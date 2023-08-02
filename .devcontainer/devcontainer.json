@@ -1,0 +1,31 @@
+{
+  "name": "Blockchain Lib",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "blockchain-lib",
+  "workspaceFolder": "/blockchain-lib",
+  "settings": {
+    "terminal.integrated.profiles.linux": {
+      "bash": {
+        "path": "bash",
+        "icon": "terminal-bash"
+      }
+    },
+  },
+  "extensions": [
+    "eg2.vscode-npm-script",
+    "dbaeumer.vscode-eslint",
+    "visualstudioexptteam.vscodeintellicode",
+    "mikestead.dotenv",
+    "firsttris.vscode-jest-runner",
+    "eamodio.gitlens",
+    "mhutchie.git-graph",
+    "ms-vsliveshare.vsliveshare",
+    "rioukkevin.vscode-git-commit",
+    "Orta.vscode-jest",
+    "wix.vscode-import-cost",
+    "mintlify.document",
+    "JuanBlanco.solidity",
+  ],
+  "remoteUser": "dev",
+  // "postCreateCommand": "dos2unix /blockchain-lib/.devcontainer/post_create.sh && /blockchain-lib/.devcontainer/post_create.sh"
+}

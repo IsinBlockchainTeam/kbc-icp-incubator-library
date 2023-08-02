@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  blockchain-lib:
+    container_name: "blockchain-lib"
+    build:
+      dockerfile: "Dockerfile.dev.yml"
+      context: .
+    volumes:
+      - ..:/blockchain-lib:cached
+    command: sleep infinity
+  # Used to run integration test
+  event-mgmt-dynamodb:
+    image: amazon/dynamodb-local:1.18.0
+    ports:
+      - 8001:8001
+    command: ['-jar', 'DynamoDBLocal.jar', '-port', '8001']

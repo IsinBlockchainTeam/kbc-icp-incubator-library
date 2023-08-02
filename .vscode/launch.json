@@ -1,0 +1,128 @@
+{
+    // Usare IntelliSense per informazioni sui possibili attributi.
+    // Al passaggio del mouse vengono visualizzate le descrizioni degli attributi esistenti.
+    // Per altre informazioni, visitare: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "[ALL] Compile smart contracts",
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": [
+                "run",
+                "compile-all"
+            ]
+        },
+        {
+            "name": "[ALL] Build library",
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": [
+                "run",
+                "build-all"
+            ]
+        },
+        {
+            "name": "[Supply Chain Mgmt] Run Jest Tests",
+            "type": "node",
+            "request": "launch",
+            "runtimeArgs": [
+                "--inspect-brk",
+                "${workspaceRoot}/packages/supply-chain-mgmt/node_modules/jest/bin/jest.js",
+                "--runInBand"
+            ],
+            "cwd": "${workspaceRoot}/packages/supply-chain-mgmt",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "port": 9229
+        },
+        {
+            "name": "[Event Mgmt] Run Jest Tests",
+            "type": "node",
+            "request": "launch",
+            "runtimeArgs": [
+                "--inspect-brk",
+                "${workspaceRoot}/packages/event-mgmt/node_modules/jest/bin/jest.js",
+                "--runInBand"
+            ],
+            "cwd": "${workspaceRoot}/packages/event-mgmt",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "port": 9229
+        },
+        {
+            "name": "[ALL] Generate doc",
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": [
+                "run",
+                "generate-doc"
+            ]
+        },
+        {
+            "name": "[Supply Chain Mgmt] Index",
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": [
+                "run",
+                "supply-chain-mgmt-index"
+            ]
+        },
+        {
+            "name": "[Supply Chain Mgmt] Deploy Contracts",
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": [
+                "run",
+                "deploy-contracts-supply-chain-mgmt"
+            ]
+        },
+        {
+            "name": "[Event Mgmt] Deploy Contracts",
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": [
+                "run",
+                "deploy-contracts-event-mgmt"
+            ]
+        },
+        {
+            "name": "[Event Mgmt] Index",
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": [
+                "run",
+                "index-event-mgmt"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "[Event Mgmt] Jest watch current file",
+            "program": "${workspaceFolder}/packages/event-mgmt/node_modules/jest-cli/bin/jest",
+            "args": [
+                "${fileBasename}",
+                "--verbose",
+                "-i",
+                "--no-cache",
+                "--watchAll"
+            ],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        }
+    ]
+}

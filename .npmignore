@@ -1,0 +1,20 @@
+# this overrides th .gitignore when pubblishing to npm/node_modules
+.devcontainer
+.vscode
+/blockchain
+/coverage
+/credentials
+/node_modules
+/docs
+/src
+/packages/*/integration-test
+.env
+.env.template
+.eslintrc.js
+.gitignore
+babel.config.js
+hardhat.config.js
+jest.config.js
+ts-config.ts
+tsconfig.json
+

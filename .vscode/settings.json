@@ -1,0 +1,81 @@
+{
+    "files.eol": "auto",
+    "eslint.format.enable": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true
+    },
+    "window.title": "${rootName}${separator}${activeEditorShort}",
+    "peacock.remoteColor": "#42b883",
+    "workbench.colorCustomizations": {
+        "activityBar.activeBackground": "#65c89b",
+        "activityBar.activeBorder": "#945bc4",
+        "activityBar.background": "#65c89b",
+        "activityBar.foreground": "#15202b",
+        "activityBar.inactiveForeground": "#15202b99",
+        "activityBarBadge.background": "#945bc4",
+        "activityBarBadge.foreground": "#e7e7e7",
+        "sash.hoverBorder": "#65c89b",
+        "statusBar.background": "#42b883",
+        "statusBar.foreground": "#15202b",
+        "statusBarItem.hoverBackground": "#359268",
+        "statusBarItem.remoteBackground": "#42b883",
+        "statusBarItem.remoteForeground": "#15202b",
+        "titleBar.activeBackground": "#42b883",
+        "titleBar.activeForeground": "#15202b",
+        "titleBar.inactiveBackground": "#42b88399",
+        "titleBar.inactiveForeground": "#15202b99",
+        "commandCenter.border": "#15202b99"
+    },
+    "docwriter.style": "JSDoc",
+    "docwriter.progress.trackFunctions": false,
+    "docwriter.progress.trackMethods": false,
+    "vscodeGitCommit.variables": {
+        "prefix": [
+            {
+                "label": "feat: 🦄 ",
+                "detail": "Select when creating new things",
+            },
+            {
+                "label": "fix: 🐞 ",
+                "detail": "Select when fixing a bug"
+            },
+            {
+                "label": "docs: 📄 ",
+                "detail": "Select when editing documentation"
+            },
+            {
+                "label": "ci: 🚀 ",
+                "detail": "Select when editing CI scripts"
+            },
+            {
+                "label": "build: 🖥️  ",
+                "detail": "Select when concerning build change or external dependencies"
+            },
+            {
+                "label": "refactor: ⚙️ ",
+                "detail": "Select when no new performances or no new functionnality"
+            },
+            {
+                "label": "style: 🌈  ",
+                "detail": "Select when working on code style"
+            },
+            {
+                "label": "perf: ⚡ ",
+                "detail": "Select when working on performances"
+            },
+            {
+                "label": "revert: ⏪  ",
+                "detail": "Select when going back"
+            },
+            {
+                "label": "test: 🪖 ",
+                "detail": "Select when adding or editing tests"
+            }
+        ]
+    },
+    "vscodeGitCommit.template": [
+        "{prefix}{message}"
+    ],
+    "editor.formatOnSave": true,
+    "typescript.tsdk": "node_modules/typescript/lib",
+}

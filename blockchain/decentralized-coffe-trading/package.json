@@ -1,0 +1,29 @@
+{
+  "name": "decentralized-coffe-trading",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "NODE_ENV=test npx hardhat test",
+    "coverage": "NODE_ENV=test npx hardhat coverage",
+    "gasReport": "REPORT_GAS=true npx hardhat test",
+    "compile": "npx hardhat compile",
+    "deploy": "npx hardhat run ./scripts/deploy.ts",
+    "node": "npx hardhat node"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^2.0.2",
+    "@nomiclabs/hardhat-ethers": "^2.2.2",
+    "eslint-plugin-mocha": "^10.1.0",
+    "ethers": "^5.7.2"
+  },
+  "dependencies": {
+    "@blockchain-lib/blockchain-common": "1.0.1",
+    "@defi-wonderland/smock": "^2.3.4",
+    "@openzeppelin/contracts": "^4.8.2",
+    "@openzeppelin/hardhat-upgrades": "^1.22.1",
+    "dotenv": "^16.0.3",
+    "hardhat": "^2.12.7",
+    "hardhat-ethernal": "^3.1.0"
+  }
+}

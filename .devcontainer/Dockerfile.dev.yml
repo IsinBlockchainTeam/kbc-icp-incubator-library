@@ -1,0 +1,38 @@
+FROM node:16
+
+ARG USERNAME=dev
+ARG USER_UID=1001
+ARG USER_GID=$USER_UID
+
+# update
+RUN apt-get -qq update
+
+# Create the user
+RUN groupadd --gid $USER_GID $USERNAME
+RUN useradd --uid $USER_UID --gid $USER_GID -m $USERNAME
+RUN apt-get -qq install sudo
+RUN echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME
+RUN chmod 0440 /etc/sudoers.d/$USERNAME
+
+# VSCode DevContainer stuff
+RUN apt-get -qq install git net-tools python
+
+# Bash
+RUN apt-get -qq install bash
+
+# Build Essentials
+RUN apt-get -qq install build-essential
+
+# dos2unix
+RUN apt-get -qq install dos2unix
+
+# lsof
+RUN apt-get -qq install lsof -y
+
+# VSCode Live Share in DevContainers
+RUN wget -O ~/vsls-reqs https://aka.ms/vsls-linux-prereq-script && chmod +x ~/vsls-reqs && ~/vsls-reqs
+
+WORKDIR /lib
+
+# sets the default user
+USER $USERNAME
