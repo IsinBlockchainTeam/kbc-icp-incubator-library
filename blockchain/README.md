@@ -13,6 +13,11 @@ You can now deploy new instances of smart contracts, by using:
 - `npm run compile`
 - `npm run deploy`
 
+## Ethernal
+You can use [Ethernal](https://app.tryethernal.com/transactions), to verify the deployed smart contracts.
+To reset the Ethernal cache, you can use: `npm run ethernal:reset`
+
+
 ## Test
 You can run tests, by using: \
 - `npm run test`: run tests
