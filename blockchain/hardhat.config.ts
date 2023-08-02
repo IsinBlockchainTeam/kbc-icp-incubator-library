@@ -41,7 +41,7 @@ const config: HardhatUserConfig = {
     },
     // @ts-ignore
     typechain: {
-        outDir: '../../packages/decentralized-coffe-trading/smart-contracts',
+        outDir: '../src/smart-contracts',
         target: 'ethers-v5',
     },
     ethernal: {

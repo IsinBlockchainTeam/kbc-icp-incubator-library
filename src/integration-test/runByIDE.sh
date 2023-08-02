@@ -1,9 +1,7 @@
 #!/bin/bash
 
 ROOT_DIR=$PWD
-cd ../../blockchain/decentralized-coffe-trading/scripts
-
-read -p "These tests will be handled by the IDE user interface? (Y/n): " TEST_IDE
+cd ../../blockchain/scripts
 
 smartContractsCleanDeploy () {
   echo "1) Checking local network..."
@@ -17,12 +15,12 @@ smartContractsCleanDeploy () {
   echo "2) Starting new local network..."
   echo "------------------------------------"
   #create local network
-  NODE_ENV=test npx hardhat node &
+  NODE_ENV=test nohup npx hardhat node > /dev/null &
   local_network_pid=$!
 
   #wait until localnetwork is up
   until $(curl --output /dev/null --silent --head --fail localhost:8545); do
-      sleep 5
+      sleep 1
   done
 
   echo "3) Deploying contracts on local network..."
@@ -32,7 +30,7 @@ smartContractsCleanDeploy () {
 }
 
 killLocalNetwork () {
-    echo "...Killing local network ($local_network_pid)..."
+    echo "...Killing local network on port 8545..."
     echo "------------------------------------"
     #pkill -TERM -P $local_network_pid
     kill -9 $(lsof -t -i:8545)
@@ -42,25 +40,4 @@ killLocalNetwork () {
 killLocalNetwork
 smartContractsCleanDeploy
 
-if [ ! -z "$TEST_IDE" ] && [[ $TEST_IDE == "n" ]]; then
-  cd "$ROOT_DIR"
 
-  echo "4) Running integration tests..."
-  echo "------------------------------------"
-  # npx jest -i --testPathPattern=./integration-test
-  NODE_ENV=test npx jest --config ./integration-test/jest.config.ts --runInBand
-
-  killLocalNetwork
-else
-  while :
-  do
-    echo ""
-    read -p "Do you want to run again the tests? (Y/n): " TEST_RUN
-    if [ ! -z "$TEST_RUN" ] && [[ $TEST_RUN == "n" ]]; then
-      killLocalNetwork
-      break
-    fi
-    killLocalNetwork
-    smartContractsCleanDeploy
-  done
-fi

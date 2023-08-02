@@ -1,20 +1,19 @@
-**/node_modules
+**/node_modules/
 .env
-/dist
 
-/packages/*/dist
-/packages/*/smart-contracts
-/packages/*/coverage
-/packages/*/integration-test/coverage
+/src/**/dist/
+/src/**/smart-contracts/
+/src/**/coverage/
+/src/**/integration-test/coverage/
 
-/coverage
+/coverage/
 /credentials/gitlab_write_token
 
-/blockchain/**/artifacts
-/blockchain/**/cache
-/blockchain/**/types
-/blockchain/**/typechain-types
-/blockchain/*/coverage
+/blockchain/**/artifacts/
+/blockchain/**/cache/
+/blockchain/**/types/
+/blockchain/**/typechain-types/
+/blockchain/**/coverage/
 *coverage.json
 
 docs/*
@@ -23,11 +22,9 @@ pretty_docs
 docs
 .npmrc
 
-packages/event-mgmt/integration-test/coverage/
-**/mongodb
-
 .npm
 .idea
 *.iml
 
-*.DS_STORE
+.DS_Store
+**/.DS_Store

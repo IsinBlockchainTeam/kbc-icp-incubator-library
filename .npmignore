@@ -7,7 +7,7 @@
 /node_modules
 /docs
 /src
-/packages/*/integration-test
+/src/*/integration-test
 .env
 .env.template
 .eslintrc.js
