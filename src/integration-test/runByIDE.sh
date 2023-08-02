@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ROOT_DIR=$PWD
-cd ../../blockchain/scripts
+cd ../blockchain/scripts
 
 smartContractsCleanDeploy () {
   echo "1) Checking local network..."

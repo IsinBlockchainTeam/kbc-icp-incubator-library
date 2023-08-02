@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ROOT_DIR=$PWD
-cd ../../blockchain/scripts
+cd ../blockchain/scripts
 
 read -p "These tests will be handled by the IDE user interface? (Y/n): " TEST_IDE
 
