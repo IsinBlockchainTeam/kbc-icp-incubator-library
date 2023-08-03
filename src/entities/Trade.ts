@@ -3,11 +3,11 @@ export class Trade {
 
     private _name: string;
 
-    private _materialsIds: number[][]; // array of [materialInId, materialOutId]
+    private _materialsIds: [number, number][]; // array of [materialInId, materialOutId]
 
     private _owner: string;
 
-    constructor(id: number, name: string, materialsIds: number[][], owner: string) {
+    constructor(id: number, name: string, materialsIds: [number, number][], owner: string) {
         this._id = id;
         this._name = name;
         this._materialsIds = materialsIds;
@@ -30,11 +30,11 @@ export class Trade {
         this._name = value;
     }
 
-    get materialsIds(): number[][] {
+    get materialsIds(): [number, number][] {
         return this._materialsIds;
     }
 
-    set materialsIds(value: number[][]) {
+    set materialsIds(value: [number, number][]) {
         this._materialsIds = value;
     }
 
