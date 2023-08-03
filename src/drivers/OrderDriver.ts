@@ -14,14 +14,14 @@ export type OrderSignatures = {
 }
 
 export class OrderDriver {
-    protected _order: OrderManager;
+    protected _contract: OrderManager;
 
     constructor(
         identityDriver: IdentityEthersDriver,
         provider: JsonRpcProvider,
         orderAddress: string,
     ) {
-        this._order = OrderManager__factory
+        this._contract = OrderManager__factory
             .connect(orderAddress, provider)
             .connect(identityDriver.wallet);
     }
@@ -31,7 +31,7 @@ export class OrderDriver {
             throw new Error('Not an address');
         }
         try {
-            const tx = await this._order.registerOrder(
+            const tx = await this._contract.registerOrder(
                 order.supplier,
                 order.contractId,
                 order.externalUrl,
@@ -40,7 +40,7 @@ export class OrderDriver {
             if (receipt.events) {
                 const registerEvent = receipt.events.find((event) => event.event === 'OrderRegistered');
                 if (registerEvent) {
-                    const decodedEvent = this._order.interface.decodeEventLog('OrderRegistered', registerEvent.data, registerEvent.topics);
+                    const decodedEvent = this._contract.interface.decodeEventLog('OrderRegistered', registerEvent.data, registerEvent.topics);
                     const savedOrderId = decodedEvent.id.toNumber();
                     for (let i = 0; i < order.lines.length; i++) {
                         const orderLine = order.lines[i];
@@ -54,7 +54,7 @@ export class OrderDriver {
     }
 
     async getOrderCounter(supplierAddress: string): Promise<number> {
-        const counter = await this._order.getOrderCounter(supplierAddress);
+        const counter = await this._contract.getOrderCounter(supplierAddress);
         return counter.toNumber();
     }
 
@@ -68,7 +68,7 @@ export class OrderDriver {
                 contractId,
                 externalUrl,
                 lineIds,
-            } = await this._order.getOrderInfo(supplierAddress, id);
+            } = await this._contract.getOrderInfo(supplierAddress, id);
             return new Order(orderId.toNumber(), supplierAddress, contractId.toNumber(), externalUrl, lineIds.map((l) => l.toNumber()));
         } catch (e: any) {
             throw new Error(e.message);
@@ -76,7 +76,7 @@ export class OrderDriver {
     }
 
     async orderExists(supplierAddress: string, orderId: number): Promise<boolean> {
-        return this._order.orderExists(supplierAddress, orderId);
+        return this._contract.orderExists(supplierAddress, orderId);
     }
 
     async getOrderLine(supplierAddress: string, orderId: number, orderLineId: number): Promise<OrderLine> {
@@ -84,7 +84,7 @@ export class OrderDriver {
             throw new Error('Not an address');
         }
         try {
-            const rawOrderLine = await this._order.getOrderLine(supplierAddress, orderId, orderLineId);
+            const rawOrderLine = await this._contract.getOrderLine(supplierAddress, orderId, orderLineId);
             return new OrderLine(
                 rawOrderLine.id.toNumber(),
                 rawOrderLine.contractLineId.toNumber(),
@@ -103,7 +103,7 @@ export class OrderDriver {
                 quantity: orderLine.quantity,
                 exists: true,
             };
-            const tx = await this._order.addOrderLine(
+            const tx = await this._contract.addOrderLine(
                 supplierAddress,
                 orderId,
                 rawOrderLine,
@@ -119,7 +119,7 @@ export class OrderDriver {
             throw new Error('Not an address');
         }
         try {
-            const tx = await this._order.addAdmin(address);
+            const tx = await this._contract.addAdmin(address);
             await tx.wait();
         } catch (e: any) {
             throw new Error(e.message);
@@ -131,7 +131,7 @@ export class OrderDriver {
             throw new Error('Not an address');
         }
         try {
-            const tx = await this._order.removeAdmin(address);
+            const tx = await this._contract.removeAdmin(address);
             await tx.wait();
         } catch (e: any) {
             throw new Error(e.message);

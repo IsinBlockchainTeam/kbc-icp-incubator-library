@@ -47,17 +47,18 @@ serial([
             await tx.wait();
         }
     },
-    () => deploy(
-        ContractName.CONTRACT_MANAGER,
-        [[process.env.SUPPLIER_ADMIN || '', process.env.CUSTOMER_ADMIN || ''],
-            contractMap.get('EnumerableFiatManager')?.address,
-            contractMap.get('EnumerableProductCategoryManager')?.address],
-    ),
-    () => deploy(
-        ContractName.ORDER_MANAGER,
-        [[process.env.SUPPLIER_ADMIN || '', process.env.CUSTOMER_ADMIN || ''],
-            contractMap.get(ContractName.CONTRACT_MANAGER)?.address],
-    ),
+    () => deploy(ContractName.CONTRACT_MANAGER, [
+        [process.env.SUPPLIER_ADMIN || '', process.env.CUSTOMER_ADMIN || ''],
+        contractMap.get('EnumerableFiatManager')?.address,
+        contractMap.get('EnumerableProductCategoryManager')?.address,
+    ]),
+    () => deploy(ContractName.ORDER_MANAGER, [
+        [process.env.SUPPLIER_ADMIN || '', process.env.CUSTOMER_ADMIN || ''],
+        contractMap.get(ContractName.CONTRACT_MANAGER)?.address,
+    ]),
+    () => deploy(ContractName.RELATIONSHIP_MANAGER, [
+        [process.env.SUPPLIER_ADMIN || ''],
+    ]),
 ])
     .catch((error: any) => {
         console.error(error);

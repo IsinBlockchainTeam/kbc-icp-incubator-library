@@ -26,12 +26,6 @@ export default {
 
     testMatch: [
         '<rootDir>/*.test.ts',
-        // '<rootDir>/offer.test.ts',
-        // '<rootDir>/session.test.ts',
-        // '<rootDir>/ticket.test.ts',
-        // '<rootDir>/eventMgmtToken.test.ts',
-        // '<rootDir>/marketplace.test.ts',
-        // '<rootDir>/user.test.ts',
     ],
 
     // The directory where Jest should output its coverage files

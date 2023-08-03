@@ -6,27 +6,21 @@ import { BigNumber, Contract } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { ContractName } from '../utils/constants';
 
-let contractManagerContract: Contract;
 let relationshipManagerContract: Contract;
-let enumerableFiatManagerContract: Contract;
-let enumerableProductCategoryManagerContract: Contract;
 let owner: SignerWithAddress;
 let admin: SignerWithAddress;
 let companyA: SignerWithAddress;
 let companyB: SignerWithAddress;
 let otherAccount: SignerWithAddress;
 let relationshipCounterId: BigNumber;
-let relationshipLineCounterId: BigNumber;
-let contractCounterId: BigNumber;
-let contractLineCounterId: BigNumber;
 
 describe('RelationshipManager', () => {
     const rawRelationship = {
         validFrom: new Date().getTime(),
-        validUntil: new Date("2030-10-10").getTime()
+        validUntil: new Date('2030-10-10').getTime(),
     };
 
-    before(async () => {
+    beforeEach(async () => {
         [owner, admin, companyA, companyB, otherAccount] = await ethers.getSigners();
 
         const RelationshipManager = await ethers.getContractFactory(ContractName.RELATIONSHIP_MANAGER);
@@ -47,15 +41,34 @@ describe('RelationshipManager', () => {
             expect(savedRelationship.validUntil).to.equal(rawRelationship.validUntil);
         });
 
-        it('should register a relationship without valid until date', async () => {
-
-        })
-
         it('should emit RelationshipRegistered event', async () => {
             relationshipCounterId = await relationshipManagerContract.connect(companyB).getRelationshipCounter();
             await expect(relationshipManagerContract.connect(companyB).registerRelationship(companyA.address, companyB.address, rawRelationship.validFrom, rawRelationship.validUntil))
                 .to.emit(relationshipManagerContract, 'RelationshipRegistered')
                 .withArgs(relationshipCounterId.toNumber() + 1, companyA.address, companyB.address);
+        });
+    });
+
+    describe('getRelationshipIdsByCompany', () => {
+        it('should retrieve saved relationship ids by same company address', async () => {
+            await relationshipManagerContract.connect(companyB).registerRelationship(companyA.address, companyB.address, rawRelationship.validFrom, rawRelationship.validUntil);
+            await relationshipManagerContract.connect(companyB).registerRelationship(otherAccount.address, companyB.address, rawRelationship.validFrom, rawRelationship.validUntil);
+            relationshipCounterId = await relationshipManagerContract.connect(companyB).getRelationshipCounter();
+
+            const relationshipIds = await relationshipManagerContract.connect(companyB).getRelationshipIdsByCompany(companyB.address);
+            expect(relationshipIds.length).to.equal(relationshipCounterId.toNumber());
+
+            let savedRelationship = await relationshipManagerContract.connect(companyB).getRelationshipInfo(relationshipIds[0]);
+            expect(savedRelationship.companyA).to.equal(companyA.address);
+            expect(savedRelationship.companyB).to.equal(companyB.address);
+            expect(savedRelationship.validFrom).to.equal(rawRelationship.validFrom);
+            expect(savedRelationship.validUntil).to.equal(rawRelationship.validUntil);
+
+            savedRelationship = await relationshipManagerContract.connect(companyB).getRelationshipInfo(relationshipIds[1]);
+            expect(savedRelationship.companyA).to.equal(otherAccount.address);
+            expect(savedRelationship.companyB).to.equal(companyB.address);
+            expect(savedRelationship.validFrom).to.equal(rawRelationship.validFrom);
+            expect(savedRelationship.validUntil).to.equal(rawRelationship.validUntil);
         });
     });
 
