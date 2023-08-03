@@ -38,8 +38,12 @@ export class RelationshipDriver {
     }
 
     async getRelationshipCounter(): Promise<number> {
-        const counter = await this._contract.getRelationshipCounter();
-        return counter.toNumber();
+        try {
+            const counter = await this._contract.getRelationshipCounter();
+            return counter.toNumber();
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
     }
 
     async getRelationshipInfo(id: number): Promise<Relationship> {
@@ -57,8 +61,12 @@ export class RelationshipDriver {
     }
 
     async getRelationshipIdsByCompany(companyAddress: string): Promise<number[]> {
-        const ids = await this._contract.getRelationshipIdsByCompany(companyAddress);
-        return ids.map((id) => id.toNumber());
+        try {
+            const ids = await this._contract.getRelationshipIdsByCompany(companyAddress);
+            return ids.map((id) => id.toNumber());
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
     }
 
     async addAdmin(address: string): Promise<void> {

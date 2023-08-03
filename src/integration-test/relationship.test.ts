@@ -63,16 +63,17 @@ describe('Relationship lifecycle', () => {
 
     it('Should get relationships by company address', async () => {
         _defineSender(OTHER_INVOKER_PRIVATE_KEY);
+        const oldRelationshipCounterId = await relationshipService.getRelationshipCounter();
         await relationshipService.registerRelationship(OTHER_INVOKER_ADDRESS, SUPPLIER_INVOKER_ADDRESS, validFrom, validUntil);
         await relationshipService.registerRelationship(OTHER_INVOKER_ADDRESS, CUSTOMER_INVOKER_ADDRESS, validFrom, validUntil);
         relationshipCounterId = await relationshipService.getRelationshipCounter();
 
         const relationshipIds = await relationshipService.getRelationshipIdsByCompany(OTHER_INVOKER_ADDRESS);
-        expect(relationshipIds.length).toEqual(relationshipCounterId);
-        let savedRelationship = await relationshipService.getRelationshipInfo(relationshipIds[0]);
-        expect(savedRelationship.companyA).toEqual(SUPPLIER_INVOKER_ADDRESS);
+        expect(relationshipIds.length).toEqual(relationshipCounterId - oldRelationshipCounterId);
+        let savedRelationship = await relationshipService.getRelationshipInfo(relationshipIds[relationshipCounterId - oldRelationshipCounterId - 2]);
+        expect(savedRelationship.companyB).toEqual(SUPPLIER_INVOKER_ADDRESS);
 
-        savedRelationship = await relationshipService.getRelationshipInfo(relationshipIds[1]);
+        savedRelationship = await relationshipService.getRelationshipInfo(relationshipIds[relationshipCounterId - oldRelationshipCounterId - 1]);
         expect(savedRelationship.companyB).toEqual(CUSTOMER_INVOKER_ADDRESS);
     });
 });

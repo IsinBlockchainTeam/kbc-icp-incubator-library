@@ -53,7 +53,7 @@ export class Relationship {
         return this._validUntil;
     }
 
-    set validUntil(value: Date) {
+    set validUntil(value: Date | undefined) {
         this._validUntil = value;
     }
 }
