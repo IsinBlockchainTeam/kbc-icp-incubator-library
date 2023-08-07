@@ -29,6 +29,7 @@ async function deploy(contractName: string, contractArgs?: any[], contractAliasN
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
 serial([
+    () => hre.ethernal.resetWorkspace(process.env.ETHERNAL_WORKSPACE || ''),
     () => deploy(ContractName.ENUMERABLE_TYPE_MANAGER, [[]], 'EnumerableFiatManager'),
     async () => {
         const enums: string[] = ['USD', 'EUR', 'CHF'];
@@ -57,6 +58,10 @@ serial([
         ContractName.ORDER_MANAGER,
         [[process.env.SUPPLIER_ADMIN || '', process.env.CUSTOMER_ADMIN || ''],
             contractMap.get(ContractName.CONTRACT_MANAGER)?.address],
+    ),
+    () => deploy(
+        ContractName.SUPPLY_CHAIN_MANAGER,
+        [],
     ),
 ])
     .catch((error: any) => {

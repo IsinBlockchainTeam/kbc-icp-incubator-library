@@ -29,7 +29,7 @@ const config: HardhatUserConfig = {
             viaIR: true,
         },
     },
-    // defaultNetwork: DEFAULT_DEPLOY_NETWORK || 'localhost',
+    defaultNetwork: NODE_ENV === 'test' ? 'hardhat' : DEFAULT_DEPLOY_NETWORK,
     networks: {
         hardhat: {
             allowUnlimitedContractSize: true,
@@ -41,7 +41,7 @@ const config: HardhatUserConfig = {
     },
     // @ts-ignore
     typechain: {
-        outDir: '../src/smart-contracts',
+        // outDir: '../src/smart-contracts',
         target: 'ethers-v5',
     },
     ethernal: {
