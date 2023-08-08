@@ -1,4 +1,4 @@
-export type ContractLinePrice = {
+export type OrderLinePrice = {
     amount: number,
     fiat: string
 }
@@ -10,11 +10,11 @@ export class OrderLine {
 
     private _quantity: number;
 
-    private _price: ContractLinePrice;
+    private _price: OrderLinePrice;
 
-    constructor(id: number, productCategory: string, quantity: number, price: ContractLinePrice);
+    constructor(id: number, productCategory: string, quantity: number, price: OrderLinePrice);
 
-    constructor(productCategory: string, quantity: number, price: ContractLinePrice);
+    constructor(productCategory: string, quantity: number, price: OrderLinePrice);
 
     constructor(...args: any[]) {
         let startIndex = 0;
@@ -51,11 +51,11 @@ export class OrderLine {
         this._quantity = value;
     }
 
-    get price(): ContractLinePrice {
+    get price(): OrderLinePrice {
         return this._price;
     }
 
-    set price(value: ContractLinePrice) {
+    set price(value: OrderLinePrice) {
         this._price = value;
     }
 }

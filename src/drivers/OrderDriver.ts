@@ -6,7 +6,7 @@ import { IdentityEthersDriver } from '@blockchain-lib/common';
 import { BigNumber, utils } from 'ethers';
 import { OrderManager, OrderManager__factory } from '../smart-contracts';
 import { Order } from '../entities/Order';
-import { OrderLine } from '../entities/OrderLine';
+import {OrderLine, OrderLinePrice} from '../entities/OrderLine';
 import { OrderStatus } from '../types/OrderStatus';
 import {EntityBuilder} from "../utils/EntityBuilder";
 
@@ -23,7 +23,7 @@ export class OrderDriver {
             .connect(identityDriver.wallet);
     }
 
-    async registerOrder(supplierAddress: string, customerAddress: string, offereeAddress: string, externalUrl: string, lines: OrderLine[]): Promise<void> {
+    async registerOrder(supplierAddress: string, customerAddress: string, offereeAddress: string, externalUrl: string, lines?: OrderLine[]): Promise<void> {
         if (!utils.isAddress(supplierAddress)) throw new Error('Supplier not an address');
         if (!utils.isAddress(customerAddress)) throw new Error('Customer not an address');
         if (!utils.isAddress(offereeAddress)) throw new Error('Offeree not an address');
@@ -36,14 +36,14 @@ export class OrderDriver {
                 externalUrl,
             );
             const receipt = await tx.wait();
-            if (receipt.events) {
+            if (lines && receipt.events) {
                 const registerEvent = receipt.events.find((event) => event.event === 'OrderRegistered');
                 if (registerEvent) {
                     const decodedEvent = this._contract.interface.decodeEventLog('OrderRegistered', registerEvent.data, registerEvent.topics);
                     const savedOrderId = decodedEvent.id.toNumber();
                     for (let i = 0; i < lines.length; i++) {
                         const orderLine = lines[i];
-                        await this.addOrderLine(supplierAddress, savedOrderId, orderLine);
+                        await this.addOrderLine(supplierAddress, savedOrderId, orderLine.productCategory, orderLine.quantity, orderLine.price);
                     }
                 }
             }
@@ -121,24 +121,20 @@ export class OrderDriver {
         }
     }
 
-    async addOrderLine(supplierAddress: string, orderId: number, orderLine: OrderLine): Promise<void> {
+    async addOrderLine(supplierAddress: string, orderId: number, productCategory: string, quantity: number, price: OrderLinePrice): Promise<void> {
         try {
-            const priceDecimals = orderLine.price.amount.toString().split('.')[1]?.length || 0;
-            const rawOrderLine: OrderManager.OrderLineStruct = {
-                id: 0,
-                productCategory: orderLine.productCategory,
-                quantity: orderLine.quantity,
-                price: {
-                    amount: orderLine.price.amount * (10 ** priceDecimals),
-                    decimals: priceDecimals,
-                    fiat: orderLine.price.fiat,
-                },
-                exists: true,
+            const priceDecimals = price.amount.toString().split('.')[1]?.length || 0;
+            const rawOrderLinePrice: OrderManager.OrderLinePriceStruct = {
+                amount: price.amount * (10 ** priceDecimals),
+                decimals: priceDecimals,
+                fiat: price.fiat,
             };
             const tx = await this._contract.addOrderLine(
                 supplierAddress,
                 orderId,
-                rawOrderLine,
+                productCategory,
+                quantity,
+                rawOrderLinePrice
             );
             await tx.wait();
         } catch (e: any) {
@@ -146,25 +142,21 @@ export class OrderDriver {
         }
     }
 
-    async updateOrderLine(supplierAddress: string, orderId: number, orderLineId: number, orderLine: OrderLine): Promise<void> {
+    async updateOrderLine(supplierAddress: string, orderId: number, orderLineId: number, productCategory: string, quantity: number, price: OrderLinePrice): Promise<void> {
         try {
-            const priceDecimals = orderLine.price.amount.toString().split('.')[1]?.length || 0;
-            const rawOrderLine: OrderManager.OrderLineStruct = {
-                id: 0,
-                productCategory: orderLine.productCategory,
-                quantity: orderLine.quantity,
-                price: {
-                    amount: orderLine.price.amount * (10 ** priceDecimals),
-                    decimals: priceDecimals,
-                    fiat: orderLine.price.fiat,
-                },
-                exists: true,
+            const priceDecimals = price.amount.toString().split('.')[1]?.length || 0;
+            const rawOrderLinePrice: OrderManager.OrderLinePriceStruct = {
+                amount: price.amount * (10 ** priceDecimals),
+                decimals: priceDecimals,
+                fiat: price.fiat,
             };
             const tx = await this._contract.updateOrderLine(
                 supplierAddress,
                 orderId,
                 orderLineId,
-                rawOrderLine,
+                productCategory,
+                quantity,
+                rawOrderLinePrice
             );
             await tx.wait();
         } catch (e: any) {

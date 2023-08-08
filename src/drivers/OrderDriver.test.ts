@@ -11,7 +11,6 @@ import {EntityBuilder} from "../utils/EntityBuilder";
 
 describe('OrderDriver', () => {
     let orderDriver: OrderDriver;
-    let order: Order;
 
     const testAddress = '0x6C9E9ADB5F57952434A4148b401502d9c6C70318';
     const errorMessage = 'testError';
@@ -39,6 +38,7 @@ describe('OrderDriver', () => {
 
     const supplier = ethers.Wallet.createRandom();
     const customer = ethers.Wallet.createRandom();
+    const externalUrl = 'https://testurl.ch';
 
     const mockedOrder = createMock<Order>();
 
@@ -118,15 +118,12 @@ describe('OrderDriver', () => {
     });
 
     it('should call and wait for register order', async () => {
-        await orderDriver.registerOrder(order);
+        await orderDriver.registerOrder(supplier.address, customer.address, customer.address, externalUrl);
 
         expect(mockedRegisterOrder).toHaveBeenCalledTimes(1);
         expect(mockedRegisterOrder).toHaveBeenNthCalledWith(
             1,
-            order.supplier,
-            order.customer,
-            order.customer,
-            order.externalUrl,
+            supplier.address, customer.address, customer.address, externalUrl
         );
         expect(mockedWait).toHaveBeenCalledTimes(1);
     });
@@ -141,14 +138,13 @@ describe('OrderDriver', () => {
             amount: price.amount,
             fiat: price.fiat,
         });
-        const order2 = new Order(1, supplier.address, customer.address, 'https://testurl.ch', customer.address, supplier.address, [1], [orderLine]);
 
         mockedRegisterOrder.mockReturnValue(Promise.resolve({
-            wait: mockedWait.mockReturnValue({ events: [{ event: 'OrderRegistered', data: order2 }] }),
+            wait: mockedWait.mockReturnValue({ events: [{ event: 'OrderRegistered', data: {id: 1} }] }),
         }));
         mockedDecodeEventLog.mockImplementation((eventName: string, data: Order, topics: string[]) => ({ id: BigNumber.from(data.id) }));
 
-        await orderDriver.registerOrder(order2);
+        await orderDriver.registerOrder(supplier.address, customer.address, customer.address, externalUrl, [orderLine]);
         const rawOrderLine: OrderManager.OrderLineStruct = {
             id: 0,
             productCategory: orderLine.productCategory,
@@ -163,17 +159,13 @@ describe('OrderDriver', () => {
         expect(mockedRegisterOrder).toHaveBeenCalledTimes(1);
         expect(mockedRegisterOrder).toHaveBeenNthCalledWith(
             1,
-            order2.supplier,
-            order2.customer,
-            order2.customer,
-            order2.externalUrl,
+            supplier.address, customer.address, customer.address, externalUrl
         );
         expect(mockedAddOrderLine).toHaveBeenCalledTimes(1);
         expect(mockedAddOrderLine).toHaveBeenNthCalledWith(
             1,
-            order2.supplier,
-            order2.id,
-            rawOrderLine,
+            supplier.address, 1,
+            rawOrderLine.productCategory, rawOrderLine.quantity, rawOrderLine.price
         );
         expect(mockedWait).toHaveBeenCalledTimes(2);
     });
@@ -181,54 +173,54 @@ describe('OrderDriver', () => {
     it('should call and wait for register order - transaction fails', async () => {
         mockedRegisterOrder.mockRejectedValue(new Error(errorMessage));
 
-        const fn = async () => orderDriver.registerOrder(order);
+        const fn = async () => orderDriver.registerOrder(supplier.address, customer.address, customer.address, externalUrl);
         await expect(fn).rejects.toThrowError(new Error(errorMessage));
     });
 
-    it('should call and wait for register order - fails for address', async () => {
-        const order3 = new Order(1, supplier.address, '0xaddress', customer.address, 'https://testurl.ch', supplier.address, []);
+    it('should call and wait for register order - fails for supplier address', async () => {
+        const fn = async () => orderDriver.registerOrder('0xaddress', customer.address, customer.address, externalUrl);
+        await expect(fn).rejects.toThrowError(new Error('Supplier not an address'));
+    });
 
-        const fn = async () => orderDriver.registerOrder(order3);
+    it('should call and wait for register order - fails for customer address', async () => {
+        const fn = async () => orderDriver.registerOrder(supplier.address, '0xaddress', customer.address, externalUrl);
         await expect(fn).rejects.toThrowError(new Error('Customer not an address'));
     });
 
+    it('should call and wait for register order - fails for offeree address', async () => {
+        const fn = async () => orderDriver.registerOrder(supplier.address, customer.address, '0xaddress', externalUrl);
+        await expect(fn).rejects.toThrowError(new Error('Offeree not an address'));
+    });
+
     it('should check if order exists', async () => {
-        await orderDriver.orderExists(order.supplier, 1);
+        await orderDriver.orderExists(supplier.address, 1);
         expect(mockedOrderExists).toHaveBeenCalledTimes(1);
-        expect(mockedOrderExists).toHaveBeenNthCalledWith(1, order.supplier, 1);
+        expect(mockedOrderExists).toHaveBeenNthCalledWith(1, supplier.address, 1);
     });
 
     it('should get the order counter ids', async () => {
-        await orderDriver.getOrderCounter(order.supplier);
+        await orderDriver.getOrderCounter(supplier.address);
         expect(mockedGetOrderCounter).toHaveBeenCalledTimes(1);
-        expect(mockedGetOrderCounter).toHaveBeenNthCalledWith(1, order.supplier);
+        expect(mockedGetOrderCounter).toHaveBeenNthCalledWith(1, supplier.address);
     });
 
     it('should confirm the order', async () => {
-        await orderDriver.confirmOrder(order.supplier, 1);
+        await orderDriver.confirmOrder(supplier.address, 1);
         expect(mockedConfirmOrder).toHaveBeenCalledTimes(1);
-        expect(mockedConfirmOrder).toHaveBeenNthCalledWith(1, order.supplier, 1);
+        expect(mockedConfirmOrder).toHaveBeenNthCalledWith(1, supplier.address, 1);
     });
 
     it('should retrieve order', async () => {
-        mockedGetOrderInfo.mockResolvedValue({
-            id: { toNumber: () => order.id },
-            supplier: order.supplier,
-            customer: order.customer,
-            externalUrl: order.externalUrl,
-            offeree: order.offeree,
-            offeror: order.offeror,
-            lineIds: order.lineIds,
-        });
+        mockedGetOrderInfo.mockResolvedValue(mockedOrder);
 
-        const resp = await orderDriver.getOrderInfo(order.supplier, 1);
+        const resp = await orderDriver.getOrderInfo(supplier.address, 1);
 
-        expect(resp).toEqual(order);
+        expect(resp).toEqual(mockedOrder);
 
         expect(mockedGetOrderInfo).toHaveBeenCalledTimes(1);
         expect(mockedGetOrderInfo).toHaveBeenNthCalledWith(
             1,
-            order.supplier,
+            supplier.address,
             1,
         );
     });
@@ -236,7 +228,7 @@ describe('OrderDriver', () => {
     it('should retrieve order - transaction fails', async () => {
         mockedGetOrderInfo.mockRejectedValue(new Error(errorMessage));
 
-        const fn = async () => orderDriver.getOrderInfo(order.supplier, 1);
+        const fn = async () => orderDriver.getOrderInfo(supplier.address, 1);
         await expect(fn).rejects.toThrowError(new Error(errorMessage));
     });
 
@@ -278,13 +270,13 @@ describe('OrderDriver', () => {
             exists: true,
         });
 
-        const resp = await orderDriver.getOrderLine(order.supplier, 1, orderLine.id as number);
+        const resp = await orderDriver.getOrderLine(supplier.address, 1, orderLine.id as number);
         expect(resp).toEqual(orderLine);
 
         expect(mockedGetOrderLine).toHaveBeenCalledTimes(1);
         expect(mockedGetOrderLine).toHaveBeenNthCalledWith(
             1,
-            order.supplier,
+            supplier.address,
             1,
             orderLine.id as number,
         );
@@ -293,7 +285,7 @@ describe('OrderDriver', () => {
     it('should retrieve order line - transaction fails', async () => {
         mockedGetOrderLine.mockRejectedValue(new Error(errorMessage));
 
-        const fn = async () => orderDriver.getOrderLine(order.supplier, 1, 2);
+        const fn = async () => orderDriver.getOrderLine(supplier.address, 1, 2);
         await expect(fn).rejects.toThrowError(new Error(errorMessage));
     });
 
@@ -308,84 +300,64 @@ describe('OrderDriver', () => {
             decimals: 0,
             fiat: 'CHF',
         };
-        const orderLine = new OrderLine(4, 'categoryA', 100, {
-            amount: price.amount,
-            fiat: price.fiat,
-        });
-        await orderDriver.addOrderLine(supplier.address, order.id as number, orderLine);
-        const rawOrderLine: OrderManager.OrderLineStruct = {
-            id: 0,
-            productCategory: orderLine.productCategory,
-            quantity: orderLine.quantity,
-            price,
-            exists: true,
-        };
+        await orderDriver.addOrderLine(supplier.address, 1, 'categoryA', 100, price);
         expect(mockedAddOrderLine).toHaveBeenCalledTimes(1);
         expect(mockedAddOrderLine).toHaveBeenNthCalledWith(
             1,
-            order.supplier,
-            order.id,
-            rawOrderLine,
+            supplier.address, 1,
+            'categoryA', 100, price
         );
         expect(mockedWait).toHaveBeenCalledTimes(1);
     });
 
     it('should call and wait for add order line - fails', async () => {
-        const orderLine = new OrderLine(3, 'categoryA', 100, {
-            amount: 10,
+        const price = {
+            amount: 100005,
+            decimals: 1,
             fiat: 'CHF',
-        });
+        };
         mockedAddOrderLine.mockRejectedValue(new Error(errorMessage));
 
-        const fn = async () => orderDriver.addOrderLine(supplier.address, order.id as number, orderLine);
+        const fn = async () => orderDriver.addOrderLine(supplier.address, 1, 'categoryA', 100, price);
         await expect(fn).rejects.toThrowError(new Error(errorMessage));
     });
 
     it('should call and wait for update order line', async () => {
         const price = {
             amount: 10000.5,
-            decimals: 1,
             fiat: 'CHF',
         };
-        const orderLine = new OrderLine(4, 'categoryUpdated', 100, {
-            amount: price.amount,
-            fiat: price.fiat,
-        });
-        await orderDriver.updateOrderLine(supplier.address, order.id!, orderLine.id!, orderLine);
-        const rawOrderLine: OrderManager.OrderLineStruct = {
-            id: 0,
-            productCategory: orderLine.productCategory,
-            quantity: orderLine.quantity,
-            price,
-            exists: true,
-        };
+        await orderDriver.updateOrderLine(supplier.address, 1, 2, 'categoryUpdated', 100, price);
         expect(mockedUpdateOrderLine).toHaveBeenCalledTimes(1);
-        rawOrderLine.price.amount = 100005;
         expect(mockedUpdateOrderLine).toHaveBeenNthCalledWith(
             1,
-            order.supplier,
-            order.id,
-            orderLine.id,
-            rawOrderLine,
+            supplier.address,
+            1, 2,
+            'categoryUpdated', 100, {
+                amount: 100005,
+                decimals: 1,
+                fiat: 'CHF'
+            },
         );
         expect(mockedWait).toHaveBeenCalledTimes(1);
     });
 
     it('should call and wait for update order line - fails', async () => {
-        const orderLine = new OrderLine(3, 'categoryUpdated', 100, {
-            amount: 10,
+        const price = {
+            amount: 100005,
+            decimals: 1,
             fiat: 'CHF',
-        });
+        };
         mockedUpdateOrderLine.mockRejectedValue(new Error(errorMessage));
 
-        const fn = async () => orderDriver.updateOrderLine(supplier.address, order.id!, orderLine.id!, orderLine);
+        const fn = async () => orderDriver.updateOrderLine(supplier.address, 1, 2, 'categoryUpdated', 100, price);
         await expect(fn).rejects.toThrowError(new Error(errorMessage));
     });
 
     it('should get the order status', async () => {
-        await orderDriver.getOrderStatus(order.supplier, 1);
+        await orderDriver.getOrderStatus(supplier.address, 1);
         expect(mockedGetOrderStatus).toHaveBeenCalledTimes(1);
-        expect(mockedGetOrderStatus).toHaveBeenNthCalledWith(1, order.supplier, 1);
+        expect(mockedGetOrderStatus).toHaveBeenNthCalledWith(1, supplier.address, 1);
     });
 
     it('should get the order status - fail due to wrong address', async () => {
