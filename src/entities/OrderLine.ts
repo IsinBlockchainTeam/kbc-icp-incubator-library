@@ -1,6 +1,28 @@
-export type OrderLinePrice = {
-    amount: number,
-    fiat: string
+export class OrderLinePrice {
+    private _amount: number;
+
+    private _fiat: string;
+
+    constructor(amount: number, fiat: string) {
+        this._amount = amount;
+        this._fiat = fiat;
+    }
+
+    get amount(): number {
+        return this._amount;
+    }
+
+    set amount(value: number) {
+        this._amount = value;
+    }
+
+    get fiat(): string {
+        return this._fiat;
+    }
+
+    set fiat(value: string) {
+        this._fiat = value;
+    }
 }
 
 export class OrderLine {
@@ -12,19 +34,11 @@ export class OrderLine {
 
     private _price: OrderLinePrice;
 
-    constructor(id: number, productCategory: string, quantity: number, price: OrderLinePrice);
-
-    constructor(productCategory: string, quantity: number, price: OrderLinePrice);
-
-    constructor(...args: any[]) {
-        let startIndex = 0;
-        if (typeof args[0] === 'number') {
-            this._id = args[0];
-            startIndex = 1;
-        }
-        this._productCategory = args[startIndex];
-        this._quantity = args[startIndex + 1];
-        this._price = args[startIndex + 2];
+    constructor(id: number, productCategory: string, quantity: number, price: OrderLinePrice) {
+        this._id = id;
+        this._productCategory = productCategory;
+        this._quantity = quantity;
+        this._price = price;
     }
 
     get id(): number | undefined {

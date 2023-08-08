@@ -11,7 +11,7 @@ import {
     SUPPLIER_INVOKER_PRIVATE_KEY,
 } from './config';
 import { Order } from '../entities/Order';
-import { OrderLine } from '../entities/OrderLine';
+import {OrderLine, OrderLinePrice} from '../entities/OrderLine';
 import { OrderStatus } from '../types/OrderStatus';
 
 describe('Order lifecycle', () => {
@@ -36,10 +36,7 @@ describe('Order lifecycle', () => {
     });
 
     it('Should correctly register and retrieve a order with a line', async () => {
-        const orderLine: OrderLine = new OrderLine('CategoryA', 20, {
-            amount: 5.2,
-            fiat: 'USD',
-        });
+        const orderLine: OrderLine = new OrderLine(0,'CategoryA', 20, new OrderLinePrice(10.25, 'USD'));
 
         await orderService.registerOrder(SUPPLIER_INVOKER_ADDRESS, CUSTOMER_INVOKER_ADDRESS, CUSTOMER_INVOKER_ADDRESS, externalUrl, [orderLine]);
         orderCounterId = await orderService.getOrderCounter(SUPPLIER_INVOKER_ADDRESS);
@@ -84,10 +81,7 @@ describe('Order lifecycle', () => {
 
     it('Should add a line to a order as a supplier', async () => {
         orderCounterId = await orderService.getOrderCounter(SUPPLIER_INVOKER_ADDRESS);
-        const line = new OrderLine('CategoryB', 20, {
-            amount: 5.2,
-            fiat: 'USD',
-        });
+        const line = new OrderLine(0, 'CategoryB', 20, new OrderLinePrice(10.25, 'USD'));
 
         await orderService.addOrderLine(SUPPLIER_INVOKER_ADDRESS, orderCounterId, line.productCategory, line.quantity, line.price);
         const { lineIds } = await orderService.getOrderInfo(SUPPLIER_INVOKER_ADDRESS, orderCounterId);
@@ -107,10 +101,7 @@ describe('Order lifecycle', () => {
         orderService = new OrderService(orderDriver);
 
         orderCounterId = await orderService.getOrderCounter(SUPPLIER_INVOKER_ADDRESS);
-        const line = new OrderLine('CategoryA', 50, {
-            amount: 50.5,
-            fiat: 'USD',
-        });
+        const line = new OrderLine(0, 'CategoryA', 50, new OrderLinePrice(50.5, 'USD'));
 
         await orderService.addOrderLine(SUPPLIER_INVOKER_ADDRESS, orderCounterId, line.productCategory, line.quantity, line.price);
         const { lineIds } = await orderService.getOrderInfo(SUPPLIER_INVOKER_ADDRESS, orderCounterId);
@@ -137,10 +128,7 @@ describe('Order lifecycle', () => {
     });
 
     it('should try to add a line to a negotiated order', async () => {
-        const orderLine = new OrderLine('CategoryA', 50, {
-            amount: 50.5,
-            fiat: 'USD',
-        });
+        const orderLine = new OrderLine(0, 'CategoryA', 50, new OrderLinePrice(50, 'USD'));
         // updates cannot be possible because the order has been confirmed by both parties
         const fn = async () => orderService.updateOrderLine(SUPPLIER_INVOKER_ADDRESS, orderCounterId, orderLineCounterId, orderLine.productCategory, orderLine.quantity, orderLine.price);
         await expect(fn).rejects.toThrowError(/The order has been confirmed, it cannot be changed/);

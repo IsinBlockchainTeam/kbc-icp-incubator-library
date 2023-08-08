@@ -6,7 +6,7 @@ import { BigNumber, ethers } from 'ethers';
 import { OrderManager, OrderManager__factory } from '../smart-contracts';
 import { OrderDriver } from './OrderDriver';
 import { Order } from '../entities/Order';
-import { OrderLine } from '../entities/OrderLine';
+import {OrderLine, OrderLinePrice} from '../entities/OrderLine';
 import {EntityBuilder} from "../utils/EntityBuilder";
 
 describe('OrderDriver', () => {
@@ -41,6 +41,8 @@ describe('OrderDriver', () => {
     const externalUrl = 'https://testurl.ch';
 
     const mockedOrder = createMock<Order>();
+    const mockedOrderLine = createMock<OrderLine>();
+    const mockedOrderLinePrice = createMock<OrderLinePrice>();
 
     beforeAll(() => {
         mockedRegisterOrder.mockReturnValue(Promise.resolve({
@@ -101,6 +103,10 @@ describe('OrderDriver', () => {
 
         const buildOrderSpy = jest.spyOn(EntityBuilder, 'buildOrder');
         buildOrderSpy.mockReturnValue(mockedOrder);
+        const buildOrderLineSpy = jest.spyOn(EntityBuilder, 'buildOrderLine');
+        buildOrderLineSpy.mockReturnValue(mockedOrderLine);
+        const buildOrderLinePriceSpy = jest.spyOn(EntityBuilder, 'buildOrderLinePrice');
+        buildOrderLinePriceSpy.mockReturnValue(mockedOrderLinePrice);
 
         mockedIdentityDriver = createMock<IdentityEthersDriver>();
         mockedProvider = createMock<JsonRpcProvider>({
@@ -130,14 +136,11 @@ describe('OrderDriver', () => {
 
     it('should call and wait for register order with order lines', async () => {
         const price = {
-            amount: 100.25,
+            amount: 10025,
             decimals: 2,
             fiat: 'CHF',
         };
-        const orderLine = new OrderLine(4, 'categoryA', 100, {
-            amount: price.amount,
-            fiat: price.fiat,
-        });
+        const orderLine = new OrderLine(4, 'categoryA', 100, new OrderLinePrice(100.25, price.fiat));
 
         mockedRegisterOrder.mockReturnValue(Promise.resolve({
             wait: mockedWait.mockReturnValue({ events: [{ event: 'OrderRegistered', data: {id: 1} }] }),
@@ -145,17 +148,6 @@ describe('OrderDriver', () => {
         mockedDecodeEventLog.mockImplementation((eventName: string, data: Order, topics: string[]) => ({ id: BigNumber.from(data.id) }));
 
         await orderDriver.registerOrder(supplier.address, customer.address, customer.address, externalUrl, [orderLine]);
-        const rawOrderLine: OrderManager.OrderLineStruct = {
-            id: 0,
-            productCategory: orderLine.productCategory,
-            quantity: orderLine.quantity,
-            price: {
-                amount: 10025,
-                fiat: price.fiat,
-                decimals: price.decimals,
-            },
-            exists: true,
-        };
         expect(mockedRegisterOrder).toHaveBeenCalledTimes(1);
         expect(mockedRegisterOrder).toHaveBeenNthCalledWith(
             1,
@@ -165,7 +157,7 @@ describe('OrderDriver', () => {
         expect(mockedAddOrderLine).toHaveBeenNthCalledWith(
             1,
             supplier.address, 1,
-            rawOrderLine.productCategory, rawOrderLine.quantity, rawOrderLine.price
+            orderLine.productCategory, orderLine.quantity, price
         );
         expect(mockedWait).toHaveBeenCalledTimes(2);
     });
@@ -254,24 +246,11 @@ describe('OrderDriver', () => {
     });
 
     it('should retrieve order line', async () => {
-        const orderLine = new OrderLine(3, 'categoryA', 100, {
-            amount: 10,
-            fiat: 'CHF',
-        });
-        mockedGetOrderLine.mockResolvedValue({
-            id: { toNumber: () => orderLine.id },
-            productCategory: orderLine.productCategory,
-            quantity: { toNumber: () => orderLine.quantity },
-            price: {
-                ...orderLine.price,
-                amount: { toNumber: () => orderLine.price.amount },
-                decimals: 0,
-            },
-            exists: true,
-        });
+        const orderLine = new OrderLine(3, 'categoryA', 100, new OrderLinePrice(100.25, 'CHF'));
+        mockedGetOrderLine.mockResolvedValue(mockedOrderLine);
 
         const resp = await orderDriver.getOrderLine(supplier.address, 1, orderLine.id as number);
-        expect(resp).toEqual(orderLine);
+        expect(resp).toEqual(mockedOrderLine);
 
         expect(mockedGetOrderLine).toHaveBeenCalledTimes(1);
         expect(mockedGetOrderLine).toHaveBeenNthCalledWith(
@@ -295,27 +274,23 @@ describe('OrderDriver', () => {
     });
 
     it('should call and wait for add order line', async () => {
-        const price = {
-            amount: 100,
-            decimals: 0,
-            fiat: 'CHF',
-        };
+        const price = new OrderLinePrice(100.25, 'CHF');
         await orderDriver.addOrderLine(supplier.address, 1, 'categoryA', 100, price);
         expect(mockedAddOrderLine).toHaveBeenCalledTimes(1);
         expect(mockedAddOrderLine).toHaveBeenNthCalledWith(
             1,
             supplier.address, 1,
-            'categoryA', 100, price
+            'categoryA', 100, {
+                amount: price.amount * 100,
+                decimals: 2,
+                fiat: price.fiat
+            }
         );
         expect(mockedWait).toHaveBeenCalledTimes(1);
     });
 
     it('should call and wait for add order line - fails', async () => {
-        const price = {
-            amount: 100005,
-            decimals: 1,
-            fiat: 'CHF',
-        };
+        const price = new OrderLinePrice(100.25, 'CHF');
         mockedAddOrderLine.mockRejectedValue(new Error(errorMessage));
 
         const fn = async () => orderDriver.addOrderLine(supplier.address, 1, 'categoryA', 100, price);
@@ -323,10 +298,7 @@ describe('OrderDriver', () => {
     });
 
     it('should call and wait for update order line', async () => {
-        const price = {
-            amount: 10000.5,
-            fiat: 'CHF',
-        };
+        const price = new OrderLinePrice(100.25, 'CHF');
         await orderDriver.updateOrderLine(supplier.address, 1, 2, 'categoryUpdated', 100, price);
         expect(mockedUpdateOrderLine).toHaveBeenCalledTimes(1);
         expect(mockedUpdateOrderLine).toHaveBeenNthCalledWith(
@@ -334,20 +306,16 @@ describe('OrderDriver', () => {
             supplier.address,
             1, 2,
             'categoryUpdated', 100, {
-                amount: 100005,
-                decimals: 1,
-                fiat: 'CHF'
+                amount: price.amount * 100,
+                decimals: 2,
+                fiat: price.fiat
             },
         );
         expect(mockedWait).toHaveBeenCalledTimes(1);
     });
 
     it('should call and wait for update order line - fails', async () => {
-        const price = {
-            amount: 100005,
-            decimals: 1,
-            fiat: 'CHF',
-        };
+        const price = new OrderLinePrice(100.25, 'CHF');
         mockedUpdateOrderLine.mockRejectedValue(new Error(errorMessage));
 
         const fn = async () => orderDriver.updateOrderLine(supplier.address, 1, 2, 'categoryUpdated', 100, price);

@@ -8,6 +8,8 @@ import {
 } from "../smart-contracts/contracts/SupplyChainManager";
 import {Trade} from "../entities/Trade";
 import {Transformation} from "../entities/Transformation";
+import {OrderManager} from "../smart-contracts";
+import {OrderLine, OrderLinePrice} from "../entities/OrderLine";
 
 describe('EntityBuilder', () => {
     describe('buildMaterial', () => {
@@ -43,6 +45,29 @@ describe('EntityBuilder', () => {
             bcTransformation.owner = 'owner';
 
             expect(EntityBuilder.buildTransformation(bcTransformation)).toEqual(new Transformation(0, 'transformation', [1, 2], 3, 'owner'));
+        });
+    });
+
+    describe('build order line', () => {
+        const bcOrderLinePrice: OrderManager.OrderLinePriceStructOutput = [BigNumber.from(10005), BigNumber.from(2), 'CHF'] as OrderManager.OrderLinePriceStructOutput;
+
+        it('should correctly build an OrderLinePrice', () => {
+            bcOrderLinePrice.amount = BigNumber.from(10005);
+            bcOrderLinePrice.decimals = BigNumber.from(2);
+            bcOrderLinePrice.fiat = 'CHF';
+
+            expect(EntityBuilder.buildOrderLinePrice(bcOrderLinePrice)).toEqual(new OrderLinePrice(100.05, 'CHF'));
+        });
+
+        it('should correctly build an OrderLine', () => {
+            const bcOrderLine: OrderManager.OrderLineStructOutput = [BigNumber.from(0), 'categoryA', BigNumber.from(40), bcOrderLinePrice, true] as OrderManager.OrderLineStructOutput;
+            bcOrderLine.id = BigNumber.from(0);
+            bcOrderLine.productCategory = 'categoryA';
+            bcOrderLine.quantity = BigNumber.from(40);
+            bcOrderLine.price = bcOrderLinePrice;
+            bcOrderLine.exists = true;
+
+            expect(EntityBuilder.buildOrderLine(bcOrderLine)).toEqual(new OrderLine(0, 'categoryA', 40, EntityBuilder.buildOrderLinePrice(bcOrderLinePrice)));
         });
     });
 });

@@ -1,7 +1,7 @@
 import { createMock } from 'ts-auto-mock';
 import OrderService from './OrderService';
 import { OrderDriver } from '../drivers/OrderDriver';
-import {OrderLine} from "../entities/OrderLine";
+import {OrderLine, OrderLinePrice} from "../entities/OrderLine";
 
 describe('OrderService', () => {
     let orderService: OrderService;
@@ -25,10 +25,10 @@ describe('OrderService', () => {
     const customer = '0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199';
     const externalUrl = 'https://externalurl.com';
 
-    let orderLine;
     const productCategory = 'categoryA';
     const quantity = 100;
-    const price = { amount: 100, fiat: 'CHF' };
+    const price = new OrderLinePrice(100.25, 'CHF');
+    const orderLine = new OrderLine(0, productCategory, quantity, price);
 
     beforeAll(() => {
         mockedOrderDriver = createMock<OrderDriver>({
@@ -49,8 +49,6 @@ describe('OrderService', () => {
         orderService = new OrderService(
             mockedOrderDriver,
         );
-
-        orderLine = new OrderLine(0, productCategory, quantity, price);
     });
 
     afterAll(() => {
@@ -62,7 +60,7 @@ describe('OrderService', () => {
             serviceFunctionName: 'registerOrder',
             serviceFunction: () => orderService.registerOrder(supplier, customer, customer, externalUrl),
             expectedMockedFunction: mockedRegisterOrder,
-            expectedMockedFunctionArgs: [supplier, customer, customer, externalUrl],
+            expectedMockedFunctionArgs: [supplier, customer, customer, externalUrl, undefined],
         },
         {
             serviceFunctionName: 'registerOrder',

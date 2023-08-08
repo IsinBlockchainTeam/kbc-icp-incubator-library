@@ -48,6 +48,19 @@ contract OrderManager is AccessControl {
         address offeree;
         bool offereeSigned;
         string externalUrl;
+
+        // constraints
+//        TODO: capire se questo vincolo è definito a livello di ordine o di linea
+        string incoterms;
+        uint256 paymentDeadline;
+        uint256 documentDeliveryDeadline;
+        string shipper;
+        string arbiter;
+        string shippingPort;
+        uint256 shippingDeadline;
+        string deliveryPort;
+        uint256 deliveryDeadline;
+
         bool exists;
     }
 

@@ -105,17 +105,7 @@ export class OrderDriver {
         }
         try {
             const rawOrderLine = await this._contract.getOrderLine(supplierAddress, orderId, orderLineId);
-            return new OrderLine(
-                rawOrderLine.id.toNumber(),
-                rawOrderLine.productCategory.toString(),
-                rawOrderLine.quantity.toNumber(),
-                {
-                    amount: rawOrderLine.price.amount.toNumber() / BigNumber.from(10)
-                        .pow(rawOrderLine.price.decimals)
-                        .toNumber(),
-                    fiat: rawOrderLine.price.fiat,
-                },
-            );
+            return EntityBuilder.buildOrderLine(rawOrderLine);
         } catch (e: any) {
             throw new Error(e.message);
         }
