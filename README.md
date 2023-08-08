@@ -1,5 +1,5 @@
 # Decentralized Coffee Trading
-The project contains the logic to manage operation on-chain by using Smart Contract.  
+The project contains the logic to manage operation on-chain by using Smart Order.  
 In order to interact with them, a NodeJs library has been developed. It is contained in _src_ folder.  
 
 Both blockchain Smart Contracts and NodeJs library, share a common implementation of some functionalities. 

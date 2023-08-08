@@ -49,15 +49,10 @@ serial([
         }
     },
     () => deploy(
-        ContractName.CONTRACT_MANAGER,
+        ContractName.ORDER_MANAGER,
         [[process.env.SUPPLIER_ADMIN || '', process.env.CUSTOMER_ADMIN || ''],
             contractMap.get('EnumerableFiatManager')?.address,
             contractMap.get('EnumerableProductCategoryManager')?.address],
-    ),
-    () => deploy(
-        ContractName.ORDER_MANAGER,
-        [[process.env.SUPPLIER_ADMIN || '', process.env.CUSTOMER_ADMIN || ''],
-            contractMap.get(ContractName.CONTRACT_MANAGER)?.address],
     ),
     () => deploy(
         ContractName.SUPPLY_CHAIN_MANAGER,

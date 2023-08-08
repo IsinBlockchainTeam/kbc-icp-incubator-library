@@ -1,13 +1,13 @@
 import { createMock } from 'ts-auto-mock';
 import ContractService from './ContractService';
-import { ContractDriver } from '../drivers/ContractDriver';
-import { Contract } from '../entities/Contract';
-import { ContractLine } from '../entities/ContractLine';
+import { OrderDriver } from '../drivers/OrderDriver';
+import { Order } from '../entities/Order';
+import { OrderLine } from '../entities/OrderLine';
 
 describe('ContractService', () => {
     let contractService: ContractService;
 
-    let mockedContractDriver: ContractDriver;
+    let mockedContractDriver: OrderDriver;
 
     const mockedRegisterContract = jest.fn();
     const mockedGetContractCounter = jest.fn();
@@ -25,14 +25,14 @@ describe('ContractService', () => {
     const supplier = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8';
     const customer = '0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199';
 
-    const contract = new Contract(supplier, customer, 'externalUrl', customer);
-    const contractLine = new ContractLine(0, 'categoryA', 100, {
+    const contract = new Order(supplier, customer, 'externalUrl', customer);
+    const contractLine = new OrderLine(0, 'categoryA', 100, {
         amount: 100,
         fiat: 'CHF',
     });
 
     beforeAll(() => {
-        mockedContractDriver = createMock<ContractDriver>({
+        mockedContractDriver = createMock<OrderDriver>({
             registerContract: mockedRegisterContract,
             getContractCounter: mockedGetContractCounter,
             getContractInfo: mockedGetContractInfo,

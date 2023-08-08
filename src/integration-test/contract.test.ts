@@ -2,7 +2,7 @@ import { IdentityEthersDriver } from '@blockchain-lib/common';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { ethers } from 'ethers';
 import ContractService from '../services/ContractService';
-import { ContractDriver } from '../drivers/ContractDriver';
+import { OrderDriver } from '../drivers/OrderDriver';
 import {
     CONTRACT_MANAGER_CONTRACT_ADDRESS,
     CUSTOMER_INVOKER_ADDRESS,
@@ -11,23 +11,23 @@ import {
     SUPPLIER_INVOKER_ADDRESS,
     SUPPLIER_INVOKER_PRIVATE_KEY,
 } from './config';
-import { Contract } from '../entities/Contract';
-import { ContractLine } from '../entities/ContractLine';
-import { ContractStatus } from '../types/ContractStatus';
+import { Order } from '../entities/Order';
+import { OrderLine } from '../entities/OrderLine';
+import { OrderStatus } from '../types/OrderStatus';
 
-describe('Contract lifecycle', () => {
+describe('Order lifecycle', () => {
     let contractService: ContractService;
-    let contractDriver: ContractDriver;
+    let contractDriver: OrderDriver;
     let identityDriver: IdentityEthersDriver;
     let provider: JsonRpcProvider;
     let contractCounterId = 0;
     let contractLineCounterId = 0;
-    let contractStatus: ContractStatus;
+    let contractStatus: OrderStatus;
 
     beforeAll(async () => {
         provider = new ethers.providers.JsonRpcProvider(NETWORK);
         identityDriver = new IdentityEthersDriver(SUPPLIER_INVOKER_PRIVATE_KEY, provider);
-        contractDriver = new ContractDriver(
+        contractDriver = new OrderDriver(
             identityDriver,
             provider,
             CONTRACT_MANAGER_CONTRACT_ADDRESS,
@@ -36,8 +36,8 @@ describe('Contract lifecycle', () => {
     });
 
     it('Should correctly register and retrieve a contract with a line', async () => {
-        const contract: Contract = new Contract(SUPPLIER_INVOKER_ADDRESS, CUSTOMER_INVOKER_ADDRESS, 'externalUrl', CUSTOMER_INVOKER_ADDRESS);
-        const contractLine: ContractLine = new ContractLine('CategoryA', 20, {
+        const contract: Order = new Order(SUPPLIER_INVOKER_ADDRESS, CUSTOMER_INVOKER_ADDRESS, 'externalUrl', CUSTOMER_INVOKER_ADDRESS);
+        const contractLine: OrderLine = new OrderLine('CategoryA', 20, {
             amount: 5.2,
             fiat: 'USD',
         });
@@ -78,16 +78,16 @@ describe('Contract lifecycle', () => {
     });
 
     it('Should check that the contract status is INITIALIZED (no signatures)', async () => {
-        const contract: Contract = new Contract(SUPPLIER_INVOKER_ADDRESS, CUSTOMER_INVOKER_ADDRESS, 'externalUrl', CUSTOMER_INVOKER_ADDRESS);
+        const contract: Order = new Order(SUPPLIER_INVOKER_ADDRESS, CUSTOMER_INVOKER_ADDRESS, 'externalUrl', CUSTOMER_INVOKER_ADDRESS);
         await contractService.registerContract(contract);
         contractCounterId = await contractService.getContractCounter(SUPPLIER_INVOKER_ADDRESS);
         contractStatus = await contractService.getContractStatus(SUPPLIER_INVOKER_ADDRESS, contractCounterId);
-        expect(contractStatus).toEqual(ContractStatus.INITIALIZED);
+        expect(contractStatus).toEqual(OrderStatus.INITIALIZED);
     });
 
     it('Should add a line to a contract as a supplier', async () => {
         contractCounterId = await contractService.getContractCounter(SUPPLIER_INVOKER_ADDRESS);
-        const line = new ContractLine('CategoryB', 20, {
+        const line = new OrderLine('CategoryB', 20, {
             amount: 5.2,
             fiat: 'USD',
         });
@@ -101,16 +101,16 @@ describe('Contract lifecycle', () => {
         expect(savedLine).toEqual(line);
 
         contractStatus = await contractService.getContractStatus(SUPPLIER_INVOKER_ADDRESS, contractCounterId);
-        expect(contractStatus).toEqual(ContractStatus.PENDING);
+        expect(contractStatus).toEqual(OrderStatus.PENDING);
     });
 
     it('Should add a line to a new contract as a customer', async () => {
         identityDriver = new IdentityEthersDriver(CUSTOMER_INVOKER_PRIVATE_KEY, provider);
-        contractDriver = new ContractDriver(identityDriver, provider, CONTRACT_MANAGER_CONTRACT_ADDRESS);
+        contractDriver = new OrderDriver(identityDriver, provider, CONTRACT_MANAGER_CONTRACT_ADDRESS);
         contractService = new ContractService(contractDriver);
 
         contractCounterId = await contractService.getContractCounter(SUPPLIER_INVOKER_ADDRESS);
-        const line = new ContractLine('CategoryA', 50, {
+        const line = new OrderLine('CategoryA', 50, {
             amount: 50.5,
             fiat: 'USD',
         });
@@ -124,23 +124,23 @@ describe('Contract lifecycle', () => {
         expect(savedLine).toEqual(line);
 
         contractStatus = await contractService.getContractStatus(SUPPLIER_INVOKER_ADDRESS, contractCounterId);
-        expect(contractStatus).toEqual(ContractStatus.PENDING);
+        expect(contractStatus).toEqual(OrderStatus.PENDING);
     });
 
     it('should confirm as supplier the contract updated by the customer', async () => {
         identityDriver = new IdentityEthersDriver(SUPPLIER_INVOKER_PRIVATE_KEY, provider);
-        contractDriver = new ContractDriver(identityDriver, provider, CONTRACT_MANAGER_CONTRACT_ADDRESS);
+        contractDriver = new OrderDriver(identityDriver, provider, CONTRACT_MANAGER_CONTRACT_ADDRESS);
         contractService = new ContractService(contractDriver);
 
         contractCounterId = await contractService.getContractCounter(SUPPLIER_INVOKER_ADDRESS);
         await contractService.confirmContract(SUPPLIER_INVOKER_ADDRESS, contractCounterId);
 
         contractStatus = await contractService.getContractStatus(SUPPLIER_INVOKER_ADDRESS, contractCounterId);
-        expect(contractStatus).toEqual(ContractStatus.COMPLETED);
+        expect(contractStatus).toEqual(OrderStatus.COMPLETED);
     });
 
     it('should try to add a line to a negotiated contract', async () => {
-        const contractLine = new ContractLine('CategoryA', 50, {
+        const contractLine = new OrderLine('CategoryA', 50, {
             amount: 50.5,
             fiat: 'USD',
         });

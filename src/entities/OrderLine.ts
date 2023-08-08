@@ -1,22 +1,30 @@
+export type ContractLinePrice = {
+    amount: number,
+    fiat: string
+}
+
 export class OrderLine {
     private _id?: number;
 
-    private _contractLineId: number;
+    private _productCategory: string;
 
     private _quantity: number;
 
-    constructor(id: number, contractLineId: number, quantity: number);
+    private _price: ContractLinePrice;
 
-    constructor(contractLineId: number, quantity: number);
+    constructor(id: number, productCategory: string, quantity: number, price: ContractLinePrice);
+
+    constructor(productCategory: string, quantity: number, price: ContractLinePrice);
 
     constructor(...args: any[]) {
         let startIndex = 0;
-        if (args.length === 3) {
+        if (typeof args[0] === 'number') {
             this._id = args[0];
             startIndex = 1;
         }
-        this._contractLineId = args[startIndex];
+        this._productCategory = args[startIndex];
         this._quantity = args[startIndex + 1];
+        this._price = args[startIndex + 2];
     }
 
     get id(): number | undefined {
@@ -27,12 +35,12 @@ export class OrderLine {
         this._id = value;
     }
 
-    get contractLineId(): number {
-        return this._contractLineId;
+    get productCategory(): string {
+        return this._productCategory;
     }
 
-    set contractLineId(value: number) {
-        this._contractLineId = value;
+    set productCategory(value: string) {
+        this._productCategory = value;
     }
 
     get quantity(): number {
@@ -41,5 +49,13 @@ export class OrderLine {
 
     set quantity(value: number) {
         this._quantity = value;
+    }
+
+    get price(): ContractLinePrice {
+        return this._price;
+    }
+
+    set price(value: ContractLinePrice) {
+        this._price = value;
     }
 }

@@ -1,50 +1,78 @@
 import { Order } from './Order';
 import { OrderLine } from './OrderLine';
 
-describe('Order', () => {
-    let order: Order;
+describe('Contract', () => {
+    let contract: Order;
 
     beforeAll(() => {
-        order = new Order(0, 'supplier', 1, 'externalUrl', [1, 2], []);
+        contract = new Order(0, 'supplier', 'customer', 'externalUrl', 'offeree', 'offeror', [1, 2], []);
     });
 
     it('should correctly initialize a new Order', () => {
-        expect(order.id).toEqual(0);
-        expect(order.supplier).toEqual('supplier');
-        expect(order.contractId).toEqual(1);
-        expect(order.lineIds).toEqual([1, 2]);
-        expect(order.lines).toEqual([]);
-        expect(order.externalUrl).toEqual('externalUrl');
+        expect(contract.id).toEqual(0);
+        expect(contract.lines).toEqual([]);
+        expect(contract.supplier).toEqual('supplier');
+        expect(contract.customer).toEqual('customer');
+        expect(contract.offeree).toEqual('offeree');
+        expect(contract.offeror).toEqual('offeror');
+        expect(contract.externalUrl).toEqual('externalUrl');
+        expect(contract.lineIds).toEqual([1, 2]);
+        expect(contract.lines).toEqual([]);
+        expect(contract.offereeSigned).toBeFalsy();
+        expect(contract.offerorSigned).toBeFalsy();
     });
 
     it('should correctly set the id', () => {
-        order.id = 1;
-        expect(order.id).toEqual(1);
-    });
-
-    it('should correctly set the supplier', () => {
-        order.supplier = 'supplier2';
-        expect(order.supplier).toEqual('supplier2');
-    });
-
-    it('should correctly set the contract id', () => {
-        order.contractId = 5;
-        expect(order.contractId).toEqual(5);
+        contract.id = 1;
+        expect(contract.id).toEqual(1);
     });
 
     it('should correctly set the lines', () => {
-        const orderLine = new OrderLine(0, 1, 50);
-        order.lines = [orderLine];
-        expect(order.lines).toEqual([orderLine]);
+        const contractLine: OrderLine = new OrderLine('CategoryA', 20, {
+            amount: 5.2,
+            fiat: 'USD',
+        });
+        contract.lines = [contractLine];
+        expect(contract.lines).toEqual([contractLine]);
     });
 
     it('should correctly set the line ids', () => {
-        order.lineIds = [3, 4];
-        expect(order.lineIds).toEqual([3, 4]);
+        contract.lineIds = [3, 4, 5];
+        expect(contract.lineIds).toEqual([3, 4, 5]);
+    });
+
+    it('should correctly set the supplier', () => {
+        contract.supplier = 'supplier2';
+        expect(contract.supplier).toEqual('supplier2');
+    });
+
+    it('should correctly set the customer', () => {
+        contract.customer = 'customer2';
+        expect(contract.customer).toEqual('customer2');
     });
 
     it('should correctly set the externalUrl', () => {
-        order.externalUrl = 'externalUrl2';
-        expect(order.externalUrl).toEqual('externalUrl2');
+        contract.externalUrl = 'externalUrl2';
+        expect(contract.externalUrl).toEqual('externalUrl2');
+    });
+
+    it('should correctly set the offeree', () => {
+        contract.offeree = 'offeree2';
+        expect(contract.offeree).toEqual('offeree2');
+    });
+
+    it('should correctly set the offeror', () => {
+        contract.offeror = 'offeror2';
+        expect(contract.offeror).toEqual('offeror2');
+    });
+
+    it('should correctly set the offereeSigned', () => {
+        contract.offereeSigned = true;
+        expect(contract.offereeSigned).toBeTruthy();
+    });
+
+    it('should correctly set the offerorSigned', () => {
+        contract.offerorSigned = false;
+        expect(contract.offerorSigned).toBeFalsy();
     });
 });

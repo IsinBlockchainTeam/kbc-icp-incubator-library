@@ -1,30 +1,44 @@
 import { OrderLine } from './OrderLine';
 
-describe('OrderLine', () => {
-    let orderLine: OrderLine;
+describe('ContractLine', () => {
+    let contractLine: OrderLine;
 
     beforeAll(() => {
-        orderLine = new OrderLine(0, 1, 50);
+        contractLine = new OrderLine(0, 'CategoryA', 20, {
+            amount: 5.2,
+            fiat: 'USD',
+        });
     });
 
-    it('should correctly initialize a new ContractLine', () => {
-        expect(orderLine.id).toEqual(0);
-        expect(orderLine.contractLineId).toEqual(1);
-        expect(orderLine.quantity).toEqual(50);
+    it('should correctly initialize a new OrderLine', () => {
+        expect(contractLine.id).toEqual(0);
+        expect(contractLine.productCategory).toEqual('CategoryA');
+        expect(contractLine.quantity).toEqual(20);
+        expect(contractLine.price.amount).toEqual(5.2);
+        expect(contractLine.price.fiat).toEqual('USD');
     });
 
     it('should correctly set the id', () => {
-        orderLine.id = 1;
-        expect(orderLine.id).toEqual(1);
+        contractLine.id = 1;
+        expect(contractLine.id).toEqual(1);
     });
 
-    it('should correctly set the contractLineId', () => {
-        orderLine.contractLineId = 2;
-        expect(orderLine.contractLineId).toEqual(2);
+    it('should correctly set the productCategory', () => {
+        contractLine.productCategory = 'categoryB';
+        expect(contractLine.productCategory).toEqual('categoryB');
     });
 
     it('should correctly set the quantity', () => {
-        orderLine.quantity = 20;
-        expect(orderLine.quantity).toEqual(20);
+        contractLine.quantity = 30;
+        expect(contractLine.quantity).toEqual(30);
+    });
+
+    it('should correctly set the price', () => {
+        contractLine.price = {
+            amount: 25,
+            fiat: 'CHF',
+        };
+        expect(contractLine.price.amount).toEqual(25);
+        expect(contractLine.price.fiat).toEqual('CHF');
     });
 });

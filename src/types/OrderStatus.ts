@@ -1,3 +1,3 @@
-export enum ContractStatus {
+export enum OrderStatus {
     INITIALIZED, PENDING, COMPLETED
 }

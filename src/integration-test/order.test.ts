@@ -12,15 +12,15 @@ import {
     SUPPLIER_INVOKER_PRIVATE_KEY,
 } from './config';
 import { Order } from '../entities/Order';
-import { Contract } from '../entities/Contract';
-import { ContractDriver } from '../drivers/ContractDriver';
+import { Order } from '../entities/Order';
+import { OrderDriver } from '../drivers/OrderDriver';
 import ContractService from '../services/ContractService';
 import { OrderLine } from '../entities/OrderLine';
-import { ContractLine } from '../entities/ContractLine';
+import { OrderLine } from '../entities/OrderLine';
 
 describe('Order lifecycle', () => {
     let contractService: ContractService;
-    let contractDriver: ContractDriver;
+    let contractDriver: OrderDriver;
     let orderService: OrderService;
     let orderDriver: OrderDriver;
     let identityDriver: IdentityEthersDriver;
@@ -35,7 +35,7 @@ describe('Order lifecycle', () => {
         provider = new ethers.providers.JsonRpcProvider(NETWORK);
 
         identityDriver = new IdentityEthersDriver(SUPPLIER_INVOKER_PRIVATE_KEY, provider);
-        contractDriver = new ContractDriver(
+        contractDriver = new OrderDriver(
             identityDriver,
             provider,
             CONTRACT_MANAGER_CONTRACT_ADDRESS,
@@ -50,11 +50,11 @@ describe('Order lifecycle', () => {
         );
         orderService = new OrderService(orderDriver);
 
-        const contractLine: ContractLine = new ContractLine('CategoryA', 20, {
+        const contractLine: OrderLine = new OrderLine('CategoryA', 20, {
             amount: 5.2,
             fiat: 'USD',
         });
-        const contract: Contract = new Contract(SUPPLIER_INVOKER_ADDRESS, CUSTOMER_INVOKER_ADDRESS, 'externalUrl', CUSTOMER_INVOKER_ADDRESS);
+        const contract: Order = new Order(SUPPLIER_INVOKER_ADDRESS, CUSTOMER_INVOKER_ADDRESS, 'externalUrl', CUSTOMER_INVOKER_ADDRESS);
         contract.lines = [contractLine];
         await contractService.registerContract(contract);
         contractCounterId = await contractService.getContractCounter(SUPPLIER_INVOKER_ADDRESS);
@@ -96,7 +96,7 @@ describe('Order lifecycle', () => {
     });
 
     it('Should add a line to an order', async () => {
-        const otherContractLine: ContractLine = new ContractLine('CategoryB', 30, {
+        const otherContractLine: OrderLine = new OrderLine('CategoryB', 30, {
             amount: 20,
             fiat: 'USD',
         });

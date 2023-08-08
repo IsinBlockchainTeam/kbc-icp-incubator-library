@@ -43,6 +43,7 @@ const config: HardhatUserConfig = {
     typechain: {
         // outDir: '../src/smart-contracts',
         target: 'ethers-v5',
+
     },
     ethernal: {
         disableSync: false, // If set to true, plugin will not sync blocks & txs
