@@ -1,14 +1,19 @@
 /* eslint-disable camelcase */
-/* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { IdentityEthersDriver } from '@blockchain-lib/common';
-import { BigNumber, utils } from 'ethers';
+import { utils } from 'ethers';
 import { OrderManager, OrderManager__factory } from '../smart-contracts';
 import { Order } from '../entities/Order';
-import {OrderLine, OrderLinePrice} from '../entities/OrderLine';
+import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
 import { OrderStatus } from '../types/OrderStatus';
-import {EntityBuilder} from "../utils/EntityBuilder";
+import { EntityBuilder } from '../utils/EntityBuilder';
+
+export enum OrderEvents {
+    OrderRegistered,
+    OrderLineAdded,
+    OrderLineUpdated,
+}
 
 export class OrderDriver {
     protected _contract: OrderManager;
@@ -57,12 +62,12 @@ export class OrderDriver {
         return counter.toNumber();
     }
 
-    async getOrderInfo(supplierAddress: string, id: number): Promise<Order> {
+    async getOrderInfo(supplierAddress: string, id: number, blockNumber?: number): Promise<Order> {
         if (!utils.isAddress(supplierAddress)) {
             throw new Error('Not an address');
         }
         try {
-            const order = await this._contract.getOrderInfo(supplierAddress, id);
+            const order = await this._contract.getOrderInfo(supplierAddress, id, { blockTag: blockNumber });
             return EntityBuilder.buildOrder(order);
             // const lines: OrderLine[] = (rawLines || []).map((rcl) => new OrderLine(
             //     rcl.id.toNumber(),
@@ -99,12 +104,12 @@ export class OrderDriver {
         await this._contract.confirmOrder(supplierAddress, orderId);
     }
 
-    async getOrderLine(supplierAddress: string, orderId: number, orderLineId: number): Promise<OrderLine> {
+    async getOrderLine(supplierAddress: string, orderId: number, orderLineId: number, blockNumber?: number): Promise<OrderLine> {
         if (!utils.isAddress(supplierAddress)) {
             throw new Error('Not an address');
         }
         try {
-            const rawOrderLine = await this._contract.getOrderLine(supplierAddress, orderId, orderLineId);
+            const rawOrderLine = await this._contract.getOrderLine(supplierAddress, orderId, orderLineId, { blockTag: blockNumber });
             return EntityBuilder.buildOrderLine(rawOrderLine);
         } catch (e: any) {
             throw new Error(e.message);
@@ -124,7 +129,7 @@ export class OrderDriver {
                 orderId,
                 productCategory,
                 quantity,
-                rawOrderLinePrice
+                rawOrderLinePrice,
             );
             await tx.wait();
         } catch (e: any) {
@@ -146,12 +151,26 @@ export class OrderDriver {
                 orderLineId,
                 productCategory,
                 quantity,
-                rawOrderLinePrice
+                rawOrderLinePrice,
             );
             await tx.wait();
         } catch (e: any) {
             throw new Error(e.message);
         }
+    }
+
+    async getBlockNumbersByOrderId(id: number): Promise<Map<OrderEvents, number[]>> {
+        const totalEvents = await Promise.all([
+            this._contract.queryFilter(this._contract.filters.OrderRegistered(id)),
+            this._contract.queryFilter(this._contract.filters.OrderLineAdded(id)),
+            this._contract.queryFilter(this._contract.filters.OrderLineUpdated(id)),
+        ]);
+
+        return totalEvents.reduce((map, events) => {
+            const eventName = events[0].event!;
+            map.set(OrderEvents[eventName as keyof typeof OrderEvents], events.map((e) => e.blockNumber));
+            return map;
+        }, new Map<OrderEvents, number[]>());
     }
 
     async addAdmin(address: string): Promise<void> {

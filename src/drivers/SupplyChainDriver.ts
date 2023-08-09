@@ -1,14 +1,15 @@
-import {IdentityEthersDriver} from "@blockchain-lib/common";
-import {JsonRpcProvider} from "@ethersproject/providers";
-import {SupplyChainManager__factory, SupplyChainManager} from "../smart-contracts";
-import {utils} from "ethers";
-import {EntityBuilder} from "../utils/EntityBuilder";
-import {Material} from "../entities/Material";
-import {Trade} from "../entities/Trade";
-import {Transformation} from "../entities/Transformation";
+import { IdentityEthersDriver } from '@blockchain-lib/common';
+import { JsonRpcProvider } from '@ethersproject/providers';
+import { utils } from 'ethers';
+import { SupplyChainManager__factory, SupplyChainManager } from '../smart-contracts';
+import { EntityBuilder } from '../utils/EntityBuilder';
+import { Material } from '../entities/Material';
+import { Trade } from '../entities/Trade';
+import { Transformation } from '../entities/Transformation';
 
 export class SupplyChainDriver {
     private _supplyChainManager: SupplyChainManager;
+
     constructor(
         identityDriver: IdentityEthersDriver,
         provider: JsonRpcProvider,

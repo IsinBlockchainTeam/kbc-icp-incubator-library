@@ -1,5 +1,5 @@
 import { Order } from './Order';
-import {OrderLine, OrderLinePrice} from './OrderLine';
+import { OrderLine, OrderLinePrice } from './OrderLine';
 
 describe('Order', () => {
     let order: Order;
@@ -28,7 +28,7 @@ describe('Order', () => {
     });
 
     it('should correctly set the lines', () => {
-        const orderLine: OrderLine = new OrderLine(1,'CategoryA', 20, new OrderLinePrice(10.25, 'USD'));
+        const orderLine: OrderLine = new OrderLine(1, 'CategoryA', 20, new OrderLinePrice(10.25, 'USD'));
         order.lines = [orderLine];
         expect(order.lines).toEqual([orderLine]);
     });

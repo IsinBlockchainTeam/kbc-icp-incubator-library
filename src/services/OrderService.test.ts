@@ -1,7 +1,7 @@
 import { createMock } from 'ts-auto-mock';
 import OrderService from './OrderService';
 import { OrderDriver } from '../drivers/OrderDriver';
-import {OrderLine, OrderLinePrice} from "../entities/OrderLine";
+import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
 
 describe('OrderService', () => {
     let orderService: OrderService;
@@ -18,6 +18,7 @@ describe('OrderService', () => {
     const mockedGetOrderLine = jest.fn();
     const mockedAddOrderLine = jest.fn();
     const mockedUpdateOrderLine = jest.fn();
+    const mockedGetBlockNumbersByOrderId = jest.fn();
     const mockedAddAdmin = jest.fn();
     const mockedRemoveAdmin = jest.fn();
 
@@ -42,6 +43,7 @@ describe('OrderService', () => {
             getOrderLine: mockedGetOrderLine,
             addOrderLine: mockedAddOrderLine,
             updateOrderLine: mockedUpdateOrderLine,
+            getBlockNumbersByOrderId: mockedGetBlockNumbersByOrderId,
             addAdmin: mockedAddAdmin,
             removeAdmin: mockedRemoveAdmin,
         });
@@ -78,7 +80,13 @@ describe('OrderService', () => {
             serviceFunctionName: 'getOrderInfo',
             serviceFunction: () => orderService.getOrderInfo(supplier, 0),
             expectedMockedFunction: mockedGetOrderInfo,
-            expectedMockedFunctionArgs: [supplier, 0],
+            expectedMockedFunctionArgs: [supplier, 0, undefined],
+        },
+        {
+            serviceFunctionName: 'getOrderInfo',
+            serviceFunction: () => orderService.getOrderInfo(supplier, 0, 20),
+            expectedMockedFunction: mockedGetOrderInfo,
+            expectedMockedFunctionArgs: [supplier, 0, 20],
         },
         {
             serviceFunctionName: 'isSupplierOrCustomer',
@@ -108,7 +116,13 @@ describe('OrderService', () => {
             serviceFunctionName: 'getOrderLine',
             serviceFunction: () => orderService.getOrderLine(supplier, 0, 0),
             expectedMockedFunction: mockedGetOrderLine,
-            expectedMockedFunctionArgs: [supplier, 0, 0],
+            expectedMockedFunctionArgs: [supplier, 0, 0, undefined],
+        },
+        {
+            serviceFunctionName: 'getOrderLine',
+            serviceFunction: () => orderService.getOrderLine(supplier, 0, 0, 25),
+            expectedMockedFunction: mockedGetOrderLine,
+            expectedMockedFunctionArgs: [supplier, 0, 0, 25],
         },
         {
             serviceFunctionName: 'addOrderLine',
@@ -121,6 +135,12 @@ describe('OrderService', () => {
             serviceFunction: () => orderService.updateOrderLine(supplier, 0, 0, productCategory, quantity, price),
             expectedMockedFunction: mockedUpdateOrderLine,
             expectedMockedFunctionArgs: [supplier, 0, 0, productCategory, quantity, price],
+        },
+        {
+            serviceFunctionName: 'getBlockNumbersByOrderId',
+            serviceFunction: () => orderService.getBlockNumbersByOrderId(1),
+            expectedMockedFunction: mockedGetBlockNumbersByOrderId,
+            expectedMockedFunctionArgs: [1],
         },
         {
             serviceFunctionName: 'addAdmin',

@@ -29,7 +29,7 @@ export class Order {
         this._offeree = offeree;
         this._offeror = offeror;
         this._lineIds = lineIds;
-        this._lines = lines ? lines : [];
+        this._lines = lines || [];
         this._offereeSigned = false;
         this._offerorSigned = false;
     }

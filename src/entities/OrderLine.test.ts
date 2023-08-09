@@ -1,4 +1,4 @@
-import {OrderLine, OrderLinePrice} from './OrderLine';
+import { OrderLine, OrderLinePrice } from './OrderLine';
 
 describe('OrderLine', () => {
     let orderLine: OrderLine;
@@ -37,5 +37,28 @@ describe('OrderLine', () => {
         orderLine.price = new OrderLinePrice(25, 'CHF');
         expect(orderLine.price.amount).toEqual(25);
         expect(orderLine.price.fiat).toEqual('CHF');
+    });
+});
+
+describe('OrderLinePrice', () => {
+    let orderLinePrice: OrderLinePrice;
+
+    beforeAll(() => {
+        orderLinePrice = new OrderLinePrice(10.25, 'USD');
+    });
+
+    it('should correctly initialize a new OrderLinePrice', () => {
+        expect(orderLinePrice.amount).toEqual(10.25);
+        expect(orderLinePrice.fiat).toEqual('USD');
+    });
+
+    it('should correctly set the amount', () => {
+        orderLinePrice.amount = 15;
+        expect(orderLinePrice.amount).toEqual(15);
+    });
+
+    it('should correctly set the fiat', () => {
+        orderLinePrice.fiat = 'CHF';
+        expect(orderLinePrice.fiat).toEqual('CHF');
     });
 });

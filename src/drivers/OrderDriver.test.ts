@@ -6,8 +6,14 @@ import { BigNumber, ethers } from 'ethers';
 import { OrderManager, OrderManager__factory } from '../smart-contracts';
 import { OrderDriver } from './OrderDriver';
 import { Order } from '../entities/Order';
-import {OrderLine, OrderLinePrice} from '../entities/OrderLine';
-import {EntityBuilder} from "../utils/EntityBuilder";
+import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
+import { EntityBuilder } from '../utils/EntityBuilder';
+import {
+    OrderLineAddedEventFilter,
+    OrderLineUpdatedEventFilter,
+    OrderRegisteredEventFilter,
+} from '../smart-contracts/contracts/OrderManager';
+import orderService from '../services/OrderService';
 
 describe('OrderDriver', () => {
     let orderDriver: OrderDriver;
@@ -35,6 +41,11 @@ describe('OrderDriver', () => {
     const mockedAddAdmin = jest.fn();
     const mockedRemoveAdmin = jest.fn();
     const mockedDecodeEventLog = jest.fn();
+
+    const mockedQueryFilter = jest.fn();
+    const mockedOrderRegisteredEventFilter = jest.fn();
+    const mockedOrderLineAddedEventFilter = jest.fn();
+    const mockedOrderLineUpdatedEventFilter = jest.fn();
 
     const supplier = ethers.Wallet.createRandom();
     const customer = ethers.Wallet.createRandom();
@@ -80,6 +91,8 @@ describe('OrderDriver', () => {
         }));
         mockedDecodeEventLog.mockReturnValue({ id: BigNumber.from(0) });
 
+        mockedQueryFilter.mockResolvedValue([{ event: 'eventName' }]);
+
         mockedOrderConnect.mockReturnValue({
             registerOrder: mockedRegisterOrder,
             getOrderInfo: mockedGetOrderInfo,
@@ -95,6 +108,12 @@ describe('OrderDriver', () => {
             addAdmin: mockedAddAdmin,
             removeAdmin: mockedRemoveAdmin,
             interface: { decodeEventLog: mockedDecodeEventLog },
+            queryFilter: mockedQueryFilter,
+            filters: {
+                OrderRegistered: mockedOrderRegisteredEventFilter,
+                OrderLineAdded: mockedOrderLineAddedEventFilter,
+                OrderLineUpdated: mockedOrderLineUpdatedEventFilter,
+            },
         });
         const mockedOrderManager = createMock<OrderManager>({
             connect: mockedOrderConnect,
@@ -129,7 +148,10 @@ describe('OrderDriver', () => {
         expect(mockedRegisterOrder).toHaveBeenCalledTimes(1);
         expect(mockedRegisterOrder).toHaveBeenNthCalledWith(
             1,
-            supplier.address, customer.address, customer.address, externalUrl
+            supplier.address,
+            customer.address,
+            customer.address,
+            externalUrl,
         );
         expect(mockedWait).toHaveBeenCalledTimes(1);
     });
@@ -143,7 +165,7 @@ describe('OrderDriver', () => {
         const orderLine = new OrderLine(4, 'categoryA', 100, new OrderLinePrice(100.25, price.fiat));
 
         mockedRegisterOrder.mockReturnValue(Promise.resolve({
-            wait: mockedWait.mockReturnValue({ events: [{ event: 'OrderRegistered', data: {id: 1} }] }),
+            wait: mockedWait.mockReturnValue({ events: [{ event: 'OrderRegistered', data: { id: 1 } }] }),
         }));
         mockedDecodeEventLog.mockImplementation((eventName: string, data: Order, topics: string[]) => ({ id: BigNumber.from(data.id) }));
 
@@ -151,13 +173,19 @@ describe('OrderDriver', () => {
         expect(mockedRegisterOrder).toHaveBeenCalledTimes(1);
         expect(mockedRegisterOrder).toHaveBeenNthCalledWith(
             1,
-            supplier.address, customer.address, customer.address, externalUrl
+            supplier.address,
+            customer.address,
+            customer.address,
+            externalUrl,
         );
         expect(mockedAddOrderLine).toHaveBeenCalledTimes(1);
         expect(mockedAddOrderLine).toHaveBeenNthCalledWith(
             1,
-            supplier.address, 1,
-            orderLine.productCategory, orderLine.quantity, price
+            supplier.address,
+            1,
+            orderLine.productCategory,
+            orderLine.quantity,
+            price,
         );
         expect(mockedWait).toHaveBeenCalledTimes(2);
     });
@@ -214,6 +242,21 @@ describe('OrderDriver', () => {
             1,
             supplier.address,
             1,
+            { blockTag: undefined },
+        );
+    });
+
+    it('should retrieve order with block number', async () => {
+        mockedGetOrderInfo.mockResolvedValue(mockedOrder);
+
+        await orderDriver.getOrderInfo(supplier.address, 1, 15);
+
+        expect(mockedGetOrderInfo).toHaveBeenCalledTimes(1);
+        expect(mockedGetOrderInfo).toHaveBeenNthCalledWith(
+            1,
+            supplier.address,
+            1,
+            { blockTag: 15 },
         );
     });
 
@@ -258,6 +301,23 @@ describe('OrderDriver', () => {
             supplier.address,
             1,
             orderLine.id as number,
+            { blockTag: undefined },
+        );
+    });
+
+    it('should retrieve order line with block number', async () => {
+        const orderLine = new OrderLine(3, 'categoryA', 100, new OrderLinePrice(100.25, 'CHF'));
+        mockedGetOrderLine.mockResolvedValue(mockedOrderLine);
+
+        await orderDriver.getOrderLine(supplier.address, 1, orderLine.id as number, 15);
+
+        expect(mockedGetOrderLine).toHaveBeenCalledTimes(1);
+        expect(mockedGetOrderLine).toHaveBeenNthCalledWith(
+            1,
+            supplier.address,
+            1,
+            orderLine.id as number,
+            { blockTag: 15 },
         );
     });
 
@@ -279,12 +339,15 @@ describe('OrderDriver', () => {
         expect(mockedAddOrderLine).toHaveBeenCalledTimes(1);
         expect(mockedAddOrderLine).toHaveBeenNthCalledWith(
             1,
-            supplier.address, 1,
-            'categoryA', 100, {
+            supplier.address,
+            1,
+            'categoryA',
+            100,
+            {
                 amount: price.amount * 100,
                 decimals: 2,
-                fiat: price.fiat
-            }
+                fiat: price.fiat,
+            },
         );
         expect(mockedWait).toHaveBeenCalledTimes(1);
     });
@@ -304,11 +367,14 @@ describe('OrderDriver', () => {
         expect(mockedUpdateOrderLine).toHaveBeenNthCalledWith(
             1,
             supplier.address,
-            1, 2,
-            'categoryUpdated', 100, {
+            1,
+            2,
+            'categoryUpdated',
+            100,
+            {
                 amount: price.amount * 100,
                 decimals: 2,
-                fiat: price.fiat
+                fiat: price.fiat,
             },
         );
         expect(mockedWait).toHaveBeenCalledTimes(1);
@@ -331,6 +397,21 @@ describe('OrderDriver', () => {
     it('should get the order status - fail due to wrong address', async () => {
         const fn = async () => orderDriver.getOrderStatus('0xaddress', 1);
         await expect(fn).rejects.toThrowError(new Error('Not an address'));
+    });
+
+    it('should get block numbers per each event name by order id', async () => {
+        const orderId = 1;
+        await orderDriver.getBlockNumbersByOrderId(orderId);
+        expect(mockedQueryFilter).toHaveBeenCalledTimes(3);
+
+        expect(mockedOrderRegisteredEventFilter).toHaveBeenCalledTimes(1);
+        expect(mockedOrderRegisteredEventFilter).toHaveBeenNthCalledWith(1, orderId);
+
+        expect(mockedOrderLineAddedEventFilter).toHaveBeenCalledTimes(1);
+        expect(mockedOrderLineAddedEventFilter).toHaveBeenNthCalledWith(1, orderId);
+
+        expect(mockedOrderLineUpdatedEventFilter).toHaveBeenCalledTimes(1);
+        expect(mockedOrderLineUpdatedEventFilter).toHaveBeenNthCalledWith(1, orderId);
     });
 
     it('should call and wait for add admin', async () => {

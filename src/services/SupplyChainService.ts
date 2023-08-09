@@ -1,7 +1,7 @@
-import {SupplyChainDriver} from "../drivers/SupplyChainDriver";
-import {Material} from "../entities/Material";
-import {Trade} from "../entities/Trade";
-import {Transformation} from "../entities/Transformation";
+import { SupplyChainDriver } from '../drivers/SupplyChainDriver';
+import { Material } from '../entities/Material';
+import { Trade } from '../entities/Trade';
+import { Transformation } from '../entities/Transformation';
 
 export class SupplyChainService {
     private _supplyChainDriver: SupplyChainDriver;

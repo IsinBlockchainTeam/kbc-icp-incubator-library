@@ -1,25 +1,25 @@
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 
-import {Wallet} from "ethers";
-import {SupplyChainDriver} from "./SupplyChainDriver";
-import {IdentityEthersDriver} from "@blockchain-lib/common";
-import {createMock} from "ts-auto-mock";
-import {JsonRpcProvider} from "@ethersproject/providers";
-import {SupplyChainManager, SupplyChainManager__factory} from "../smart-contracts";
-import {Material} from "../entities/Material";
-import {Transformation} from "../entities/Transformation";
-import {Trade} from "../entities/Trade";
+import { Wallet } from 'ethers';
+import { IdentityEthersDriver } from '@blockchain-lib/common';
+import { createMock } from 'ts-auto-mock';
+import { JsonRpcProvider } from '@ethersproject/providers';
+import { SupplyChainDriver } from './SupplyChainDriver';
+import { SupplyChainManager, SupplyChainManager__factory } from '../smart-contracts';
+import { Material } from '../entities/Material';
+import { Transformation } from '../entities/Transformation';
+import { Trade } from '../entities/Trade';
 import {
     MaterialStructOutput,
     TradeStructOutput,
-    TransformationStructOutput
-} from "../smart-contracts/contracts/SupplyChainManager";
-import {EntityBuilder} from "../utils/EntityBuilder";
+    TransformationStructOutput,
+} from '../smart-contracts/contracts/SupplyChainManager';
+import { EntityBuilder } from '../utils/EntityBuilder';
 
 describe('SupplyChainDriver', () => {
     let supplyChainDriver: SupplyChainDriver;
-    let companyAddress: string = Wallet.createRandom().address;
-    let contractAddress: string = Wallet.createRandom().address;
+    const companyAddress: string = Wallet.createRandom().address;
+    const contractAddress: string = Wallet.createRandom().address;
 
     let mockedIdentityDriver: IdentityEthersDriver;
     let mockedProvider: JsonRpcProvider;
@@ -117,27 +117,28 @@ describe('SupplyChainDriver', () => {
         jest.restoreAllMocks();
     });
 
-
     it.each([
         {
             resource: 'Material',
             method: () => supplyChainDriver.registerMaterial(companyAddress, 'material'),
             mockedRegister: mockedRegisterMaterial,
-            mockedRegisterArgs: [companyAddress, 'material']
+            mockedRegisterArgs: [companyAddress, 'material'],
         },
         {
             resource: 'Trade',
             method: () => supplyChainDriver.registerTrade(companyAddress, 'trade', [[1, 2]]),
             mockedRegister: mockedRegisterTrade,
-            mockedRegisterArgs: [companyAddress, 'trade', [[1, 2]]]
+            mockedRegisterArgs: [companyAddress, 'trade', [[1, 2]]],
         },
         {
             resource: 'Transformation',
             method: () => supplyChainDriver.registerTransformation(companyAddress, 'transformation', [1, 2], 3),
             mockedRegister: mockedRegisterTransformation,
-            mockedRegisterArgs: [companyAddress, 'transformation', [1, 2], 3]
+            mockedRegisterArgs: [companyAddress, 'transformation', [1, 2], 3],
         },
-    ])('should correctly register a new $resource', async ({ resource, method, mockedRegister, mockedRegisterArgs }) => {
+    ])('should correctly register a new $resource', async ({
+        resource, method, mockedRegister, mockedRegisterArgs,
+    }) => {
         await method();
 
         expect(mockedRegister).toHaveBeenCalledTimes(1);
@@ -174,21 +175,23 @@ describe('SupplyChainDriver', () => {
             resource: 'Material',
             method: () => supplyChainDriver.updateMaterial(companyAddress, 0, 'material'),
             mockedUpdate: mockedUpdateMaterial,
-            mockedUpdateArgs: [companyAddress, 0, 'material']
+            mockedUpdateArgs: [companyAddress, 0, 'material'],
         },
         {
             resource: 'Trade',
             method: () => supplyChainDriver.updateTrade(companyAddress, 0, 'trade', [[1, 2]]),
             mockedUpdate: mockedUpdateTrade,
-            mockedUpdateArgs: [companyAddress, 0, 'trade', [[1, 2]]]
+            mockedUpdateArgs: [companyAddress, 0, 'trade', [[1, 2]]],
         },
         {
             resource: 'Transformation',
             method: () => supplyChainDriver.updateTransformation(companyAddress, 0, 'transformation', [1, 2], 3),
             mockedUpdate: mockedUpdateTransformation,
-            mockedUpdateArgs: [companyAddress, 0, 'transformation', [1, 2], 3]
+            mockedUpdateArgs: [companyAddress, 0, 'transformation', [1, 2], 3],
         },
-    ])('should correctly update a $resource', async ({ resource, method, mockedUpdate, mockedUpdateArgs }) => {
+    ])('should correctly update a $resource', async ({
+        resource, method, mockedUpdate, mockedUpdateArgs,
+    }) => {
         await method();
 
         expect(mockedUpdate).toHaveBeenCalledTimes(1);
@@ -225,21 +228,23 @@ describe('SupplyChainDriver', () => {
             resource: 'Material',
             method: () => supplyChainDriver.getMaterialsCounter(companyAddress),
             mockedGetCounter: mockedGetMaterialsCounter,
-            mockedGetCounterArgs: [companyAddress]
+            mockedGetCounterArgs: [companyAddress],
         },
         {
             resource: 'Trade',
             method: () => supplyChainDriver.getTradesCounter(companyAddress),
             mockedGetCounter: mockedGetTradesCounter,
-            mockedGetCounterArgs: [companyAddress]
+            mockedGetCounterArgs: [companyAddress],
         },
         {
             resource: 'Transformation',
             method: () => supplyChainDriver.getTransformationsCounter(companyAddress),
             mockedGetCounter: mockedGetTransformationsCounter,
-            mockedGetCounterArgs: [companyAddress]
+            mockedGetCounterArgs: [companyAddress],
         },
-    ])('should correctly retrieve $resource counter', async ({ resource, method, mockedGetCounter, mockedGetCounterArgs }) => {
+    ])('should correctly retrieve $resource counter', async ({
+        resource, method, mockedGetCounter, mockedGetCounterArgs,
+    }) => {
         const response = await method();
 
         expect(response).toEqual(1);
@@ -278,23 +283,25 @@ describe('SupplyChainDriver', () => {
             method: () => supplyChainDriver.getMaterial(companyAddress, 1),
             mockedGet: mockedGetMaterial,
             mockedGetArgs: [companyAddress, 1],
-            mockedResource: mockedMaterial
+            mockedResource: mockedMaterial,
         },
         {
             resource: 'Trade',
             method: () => supplyChainDriver.getTrade(companyAddress, 1),
             mockedGet: mockedGetTrade,
             mockedGetArgs: [companyAddress, 1],
-            mockedResource: mockedTrade
+            mockedResource: mockedTrade,
         },
         {
             resource: 'Transformation',
             method: () => supplyChainDriver.getTransformation(companyAddress, 1),
             mockedGet: mockedGetTransformation,
             mockedGetArgs: [companyAddress, 1],
-            mockedResource: mockedTransformation
+            mockedResource: mockedTransformation,
         },
-    ])('should correctly retrieve $resource', async ({ resource, method, mockedGet, mockedGetArgs, mockedResource }) => {
+    ])('should correctly retrieve $resource', async ({
+        resource, method, mockedGet, mockedGetArgs, mockedResource,
+    }) => {
         const response = await method();
 
         expect(response).toEqual(mockedResource);

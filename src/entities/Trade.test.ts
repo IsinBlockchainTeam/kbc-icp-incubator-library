@@ -1,4 +1,4 @@
-import {Trade} from "./Trade";
+import { Trade } from './Trade';
 
 describe('Trade', () => {
     let trade: Trade;

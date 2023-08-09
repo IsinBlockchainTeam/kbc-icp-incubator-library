@@ -1,5 +1,5 @@
-import {OrderLine, OrderLinePrice} from '../entities/OrderLine';
-import { OrderDriver } from '../drivers/OrderDriver';
+import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
+import { OrderDriver, OrderEvents } from '../drivers/OrderDriver';
 import { Order } from '../entities/Order';
 import { OrderStatus } from '../types/OrderStatus';
 
@@ -18,8 +18,8 @@ export class OrderService {
         return this._orderDriver.getOrderCounter(supplierAddress);
     }
 
-    async getOrderInfo(supplierAddress: string, id: number): Promise<Order> {
-        return this._orderDriver.getOrderInfo(supplierAddress, id);
+    async getOrderInfo(supplierAddress: string, id: number, blockNumber?: number): Promise<Order> {
+        return this._orderDriver.getOrderInfo(supplierAddress, id, blockNumber);
     }
 
     async isSupplierOrCustomer(supplierAddress: string, id: number, senderAddress: string): Promise<boolean> {
@@ -38,8 +38,8 @@ export class OrderService {
         await this._orderDriver.confirmOrder(supplierAddress, id);
     }
 
-    async getOrderLine(supplierAddress: string, orderId: number, orderLineId: number): Promise<OrderLine> {
-        return this._orderDriver.getOrderLine(supplierAddress, orderId, orderLineId);
+    async getOrderLine(supplierAddress: string, orderId: number, orderLineId: number, blockNumber?: number): Promise<OrderLine> {
+        return this._orderDriver.getOrderLine(supplierAddress, orderId, orderLineId, blockNumber);
     }
 
     async updateOrderLine(supplierAddress: string, orderId: number, orderLineId: number, productCategory: string, quantity: number, price: OrderLinePrice): Promise<void> {
@@ -48,6 +48,10 @@ export class OrderService {
 
     async addOrderLine(supplierAddress: string, orderId: number, productCategory: string, quantity: number, price: OrderLinePrice): Promise<void> {
         return this._orderDriver.addOrderLine(supplierAddress, orderId, productCategory, quantity, price);
+    }
+
+    async getBlockNumbersByOrderId(id: number): Promise<Map<OrderEvents, number[]>> {
+        return this._orderDriver.getBlockNumbersByOrderId(id);
     }
 
     async addAdmin(address: string): Promise<void> {

@@ -1,9 +1,9 @@
-import {SupplyChainService} from "./SupplyChainService";
-import {SupplyChainDriver} from "../drivers/SupplyChainDriver";
-import {Material} from "../entities/Material";
-import {Trade} from "../entities/Trade";
-import {Transformation} from "../entities/Transformation";
-import {createMock} from "ts-auto-mock";
+import { createMock } from 'ts-auto-mock';
+import { SupplyChainService } from './SupplyChainService';
+import { SupplyChainDriver } from '../drivers/SupplyChainDriver';
+import { Material } from '../entities/Material';
+import { Trade } from '../entities/Trade';
+import { Transformation } from '../entities/Transformation';
 
 describe('SupplyChainService', () => {
     let supplyChainService: SupplyChainService;
@@ -22,7 +22,7 @@ describe('SupplyChainService', () => {
         getMaterial: jest.fn(),
         getTrade: jest.fn(),
         getTransformation: jest.fn(),
-    }
+    };
 
     const material = new Material(1, 'Material 1', 'Owner');
     const trade = new Trade(1, 'Trade 1', [[1, 2], [3, 4]], 'Owner');
@@ -110,7 +110,7 @@ describe('SupplyChainService', () => {
             serviceFunction: () => supplyChainService.getTransformation(transformation.owner, transformation.id),
             expectedMockedFunction: mockedInstance.getTransformation,
             expectedMockedFunctionArgs: [transformation.owner, transformation.id],
-        }
+        },
     ])('service should call driver $serviceFunctionName', async ({ serviceFunction, expectedMockedFunction, expectedMockedFunctionArgs }) => {
         await serviceFunction();
 
@@ -140,7 +140,9 @@ describe('SupplyChainService', () => {
             testResource: transformation,
             serviceFunction: () => supplyChainService.getTransformations(material.owner),
         },
-    ])('should retrieve all the $resource', async ({ resource, getCounterMockedFunction, getResourceMockedFunction, testResource, serviceFunction }) => {
+    ])('should retrieve all the $resource', async ({
+        resource, getCounterMockedFunction, getResourceMockedFunction, testResource, serviceFunction,
+    }) => {
         getCounterMockedFunction.mockReturnValue(2);
         getResourceMockedFunction.mockReturnValueOnce(testResource);
         getResourceMockedFunction.mockReturnValueOnce(testResource);

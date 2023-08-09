@@ -5,6 +5,7 @@
         "jest": true,
         "mocha": true
     },
+    "ignorePatterns": ["node_modules"],
     "extends": [
         "airbnb-base"
     ],
@@ -68,6 +69,7 @@
         "grouped-accessor-pairs": "off",
         "prefer-destructuring": "off",
         "no-plusplus": "off",
-        "operator-linebreak": "off"
+        "operator-linebreak": "off",
+        "max-classes-per-file": "off"
     }
 }

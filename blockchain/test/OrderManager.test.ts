@@ -175,16 +175,16 @@ describe('OrderManager', () => {
         });
 
         describe('orderLineExists', () => {
-             it('should check if an order line exists', async () => {
-                 await orderManagerContract.connect(supplier).registerOrder(supplier.address, customer.address, customer.address, rawOrder.externalUrl);
-                 orderCounterId = await orderManagerContract.connect(supplier).getOrderCounter(supplier.address);
-                 await orderManagerContract.connect(supplier).addOrderLine(supplier.address, orderCounterId.toNumber(), initialProductCategory, quantity, price);
-                 const { lineIds } = await orderManagerContract.connect(supplier).getOrderInfo(supplier.address, orderCounterId.toNumber());
-                 orderLineCounterId = lineIds.slice(-1)[0];
+            it('should check if an order line exists', async () => {
+                await orderManagerContract.connect(supplier).registerOrder(supplier.address, customer.address, customer.address, rawOrder.externalUrl);
+                orderCounterId = await orderManagerContract.connect(supplier).getOrderCounter(supplier.address);
+                await orderManagerContract.connect(supplier).addOrderLine(supplier.address, orderCounterId.toNumber(), initialProductCategory, quantity, price);
+                const { lineIds } = await orderManagerContract.connect(supplier).getOrderInfo(supplier.address, orderCounterId.toNumber());
+                orderLineCounterId = lineIds.slice(-1)[0];
 
-                 const exist = await orderManagerContract.connect(supplier).orderLineExists(supplier.address, orderCounterId.toNumber(), orderLineCounterId.toNumber());
-                 expect(exist).to.be.true;
-             });
+                const exist = await orderManagerContract.connect(supplier).orderLineExists(supplier.address, orderCounterId.toNumber(), orderLineCounterId.toNumber());
+                expect(exist).to.be.true;
+            });
         });
 
         describe('updateOrderLine', () => {

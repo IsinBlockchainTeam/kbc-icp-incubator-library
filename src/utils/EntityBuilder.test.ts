@@ -1,15 +1,16 @@
+import { BigNumber } from 'ethers';
 import { EntityBuilder } from './EntityBuilder';
-import {BigNumber} from "ethers";
-import {Material} from "../entities/Material";
+import { Material } from '../entities/Material';
 import {
     MaterialStructOutput,
     TradeStructOutput,
-    TransformationStructOutput
-} from "../smart-contracts/contracts/SupplyChainManager";
-import {Trade} from "../entities/Trade";
-import {Transformation} from "../entities/Transformation";
-import {OrderManager} from "../smart-contracts";
-import {OrderLine, OrderLinePrice} from "../entities/OrderLine";
+    TransformationStructOutput,
+} from '../smart-contracts/contracts/SupplyChainManager';
+import { Trade } from '../entities/Trade';
+import { Transformation } from '../entities/Transformation';
+import { OrderManager } from '../smart-contracts';
+import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
+import { Order } from '../entities/Order';
 
 describe('EntityBuilder', () => {
     describe('buildMaterial', () => {
@@ -45,6 +46,21 @@ describe('EntityBuilder', () => {
             bcTransformation.owner = 'owner';
 
             expect(EntityBuilder.buildTransformation(bcTransformation)).toEqual(new Transformation(0, 'transformation', [1, 2], 3, 'owner'));
+        });
+    });
+
+    describe('build order', () => {
+        it('should correctly build an Order', () => {
+            const bcOrder = {
+                id: BigNumber.from(0),
+                supplier: 'supplier',
+                customer: 'customer',
+                offeree: 'offeree',
+                offeror: 'offeror',
+                externalUrl: 'extUrl',
+                lineIds: [BigNumber.from(1)],
+            };
+            expect(EntityBuilder.buildOrder(bcOrder)).toEqual(new Order(bcOrder.id.toNumber(), bcOrder.supplier, bcOrder.customer, bcOrder.externalUrl, bcOrder.offeree, bcOrder.offeror, bcOrder.lineIds.map((l) => l.toNumber())));
         });
     });
 
