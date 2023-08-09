@@ -29,7 +29,7 @@ const config: HardhatUserConfig = {
             viaIR: true,
         },
     },
-    // defaultNetwork: DEFAULT_DEPLOY_NETWORK || 'localhost',
+    defaultNetwork: DEFAULT_DEPLOY_NETWORK || 'localhost',
     networks: {
         hardhat: {
             allowUnlimitedContractSize: true,

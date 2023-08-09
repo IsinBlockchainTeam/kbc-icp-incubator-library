@@ -1,9 +1,7 @@
 /* eslint-disable camelcase */
 /* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
-import { JsonRpcProvider } from '@ethersproject/providers';
-import { IdentityEthersDriver } from '@blockchain-lib/common';
-import { utils } from 'ethers';
+import { Signer, utils } from 'ethers';
 import { RelationshipManager, RelationshipManager__factory } from '../smart-contracts';
 import { Relationship } from '../entities/Relationship';
 
@@ -11,13 +9,12 @@ export class RelationshipDriver {
     protected _contract: RelationshipManager;
 
     constructor(
-        identityDriver: IdentityEthersDriver,
-        provider: JsonRpcProvider,
+        signer: Signer,
         relationshipAddress: string,
     ) {
         this._contract = RelationshipManager__factory
-            .connect(relationshipAddress, provider)
-            .connect(identityDriver.wallet);
+            .connect(relationshipAddress, signer.provider!)
+            .connect(signer);
     }
 
     async registerRelationship(companyAAddress: string, companyBAddress: string, validFrom: Date, validUntil?: Date): Promise<void> {
