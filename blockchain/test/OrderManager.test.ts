@@ -4,6 +4,7 @@ import { ethers } from 'hardhat';
 import { expect } from 'chai';
 import { BigNumber, Contract } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import { string } from 'hardhat/internal/core/params/argumentTypes';
 import { ContractName } from '../utils/constants';
 
 let orderManagerContract: Contract;
@@ -16,6 +17,18 @@ let customer: SignerWithAddress;
 let orderManager: SignerWithAddress;
 let otherAccount: SignerWithAddress;
 let orderCounterId: BigNumber;
+
+const _addAllOrderConstraints = async (sender: SignerWithAddress, supplierAddress: string, orderId: number) => {
+    await orderManagerContract.connect(sender).setOrderIncoterms(supplierAddress, orderId, 'FOB');
+    await orderManagerContract.connect(sender).setOrderPaymentDeadline(supplierAddress, orderId, new Date().getTime());
+    await orderManagerContract.connect(sender).setOrderDocumentDeliveryDeadline(supplierAddress, orderId, new Date().getTime());
+    await orderManagerContract.connect(sender).setOrderShipper(supplierAddress, orderId, 'shipper');
+    await orderManagerContract.connect(sender).setOrderArbiter(supplierAddress, orderId, 'arbiter');
+    await orderManagerContract.connect(sender).setOrderShippingPort(supplierAddress, orderId, 'shipping port');
+    await orderManagerContract.connect(sender).setOrderShippingDeadline(supplierAddress, orderId, new Date().getTime());
+    await orderManagerContract.connect(sender).setOrderDeliveryPort(supplierAddress, orderId, 'delivery port');
+    await orderManagerContract.connect(sender).setOrderDeliveryDeadline(supplierAddress, orderId, new Date().getTime());
+};
 
 describe('OrderManager', () => {
     const rawOrder = {
@@ -90,6 +103,17 @@ describe('OrderManager', () => {
         });
     });
 
+    describe('confirmOrder', () => {
+        before(async () => {
+            await orderManagerContract.connect(supplier).registerOrder(supplier.address, customer.address, customer.address, rawOrder.externalUrl);
+            orderCounterId = await orderManagerContract.connect(supplier).getOrderCounter(supplier.address);
+        });
+
+        it('should confirm an order - FAIL (Cannot confirm an order if all constraints have not been defined', async () => {
+            await expect(orderManagerContract.connect(supplier).confirmOrder(supplier.address, orderCounterId)).to.be.revertedWith('Cannot confirm an order if all constraints have not been defined');
+        });
+    });
+
     describe('manipulate order by adding/updating lines', () => {
         let orderLineCounterId: BigNumber;
         const initialProductCategory = 'categoryA';
@@ -103,6 +127,7 @@ describe('OrderManager', () => {
         before(async () => {
             await orderManagerContract.connect(supplier).registerOrder(supplier.address, customer.address, customer.address, rawOrder.externalUrl);
             orderCounterId = await orderManagerContract.connect(supplier).getOrderCounter(supplier.address);
+            await _addAllOrderConstraints(supplier, supplier.address, orderCounterId.toNumber());
         });
 
         describe('addOrderLine', () => {
@@ -248,35 +273,43 @@ describe('OrderManager', () => {
                 orderCounterId = await orderManagerContract.connect(supplier).getOrderCounter(supplier.address);
             });
 
-            it('should try to get order status - FAIL (Order does not exist)', async () => {
-                await expect(orderManagerContract.connect(supplier).getOrderStatus(supplier.address, 50)).to.be.revertedWith('Order does not exist');
+            describe('Order initialization', () => {
+                it('should try to get order status - FAIL (Order does not exist)', async () => {
+                    await expect(orderManagerContract.connect(supplier).getOrderStatus(supplier.address, 50)).to.be.revertedWith('Order does not exist');
+                });
+
+                it('neither supplier nor customer have been signed the order, result = INITIALIZED', async () => {
+                    orderStatus = await orderManagerContract.connect(supplier).getOrderStatus(supplier.address, orderCounterId.toNumber());
+                    expect(orderStatus).to.equal(0);
+                });
             });
 
-            it('neither supplier nor customer have been confirmed the order, result = INITIALIZED', async () => {
-                orderStatus = await orderManagerContract.connect(supplier).getOrderStatus(supplier.address, orderCounterId.toNumber());
-                expect(orderStatus).to.equal(0);
-            });
+            describe('Order with defined constraints', () => {
+                before(async () => {
+                    await _addAllOrderConstraints(supplier, supplier.address, orderCounterId.toNumber());
+                });
 
-            it('the supplier should change the order status by adding line, result = PENDING', async () => {
-                await orderManagerContract.connect(supplier).addOrderLine(supplier.address, orderCounterId, initialProductCategory, quantity, price);
-                orderStatus = await orderManagerContract.connect(supplier).getOrderStatus(supplier.address, orderCounterId.toNumber());
-                expect(orderStatus).to.equal(1);
-            });
+                it('the supplier should change the order status by adding line, result = PENDING', async () => {
+                    await orderManagerContract.connect(supplier).addOrderLine(supplier.address, orderCounterId, initialProductCategory, quantity, price);
+                    orderStatus = await orderManagerContract.connect(supplier).getOrderStatus(supplier.address, orderCounterId.toNumber());
+                    expect(orderStatus).to.equal(1);
+                });
 
-            it('the customer should change again the order by adding a line, result = PENDING', async () => {
-                await orderManagerContract.connect(customer).addOrderLine(supplier.address, orderCounterId, initialProductCategory, quantity, price);
-                orderStatus = await orderManagerContract.connect(customer).getOrderStatus(supplier.address, orderCounterId.toNumber());
-                expect(orderStatus).to.equal(1);
-            });
+                it('the customer should change again the order by adding a line, result = PENDING', async () => {
+                    await orderManagerContract.connect(customer).addOrderLine(supplier.address, orderCounterId, initialProductCategory, quantity, price);
+                    orderStatus = await orderManagerContract.connect(customer).getOrderStatus(supplier.address, orderCounterId.toNumber());
+                    expect(orderStatus).to.equal(1);
+                });
 
-            it('the supplier should try to confirm the order - FAIL (Only an offeree or an offeror can confirm the order)', async () => {
-                await expect(orderManagerContract.connect(otherAccount).confirmOrder(supplier.address, orderCounterId)).to.be.revertedWith('Only an offeree or an offeror can confirm the order');
-            });
+                it('the supplier should try to confirm the order - FAIL (Only an offeree or an offeror can confirm the order)', async () => {
+                    await expect(orderManagerContract.connect(otherAccount).confirmOrder(supplier.address, orderCounterId)).to.be.revertedWith('Only an offeree or an offeror can confirm the order');
+                });
 
-            it('the supplier should confirm the order, result = CONFIRMED', async () => {
-                await orderManagerContract.connect(supplier).confirmOrder(supplier.address, orderCounterId);
-                orderStatus = await orderManagerContract.connect(supplier).getOrderStatus(supplier.address, orderCounterId.toNumber());
-                expect(orderStatus).to.equal(2);
+                it('the supplier should confirm the order, result = CONFIRMED', async () => {
+                    await orderManagerContract.connect(supplier).confirmOrder(supplier.address, orderCounterId);
+                    orderStatus = await orderManagerContract.connect(supplier).getOrderStatus(supplier.address, orderCounterId.toNumber());
+                    expect(orderStatus).to.equal(2);
+                });
             });
         });
     });
@@ -302,7 +335,7 @@ describe('OrderManager', () => {
         });
 
         describe('setOrderPaymentDeadline', () => {
-            const deadline = new Date("2030-10-10").getTime();
+            const deadline = new Date('2030-10-10').getTime();
 
             it('should set the payment deadline', async () => {
                 await orderManagerContract.connect(supplier).setOrderPaymentDeadline(supplier.address, orderCounterId, deadline);
@@ -316,7 +349,7 @@ describe('OrderManager', () => {
         });
 
         describe('setOrderDocumentDeliveryDeadline', () => {
-            const deadline = new Date("2030-10-10").getTime();
+            const deadline = new Date('2030-10-10').getTime();
 
             it('should set the document delivery deadline', async () => {
                 await orderManagerContract.connect(supplier).setOrderDocumentDeliveryDeadline(supplier.address, orderCounterId, deadline);
@@ -330,7 +363,7 @@ describe('OrderManager', () => {
         });
 
         describe('setOrderShipper', () => {
-            const shipper = "shipper 1";
+            const shipper = 'shipper 1';
 
             it('should set the shipper', async () => {
                 await orderManagerContract.connect(supplier).setOrderShipper(supplier.address, orderCounterId, shipper);
@@ -344,7 +377,7 @@ describe('OrderManager', () => {
         });
 
         describe('setOrderArbiter', () => {
-            const arbiter = "arbiter 1";
+            const arbiter = 'arbiter 1';
 
             it('should set the arbiter', async () => {
                 await orderManagerContract.connect(supplier).setOrderArbiter(supplier.address, orderCounterId, arbiter);
@@ -358,7 +391,7 @@ describe('OrderManager', () => {
         });
 
         describe('setOrderShippingPort', () => {
-            const shippingPort = "shippingPort 1";
+            const shippingPort = 'shippingPort 1';
 
             it('should set the shipping port', async () => {
                 await orderManagerContract.connect(supplier).setOrderShippingPort(supplier.address, orderCounterId, shippingPort);
@@ -372,7 +405,7 @@ describe('OrderManager', () => {
         });
 
         describe('setOrderShippingDeadline', () => {
-            const shippingDeadline = new Date("2030-10-10").getTime();
+            const shippingDeadline = new Date('2030-10-10').getTime();
 
             it('should set the shipping deadline', async () => {
                 await orderManagerContract.connect(supplier).setOrderShippingDeadline(supplier.address, orderCounterId, shippingDeadline);
@@ -386,7 +419,7 @@ describe('OrderManager', () => {
         });
 
         describe('setOrderDeliveryPort', () => {
-            const deliveryPort = "deliveryPort 1";
+            const deliveryPort = 'deliveryPort 1';
 
             it('should set the delivery port', async () => {
                 await orderManagerContract.connect(supplier).setOrderDeliveryPort(supplier.address, orderCounterId, deliveryPort);
@@ -400,7 +433,7 @@ describe('OrderManager', () => {
         });
 
         describe('setOrderDeliveryDeadline', () => {
-            const deliveryDeadline = new Date("2030-10-10").getTime();
+            const deliveryDeadline = new Date('2030-10-10').getTime();
 
             it('should set the shipping deadline', async () => {
                 await orderManagerContract.connect(supplier).setOrderDeliveryDeadline(supplier.address, orderCounterId, deliveryDeadline);

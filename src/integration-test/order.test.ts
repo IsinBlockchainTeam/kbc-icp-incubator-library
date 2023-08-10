@@ -79,7 +79,7 @@ describe('Order lifecycle', () => {
         expect(orderStatus).toEqual(OrderStatus.INITIALIZED);
     });
 
-    it('Should add a line to a order as a supplier', async () => {
+    it('Should add a line to a order as a supplier and check that the status is PENDING', async () => {
         orderCounterId = await orderService.getOrderCounter(SUPPLIER_INVOKER_ADDRESS);
         const line = new OrderLine(0, 'CategoryB', 20, new OrderLinePrice(10.25, 'USD'));
 
@@ -95,7 +95,7 @@ describe('Order lifecycle', () => {
         expect(orderStatus).toEqual(OrderStatus.PENDING);
     });
 
-    it('Should add a line to a new order as a customer', async () => {
+    it('Should add a line to a new order as a customer and status again in PENDING', async () => {
         identityDriver = new IdentityEthersDriver(CUSTOMER_INVOKER_PRIVATE_KEY, provider);
         orderDriver = new OrderDriver(identityDriver, provider, ORDER_MANAGER_CONTRACT_ADDRESS);
         orderService = new OrderService(orderDriver);

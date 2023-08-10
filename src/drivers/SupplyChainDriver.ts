@@ -1,3 +1,5 @@
+/* eslint-disable camelcase */
+
 import { IdentityEthersDriver } from '@blockchain-lib/common';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { utils } from 'ethers';

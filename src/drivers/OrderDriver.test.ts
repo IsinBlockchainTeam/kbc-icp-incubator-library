@@ -23,12 +23,11 @@ describe('OrderDriver', () => {
 
     let mockedIdentityDriver: IdentityEthersDriver;
     let mockedProvider: JsonRpcProvider;
+    let mockedContract: OrderManager;
 
     const mockedOrderConnect = jest.fn();
     const mockedWait = jest.fn();
     const mockedRegisterOrder = jest.fn();
-
-    let mockedContract: OrderManager;
 
     const mockedWriteFunction = jest.fn();
     const mockedReadFunction = jest.fn();
@@ -223,6 +222,8 @@ describe('OrderDriver', () => {
             await orderDriver.confirmOrder(supplier.address, 1);
             expect(mockedContract.confirmOrder).toHaveBeenCalledTimes(1);
             expect(mockedContract.confirmOrder).toHaveBeenNthCalledWith(1, supplier.address, 1);
+
+            expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 
         it('should confirm the order - fails for address', async () => {
@@ -286,6 +287,7 @@ describe('OrderDriver', () => {
                 1,
                 incoterms,
             );
+            expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 
         it('should set order incoterms - not an address', async () => {
@@ -305,6 +307,7 @@ describe('OrderDriver', () => {
                 1,
                 deadline.getTime(),
             );
+            expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 
         it('should set order payment deadline - not an address', async () => {
@@ -324,6 +327,7 @@ describe('OrderDriver', () => {
                 1,
                 deadline.getTime(),
             );
+            expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 
         it('should set order document delivery pipeline - not an address', async () => {
@@ -343,6 +347,7 @@ describe('OrderDriver', () => {
                 1,
                 shipper,
             );
+            expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 
         it('should set order shipper - not an address', async () => {
@@ -362,6 +367,7 @@ describe('OrderDriver', () => {
                 1,
                 arbiter,
             );
+            expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 
         it('should set order arbiter - not an address', async () => {
@@ -381,6 +387,7 @@ describe('OrderDriver', () => {
                 1,
                 shippingPort,
             );
+            expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 
         it('should set order shipping port - not an address', async () => {
@@ -400,6 +407,7 @@ describe('OrderDriver', () => {
                 1,
                 deadline.getTime(),
             );
+            expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 
         it('should set order shipping deadline - not an address', async () => {
@@ -419,6 +427,7 @@ describe('OrderDriver', () => {
                 1,
                 deliveryPort,
             );
+            expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 
         it('should set order delivery port - not an address', async () => {
@@ -438,6 +447,7 @@ describe('OrderDriver', () => {
                 1,
                 deadline.getTime(),
             );
+            expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 
         it('should set order delivery deadline - not an address', async () => {

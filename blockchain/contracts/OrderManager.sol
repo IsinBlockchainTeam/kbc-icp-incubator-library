@@ -182,14 +182,18 @@ contract OrderManager is AccessControl {
     }
 
     function confirmOrder(address supplier, uint256 orderId) public {
-        Order storage c = orders[supplier][orderId];
-        require(msg.sender == c.offeree || msg.sender == c.offeror, "Only an offeree or an offeror can confirm the order");
+        Order storage o = orders[supplier][orderId];
+        require(msg.sender == o.offeree || msg.sender == o.offeror, "Only an offeree or an offeror can confirm the order");
+        require((bytes(o.incoterms).length != 0 || o.paymentDeadline != 0 || o.documentDeliveryDeadline != 0 ||
+                bytes(o.shipper).length != 0 || bytes(o.arbiter).length != 0 || bytes(o.shippingPort).length != 0 ||
+                o.shippingDeadline != 0 || bytes(o.deliveryPort).length != 0 || o.deliveryDeadline != 0),
+            "Cannot confirm an order if all constraints have not been defined");
 
-        if (msg.sender == c.offeror) {
-            c.offerorSigned = true;
+        if (msg.sender == o.offeror) {
+            o.offerorSigned = true;
         }
         else {
-            c.offereeSigned = true;
+            o.offereeSigned = true;
         }
     }
 

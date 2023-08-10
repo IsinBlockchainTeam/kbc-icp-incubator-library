@@ -1,4 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+/* eslint-disable camelcase */
 
 import { Wallet } from 'ethers';
 import { IdentityEthersDriver } from '@blockchain-lib/common';
