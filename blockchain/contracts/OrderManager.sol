@@ -109,6 +109,78 @@ contract OrderManager is AccessControl {
         return ordersCounter[supplier].current();
     }
 
+    function setOrderIncoterms(address supplier, uint256 orderId, string memory incoterms) public {
+        Order storage o = orders[supplier][orderId];
+        require(o.exists, "Order does not exist");
+
+        o.incoterms = incoterms;
+        _updateSignatures(msg.sender, o);
+    }
+
+    function setPaymentDeadline(address supplier, uint256 orderId, uint256 paymentDeadline) public {
+        Order storage o = orders[supplier][orderId];
+        require(o.exists, "Order does not exist");
+
+        o.paymentDeadline = paymentDeadline;
+        _updateSignatures(msg.sender, o);
+    }
+
+    function setDocumentDeliveryDeadline(address supplier, uint256 orderId, uint256 documentDeliveryDeadline) public {
+        Order storage o = orders[supplier][orderId];
+        require(o.exists, "Order does not exist");
+
+        o.documentDeliveryDeadline = documentDeliveryDeadline;
+        _updateSignatures(msg.sender, o);
+    }
+
+    function setShipper(address supplier, uint256 orderId, string memory shipper) public {
+        Order storage o = orders[supplier][orderId];
+        require(o.exists, "Order does not exist");
+
+        o.shipper = shipper;
+        _updateSignatures(msg.sender, o);
+    }
+
+    function setArbiter(address supplier, uint256 orderId, string memory arbiter) public {
+        Order storage o = orders[supplier][orderId];
+        require(o.exists, "Order does not exist");
+
+        o.arbiter = arbiter;
+        _updateSignatures(msg.sender, o);
+    }
+
+    function setShippingPort(address supplier, uint256 orderId, string memory shippingPort) public {
+        Order storage o = orders[supplier][orderId];
+        require(o.exists, "Order does not exist");
+
+        o.shippingPort = shippingPort;
+        _updateSignatures(msg.sender, o);
+    }
+
+    function setShippingDeadline(address supplier, uint256 orderId, uint256 shippingDeadline) public {
+        Order storage o = orders[supplier][orderId];
+        require(o.exists, "Order does not exist");
+
+        o.shippingDeadline = shippingDeadline;
+        _updateSignatures(msg.sender, o);
+    }
+
+    function setDeliveryPort(address supplier, uint256 orderId, string memory deliveryPort) public {
+        Order storage o = orders[supplier][orderId];
+        require(o.exists, "Order does not exist");
+
+        o.deliveryPort = deliveryPort;
+        _updateSignatures(msg.sender, o);
+    }
+
+    function setDeliveryDeadline(address supplier, uint256 orderId, uint256 deliveryDeadline) public {
+        Order storage o = orders[supplier][orderId];
+        require(o.exists, "Order does not exist");
+
+        o.deliveryDeadline = deliveryDeadline;
+        _updateSignatures(msg.sender, o);
+    }
+
     function confirmOrder(address supplier, uint256 orderId) public {
         Order storage c = orders[supplier][orderId];
         require(msg.sender == c.offeree || msg.sender == c.offeror, "Only an offeree or an offeror can confirm the order");

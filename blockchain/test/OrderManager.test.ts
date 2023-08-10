@@ -272,6 +272,20 @@ describe('OrderManager', () => {
         });
     });
 
+    describe('manipulate order by setting constraints', () => {
+        before(async () => {
+            await orderManagerContract.connect(supplier).registerOrder(supplier.address, customer.address, customer.address, rawOrder.externalUrl);
+            orderCounterId = await orderManagerContract.connect(supplier).getOrderCounter(supplier.address);
+        });
+
+        describe('setOrderIncoterms', () => {
+            it('should set the incoterms', async () => {
+                const incoterms = 'FOB';
+                await orderManagerContract.connect(supplier).setOrderIncoterms(supplier.address, orderCounterId, incoterms);
+            });
+        });
+    });
+
     describe('isSupplierOrCustomer', () => {
         it('should check that the sender is supplier or customer', async () => {
             const isParty = await orderManagerContract.connect(supplier).isSupplierOrCustomer(supplier.address, orderCounterId, customer.address);
