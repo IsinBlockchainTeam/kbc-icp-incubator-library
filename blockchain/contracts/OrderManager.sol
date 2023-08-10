@@ -209,11 +209,18 @@ contract OrderManager is AccessControl {
         }
     }
 
-    function getOrderInfo(address orderSupplier, uint256 orderId) public view returns (uint256 id, address supplier, address customer, address offeree, address offeror, string memory externalUrl, uint256[] memory lineIds) {
-        require(orders[orderSupplier][orderId].exists, "Order does not exist");
+    function getOrderInfo(address orderSupplier, uint256 orderId) public view returns (
+        uint256 id, address supplier, address customer, address offeree, address offeror, string memory externalUrl, uint256[] memory lineIds,
+        string memory incoterms, uint256 paymentDeadline, uint256 documentDeliveryDeadline, string memory shipper, string memory arbiter,
+        string memory shippingPort, uint256 shippingDeadline, string memory deliveryPort, uint256 deliveryDeadline
+    ) {
+        Order storage order = orders[orderSupplier][orderId];
+        require(order.exists, "Order does not exist");
 
-        return (orders[orderSupplier][orderId].id, orders[orderSupplier][orderId].supplier, orders[orderSupplier][orderId].customer,
-            orders[orderSupplier][orderId].offeree, orders[orderSupplier][orderId].offeror, orders[orderSupplier][orderId].externalUrl, orders[orderSupplier][orderId].lineIds);
+        return (order.id, order.supplier, order.customer, order.offeree, order.offeror, order.externalUrl, order.lineIds,
+                order.incoterms, order.paymentDeadline, order.documentDeliveryDeadline, order.shipper, order.arbiter,
+                order.shippingPort, order.shippingDeadline, order.deliveryPort, order.deliveryDeadline
+        );
     }
 
     function isSupplierOrCustomer(address supplier, uint256 orderId, address sender) public view returns (bool) {

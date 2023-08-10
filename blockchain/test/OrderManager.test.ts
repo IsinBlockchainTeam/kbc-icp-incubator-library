@@ -56,6 +56,15 @@ describe('OrderManager', () => {
             expect(order.offerorSigned).to.be.undefined;
             expect(order.offereeSigned).to.be.undefined;
             expect(order.externalUrl).to.equal(rawOrder.externalUrl);
+            expect(order.incoterms).to.be.empty;
+            expect(order.paymentDeadline).to.equal(0);
+            expect(order.documentDeliveryDeadline).to.equal(0);
+            expect(order.shipper).to.be.empty;
+            expect(order.arbiter).to.be.empty;
+            expect(order.shippingPort).to.be.empty;
+            expect(order.shippingDeadline).to.equal(0);
+            expect(order.deliveryPort).to.be.empty;
+            expect(order.deliveryDeadline).to.equal(0);
         });
 
         it('should register a order - FAIL (sender is neither supplier nor customer)', async () => {
@@ -279,9 +288,128 @@ describe('OrderManager', () => {
         });
 
         describe('setOrderIncoterms', () => {
+            const incoterms = 'FOB';
+
             it('should set the incoterms', async () => {
-                const incoterms = 'FOB';
                 await orderManagerContract.connect(supplier).setOrderIncoterms(supplier.address, orderCounterId, incoterms);
+                const order = await orderManagerContract.connect(supplier).getOrderInfo(supplier.address, orderCounterId.toNumber());
+                expect(order.incoterms).to.equal(incoterms);
+            });
+
+            it('should set the incoterms - FAIL(Order does not exist)', async () => {
+                await expect(orderManagerContract.connect(supplier).setOrderIncoterms(supplier.address, 50, incoterms)).to.be.revertedWith('Order does not exist');
+            });
+        });
+
+        describe('setPaymentDeadline', () => {
+            const deadline = new Date("2030-10-10").getTime();
+
+            it('should set the payment deadline', async () => {
+                await orderManagerContract.connect(supplier).setPaymentDeadline(supplier.address, orderCounterId, deadline);
+                const order = await orderManagerContract.connect(supplier).getOrderInfo(supplier.address, orderCounterId.toNumber());
+                expect(order.paymentDeadline).to.equal(deadline);
+            });
+
+            it('should set the payment deadline - FAIL(Order does not exist)', async () => {
+                await expect(orderManagerContract.connect(supplier).setPaymentDeadline(supplier.address, 50, deadline)).to.be.revertedWith('Order does not exist');
+            });
+        });
+
+        describe('setDocumentDeliveryDeadline', () => {
+            const deadline = new Date("2030-10-10").getTime();
+
+            it('should set the document delivery deadline', async () => {
+                await orderManagerContract.connect(supplier).setDocumentDeliveryDeadline(supplier.address, orderCounterId, deadline);
+                const order = await orderManagerContract.connect(supplier).getOrderInfo(supplier.address, orderCounterId.toNumber());
+                expect(order.documentDeliveryDeadline).to.equal(deadline);
+            });
+
+            it('should set the document delivery deadline - FAIL(Order does not exist)', async () => {
+                await expect(orderManagerContract.connect(supplier).setDocumentDeliveryDeadline(supplier.address, 50, deadline)).to.be.revertedWith('Order does not exist');
+            });
+        });
+
+        describe('setShipper', () => {
+            const shipper = "shipper 1";
+
+            it('should set the shipper', async () => {
+                await orderManagerContract.connect(supplier).setShipper(supplier.address, orderCounterId, shipper);
+                const order = await orderManagerContract.connect(supplier).getOrderInfo(supplier.address, orderCounterId.toNumber());
+                expect(order.shipper).to.equal(shipper);
+            });
+
+            it('should set the shipper - FAIL(Order does not exist)', async () => {
+                await expect(orderManagerContract.connect(supplier).setShipper(supplier.address, 50, shipper)).to.be.revertedWith('Order does not exist');
+            });
+        });
+
+        describe('setArbiter', () => {
+            const arbiter = "arbiter 1";
+
+            it('should set the arbiter', async () => {
+                await orderManagerContract.connect(supplier).setArbiter(supplier.address, orderCounterId, arbiter);
+                const order = await orderManagerContract.connect(supplier).getOrderInfo(supplier.address, orderCounterId.toNumber());
+                expect(order.arbiter).to.equal(arbiter);
+            });
+
+            it('should set the arbiter - FAIL(Order does not exist)', async () => {
+                await expect(orderManagerContract.connect(supplier).setArbiter(supplier.address, 50, arbiter)).to.be.revertedWith('Order does not exist');
+            });
+        });
+
+        describe('setShippingPort', () => {
+            const shippingPort = "shippingPort 1";
+
+            it('should set the shipping port', async () => {
+                await orderManagerContract.connect(supplier).setShippingPort(supplier.address, orderCounterId, shippingPort);
+                const order = await orderManagerContract.connect(supplier).getOrderInfo(supplier.address, orderCounterId.toNumber());
+                expect(order.shippingPort).to.equal(shippingPort);
+            });
+
+            it('should set the shipping port - FAIL(Order does not exist)', async () => {
+                await expect(orderManagerContract.connect(supplier).setShippingPort(supplier.address, 50, shippingPort)).to.be.revertedWith('Order does not exist');
+            });
+        });
+
+        describe('setShippingDeadline', () => {
+            const shippingDeadline = new Date("2030-10-10").getTime();
+
+            it('should set the shipping deadline', async () => {
+                await orderManagerContract.connect(supplier).setShippingDeadline(supplier.address, orderCounterId, shippingDeadline);
+                const order = await orderManagerContract.connect(supplier).getOrderInfo(supplier.address, orderCounterId.toNumber());
+                expect(order.shippingDeadline).to.equal(shippingDeadline);
+            });
+
+            it('should set the shipping deadline - FAIL(Order does not exist)', async () => {
+                await expect(orderManagerContract.connect(supplier).setShippingDeadline(supplier.address, 50, shippingDeadline)).to.be.revertedWith('Order does not exist');
+            });
+        });
+
+        describe('setDeliveryPort', () => {
+            const deliveryPort = "deliveryPort 1";
+
+            it('should set the delivery port', async () => {
+                await orderManagerContract.connect(supplier).setDeliveryPort(supplier.address, orderCounterId, deliveryPort);
+                const order = await orderManagerContract.connect(supplier).getOrderInfo(supplier.address, orderCounterId.toNumber());
+                expect(order.deliveryPort).to.equal(deliveryPort);
+            });
+
+            it('should set the delivery port - FAIL(Order does not exist)', async () => {
+                await expect(orderManagerContract.connect(supplier).setDeliveryPort(supplier.address, 50, deliveryPort)).to.be.revertedWith('Order does not exist');
+            });
+        });
+
+        describe('setDeliveryDeadline', () => {
+            const deliveryDeadline = new Date("2030-10-10").getTime();
+
+            it('should set the shipping deadline', async () => {
+                await orderManagerContract.connect(supplier).setDeliveryDeadline(supplier.address, orderCounterId, deliveryDeadline);
+                const order = await orderManagerContract.connect(supplier).getOrderInfo(supplier.address, orderCounterId.toNumber());
+                expect(order.deliveryDeadline).to.equal(deliveryDeadline);
+            });
+
+            it('should set the shipping deadline - FAIL(Order does not exist)', async () => {
+                await expect(orderManagerContract.connect(supplier).setDeliveryDeadline(supplier.address, 50, deliveryDeadline)).to.be.revertedWith('Order does not exist');
             });
         });
     });
