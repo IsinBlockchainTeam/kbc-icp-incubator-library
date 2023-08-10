@@ -58,14 +58,69 @@ export class OrderDriver {
     }
 
     async getOrderCounter(supplierAddress: string): Promise<number> {
+        if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
+
         const counter = await this._contract.getOrderCounter(supplierAddress);
         return counter.toNumber();
     }
 
+    async setOrderIncoterms(supplierAddress: string, id: number, incoterms: string): Promise<void> {
+        if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
+
+        await this._contract.setOrderIncoterms(supplierAddress, id, incoterms);
+    }
+
+    async setOrderPaymentDeadline(supplierAddress: string, id: number, paymentDeadline: Date): Promise<void> {
+        if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
+
+        await this._contract.setOrderPaymentDeadline(supplierAddress, id, paymentDeadline.getTime());
+    }
+
+    async setOrderDocumentDeliveryDeadline(supplierAddress: string, id: number, documentDeliveryDeadline: Date): Promise<void> {
+        if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
+
+        await this._contract.setOrderDocumentDeliveryDeadline(supplierAddress, id, documentDeliveryDeadline.getTime());
+    }
+
+    async setOrderShipper(supplierAddress: string, id: number, shipper: string): Promise<void> {
+        if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
+
+        await this._contract.setOrderShipper(supplierAddress, id, shipper);
+    }
+
+    async setOrderArbiter(supplierAddress: string, id: number, arbiter: string): Promise<void> {
+        if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
+
+        await this._contract.setOrderArbiter(supplierAddress, id, arbiter);
+    }
+
+    async setOrderShippingPort(supplierAddress: string, id: number, shippingPort: string): Promise<void> {
+        if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
+
+        await this._contract.setOrderShippingPort(supplierAddress, id, shippingPort);
+    }
+
+    async setOrderShippingDeadline(supplierAddress: string, id: number, shippingDeadline: Date): Promise<void> {
+        if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
+
+        await this._contract.setOrderShippingDeadline(supplierAddress, id, shippingDeadline.getTime());
+    }
+
+    async setOrderDeliveryPort(supplierAddress: string, id: number, deliveryPort: string): Promise<void> {
+        if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
+
+        await this._contract.setOrderDeliveryPort(supplierAddress, id, deliveryPort);
+    }
+
+    async setOrderDeliveryDeadline(supplierAddress: string, id: number, deliveryDeadline: Date): Promise<void> {
+        if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
+
+        await this._contract.setOrderDeliveryDeadline(supplierAddress, id, deliveryDeadline.getTime());
+    }
+
     async getOrderInfo(supplierAddress: string, id: number, blockNumber?: number): Promise<Order> {
-        if (!utils.isAddress(supplierAddress)) {
-            throw new Error('Not an address');
-        }
+        if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
+
         try {
             const order = await this._contract.getOrderInfo(supplierAddress, id, { blockTag: blockNumber });
             return EntityBuilder.buildOrder(order);
@@ -97,10 +152,14 @@ export class OrderDriver {
     }
 
     async orderExists(supplierAddress: string, orderId: number): Promise<boolean> {
+        if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
+
         return this._contract.orderExists(supplierAddress, orderId);
     }
 
     async confirmOrder(supplierAddress: string, orderId: number): Promise<void> {
+        if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
+
         await this._contract.confirmOrder(supplierAddress, orderId);
     }
 
@@ -117,6 +176,8 @@ export class OrderDriver {
     }
 
     async addOrderLine(supplierAddress: string, orderId: number, productCategory: string, quantity: number, price: OrderLinePrice): Promise<void> {
+        if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
+
         try {
             const priceDecimals = price.amount.toString().split('.')[1]?.length || 0;
             const rawOrderLinePrice: OrderManager.OrderLinePriceStruct = {
@@ -138,6 +199,8 @@ export class OrderDriver {
     }
 
     async updateOrderLine(supplierAddress: string, orderId: number, orderLineId: number, productCategory: string, quantity: number, price: OrderLinePrice): Promise<void> {
+        if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
+
         try {
             const priceDecimals = price.amount.toString().split('.')[1]?.length || 0;
             const rawOrderLinePrice: OrderManager.OrderLinePriceStruct = {
@@ -174,9 +237,8 @@ export class OrderDriver {
     }
 
     async addAdmin(address: string): Promise<void> {
-        if (!utils.isAddress(address)) {
-            throw new Error('Not an address');
-        }
+        if (!utils.isAddress(address)) throw new Error('Not an address');
+
         try {
             const tx = await this._contract.addAdmin(address);
             await tx.wait();
@@ -186,9 +248,8 @@ export class OrderDriver {
     }
 
     async removeAdmin(address: string): Promise<void> {
-        if (!utils.isAddress(address)) {
-            throw new Error('Not an address');
-        }
+        if (!utils.isAddress(address)) throw new Error('Not an address');
+
         try {
             const tx = await this._contract.removeAdmin(address);
             await tx.wait();

@@ -117,7 +117,7 @@ contract OrderManager is AccessControl {
         _updateSignatures(msg.sender, o);
     }
 
-    function setPaymentDeadline(address supplier, uint256 orderId, uint256 paymentDeadline) public {
+    function setOrderPaymentDeadline(address supplier, uint256 orderId, uint256 paymentDeadline) public {
         Order storage o = orders[supplier][orderId];
         require(o.exists, "Order does not exist");
 
@@ -125,7 +125,7 @@ contract OrderManager is AccessControl {
         _updateSignatures(msg.sender, o);
     }
 
-    function setDocumentDeliveryDeadline(address supplier, uint256 orderId, uint256 documentDeliveryDeadline) public {
+    function setOrderDocumentDeliveryDeadline(address supplier, uint256 orderId, uint256 documentDeliveryDeadline) public {
         Order storage o = orders[supplier][orderId];
         require(o.exists, "Order does not exist");
 
@@ -133,7 +133,7 @@ contract OrderManager is AccessControl {
         _updateSignatures(msg.sender, o);
     }
 
-    function setShipper(address supplier, uint256 orderId, string memory shipper) public {
+    function setOrderShipper(address supplier, uint256 orderId, string memory shipper) public {
         Order storage o = orders[supplier][orderId];
         require(o.exists, "Order does not exist");
 
@@ -141,7 +141,7 @@ contract OrderManager is AccessControl {
         _updateSignatures(msg.sender, o);
     }
 
-    function setArbiter(address supplier, uint256 orderId, string memory arbiter) public {
+    function setOrderArbiter(address supplier, uint256 orderId, string memory arbiter) public {
         Order storage o = orders[supplier][orderId];
         require(o.exists, "Order does not exist");
 
@@ -149,7 +149,7 @@ contract OrderManager is AccessControl {
         _updateSignatures(msg.sender, o);
     }
 
-    function setShippingPort(address supplier, uint256 orderId, string memory shippingPort) public {
+    function setOrderShippingPort(address supplier, uint256 orderId, string memory shippingPort) public {
         Order storage o = orders[supplier][orderId];
         require(o.exists, "Order does not exist");
 
@@ -157,7 +157,7 @@ contract OrderManager is AccessControl {
         _updateSignatures(msg.sender, o);
     }
 
-    function setShippingDeadline(address supplier, uint256 orderId, uint256 shippingDeadline) public {
+    function setOrderShippingDeadline(address supplier, uint256 orderId, uint256 shippingDeadline) public {
         Order storage o = orders[supplier][orderId];
         require(o.exists, "Order does not exist");
 
@@ -165,7 +165,7 @@ contract OrderManager is AccessControl {
         _updateSignatures(msg.sender, o);
     }
 
-    function setDeliveryPort(address supplier, uint256 orderId, string memory deliveryPort) public {
+    function setOrderDeliveryPort(address supplier, uint256 orderId, string memory deliveryPort) public {
         Order storage o = orders[supplier][orderId];
         require(o.exists, "Order does not exist");
 
@@ -173,7 +173,7 @@ contract OrderManager is AccessControl {
         _updateSignatures(msg.sender, o);
     }
 
-    function setDeliveryDeadline(address supplier, uint256 orderId, uint256 deliveryDeadline) public {
+    function setOrderDeliveryDeadline(address supplier, uint256 orderId, uint256 deliveryDeadline) public {
         Order storage o = orders[supplier][orderId];
         require(o.exists, "Order does not exist");
 

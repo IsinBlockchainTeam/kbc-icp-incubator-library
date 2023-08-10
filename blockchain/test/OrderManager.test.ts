@@ -301,115 +301,115 @@ describe('OrderManager', () => {
             });
         });
 
-        describe('setPaymentDeadline', () => {
+        describe('setOrderPaymentDeadline', () => {
             const deadline = new Date("2030-10-10").getTime();
 
             it('should set the payment deadline', async () => {
-                await orderManagerContract.connect(supplier).setPaymentDeadline(supplier.address, orderCounterId, deadline);
+                await orderManagerContract.connect(supplier).setOrderPaymentDeadline(supplier.address, orderCounterId, deadline);
                 const order = await orderManagerContract.connect(supplier).getOrderInfo(supplier.address, orderCounterId.toNumber());
                 expect(order.paymentDeadline).to.equal(deadline);
             });
 
             it('should set the payment deadline - FAIL(Order does not exist)', async () => {
-                await expect(orderManagerContract.connect(supplier).setPaymentDeadline(supplier.address, 50, deadline)).to.be.revertedWith('Order does not exist');
+                await expect(orderManagerContract.connect(supplier).setOrderPaymentDeadline(supplier.address, 50, deadline)).to.be.revertedWith('Order does not exist');
             });
         });
 
-        describe('setDocumentDeliveryDeadline', () => {
+        describe('setOrderDocumentDeliveryDeadline', () => {
             const deadline = new Date("2030-10-10").getTime();
 
             it('should set the document delivery deadline', async () => {
-                await orderManagerContract.connect(supplier).setDocumentDeliveryDeadline(supplier.address, orderCounterId, deadline);
+                await orderManagerContract.connect(supplier).setOrderDocumentDeliveryDeadline(supplier.address, orderCounterId, deadline);
                 const order = await orderManagerContract.connect(supplier).getOrderInfo(supplier.address, orderCounterId.toNumber());
                 expect(order.documentDeliveryDeadline).to.equal(deadline);
             });
 
             it('should set the document delivery deadline - FAIL(Order does not exist)', async () => {
-                await expect(orderManagerContract.connect(supplier).setDocumentDeliveryDeadline(supplier.address, 50, deadline)).to.be.revertedWith('Order does not exist');
+                await expect(orderManagerContract.connect(supplier).setOrderDocumentDeliveryDeadline(supplier.address, 50, deadline)).to.be.revertedWith('Order does not exist');
             });
         });
 
-        describe('setShipper', () => {
+        describe('setOrderShipper', () => {
             const shipper = "shipper 1";
 
             it('should set the shipper', async () => {
-                await orderManagerContract.connect(supplier).setShipper(supplier.address, orderCounterId, shipper);
+                await orderManagerContract.connect(supplier).setOrderShipper(supplier.address, orderCounterId, shipper);
                 const order = await orderManagerContract.connect(supplier).getOrderInfo(supplier.address, orderCounterId.toNumber());
                 expect(order.shipper).to.equal(shipper);
             });
 
             it('should set the shipper - FAIL(Order does not exist)', async () => {
-                await expect(orderManagerContract.connect(supplier).setShipper(supplier.address, 50, shipper)).to.be.revertedWith('Order does not exist');
+                await expect(orderManagerContract.connect(supplier).setOrderShipper(supplier.address, 50, shipper)).to.be.revertedWith('Order does not exist');
             });
         });
 
-        describe('setArbiter', () => {
+        describe('setOrderArbiter', () => {
             const arbiter = "arbiter 1";
 
             it('should set the arbiter', async () => {
-                await orderManagerContract.connect(supplier).setArbiter(supplier.address, orderCounterId, arbiter);
+                await orderManagerContract.connect(supplier).setOrderArbiter(supplier.address, orderCounterId, arbiter);
                 const order = await orderManagerContract.connect(supplier).getOrderInfo(supplier.address, orderCounterId.toNumber());
                 expect(order.arbiter).to.equal(arbiter);
             });
 
             it('should set the arbiter - FAIL(Order does not exist)', async () => {
-                await expect(orderManagerContract.connect(supplier).setArbiter(supplier.address, 50, arbiter)).to.be.revertedWith('Order does not exist');
+                await expect(orderManagerContract.connect(supplier).setOrderArbiter(supplier.address, 50, arbiter)).to.be.revertedWith('Order does not exist');
             });
         });
 
-        describe('setShippingPort', () => {
+        describe('setOrderShippingPort', () => {
             const shippingPort = "shippingPort 1";
 
             it('should set the shipping port', async () => {
-                await orderManagerContract.connect(supplier).setShippingPort(supplier.address, orderCounterId, shippingPort);
+                await orderManagerContract.connect(supplier).setOrderShippingPort(supplier.address, orderCounterId, shippingPort);
                 const order = await orderManagerContract.connect(supplier).getOrderInfo(supplier.address, orderCounterId.toNumber());
                 expect(order.shippingPort).to.equal(shippingPort);
             });
 
             it('should set the shipping port - FAIL(Order does not exist)', async () => {
-                await expect(orderManagerContract.connect(supplier).setShippingPort(supplier.address, 50, shippingPort)).to.be.revertedWith('Order does not exist');
+                await expect(orderManagerContract.connect(supplier).setOrderShippingPort(supplier.address, 50, shippingPort)).to.be.revertedWith('Order does not exist');
             });
         });
 
-        describe('setShippingDeadline', () => {
+        describe('setOrderShippingDeadline', () => {
             const shippingDeadline = new Date("2030-10-10").getTime();
 
             it('should set the shipping deadline', async () => {
-                await orderManagerContract.connect(supplier).setShippingDeadline(supplier.address, orderCounterId, shippingDeadline);
+                await orderManagerContract.connect(supplier).setOrderShippingDeadline(supplier.address, orderCounterId, shippingDeadline);
                 const order = await orderManagerContract.connect(supplier).getOrderInfo(supplier.address, orderCounterId.toNumber());
                 expect(order.shippingDeadline).to.equal(shippingDeadline);
             });
 
             it('should set the shipping deadline - FAIL(Order does not exist)', async () => {
-                await expect(orderManagerContract.connect(supplier).setShippingDeadline(supplier.address, 50, shippingDeadline)).to.be.revertedWith('Order does not exist');
+                await expect(orderManagerContract.connect(supplier).setOrderShippingDeadline(supplier.address, 50, shippingDeadline)).to.be.revertedWith('Order does not exist');
             });
         });
 
-        describe('setDeliveryPort', () => {
+        describe('setOrderDeliveryPort', () => {
             const deliveryPort = "deliveryPort 1";
 
             it('should set the delivery port', async () => {
-                await orderManagerContract.connect(supplier).setDeliveryPort(supplier.address, orderCounterId, deliveryPort);
+                await orderManagerContract.connect(supplier).setOrderDeliveryPort(supplier.address, orderCounterId, deliveryPort);
                 const order = await orderManagerContract.connect(supplier).getOrderInfo(supplier.address, orderCounterId.toNumber());
                 expect(order.deliveryPort).to.equal(deliveryPort);
             });
 
             it('should set the delivery port - FAIL(Order does not exist)', async () => {
-                await expect(orderManagerContract.connect(supplier).setDeliveryPort(supplier.address, 50, deliveryPort)).to.be.revertedWith('Order does not exist');
+                await expect(orderManagerContract.connect(supplier).setOrderDeliveryPort(supplier.address, 50, deliveryPort)).to.be.revertedWith('Order does not exist');
             });
         });
 
-        describe('setDeliveryDeadline', () => {
+        describe('setOrderDeliveryDeadline', () => {
             const deliveryDeadline = new Date("2030-10-10").getTime();
 
             it('should set the shipping deadline', async () => {
-                await orderManagerContract.connect(supplier).setDeliveryDeadline(supplier.address, orderCounterId, deliveryDeadline);
+                await orderManagerContract.connect(supplier).setOrderDeliveryDeadline(supplier.address, orderCounterId, deliveryDeadline);
                 const order = await orderManagerContract.connect(supplier).getOrderInfo(supplier.address, orderCounterId.toNumber());
                 expect(order.deliveryDeadline).to.equal(deliveryDeadline);
             });
 
             it('should set the shipping deadline - FAIL(Order does not exist)', async () => {
-                await expect(orderManagerContract.connect(supplier).setDeliveryDeadline(supplier.address, 50, deliveryDeadline)).to.be.revertedWith('Order does not exist');
+                await expect(orderManagerContract.connect(supplier).setOrderDeliveryDeadline(supplier.address, 50, deliveryDeadline)).to.be.revertedWith('Order does not exist');
             });
         });
     });
