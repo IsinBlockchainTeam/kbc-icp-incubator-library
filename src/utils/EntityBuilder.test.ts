@@ -59,8 +59,21 @@ describe('EntityBuilder', () => {
                 offeror: 'offeror',
                 externalUrl: 'extUrl',
                 lineIds: [BigNumber.from(1)],
+                incoterms: 'FOB',
+                paymentDeadline: BigNumber.from(1692001147),
+                documentDeliveryDeadline: BigNumber.from(1692001147),
+                shipper: 'shipper',
+                arbiter: 'arbiter',
+                shippingPort: 'shippingPort',
+                shippingDeadline: BigNumber.from(1692001147),
+                deliveryPort: 'deliveryPort',
+                deliveryDeadline: BigNumber.from(1692001147),
             };
-            expect(EntityBuilder.buildOrder(bcOrder)).toEqual(new Order(bcOrder.id.toNumber(), bcOrder.supplier, bcOrder.customer, bcOrder.externalUrl, bcOrder.offeree, bcOrder.offeror, bcOrder.lineIds.map((l) => l.toNumber())));
+            expect(EntityBuilder.buildOrder(bcOrder)).toEqual(
+                new Order(bcOrder.id.toNumber(), bcOrder.supplier, bcOrder.customer, bcOrder.externalUrl, bcOrder.offeree, bcOrder.offeror, bcOrder.lineIds.map((l) => l.toNumber()),
+                    bcOrder.incoterms, new Date(bcOrder.paymentDeadline.toNumber()), new Date(bcOrder.documentDeliveryDeadline.toNumber()), bcOrder.shipper, bcOrder.arbiter, bcOrder.shippingPort,
+                    new Date(bcOrder.shippingDeadline.toNumber()), bcOrder.deliveryPort, new Date(bcOrder.deliveryDeadline.toNumber())),
+            );
         });
     });
 

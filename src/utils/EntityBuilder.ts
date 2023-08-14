@@ -24,8 +24,11 @@ export class EntityBuilder {
         return new Transformation(bcTransformation.id.toNumber(), bcTransformation.name, bcTransformation.inputMaterialsIds.map((id) => id.toNumber()), bcTransformation.outputMaterialId.toNumber(), bcTransformation.owner);
     }
 
-    static buildOrder(bcOrder: { id: BigNumber, supplier: string, customer: string, offeree: string, offeror: string, externalUrl: string, lineIds: BigNumber[] }): Order {
-        return new Order(bcOrder.id.toNumber(), bcOrder.supplier, bcOrder.customer, bcOrder.externalUrl, bcOrder.offeree, bcOrder.offeror, bcOrder.lineIds.map((l) => l.toNumber()));
+    static buildOrder(bcOrder: { id: BigNumber, supplier: string, customer: string, offeree: string, offeror: string, externalUrl: string, lineIds: BigNumber[], incoterms: string, paymentDeadline: BigNumber,
+                        documentDeliveryDeadline: BigNumber, shipper: string, arbiter: string, shippingPort: string, shippingDeadline: BigNumber, deliveryPort: string, deliveryDeadline: BigNumber }): Order {
+        return new Order(bcOrder.id.toNumber(), bcOrder.supplier, bcOrder.customer, bcOrder.externalUrl, bcOrder.offeree, bcOrder.offeror, bcOrder.lineIds.map((l) => l.toNumber()),
+            bcOrder.incoterms, new Date(bcOrder.paymentDeadline.toNumber()), new Date(bcOrder.documentDeliveryDeadline.toNumber()), bcOrder.shipper, bcOrder.arbiter, bcOrder.shippingPort,
+            new Date(bcOrder.shippingDeadline.toNumber()), bcOrder.deliveryPort, new Date(bcOrder.deliveryDeadline.toNumber()));
     }
 
     static buildOrderLinePrice(bcOrderLinePrice: OrderManager.OrderLinePriceStructOutput): OrderLinePrice {

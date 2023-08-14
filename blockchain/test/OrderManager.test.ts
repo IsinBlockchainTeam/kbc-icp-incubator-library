@@ -4,7 +4,6 @@ import { ethers } from 'hardhat';
 import { expect } from 'chai';
 import { BigNumber, Contract } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { string } from 'hardhat/internal/core/params/argumentTypes';
 import { ContractName } from '../utils/constants';
 
 let orderManagerContract: Contract;
@@ -110,6 +109,7 @@ describe('OrderManager', () => {
         });
 
         it('should confirm an order - FAIL (Cannot confirm an order if all constraints have not been defined', async () => {
+            await expect(orderManagerContract.connect(supplier).setOrderIncoterms(supplier.address, orderCounterId, 'FOB'));
             await expect(orderManagerContract.connect(supplier).confirmOrder(supplier.address, orderCounterId)).to.be.revertedWith('Cannot confirm an order if all constraints have not been defined');
         });
     });

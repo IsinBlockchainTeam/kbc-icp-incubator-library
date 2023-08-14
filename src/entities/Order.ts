@@ -1,9 +1,5 @@
-import { OrderLine } from './OrderLine';
-
 export class Order {
     private _id: number;
-
-    private _lines: OrderLine[];
 
     private _lineIds: number[];
 
@@ -21,7 +17,25 @@ export class Order {
 
     private _offerorSigned: boolean;
 
-    constructor(id: number, supplier: string, customer: string, externalUrl: string, offeree: string, offeror: string, lineIds: number[], lines?: OrderLine[]) {
+    private _incoterms?: string;
+
+    private _paymentDeadline?: Date;
+
+    private _documentDeliveryDeadline?: Date;
+
+    private _shipper?: string;
+
+    private _arbiter?: string;
+
+    private _shippingPort?: string;
+
+    private _shippingDeadline?: Date;
+
+    private _deliveryPort?: string;
+
+    private _deliveryDeadline?: Date;
+
+    constructor(id: number, supplier: string, customer: string, externalUrl: string, offeree: string, offeror: string, lineIds: number[], incoterms: string, paymentDeadline: Date, documentDeliveryDeadline: Date, shipper: string, arbiter: string, shippingPort: string, shippingDeadline: Date, deliveryPort: string, deliveryDeadline: Date) {
         this._id = id;
         this._supplier = supplier;
         this._customer = customer;
@@ -29,9 +43,17 @@ export class Order {
         this._offeree = offeree;
         this._offeror = offeror;
         this._lineIds = lineIds;
-        this._lines = lines || [];
         this._offereeSigned = false;
         this._offerorSigned = false;
+        this._incoterms = incoterms !== '' ? incoterms : undefined;
+        this._paymentDeadline = paymentDeadline.getTime() !== 0 ? paymentDeadline : undefined;
+        this._documentDeliveryDeadline = documentDeliveryDeadline.getTime() !== 0 ? documentDeliveryDeadline : undefined;
+        this._shipper = shipper !== '' ? shipper : undefined;
+        this._arbiter = arbiter !== '' ? arbiter : undefined;
+        this._shippingPort = shippingPort !== '' ? shippingPort : undefined;
+        this._shippingDeadline = shippingDeadline.getTime() !== 0 ? shippingDeadline : undefined;
+        this._deliveryPort = deliveryPort !== '' ? deliveryPort : undefined;
+        this._deliveryDeadline = deliveryDeadline.getTime() !== 0 ? deliveryDeadline : undefined;
     }
 
     get id(): number {
@@ -40,14 +62,6 @@ export class Order {
 
     set id(value: number) {
         this._id = value;
-    }
-
-    get lines(): OrderLine[] {
-        return this._lines;
-    }
-
-    set lines(value: OrderLine[]) {
-        this._lines = value;
     }
 
     get lineIds(): number[] {
@@ -70,22 +84,6 @@ export class Order {
         return this._customer;
     }
 
-    get offeree(): string {
-        return this._offeree;
-    }
-
-    get offereeSigned(): boolean {
-        return this._offereeSigned;
-    }
-
-    get offeror(): string {
-        return this._offeror;
-    }
-
-    get offerorSigned(): boolean {
-        return this._offerorSigned;
-    }
-
     set customer(value: string) {
         this._customer = value;
     }
@@ -98,19 +96,107 @@ export class Order {
         this._externalUrl = value;
     }
 
+    get offeree(): string {
+        return this._offeree;
+    }
+
     set offeree(value: string) {
         this._offeree = value;
+    }
+
+    get offereeSigned(): boolean {
+        return this._offereeSigned;
     }
 
     set offereeSigned(value: boolean) {
         this._offereeSigned = value;
     }
 
+    get offeror(): string {
+        return this._offeror;
+    }
+
     set offeror(value: string) {
         this._offeror = value;
     }
 
+    get offerorSigned(): boolean {
+        return this._offerorSigned;
+    }
+
     set offerorSigned(value: boolean) {
         this._offerorSigned = value;
+    }
+
+    get incoterms(): string | undefined {
+        return this._incoterms;
+    }
+
+    set incoterms(value: string | undefined) {
+        this._incoterms = value;
+    }
+
+    get paymentDeadline(): Date | undefined {
+        return this._paymentDeadline;
+    }
+
+    set paymentDeadline(value: Date | undefined) {
+        this._paymentDeadline = value;
+    }
+
+    get documentDeliveryDeadline(): Date | undefined {
+        return this._documentDeliveryDeadline;
+    }
+
+    set documentDeliveryDeadline(value: Date | undefined) {
+        this._documentDeliveryDeadline = value;
+    }
+
+    get shipper(): string | undefined {
+        return this._shipper;
+    }
+
+    set shipper(value: string | undefined) {
+        this._shipper = value;
+    }
+
+    get arbiter(): string | undefined {
+        return this._arbiter;
+    }
+
+    set arbiter(value: string | undefined) {
+        this._arbiter = value;
+    }
+
+    get shippingPort(): string | undefined {
+        return this._shippingPort;
+    }
+
+    set shippingPort(value: string | undefined) {
+        this._shippingPort = value;
+    }
+
+    get shippingDeadline(): Date | undefined {
+        return this._shippingDeadline;
+    }
+
+    set shippingDeadline(value: Date | undefined) {
+        this._shippingDeadline = value;
+    }
+
+    get deliveryPort(): string | undefined {
+        return this._deliveryPort;
+    }
+
+    set deliveryPort(value: string | undefined) {
+        this._deliveryPort = value;
+    }
+
+    get deliveryDeadline(): Date | undefined {
+        return this._deliveryDeadline;
+    }
+
+    set deliveryDeadline(value: Date | undefined) {
+        this._deliveryDeadline = value;
     }
 }

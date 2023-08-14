@@ -10,8 +10,12 @@ export class OrderService {
         this._orderDriver = orderDriver;
     }
 
-    async registerOrder(supplierAddress: string, customerAddress: string, offereeAddress: string, externalUrl: string, lines?: OrderLine[]): Promise<void> {
-        await this._orderDriver.registerOrder(supplierAddress, customerAddress, offereeAddress, externalUrl, lines);
+    async registerOrder(supplierAddress: string, customerAddress: string, offereeAddress: string, externalUrl: string): Promise<void> {
+        await this._orderDriver.registerOrder(supplierAddress, customerAddress, offereeAddress, externalUrl);
+    }
+
+    async addOrderLines(supplierAddress: string, orderId: number, lines: OrderLine[]): Promise<void> {
+        await this._orderDriver.addOrderLines(supplierAddress, orderId, lines);
     }
 
     async getOrderCounter(supplierAddress: string): Promise<number> {

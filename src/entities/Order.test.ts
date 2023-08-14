@@ -1,36 +1,40 @@
 import { Order } from './Order';
-import { OrderLine, OrderLinePrice } from './OrderLine';
 
 describe('Order', () => {
     let order: Order;
+    const deadline = new Date('2030-10-10');
+    const deadline2 = new Date('2050-05-05');
 
     beforeAll(() => {
-        order = new Order(0, 'supplier', 'customer', 'externalUrl', 'offeree', 'offeror', [1, 2], []);
+        order = new Order(0, 'supplier', 'customer', 'externalUrl', 'offeree', 'offeror', [1, 2],
+            'FOB', deadline, deadline, 'shipper', 'arbiter', 'shipping port',
+            deadline, 'delivery port', deadline);
     });
 
     it('should correctly initialize a new Order', () => {
         expect(order.id).toEqual(0);
-        expect(order.lines).toEqual([]);
         expect(order.supplier).toEqual('supplier');
         expect(order.customer).toEqual('customer');
         expect(order.offeree).toEqual('offeree');
         expect(order.offeror).toEqual('offeror');
         expect(order.externalUrl).toEqual('externalUrl');
         expect(order.lineIds).toEqual([1, 2]);
-        expect(order.lines).toEqual([]);
         expect(order.offereeSigned).toBeFalsy();
         expect(order.offerorSigned).toBeFalsy();
+        expect(order.incoterms).toEqual('FOB');
+        expect(order.paymentDeadline).toEqual(deadline);
+        expect(order.documentDeliveryDeadline).toEqual(deadline);
+        expect(order.shipper).toEqual('shipper');
+        expect(order.arbiter).toEqual('arbiter');
+        expect(order.shippingPort).toEqual('shipping port');
+        expect(order.shippingDeadline).toEqual(deadline);
+        expect(order.deliveryPort).toEqual('delivery port');
+        expect(order.deliveryDeadline).toEqual(deadline);
     });
 
     it('should correctly set the id', () => {
         order.id = 1;
         expect(order.id).toEqual(1);
-    });
-
-    it('should correctly set the lines', () => {
-        const orderLine: OrderLine = new OrderLine(1, 'CategoryA', 20, new OrderLinePrice(10.25, 'USD'));
-        order.lines = [orderLine];
-        expect(order.lines).toEqual([orderLine]);
     });
 
     it('should correctly set the line ids', () => {
@@ -71,5 +75,49 @@ describe('Order', () => {
     it('should correctly set the offerorSigned', () => {
         order.offerorSigned = false;
         expect(order.offerorSigned).toBeFalsy();
+    });
+
+    it('should correctly set the incoterms', () => {
+        order.incoterms = 'FOB';
+        expect(order.incoterms).toEqual('FOB');
+    });
+
+    it('should correctly set the paymentDeadline', () => {
+        order.paymentDeadline = deadline2;
+        expect(order.paymentDeadline).toEqual(deadline2);
+    });
+
+    it('should correctly set the documentDeliveryDeadline', () => {
+        order.documentDeliveryDeadline = deadline2;
+        expect(order.documentDeliveryDeadline).toEqual(deadline2);
+    });
+
+    it('should correctly set the shipper', () => {
+        order.shipper = 'shipper 2';
+        expect(order.shipper).toEqual('shipper 2');
+    });
+
+    it('should correctly set the arbiter', () => {
+        order.arbiter = 'arbiter 2';
+        expect(order.arbiter).toEqual('arbiter 2');
+    });
+    it('should correctly set the shippingPort', () => {
+        order.shippingPort = 'shippingPort 2';
+        expect(order.shippingPort).toEqual('shippingPort 2');
+    });
+
+    it('should correctly set the shippingDeadline', () => {
+        order.shippingDeadline = deadline2;
+        expect(order.shippingDeadline).toEqual(deadline2);
+    });
+
+    it('should correctly set the deliveryPort', () => {
+        order.deliveryPort = 'deliveryPort 2';
+        expect(order.deliveryPort).toEqual('deliveryPort 2');
+    });
+
+    it('should correctly set the deliveryDeadline', () => {
+        order.deliveryDeadline = deadline2;
+        expect(order.deliveryDeadline).toEqual(deadline2);
     });
 });

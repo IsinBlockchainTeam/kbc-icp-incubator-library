@@ -23,6 +23,8 @@ describe('Order lifecycle', () => {
     let orderLineCounterId = 0;
     let orderStatus: OrderStatus;
     const externalUrl = 'externalUrl';
+    const deadline = new Date('2030-10-10');
+    const arbiter = 'arbiter 1', shipper = 'shipper 1', deliveryPort = 'delivery port', shippingPort = 'shipping port';
 
     beforeAll(async () => {
         provider = new ethers.providers.JsonRpcProvider(NETWORK);
@@ -38,8 +40,9 @@ describe('Order lifecycle', () => {
     it('Should correctly register and retrieve a order with a line', async () => {
         const orderLine: OrderLine = new OrderLine(0, 'CategoryA', 20, new OrderLinePrice(10.25, 'USD'));
 
-        await orderService.registerOrder(SUPPLIER_INVOKER_ADDRESS, CUSTOMER_INVOKER_ADDRESS, CUSTOMER_INVOKER_ADDRESS, externalUrl, [orderLine]);
+        await orderService.registerOrder(SUPPLIER_INVOKER_ADDRESS, CUSTOMER_INVOKER_ADDRESS, CUSTOMER_INVOKER_ADDRESS, externalUrl);
         orderCounterId = await orderService.getOrderCounter(SUPPLIER_INVOKER_ADDRESS);
+        await orderService.addOrderLines(SUPPLIER_INVOKER_ADDRESS, orderCounterId, [orderLine]);
         const { lineIds } = await orderService.getOrderInfo(SUPPLIER_INVOKER_ADDRESS, orderCounterId);
         orderLineCounterId = lineIds.splice(-1)[0];
 
@@ -53,6 +56,16 @@ describe('Order lifecycle', () => {
         expect(savedOrder.offeror).toEqual(SUPPLIER_INVOKER_ADDRESS);
         expect(savedOrder.offereeSigned).toBeFalsy();
         expect(savedOrder.offerorSigned).toBeFalsy();
+        expect(savedOrder.lineIds).toEqual([orderLineCounterId]);
+        expect(savedOrder.incoterms).toBeUndefined();
+        expect(savedOrder.paymentDeadline).toBeUndefined();
+        expect(savedOrder.documentDeliveryDeadline).toBeUndefined();
+        expect(savedOrder.shipper).toBeUndefined();
+        expect(savedOrder.arbiter).toBeUndefined();
+        expect(savedOrder.shippingPort).toBeUndefined();
+        expect(savedOrder.shippingDeadline).toBeUndefined();
+        expect(savedOrder.deliveryPort).toBeUndefined();
+        expect(savedOrder.deliveryDeadline).toBeUndefined();
 
         const savedOrderLine = await orderService.getOrderLine(SUPPLIER_INVOKER_ADDRESS, orderCounterId, orderLineCounterId);
         expect(savedOrderLine.id).toEqual(orderLineCounterId);
@@ -79,7 +92,18 @@ describe('Order lifecycle', () => {
         expect(orderStatus).toEqual(OrderStatus.INITIALIZED);
     });
 
-    it('Should add a line to a order as a supplier and check that the status is PENDING', async () => {
+    it('Should alter an order by setting some constraints and check that the status is PENDING', async () => {
+        orderCounterId = await orderService.getOrderCounter(SUPPLIER_INVOKER_ADDRESS);
+        await orderService.setOrderIncoterms(SUPPLIER_INVOKER_ADDRESS, orderCounterId, 'FOB');
+        await orderService.setOrderDocumentDeliveryDeadline(SUPPLIER_INVOKER_ADDRESS, orderCounterId, deadline);
+        await orderService.setOrderArbiter(SUPPLIER_INVOKER_ADDRESS, orderCounterId, arbiter);
+        await orderService.setOrderDeliveryPort(SUPPLIER_INVOKER_ADDRESS, orderCounterId, deliveryPort);
+
+        orderStatus = await orderService.getOrderStatus(SUPPLIER_INVOKER_ADDRESS, orderCounterId);
+        expect(orderStatus).toEqual(OrderStatus.PENDING);
+    });
+
+    it('Should add a line to an order as a supplier and check that the status is still PENDING', async () => {
         orderCounterId = await orderService.getOrderCounter(SUPPLIER_INVOKER_ADDRESS);
         const line = new OrderLine(0, 'CategoryB', 20, new OrderLinePrice(10.25, 'USD'));
 
@@ -115,7 +139,30 @@ describe('Order lifecycle', () => {
         expect(orderStatus).toEqual(OrderStatus.PENDING);
     });
 
-    it('should confirm as supplier the order updated by the customer', async () => {
+    it('Should try to confirm an order as supplier, fails because not all constraints are set', async () => {
+        identityDriver = new IdentityEthersDriver(SUPPLIER_INVOKER_PRIVATE_KEY, provider);
+        orderDriver = new OrderDriver(identityDriver, provider, ORDER_MANAGER_CONTRACT_ADDRESS);
+        orderService = new OrderService(orderDriver);
+
+        orderCounterId = await orderService.getOrderCounter(SUPPLIER_INVOKER_ADDRESS);
+        const fn = async () => orderService.confirmOrder(SUPPLIER_INVOKER_ADDRESS, orderCounterId);
+        await expect(fn).rejects.toThrowError(/Cannot confirm an order if all constraints have not been defined/);
+    });
+
+    it('Should add remaining constraints as customer', async () => {
+        identityDriver = new IdentityEthersDriver(CUSTOMER_INVOKER_PRIVATE_KEY, provider);
+        orderDriver = new OrderDriver(identityDriver, provider, ORDER_MANAGER_CONTRACT_ADDRESS);
+        orderService = new OrderService(orderDriver);
+
+        orderCounterId = await orderService.getOrderCounter(SUPPLIER_INVOKER_ADDRESS);
+        await orderService.setOrderPaymentDeadline(SUPPLIER_INVOKER_ADDRESS, orderCounterId, deadline);
+        await orderService.setOrderShipper(SUPPLIER_INVOKER_ADDRESS, orderCounterId, shipper);
+        await orderService.setOrderShippingPort(SUPPLIER_INVOKER_ADDRESS, orderCounterId, shippingPort);
+        await orderService.setOrderShippingDeadline(SUPPLIER_INVOKER_ADDRESS, orderCounterId, deadline);
+        await orderService.setOrderDeliveryDeadline(SUPPLIER_INVOKER_ADDRESS, orderCounterId, deadline);
+    });
+
+    it('Should confirm as supplier the order updated by the customer', async () => {
         identityDriver = new IdentityEthersDriver(SUPPLIER_INVOKER_PRIVATE_KEY, provider);
         orderDriver = new OrderDriver(identityDriver, provider, ORDER_MANAGER_CONTRACT_ADDRESS);
         orderService = new OrderService(orderDriver);

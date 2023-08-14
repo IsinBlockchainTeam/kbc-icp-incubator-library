@@ -28,7 +28,7 @@ export class OrderDriver {
             .connect(identityDriver.wallet);
     }
 
-    async registerOrder(supplierAddress: string, customerAddress: string, offereeAddress: string, externalUrl: string, lines?: OrderLine[]): Promise<void> {
+    async registerOrder(supplierAddress: string, customerAddress: string, offereeAddress: string, externalUrl: string): Promise<void> {
         if (!utils.isAddress(supplierAddress)) throw new Error('Supplier not an address');
         if (!utils.isAddress(customerAddress)) throw new Error('Customer not an address');
         if (!utils.isAddress(offereeAddress)) throw new Error('Offeree not an address');
@@ -40,21 +40,28 @@ export class OrderDriver {
                 offereeAddress,
                 externalUrl,
             );
-            const receipt = await tx.wait();
-            if (lines && receipt.events) {
-                const registerEvent = receipt.events.find((event) => event.event === 'OrderRegistered');
-                if (registerEvent) {
-                    const decodedEvent = this._contract.interface.decodeEventLog('OrderRegistered', registerEvent.data, registerEvent.topics);
-                    const savedOrderId = decodedEvent.id.toNumber();
-                    for (let i = 0; i < lines.length; i++) {
-                        const orderLine = lines[i];
-                        await this.addOrderLine(supplierAddress, savedOrderId, orderLine.productCategory, orderLine.quantity, orderLine.price);
-                    }
-                }
-            }
+            await tx.wait();
+            // const receipt = await tx.wait();
+            // if (lines && receipt.events) {
+            //     const registerEvent = receipt.events.find((event) => event.event === 'OrderRegistered');
+            //     if (registerEvent) {
+            //         const decodedEvent = this._contract.interface.decodeEventLog('OrderRegistered', registerEvent.data, registerEvent.topics);
+            //         const savedOrderId = decodedEvent.id.toNumber();
+            //         for (let i = 0; i < lines.length; i++) {
+            //             const orderLine = lines[i];
+            //             await this.addOrderLine(supplierAddress, savedOrderId, orderLine.productCategory, orderLine.quantity, orderLine.price);
+            //         }
+            //     }
+            // }
         } catch (e: any) {
             throw new Error(e.message);
         }
+    }
+
+    async addOrderLines(supplierAddress: string, orderId: number, lines: OrderLine[]): Promise<void> {
+        await Promise.all(lines.map(async (line) => {
+            await this.addOrderLine(supplierAddress, orderId, line.productCategory, line.quantity, line.price);
+        }));
     }
 
     async getOrderCounter(supplierAddress: string): Promise<number> {

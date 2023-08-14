@@ -16,6 +16,7 @@ describe('OrderService', () => {
 
     const mockedOrderDriver: OrderDriver = createMock<OrderDriver>({
         registerOrder: jest.fn(),
+        addOrderLines: jest.fn(),
         getOrderCounter: jest.fn(),
         setOrderIncoterms: jest.fn(),
         setOrderPaymentDeadline: jest.fn(),
@@ -52,13 +53,13 @@ describe('OrderService', () => {
             serviceFunctionName: 'registerOrder',
             serviceFunction: () => orderService.registerOrder(supplier, customer, customer, externalUrl),
             expectedMockedFunction: mockedOrderDriver.registerOrder,
-            expectedMockedFunctionArgs: [supplier, customer, customer, externalUrl, undefined],
+            expectedMockedFunctionArgs: [supplier, customer, customer, externalUrl],
         },
         {
-            serviceFunctionName: 'registerOrder',
-            serviceFunction: () => orderService.registerOrder(supplier, customer, customer, externalUrl, [orderLine]),
-            expectedMockedFunction: mockedOrderDriver.registerOrder,
-            expectedMockedFunctionArgs: [supplier, customer, customer, externalUrl, [orderLine]],
+            serviceFunctionName: 'addOrderLines',
+            serviceFunction: () => orderService.addOrderLines(supplier, 1, [orderLine]),
+            expectedMockedFunction: mockedOrderDriver.addOrderLines,
+            expectedMockedFunctionArgs: [supplier, 1, [orderLine]],
         },
         {
             serviceFunctionName: 'getOrderCounter',

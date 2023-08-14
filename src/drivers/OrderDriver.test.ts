@@ -8,12 +8,6 @@ import { OrderDriver } from './OrderDriver';
 import { Order } from '../entities/Order';
 import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
 import { EntityBuilder } from '../utils/EntityBuilder';
-import {
-    OrderLineAddedEventFilter,
-    OrderLineUpdatedEventFilter, OrderManagerInterface,
-    OrderRegisteredEventFilter,
-} from '../smart-contracts/contracts/OrderManager';
-import orderService from '../services/OrderService';
 
 describe('OrderDriver', () => {
     let orderDriver: OrderDriver;
@@ -134,7 +128,7 @@ describe('OrderDriver', () => {
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 
-        it('should call and wait for register order with order lines', async () => {
+        it('should add order lines', async () => {
             const price = {
                 amount: 10025,
                 decimals: 2,
@@ -142,20 +136,12 @@ describe('OrderDriver', () => {
             };
             const orderLine = new OrderLine(4, 'categoryA', 100, new OrderLinePrice(100.25, price.fiat));
 
-            mockedRegisterOrder.mockReturnValue(Promise.resolve({
-                wait: mockedWait.mockReturnValue({ events: [{ event: 'OrderRegistered', data: { id: 1 } }] }),
-            }));
-            mockedDecodeEventLog.mockImplementation((eventName: string, data: Order, topics: string[]) => ({ id: BigNumber.from(data.id) }));
+            // mockedRegisterOrder.mockReturnValue(Promise.resolve({
+            //     wait: mockedWait.mockReturnValue({ events: [{ event: 'OrderRegistered', data: { id: 1 } }] }),
+            // }));
+            // mockedDecodeEventLog.mockImplementation((eventName: string, data: Order, topics: string[]) => ({ id: BigNumber.from(data.id) }));
 
-            await orderDriver.registerOrder(supplier.address, customer.address, customer.address, externalUrl, [orderLine]);
-            expect(mockedRegisterOrder).toHaveBeenCalledTimes(1);
-            expect(mockedRegisterOrder).toHaveBeenNthCalledWith(
-                1,
-                supplier.address,
-                customer.address,
-                customer.address,
-                externalUrl,
-            );
+            await orderDriver.addOrderLines(supplier.address, 1, [orderLine]);
             expect(mockedContract.addOrderLine).toHaveBeenCalledTimes(1);
             expect(mockedContract.addOrderLine).toHaveBeenNthCalledWith(
                 1,
@@ -165,7 +151,7 @@ describe('OrderDriver', () => {
                 orderLine.quantity,
                 price,
             );
-            expect(mockedWait).toHaveBeenCalledTimes(2);
+            expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 
         it('should call and wait for register order - transaction fails', async () => {
