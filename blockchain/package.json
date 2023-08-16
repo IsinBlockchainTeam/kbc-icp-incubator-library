@@ -5,17 +5,18 @@
     "test": "NODE_ENV=test npx hardhat test",
     "coverage": "NODE_ENV=test npx hardhat coverage",
     "gasReport": "REPORT_GAS=true npx hardhat test",
-    "compile": "npx hardhat compile",
+    "compile": "npx hardhat compile && rm -r ../src/smart-contracts && cp -R ./typechain-types ../src/smart-contracts",
     "deploy": "npx hardhat run ./scripts/deploy.ts",
     "node": "npx hardhat node"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.8",
     "@nomicfoundation/hardhat-toolbox": "^2.0.2",
     "@nomiclabs/hardhat-ethers": "^2.2.2",
-    "@typescript-eslint/eslint-plugin": "^6.2.1",
-    "@typescript-eslint/parser": "^6.2.1",
+    "@typescript-eslint/eslint-plugin": "^6.3.0",
+    "@typescript-eslint/parser": "^6.3.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-mocha": "^10.1.0",
     "ethers": "^5.7.2"

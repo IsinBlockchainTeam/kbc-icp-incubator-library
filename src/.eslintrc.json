@@ -5,6 +5,7 @@
         "jest": true,
         "mocha": true
     },
+    "ignorePatterns": ["node_modules", "dist"],
     "extends": [
         "airbnb-base"
     ],
@@ -14,7 +15,8 @@
         "sourceType": "module"
     },
     "plugins": [
-        "@typescript-eslint"
+        "@typescript-eslint",
+        "unused-imports"
     ],
     "settings": {
         "import/resolver": {
@@ -38,6 +40,7 @@
             "error",
             4
         ], // Indent with 4 spaces
+        "unused-imports/no-unused-imports": "error",
         "no-underscore-dangle": "off",
         "linebreak-style": [
             "error",
@@ -68,6 +71,14 @@
         "grouped-accessor-pairs": "off",
         "prefer-destructuring": "off",
         "no-plusplus": "off",
-        "operator-linebreak": "off"
+        "operator-linebreak": "off",
+        "max-classes-per-file": "off",
+        "function-paren-newline": "off",
+        "function-call-argument-newline": "off",
+        "one-var": "off",
+        "one-var-declaration-per-line": "off",
+        "object-curly-newline": ["error", {
+            "ObjectPattern": { "multiline":  true }
+        }]
     }
 }

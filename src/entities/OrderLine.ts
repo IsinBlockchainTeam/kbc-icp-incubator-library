@@ -1,22 +1,44 @@
+export class OrderLinePrice {
+    private _amount: number;
+
+    private _fiat: string;
+
+    constructor(amount: number, fiat: string) {
+        this._amount = amount;
+        this._fiat = fiat;
+    }
+
+    get amount(): number {
+        return this._amount;
+    }
+
+    set amount(value: number) {
+        this._amount = value;
+    }
+
+    get fiat(): string {
+        return this._fiat;
+    }
+
+    set fiat(value: string) {
+        this._fiat = value;
+    }
+}
+
 export class OrderLine {
     private _id?: number;
 
-    private _contractLineId: number;
+    private _productCategory: string;
 
     private _quantity: number;
 
-    constructor(id: number, contractLineId: number, quantity: number);
+    private _price: OrderLinePrice;
 
-    constructor(contractLineId: number, quantity: number);
-
-    constructor(...args: any[]) {
-        let startIndex = 0;
-        if (args.length === 3) {
-            this._id = args[0];
-            startIndex = 1;
-        }
-        this._contractLineId = args[startIndex];
-        this._quantity = args[startIndex + 1];
+    constructor(id: number, productCategory: string, quantity: number, price: OrderLinePrice) {
+        this._id = id;
+        this._productCategory = productCategory;
+        this._quantity = quantity;
+        this._price = price;
     }
 
     get id(): number | undefined {
@@ -27,12 +49,12 @@ export class OrderLine {
         this._id = value;
     }
 
-    get contractLineId(): number {
-        return this._contractLineId;
+    get productCategory(): string {
+        return this._productCategory;
     }
 
-    set contractLineId(value: number) {
-        this._contractLineId = value;
+    set productCategory(value: string) {
+        this._productCategory = value;
     }
 
     get quantity(): number {
@@ -41,5 +63,13 @@ export class OrderLine {
 
     set quantity(value: number) {
         this._quantity = value;
+    }
+
+    get price(): OrderLinePrice {
+        return this._price;
+    }
+
+    set price(value: OrderLinePrice) {
+        this._price = value;
     }
 }
