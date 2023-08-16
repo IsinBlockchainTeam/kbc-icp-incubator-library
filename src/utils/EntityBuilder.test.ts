@@ -8,9 +8,10 @@ import {
 } from '../smart-contracts/contracts/SupplyChainManager';
 import { Trade } from '../entities/Trade';
 import { Transformation } from '../entities/Transformation';
-import { OrderManager } from '../smart-contracts';
+import { OrderManager, RelationshipManager } from '../smart-contracts';
 import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
 import { Order } from '../entities/Order';
+import { Relationship } from '../entities/Relationship';
 
 describe('EntityBuilder', () => {
     describe('buildMaterial', () => {
@@ -97,6 +98,22 @@ describe('EntityBuilder', () => {
             bcOrderLine.exists = true;
 
             expect(EntityBuilder.buildOrderLine(bcOrderLine)).toEqual(new OrderLine(0, 'categoryA', 40, EntityBuilder.buildOrderLinePrice(bcOrderLinePrice)));
+        });
+    });
+
+    describe('buildRelationship', () => {
+        it('should correctly build a relationship', () => {
+            const bcRelationship: RelationshipManager.RelationshipStructOutput = [BigNumber.from(0), 'companyA_address', 'companyB_address', BigNumber.from(1692001147), BigNumber.from(0), true] as RelationshipManager.RelationshipStructOutput;
+            bcRelationship.id = BigNumber.from(0);
+            bcRelationship.companyA = 'companyA';
+            bcRelationship.companyB = 'companyB';
+            bcRelationship.validFrom = BigNumber.from(1692001147);
+            bcRelationship.validUntil = BigNumber.from(0);
+            bcRelationship.exists = true;
+
+            const relationship = new Relationship(0, 'companyA', 'companyB', new Date(1692001147), new Date(0));
+            expect(EntityBuilder.buildRelationship(bcRelationship)).toEqual(relationship);
+            expect(relationship.validUntil).toBeUndefined();
         });
     });
 });

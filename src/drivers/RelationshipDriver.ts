@@ -4,6 +4,7 @@
 import { Signer, utils } from 'ethers';
 import { RelationshipManager, RelationshipManager__factory } from '../smart-contracts';
 import { Relationship } from '../entities/Relationship';
+import { EntityBuilder } from '../utils/EntityBuilder';
 
 export class RelationshipDriver {
     protected _contract: RelationshipManager;
@@ -45,13 +46,8 @@ export class RelationshipDriver {
 
     async getRelationshipInfo(id: number): Promise<Relationship> {
         try {
-            const {
-                companyA,
-                companyB,
-                validFrom,
-                validUntil,
-            } = await this._contract.getRelationshipInfo(id);
-            return new Relationship(id, companyA, companyB, new Date(validFrom.toNumber()), validUntil.isZero() ? undefined : new Date(validUntil.toNumber()));
+            const relationship = await this._contract.getRelationshipInfo(id);
+            return EntityBuilder.buildRelationship(relationship);
         } catch (e: any) {
             throw new Error(e.message);
         }
@@ -67,9 +63,7 @@ export class RelationshipDriver {
     }
 
     async addAdmin(address: string): Promise<void> {
-        if (!utils.isAddress(address)) {
-            throw new Error('Not an address');
-        }
+        if (!utils.isAddress(address)) throw new Error('Not an address');
         try {
             const tx = await this._contract.addAdmin(address);
             await tx.wait();
@@ -79,9 +73,7 @@ export class RelationshipDriver {
     }
 
     async removeAdmin(address: string): Promise<void> {
-        if (!utils.isAddress(address)) {
-            throw new Error('Not an address');
-        }
+        if (!utils.isAddress(address)) throw new Error('Not an address');
         try {
             const tx = await this._contract.removeAdmin(address);
             await tx.wait();

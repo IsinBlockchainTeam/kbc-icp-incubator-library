@@ -65,10 +65,10 @@ contract RelationshipManager is AccessControl {
         return relationshipCounter.current();
     }
 
-    function getRelationshipInfo(uint256 relationshipId) public view returns (address companyA, address companyB, uint256 validFrom, uint256 validUntil) {
+    function getRelationshipInfo(uint256 relationshipId) public view returns (Relationship memory) {
         require(relationships[relationshipId].exists, "Relationship does not exist");
 
-        return (relationships[relationshipId].companyA, relationships[relationshipId].companyB, relationships[relationshipId].validFrom, relationships[relationshipId].validUntil);
+        return (relationships[relationshipId]);
     }
 
     function getRelationshipIdsByCompany(address company) public view returns (uint256[] memory) {

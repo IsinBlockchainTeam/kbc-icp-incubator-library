@@ -3,13 +3,14 @@ import { Material } from '../entities/Material';
 import { Trade } from '../entities/Trade';
 import { Transformation } from '../entities/Transformation';
 import { Order } from '../entities/Order';
-import { OrderManager } from '../smart-contracts';
+import { OrderManager, RelationshipManager } from '../smart-contracts';
 import {
     MaterialStructOutput,
     TradeStructOutput,
     TransformationStructOutput,
 } from '../smart-contracts/contracts/SupplyChainManager';
 import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
+import { Relationship } from '../entities/Relationship';
 
 export class EntityBuilder {
     static buildMaterial(bcMaterial: MaterialStructOutput): Material {
@@ -37,5 +38,9 @@ export class EntityBuilder {
 
     static buildOrderLine(bcOrderLine: OrderManager.OrderLineStructOutput): OrderLine {
         return new OrderLine(bcOrderLine.id.toNumber(), bcOrderLine.productCategory, bcOrderLine.quantity.toNumber(), this.buildOrderLinePrice(bcOrderLine.price));
+    }
+
+    static buildRelationship(bcRelationship: RelationshipManager.RelationshipStructOutput): Relationship {
+        return new Relationship(bcRelationship.id.toNumber(), bcRelationship.companyA, bcRelationship.companyB, new Date(bcRelationship.validFrom.toNumber()), new Date(bcRelationship.validUntil.toNumber()));
     }
 }

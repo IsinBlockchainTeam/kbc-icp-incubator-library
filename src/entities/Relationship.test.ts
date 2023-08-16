@@ -17,7 +17,7 @@ describe('Relationship', () => {
     });
 
     it('should correctly initialize a new Relationship without validUntil date', () => {
-        const newRelationship = new Relationship(0, 'companyA', 'companyB', now);
+        const newRelationship = new Relationship(0, 'companyA', 'companyB', now, new Date(0));
         expect(newRelationship.id).toEqual(0);
         expect(newRelationship.companyA).toEqual('companyA');
         expect(newRelationship.companyB).toEqual('companyB');

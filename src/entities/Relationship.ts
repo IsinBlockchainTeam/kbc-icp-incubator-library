@@ -9,12 +9,12 @@ export class Relationship {
 
     private _validUntil?: Date;
 
-    constructor(id: number, companyA: string, companyB: string, validFrom: Date, validUntil?: Date) {
+    constructor(id: number, companyA: string, companyB: string, validFrom: Date, validUntil: Date) {
         this._id = id;
         this._companyA = companyA;
         this._companyB = companyB;
         this._validFrom = validFrom;
-        this._validUntil = validUntil;
+        this._validUntil = validUntil.getTime() !== 0 ? validUntil : undefined;
     }
 
     get id(): number {
