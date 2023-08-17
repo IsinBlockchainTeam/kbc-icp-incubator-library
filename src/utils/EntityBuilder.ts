@@ -3,7 +3,7 @@ import { Material } from '../entities/Material';
 import { Trade } from '../entities/Trade';
 import { Transformation } from '../entities/Transformation';
 import { Order } from '../entities/Order';
-import { OrderManager, RelationshipManager } from '../smart-contracts';
+import { DocumentManager, OrderManager, RelationshipManager } from '../smart-contracts';
 import {
     MaterialStructOutput,
     TradeStructOutput,
@@ -11,6 +11,7 @@ import {
 } from '../smart-contracts/contracts/SupplyChainManager';
 import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
 import { Relationship } from '../entities/Relationship';
+import { Document } from '../entities/Document';
 
 export class EntityBuilder {
     static buildMaterial(bcMaterial: MaterialStructOutput): Material {
@@ -42,5 +43,9 @@ export class EntityBuilder {
 
     static buildRelationship(bcRelationship: RelationshipManager.RelationshipStructOutput): Relationship {
         return new Relationship(bcRelationship.id.toNumber(), bcRelationship.companyA, bcRelationship.companyB, new Date(bcRelationship.validFrom.toNumber()), new Date(bcRelationship.validUntil.toNumber()));
+    }
+
+    static buildDocument(bcDocument: DocumentManager.DocumentStructOutput): Document {
+        return new Document(bcDocument.id.toNumber(), bcDocument.owner, bcDocument.transactionId.toNumber(), bcDocument.name, bcDocument.documentType, bcDocument.externalUrl);
     }
 }
