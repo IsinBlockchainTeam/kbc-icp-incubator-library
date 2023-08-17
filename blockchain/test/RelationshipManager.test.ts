@@ -30,7 +30,7 @@ describe('RelationshipManager', () => {
     });
 
     describe('registerRelationship', () => {
-        it('should register an relationship', async () => {
+        it('should register a relationship', async () => {
             await relationshipManagerContract.connect(companyB).registerRelationship(companyA.address, companyB.address, rawRelationship.validFrom, rawRelationship.validUntil);
             relationshipCounterId = await relationshipManagerContract.connect(companyB).getRelationshipCounter();
 

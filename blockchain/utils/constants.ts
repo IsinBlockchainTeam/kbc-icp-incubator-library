@@ -3,4 +3,5 @@ export enum ContractName {
     ORDER_MANAGER = 'OrderManager',
     SUPPLY_CHAIN_MANAGER = 'SupplyChainManager',
     RELATIONSHIP_MANAGER = 'RelationshipManager',
+    DOCUMENT_MANAGER = 'DocumentManager'
 }

@@ -3,7 +3,6 @@ pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@blockchain-lib/blockchain-common/contracts/EnumerableType.sol";
 
 contract OrderManager is AccessControl {
