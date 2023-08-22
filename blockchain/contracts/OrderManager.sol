@@ -231,14 +231,14 @@ contract OrderManager is AccessControl {
     function getOrderInfo(address orderSupplier, uint256 orderId) public view returns (
         uint256 id, address supplier, address customer, address offeree, address offeror, string memory externalUrl, uint256[] memory lineIds,
         string memory incoterms, uint256 paymentDeadline, uint256 documentDeliveryDeadline, string memory shipper, string memory arbiter,
-        string memory shippingPort, uint256 shippingDeadline, string memory deliveryPort, uint256 deliveryDeadline
+        string memory shippingPort, uint256 shippingDeadline, string memory deliveryPort, uint256 deliveryDeadline, string memory status
     ) {
         Order storage order = orders[orderSupplier][orderId];
         require(order.exists, "Order does not exist");
 
         return (order.id, order.supplier, order.customer, order.offeree, order.offeror, order.externalUrl, order.lineIds,
                 order.incoterms, order.paymentDeadline, order.documentDeliveryDeadline, order.shipper, order.arbiter,
-                order.shippingPort, order.shippingDeadline, order.deliveryPort, order.deliveryDeadline
+                order.shippingPort, order.shippingDeadline, order.deliveryPort, order.deliveryDeadline, order.status
         );
     }
 
@@ -265,6 +265,7 @@ contract OrderManager is AccessControl {
         require(o.offeree == msg.sender || o.offeror == msg.sender, "Sender is neither offeree nor offeror");
         require(getNegotiationStatus(supplier, orderId) != NegotiationStatus.COMPLETED, "The order has been confirmed, it cannot be changed");
         require(fiatManager.contains(price.fiat), "The fiat of the order line isn't registered");
+        require(productCategoryManager.contains(productCategory), "The product category specified isn't registered");
 
         OrderLine memory orderLine = OrderLine(orderLineId, productCategory, quantity, price, true);
         o.lines[orderLineId] = orderLine;
@@ -280,6 +281,7 @@ contract OrderManager is AccessControl {
         require(o.offeree == msg.sender || o.offeror == msg.sender, "Sender is neither offeree nor offeror");
         require(getNegotiationStatus(supplier, orderId) != NegotiationStatus.COMPLETED, "The order has been confirmed, it cannot be changed");
         require(fiatManager.contains(price.fiat), "The fiat of the order line isn't registered");
+        require(productCategoryManager.contains(productCategory), "The product category specified isn't registered");
 
         Counters.Counter storage orderLineCounter = orderLinesCounter[supplier];
         uint256 orderLineId = orderLineCounter.current() + 1;

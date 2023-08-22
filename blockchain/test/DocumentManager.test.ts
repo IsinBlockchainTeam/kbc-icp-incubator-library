@@ -1,13 +1,16 @@
 /* eslint-disable no-unused-expressions */
 /* eslint-disable import/no-extraneous-dependencies */
 import { ethers } from 'hardhat';
-import { expect } from 'chai';
+import chai, { expect } from 'chai';
 import { BigNumber, Contract } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import { FakeContract, smock } from '@defi-wonderland/smock';
 import { ContractName } from '../utils/constants';
 
+chai.use(smock.matchers);
+
 let documentManagerContract: Contract;
-let enumerableDocumentTypeManagerContract: Contract;
+let enumerableDocumentTypeManagerContractFake: FakeContract;
 let owner: SignerWithAddress;
 let sender: SignerWithAddress;
 let admin: SignerWithAddress;
@@ -16,14 +19,15 @@ let orderManager: SignerWithAddress;
 let documentCounterId: BigNumber;
 
 describe('DocumentManager', () => {
+    const documentTypes = ['documentType1', 'documentType2'];
     const rawDocument = {
         name: 'Document name',
-        documentType: 'documentType1',
+        documentType: documentTypes[0],
         externalUrl: 'externalUrl',
     };
     const rawDocument2 = {
         name: 'Document name2',
-        documentType: 'documentType2',
+        documentType: documentTypes[1],
         externalUrl: 'externalUr2',
     };
     const transactionId = 2;
@@ -34,12 +38,10 @@ describe('DocumentManager', () => {
         const DocumentManager = await ethers.getContractFactory(ContractName.DOCUMENT_MANAGER);
         const EnumerableDocumentTypeManager = await ethers.getContractFactory(ContractName.ENUMERABLE_TYPE_MANAGER);
 
-        enumerableDocumentTypeManagerContract = await EnumerableDocumentTypeManager.deploy();
-        await enumerableDocumentTypeManagerContract.deployed();
-        await enumerableDocumentTypeManagerContract.add('documentType1');
-        await enumerableDocumentTypeManagerContract.add('documentType2');
+        enumerableDocumentTypeManagerContractFake = await smock.fake(ContractName.ENUMERABLE_TYPE_MANAGER);
+        enumerableDocumentTypeManagerContractFake.contains.returns((value: string) => documentTypes.includes(value[0]));
 
-        documentManagerContract = await DocumentManager.deploy([], enumerableDocumentTypeManagerContract.address);
+        documentManagerContract = await DocumentManager.deploy([], enumerableDocumentTypeManagerContractFake.address);
         await documentManagerContract.deployed();
 
         await documentManagerContract.connect(owner).addOrderManager(orderManager.address);
@@ -48,6 +50,10 @@ describe('DocumentManager', () => {
     describe('registerDocument', () => {
         it('should register a document (as order manager contract)', async () => {
             await documentManagerContract.connect(orderManager).registerDocument(sender.address, transactionId, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
+
+            expect(enumerableDocumentTypeManagerContractFake.contains).to.be.called;
+            expect(enumerableDocumentTypeManagerContractFake.contains).to.be.calledWith(rawDocument.documentType);
+
             documentCounterId = await documentManagerContract.connect(sender).getDocumentCounter(sender.address);
 
             const savedDocument = await documentManagerContract.connect(sender).getDocumentInfo(sender.address, transactionId, documentCounterId.toNumber());
