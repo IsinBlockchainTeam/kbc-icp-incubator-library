@@ -180,6 +180,13 @@ export class OrderDriver {
         await tx.wait();
     }
 
+    async addDocument(supplierAddress: string, orderId: number, orderStatus: string, documentName: string, documentType: string, documentExternalUrl: string): Promise<void> {
+        if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
+
+        const tx = await this._contract.addDocument(supplierAddress, orderId, orderStatus, documentName, documentType, documentExternalUrl);
+        await tx.wait();
+    }
+
     async getOrderLine(supplierAddress: string, orderId: number, orderLineId: number, blockNumber?: number): Promise<OrderLine> {
         if (!utils.isAddress(supplierAddress)) {
             throw new Error('Not an address');

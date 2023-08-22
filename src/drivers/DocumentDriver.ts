@@ -97,4 +97,24 @@ export class DocumentDriver {
             throw new Error(e.message);
         }
     }
+
+    async addOrderManager(address: string): Promise<void> {
+        if (!utils.isAddress(address)) throw new Error('Not an address');
+        try {
+            const tx = await this._contract.addOrderManager(address);
+            await tx.wait();
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
+    }
+
+    async removeOrderManager(address: string): Promise<void> {
+        if (!utils.isAddress(address)) throw new Error('Not an address');
+        try {
+            const tx = await this._contract.removeOrderManager(address);
+            await tx.wait();
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
+    }
 }

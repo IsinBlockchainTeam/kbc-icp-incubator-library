@@ -78,6 +78,10 @@ export class OrderService {
         await this._orderDriver.confirmOrder(supplierAddress, id);
     }
 
+    async addDocument(supplierAddress: string, orderId: number, orderStatus: string, documentName: string, documentType: string, documentExternalUrl: string): Promise<void> {
+        await this._orderDriver.addDocument(supplierAddress, orderId, orderStatus, documentName, documentType, documentExternalUrl);
+    }
+
     async getOrderLine(supplierAddress: string, orderId: number, orderLineId: number, blockNumber?: number): Promise<OrderLine> {
         return this._orderDriver.getOrderLine(supplierAddress, orderId, orderLineId, blockNumber);
     }

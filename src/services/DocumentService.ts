@@ -35,6 +35,14 @@ export class DocumentService {
     async removeAdmin(address: string): Promise<void> {
         await this._documentDriver.removeAdmin(address);
     }
+
+    async addOrderManager(address: string): Promise<void> {
+        await this._documentDriver.addOrderManager(address);
+    }
+
+    async removeOrderManager(address: string): Promise<void> {
+        await this._documentDriver.removeOrderManager(address);
+    }
 }
 
 export default DocumentService;

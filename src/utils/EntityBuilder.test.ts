@@ -8,10 +8,11 @@ import {
 } from '../smart-contracts/contracts/SupplyChainManager';
 import { Trade } from '../entities/Trade';
 import { Transformation } from '../entities/Transformation';
-import { OrderManager, RelationshipManager } from '../smart-contracts';
+import { DocumentManager, OrderManager, RelationshipManager } from '../smart-contracts';
 import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
 import { Order } from '../entities/Order';
 import { Relationship } from '../entities/Relationship';
+import { Document } from '../entities/Document';
 
 describe('EntityBuilder', () => {
     describe('buildMaterial', () => {
@@ -69,11 +70,12 @@ describe('EntityBuilder', () => {
                 shippingDeadline: BigNumber.from(1692001147),
                 deliveryPort: 'deliveryPort',
                 deliveryDeadline: BigNumber.from(1692001147),
+                status: 'status',
             };
             expect(EntityBuilder.buildOrder(bcOrder)).toEqual(
                 new Order(bcOrder.id.toNumber(), bcOrder.supplier, bcOrder.customer, bcOrder.externalUrl, bcOrder.offeree, bcOrder.offeror, bcOrder.lineIds.map((l) => l.toNumber()),
                     bcOrder.incoterms, new Date(bcOrder.paymentDeadline.toNumber()), new Date(bcOrder.documentDeliveryDeadline.toNumber()), bcOrder.shipper, bcOrder.arbiter, bcOrder.shippingPort,
-                    new Date(bcOrder.shippingDeadline.toNumber()), bcOrder.deliveryPort, new Date(bcOrder.deliveryDeadline.toNumber())),
+                    new Date(bcOrder.shippingDeadline.toNumber()), bcOrder.deliveryPort, new Date(bcOrder.deliveryDeadline.toNumber()), bcOrder.status),
             );
         });
     });
@@ -114,6 +116,22 @@ describe('EntityBuilder', () => {
             const relationship = new Relationship(0, 'companyA', 'companyB', new Date(1692001147), new Date(0));
             expect(EntityBuilder.buildRelationship(bcRelationship)).toEqual(relationship);
             expect(relationship.validUntil).toBeUndefined();
+        });
+    });
+
+    describe('buildDocument', () => {
+        it('should correctly build a document', () => {
+            const bcDocument: DocumentManager.DocumentStructOutput = [BigNumber.from(0), 'owner', BigNumber.from(2), 'doc name', 'doc type', 'external url', true] as DocumentManager.DocumentStructOutput;
+            bcDocument.id = BigNumber.from(0);
+            bcDocument.owner = 'owner';
+            bcDocument.transactionId = BigNumber.from(2);
+            bcDocument.name = 'doc name';
+            bcDocument.documentType = 'doc type';
+            bcDocument.externalUrl = 'external url';
+            bcDocument.exists = true;
+
+            const document = new Document(0, 'owner', 2, 'doc name', 'doc type', 'external url');
+            expect(EntityBuilder.buildDocument(bcDocument)).toEqual(document);
         });
     });
 });

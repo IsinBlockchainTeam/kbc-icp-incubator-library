@@ -49,6 +49,8 @@ describe('DocumentDriver', () => {
             getTransactionDocumentIds: mockedReadFunction,
             addAdmin: mockedWriteFunction,
             removeAdmin: mockedWriteFunction,
+            addOrderManager: mockedWriteFunction,
+            removeOrderManager: mockedWriteFunction,
             interface: { decodeEventLog: mockedDecodeEventLog },
         });
 
@@ -242,6 +244,64 @@ describe('DocumentDriver', () => {
             const address = '123';
 
             const fn = async () => documentDriver.removeAdmin(address);
+            await expect(fn).rejects.toThrowError(new Error('Not an address'));
+        });
+    });
+
+    describe('addOrderManager', () => {
+        it('should call and wait for add order manager', async () => {
+            const { address } = ethers.Wallet.createRandom();
+            await documentDriver.addOrderManager(address);
+
+            expect(mockedContract.addOrderManager).toHaveBeenCalledTimes(1);
+            expect(mockedContract.addOrderManager).toHaveBeenNthCalledWith(
+                1,
+                address,
+            );
+            expect(mockedWait).toHaveBeenCalledTimes(1);
+        });
+
+        it('should call and wait for add order manager - transaction fails', async () => {
+            const { address } = ethers.Wallet.createRandom();
+            mockedContract.addOrderManager = jest.fn().mockRejectedValue(new Error(errorMessage));
+
+            const fn = async () => documentDriver.addOrderManager(address);
+            await expect(fn).rejects.toThrowError(new Error(errorMessage));
+        });
+
+        it('should call and wait for add order manager - fails for address', async () => {
+            const address = '123';
+
+            const fn = async () => documentDriver.addOrderManager(address);
+            await expect(fn).rejects.toThrowError(new Error('Not an address'));
+        });
+    });
+
+    describe('removeOrderManager', () => {
+        it('should call and wait for remove order manager', async () => {
+            const { address } = ethers.Wallet.createRandom();
+            await documentDriver.removeOrderManager(address);
+
+            expect(mockedContract.removeOrderManager).toHaveBeenCalledTimes(1);
+            expect(mockedContract.removeOrderManager).toHaveBeenNthCalledWith(
+                1,
+                address,
+            );
+            expect(mockedWait).toHaveBeenCalledTimes(1);
+        });
+
+        it('should call and wait for remove order manager - transaction fails', async () => {
+            const { address } = ethers.Wallet.createRandom();
+            mockedContract.removeOrderManager = jest.fn().mockRejectedValue(new Error(errorMessage));
+
+            const fn = async () => documentDriver.removeOrderManager(address);
+            await expect(fn).rejects.toThrowError(new Error(errorMessage));
+        });
+
+        it('should call and wait for remove order manager - fails for address', async () => {
+            const address = '123';
+
+            const fn = async () => documentDriver.removeOrderManager(address);
             await expect(fn).rejects.toThrowError(new Error('Not an address'));
         });
     });

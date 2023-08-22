@@ -70,6 +70,7 @@ describe('OrderDriver', () => {
             setOrderDeliveryDeadline: mockedWriteFunction,
             orderExists: mockedReadFunction,
             confirmOrder: mockedWriteFunction,
+            addDocument: mockedWriteFunction,
             getNegotiationStatus: mockedReadFunction,
             getOrderLine: mockedReadFunction,
             addOrderLine: mockedWriteFunction,
@@ -214,6 +215,28 @@ describe('OrderDriver', () => {
 
         it('should confirm the order - fails for address', async () => {
             const fn = async () => orderDriver.confirmOrder('0xaddress', 1);
+            await expect(fn).rejects.toThrowError(new Error('Not an address'));
+        });
+    });
+
+    describe('addDocument', () => {
+        it('should add document to an order', async () => {
+            await orderDriver.addDocument(supplier.address, 1, 'shipped', 'doc name', 'doc type', 'external url');
+            expect(mockedContract.addDocument).toHaveBeenCalledTimes(1);
+            expect(mockedContract.addDocument).toHaveBeenNthCalledWith(1, supplier.address, 1, 'shipped', 'doc name', 'doc type', 'external url');
+
+            expect(mockedWait).toHaveBeenCalledTimes(1);
+        });
+
+        it('should retrieve order - transaction fails', async () => {
+            mockedContract.addDocument = jest.fn().mockRejectedValue(new Error(errorMessage));
+
+            const fn = async () => orderDriver.addDocument(supplier.address, 1, 'shipped', 'doc name', 'doc type', 'external url');
+            await expect(fn).rejects.toThrowError(new Error(errorMessage));
+        });
+
+        it('should add document to an order - not an address', async () => {
+            const fn = async () => orderDriver.addDocument('0xaddress', 1, 'shipped', 'doc name', 'doc type', 'external url');
             await expect(fn).rejects.toThrowError(new Error('Not an address'));
         });
     });

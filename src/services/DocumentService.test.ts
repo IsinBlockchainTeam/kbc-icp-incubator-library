@@ -20,6 +20,8 @@ describe('DocumentService', () => {
         getTransactionDocumentIds: jest.fn(),
         addAdmin: jest.fn(),
         removeAdmin: jest.fn(),
+        addOrderManager: jest.fn(),
+        removeOrderManager: jest.fn(),
     });
 
     const documentService = new DocumentService(
@@ -71,6 +73,18 @@ describe('DocumentService', () => {
             serviceFunctionName: 'removeAdmin',
             serviceFunction: () => documentService.removeAdmin('testAddress'),
             expectedMockedFunction: mockedDocumentDriver.removeAdmin,
+            expectedMockedFunctionArgs: ['testAddress'],
+        },
+        {
+            serviceFunctionName: 'addOrderManager',
+            serviceFunction: () => documentService.addOrderManager('testAddress'),
+            expectedMockedFunction: mockedDocumentDriver.addOrderManager,
+            expectedMockedFunctionArgs: ['testAddress'],
+        },
+        {
+            serviceFunctionName: 'removeOrderManager',
+            serviceFunction: () => documentService.removeOrderManager('testAddress'),
+            expectedMockedFunction: mockedDocumentDriver.removeOrderManager,
             expectedMockedFunctionArgs: ['testAddress'],
         },
     ])('should call driver $serviceFunctionName', async ({ serviceFunction, expectedMockedFunction, expectedMockedFunctionArgs }) => {

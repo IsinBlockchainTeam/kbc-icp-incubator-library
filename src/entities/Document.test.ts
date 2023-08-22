@@ -40,4 +40,9 @@ describe('Document', () => {
         document.documentType = 'doc type 2';
         expect(document.documentType).toEqual('doc type 2');
     });
+
+    it('should correctly set the external url', () => {
+        document.externalUrl = 'external url 2';
+        expect(document.externalUrl).toEqual('external url 2');
+    });
 });

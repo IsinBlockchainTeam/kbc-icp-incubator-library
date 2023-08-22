@@ -66,6 +66,7 @@ describe('Order lifecycle', () => {
         expect(savedOrder.shippingDeadline).toBeUndefined();
         expect(savedOrder.deliveryPort).toBeUndefined();
         expect(savedOrder.deliveryDeadline).toBeUndefined();
+        expect(savedOrder.status).toBeUndefined();
 
         const savedOrderLine = await orderService.getOrderLine(SUPPLIER_INVOKER_ADDRESS, orderCounterId, orderLineCounterId);
         expect(savedOrderLine.id).toEqual(orderLineCounterId);
@@ -147,6 +148,10 @@ describe('Order lifecycle', () => {
         orderCounterId = await orderService.getOrderCounter(SUPPLIER_INVOKER_ADDRESS);
         const fn = async () => orderService.confirmOrder(SUPPLIER_INVOKER_ADDRESS, orderCounterId);
         await expect(fn).rejects.toThrowError(/Cannot confirm an order if all constraints have not been defined/);
+    });
+
+    it('Should add a document to a non confirmed order', async () => {
+
     });
 
     it('Should add remaining constraints as customer', async () => {

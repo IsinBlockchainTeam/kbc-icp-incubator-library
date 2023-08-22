@@ -35,7 +35,9 @@ export class Order {
 
     private _deliveryDeadline?: Date;
 
-    constructor(id: number, supplier: string, customer: string, externalUrl: string, offeree: string, offeror: string, lineIds: number[], incoterms: string, paymentDeadline: Date, documentDeliveryDeadline: Date, shipper: string, arbiter: string, shippingPort: string, shippingDeadline: Date, deliveryPort: string, deliveryDeadline: Date) {
+    private _status?: string;
+
+    constructor(id: number, supplier: string, customer: string, externalUrl: string, offeree: string, offeror: string, lineIds: number[], incoterms: string, paymentDeadline: Date, documentDeliveryDeadline: Date, shipper: string, arbiter: string, shippingPort: string, shippingDeadline: Date, deliveryPort: string, deliveryDeadline: Date, status: string) {
         this._id = id;
         this._supplier = supplier;
         this._customer = customer;
@@ -54,6 +56,7 @@ export class Order {
         this._shippingDeadline = shippingDeadline.getTime() !== 0 ? shippingDeadline : undefined;
         this._deliveryPort = deliveryPort !== '' ? deliveryPort : undefined;
         this._deliveryDeadline = deliveryDeadline.getTime() !== 0 ? deliveryDeadline : undefined;
+        this._status = status !== '' ? status : undefined;
     }
 
     get id(): number {
@@ -198,5 +201,13 @@ export class Order {
 
     set deliveryDeadline(value: Date | undefined) {
         this._deliveryDeadline = value;
+    }
+
+    get status(): string | undefined {
+        return this._status;
+    }
+
+    set status(value: string | undefined) {
+        this._status = value;
     }
 }
