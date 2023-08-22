@@ -6,7 +6,7 @@ import { utils } from 'ethers';
 import { OrderManager, OrderManager__factory } from '../smart-contracts';
 import { Order } from '../entities/Order';
 import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
-import { OrderStatus } from '../types/OrderStatus';
+import { NegotiationStatus } from '../types/NegotiationStatus';
 import { EntityBuilder } from '../utils/EntityBuilder';
 
 export enum OrderEvents {
@@ -162,9 +162,9 @@ export class OrderDriver {
         return this._contract.isSupplierOrCustomer(supplierAddress, orderId, senderAddress);
     }
 
-    async getOrderStatus(supplierAddress: string, orderId: number): Promise<OrderStatus> {
+    async getNegotiationStatus(supplierAddress: string, orderId: number): Promise<NegotiationStatus> {
         if (!utils.isAddress(supplierAddress)) { throw new Error('Not an address'); }
-        return this._contract.getOrderStatus(supplierAddress, orderId);
+        return this._contract.getNegotiationStatus(supplierAddress, orderId);
     }
 
     async orderExists(supplierAddress: string, orderId: number): Promise<boolean> {

@@ -9,7 +9,11 @@ import { ContractName } from '../utils/constants';
 let orderManagerContract: Contract;
 let enumerableFiatManagerContract: Contract;
 let enumerableProductCategoryManagerContract: Contract;
+let enumerableStatusManagerContract: Contract;
+let documentManagerContract: Contract;
+let enumerableDocumentTypeManagerContract: Contract;
 let owner: SignerWithAddress;
+let sender: SignerWithAddress;
 let admin: SignerWithAddress;
 let supplier: SignerWithAddress;
 let customer: SignerWithAddress;
@@ -17,40 +21,58 @@ let orderManager: SignerWithAddress;
 let otherAccount: SignerWithAddress;
 let orderCounterId: BigNumber;
 
-const _addAllOrderConstraints = async (sender: SignerWithAddress, supplierAddress: string, orderId: number) => {
-    await orderManagerContract.connect(sender).setOrderIncoterms(supplierAddress, orderId, 'FOB');
-    await orderManagerContract.connect(sender).setOrderPaymentDeadline(supplierAddress, orderId, new Date().getTime());
-    await orderManagerContract.connect(sender).setOrderDocumentDeliveryDeadline(supplierAddress, orderId, new Date().getTime());
-    await orderManagerContract.connect(sender).setOrderShipper(supplierAddress, orderId, 'shipper');
-    await orderManagerContract.connect(sender).setOrderArbiter(supplierAddress, orderId, 'arbiter');
-    await orderManagerContract.connect(sender).setOrderShippingPort(supplierAddress, orderId, 'shipping port');
-    await orderManagerContract.connect(sender).setOrderShippingDeadline(supplierAddress, orderId, new Date().getTime());
-    await orderManagerContract.connect(sender).setOrderDeliveryPort(supplierAddress, orderId, 'delivery port');
-    await orderManagerContract.connect(sender).setOrderDeliveryDeadline(supplierAddress, orderId, new Date().getTime());
+const _addAllOrderConstraints = async (senderSigner: SignerWithAddress, supplierAddress: string, orderId: number) => {
+    await orderManagerContract.connect(senderSigner).setOrderIncoterms(supplierAddress, orderId, 'FOB');
+    await orderManagerContract.connect(senderSigner).setOrderPaymentDeadline(supplierAddress, orderId, new Date().getTime());
+    await orderManagerContract.connect(senderSigner).setOrderDocumentDeliveryDeadline(supplierAddress, orderId, new Date().getTime());
+    await orderManagerContract.connect(senderSigner).setOrderShipper(supplierAddress, orderId, 'shipper');
+    await orderManagerContract.connect(senderSigner).setOrderArbiter(supplierAddress, orderId, 'arbiter');
+    await orderManagerContract.connect(senderSigner).setOrderShippingPort(supplierAddress, orderId, 'shipping port');
+    await orderManagerContract.connect(senderSigner).setOrderShippingDeadline(supplierAddress, orderId, new Date().getTime());
+    await orderManagerContract.connect(senderSigner).setOrderDeliveryPort(supplierAddress, orderId, 'delivery port');
+    await orderManagerContract.connect(senderSigner).setOrderDeliveryDeadline(supplierAddress, orderId, new Date().getTime());
 };
 
 describe('OrderManager', () => {
     const rawOrder = {
         externalUrl: 'https://testurl.ch',
     };
+    const categoryA = 'categoryA', categoryB = 'categoryB';
+    const fiatCHF = 'CHF';
+    const status = 'shipped';
+    const documentType = 'documentType1';
 
     before(async () => {
-        [owner, admin, supplier, customer, orderManager, otherAccount] = await ethers.getSigners();
+        [owner, sender, admin, supplier, customer, orderManager, otherAccount] = await ethers.getSigners();
 
         const OrderManager = await ethers.getContractFactory(ContractName.ORDER_MANAGER);
         const EnumerableFiatManager = await ethers.getContractFactory(ContractName.ENUMERABLE_TYPE_MANAGER);
         const EnumerableProductCategoryManager = await ethers.getContractFactory(ContractName.ENUMERABLE_TYPE_MANAGER);
+        const EnumerableStatusManager = await ethers.getContractFactory(ContractName.ENUMERABLE_TYPE_MANAGER);
+        const EnumerableDocumentTypeManager = await ethers.getContractFactory(ContractName.ENUMERABLE_TYPE_MANAGER);
+        const DocumentManager = await ethers.getContractFactory(ContractName.DOCUMENT_MANAGER);
 
         enumerableFiatManagerContract = await EnumerableFiatManager.deploy();
         await enumerableFiatManagerContract.deployed();
-        await enumerableFiatManagerContract.add('CHF');
+        await enumerableFiatManagerContract.add(fiatCHF);
 
         enumerableProductCategoryManagerContract = await EnumerableProductCategoryManager.deploy();
         await enumerableProductCategoryManagerContract.deployed();
-        await enumerableProductCategoryManagerContract.add('categoryA');
-        await enumerableProductCategoryManagerContract.add('categoryB');
+        await enumerableProductCategoryManagerContract.add(categoryA);
+        await enumerableProductCategoryManagerContract.add(categoryB);
 
-        orderManagerContract = await OrderManager.deploy([admin.address], enumerableFiatManagerContract.address, enumerableProductCategoryManagerContract.address);
+        enumerableStatusManagerContract = await EnumerableStatusManager.deploy();
+        await enumerableStatusManagerContract.deployed();
+        await enumerableStatusManagerContract.add(status);
+
+        enumerableDocumentTypeManagerContract = await EnumerableDocumentTypeManager.deploy();
+        await enumerableDocumentTypeManagerContract.add(documentType);
+
+        documentManagerContract = await DocumentManager.deploy([admin.address], enumerableDocumentTypeManagerContract.address);
+
+        orderManagerContract = await OrderManager.deploy([admin.address], enumerableFiatManagerContract.address,
+            enumerableProductCategoryManagerContract.address, enumerableStatusManagerContract.address, documentManagerContract.address);
+
         await orderManagerContract.deployed();
     });
 
@@ -112,16 +134,39 @@ describe('OrderManager', () => {
             await expect(orderManagerContract.connect(supplier).setOrderIncoterms(supplier.address, orderCounterId, 'FOB'));
             await expect(orderManagerContract.connect(supplier).confirmOrder(supplier.address, orderCounterId)).to.be.revertedWith('Cannot confirm an order if all constraints have not been defined');
         });
+
+        it('should confirm an order', async () => {
+            await _addAllOrderConstraints(supplier, supplier.address, orderCounterId.toNumber());
+            await orderManagerContract.connect(supplier).confirmOrder(supplier.address, orderCounterId);
+            await orderManagerContract.connect(customer).confirmOrder(supplier.address, orderCounterId);
+            const negotiationStatus = await orderManagerContract.connect(supplier).getNegotiationStatus(supplier.address, orderCounterId);
+            expect(negotiationStatus).to.be.equal(2);
+        });
+
+        it('should confirm an order - FAIL (Only an offeree or an offeror can confirm the order)', async () => {
+            await expect(orderManagerContract.connect(otherAccount).confirmOrder(supplier.address, orderCounterId)).to.be.revertedWith('Only an offeree or an offeror can confirm the order');
+        });
+    });
+
+    describe('addDocument', () => {
+        before(async () => {
+            await orderManagerContract.connect(supplier).registerOrder(supplier.address, customer.address, customer.address, rawOrder.externalUrl);
+            orderCounterId = await orderManagerContract.connect(supplier).getOrderCounter(supplier.address);
+        });
+
+        it('should add a document to an existing order', async () => {
+
+        });
     });
 
     describe('manipulate order by adding/updating lines', () => {
         let orderLineCounterId: BigNumber;
-        const initialProductCategory = 'categoryA';
+        const initialProductCategory = categoryA;
         const quantity = BigNumber.from(10);
         const price = {
             amount: BigNumber.from(100),
             decimals: BigNumber.from(2),
-            fiat: 'CHF',
+            fiat: fiatCHF,
         };
 
         before(async () => {
@@ -265,7 +310,7 @@ describe('OrderManager', () => {
             });
         });
 
-        describe('getOrderStatus', () => {
+        describe('getNegotiationStatus', () => {
             let orderStatus;
 
             before(async () => {
@@ -275,39 +320,35 @@ describe('OrderManager', () => {
 
             describe('Order initialization', () => {
                 it('should try to get order status - FAIL (Order does not exist)', async () => {
-                    await expect(orderManagerContract.connect(supplier).getOrderStatus(supplier.address, 50)).to.be.revertedWith('Order does not exist');
+                    await expect(orderManagerContract.connect(supplier).getNegotiationStatus(supplier.address, 50)).to.be.revertedWith('Order does not exist');
                 });
 
                 it('neither supplier nor customer have been signed the order, result = INITIALIZED', async () => {
-                    orderStatus = await orderManagerContract.connect(supplier).getOrderStatus(supplier.address, orderCounterId.toNumber());
+                    orderStatus = await orderManagerContract.connect(supplier).getNegotiationStatus(supplier.address, orderCounterId.toNumber());
                     expect(orderStatus).to.equal(0);
                 });
             });
 
-            describe('Order with defined constraints', () => {
+            describe('Negotiation status with defined constraints', () => {
                 before(async () => {
                     await _addAllOrderConstraints(supplier, supplier.address, orderCounterId.toNumber());
                 });
 
                 it('the supplier should change the order status by adding line, result = PENDING', async () => {
                     await orderManagerContract.connect(supplier).addOrderLine(supplier.address, orderCounterId, initialProductCategory, quantity, price);
-                    orderStatus = await orderManagerContract.connect(supplier).getOrderStatus(supplier.address, orderCounterId.toNumber());
+                    orderStatus = await orderManagerContract.connect(supplier).getNegotiationStatus(supplier.address, orderCounterId.toNumber());
                     expect(orderStatus).to.equal(1);
                 });
 
                 it('the customer should change again the order by adding a line, result = PENDING', async () => {
                     await orderManagerContract.connect(customer).addOrderLine(supplier.address, orderCounterId, initialProductCategory, quantity, price);
-                    orderStatus = await orderManagerContract.connect(customer).getOrderStatus(supplier.address, orderCounterId.toNumber());
+                    orderStatus = await orderManagerContract.connect(customer).getNegotiationStatus(supplier.address, orderCounterId.toNumber());
                     expect(orderStatus).to.equal(1);
                 });
 
-                it('the supplier should try to confirm the order - FAIL (Only an offeree or an offeror can confirm the order)', async () => {
-                    await expect(orderManagerContract.connect(otherAccount).confirmOrder(supplier.address, orderCounterId)).to.be.revertedWith('Only an offeree or an offeror can confirm the order');
-                });
-
-                it('the supplier should confirm the order, result = CONFIRMED', async () => {
+                it('the supplier should confirm the order, result = COMPLETED', async () => {
                     await orderManagerContract.connect(supplier).confirmOrder(supplier.address, orderCounterId);
-                    orderStatus = await orderManagerContract.connect(supplier).getOrderStatus(supplier.address, orderCounterId.toNumber());
+                    orderStatus = await orderManagerContract.connect(supplier).getNegotiationStatus(supplier.address, orderCounterId.toNumber());
                     expect(orderStatus).to.equal(2);
                 });
             });

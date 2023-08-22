@@ -30,7 +30,7 @@ describe('OrderService', () => {
         getOrderInfo: jest.fn(),
         isSupplierOrCustomer: jest.fn(),
         orderExists: jest.fn(),
-        getOrderStatus: jest.fn(),
+        getNegotiationStatus: jest.fn(),
         confirmOrder: jest.fn(),
         getOrderLine: jest.fn(),
         addOrderLine: jest.fn(),
@@ -146,9 +146,9 @@ describe('OrderService', () => {
             expectedMockedFunctionArgs: [supplier, 0],
         },
         {
-            serviceFunctionName: 'getOrderStatus',
-            serviceFunction: () => orderService.getOrderStatus(supplier, 0),
-            expectedMockedFunction: mockedOrderDriver.getOrderStatus,
+            serviceFunctionName: 'getNegotiationStatus',
+            serviceFunction: () => orderService.getNegotiationStatus(supplier, 0),
+            expectedMockedFunction: mockedOrderDriver.getNegotiationStatus,
             expectedMockedFunctionArgs: [supplier, 0],
         },
         {

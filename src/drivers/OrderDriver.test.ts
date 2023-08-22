@@ -70,7 +70,7 @@ describe('OrderDriver', () => {
             setOrderDeliveryDeadline: mockedWriteFunction,
             orderExists: mockedReadFunction,
             confirmOrder: mockedWriteFunction,
-            getOrderStatus: mockedReadFunction,
+            getNegotiationStatus: mockedReadFunction,
             getOrderLine: mockedReadFunction,
             addOrderLine: mockedWriteFunction,
             updateOrderLine: mockedWriteFunction,
@@ -579,15 +579,15 @@ describe('OrderDriver', () => {
         });
     });
 
-    describe('getOrderStatus', () => {
+    describe('getNegotiationStatus', () => {
         it('should get the order status', async () => {
-            await orderDriver.getOrderStatus(supplier.address, 1);
-            expect(mockedContract.getOrderStatus).toHaveBeenCalledTimes(1);
-            expect(mockedContract.getOrderStatus).toHaveBeenNthCalledWith(1, supplier.address, 1);
+            await orderDriver.getNegotiationStatus(supplier.address, 1);
+            expect(mockedContract.getNegotiationStatus).toHaveBeenCalledTimes(1);
+            expect(mockedContract.getNegotiationStatus).toHaveBeenNthCalledWith(1, supplier.address, 1);
         });
 
         it('should get the order status - fail due to wrong address', async () => {
-            const fn = async () => orderDriver.getOrderStatus('0xaddress', 1);
+            const fn = async () => orderDriver.getNegotiationStatus('0xaddress', 1);
             await expect(fn).rejects.toThrowError(new Error('Not an address'));
         });
     });

@@ -4,13 +4,14 @@ pragma solidity ^0.8.17;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@blockchain-lib/blockchain-common/contracts/EnumerableType.sol";
+import "./DocumentManager.sol";
 
 contract OrderManager is AccessControl {
     using Counters for Counters.Counter;
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
-    enum OrderStatus{INITIALIZED, PENDING, COMPLETED}
+    enum NegotiationStatus{INITIALIZED, PENDING, COMPLETED}
 
     event OrderRegistered(uint256 indexed id, address supplier);
     event OrderLineAdded(uint256 indexed id, address supplier, uint256 orderLineId);
@@ -47,6 +48,7 @@ contract OrderManager is AccessControl {
         address offeree;
         bool offereeSigned;
         string externalUrl;
+        string status;
 
         // constraints
 //        TODO: capire se questo vincolo è definito a livello di ordine o di linea
@@ -72,8 +74,11 @@ contract OrderManager is AccessControl {
 
     EnumerableType fiatManager;
     EnumerableType productCategoryManager;
+    EnumerableType statusManager;
+    DocumentManager documentManager;
 
-    constructor(address[] memory admins, address fiatManagerAddress, address productCategoryAddress) {
+    constructor(address[] memory admins, address fiatManagerAddress, address productCategoryAddress,
+                address statusManagerAddress, address documentManagerAddress) {
         _setupRole(ADMIN_ROLE, msg.sender);
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
 
@@ -83,6 +88,8 @@ contract OrderManager is AccessControl {
 
         fiatManager = EnumerableType(fiatManagerAddress);
         productCategoryManager = EnumerableType(productCategoryAddress);
+        statusManager = EnumerableType(statusManagerAddress);
+        documentManager = DocumentManager(documentManagerAddress);
     }
 
     function registerOrder(address supplier, address customer, address offeree, string memory externalUrl) public {
@@ -196,19 +203,28 @@ contract OrderManager is AccessControl {
         }
     }
 
+    function addDocument(address supplier, uint256 orderId, string memory status, string memory name, string memory documentType, string memory externalUrl) public {
+        require(orders[supplier][orderId].exists, "Order does not exist");
+        require(statusManager.contains(status), "The status specified is not registered");
+        require(getNegotiationStatus(supplier, orderId) == NegotiationStatus.COMPLETED, "The order is not already confirmed, cannot add document");
+        orders[supplier][orderId].status = status;
+
+        documentManager.registerDocument(supplier, orderId, name, documentType, externalUrl);
+    }
+
     function orderExists(address supplier, uint256 orderId) public view returns (bool) {
         return orders[supplier][orderId].exists;
     }
 
-    function getOrderStatus(address supplier, uint256 orderId) public view returns (OrderStatus orderStatus) {
+    function getNegotiationStatus(address supplier, uint256 orderId) public view returns (NegotiationStatus orderStatus) {
         require(orders[supplier][orderId].exists, "Order does not exist");
 
         if (!orders[supplier][orderId].offereeSigned && !orders[supplier][orderId].offerorSigned) {
-            return OrderStatus.INITIALIZED;
+            return NegotiationStatus.INITIALIZED;
         } else if (orders[supplier][orderId].offerorSigned && orders[supplier][orderId].offereeSigned) {
-            return OrderStatus.COMPLETED;
+            return NegotiationStatus.COMPLETED;
         } else {
-            return OrderStatus.PENDING;
+            return NegotiationStatus.PENDING;
         }
     }
 
@@ -247,7 +263,7 @@ contract OrderManager is AccessControl {
         Order storage o = orders[supplier][orderId];
         require(o.exists, "Order does not exist");
         require(o.offeree == msg.sender || o.offeror == msg.sender, "Sender is neither offeree nor offeror");
-        require(getOrderStatus(supplier, orderId) != OrderStatus.COMPLETED, "The order has been confirmed, it cannot be changed");
+        require(getNegotiationStatus(supplier, orderId) != NegotiationStatus.COMPLETED, "The order has been confirmed, it cannot be changed");
         require(fiatManager.contains(price.fiat), "The fiat of the order line isn't registered");
 
         OrderLine memory orderLine = OrderLine(orderLineId, productCategory, quantity, price, true);
@@ -262,7 +278,7 @@ contract OrderManager is AccessControl {
         Order storage o = orders[supplier][orderId];
         require(o.exists, "Order does not exist");
         require(o.offeree == msg.sender || o.offeror == msg.sender, "Sender is neither offeree nor offeror");
-        require(getOrderStatus(supplier, orderId) != OrderStatus.COMPLETED, "The order has been confirmed, it cannot be changed");
+        require(getNegotiationStatus(supplier, orderId) != NegotiationStatus.COMPLETED, "The order has been confirmed, it cannot be changed");
         require(fiatManager.contains(price.fiat), "The fiat of the order line isn't registered");
 
         Counters.Counter storage orderLineCounter = orderLinesCounter[supplier];

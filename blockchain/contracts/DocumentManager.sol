@@ -5,11 +5,11 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@blockchain-lib/blockchain-common/contracts/EnumerableType.sol";
 
-//TODO: verificare in quale occasione va verificato se il sender ha il ruolo "ADMIN_ROLE"
 contract DocumentManager is AccessControl {
     using Counters for Counters.Counter;
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
+    bytes32 public constant ORDER_MANAGER_ROLE = keccak256("ORDER_MANAGER_ROLE");
 
     event DocumentRegistered(uint256 indexed id, address owner, uint256 transactionId);
 
@@ -41,6 +41,7 @@ contract DocumentManager is AccessControl {
     constructor(address[] memory admins, address documentTypeManagerAddress) {
         _setupRole(ADMIN_ROLE, msg.sender);
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
+        _setRoleAdmin(ORDER_MANAGER_ROLE, ADMIN_ROLE);
 
         for (uint256 i = 0; i < admins.length; ++i) {
             grantRole(ADMIN_ROLE, admins[i]);
@@ -50,7 +51,7 @@ contract DocumentManager is AccessControl {
     }
 
     function registerDocument(address owner, uint256 transactionId, string memory name, string memory documentType, string memory externalUrl) public {
-        require(owner == msg.sender, "Sender is not the owner of the document");
+        require(hasRole(ADMIN_ROLE, msg.sender) || hasRole(ORDER_MANAGER_ROLE, msg.sender), "Sender has no permissions");
         require(documentTypeManager.contains(documentType), "The document type isn't registered");
 
         Counters.Counter storage documentCounter = documentsCounter[owner];
@@ -97,5 +98,13 @@ contract DocumentManager is AccessControl {
 
     function removeAdmin(address admin) public onlyAdmin {
         revokeRole(ADMIN_ROLE, admin);
+    }
+
+    function addOrderManager(address orderManager) public onlyAdmin {
+        grantRole(ORDER_MANAGER_ROLE, orderManager);
+    }
+
+    function removeOrderManager(address orderManager) public onlyAdmin {
+        revokeRole(ORDER_MANAGER_ROLE, orderManager);
     }
 }

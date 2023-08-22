@@ -12,7 +12,7 @@ import {
     SUPPLIER_INVOKER_PRIVATE_KEY,
 } from './config';
 import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
-import { OrderStatus } from '../types/OrderStatus';
+import { NegotiationStatus } from '../types/NegotiationStatus';
 
 describe('Order lifecycle', () => {
     let orderService: OrderService;
@@ -21,7 +21,7 @@ describe('Order lifecycle', () => {
     let provider: JsonRpcProvider;
     let orderCounterId = 0;
     let orderLineCounterId = 0;
-    let orderStatus: OrderStatus;
+    let orderStatus: NegotiationStatus;
     const externalUrl = 'externalUrl';
     const deadline = new Date('2030-10-10');
     const arbiter = 'arbiter 1', shipper = 'shipper 1', deliveryPort = 'delivery port', shippingPort = 'shipping port';
@@ -88,8 +88,8 @@ describe('Order lifecycle', () => {
     it('Should check that the order status is INITIALIZED (no signatures)', async () => {
         await orderService.registerOrder(SUPPLIER_INVOKER_ADDRESS, CUSTOMER_INVOKER_ADDRESS, CUSTOMER_INVOKER_ADDRESS, externalUrl);
         orderCounterId = await orderService.getOrderCounter(SUPPLIER_INVOKER_ADDRESS);
-        orderStatus = await orderService.getOrderStatus(SUPPLIER_INVOKER_ADDRESS, orderCounterId);
-        expect(orderStatus).toEqual(OrderStatus.INITIALIZED);
+        orderStatus = await orderService.getNegotiationStatus(SUPPLIER_INVOKER_ADDRESS, orderCounterId);
+        expect(orderStatus).toEqual(NegotiationStatus.INITIALIZED);
     });
 
     it('Should alter an order by setting some constraints and check that the status is PENDING', async () => {
@@ -99,8 +99,8 @@ describe('Order lifecycle', () => {
         await orderService.setOrderArbiter(SUPPLIER_INVOKER_ADDRESS, orderCounterId, arbiter);
         await orderService.setOrderDeliveryPort(SUPPLIER_INVOKER_ADDRESS, orderCounterId, deliveryPort);
 
-        orderStatus = await orderService.getOrderStatus(SUPPLIER_INVOKER_ADDRESS, orderCounterId);
-        expect(orderStatus).toEqual(OrderStatus.PENDING);
+        orderStatus = await orderService.getNegotiationStatus(SUPPLIER_INVOKER_ADDRESS, orderCounterId);
+        expect(orderStatus).toEqual(NegotiationStatus.PENDING);
     });
 
     it('Should add a line to an order as a supplier and check that the status is still PENDING', async () => {
@@ -115,8 +115,8 @@ describe('Order lifecycle', () => {
         line.id = orderLineCounterId;
         expect(savedLine).toEqual(line);
 
-        orderStatus = await orderService.getOrderStatus(SUPPLIER_INVOKER_ADDRESS, orderCounterId);
-        expect(orderStatus).toEqual(OrderStatus.PENDING);
+        orderStatus = await orderService.getNegotiationStatus(SUPPLIER_INVOKER_ADDRESS, orderCounterId);
+        expect(orderStatus).toEqual(NegotiationStatus.PENDING);
     });
 
     it('Should add a line to a new order as a customer and status again in PENDING', async () => {
@@ -135,8 +135,8 @@ describe('Order lifecycle', () => {
         line.id = orderLineCounterId;
         expect(savedLine).toEqual(line);
 
-        orderStatus = await orderService.getOrderStatus(SUPPLIER_INVOKER_ADDRESS, orderCounterId);
-        expect(orderStatus).toEqual(OrderStatus.PENDING);
+        orderStatus = await orderService.getNegotiationStatus(SUPPLIER_INVOKER_ADDRESS, orderCounterId);
+        expect(orderStatus).toEqual(NegotiationStatus.PENDING);
     });
 
     it('Should try to confirm an order as supplier, fails because not all constraints are set', async () => {
@@ -170,8 +170,8 @@ describe('Order lifecycle', () => {
         orderCounterId = await orderService.getOrderCounter(SUPPLIER_INVOKER_ADDRESS);
         await orderService.confirmOrder(SUPPLIER_INVOKER_ADDRESS, orderCounterId);
 
-        orderStatus = await orderService.getOrderStatus(SUPPLIER_INVOKER_ADDRESS, orderCounterId);
-        expect(orderStatus).toEqual(OrderStatus.COMPLETED);
+        orderStatus = await orderService.getNegotiationStatus(SUPPLIER_INVOKER_ADDRESS, orderCounterId);
+        expect(orderStatus).toEqual(NegotiationStatus.COMPLETED);
     });
 
     it('should try to add a line to a negotiated order', async () => {
