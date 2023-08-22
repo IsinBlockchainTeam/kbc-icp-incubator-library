@@ -1,8 +1,6 @@
 /* eslint-disable camelcase */
-import { JsonRpcProvider } from '@ethersproject/providers';
 import { createMock } from 'ts-auto-mock';
-import { IdentityEthersDriver } from '@blockchain-lib/common';
-import { BigNumber, ethers } from 'ethers';
+import { BigNumber, ethers, Signer } from 'ethers';
 import { OrderManager, OrderManager__factory } from '../smart-contracts';
 import { OrderDriver } from './OrderDriver';
 import { Order } from '../entities/Order';
@@ -15,8 +13,7 @@ describe('OrderDriver', () => {
     const testAddress = '0x6C9E9ADB5F57952434A4148b401502d9c6C70318';
     const errorMessage = 'testError';
 
-    let mockedIdentityDriver: IdentityEthersDriver;
-    let mockedProvider: JsonRpcProvider;
+    let mockedSigner: Signer;
     let mockedContract: OrderManager;
 
     const mockedOrderConnect = jest.fn();
@@ -99,13 +96,9 @@ describe('OrderDriver', () => {
         const buildOrderLinePriceSpy = jest.spyOn(EntityBuilder, 'buildOrderLinePrice');
         buildOrderLinePriceSpy.mockReturnValue(mockedOrderLinePrice);
 
-        mockedIdentityDriver = createMock<IdentityEthersDriver>();
-        mockedProvider = createMock<JsonRpcProvider>({
-            _isProvider: true,
-        });
+        mockedSigner = createMock<Signer>();
         orderDriver = new OrderDriver(
-            mockedIdentityDriver,
-            mockedProvider,
+            mockedSigner,
             testAddress,
         );
     });

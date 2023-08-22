@@ -1,11 +1,10 @@
-import { IdentityEthersDriver } from '@blockchain-lib/common';
 import { JsonRpcProvider } from '@ethersproject/providers';
-import { ethers } from 'ethers';
+import { ethers, Signer } from 'ethers';
 import OrderService from '../services/OrderService';
 import { OrderDriver, OrderEvents } from '../drivers/OrderDriver';
 import {
     CUSTOMER_INVOKER_ADDRESS,
-    CUSTOMER_INVOKER_PRIVATE_KEY,
+    CUSTOMER_INVOKER_PRIVATE_KEY, DOCUMENT_MANAGER_CONTRACT_ADDRESS,
     NETWORK,
     ORDER_MANAGER_CONTRACT_ADDRESS,
     SUPPLIER_INVOKER_ADDRESS,
@@ -13,12 +12,18 @@ import {
 } from './config';
 import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
 import { NegotiationStatus } from '../types/NegotiationStatus';
+import DocumentService from '../services/DocumentService';
+import { DocumentDriver } from '../drivers/DocumentDriver';
 
 describe('Order lifecycle', () => {
     let orderService: OrderService;
     let orderDriver: OrderDriver;
-    let identityDriver: IdentityEthersDriver;
     let provider: JsonRpcProvider;
+    let signer: Signer;
+
+    let documentService: DocumentService;
+    let documentDriver: DocumentDriver;
+
     let orderCounterId = 0;
     let orderLineCounterId = 0;
     let orderStatus: NegotiationStatus;
@@ -26,15 +31,23 @@ describe('Order lifecycle', () => {
     const deadline = new Date('2030-10-10');
     const arbiter = 'arbiter 1', shipper = 'shipper 1', deliveryPort = 'delivery port', shippingPort = 'shipping port';
 
-    beforeAll(async () => {
-        provider = new ethers.providers.JsonRpcProvider(NETWORK);
-        identityDriver = new IdentityEthersDriver(SUPPLIER_INVOKER_PRIVATE_KEY, provider);
+    const _defineSender = (privateKey: string) => {
+        signer = new ethers.Wallet(privateKey, provider);
         orderDriver = new OrderDriver(
-            identityDriver,
-            provider,
+            signer,
             ORDER_MANAGER_CONTRACT_ADDRESS,
         );
         orderService = new OrderService(orderDriver);
+    };
+
+    beforeAll(async () => {
+        provider = new ethers.providers.JsonRpcProvider(NETWORK);
+        _defineSender(SUPPLIER_INVOKER_PRIVATE_KEY);
+        documentDriver = new DocumentDriver(
+            signer,
+            DOCUMENT_MANAGER_CONTRACT_ADDRESS,
+        );
+        documentService = new DocumentService(documentDriver);
     });
 
     it('Should correctly register and retrieve a order with a line', async () => {
@@ -121,9 +134,7 @@ describe('Order lifecycle', () => {
     });
 
     it('Should add a line to a new order as a customer and status again in PENDING', async () => {
-        identityDriver = new IdentityEthersDriver(CUSTOMER_INVOKER_PRIVATE_KEY, provider);
-        orderDriver = new OrderDriver(identityDriver, provider, ORDER_MANAGER_CONTRACT_ADDRESS);
-        orderService = new OrderService(orderDriver);
+        _defineSender(CUSTOMER_INVOKER_PRIVATE_KEY);
 
         orderCounterId = await orderService.getOrderCounter(SUPPLIER_INVOKER_ADDRESS);
         const line = new OrderLine(0, 'CategoryA', 50, new OrderLinePrice(50.5, 'USD'));
@@ -141,23 +152,20 @@ describe('Order lifecycle', () => {
     });
 
     it('Should try to confirm an order as supplier, fails because not all constraints are set', async () => {
-        identityDriver = new IdentityEthersDriver(SUPPLIER_INVOKER_PRIVATE_KEY, provider);
-        orderDriver = new OrderDriver(identityDriver, provider, ORDER_MANAGER_CONTRACT_ADDRESS);
-        orderService = new OrderService(orderDriver);
-
+        _defineSender(SUPPLIER_INVOKER_PRIVATE_KEY);
         orderCounterId = await orderService.getOrderCounter(SUPPLIER_INVOKER_ADDRESS);
         const fn = async () => orderService.confirmOrder(SUPPLIER_INVOKER_ADDRESS, orderCounterId);
         await expect(fn).rejects.toThrowError(/Cannot confirm an order if all constraints have not been defined/);
     });
 
-    it('Should add a document to a non confirmed order', async () => {
-
+    it('Should add a document, fails because the order is not already confirmed', async () => {
+        orderCounterId = await orderService.getOrderCounter(SUPPLIER_INVOKER_ADDRESS);
+        const fn = async () => orderService.addDocument(SUPPLIER_INVOKER_ADDRESS, orderCounterId, 'shipped', 'document name', 'Bill of lading', 'external url');
+        await expect(fn).rejects.toThrowError(/The order is not already confirmed, cannot add document/);
     });
 
     it('Should add remaining constraints as customer', async () => {
-        identityDriver = new IdentityEthersDriver(CUSTOMER_INVOKER_PRIVATE_KEY, provider);
-        orderDriver = new OrderDriver(identityDriver, provider, ORDER_MANAGER_CONTRACT_ADDRESS);
-        orderService = new OrderService(orderDriver);
+        _defineSender(CUSTOMER_INVOKER_PRIVATE_KEY);
 
         orderCounterId = await orderService.getOrderCounter(SUPPLIER_INVOKER_ADDRESS);
         await orderService.setOrderPaymentDeadline(SUPPLIER_INVOKER_ADDRESS, orderCounterId, deadline);
@@ -168,15 +176,20 @@ describe('Order lifecycle', () => {
     });
 
     it('Should confirm as supplier the order updated by the customer', async () => {
-        identityDriver = new IdentityEthersDriver(SUPPLIER_INVOKER_PRIVATE_KEY, provider);
-        orderDriver = new OrderDriver(identityDriver, provider, ORDER_MANAGER_CONTRACT_ADDRESS);
-        orderService = new OrderService(orderDriver);
+        _defineSender(SUPPLIER_INVOKER_PRIVATE_KEY);
 
         orderCounterId = await orderService.getOrderCounter(SUPPLIER_INVOKER_ADDRESS);
         await orderService.confirmOrder(SUPPLIER_INVOKER_ADDRESS, orderCounterId);
 
         orderStatus = await orderService.getNegotiationStatus(SUPPLIER_INVOKER_ADDRESS, orderCounterId);
         expect(orderStatus).toEqual(NegotiationStatus.COMPLETED);
+    });
+
+    it('Should add a document, fails because the document type is wrong', async () => {
+        await documentService.addOrderManager(ORDER_MANAGER_CONTRACT_ADDRESS);
+        orderCounterId = await orderService.getOrderCounter(SUPPLIER_INVOKER_ADDRESS);
+        const fn = async () => orderService.addDocument(SUPPLIER_INVOKER_ADDRESS, orderCounterId, 'shipped', 'document name', 'custom doc type', 'external url');
+        await expect(fn).rejects.toThrowError(/The document type isn't registered/);
     });
 
     it('should try to add a line to a negotiated order', async () => {
@@ -193,9 +206,7 @@ describe('Order lifecycle', () => {
         await orderService.addOrderLine(SUPPLIER_INVOKER_ADDRESS, orderCounterId, 'CategoryA', 50, new OrderLinePrice(50, 'USD'));
         const orderVersion2 = await orderService.getOrderInfo(SUPPLIER_INVOKER_ADDRESS, orderCounterId);
 
-        identityDriver = new IdentityEthersDriver(CUSTOMER_INVOKER_PRIVATE_KEY, provider);
-        orderDriver = new OrderDriver(identityDriver, provider, ORDER_MANAGER_CONTRACT_ADDRESS);
-        orderService = new OrderService(orderDriver);
+        _defineSender(CUSTOMER_INVOKER_PRIVATE_KEY);
 
         await orderService.addOrderLine(SUPPLIER_INVOKER_ADDRESS, orderCounterId, 'CategoryB', 10, new OrderLinePrice(20, 'USD'));
         const orderVersion3 = await orderService.getOrderInfo(SUPPLIER_INVOKER_ADDRESS, orderCounterId);
@@ -203,11 +214,9 @@ describe('Order lifecycle', () => {
         orderLineCounterId = lineIds.splice(-1)[0];
         const orderLineVersion1 = await orderService.getOrderLine(SUPPLIER_INVOKER_ADDRESS, orderCounterId, orderLineCounterId);
 
-        identityDriver = new IdentityEthersDriver(SUPPLIER_INVOKER_PRIVATE_KEY, provider);
-        orderDriver = new OrderDriver(identityDriver, provider, ORDER_MANAGER_CONTRACT_ADDRESS);
-        orderService = new OrderService(orderDriver);
+        _defineSender(SUPPLIER_INVOKER_PRIVATE_KEY);
 
-        await orderService.updateOrderLine(SUPPLIER_INVOKER_ADDRESS, orderCounterId, orderLineCounterId, 'CategoryUpdated', 40, new OrderLinePrice(20, 'USD'));
+        await orderService.updateOrderLine(SUPPLIER_INVOKER_ADDRESS, orderCounterId, orderLineCounterId, 'CategoryA Superior', 40, new OrderLinePrice(20, 'USD'));
         const orderVersion4 = await orderService.getOrderInfo(SUPPLIER_INVOKER_ADDRESS, orderCounterId);
         const orderLineVersion2 = await orderService.getOrderLine(SUPPLIER_INVOKER_ADDRESS, orderCounterId, orderLineCounterId);
 

@@ -1,8 +1,6 @@
 /* eslint-disable camelcase */
 /* eslint-disable no-await-in-loop */
-import { JsonRpcProvider } from '@ethersproject/providers';
-import { IdentityEthersDriver } from '@blockchain-lib/common';
-import { utils } from 'ethers';
+import { Signer, utils } from 'ethers';
 import { OrderManager, OrderManager__factory } from '../smart-contracts';
 import { Order } from '../entities/Order';
 import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
@@ -19,13 +17,12 @@ export class OrderDriver {
     protected _contract: OrderManager;
 
     constructor(
-        identityDriver: IdentityEthersDriver,
-        provider: JsonRpcProvider,
+        signer: Signer,
         contractAddress: string,
     ) {
         this._contract = OrderManager__factory
-            .connect(contractAddress, provider)
-            .connect(identityDriver.wallet);
+            .connect(contractAddress, signer.provider!)
+            .connect(signer);
     }
 
     async registerOrder(supplierAddress: string, customerAddress: string, offereeAddress: string, externalUrl: string): Promise<void> {

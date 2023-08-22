@@ -6,15 +6,24 @@ import {
     CUSTOMER_INVOKER_ADDRESS,
     CUSTOMER_INVOKER_PRIVATE_KEY,
     DOCUMENT_MANAGER_CONTRACT_ADDRESS,
-    NETWORK,
+    NETWORK, ORDER_MANAGER_CONTRACT_ADDRESS,
     SUPPLIER_INVOKER_ADDRESS, SUPPLIER_INVOKER_PRIVATE_KEY,
 } from './config';
+import OrderService from '../services/OrderService';
+import { OrderDriver } from '../drivers/OrderDriver';
 
 describe('Document lifecycle', () => {
     let documentService: DocumentService;
     let documentDriver: DocumentDriver;
     let provider: JsonRpcProvider;
     let signer: Signer;
+
+    let orderService: OrderService;
+    let orderDriver: OrderDriver;
+
+    const externalUrl = 'externalUrl';
+    const deadline = new Date('2030-10-10');
+    const arbiter = 'arbiter 1', shipper = 'shipper 1', deliveryPort = 'delivery port', shippingPort = 'shipping port';
 
     let documentCounterId = 0;
     const rawDocument = {
@@ -27,8 +36,8 @@ describe('Document lifecycle', () => {
         documentType: 'Delivery note',
         externalUrl: 'externalUr2',
     };
-    const transactionId = 2;
-    const transactionId2 = 5;
+    let transactionId = 1;
+    let transactionId2 = 2;
 
     const _defineSender = (privateKey: string) => {
         signer = new ethers.Wallet(privateKey, provider);
@@ -39,13 +48,51 @@ describe('Document lifecycle', () => {
         documentService = new DocumentService(documentDriver);
     };
 
+    const _defineOrderSender = (privateKey: string) => {
+        signer = new ethers.Wallet(privateKey, provider);
+        orderDriver = new OrderDriver(
+            signer,
+            ORDER_MANAGER_CONTRACT_ADDRESS,
+        );
+        orderService = new OrderService(orderDriver);
+    };
+
+    const createOrderAndConfirm = async (): Promise<number> => {
+        await orderService.registerOrder(SUPPLIER_INVOKER_ADDRESS, CUSTOMER_INVOKER_ADDRESS, CUSTOMER_INVOKER_ADDRESS, externalUrl);
+        const orderId = await orderService.getOrderCounter(SUPPLIER_INVOKER_ADDRESS);
+        // add all the constraints so that an order can be confirmed (it is required to add a document)
+        await orderService.setOrderIncoterms(SUPPLIER_INVOKER_ADDRESS, orderId, 'FOB');
+        await orderService.setOrderDocumentDeliveryDeadline(SUPPLIER_INVOKER_ADDRESS, orderId, deadline);
+        await orderService.setOrderArbiter(SUPPLIER_INVOKER_ADDRESS, orderId, arbiter);
+        await orderService.setOrderDeliveryPort(SUPPLIER_INVOKER_ADDRESS, orderId, deliveryPort);
+        await orderService.setOrderPaymentDeadline(SUPPLIER_INVOKER_ADDRESS, orderId, deadline);
+        await orderService.setOrderShipper(SUPPLIER_INVOKER_ADDRESS, orderId, shipper);
+        await orderService.setOrderShippingPort(SUPPLIER_INVOKER_ADDRESS, orderId, shippingPort);
+        await orderService.setOrderShippingDeadline(SUPPLIER_INVOKER_ADDRESS, orderId, deadline);
+        await orderService.setOrderDeliveryDeadline(SUPPLIER_INVOKER_ADDRESS, orderId, deadline);
+        // confirm the order
+        _defineOrderSender(CUSTOMER_INVOKER_PRIVATE_KEY);
+        await orderService.confirmOrder(SUPPLIER_INVOKER_ADDRESS, orderId);
+        return orderId;
+    };
+
     beforeAll(async () => {
         provider = new ethers.providers.JsonRpcProvider(NETWORK);
         _defineSender(SUPPLIER_INVOKER_PRIVATE_KEY);
+        _defineOrderSender(SUPPLIER_INVOKER_PRIVATE_KEY);
+        await documentService.addOrderManager(ORDER_MANAGER_CONTRACT_ADDRESS);
     });
 
-    it('Should correctly register and retrieve a document', async () => {
-        await documentService.registerDocument(SUPPLIER_INVOKER_ADDRESS, transactionId, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
+    it('Should register a document by another company, fails because the contract cannot directly be invoked to register a new document', async () => {
+        _defineSender(CUSTOMER_INVOKER_PRIVATE_KEY);
+        const fn = () => documentService.registerDocument(CUSTOMER_INVOKER_ADDRESS, transactionId, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
+        await expect(fn).rejects.toThrowError(/Sender has no permissions/);
+    });
+
+    it('Should register a document by invoking the order manager contract and retrieve it', async () => {
+        transactionId = await createOrderAndConfirm();
+        await orderService.addDocument(SUPPLIER_INVOKER_ADDRESS, transactionId, 'shipped', rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
+
         documentCounterId = await documentService.getDocumentCounter(SUPPLIER_INVOKER_ADDRESS);
         expect(documentCounterId).toEqual(1);
 
@@ -62,30 +109,21 @@ describe('Document lifecycle', () => {
         expect(savedDocument.externalUrl).toEqual(rawDocument.externalUrl);
     });
 
-    it('Should register a document by another company', async () => {
-        _defineSender(CUSTOMER_INVOKER_PRIVATE_KEY);
-        await documentService.registerDocument(CUSTOMER_INVOKER_ADDRESS, transactionId, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
-        documentCounterId = await documentService.getDocumentCounter(CUSTOMER_INVOKER_ADDRESS);
-        expect(documentCounterId).not.toEqual(2);
-        expect(documentCounterId).toEqual(1);
-
-        const exist = await documentService.documentExists(CUSTOMER_INVOKER_ADDRESS, transactionId, documentCounterId);
-        expect(exist).toBeTruthy();
-    });
-
     it('Should add another document for the same transaction id and another to other transaction id', async () => {
-        await documentService.registerDocument(CUSTOMER_INVOKER_ADDRESS, transactionId, rawDocument2.name, rawDocument2.documentType, rawDocument2.externalUrl);
-        await documentService.registerDocument(CUSTOMER_INVOKER_ADDRESS, transactionId2, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
-        documentCounterId = await documentService.getDocumentCounter(CUSTOMER_INVOKER_ADDRESS);
+        transactionId2 = await createOrderAndConfirm();
+        await orderService.addDocument(SUPPLIER_INVOKER_ADDRESS, transactionId, 'on_board', rawDocument2.name, rawDocument2.documentType, rawDocument2.externalUrl);
+        await orderService.addDocument(SUPPLIER_INVOKER_ADDRESS, transactionId2, 'shipped', rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
 
-        const transaction1DocumentIds = await documentService.getTransactionDocumentIds(CUSTOMER_INVOKER_ADDRESS, transactionId);
-        const transaction2DocumentIds = await documentService.getTransactionDocumentIds(CUSTOMER_INVOKER_ADDRESS, transactionId2);
+        documentCounterId = await documentService.getDocumentCounter(SUPPLIER_INVOKER_ADDRESS);
+
+        const transaction1DocumentIds = await documentService.getTransactionDocumentIds(SUPPLIER_INVOKER_ADDRESS, transactionId);
+        const transaction2DocumentIds = await documentService.getTransactionDocumentIds(SUPPLIER_INVOKER_ADDRESS, transactionId2);
         expect(documentCounterId).toEqual(transaction1DocumentIds.length + transaction2DocumentIds.length);
 
-        const savedTransaction2Document = await documentService.getDocumentInfo(CUSTOMER_INVOKER_ADDRESS, transactionId2, transaction2DocumentIds[0]);
+        const savedTransaction2Document = await documentService.getDocumentInfo(SUPPLIER_INVOKER_ADDRESS, transactionId2, transaction2DocumentIds[0]);
         expect(savedTransaction2Document).toBeDefined();
         expect(savedTransaction2Document.id).toEqual(transaction2DocumentIds[0]);
-        expect(savedTransaction2Document.owner).toEqual(CUSTOMER_INVOKER_ADDRESS);
+        expect(savedTransaction2Document.owner).toEqual(SUPPLIER_INVOKER_ADDRESS);
         expect(savedTransaction2Document.transactionId).toEqual(transactionId2);
         expect(savedTransaction2Document.name).toEqual(rawDocument.name);
         expect(savedTransaction2Document.documentType).toEqual(rawDocument.documentType);
