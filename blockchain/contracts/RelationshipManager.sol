@@ -43,6 +43,7 @@ contract RelationshipManager is AccessControl {
 
     function registerRelationship(address companyA, address companyB, uint256 validFrom, uint256 validUntil) public {
         require(companyA == msg.sender || companyB == msg.sender, "Sender is not one of the two entities involved in the relationship");
+        require(companyA != companyB, "Fields 'companyA' and 'companyB' must be different");
 
         uint256 id = relationshipCounter.current() + 1;
         relationshipCounter.increment();

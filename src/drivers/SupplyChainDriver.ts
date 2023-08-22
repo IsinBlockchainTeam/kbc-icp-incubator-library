@@ -1,8 +1,6 @@
 /* eslint-disable camelcase */
 
-import { IdentityEthersDriver } from '@blockchain-lib/common';
-import { JsonRpcProvider } from '@ethersproject/providers';
-import { utils } from 'ethers';
+import { Signer, utils } from 'ethers';
 import { SupplyChainManager__factory, SupplyChainManager } from '../smart-contracts';
 import { EntityBuilder } from '../utils/EntityBuilder';
 import { Material } from '../entities/Material';
@@ -13,13 +11,12 @@ export class SupplyChainDriver {
     private _supplyChainManager: SupplyChainManager;
 
     constructor(
-        identityDriver: IdentityEthersDriver,
-        provider: JsonRpcProvider,
+        signer: Signer,
         supplyChainManagerAddress: string,
     ) {
         this._supplyChainManager = SupplyChainManager__factory
-            .connect(supplyChainManagerAddress, provider)
-            .connect(identityDriver.wallet);
+            .connect(supplyChainManagerAddress, signer.provider!)
+            .connect(signer);
     }
 
     async registerMaterial(companyAddress: string, name: string): Promise<void> {

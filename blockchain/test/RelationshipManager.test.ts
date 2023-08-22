@@ -41,6 +41,16 @@ describe('RelationshipManager', () => {
             expect(savedRelationship.validUntil).to.equal(rawRelationship.validUntil);
         });
 
+        it('should register a relationship - FAIL (Sender is not one of the two entities involved in the relationship)', async () => {
+            await expect(relationshipManagerContract.connect(otherAccount).registerRelationship(companyA.address, companyB.address, rawRelationship.validFrom, rawRelationship.validUntil))
+                .to.be.revertedWith('Sender is not one of the two entities involved in the relationship');
+        });
+
+        it("should register a relationship - FAIL (Fields 'companyA' and 'companyB' must be different)", async () => {
+            await expect(relationshipManagerContract.connect(companyA).registerRelationship(companyA.address, companyA.address, rawRelationship.validFrom, rawRelationship.validUntil))
+                .to.be.revertedWith("Fields 'companyA' and 'companyB' must be different");
+        });
+
         it('should emit RelationshipRegistered event', async () => {
             relationshipCounterId = await relationshipManagerContract.connect(companyB).getRelationshipCounter();
             await expect(relationshipManagerContract.connect(companyB).registerRelationship(companyA.address, companyB.address, rawRelationship.validFrom, rawRelationship.validUntil))
