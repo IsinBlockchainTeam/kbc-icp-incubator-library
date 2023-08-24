@@ -8,7 +8,7 @@ describe('Order', () => {
     beforeAll(() => {
         order = new Order(0, 'supplier', 'customer', 'externalUrl', 'offeree', 'offeror', [1, 2],
             'FOB', deadline, deadline, 'shipper', 'arbiter', 'shipping port',
-            deadline, 'delivery port', deadline);
+            deadline, 'delivery port', deadline, 'shipped');
     });
 
     it('should correctly initialize a new Order', () => {
@@ -30,6 +30,7 @@ describe('Order', () => {
         expect(order.shippingDeadline).toEqual(deadline);
         expect(order.deliveryPort).toEqual('delivery port');
         expect(order.deliveryDeadline).toEqual(deadline);
+        expect(order.status).toEqual('shipped');
     });
 
     it('should correctly set the id', () => {
@@ -119,5 +120,10 @@ describe('Order', () => {
     it('should correctly set the deliveryDeadline', () => {
         order.deliveryDeadline = deadline2;
         expect(order.deliveryDeadline).toEqual(deadline2);
+    });
+
+    it('should correctly set the status', () => {
+        order.status = 'on board';
+        expect(order.status).toEqual('on board');
     });
 });

@@ -1,7 +1,7 @@
 import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
 import { OrderDriver, OrderEvents } from '../drivers/OrderDriver';
 import { Order } from '../entities/Order';
-import { OrderStatus } from '../types/OrderStatus';
+import { NegotiationStatus } from '../types/NegotiationStatus';
 
 export class OrderService {
     private _orderDriver: OrderDriver;
@@ -70,12 +70,16 @@ export class OrderService {
         return this._orderDriver.orderExists(supplierAddress, id);
     }
 
-    async getOrderStatus(supplierAddress: string, id: number): Promise<OrderStatus> {
-        return this._orderDriver.getOrderStatus(supplierAddress, id);
+    async getNegotiationStatus(supplierAddress: string, id: number): Promise<NegotiationStatus> {
+        return this._orderDriver.getNegotiationStatus(supplierAddress, id);
     }
 
     async confirmOrder(supplierAddress: string, id: number): Promise<void> {
         await this._orderDriver.confirmOrder(supplierAddress, id);
+    }
+
+    async addDocument(supplierAddress: string, orderId: number, orderStatus: string, documentName: string, documentType: string, documentExternalUrl: string): Promise<void> {
+        await this._orderDriver.addDocument(supplierAddress, orderId, orderStatus, documentName, documentType, documentExternalUrl);
     }
 
     async getOrderLine(supplierAddress: string, orderId: number, orderLineId: number, blockNumber?: number): Promise<OrderLine> {

@@ -30,8 +30,9 @@ describe('OrderService', () => {
         getOrderInfo: jest.fn(),
         isSupplierOrCustomer: jest.fn(),
         orderExists: jest.fn(),
-        getOrderStatus: jest.fn(),
+        getNegotiationStatus: jest.fn(),
         confirmOrder: jest.fn(),
+        addDocument: jest.fn(),
         getOrderLine: jest.fn(),
         addOrderLine: jest.fn(),
         updateOrderLine: jest.fn(),
@@ -146,9 +147,9 @@ describe('OrderService', () => {
             expectedMockedFunctionArgs: [supplier, 0],
         },
         {
-            serviceFunctionName: 'getOrderStatus',
-            serviceFunction: () => orderService.getOrderStatus(supplier, 0),
-            expectedMockedFunction: mockedOrderDriver.getOrderStatus,
+            serviceFunctionName: 'getNegotiationStatus',
+            serviceFunction: () => orderService.getNegotiationStatus(supplier, 0),
+            expectedMockedFunction: mockedOrderDriver.getNegotiationStatus,
             expectedMockedFunctionArgs: [supplier, 0],
         },
         {
@@ -156,6 +157,12 @@ describe('OrderService', () => {
             serviceFunction: () => orderService.confirmOrder(supplier, 0),
             expectedMockedFunction: mockedOrderDriver.confirmOrder,
             expectedMockedFunctionArgs: [supplier, 0],
+        },
+        {
+            serviceFunctionName: 'addDocument',
+            serviceFunction: () => orderService.addDocument(supplier, 0, 'status', 'doc name', 'doc type', externalUrl),
+            expectedMockedFunction: mockedOrderDriver.addDocument,
+            expectedMockedFunctionArgs: [supplier, 0, 'status', 'doc name', 'doc type', externalUrl],
         },
         {
             serviceFunctionName: 'getOrderLine',

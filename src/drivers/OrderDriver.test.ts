@@ -1,8 +1,6 @@
 /* eslint-disable camelcase */
-import { JsonRpcProvider } from '@ethersproject/providers';
 import { createMock } from 'ts-auto-mock';
-import { IdentityEthersDriver } from '@blockchain-lib/common';
-import { BigNumber, ethers } from 'ethers';
+import { BigNumber, ethers, Signer } from 'ethers';
 import { OrderManager, OrderManager__factory } from '../smart-contracts';
 import { OrderDriver } from './OrderDriver';
 import { Order } from '../entities/Order';
@@ -15,8 +13,7 @@ describe('OrderDriver', () => {
     const testAddress = '0x6C9E9ADB5F57952434A4148b401502d9c6C70318';
     const errorMessage = 'testError';
 
-    let mockedIdentityDriver: IdentityEthersDriver;
-    let mockedProvider: JsonRpcProvider;
+    let mockedSigner: Signer;
     let mockedContract: OrderManager;
 
     const mockedOrderConnect = jest.fn();
@@ -70,7 +67,8 @@ describe('OrderDriver', () => {
             setOrderDeliveryDeadline: mockedWriteFunction,
             orderExists: mockedReadFunction,
             confirmOrder: mockedWriteFunction,
-            getOrderStatus: mockedReadFunction,
+            addDocument: mockedWriteFunction,
+            getNegotiationStatus: mockedReadFunction,
             getOrderLine: mockedReadFunction,
             addOrderLine: mockedWriteFunction,
             updateOrderLine: mockedWriteFunction,
@@ -98,13 +96,9 @@ describe('OrderDriver', () => {
         const buildOrderLinePriceSpy = jest.spyOn(EntityBuilder, 'buildOrderLinePrice');
         buildOrderLinePriceSpy.mockReturnValue(mockedOrderLinePrice);
 
-        mockedIdentityDriver = createMock<IdentityEthersDriver>();
-        mockedProvider = createMock<JsonRpcProvider>({
-            _isProvider: true,
-        });
+        mockedSigner = createMock<Signer>();
         orderDriver = new OrderDriver(
-            mockedIdentityDriver,
-            mockedProvider,
+            mockedSigner,
             testAddress,
         );
     });
@@ -214,6 +208,28 @@ describe('OrderDriver', () => {
 
         it('should confirm the order - fails for address', async () => {
             const fn = async () => orderDriver.confirmOrder('0xaddress', 1);
+            await expect(fn).rejects.toThrowError(new Error('Not an address'));
+        });
+    });
+
+    describe('addDocument', () => {
+        it('should add document to an order', async () => {
+            await orderDriver.addDocument(supplier.address, 1, 'shipped', 'doc name', 'doc type', 'external url');
+            expect(mockedContract.addDocument).toHaveBeenCalledTimes(1);
+            expect(mockedContract.addDocument).toHaveBeenNthCalledWith(1, supplier.address, 1, 'shipped', 'doc name', 'doc type', 'external url');
+
+            expect(mockedWait).toHaveBeenCalledTimes(1);
+        });
+
+        it('should retrieve order - transaction fails', async () => {
+            mockedContract.addDocument = jest.fn().mockRejectedValue(new Error(errorMessage));
+
+            const fn = async () => orderDriver.addDocument(supplier.address, 1, 'shipped', 'doc name', 'doc type', 'external url');
+            await expect(fn).rejects.toThrowError(new Error(errorMessage));
+        });
+
+        it('should add document to an order - not an address', async () => {
+            const fn = async () => orderDriver.addDocument('0xaddress', 1, 'shipped', 'doc name', 'doc type', 'external url');
             await expect(fn).rejects.toThrowError(new Error('Not an address'));
         });
     });
@@ -579,15 +595,15 @@ describe('OrderDriver', () => {
         });
     });
 
-    describe('getOrderStatus', () => {
+    describe('getNegotiationStatus', () => {
         it('should get the order status', async () => {
-            await orderDriver.getOrderStatus(supplier.address, 1);
-            expect(mockedContract.getOrderStatus).toHaveBeenCalledTimes(1);
-            expect(mockedContract.getOrderStatus).toHaveBeenNthCalledWith(1, supplier.address, 1);
+            await orderDriver.getNegotiationStatus(supplier.address, 1);
+            expect(mockedContract.getNegotiationStatus).toHaveBeenCalledTimes(1);
+            expect(mockedContract.getNegotiationStatus).toHaveBeenNthCalledWith(1, supplier.address, 1);
         });
 
         it('should get the order status - fail due to wrong address', async () => {
-            const fn = async () => orderDriver.getOrderStatus('0xaddress', 1);
+            const fn = async () => orderDriver.getNegotiationStatus('0xaddress', 1);
             await expect(fn).rejects.toThrowError(new Error('Not an address'));
         });
     });

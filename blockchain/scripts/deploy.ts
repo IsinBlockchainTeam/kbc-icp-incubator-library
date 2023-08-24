@@ -48,11 +48,35 @@ serial([
             await tx.wait();
         }
     },
+    () => deploy(ContractName.ENUMERABLE_TYPE_MANAGER, [[]], 'EnumerableDocumentTypeManager'),
+    async () => {
+        const enums: string[] = ['Bill of lading', 'Delivery note', 'Country of Origin'];
+        for (let i = 0; i < enums.length; i++) {
+            const tx = await contractMap.get('EnumerableDocumentTypeManager')
+                ?.add(enums[i]);
+            await tx.wait();
+        }
+    },
+    () => deploy(ContractName.ENUMERABLE_TYPE_MANAGER, [[]], 'EnumerableStatusManager'),
+    async () => {
+        const enums: string[] = ['shipped', 'on_board'];
+        for (let i = 0; i < enums.length; i++) {
+            const tx = await contractMap.get('EnumerableStatusManager')
+                ?.add(enums[i]);
+            await tx.wait();
+        }
+    },
+    () => deploy(ContractName.DOCUMENT_MANAGER, [
+        [],
+        contractMap.get('EnumerableDocumentTypeManager')?.address,
+    ]),
     () => deploy(
         ContractName.ORDER_MANAGER,
         [[process.env.SUPPLIER_ADMIN || '', process.env.CUSTOMER_ADMIN || ''],
             contractMap.get('EnumerableFiatManager')?.address,
-            contractMap.get('EnumerableProductCategoryManager')?.address],
+            contractMap.get('EnumerableProductCategoryManager')?.address,
+            contractMap.get('EnumerableStatusManager')?.address,
+            contractMap.get(ContractName.DOCUMENT_MANAGER)?.address],
     ),
     () => deploy(
         ContractName.SUPPLY_CHAIN_MANAGER,
@@ -61,6 +85,7 @@ serial([
     () => deploy(ContractName.RELATIONSHIP_MANAGER, [
         [process.env.SUPPLIER_ADMIN || ''],
     ]),
+
 ])
     .catch((error: any) => {
         console.error(error);

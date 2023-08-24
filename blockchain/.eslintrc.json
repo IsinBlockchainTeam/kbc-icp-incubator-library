@@ -70,6 +70,10 @@
         "prefer-destructuring": "off",
         "no-plusplus": "off",
         "operator-linebreak": "off",
-        "max-classes-per-file": "off"
+        "max-classes-per-file": "off",
+        "one-var-declaration-per-line": "off",
+        "one-var": "off",
+        "function-paren-newline": "off",
+        "function-call-argument-newline": "off"
     }
 }

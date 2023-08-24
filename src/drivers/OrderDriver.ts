@@ -1,12 +1,10 @@
 /* eslint-disable camelcase */
 /* eslint-disable no-await-in-loop */
-import { JsonRpcProvider } from '@ethersproject/providers';
-import { IdentityEthersDriver } from '@blockchain-lib/common';
-import { utils } from 'ethers';
+import { Signer, utils } from 'ethers';
 import { OrderManager, OrderManager__factory } from '../smart-contracts';
 import { Order } from '../entities/Order';
 import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
-import { OrderStatus } from '../types/OrderStatus';
+import { NegotiationStatus } from '../types/NegotiationStatus';
 import { EntityBuilder } from '../utils/EntityBuilder';
 
 export enum OrderEvents {
@@ -19,13 +17,12 @@ export class OrderDriver {
     protected _contract: OrderManager;
 
     constructor(
-        identityDriver: IdentityEthersDriver,
-        provider: JsonRpcProvider,
+        signer: Signer,
         contractAddress: string,
     ) {
         this._contract = OrderManager__factory
-            .connect(contractAddress, provider)
-            .connect(identityDriver.wallet);
+            .connect(contractAddress, signer.provider!)
+            .connect(signer);
     }
 
     async registerOrder(supplierAddress: string, customerAddress: string, offereeAddress: string, externalUrl: string): Promise<void> {
@@ -162,9 +159,9 @@ export class OrderDriver {
         return this._contract.isSupplierOrCustomer(supplierAddress, orderId, senderAddress);
     }
 
-    async getOrderStatus(supplierAddress: string, orderId: number): Promise<OrderStatus> {
+    async getNegotiationStatus(supplierAddress: string, orderId: number): Promise<NegotiationStatus> {
         if (!utils.isAddress(supplierAddress)) { throw new Error('Not an address'); }
-        return this._contract.getOrderStatus(supplierAddress, orderId);
+        return this._contract.getNegotiationStatus(supplierAddress, orderId);
     }
 
     async orderExists(supplierAddress: string, orderId: number): Promise<boolean> {
@@ -177,6 +174,13 @@ export class OrderDriver {
         if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
 
         const tx = await this._contract.confirmOrder(supplierAddress, orderId);
+        await tx.wait();
+    }
+
+    async addDocument(supplierAddress: string, orderId: number, orderStatus: string, documentName: string, documentType: string, documentExternalUrl: string): Promise<void> {
+        if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
+
+        const tx = await this._contract.addDocument(supplierAddress, orderId, orderStatus, documentName, documentType, documentExternalUrl);
         await tx.wait();
     }
 
