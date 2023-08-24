@@ -94,6 +94,20 @@ export class OrderService {
         return this._orderDriver.addOrderLine(supplierAddress, orderId, productCategory, quantity, price);
     }
 
+    async getOrders(supplierAddress: string): Promise<Order[]> {
+        const orders: Order[] = [];
+        const orderCounter = await this.getOrderCounter(supplierAddress);
+        for (let i = 1; i <= orderCounter; i++) {
+            orders.push(await this.getOrderInfo(supplierAddress, i));
+        }
+        return orders;
+    }
+
+    async getOrderLines(supplierAddress: string, orderId: number) : Promise<OrderLine[]> {
+        const order = await this.getOrderInfo(supplierAddress, orderId);
+        return Promise.all(order.lineIds.map(async (lineId) => this.getOrderLine(supplierAddress, orderId, lineId)));
+    }
+
     async getBlockNumbersByOrderId(id: number): Promise<Map<OrderEvents, number[]>> {
         return this._orderDriver.getBlockNumbersByOrderId(id);
     }

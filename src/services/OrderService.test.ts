@@ -212,4 +212,30 @@ describe('OrderService', () => {
         expect(expectedMockedFunction).toHaveBeenCalledTimes(1);
         expect(expectedMockedFunction).toHaveBeenNthCalledWith(1, ...expectedMockedFunctionArgs);
     });
+
+    it('should get all orders', async () => {
+        const address = 'testAddress';
+        mockedOrderDriver.getOrderCounter = jest.fn().mockResolvedValue(2);
+        await orderService.getOrders(address);
+
+        expect(mockedOrderDriver.getOrderCounter).toHaveBeenCalledTimes(1);
+        expect(mockedOrderDriver.getOrderCounter).toHaveBeenNthCalledWith(1, address);
+
+        expect(mockedOrderDriver.getOrderInfo).toHaveBeenCalledTimes(2);
+        expect(mockedOrderDriver.getOrderInfo).toHaveBeenNthCalledWith(1, address, 1, undefined);
+        expect(mockedOrderDriver.getOrderInfo).toHaveBeenNthCalledWith(2, address, 2, undefined);
+    });
+
+    it('should get all order lines', async () => {
+        const address = 'testAddress';
+        mockedOrderDriver.getOrderInfo = jest.fn().mockResolvedValue({ lineIds: [1, 2] });
+        await orderService.getOrderLines(address, 1);
+
+        expect(mockedOrderDriver.getOrderInfo).toHaveBeenCalledTimes(1);
+        expect(mockedOrderDriver.getOrderInfo).toHaveBeenNthCalledWith(1, address, 1, undefined);
+
+        expect(mockedOrderDriver.getOrderLine).toHaveBeenCalledTimes(2);
+        expect(mockedOrderDriver.getOrderLine).toHaveBeenNthCalledWith(1, address, 1, 1, undefined);
+        expect(mockedOrderDriver.getOrderLine).toHaveBeenNthCalledWith(2, address, 1, 2, undefined);
+    });
 });

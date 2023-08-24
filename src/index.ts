@@ -9,6 +9,9 @@ export { RelationshipService } from './services/RelationshipService';
 export { SupplyChainDriver } from './drivers/SupplyChainDriver';
 export { SupplyChainService } from './services/SupplyChainService';
 
+export { OrderDriver } from './drivers/OrderDriver';
+export { OrderService } from './services/OrderService';
+
 export { Material } from './entities/Material';
 export { Trade } from './entities/Trade';
 export { Transformation } from './entities/Transformation';

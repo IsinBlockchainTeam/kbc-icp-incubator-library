@@ -35,27 +35,27 @@ export class SupplyChainService {
     }
 
     async getMaterialsCounter(companyAddress: string): Promise<number> {
-        return await this._supplyChainDriver.getMaterialsCounter(companyAddress);
+        return this._supplyChainDriver.getMaterialsCounter(companyAddress);
     }
 
     async getTradesCounter(companyAddress: string): Promise<number> {
-        return await this._supplyChainDriver.getTradesCounter(companyAddress);
+        return this._supplyChainDriver.getTradesCounter(companyAddress);
     }
 
     async getTransformationsCounter(companyAddress: string): Promise<number> {
-        return await this._supplyChainDriver.getTransformationsCounter(companyAddress);
+        return this._supplyChainDriver.getTransformationsCounter(companyAddress);
     }
 
     async getMaterial(companyAddress: string, id: number): Promise<Material> {
-        return await this._supplyChainDriver.getMaterial(companyAddress, id);
+        return this._supplyChainDriver.getMaterial(companyAddress, id);
     }
 
     async getTrade(companyAddress: string, id: number): Promise<Trade> {
-        return await this._supplyChainDriver.getTrade(companyAddress, id);
+        return this._supplyChainDriver.getTrade(companyAddress, id);
     }
 
     async getTransformation(companyAddress: string, id: number): Promise<Transformation> {
-        return await this._supplyChainDriver.getTransformation(companyAddress, id);
+        return this._supplyChainDriver.getTransformation(companyAddress, id);
     }
 
     async getMaterials(companyAddress: string): Promise<Material[]> {
