@@ -111,7 +111,7 @@ contract OrderManager is AccessControl {
         emit OrderRegistered(orderId, supplier);
     }
 
-    function getOrderCounter(address supplier) public view returns (uint256 counter) {
+    function getOrderCounter(address supplier) public view returns (uint256) {
         return ordersCounter[supplier].current();
     }
 
