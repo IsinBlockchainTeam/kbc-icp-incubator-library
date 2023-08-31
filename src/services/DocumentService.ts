@@ -28,6 +28,11 @@ export class DocumentService {
         return this._documentDriver.getTransactionDocumentIds(ownerAddress, transactionId);
     }
 
+    async getDocumentsByTransaction(ownerAddress: string, transactionId: number): Promise<Document[]> {
+        const documentIds = await this.getTransactionDocumentIds(ownerAddress, transactionId);
+        return Promise.all(documentIds.map(async (id) => this.getDocumentInfo(ownerAddress, transactionId, id)));
+    }
+
     async addAdmin(address: string): Promise<void> {
         await this._documentDriver.addAdmin(address);
     }

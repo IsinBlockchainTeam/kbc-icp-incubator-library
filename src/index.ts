@@ -12,6 +12,9 @@ export { SupplyChainService } from './services/SupplyChainService';
 export { OrderDriver } from './drivers/OrderDriver';
 export { OrderService } from './services/OrderService';
 
+export { DocumentDriver } from './drivers/DocumentDriver';
+export { DocumentService } from './services/DocumentService';
+
 export { Material } from './entities/Material';
 export { Trade } from './entities/Trade';
 export { Transformation } from './entities/Transformation';

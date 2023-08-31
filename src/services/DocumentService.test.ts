@@ -93,4 +93,16 @@ describe('DocumentService', () => {
         expect(expectedMockedFunction).toHaveBeenCalledTimes(1);
         expect(expectedMockedFunction).toHaveBeenNthCalledWith(1, ...expectedMockedFunctionArgs);
     });
+
+    it('should get documents by transaction', async () => {
+        mockedDocumentDriver.getTransactionDocumentIds = jest.fn().mockResolvedValue([1, 2]);
+        await documentService.getDocumentsByTransaction(owner, transactionId);
+
+        expect(mockedDocumentDriver.getTransactionDocumentIds).toHaveBeenCalledTimes(1);
+        expect(mockedDocumentDriver.getTransactionDocumentIds).toHaveBeenNthCalledWith(1, owner, transactionId);
+
+        expect(mockedDocumentDriver.getDocumentInfo).toHaveBeenCalledTimes(2);
+        expect(mockedDocumentDriver.getDocumentInfo).toHaveBeenNthCalledWith(1, owner, transactionId, 1);
+        expect(mockedDocumentDriver.getDocumentInfo).toHaveBeenNthCalledWith(2, owner, transactionId, 2);
+    });
 });
