@@ -6,6 +6,7 @@ import { Order } from '../entities/Order';
 import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
 import { NegotiationStatus } from '../types/NegotiationStatus';
 import { EntityBuilder } from '../utils/EntityBuilder';
+import { serial } from '../utils/utils';
 
 export enum OrderEvents {
     OrderRegistered,
@@ -56,9 +57,10 @@ export class OrderDriver {
     }
 
     async addOrderLines(supplierAddress: string, orderId: number, lines: OrderLine[]): Promise<void> {
-        await Promise.all(lines.map(async (line) => {
+        const orderLineFunctions = lines.map((line) => async () => {
             await this.addOrderLine(supplierAddress, orderId, line.productCategory, line.quantity, line.price);
-        }));
+        });
+        await serial(orderLineFunctions);
     }
 
     async getOrderCounter(supplierAddress: string): Promise<number> {

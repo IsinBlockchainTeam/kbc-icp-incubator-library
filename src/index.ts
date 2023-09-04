@@ -17,6 +17,8 @@ export { DocumentService } from './services/DocumentService';
 
 export { Material } from './entities/Material';
 export { Trade } from './entities/Trade';
+export { Order } from './entities/Order';
+export { OrderLine, OrderLinePrice } from './entities/OrderLine';
 export { Transformation } from './entities/Transformation';
 
 export { GraphService } from './services/GraphService';
