@@ -11,6 +11,9 @@ import {
 } from './config';
 import OrderService from '../services/OrderService';
 import { OrderDriver } from '../drivers/OrderDriver';
+import PinataIPFSDriver from '../drivers/PinataIPFSDriver';
+import { IPFSService } from '../services/IPFSService';
+import { ResolvedDocument } from '../entities/ResolvedDocument';
 
 describe('Document lifecycle', () => {
     let documentService: DocumentService;
@@ -20,6 +23,9 @@ describe('Document lifecycle', () => {
 
     let orderService: OrderService;
     let orderDriver: OrderDriver;
+
+    let pinataDriver: PinataIPFSDriver;
+    let pinataService: IPFSService;
 
     const externalUrl = 'externalUrl';
     const deadline = new Date('2030-10-10');
@@ -80,6 +86,9 @@ describe('Document lifecycle', () => {
         provider = new ethers.providers.JsonRpcProvider(NETWORK);
         _defineSender(SUPPLIER_INVOKER_PRIVATE_KEY);
         _defineOrderSender(SUPPLIER_INVOKER_PRIVATE_KEY);
+
+        pinataDriver = new PinataIPFSDriver(process.env.PINATA_API_KEY!, process.env.PINATA_SECRET_API_KEY!);
+        pinataService = new IPFSService(pinataDriver);
         await documentService.addOrderManager(ORDER_MANAGER_CONTRACT_ADDRESS);
     });
 
@@ -87,6 +96,10 @@ describe('Document lifecycle', () => {
         _defineSender(CUSTOMER_INVOKER_PRIVATE_KEY);
         const fn = () => documentService.registerDocument(CUSTOMER_INVOKER_ADDRESS, transactionId, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
         await expect(fn).rejects.toThrowError(/Sender has no permissions/);
+    });
+
+    it('Should store the document blob file inside an IPFS by using Pinata', async () => {
+        const documentMetadata = new ResolvedDocument('doc1.pdf', '');
     });
 
     it('Should register a document by invoking the order manager contract and retrieve it', async () => {

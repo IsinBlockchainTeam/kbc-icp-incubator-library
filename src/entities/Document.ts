@@ -1,3 +1,5 @@
+import { ResolvedDocument } from './ResolvedDocument';
+
 export class Document {
     private _id: number;
 
@@ -60,11 +62,11 @@ export class Document {
         this._documentType = value;
     }
 
-    get externalUrl(): string {
-        return this._externalUrl;
+    get metadata(): ResolvedDocument | undefined {
+        return this._metadata;
     }
 
-    set externalUrl(value: string) {
-        this._externalUrl = value;
+    set metadata(value: ResolvedDocument | undefined) {
+        this._metadata = value;
     }
 }
