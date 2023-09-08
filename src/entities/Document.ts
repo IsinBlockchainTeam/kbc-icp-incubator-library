@@ -1,6 +1,10 @@
-import { ResolvedDocument } from './ResolvedDocument';
+import { IPFSService, PinataIPFSDriver } from '@blockchain-lib/common';
+import { DocumentFile } from './DocumentFile';
+import { envVariables } from '../utils/constants';
 
 export class Document {
+    private _ipfsService?: IPFSService;
+
     private _id: number;
 
     private _owner: string;
@@ -12,6 +16,8 @@ export class Document {
     private _documentType: string;
 
     private _externalUrl: string;
+
+    private _file?: DocumentFile;
 
     constructor(id: number, owner: string, transactionId: number, name: string, documentType: string, externalUrl: string) {
         this._id = id;
@@ -62,11 +68,18 @@ export class Document {
         this._documentType = value;
     }
 
-    get metadata(): ResolvedDocument | undefined {
-        return this._metadata;
-    }
+    get file(): Promise<DocumentFile | undefined> {
+        if (!this._ipfsService) this._ipfsService = new IPFSService(new PinataIPFSDriver(envVariables.PINATA_API_KEY(), envVariables.PINATA_SECRET_API_KEY()));
 
-    set metadata(value: ResolvedDocument | undefined) {
-        this._metadata = value;
+        return (async () => {
+            try {
+                const { filename, fileUrl } = await this._ipfsService!.retrieveJSON(this._externalUrl);
+                const fileContent = await this._ipfsService!.retrieveFile(fileUrl);
+                return new DocumentFile(filename, fileContent);
+            } catch (e) {
+                console.error('Error while retrieve document file from IPFS: ', e);
+            }
+            return undefined;
+        })();
     }
 }

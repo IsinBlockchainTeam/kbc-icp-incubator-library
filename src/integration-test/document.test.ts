@@ -1,5 +1,9 @@
+import fs from 'fs';
+import path from 'path';
+import * as dotenv from 'dotenv';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { ethers, Signer } from 'ethers';
+import { IPFSService, PinataIPFSDriver } from '@blockchain-lib/common';
 import DocumentService from '../services/DocumentService';
 import { DocumentDriver } from '../drivers/DocumentDriver';
 import {
@@ -11,9 +15,8 @@ import {
 } from './config';
 import OrderService from '../services/OrderService';
 import { OrderDriver } from '../drivers/OrderDriver';
-import PinataIPFSDriver from '../drivers/PinataIPFSDriver';
-import { IPFSService } from '../services/IPFSService';
-import { ResolvedDocument } from '../entities/ResolvedDocument';
+
+dotenv.config();
 
 describe('Document lifecycle', () => {
     let documentService: DocumentService;
@@ -27,6 +30,7 @@ describe('Document lifecycle', () => {
     let pinataDriver: PinataIPFSDriver;
     let pinataService: IPFSService;
 
+    const localFilename = 'samplePdf.pdf';
     const externalUrl = 'externalUrl';
     const deadline = new Date('2030-10-10');
     const arbiter = 'arbiter 1', shipper = 'shipper 1', deliveryPort = 'delivery port', shippingPort = 'shipping port';
@@ -83,6 +87,7 @@ describe('Document lifecycle', () => {
     };
 
     beforeAll(async () => {
+        jest.setTimeout(10000);
         provider = new ethers.providers.JsonRpcProvider(NETWORK);
         _defineSender(SUPPLIER_INVOKER_PRIVATE_KEY);
         _defineOrderSender(SUPPLIER_INVOKER_PRIVATE_KEY);
@@ -98,13 +103,14 @@ describe('Document lifecycle', () => {
         await expect(fn).rejects.toThrowError(/Sender has no permissions/);
     });
 
-    it('Should store the document blob file inside an IPFS by using Pinata', async () => {
-        const documentMetadata = new ResolvedDocument('doc1.pdf', '');
-    });
-
     it('Should register a document by invoking the order manager contract and retrieve it', async () => {
+        const filename = 'file1.pdf';
+        const content = fs.createReadStream(path.resolve(__dirname, localFilename));
+        const ipfsFileUrl = await pinataService.storeFile(content);
+        const metadataUrl = await pinataService.storeJSON({ filename, fileUrl: ipfsFileUrl });
+
         transactionId = await createOrderAndConfirm();
-        await orderService.addDocument(SUPPLIER_INVOKER_ADDRESS, transactionId, 'shipped', rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
+        await orderService.addDocument(SUPPLIER_INVOKER_ADDRESS, transactionId, 'shipped', rawDocument.name, rawDocument.documentType, metadataUrl);
 
         documentCounterId = await documentService.getDocumentCounter(SUPPLIER_INVOKER_ADDRESS);
         expect(documentCounterId).toEqual(1);
@@ -113,14 +119,16 @@ describe('Document lifecycle', () => {
         expect(exist).toBeTruthy();
 
         const savedDocument = await documentService.getDocumentInfo(SUPPLIER_INVOKER_ADDRESS, transactionId, documentCounterId);
+        const savedDocumentFile = await savedDocument.file;
+        expect(savedDocumentFile).toBeDefined();
         expect(savedDocument).toBeDefined();
         expect(savedDocument.id).toEqual(documentCounterId);
         expect(savedDocument.owner).toEqual(SUPPLIER_INVOKER_ADDRESS);
         expect(savedDocument.transactionId).toEqual(transactionId);
         expect(savedDocument.name).toEqual(rawDocument.name);
         expect(savedDocument.documentType).toEqual(rawDocument.documentType);
-        expect(savedDocument.externalUrl).toEqual(rawDocument.externalUrl);
-    });
+        expect(savedDocumentFile?.filename).toEqual();
+    }, 20000);
 
     it('Should add another document for the same transaction id and another to other transaction id', async () => {
         transactionId2 = await createOrderAndConfirm();
@@ -140,6 +148,5 @@ describe('Document lifecycle', () => {
         expect(savedTransaction2Document.transactionId).toEqual(transactionId2);
         expect(savedTransaction2Document.name).toEqual(rawDocument.name);
         expect(savedTransaction2Document.documentType).toEqual(rawDocument.documentType);
-        expect(savedTransaction2Document.externalUrl).toEqual(rawDocument.externalUrl);
     });
 });
