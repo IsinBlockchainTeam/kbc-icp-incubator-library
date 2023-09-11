@@ -1,4 +1,10 @@
+import { IPFSService, PinataIPFSDriver } from '@blockchain-lib/common';
+import { envVariables } from '../utils/constants';
+import { OrderMetadata } from './OrderMetadata';
+
 export class Order {
+    private _ipfsService?: IPFSService;
+
     private _id: number;
 
     private _lineIds: number[];
@@ -36,6 +42,8 @@ export class Order {
     private _deliveryDeadline?: Date;
 
     private _status?: string;
+
+    private _metadata?: OrderMetadata;
 
     constructor(id: number, supplier: string, customer: string, externalUrl: string, offeree: string, offeror: string, lineIds: number[], incoterms: string, paymentDeadline: Date, documentDeliveryDeadline: Date, shipper: string, arbiter: string, shippingPort: string, shippingDeadline: Date, deliveryPort: string, deliveryDeadline: Date, status: string) {
         this._id = id;
@@ -89,14 +97,6 @@ export class Order {
 
     set customer(value: string) {
         this._customer = value;
-    }
-
-    get externalUrl(): string {
-        return this._externalUrl;
-    }
-
-    set externalUrl(value: string) {
-        this._externalUrl = value;
     }
 
     get offeree(): string {
@@ -209,5 +209,20 @@ export class Order {
 
     set status(value: string | undefined) {
         this._status = value;
+    }
+
+    get metadata(): Promise<OrderMetadata | undefined> {
+        if (!this._ipfsService) this._ipfsService = new IPFSService(new PinataIPFSDriver(envVariables.PINATA_API_KEY(), envVariables.PINATA_SECRET_API_KEY()));
+
+        return (async () => {
+            if (!this._metadata) {
+                try {
+                    return this._ipfsService!.retrieveJSON(this._externalUrl);
+                } catch (e) {
+                    console.error('Error while retrieve document file from IPFS: ', e);
+                }
+            }
+            return this._metadata;
+        })();
     }
 }

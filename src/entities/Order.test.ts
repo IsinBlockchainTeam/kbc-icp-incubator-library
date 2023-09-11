@@ -17,7 +17,6 @@ describe('Order', () => {
         expect(order.customer).toEqual('customer');
         expect(order.offeree).toEqual('offeree');
         expect(order.offeror).toEqual('offeror');
-        expect(order.externalUrl).toEqual('externalUrl');
         expect(order.lineIds).toEqual([1, 2]);
         expect(order.offereeSigned).toBeFalsy();
         expect(order.offerorSigned).toBeFalsy();
@@ -51,11 +50,6 @@ describe('Order', () => {
     it('should correctly set the customer', () => {
         order.customer = 'customer2';
         expect(order.customer).toEqual('customer2');
-    });
-
-    it('should correctly set the externalUrl', () => {
-        order.externalUrl = 'externalUrl2';
-        expect(order.externalUrl).toEqual('externalUrl2');
     });
 
     it('should correctly set the offeree', () => {
@@ -125,5 +119,16 @@ describe('Order', () => {
     it('should correctly set the status', () => {
         order.status = 'on board';
         expect(order.status).toEqual('on board');
+    });
+
+    it('should correctly get the metadata asynchronously', async () => {
+        const orderMetadata = await order.metadata;
+        expect(orderMetadata).toBeDefined();
+        expect(orderMetadata!.issueDate).toEqual(documentBlob.size);
+        expect(ipfsServiceRetrieveJSON).toHaveBeenCalledTimes(1);
+        expect(ipfsServiceRetrieveJSON).toHaveBeenNthCalledWith(1, 'CID');
+
+        expect(ipfsServiceRetrieveFile).toHaveBeenCalledTimes(1);
+        expect(ipfsServiceRetrieveFile).toHaveBeenNthCalledWith(1, fileExternalUrl);
     });
 });

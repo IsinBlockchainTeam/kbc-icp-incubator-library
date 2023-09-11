@@ -1,11 +1,9 @@
-import { ReadStream } from 'fs';
-
 export class DocumentFile {
-    private _filename: string;
+    private readonly _filename: string;
 
-    private _content: ReadStream;
+    private readonly _content: Blob;
 
-    constructor(filename: string, content: ReadStream) {
+    constructor(filename: string, content: Blob) {
         this._filename = filename;
         this._content = content;
     }
@@ -14,7 +12,7 @@ export class DocumentFile {
         return this._filename;
     }
 
-    get content(): ReadStream {
+    get content(): Blob {
         return this._content;
     }
 }

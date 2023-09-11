@@ -64,7 +64,6 @@ describe('Order lifecycle', () => {
         expect(savedOrder.id).toEqual(orderCounterId);
         expect(savedOrder.supplier).toEqual(SUPPLIER_INVOKER_ADDRESS);
         expect(savedOrder.customer).toEqual(CUSTOMER_INVOKER_ADDRESS);
-        expect(savedOrder.externalUrl).toEqual(externalUrl);
         expect(savedOrder.offeree).toEqual(CUSTOMER_INVOKER_ADDRESS);
         expect(savedOrder.offeror).toEqual(SUPPLIER_INVOKER_ADDRESS);
         expect(savedOrder.offereeSigned).toBeFalsy();

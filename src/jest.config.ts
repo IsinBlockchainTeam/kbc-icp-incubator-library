@@ -60,6 +60,7 @@ export default {
 
     setupFiles: [
         '<rootDir>/ts-config.ts',
+        '<rootDir>/jest_env.ts',
     ],
     testPathIgnorePatterns: [
         '<rootDir>/smart-contracts',

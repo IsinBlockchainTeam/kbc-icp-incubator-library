@@ -23,7 +23,6 @@ describe('Document lifecycle', () => {
     let documentDriver: DocumentDriver;
     let provider: JsonRpcProvider;
     let signer: Signer;
-
     let orderService: OrderService;
     let orderDriver: OrderDriver;
 
@@ -105,8 +104,9 @@ describe('Document lifecycle', () => {
 
     it('Should register a document by invoking the order manager contract and retrieve it', async () => {
         const filename = 'file1.pdf';
-        const content = fs.createReadStream(path.resolve(__dirname, localFilename));
-        const ipfsFileUrl = await pinataService.storeFile(content);
+        const fileBuffer = fs.readFileSync(path.resolve(__dirname, localFilename));
+        const content = new Blob([fileBuffer], { type: 'application/pdf' });
+        const ipfsFileUrl = await pinataService.storeFile(content, filename);
         const metadataUrl = await pinataService.storeJSON({ filename, fileUrl: ipfsFileUrl });
 
         transactionId = await createOrderAndConfirm();
@@ -127,7 +127,8 @@ describe('Document lifecycle', () => {
         expect(savedDocument.transactionId).toEqual(transactionId);
         expect(savedDocument.name).toEqual(rawDocument.name);
         expect(savedDocument.documentType).toEqual(rawDocument.documentType);
-        expect(savedDocumentFile?.filename).toEqual();
+        expect(savedDocumentFile!.filename).toEqual(filename);
+        expect(savedDocumentFile!.content.size).toEqual(content.size);
     }, 20000);
 
     it('Should add another document for the same transaction id and another to other transaction id', async () => {

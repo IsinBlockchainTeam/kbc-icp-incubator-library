@@ -15,7 +15,7 @@ export class Document {
 
     private _documentType: string;
 
-    private _externalUrl: string;
+    private readonly _externalUrl: string;
 
     private _file?: DocumentFile;
 
@@ -72,14 +72,16 @@ export class Document {
         if (!this._ipfsService) this._ipfsService = new IPFSService(new PinataIPFSDriver(envVariables.PINATA_API_KEY(), envVariables.PINATA_SECRET_API_KEY()));
 
         return (async () => {
-            try {
-                const { filename, fileUrl } = await this._ipfsService!.retrieveJSON(this._externalUrl);
-                const fileContent = await this._ipfsService!.retrieveFile(fileUrl);
-                return new DocumentFile(filename, fileContent);
-            } catch (e) {
-                console.error('Error while retrieve document file from IPFS: ', e);
+            if (!this._file) {
+                try {
+                    const { filename, fileUrl } = await this._ipfsService!.retrieveJSON(this._externalUrl);
+                    const fileContent = await this._ipfsService!.retrieveFile(fileUrl);
+                    if (fileContent) this._file = new DocumentFile(filename, fileContent);
+                } catch (e) {
+                    console.error('Error while retrieve document file from IPFS: ', e);
+                }
             }
-            return undefined;
+            return this._file;
         })();
     }
 }
