@@ -91,7 +91,7 @@ describe('Document lifecycle', () => {
         _defineSender(SUPPLIER_INVOKER_PRIVATE_KEY);
         _defineOrderSender(SUPPLIER_INVOKER_PRIVATE_KEY);
 
-        pinataDriver = new PinataIPFSDriver(process.env.PINATA_API_KEY!, process.env.PINATA_SECRET_API_KEY!);
+        pinataDriver = new PinataIPFSDriver(process.env.PINATA_API_KEY!, process.env.PINATA_SECRET_API_KEY!, process.env.PINATA_GATEWAY_URL!, process.env.PINATA_GATEWAY_TOKEN!);
         pinataService = new IPFSService(pinataDriver);
         await documentService.addOrderManager(ORDER_MANAGER_CONTRACT_ADDRESS);
     });

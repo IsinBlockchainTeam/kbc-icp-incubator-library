@@ -13,7 +13,7 @@ export class Order {
 
     private _customer: string;
 
-    private _externalUrl: string;
+    private readonly _externalUrl: string;
 
     private _offeree: string;
 
@@ -217,9 +217,10 @@ export class Order {
         return (async () => {
             if (!this._metadata) {
                 try {
-                    return this._ipfsService!.retrieveJSON(this._externalUrl);
+                    const metadata = await this._ipfsService!.retrieveJSON(this._externalUrl);
+                    if (metadata) this._metadata = metadata;
                 } catch (e) {
-                    console.error('Error while retrieve document file from IPFS: ', e);
+                    console.error('Error while retrieve order metadata from IPFS: ', e);
                 }
             }
             return this._metadata;

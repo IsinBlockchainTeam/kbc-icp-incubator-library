@@ -2,20 +2,16 @@ import { Blob } from 'buffer';
 import { IPFSService } from '@blockchain-lib/common';
 import { Document } from './Document';
 
-// jest.mock('@blockchain-lib/common', () => ({
-//     PinataIPFSDriver: jest.fn(),
-//     IPFSService: jest.fn(),
-// }));
 describe('Document', () => {
     let document: Document;
     const metadataExternalUrl = 'CID';
     const fileExternalUrl = 'CID_file_blob';
-    const ipfsServiceRetrieveJSON = jest.spyOn(IPFSService.prototype, 'retrieveJSON');
-    const ipfsServiceRetrieveFile = jest.spyOn(IPFSService.prototype, 'retrieveFile');
+    const ipfsServiceRetrieveJSONSpy = jest.spyOn(IPFSService.prototype, 'retrieveJSON');
+    const ipfsServiceRetrieveFileSpy = jest.spyOn(IPFSService.prototype, 'retrieveFile');
     const documentBlob = new Blob(['b', 'l', 'o', 'b']);
 
-    ipfsServiceRetrieveJSON.mockResolvedValue({ fileUrl: fileExternalUrl });
-    ipfsServiceRetrieveFile.mockResolvedValue(documentBlob);
+    ipfsServiceRetrieveJSONSpy.mockResolvedValue({ fileUrl: fileExternalUrl });
+    ipfsServiceRetrieveFileSpy.mockResolvedValue(documentBlob);
 
     // mockedIpfsService.retrieveJSON = jest.fn().mockResolvedValue({ fileUrl: fileExternalUrl });
     // mockedIpfsService.retrieveFile = jest.fn().mockResolvedValue(new Blob(['b', 'l', 'o', 'b']));
@@ -61,10 +57,10 @@ describe('Document', () => {
         const documentFile = await document.file;
         expect(documentFile).toBeDefined();
         expect(documentFile!.content.size).toEqual(documentBlob.size);
-        expect(ipfsServiceRetrieveJSON).toHaveBeenCalledTimes(1);
-        expect(ipfsServiceRetrieveJSON).toHaveBeenNthCalledWith(1, 'CID');
+        expect(ipfsServiceRetrieveJSONSpy).toHaveBeenCalledTimes(1);
+        expect(ipfsServiceRetrieveJSONSpy).toHaveBeenNthCalledWith(1, metadataExternalUrl);
 
-        expect(ipfsServiceRetrieveFile).toHaveBeenCalledTimes(1);
-        expect(ipfsServiceRetrieveFile).toHaveBeenNthCalledWith(1, fileExternalUrl);
+        expect(ipfsServiceRetrieveFileSpy).toHaveBeenCalledTimes(1);
+        expect(ipfsServiceRetrieveFileSpy).toHaveBeenNthCalledWith(1, fileExternalUrl);
     });
 });

@@ -1,12 +1,18 @@
+import { IPFSService } from '@blockchain-lib/common';
 import { Order } from './Order';
 
 describe('Order', () => {
     let order: Order;
     const deadline = new Date('2030-10-10');
     const deadline2 = new Date('2050-05-05');
+    const metadataExternalUrl = 'CID';
+    const ipfsServiceRetrieveJSONSpy = jest.spyOn(IPFSService.prototype, 'retrieveJSON');
+    const orderMetadata = { issueDate: new Date() };
+
+    ipfsServiceRetrieveJSONSpy.mockResolvedValue(orderMetadata);
 
     beforeAll(() => {
-        order = new Order(0, 'supplier', 'customer', 'externalUrl', 'offeree', 'offeror', [1, 2],
+        order = new Order(0, 'supplier', 'customer', metadataExternalUrl, 'offeree', 'offeror', [1, 2],
             'FOB', deadline, deadline, 'shipper', 'arbiter', 'shipping port',
             deadline, 'delivery port', deadline, 'shipped');
     });
@@ -122,13 +128,10 @@ describe('Order', () => {
     });
 
     it('should correctly get the metadata asynchronously', async () => {
-        const orderMetadata = await order.metadata;
-        expect(orderMetadata).toBeDefined();
-        expect(orderMetadata!.issueDate).toEqual(documentBlob.size);
-        expect(ipfsServiceRetrieveJSON).toHaveBeenCalledTimes(1);
-        expect(ipfsServiceRetrieveJSON).toHaveBeenNthCalledWith(1, 'CID');
-
-        expect(ipfsServiceRetrieveFile).toHaveBeenCalledTimes(1);
-        expect(ipfsServiceRetrieveFile).toHaveBeenNthCalledWith(1, fileExternalUrl);
+        const metadata = await order.metadata;
+        expect(metadata).toBeDefined();
+        expect(metadata!.issueDate).toEqual(orderMetadata.issueDate);
+        expect(ipfsServiceRetrieveJSONSpy).toHaveBeenCalledTimes(1);
+        expect(ipfsServiceRetrieveJSONSpy).toHaveBeenNthCalledWith(1, metadataExternalUrl);
     });
 });
