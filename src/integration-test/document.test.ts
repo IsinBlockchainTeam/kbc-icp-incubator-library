@@ -18,7 +18,7 @@ import { OrderDriver } from '../drivers/OrderDriver';
 
 dotenv.config();
 
-describe('Document lifecycle', () => {
+describe('DocumentInfo lifecycle', () => {
     let documentService: DocumentService;
     let documentDriver: DocumentDriver;
     let provider: JsonRpcProvider;
@@ -54,7 +54,8 @@ describe('Document lifecycle', () => {
             signer,
             DOCUMENT_MANAGER_CONTRACT_ADDRESS,
         );
-        documentService = new DocumentService(documentDriver);
+
+        documentService = new DocumentService(documentDriver, pinataService);
     };
 
     const _defineOrderSender = (privateKey: string) => {
@@ -90,7 +91,6 @@ describe('Document lifecycle', () => {
         provider = new ethers.providers.JsonRpcProvider(NETWORK);
         _defineSender(SUPPLIER_INVOKER_PRIVATE_KEY);
         _defineOrderSender(SUPPLIER_INVOKER_PRIVATE_KEY);
-
         pinataDriver = new PinataIPFSDriver(process.env.PINATA_API_KEY!, process.env.PINATA_SECRET_API_KEY!, process.env.PINATA_GATEWAY_URL!, process.env.PINATA_GATEWAY_TOKEN!);
         pinataService = new IPFSService(pinataDriver);
         await documentService.addOrderManager(ORDER_MANAGER_CONTRACT_ADDRESS);
@@ -102,7 +102,7 @@ describe('Document lifecycle', () => {
         await expect(fn).rejects.toThrowError(/Sender has no permissions/);
     });
 
-    it('Should register a document by invoking the order manager contract and retrieve it', async () => {
+    it('Should register a document (and storing it to ipfs) by invoking the order manager contract and retrieve it', async () => {
         const filename = 'file1.pdf';
         const fileBuffer = fs.readFileSync(path.resolve(__dirname, localFilename));
         const content = new Blob([fileBuffer], { type: 'application/pdf' });
@@ -119,7 +119,7 @@ describe('Document lifecycle', () => {
         expect(exist).toBeTruthy();
 
         const savedDocument = await documentService.getDocumentInfo(SUPPLIER_INVOKER_ADDRESS, transactionId, documentCounterId);
-        const savedDocumentFile = await savedDocument.file;
+        const savedDocumentFile = await documentService.getCompleteDocument(savedDocument);
         expect(savedDocumentFile).toBeDefined();
         expect(savedDocument).toBeDefined();
         expect(savedDocument.id).toEqual(documentCounterId);
@@ -129,6 +129,7 @@ describe('Document lifecycle', () => {
         expect(savedDocument.documentType).toEqual(rawDocument.documentType);
         expect(savedDocumentFile!.filename).toEqual(filename);
         expect(savedDocumentFile!.content.size).toEqual(content.size);
+        expect(savedDocumentFile!.content.type).toEqual(content.type);
     }, 20000);
 
     it('Should add another document for the same transaction id and another to other transaction id', async () => {

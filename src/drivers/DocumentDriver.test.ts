@@ -3,7 +3,7 @@ import { createMock } from 'ts-auto-mock';
 import { BigNumber, ethers, Signer } from 'ethers';
 import { DocumentManager, DocumentManager__factory } from '../smart-contracts';
 import { DocumentDriver } from './DocumentDriver';
-import { Document } from '../entities/Document';
+import { DocumentInfo } from '../entities/DocumentInfo';
 import { EntityBuilder } from '../utils/EntityBuilder';
 
 describe('DocumentDriver', () => {
@@ -30,7 +30,7 @@ describe('DocumentDriver', () => {
         documentType: 'Bill of lading',
         externalUrl: 'externalUrl',
     };
-    const mockedDocument = createMock<Document>();
+    const mockedDocument = createMock<DocumentInfo>();
 
     beforeAll(() => {
         mockedWriteFunction.mockResolvedValue({

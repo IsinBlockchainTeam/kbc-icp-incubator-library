@@ -1,6 +1,8 @@
 import { createMock } from 'ts-auto-mock';
+import { IPFSService } from '@blockchain-lib/common';
 import DocumentService from './DocumentService';
 import { DocumentDriver } from '../drivers/DocumentDriver';
+import { DocumentInfo } from '../entities/DocumentInfo';
 
 describe('DocumentService', () => {
     const owner = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8';
@@ -23,8 +25,12 @@ describe('DocumentService', () => {
         addOrderManager: jest.fn(),
         removeOrderManager: jest.fn(),
     });
+    const mockedIPFSService = createMock<IPFSService>({
+        retrieveJSON: jest.fn(),
+        retrieveFile: jest.fn(),
+    });
 
-    const documentService = new DocumentService(
+    let documentService = new DocumentService(
         mockedDocumentDriver,
     );
 
@@ -96,7 +102,7 @@ describe('DocumentService', () => {
 
     it('should get documents by transaction', async () => {
         mockedDocumentDriver.getTransactionDocumentIds = jest.fn().mockResolvedValue([1, 2]);
-        await documentService.getDocumentsByTransaction(owner, transactionId);
+        await documentService.getDocumentsInfoByTransaction(owner, transactionId);
 
         expect(mockedDocumentDriver.getTransactionDocumentIds).toHaveBeenCalledTimes(1);
         expect(mockedDocumentDriver.getTransactionDocumentIds).toHaveBeenNthCalledWith(1, owner, transactionId);
@@ -104,5 +110,29 @@ describe('DocumentService', () => {
         expect(mockedDocumentDriver.getDocumentInfo).toHaveBeenCalledTimes(2);
         expect(mockedDocumentDriver.getDocumentInfo).toHaveBeenNthCalledWith(1, owner, transactionId, 1);
         expect(mockedDocumentDriver.getDocumentInfo).toHaveBeenNthCalledWith(2, owner, transactionId, 2);
+    });
+
+    it('should get complete document with file retrieved from IPFS', async () => {
+        documentService = new DocumentService(
+            mockedDocumentDriver, mockedIPFSService,
+        );
+        mockedIPFSService.retrieveJSON = jest.fn().mockResolvedValue({ filename: 'file1.pdf', fileUrl: 'fileUrl' });
+        const documentInfo = new DocumentInfo(0, 'owner', 1, 'doc name', 'doc type', 'metadataExternalUrl');
+        await documentService.getCompleteDocument(documentInfo);
+
+        expect(mockedIPFSService.retrieveJSON).toHaveBeenCalledTimes(1);
+        expect(mockedIPFSService.retrieveJSON).toHaveBeenNthCalledWith(1, documentInfo.externalUrl);
+
+        expect(mockedIPFSService.retrieveFile).toHaveBeenCalledTimes(1);
+        expect(mockedIPFSService.retrieveFile).toHaveBeenNthCalledWith(1, 'fileUrl');
+    });
+
+    it('should throw error if try to get complete document with file retrieved from IPFS, without passing ipfs service to constructor', async () => {
+        documentService = new DocumentService(
+            mockedDocumentDriver,
+        );
+        const documentInfo = new DocumentInfo(0, 'owner', 1, 'doc name', 'doc type', 'metadataExternalUrl');
+        const fn = async () => documentService.getCompleteDocument(documentInfo);
+        await expect(fn).rejects.toThrowError(new Error('IPFS Service not available'));
     });
 });

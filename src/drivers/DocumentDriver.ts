@@ -3,7 +3,7 @@
 /* eslint-disable no-await-in-loop */
 import { Signer, utils } from 'ethers';
 import { DocumentManager, DocumentManager__factory } from '../smart-contracts';
-import { Document } from '../entities/Document';
+import { DocumentInfo } from '../entities/DocumentInfo';
 import { EntityBuilder } from '../utils/EntityBuilder';
 
 export class DocumentDriver {
@@ -56,7 +56,7 @@ export class DocumentDriver {
         }
     }
 
-    async getDocumentInfo(ownerAddress: string, transactionId: number, documentId: number): Promise<Document> {
+    async getDocumentInfo(ownerAddress: string, transactionId: number, documentId: number): Promise<DocumentInfo> {
         if (!utils.isAddress(ownerAddress)) throw new Error('Owner not an address');
 
         try {

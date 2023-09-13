@@ -1,87 +1,30 @@
-import { IPFSService, PinataIPFSDriver } from '@blockchain-lib/common';
-import { DocumentFile } from './DocumentFile';
-import { envVariables } from '../utils/constants';
+import { Blob } from 'buffer';
+import { DocumentInfo } from './DocumentInfo';
 
-export class Document {
-    private _ipfsService?: IPFSService;
+export class Document extends DocumentInfo {
+    private _filename: string;
 
-    private _id: number;
+    private _content: Blob;
 
-    private _owner: string;
-
-    private _transactionId: number;
-
-    private _name: string;
-
-    private _documentType: string;
-
-    private readonly _externalUrl: string;
-
-    private _file?: DocumentFile;
-
-    constructor(id: number, owner: string, transactionId: number, name: string, documentType: string, externalUrl: string) {
-        this._id = id;
-        this._owner = owner;
-        this._transactionId = transactionId;
-        this._name = name;
-        this._documentType = documentType;
-        this._externalUrl = externalUrl;
+    constructor(documentInfo: DocumentInfo, filename: string, content: Blob) {
+        super(documentInfo.id, documentInfo.owner, documentInfo.transactionId, documentInfo.name, documentInfo.documentType, documentInfo.externalUrl);
+        this._filename = filename;
+        this._content = content;
     }
 
-    get id(): number {
-        return this._id;
+    get filename(): string {
+        return this._filename;
     }
 
-    set id(value: number) {
-        this._id = value;
+    set filename(value: string) {
+        this._filename = value;
     }
 
-    get owner(): string {
-        return this._owner;
+    get content(): Blob {
+        return this._content;
     }
 
-    set owner(value: string) {
-        this._owner = value;
-    }
-
-    get transactionId(): number {
-        return this._transactionId;
-    }
-
-    set transactionId(value: number) {
-        this._transactionId = value;
-    }
-
-    get name(): string {
-        return this._name;
-    }
-
-    set name(value: string) {
-        this._name = value;
-    }
-
-    get documentType(): string {
-        return this._documentType;
-    }
-
-    set documentType(value: string) {
-        this._documentType = value;
-    }
-
-    get file(): Promise<DocumentFile | undefined> {
-        if (!this._ipfsService) this._ipfsService = new IPFSService(new PinataIPFSDriver(envVariables.PINATA_API_KEY(), envVariables.PINATA_SECRET_API_KEY()));
-
-        return (async () => {
-            if (!this._file) {
-                try {
-                    const { filename, fileUrl } = await this._ipfsService!.retrieveJSON(this._externalUrl);
-                    const fileContent = await this._ipfsService!.retrieveFile(fileUrl);
-                    if (fileContent) this._file = new DocumentFile(filename, fileContent);
-                } catch (e) {
-                    console.error('Error while retrieve document file from IPFS: ', e);
-                }
-            }
-            return this._file;
-        })();
+    set content(value: Blob) {
+        this._content = value;
     }
 }

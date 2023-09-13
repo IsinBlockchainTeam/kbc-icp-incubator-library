@@ -1,11 +1,16 @@
+import { IPFSService } from '@blockchain-lib/common';
 import { DocumentDriver } from '../drivers/DocumentDriver';
+import { DocumentInfo } from '../entities/DocumentInfo';
 import { Document } from '../entities/Document';
 
 export class DocumentService {
     private _documentDriver: DocumentDriver;
 
-    constructor(documentDriver: DocumentDriver) {
+    private _ipfsService?: IPFSService;
+
+    constructor(documentDriver: DocumentDriver, ipfsService?: IPFSService) {
         this._documentDriver = documentDriver;
+        this._ipfsService = ipfsService;
     }
 
     async registerDocument(ownerAddress: string, transactionId: number, name: string, documentType: string, externalUrl: string): Promise<void> {
@@ -20,15 +25,27 @@ export class DocumentService {
         return this._documentDriver.documentExists(ownerAddress, transactionId, documentId);
     }
 
-    async getDocumentInfo(ownerAddress: string, transactionId: number, documentId: number): Promise<Document> {
+    async getDocumentInfo(ownerAddress: string, transactionId: number, documentId: number): Promise<DocumentInfo> {
         return this._documentDriver.getDocumentInfo(ownerAddress, transactionId, documentId);
+    }
+
+    async getCompleteDocument(documentInfo: DocumentInfo): Promise<Document | undefined> {
+        if (!this._ipfsService) throw new Error('IPFS Service not available');
+        try {
+            const { filename, fileUrl } = await this._ipfsService!.retrieveJSON(documentInfo.externalUrl);
+            const fileContent = await this._ipfsService!.retrieveFile(fileUrl);
+            if (fileContent) return new Document(documentInfo, filename, fileContent);
+        } catch (e) {
+            console.error('Error while retrieve document file from IPFS: ', e);
+        }
+        return undefined;
     }
 
     async getTransactionDocumentIds(ownerAddress: string, transactionId: number): Promise<number[]> {
         return this._documentDriver.getTransactionDocumentIds(ownerAddress, transactionId);
     }
 
-    async getDocumentsByTransaction(ownerAddress: string, transactionId: number): Promise<Document[]> {
+    async getDocumentsInfoByTransaction(ownerAddress: string, transactionId: number): Promise<DocumentInfo[]> {
         const documentIds = await this.getTransactionDocumentIds(ownerAddress, transactionId);
         return Promise.all(documentIds.map(async (id) => this.getDocumentInfo(ownerAddress, transactionId, id)));
     }

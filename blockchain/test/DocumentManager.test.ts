@@ -89,10 +89,10 @@ describe('DocumentManager', () => {
             expect(exist).to.be.true;
         });
 
-        it('should try to retrieve a document - FAIL (Document does not exist)', async () => {
+        it('should try to retrieve a document - FAIL (DocumentInfo does not exist)', async () => {
             documentCounterId = await documentManagerContract.connect(sender).getDocumentCounter(sender.address);
             expect(documentManagerContract.connect(sender).getDocumentInfo(sender.address, transactionId, documentCounterId.toNumber() + 10))
-                .to.be.revertedWith('Document does not exist');
+                .to.be.revertedWith('DocumentInfo does not exist');
         });
     });
 

@@ -12,7 +12,7 @@ import { DocumentManager, OrderManager, RelationshipManager } from '../smart-con
 import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
 import { Order } from '../entities/Order';
 import { Relationship } from '../entities/Relationship';
-import { Document } from '../entities/Document';
+import { DocumentInfo } from '../entities/DocumentInfo';
 
 describe('EntityBuilder', () => {
     describe('buildMaterial', () => {
@@ -130,7 +130,7 @@ describe('EntityBuilder', () => {
             bcDocument.externalUrl = 'external url';
             bcDocument.exists = true;
 
-            const document = new Document(0, 'owner', 2, 'doc name', 'doc type', 'external url');
+            const document = new DocumentInfo(0, 'owner', 2, 'doc name', 'doc type', 'external url');
             expect(EntityBuilder.buildDocument(bcDocument)).toEqual(document);
         });
     });
