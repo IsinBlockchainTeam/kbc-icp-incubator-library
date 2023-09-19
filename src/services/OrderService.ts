@@ -1,25 +1,25 @@
 import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
-import { OrderDriver, OrderEvents } from '../drivers/OrderDriver';
+import { TradeDriver, TradeEvents } from '../drivers/TradeDriver';
 import { Order } from '../entities/Order';
 import { NegotiationStatus } from '../types/NegotiationStatus';
 
 export class OrderService {
-    private _orderDriver: OrderDriver;
+    private _orderDriver: TradeDriver;
 
-    constructor(orderDriver: OrderDriver) {
+    constructor(orderDriver: TradeDriver) {
         this._orderDriver = orderDriver;
     }
 
-    async registerOrder(supplierAddress: string, customerAddress: string, offereeAddress: string, externalUrl: string): Promise<void> {
-        await this._orderDriver.registerOrder(supplierAddress, customerAddress, offereeAddress, externalUrl);
+    async registerTrade(supplierAddress: string, customerAddress: string, offereeAddress: string, externalUrl: string): Promise<void> {
+        await this._orderDriver.registerTrade(supplierAddress, customerAddress, offereeAddress, externalUrl);
     }
 
     async addOrderLines(supplierAddress: string, orderId: number, lines: OrderLine[]): Promise<void> {
         await this._orderDriver.addOrderLines(supplierAddress, orderId, lines);
     }
 
-    async getOrderCounter(supplierAddress: string): Promise<number> {
-        return this._orderDriver.getOrderCounter(supplierAddress);
+    async getTradeCounter(supplierAddress: string): Promise<number> {
+        return this._orderDriver.getTradeCounter(supplierAddress);
     }
 
     async setOrderIncoterms(supplierAddress: string, id: number, incoterms: string): Promise<void> {
@@ -82,8 +82,8 @@ export class OrderService {
         await this._orderDriver.addDocument(supplierAddress, orderId, orderStatus, documentName, documentType, documentExternalUrl);
     }
 
-    async getOrderLine(supplierAddress: string, orderId: number, orderLineId: number, blockNumber?: number): Promise<OrderLine> {
-        return this._orderDriver.getOrderLine(supplierAddress, orderId, orderLineId, blockNumber);
+    async getTradeLine(supplierAddress: string, orderId: number, orderLineId: number, blockNumber?: number): Promise<OrderLine> {
+        return this._orderDriver.getTradeLine(supplierAddress, orderId, orderLineId, blockNumber);
     }
 
     async updateOrderLine(supplierAddress: string, orderId: number, orderLineId: number, productCategory: string, quantity: number, price: OrderLinePrice): Promise<void> {
@@ -96,19 +96,19 @@ export class OrderService {
 
     async getOrders(supplierAddress: string): Promise<Order[]> {
         const orders: Order[] = [];
-        const orderCounter = await this.getOrderCounter(supplierAddress);
+        const orderCounter = await this.getTradeCounter(supplierAddress);
         for (let i = 1; i <= orderCounter; i++) {
             orders.push(await this.getOrderInfo(supplierAddress, i));
         }
         return orders;
     }
 
-    async getOrderLines(supplierAddress: string, orderId: number) : Promise<OrderLine[]> {
+    async getTradeLines(supplierAddress: string, orderId: number) : Promise<OrderLine[]> {
         const order = await this.getOrderInfo(supplierAddress, orderId);
-        return Promise.all(order.lineIds.map(async (lineId) => this.getOrderLine(supplierAddress, orderId, lineId)));
+        return Promise.all(order.lineIds.map(async (lineId) => this.getTradeLine(supplierAddress, orderId, lineId)));
     }
 
-    async getBlockNumbersByOrderId(id: number): Promise<Map<OrderEvents, number[]>> {
+    async getBlockNumbersByOrderId(id: number): Promise<Map<TradeEvents, number[]>> {
         return this._orderDriver.getBlockNumbersByOrderId(id);
     }
 

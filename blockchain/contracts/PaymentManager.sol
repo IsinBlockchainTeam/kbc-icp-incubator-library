@@ -4,7 +4,7 @@ pragma solidity ^0.8.17;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@blockchain-lib/blockchain-common/contracts/EnumerableType.sol";
-import "./OrderManager.sol";
+import "./TradeManager.sol";
 
 contract PaymentManager is AccessControl {
     using Counters for Counters.Counter;
@@ -52,7 +52,7 @@ contract PaymentManager is AccessControl {
     // payer => order id => orderline id => [payment id]
     mapping(address => mapping(uint256 => mapping(uint256 => uint256[]))) private orderLinePayments;
 
-    OrderManager orderManager;
+    TradeManager orderManager;
     EnumerableType fiatManager;
 
     constructor(address[] memory admins, address orderManagerAddress, address fiatManagerAddress) {
@@ -63,7 +63,7 @@ contract PaymentManager is AccessControl {
             grantRole(ADMIN_ROLE, admins[i]);
         }
 
-        orderManager = OrderManager(orderManagerAddress);
+        orderManager = TradeManager(orderManagerAddress);
         fiatManager = EnumerableType(fiatManagerAddress);
     }
 
@@ -112,8 +112,8 @@ contract PaymentManager is AccessControl {
     function addPaymentTarget(uint256 paymentId, address payer, uint256 orderId, uint256 orderLineId) public {
         Payment storage payment = payments[payer][paymentId];
         require(payment.exists, "Payment does not exist");
-        require(orderManager.orderExists(payment.supplier, orderId), "Trying to set an order that does not exist");
-        require(orderManager.orderLineExists(payment.supplier, orderId, orderLineId), "Trying to set an order line that does not exist");
+        require(orderManager.tradeExists(payment.supplier, orderId), "Trying to set an order that does not exist");
+        require(orderManager.tradeLineExists(payment.supplier, orderId, orderLineId), "Trying to set an order line that does not exist");
         require(payment.status != PaymentStatus.FINALIZED, "Payment is already finalized");
         require(payment.payer == msg.sender || payment.supplier == msg.sender, "Sender is neither payer nor supplier");
 
@@ -145,8 +145,8 @@ contract PaymentManager is AccessControl {
     }
 
     function getOrderLinePayments(address payer, uint256 orderId, uint256 orderLineId) public view returns (uint256[] memory paymentIds) {
-        require(orderManager.orderExists(payer, orderId), "Trying to retrieve an order that does not exist");
-        require(orderManager.orderLineExists(payer, orderId, orderLineId), "Trying to retrieve an order line that does not exist");
+        require(orderManager.tradeExists(payer, orderId), "Trying to retrieve an order that does not exist");
+        require(orderManager.tradeLineExists(payer, orderId, orderLineId), "Trying to retrieve an order line that does not exist");
 
         return orderLinePayments[payer][orderId][orderLineId];
     }

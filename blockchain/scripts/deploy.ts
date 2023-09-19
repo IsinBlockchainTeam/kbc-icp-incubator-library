@@ -57,21 +57,12 @@ serial([
             await tx.wait();
         }
     },
-    () => deploy(ContractName.ENUMERABLE_TYPE_MANAGER, [[]], 'EnumerableStatusManager'),
-    async () => {
-        const enums: string[] = ['shipped', 'on_board'];
-        for (let i = 0; i < enums.length; i++) {
-            const tx = await contractMap.get('EnumerableStatusManager')
-                ?.add(enums[i]);
-            await tx.wait();
-        }
-    },
     () => deploy(ContractName.DOCUMENT_MANAGER, [
         [],
         contractMap.get('EnumerableDocumentTypeManager')?.address,
     ]),
     () => deploy(
-        ContractName.ORDER_MANAGER,
+        ContractName.TRADE_MANAGER,
         [[process.env.SUPPLIER_ADMIN || '', process.env.CUSTOMER_ADMIN || ''],
             contractMap.get('EnumerableFiatManager')?.address,
             contractMap.get('EnumerableProductCategoryManager')?.address,

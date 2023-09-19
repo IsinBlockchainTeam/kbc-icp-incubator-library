@@ -9,7 +9,7 @@ export { RelationshipService } from './services/RelationshipService';
 export { SupplyChainDriver } from './drivers/SupplyChainDriver';
 export { SupplyChainService } from './services/SupplyChainService';
 
-export { OrderDriver } from './drivers/OrderDriver';
+export { TradeDriver } from './drivers/TradeDriver';
 export { OrderService } from './services/OrderService';
 
 export { DocumentDriver } from './drivers/DocumentDriver';

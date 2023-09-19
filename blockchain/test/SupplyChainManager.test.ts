@@ -19,7 +19,6 @@ describe('SupplyChainManager', () => {
     describe('Registration', async () => {
         [
             { resource: 'Material', args: ['testMaterial'], expectedResource: { id: BigNumber.from(0), name: 'testMaterial' } },
-            { resource: 'Trade', args: ['testTrade', [[1, 2], [3, 4]]], expectedResource: { id: BigNumber.from(0), name: 'testTrade', materialsIds: [[BigNumber.from(1), BigNumber.from(2)], [BigNumber.from(3), BigNumber.from(4)]] } },
             {
                 resource: 'Transformation',
                 args: ['testTransformation', [1, 2], 3],
@@ -56,9 +55,6 @@ describe('SupplyChainManager', () => {
         [
             {
                 resource: 'Material', registerArgs: ['testMaterial'], updateArgs: [0, 'testMaterialNew'], expectedResource: { id: BigNumber.from(0), name: 'testMaterialNew' },
-            },
-            {
-                resource: 'Trade', registerArgs: ['testTrade', [[1, 2], [3, 4]]], updateArgs: [0, 'testTradeNew', [[5, 6], [7, 8]]], expectedResource: { id: BigNumber.from(0), name: 'testTradeNew', materialsIds: [[BigNumber.from(5), BigNumber.from(6)], [BigNumber.from(7), BigNumber.from(8)]] },
             },
             {
                 resource: 'Transformation',

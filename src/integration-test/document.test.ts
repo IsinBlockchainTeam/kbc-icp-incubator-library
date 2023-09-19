@@ -14,7 +14,7 @@ import {
     SUPPLIER_INVOKER_ADDRESS, SUPPLIER_INVOKER_PRIVATE_KEY,
 } from './config';
 import OrderService from '../services/OrderService';
-import { OrderDriver } from '../drivers/OrderDriver';
+import { TradeDriver } from '../drivers/TradeDriver';
 
 dotenv.config();
 
@@ -24,7 +24,7 @@ describe('DocumentInfo lifecycle', () => {
     let provider: JsonRpcProvider;
     let signer: Signer;
     let orderService: OrderService;
-    let orderDriver: OrderDriver;
+    let orderDriver: TradeDriver;
 
     let pinataDriver: PinataIPFSDriver;
     let pinataService: IPFSService;
@@ -60,7 +60,7 @@ describe('DocumentInfo lifecycle', () => {
 
     const _defineOrderSender = (privateKey: string) => {
         signer = new ethers.Wallet(privateKey, provider);
-        orderDriver = new OrderDriver(
+        orderDriver = new TradeDriver(
             signer,
             ORDER_MANAGER_CONTRACT_ADDRESS,
         );
@@ -68,8 +68,8 @@ describe('DocumentInfo lifecycle', () => {
     };
 
     const createOrderAndConfirm = async (): Promise<number> => {
-        await orderService.registerOrder(SUPPLIER_INVOKER_ADDRESS, CUSTOMER_INVOKER_ADDRESS, CUSTOMER_INVOKER_ADDRESS, externalUrl);
-        const orderId = await orderService.getOrderCounter(SUPPLIER_INVOKER_ADDRESS);
+        await orderService.registerTrade(SUPPLIER_INVOKER_ADDRESS, CUSTOMER_INVOKER_ADDRESS, CUSTOMER_INVOKER_ADDRESS, externalUrl);
+        const orderId = await orderService.getTradeCounter(SUPPLIER_INVOKER_ADDRESS);
         // add all the constraints so that an order can be confirmed (it is required to add a document)
         await orderService.setOrderIncoterms(SUPPLIER_INVOKER_ADDRESS, orderId, 'FOB');
         await orderService.setOrderDocumentDeliveryDeadline(SUPPLIER_INVOKER_ADDRESS, orderId, deadline);

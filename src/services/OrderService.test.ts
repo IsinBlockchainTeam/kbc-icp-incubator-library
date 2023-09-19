@@ -1,6 +1,6 @@
 import { createMock } from 'ts-auto-mock';
 import OrderService from './OrderService';
-import { OrderDriver } from '../drivers/OrderDriver';
+import { TradeDriver } from '../drivers/TradeDriver';
 import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
 
 describe('OrderService', () => {
@@ -14,10 +14,10 @@ describe('OrderService', () => {
     const orderLine = new OrderLine(0, productCategory, quantity, price);
     const deadline = new Date('2030-10-10');
 
-    const mockedOrderDriver: OrderDriver = createMock<OrderDriver>({
-        registerOrder: jest.fn(),
+    const mockedOrderDriver: TradeDriver = createMock<TradeDriver>({
+        registerTrade: jest.fn(),
         addOrderLines: jest.fn(),
-        getOrderCounter: jest.fn(),
+        getTradeCounter: jest.fn(),
         setOrderIncoterms: jest.fn(),
         setOrderPaymentDeadline: jest.fn(),
         setOrderDocumentDeliveryDeadline: jest.fn(),
@@ -33,7 +33,7 @@ describe('OrderService', () => {
         getNegotiationStatus: jest.fn(),
         confirmOrder: jest.fn(),
         addDocument: jest.fn(),
-        getOrderLine: jest.fn(),
+        getTradeLine: jest.fn(),
         addOrderLine: jest.fn(),
         updateOrderLine: jest.fn(),
         getBlockNumbersByOrderId: jest.fn(),
@@ -51,9 +51,9 @@ describe('OrderService', () => {
 
     it.each([
         {
-            serviceFunctionName: 'registerOrder',
-            serviceFunction: () => orderService.registerOrder(supplier, customer, customer, externalUrl),
-            expectedMockedFunction: mockedOrderDriver.registerOrder,
+            serviceFunctionName: 'registerTrade',
+            serviceFunction: () => orderService.registerTrade(supplier, customer, customer, externalUrl),
+            expectedMockedFunction: mockedOrderDriver.registerTrade,
             expectedMockedFunctionArgs: [supplier, customer, customer, externalUrl],
         },
         {
@@ -63,9 +63,9 @@ describe('OrderService', () => {
             expectedMockedFunctionArgs: [supplier, 1, [orderLine]],
         },
         {
-            serviceFunctionName: 'getOrderCounter',
-            serviceFunction: () => orderService.getOrderCounter(supplier),
-            expectedMockedFunction: mockedOrderDriver.getOrderCounter,
+            serviceFunctionName: 'getTradeCounter',
+            serviceFunction: () => orderService.getTradeCounter(supplier),
+            expectedMockedFunction: mockedOrderDriver.getTradeCounter,
             expectedMockedFunctionArgs: [supplier],
         },
         {
@@ -165,15 +165,15 @@ describe('OrderService', () => {
             expectedMockedFunctionArgs: [supplier, 0, 'status', 'doc name', 'doc type', externalUrl],
         },
         {
-            serviceFunctionName: 'getOrderLine',
-            serviceFunction: () => orderService.getOrderLine(supplier, 0, 0),
-            expectedMockedFunction: mockedOrderDriver.getOrderLine,
+            serviceFunctionName: 'getTradeLine',
+            serviceFunction: () => orderService.getTradeLine(supplier, 0, 0),
+            expectedMockedFunction: mockedOrderDriver.getTradeLine,
             expectedMockedFunctionArgs: [supplier, 0, 0, undefined],
         },
         {
-            serviceFunctionName: 'getOrderLine',
-            serviceFunction: () => orderService.getOrderLine(supplier, 0, 0, 25),
-            expectedMockedFunction: mockedOrderDriver.getOrderLine,
+            serviceFunctionName: 'getTradeLine',
+            serviceFunction: () => orderService.getTradeLine(supplier, 0, 0, 25),
+            expectedMockedFunction: mockedOrderDriver.getTradeLine,
             expectedMockedFunctionArgs: [supplier, 0, 0, 25],
         },
         {
@@ -215,11 +215,11 @@ describe('OrderService', () => {
 
     it('should get all orders', async () => {
         const address = 'testAddress';
-        mockedOrderDriver.getOrderCounter = jest.fn().mockResolvedValue(2);
+        mockedOrderDriver.getTradeCounter = jest.fn().mockResolvedValue(2);
         await orderService.getOrders(address);
 
-        expect(mockedOrderDriver.getOrderCounter).toHaveBeenCalledTimes(1);
-        expect(mockedOrderDriver.getOrderCounter).toHaveBeenNthCalledWith(1, address);
+        expect(mockedOrderDriver.getTradeCounter).toHaveBeenCalledTimes(1);
+        expect(mockedOrderDriver.getTradeCounter).toHaveBeenNthCalledWith(1, address);
 
         expect(mockedOrderDriver.getOrderInfo).toHaveBeenCalledTimes(2);
         expect(mockedOrderDriver.getOrderInfo).toHaveBeenNthCalledWith(1, address, 1, undefined);
@@ -229,13 +229,13 @@ describe('OrderService', () => {
     it('should get all order lines', async () => {
         const address = 'testAddress';
         mockedOrderDriver.getOrderInfo = jest.fn().mockResolvedValue({ lineIds: [1, 2] });
-        await orderService.getOrderLines(address, 1);
+        await orderService.getTradeLines(address, 1);
 
         expect(mockedOrderDriver.getOrderInfo).toHaveBeenCalledTimes(1);
         expect(mockedOrderDriver.getOrderInfo).toHaveBeenNthCalledWith(1, address, 1, undefined);
 
-        expect(mockedOrderDriver.getOrderLine).toHaveBeenCalledTimes(2);
-        expect(mockedOrderDriver.getOrderLine).toHaveBeenNthCalledWith(1, address, 1, 1, undefined);
-        expect(mockedOrderDriver.getOrderLine).toHaveBeenNthCalledWith(2, address, 1, 2, undefined);
+        expect(mockedOrderDriver.getTradeLine).toHaveBeenCalledTimes(2);
+        expect(mockedOrderDriver.getTradeLine).toHaveBeenNthCalledWith(1, address, 1, 1, undefined);
+        expect(mockedOrderDriver.getTradeLine).toHaveBeenNthCalledWith(2, address, 1, 2, undefined);
     });
 });

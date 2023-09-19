@@ -1,19 +1,13 @@
 import { IPFSService, PinataIPFSDriver } from '@blockchain-lib/common';
+import { format } from 'logform';
 import { envVariables } from '../utils/constants';
 import { OrderMetadata } from './OrderMetadata';
+import { Trade } from './Trade';
+import metadata = format.metadata;
+import metadata = format.metadata;
 
-export class Order {
+export class Order extends Trade {
     private _ipfsService?: IPFSService;
-
-    private _id: number;
-
-    private _lineIds: number[];
-
-    private _supplier: string;
-
-    private _customer: string;
-
-    private readonly _externalUrl: string;
 
     private _offeree: string;
 
@@ -23,80 +17,37 @@ export class Order {
 
     private _offerorSigned: boolean;
 
-    private _incoterms?: string;
-
     private _paymentDeadline?: Date;
 
     private _documentDeliveryDeadline?: Date;
 
-    private _shipper?: string;
-
     private _arbiter?: string;
-
-    private _shippingPort?: string;
 
     private _shippingDeadline?: Date;
 
-    private _deliveryPort?: string;
-
     private _deliveryDeadline?: Date;
-
-    private _status?: string;
 
     private _metadata?: OrderMetadata;
 
-    constructor(id: number, supplier: string, customer: string, externalUrl: string, offeree: string, offeror: string, lineIds: number[], incoterms: string, paymentDeadline: Date, documentDeliveryDeadline: Date, shipper: string, arbiter: string, shippingPort: string, shippingDeadline: Date, deliveryPort: string, deliveryDeadline: Date, status: string) {
-        this._id = id;
-        this._supplier = supplier;
-        this._customer = customer;
-        this._externalUrl = externalUrl;
+    constructor(id: number, name: string, supplier: string, customer: string, externalUrl: string, offeree: string, offeror: string, lineIds: number[], paymentDeadline: Date, documentDeliveryDeadline: Date, arbiter: string, shippingDeadline: Date, deliveryDeadline: Date) {
+        super(id, name, supplier, customer, externalUrl, lineIds);
         this._offeree = offeree;
         this._offeror = offeror;
-        this._lineIds = lineIds;
         this._offereeSigned = false;
         this._offerorSigned = false;
-        this._incoterms = incoterms !== '' ? incoterms : undefined;
         this._paymentDeadline = paymentDeadline.getTime() !== 0 ? paymentDeadline : undefined;
         this._documentDeliveryDeadline = documentDeliveryDeadline.getTime() !== 0 ? documentDeliveryDeadline : undefined;
-        this._shipper = shipper !== '' ? shipper : undefined;
         this._arbiter = arbiter !== '' ? arbiter : undefined;
-        this._shippingPort = shippingPort !== '' ? shippingPort : undefined;
         this._shippingDeadline = shippingDeadline.getTime() !== 0 ? shippingDeadline : undefined;
-        this._deliveryPort = deliveryPort !== '' ? deliveryPort : undefined;
         this._deliveryDeadline = deliveryDeadline.getTime() !== 0 ? deliveryDeadline : undefined;
-        this._status = status !== '' ? status : undefined;
     }
 
-    get id(): number {
-        return this._id;
+    get ipfsService(): IPFSService {
+        return this._ipfsService;
     }
 
-    set id(value: number) {
-        this._id = value;
-    }
-
-    get lineIds(): number[] {
-        return this._lineIds;
-    }
-
-    set lineIds(value: number[]) {
-        this._lineIds = value;
-    }
-
-    get supplier(): string {
-        return this._supplier;
-    }
-
-    set supplier(value: string) {
-        this._supplier = value;
-    }
-
-    get customer(): string {
-        return this._customer;
-    }
-
-    set customer(value: string) {
-        this._customer = value;
+    set ipfsService(value: IPFSService) {
+        this._ipfsService = value;
     }
 
     get offeree(): string {
@@ -131,86 +82,47 @@ export class Order {
         this._offerorSigned = value;
     }
 
-    get incoterms(): string | undefined {
-        return this._incoterms;
-    }
-
-    set incoterms(value: string | undefined) {
-        this._incoterms = value;
-    }
-
-    get paymentDeadline(): Date | undefined {
+    get paymentDeadline(): Date {
         return this._paymentDeadline;
     }
 
-    set paymentDeadline(value: Date | undefined) {
+    set paymentDeadline(value: Date) {
         this._paymentDeadline = value;
     }
 
-    get documentDeliveryDeadline(): Date | undefined {
+    get documentDeliveryDeadline(): Date {
         return this._documentDeliveryDeadline;
     }
 
-    set documentDeliveryDeadline(value: Date | undefined) {
+    set documentDeliveryDeadline(value: Date) {
         this._documentDeliveryDeadline = value;
     }
 
-    get shipper(): string | undefined {
-        return this._shipper;
-    }
-
-    set shipper(value: string | undefined) {
-        this._shipper = value;
-    }
-
-    get arbiter(): string | undefined {
+    get arbiter(): string {
         return this._arbiter;
     }
 
-    set arbiter(value: string | undefined) {
+    set arbiter(value: string) {
         this._arbiter = value;
     }
 
-    get shippingPort(): string | undefined {
-        return this._shippingPort;
-    }
-
-    set shippingPort(value: string | undefined) {
-        this._shippingPort = value;
-    }
-
-    get shippingDeadline(): Date | undefined {
+    get shippingDeadline(): Date {
         return this._shippingDeadline;
     }
 
-    set shippingDeadline(value: Date | undefined) {
+    set shippingDeadline(value: Date) {
         this._shippingDeadline = value;
     }
 
-    get deliveryPort(): string | undefined {
-        return this._deliveryPort;
-    }
-
-    set deliveryPort(value: string | undefined) {
-        this._deliveryPort = value;
-    }
-
-    get deliveryDeadline(): Date | undefined {
+    get deliveryDeadline(): Date {
         return this._deliveryDeadline;
     }
 
-    set deliveryDeadline(value: Date | undefined) {
+    set deliveryDeadline(value: Date) {
         this._deliveryDeadline = value;
     }
 
-    get status(): string | undefined {
-        return this._status;
-    }
-
-    set status(value: string | undefined) {
-        this._status = value;
-    }
-
+    // TODO: manage externally the metadata information
     get metadata(): Promise<OrderMetadata | undefined> {
         if (!this._ipfsService) this._ipfsService = new IPFSService(new PinataIPFSDriver(envVariables.PINATA_API_KEY(), envVariables.PINATA_SECRET_API_KEY()));
 

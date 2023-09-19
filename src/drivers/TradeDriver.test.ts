@@ -2,13 +2,13 @@
 import { createMock } from 'ts-auto-mock';
 import { BigNumber, ethers, Signer } from 'ethers';
 import { OrderManager, OrderManager__factory } from '../smart-contracts';
-import { OrderDriver } from './OrderDriver';
+import { TradeDriver } from './TradeDriver';
 import { Order } from '../entities/Order';
 import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
 import { EntityBuilder } from '../utils/EntityBuilder';
 
 describe('OrderDriver', () => {
-    let orderDriver: OrderDriver;
+    let orderDriver: TradeDriver;
 
     const testAddress = '0x6C9E9ADB5F57952434A4148b401502d9c6C70318';
     const errorMessage = 'testError';
@@ -18,7 +18,7 @@ describe('OrderDriver', () => {
 
     const mockedOrderConnect = jest.fn();
     const mockedWait = jest.fn();
-    const mockedRegisterOrder = jest.fn();
+    const mockedregisterTrade = jest.fn();
 
     const mockedWriteFunction = jest.fn();
     const mockedReadFunction = jest.fn();
@@ -44,7 +44,7 @@ describe('OrderDriver', () => {
         mockedReadFunction.mockResolvedValue({
             toNumber: jest.fn(),
         });
-        mockedRegisterOrder.mockReturnValue(Promise.resolve({
+        mockedregisterTrade.mockReturnValue(Promise.resolve({
             wait: mockedWait.mockReturnValue({ events: [{ event: 'OrderRegistered' }] }),
         }));
         mockedDecodeEventLog.mockReturnValue({ id: BigNumber.from(0) });
@@ -52,10 +52,10 @@ describe('OrderDriver', () => {
         mockedQueryFilter.mockResolvedValue([{ event: 'eventName' }]);
 
         mockedContract = createMock<OrderManager>({
-            registerOrder: mockedRegisterOrder,
+            registerTrade: mockedregisterTrade,
             getOrderInfo: mockedReadFunction,
             isSupplierOrCustomer: mockedReadFunction,
-            getOrderCounter: mockedReadFunction,
+            getTradeCounter: mockedReadFunction,
             setOrderIncoterms: mockedWriteFunction,
             setOrderPaymentDeadline: mockedWriteFunction,
             setOrderDocumentDeliveryDeadline: mockedWriteFunction,
@@ -69,7 +69,7 @@ describe('OrderDriver', () => {
             confirmOrder: mockedWriteFunction,
             addDocument: mockedWriteFunction,
             getNegotiationStatus: mockedReadFunction,
-            getOrderLine: mockedReadFunction,
+            getTradeLine: mockedReadFunction,
             addOrderLine: mockedWriteFunction,
             updateOrderLine: mockedWriteFunction,
             addAdmin: mockedWriteFunction,
@@ -97,7 +97,7 @@ describe('OrderDriver', () => {
         buildOrderLinePriceSpy.mockReturnValue(mockedOrderLinePrice);
 
         mockedSigner = createMock<Signer>();
-        orderDriver = new OrderDriver(
+        orderDriver = new TradeDriver(
             mockedSigner,
             testAddress,
         );
@@ -107,12 +107,12 @@ describe('OrderDriver', () => {
         jest.restoreAllMocks();
     });
 
-    describe('registerOrder', () => {
+    describe('registerTrade', () => {
         it('should call and wait for register order', async () => {
-            await orderDriver.registerOrder(supplier.address, customer.address, customer.address, externalUrl);
+            await orderDriver.registerTrade(supplier.address, customer.address, customer.address, externalUrl);
 
-            expect(mockedRegisterOrder).toHaveBeenCalledTimes(1);
-            expect(mockedRegisterOrder).toHaveBeenNthCalledWith(
+            expect(mockedregisterTrade).toHaveBeenCalledTimes(1);
+            expect(mockedregisterTrade).toHaveBeenNthCalledWith(
                 1,
                 supplier.address,
                 customer.address,
@@ -130,7 +130,7 @@ describe('OrderDriver', () => {
             };
             const orderLine = new OrderLine(4, 'categoryA', 100, new OrderLinePrice(100.25, price.fiat));
 
-            // mockedRegisterOrder.mockReturnValue(Promise.resolve({
+            // mockedregisterTrade.mockReturnValue(Promise.resolve({
             //     wait: mockedWait.mockReturnValue({ events: [{ event: 'OrderRegistered', data: { id: 1 } }] }),
             // }));
             // mockedDecodeEventLog.mockImplementation((eventName: string, data: Order, topics: string[]) => ({ id: BigNumber.from(data.id) }));
@@ -149,24 +149,24 @@ describe('OrderDriver', () => {
         });
 
         it('should call and wait for register order - transaction fails', async () => {
-            mockedRegisterOrder.mockRejectedValue(new Error(errorMessage));
+            mockedregisterTrade.mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => orderDriver.registerOrder(supplier.address, customer.address, customer.address, externalUrl);
+            const fn = async () => orderDriver.registerTrade(supplier.address, customer.address, customer.address, externalUrl);
             await expect(fn).rejects.toThrowError(new Error(errorMessage));
         });
 
         it('should call and wait for register order - fails for supplier address', async () => {
-            const fn = async () => orderDriver.registerOrder('0xaddress', customer.address, customer.address, externalUrl);
+            const fn = async () => orderDriver.registerTrade('0xaddress', customer.address, customer.address, externalUrl);
             await expect(fn).rejects.toThrowError(new Error('Supplier not an address'));
         });
 
         it('should call and wait for register order - fails for customer address', async () => {
-            const fn = async () => orderDriver.registerOrder(supplier.address, '0xaddress', customer.address, externalUrl);
+            const fn = async () => orderDriver.registerTrade(supplier.address, '0xaddress', customer.address, externalUrl);
             await expect(fn).rejects.toThrowError(new Error('Customer not an address'));
         });
 
         it('should call and wait for register order - fails for offeree address', async () => {
-            const fn = async () => orderDriver.registerOrder(supplier.address, customer.address, '0xaddress', externalUrl);
+            const fn = async () => orderDriver.registerTrade(supplier.address, customer.address, '0xaddress', externalUrl);
             await expect(fn).rejects.toThrowError(new Error('Offeree not an address'));
         });
     });
@@ -184,15 +184,15 @@ describe('OrderDriver', () => {
         });
     });
 
-    describe('getOrderCounter', () => {
+    describe('getTradeCounter', () => {
         it('should get the order counter ids', async () => {
-            await orderDriver.getOrderCounter(supplier.address);
-            expect(mockedContract.getOrderCounter).toHaveBeenCalledTimes(1);
-            expect(mockedContract.getOrderCounter).toHaveBeenNthCalledWith(1, supplier.address);
+            await orderDriver.getTradeCounter(supplier.address);
+            expect(mockedContract.getTradeCounter).toHaveBeenCalledTimes(1);
+            expect(mockedContract.getTradeCounter).toHaveBeenNthCalledWith(1, supplier.address);
         });
 
         it('should get the order counter ids - fails for address', async () => {
-            const fn = async () => orderDriver.getOrderCounter('0xaddress');
+            const fn = async () => orderDriver.getTradeCounter('0xaddress');
             await expect(fn).rejects.toThrowError(new Error('Not an address'));
         });
     });
@@ -476,16 +476,16 @@ describe('OrderDriver', () => {
         });
     });
 
-    describe('getOrderLine', () => {
+    describe('getTradeLine', () => {
         it('should retrieve order line', async () => {
             const orderLine = new OrderLine(3, 'categoryA', 100, new OrderLinePrice(100.25, 'CHF'));
-            mockedContract.getOrderLine = jest.fn().mockResolvedValue(mockedOrderLine);
+            mockedContract.getTradeLine = jest.fn().mockResolvedValue(mockedOrderLine);
 
-            const resp = await orderDriver.getOrderLine(supplier.address, 1, orderLine.id as number);
+            const resp = await orderDriver.getTradeLine(supplier.address, 1, orderLine.id as number);
             expect(resp).toEqual(mockedOrderLine);
 
-            expect(mockedContract.getOrderLine).toHaveBeenCalledTimes(1);
-            expect(mockedContract.getOrderLine).toHaveBeenNthCalledWith(
+            expect(mockedContract.getTradeLine).toHaveBeenCalledTimes(1);
+            expect(mockedContract.getTradeLine).toHaveBeenNthCalledWith(
                 1,
                 supplier.address,
                 1,
@@ -496,12 +496,12 @@ describe('OrderDriver', () => {
 
         it('should retrieve order line with block number', async () => {
             const orderLine = new OrderLine(3, 'categoryA', 100, new OrderLinePrice(100.25, 'CHF'));
-            mockedContract.getOrderLine = jest.fn().mockResolvedValue(mockedOrderLine);
+            mockedContract.getTradeLine = jest.fn().mockResolvedValue(mockedOrderLine);
 
-            await orderDriver.getOrderLine(supplier.address, 1, orderLine.id as number, 15);
+            await orderDriver.getTradeLine(supplier.address, 1, orderLine.id as number, 15);
 
-            expect(mockedContract.getOrderLine).toHaveBeenCalledTimes(1);
-            expect(mockedContract.getOrderLine).toHaveBeenNthCalledWith(
+            expect(mockedContract.getTradeLine).toHaveBeenCalledTimes(1);
+            expect(mockedContract.getTradeLine).toHaveBeenNthCalledWith(
                 1,
                 supplier.address,
                 1,
@@ -511,14 +511,14 @@ describe('OrderDriver', () => {
         });
 
         it('should retrieve order line - transaction fails', async () => {
-            mockedContract.getOrderLine = jest.fn().mockRejectedValue(new Error(errorMessage));
+            mockedContract.getTradeLine = jest.fn().mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => orderDriver.getOrderLine(supplier.address, 1, 2);
+            const fn = async () => orderDriver.getTradeLine(supplier.address, 1, 2);
             await expect(fn).rejects.toThrowError(new Error(errorMessage));
         });
 
         it('should retrieve order line - not an address', async () => {
-            const fn = async () => orderDriver.getOrderLine('test', 1, 2);
+            const fn = async () => orderDriver.getTradeLine('test', 1, 2);
             await expect(fn).rejects.toThrowError(new Error('Not an address'));
         });
     });

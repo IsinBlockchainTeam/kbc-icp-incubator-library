@@ -1,41 +1,43 @@
 /* eslint-disable camelcase */
 /* eslint-disable no-await-in-loop */
 import { Signer, utils } from 'ethers';
-import { OrderManager, OrderManager__factory } from '../smart-contracts';
+import { TradeManager, TradeManager__factory } from '../smart-contracts';
 import { Order } from '../entities/Order';
 import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
 import { NegotiationStatus } from '../types/NegotiationStatus';
 import { EntityBuilder } from '../utils/EntityBuilder';
 import { serial } from '../utils/utils';
 
-export enum OrderEvents {
-    OrderRegistered,
+export enum TradeEvents {
+    TradeRegistered,
+    TradeLineAdded,
+    TradeLineUpdated,
     OrderLineAdded,
     OrderLineUpdated,
 }
 
-export class OrderDriver {
-    protected _contract: OrderManager;
+export class TradeDriver {
+    protected _contract: TradeManager;
 
     constructor(
         signer: Signer,
         contractAddress: string,
     ) {
-        this._contract = OrderManager__factory
+        this._contract = TradeManager__factory
             .connect(contractAddress, signer.provider!)
             .connect(signer);
     }
 
-    async registerOrder(supplierAddress: string, customerAddress: string, offereeAddress: string, externalUrl: string): Promise<void> {
+    async registerTrade(tradeType: TradeType, supplierAddress: string, customerAddress: string, name: string, externalUrl: string): Promise<void> {
         if (!utils.isAddress(supplierAddress)) throw new Error('Supplier not an address');
         if (!utils.isAddress(customerAddress)) throw new Error('Customer not an address');
-        if (!utils.isAddress(offereeAddress)) throw new Error('Offeree not an address');
 
         try {
-            const tx = await this._contract.registerOrder(
+            const tx = await this._contract.registerTrade(
+                tradeType,
                 supplierAddress,
                 customerAddress,
-                offereeAddress,
+                name,
                 externalUrl,
             );
             await tx.wait();
@@ -56,6 +58,10 @@ export class OrderDriver {
         }
     }
 
+    async getTradeInfo(supplierAddress: string, tradeId: number): Promise<Trade> {
+
+    }
+
     async addOrderLines(supplierAddress: string, orderId: number, lines: OrderLine[]): Promise<void> {
         const orderLineFunctions = lines.map((line) => async () => {
             await this.addOrderLine(supplierAddress, orderId, line.productCategory, line.quantity, line.price);
@@ -63,10 +69,10 @@ export class OrderDriver {
         await serial(orderLineFunctions);
     }
 
-    async getOrderCounter(supplierAddress: string): Promise<number> {
+    async getTradeCounter(supplierAddress: string): Promise<number> {
         if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
 
-        const counter = await this._contract.getOrderCounter(supplierAddress);
+        const counter = await this._contract.getTradeCounter(supplierAddress);
         return counter.toNumber();
     }
 
@@ -186,12 +192,12 @@ export class OrderDriver {
         await tx.wait();
     }
 
-    async getOrderLine(supplierAddress: string, orderId: number, orderLineId: number, blockNumber?: number): Promise<OrderLine> {
+    async getTradeLine(supplierAddress: string, orderId: number, orderLineId: number, blockNumber?: number): Promise<OrderLine> {
         if (!utils.isAddress(supplierAddress)) {
             throw new Error('Not an address');
         }
         try {
-            const rawOrderLine = await this._contract.getOrderLine(supplierAddress, orderId, orderLineId, { blockTag: blockNumber });
+            const rawOrderLine = await this._contract.getTradeLine(supplierAddress, orderId, orderLineId, { blockTag: blockNumber });
             return EntityBuilder.buildOrderLine(rawOrderLine);
         } catch (e: any) {
             throw new Error(e.message);
@@ -203,7 +209,7 @@ export class OrderDriver {
 
         try {
             const priceDecimals = price.amount.toString().split('.')[1]?.length || 0;
-            const rawOrderLinePrice: OrderManager.OrderLinePriceStruct = {
+            const rawOrderLinePrice: TradeManager.OrderLinePriceStruct = {
                 amount: price.amount * (10 ** priceDecimals),
                 decimals: priceDecimals,
                 fiat: price.fiat,
@@ -226,7 +232,7 @@ export class OrderDriver {
 
         try {
             const priceDecimals = price.amount.toString().split('.')[1]?.length || 0;
-            const rawOrderLinePrice: OrderManager.OrderLinePriceStruct = {
+            const rawOrderLinePrice: TradeManager.OrderLinePriceStruct = {
                 amount: price.amount * (10 ** priceDecimals),
                 decimals: priceDecimals,
                 fiat: price.fiat,
@@ -245,7 +251,7 @@ export class OrderDriver {
         }
     }
 
-    async getBlockNumbersByOrderId(id: number): Promise<Map<OrderEvents, number[]>> {
+    async getBlockNumbersByOrderId(id: number): Promise<Map<TradeEvents, number[]>> {
         const totalEvents = await Promise.all([
             this._contract.queryFilter(this._contract.filters.OrderRegistered(id)),
             this._contract.queryFilter(this._contract.filters.OrderLineAdded(id)),
@@ -254,9 +260,9 @@ export class OrderDriver {
 
         return totalEvents.reduce((map, events) => {
             const eventName = events[0].event!;
-            map.set(OrderEvents[eventName as keyof typeof OrderEvents], events.map((e) => e.blockNumber));
+            map.set(TradeEvents[eventName as keyof typeof TradeEvents], events.map((e) => e.blockNumber));
             return map;
-        }, new Map<OrderEvents, number[]>());
+        }, new Map<TradeEvents, number[]>());
     }
 
     async addAdmin(address: string): Promise<void> {
