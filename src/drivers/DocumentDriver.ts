@@ -7,7 +7,7 @@ import { DocumentInfo } from '../entities/DocumentInfo';
 import { EntityBuilder } from '../utils/EntityBuilder';
 
 export class DocumentDriver {
-    protected _contract: DocumentManager;
+    private _contract: DocumentManager;
 
     constructor(
         signer: Signer,

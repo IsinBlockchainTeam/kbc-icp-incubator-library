@@ -1,4 +1,3 @@
-import { Blob } from 'buffer';
 import { DocumentInfo } from './DocumentInfo';
 
 export class Document extends DocumentInfo {

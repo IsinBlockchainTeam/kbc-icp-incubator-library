@@ -14,9 +14,9 @@ export abstract class Trade {
 
     private readonly _externalUrl: string;
 
-    private _lineIds?: number[];
+    private _lineIds: number[];
 
-    protected constructor(id: number, name: string, supplier: string, customer: string, externalUrl: string, lineIds?: number[]) {
+    protected constructor(id: number, name: string, supplier: string, customer: string, externalUrl: string, lineIds: number[]) {
         this._id = id;
         this._name = name;
         this._supplier = supplier;
@@ -31,14 +31,6 @@ export abstract class Trade {
 
     set id(value: number) {
         this._id = value;
-    }
-
-    get type(): TradeType {
-        return this._type;
-    }
-
-    set type(value: TradeType) {
-        this._type = value;
     }
 
     get name(): string {
@@ -71,5 +63,9 @@ export abstract class Trade {
 
     set lineIds(value: number[]) {
         this._lineIds = value;
+    }
+
+    get externalUrl(): string {
+        return this._externalUrl;
     }
 }

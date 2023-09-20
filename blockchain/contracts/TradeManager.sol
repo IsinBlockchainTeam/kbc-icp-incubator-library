@@ -87,7 +87,7 @@ contract TradeManager is AccessControl {
 
     // supplier => trade id => trade
     mapping(address => mapping(uint256 => Trade)) private trades;
-    // supplier => order id counter (the ids are different per each supplier, not unique in general)
+    // supplier => trade id counter (the ids are different per each supplier, not unique in general)
     mapping(address => Counters.Counter) private tradesCounter;
     // supplier => trade line id counter
     mapping(address => Counters.Counter) private tradeLinesCounter;
@@ -128,6 +128,10 @@ contract TradeManager is AccessControl {
         emit TradeRegistered(tradeId, supplier);
     }
 
+    function tradeExists(address supplier, uint256 tradeId) public view returns (bool) {
+        return trades[supplier][tradeId].exists;
+    }
+
     function getTradeInfo(address tradeSupplier, uint256 tradeId) public view returns (
         uint256 id, string memory name,
         address supplier, address customer, string memory externalUrl, uint256[] memory lineIds
@@ -137,6 +141,10 @@ contract TradeManager is AccessControl {
         require(t.tradeType == TradeType.TRADE, "Can't perform this operation if not TRADE");
 
         return (t.id, t.name, t.supplier, t.customer, t.externalUrl, t.lineIds);
+    }
+
+    function getTradeCounter(address supplier) public view returns (uint256) {
+        return tradesCounter[supplier].current();
     }
 
     function addTradeLine(address supplier, uint256 tradeId, uint256[2] memory materialIds, string memory productCategory) public {
@@ -176,9 +184,11 @@ contract TradeManager is AccessControl {
     }
 
     function getTradeLine(address supplier, uint256 tradeId, uint256 tradeLineId) public view returns (TradeLine memory) {
-        require(trades[supplier][tradeId].exists, "Trade does not exist");
+        Trade storage t = trades[supplier][tradeId];
+        require(t.exists, "Trade does not exist");
+        require(t.tradeType == TradeType.TRADE, "Only a TRADE has trade lines");
 
-        TradeLine memory tL = trades[supplier][tradeId].lines[tradeLineId];
+        TradeLine memory tL = t.lines[tradeLineId];
         require(tL.exists, "Trade line does not exist");
 
         return tL;
@@ -195,10 +205,6 @@ contract TradeManager is AccessControl {
 
         o.offeror = msg.sender;
         o.offeree = offeree;
-    }
-
-    function getTradeCounter(address supplier) public view returns (uint256) {
-        return tradesCounter[supplier].current();
     }
 
     function setOrderPaymentDeadline(address supplier, uint256 orderId, uint256 paymentDeadline) public {
@@ -270,9 +276,6 @@ contract TradeManager is AccessControl {
         documentManager.registerDocument(supplier, tradeId, name, documentType, externalUrl);
     }
 
-    function tradeExists(address supplier, uint256 tradeId) public view returns (bool) {
-        return trades[supplier][tradeId].exists;
-    }
 
     function getNegotiationStatus(address supplier, uint256 orderId) public view returns (NegotiationStatus orderStatus) {
         Trade storage o = trades[supplier][orderId];
@@ -345,6 +348,17 @@ contract TradeManager is AccessControl {
         _updateSignatures(msg.sender, o);
 
         emit OrderLineUpdated(orderId, supplier, orderLineId);
+    }
+
+    function getOrderLine(address supplier, uint256 orderId, uint256 orderLineId) public view returns (TradeLine memory) {
+        Trade storage o = trades[supplier][orderId];
+        require(o.exists, "Order does not exist");
+        require(o.tradeType == TradeType.ORDER, "Only an ORDER has order lines");
+
+        TradeLine memory oL = o.lines[orderLineId];
+        require(oL.exists, "Order line does not exist");
+
+        return oL;
     }
 
     // ROLES

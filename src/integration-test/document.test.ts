@@ -7,14 +7,17 @@ import { IPFSService, PinataIPFSDriver } from '@blockchain-lib/common';
 import DocumentService from '../services/DocumentService';
 import { DocumentDriver } from '../drivers/DocumentDriver';
 import {
-    CUSTOMER_INVOKER_ADDRESS,
-    CUSTOMER_INVOKER_PRIVATE_KEY,
+    CUSTOMER_ADDRESS,
+    CUSTOMER_PRIVATE_KEY,
     DOCUMENT_MANAGER_CONTRACT_ADDRESS,
-    NETWORK, ORDER_MANAGER_CONTRACT_ADDRESS,
-    SUPPLIER_INVOKER_ADDRESS, SUPPLIER_INVOKER_PRIVATE_KEY,
+    NETWORK,
+    TRADE_MANAGER_CONTRACT_ADDRESS,
+    SUPPLIER_ADDRESS,
+    SUPPLIER_PRIVATE_KEY,
 } from './config';
-import OrderService from '../services/OrderService';
+import TradeService from '../services/TradeService';
 import { TradeDriver } from '../drivers/TradeDriver';
+import { TradeType } from '../entities/Trade';
 
 dotenv.config();
 
@@ -23,7 +26,7 @@ describe('DocumentInfo lifecycle', () => {
     let documentDriver: DocumentDriver;
     let provider: JsonRpcProvider;
     let signer: Signer;
-    let orderService: OrderService;
+    let orderService: TradeService;
     let orderDriver: TradeDriver;
 
     let pinataDriver: PinataIPFSDriver;
@@ -62,43 +65,40 @@ describe('DocumentInfo lifecycle', () => {
         signer = new ethers.Wallet(privateKey, provider);
         orderDriver = new TradeDriver(
             signer,
-            ORDER_MANAGER_CONTRACT_ADDRESS,
+            TRADE_MANAGER_CONTRACT_ADDRESS,
         );
-        orderService = new OrderService(orderDriver);
+        orderService = new TradeService(orderDriver);
     };
 
     const createOrderAndConfirm = async (): Promise<number> => {
-        await orderService.registerTrade(SUPPLIER_INVOKER_ADDRESS, CUSTOMER_INVOKER_ADDRESS, CUSTOMER_INVOKER_ADDRESS, externalUrl);
-        const orderId = await orderService.getTradeCounter(SUPPLIER_INVOKER_ADDRESS);
+        await orderService.registerTrade(TradeType.ORDER, SUPPLIER_ADDRESS, CUSTOMER_ADDRESS, 'Order name', externalUrl);
+        const orderId = await orderService.getTradeCounter(SUPPLIER_ADDRESS);
+        await orderService.addOrderOfferee(SUPPLIER_ADDRESS, orderId, CUSTOMER_ADDRESS);
         // add all the constraints so that an order can be confirmed (it is required to add a document)
-        await orderService.setOrderIncoterms(SUPPLIER_INVOKER_ADDRESS, orderId, 'FOB');
-        await orderService.setOrderDocumentDeliveryDeadline(SUPPLIER_INVOKER_ADDRESS, orderId, deadline);
-        await orderService.setOrderArbiter(SUPPLIER_INVOKER_ADDRESS, orderId, arbiter);
-        await orderService.setOrderDeliveryPort(SUPPLIER_INVOKER_ADDRESS, orderId, deliveryPort);
-        await orderService.setOrderPaymentDeadline(SUPPLIER_INVOKER_ADDRESS, orderId, deadline);
-        await orderService.setOrderShipper(SUPPLIER_INVOKER_ADDRESS, orderId, shipper);
-        await orderService.setOrderShippingPort(SUPPLIER_INVOKER_ADDRESS, orderId, shippingPort);
-        await orderService.setOrderShippingDeadline(SUPPLIER_INVOKER_ADDRESS, orderId, deadline);
-        await orderService.setOrderDeliveryDeadline(SUPPLIER_INVOKER_ADDRESS, orderId, deadline);
+        await orderService.setOrderDocumentDeliveryDeadline(SUPPLIER_ADDRESS, orderId, deadline);
+        await orderService.setOrderArbiter(SUPPLIER_ADDRESS, orderId, arbiter);
+        await orderService.setOrderPaymentDeadline(SUPPLIER_ADDRESS, orderId, deadline);
+        await orderService.setOrderShippingDeadline(SUPPLIER_ADDRESS, orderId, deadline);
+        await orderService.setOrderDeliveryDeadline(SUPPLIER_ADDRESS, orderId, deadline);
         // confirm the order
-        _defineOrderSender(CUSTOMER_INVOKER_PRIVATE_KEY);
-        await orderService.confirmOrder(SUPPLIER_INVOKER_ADDRESS, orderId);
+        _defineOrderSender(CUSTOMER_PRIVATE_KEY);
+        await orderService.confirmOrder(SUPPLIER_ADDRESS, orderId);
         return orderId;
     };
 
     beforeAll(async () => {
         jest.setTimeout(10000);
         provider = new ethers.providers.JsonRpcProvider(NETWORK);
-        _defineSender(SUPPLIER_INVOKER_PRIVATE_KEY);
-        _defineOrderSender(SUPPLIER_INVOKER_PRIVATE_KEY);
+        _defineSender(SUPPLIER_PRIVATE_KEY);
+        _defineOrderSender(SUPPLIER_PRIVATE_KEY);
         pinataDriver = new PinataIPFSDriver(process.env.PINATA_API_KEY!, process.env.PINATA_SECRET_API_KEY!, process.env.PINATA_GATEWAY_URL!, process.env.PINATA_GATEWAY_TOKEN!);
         pinataService = new IPFSService(pinataDriver);
-        await documentService.addOrderManager(ORDER_MANAGER_CONTRACT_ADDRESS);
+        await documentService.addOrderManager(TRADE_MANAGER_CONTRACT_ADDRESS);
     });
 
     it('Should register a document by another company, fails because the contract cannot directly be invoked to register a new document', async () => {
-        _defineSender(CUSTOMER_INVOKER_PRIVATE_KEY);
-        const fn = () => documentService.registerDocument(CUSTOMER_INVOKER_ADDRESS, transactionId, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
+        _defineSender(CUSTOMER_PRIVATE_KEY);
+        const fn = () => documentService.registerDocument(CUSTOMER_ADDRESS, transactionId, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
         await expect(fn).rejects.toThrowError(/Sender has no permissions/);
     });
 
@@ -110,43 +110,43 @@ describe('DocumentInfo lifecycle', () => {
         const metadataUrl = await pinataService.storeJSON({ filename, fileUrl: ipfsFileUrl });
 
         transactionId = await createOrderAndConfirm();
-        await orderService.addDocument(SUPPLIER_INVOKER_ADDRESS, transactionId, 'shipped', rawDocument.name, rawDocument.documentType, metadataUrl);
+        await orderService.addDocument(SUPPLIER_ADDRESS, transactionId, rawDocument.name, rawDocument.documentType, metadataUrl);
 
-        documentCounterId = await documentService.getDocumentCounter(SUPPLIER_INVOKER_ADDRESS);
+        documentCounterId = await documentService.getDocumentCounter(SUPPLIER_ADDRESS);
         expect(documentCounterId).toEqual(1);
 
-        const exist = await documentService.documentExists(SUPPLIER_INVOKER_ADDRESS, transactionId, documentCounterId);
+        const exist = await documentService.documentExists(SUPPLIER_ADDRESS, transactionId, documentCounterId);
         expect(exist).toBeTruthy();
 
-        const savedDocument = await documentService.getDocumentInfo(SUPPLIER_INVOKER_ADDRESS, transactionId, documentCounterId);
-        const savedDocumentFile = await documentService.getCompleteDocument(savedDocument);
-        expect(savedDocumentFile).toBeDefined();
+        const savedDocumentInfo = await documentService.getDocumentInfo(SUPPLIER_ADDRESS, transactionId, documentCounterId);
+        const savedDocument = await documentService.getCompleteDocument(savedDocumentInfo);
         expect(savedDocument).toBeDefined();
-        expect(savedDocument.id).toEqual(documentCounterId);
-        expect(savedDocument.owner).toEqual(SUPPLIER_INVOKER_ADDRESS);
-        expect(savedDocument.transactionId).toEqual(transactionId);
-        expect(savedDocument.name).toEqual(rawDocument.name);
-        expect(savedDocument.documentType).toEqual(rawDocument.documentType);
-        expect(savedDocumentFile!.filename).toEqual(filename);
-        expect(savedDocumentFile!.content.size).toEqual(content.size);
-        expect(savedDocumentFile!.content.type).toEqual(content.type);
+        expect(savedDocumentInfo).toBeDefined();
+        expect(savedDocument!.id).toEqual(documentCounterId);
+        expect(savedDocument!.owner).toEqual(SUPPLIER_ADDRESS);
+        expect(savedDocument!.transactionId).toEqual(transactionId);
+        expect(savedDocument!.name).toEqual(rawDocument.name);
+        expect(savedDocument!.documentType).toEqual(rawDocument.documentType);
+        expect(savedDocument!.filename).toEqual(filename);
+        expect(savedDocument!.content.size).toEqual(content.size);
+        expect(savedDocument!.content.type).toEqual(content.type);
     }, 20000);
 
     it('Should add another document for the same transaction id and another to other transaction id', async () => {
         transactionId2 = await createOrderAndConfirm();
-        await orderService.addDocument(SUPPLIER_INVOKER_ADDRESS, transactionId, 'on_board', rawDocument2.name, rawDocument2.documentType, rawDocument2.externalUrl);
-        await orderService.addDocument(SUPPLIER_INVOKER_ADDRESS, transactionId2, 'shipped', rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
+        await orderService.addDocument(SUPPLIER_ADDRESS, transactionId, rawDocument2.name, rawDocument2.documentType, rawDocument2.externalUrl);
+        await orderService.addDocument(SUPPLIER_ADDRESS, transactionId2, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
 
-        documentCounterId = await documentService.getDocumentCounter(SUPPLIER_INVOKER_ADDRESS);
+        documentCounterId = await documentService.getDocumentCounter(SUPPLIER_ADDRESS);
 
-        const transaction1DocumentIds = await documentService.getTransactionDocumentIds(SUPPLIER_INVOKER_ADDRESS, transactionId);
-        const transaction2DocumentIds = await documentService.getTransactionDocumentIds(SUPPLIER_INVOKER_ADDRESS, transactionId2);
+        const transaction1DocumentIds = await documentService.getTransactionDocumentIds(SUPPLIER_ADDRESS, transactionId);
+        const transaction2DocumentIds = await documentService.getTransactionDocumentIds(SUPPLIER_ADDRESS, transactionId2);
         expect(documentCounterId).toEqual(transaction1DocumentIds.length + transaction2DocumentIds.length);
 
-        const savedTransaction2Document = await documentService.getDocumentInfo(SUPPLIER_INVOKER_ADDRESS, transactionId2, transaction2DocumentIds[0]);
+        const savedTransaction2Document = await documentService.getDocumentInfo(SUPPLIER_ADDRESS, transactionId2, transaction2DocumentIds[0]);
         expect(savedTransaction2Document).toBeDefined();
         expect(savedTransaction2Document.id).toEqual(transaction2DocumentIds[0]);
-        expect(savedTransaction2Document.owner).toEqual(SUPPLIER_INVOKER_ADDRESS);
+        expect(savedTransaction2Document.owner).toEqual(SUPPLIER_ADDRESS);
         expect(savedTransaction2Document.transactionId).toEqual(transactionId2);
         expect(savedTransaction2Document.name).toEqual(rawDocument.name);
         expect(savedTransaction2Document.documentType).toEqual(rawDocument.documentType);

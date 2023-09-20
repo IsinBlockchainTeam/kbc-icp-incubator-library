@@ -1,6 +1,5 @@
 import { SupplyChainDriver } from '../drivers/SupplyChainDriver';
 import { Material } from '../entities/Material';
-import { Trade } from '../entities/Trade';
 import { Transformation } from '../entities/Transformation';
 
 export class SupplyChainService {
@@ -14,20 +13,12 @@ export class SupplyChainService {
         await this._supplyChainDriver.registerMaterial(companyAddress, name);
     }
 
-    async registerTrade(companyAddress: string, name: string, materialsIds: [number, number][]): Promise<void> {
-        await this._supplyChainDriver.registerTrade(companyAddress, name, materialsIds);
-    }
-
     async registerTransformation(companyAddress: string, name: string, inputMaterialsIds: number[], outputMaterialId: number): Promise<void> {
         await this._supplyChainDriver.registerTransformation(companyAddress, name, inputMaterialsIds, outputMaterialId);
     }
 
     async updateMaterial(companyAddress: string, id: number, name: string): Promise<void> {
         await this._supplyChainDriver.updateMaterial(companyAddress, id, name);
-    }
-
-    async updateTrade(companyAddress: string, id: number, name: string, materialsIds: [number, number][]): Promise<void> {
-        await this._supplyChainDriver.updateTrade(companyAddress, id, name, materialsIds);
     }
 
     async updateTransformation(companyAddress: string, id: number, name: string, inputMaterialsIds: number[], outputMaterialId: number): Promise<void> {
@@ -38,20 +29,12 @@ export class SupplyChainService {
         return this._supplyChainDriver.getMaterialsCounter(companyAddress);
     }
 
-    async getTradesCounter(companyAddress: string): Promise<number> {
-        return this._supplyChainDriver.getTradesCounter(companyAddress);
-    }
-
     async getTransformationsCounter(companyAddress: string): Promise<number> {
         return this._supplyChainDriver.getTransformationsCounter(companyAddress);
     }
 
     async getMaterial(companyAddress: string, id: number): Promise<Material> {
         return this._supplyChainDriver.getMaterial(companyAddress, id);
-    }
-
-    async getTrade(companyAddress: string, id: number): Promise<Trade> {
-        return this._supplyChainDriver.getTrade(companyAddress, id);
     }
 
     async getTransformation(companyAddress: string, id: number): Promise<Transformation> {
@@ -65,15 +48,6 @@ export class SupplyChainService {
             materials.push(await this.getMaterial(companyAddress, i));
         }
         return materials;
-    }
-
-    async getTrades(companyAddress: string): Promise<Trade[]> {
-        const trades: Trade[] = [];
-        const tradesCounter = await this._supplyChainDriver.getTradesCounter(companyAddress);
-        for (let i = 0; i < tradesCounter; i++) {
-            trades.push(await this.getTrade(companyAddress, i));
-        }
-        return trades;
     }
 
     async getTransformations(companyAddress: string): Promise<Transformation[]> {

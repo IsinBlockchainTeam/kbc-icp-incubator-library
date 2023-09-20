@@ -6,7 +6,7 @@ import { Document } from '../entities/Document';
 export class DocumentService {
     private _documentDriver: DocumentDriver;
 
-    private _ipfsService?: IPFSService;
+    private readonly _ipfsService?: IPFSService;
 
     constructor(documentDriver: DocumentDriver, ipfsService?: IPFSService) {
         this._documentDriver = documentDriver;

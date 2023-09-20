@@ -58,7 +58,7 @@ serial([
         }
     },
     () => deploy(ContractName.DOCUMENT_MANAGER, [
-        [],
+        [process.env.SUPPLIER_ADMIN || ''],
         contractMap.get('EnumerableDocumentTypeManager')?.address,
     ]),
     () => deploy(
@@ -66,7 +66,6 @@ serial([
         [[process.env.SUPPLIER_ADMIN || '', process.env.CUSTOMER_ADMIN || ''],
             contractMap.get('EnumerableFiatManager')?.address,
             contractMap.get('EnumerableProductCategoryManager')?.address,
-            contractMap.get('EnumerableStatusManager')?.address,
             contractMap.get(ContractName.DOCUMENT_MANAGER)?.address],
     ),
     () => deploy(

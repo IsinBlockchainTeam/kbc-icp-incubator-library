@@ -4,17 +4,16 @@ import { Signer, utils } from 'ethers';
 import { SupplyChainManager__factory, SupplyChainManager } from '../smart-contracts';
 import { EntityBuilder } from '../utils/EntityBuilder';
 import { Material } from '../entities/Material';
-import { Trade } from '../entities/Trade';
 import { Transformation } from '../entities/Transformation';
 
 export class SupplyChainDriver {
-    private _supplyChainManager: SupplyChainManager;
+    private _contract: SupplyChainManager;
 
     constructor(
         signer: Signer,
         supplyChainManagerAddress: string,
     ) {
-        this._supplyChainManager = SupplyChainManager__factory
+        this._contract = SupplyChainManager__factory
             .connect(supplyChainManagerAddress, signer.provider!)
             .connect(signer);
     }
@@ -23,15 +22,7 @@ export class SupplyChainDriver {
         if (!utils.isAddress(companyAddress)) {
             throw new Error('Not an address');
         }
-        const tx = await this._supplyChainManager.registerMaterial(companyAddress, name);
-        await tx.wait();
-    }
-
-    async registerTrade(companyAddress: string, name: string, materialsIds: [number, number][]): Promise<void> {
-        if (!utils.isAddress(companyAddress)) {
-            throw new Error('Not an address');
-        }
-        const tx = await this._supplyChainManager.registerTrade(companyAddress, name, materialsIds);
+        const tx = await this._contract.registerMaterial(companyAddress, name);
         await tx.wait();
     }
 
@@ -39,7 +30,7 @@ export class SupplyChainDriver {
         if (!utils.isAddress(companyAddress)) {
             throw new Error('Not an address');
         }
-        const tx = await this._supplyChainManager.registerTransformation(companyAddress, name, inputMaterialsIds, outputMaterialId);
+        const tx = await this._contract.registerTransformation(companyAddress, name, inputMaterialsIds, outputMaterialId);
         await tx.wait();
     }
 
@@ -47,15 +38,7 @@ export class SupplyChainDriver {
         if (!utils.isAddress(companyAddress)) {
             throw new Error('Not an address');
         }
-        const tx = await this._supplyChainManager.updateMaterial(companyAddress, id, name);
-        await tx.wait();
-    }
-
-    async updateTrade(companyAddress: string, id: number, name: string, materialsIds: [number, number][]): Promise<void> {
-        if (!utils.isAddress(companyAddress)) {
-            throw new Error('Not an address');
-        }
-        const tx = await this._supplyChainManager.updateTrade(companyAddress, id, name, materialsIds);
+        const tx = await this._contract.updateMaterial(companyAddress, id, name);
         await tx.wait();
     }
 
@@ -63,7 +46,7 @@ export class SupplyChainDriver {
         if (!utils.isAddress(companyAddress)) {
             throw new Error('Not an address');
         }
-        const tx = await this._supplyChainManager.updateTransformation(companyAddress, id, name, inputMaterialsIds, outputMaterialId);
+        const tx = await this._contract.updateTransformation(companyAddress, id, name, inputMaterialsIds, outputMaterialId);
         await tx.wait();
     }
 
@@ -71,15 +54,7 @@ export class SupplyChainDriver {
         if (!utils.isAddress(companyAddress)) {
             throw new Error('Not an address');
         }
-        const counter = await this._supplyChainManager.getMaterialsCounter(companyAddress);
-        return counter.toNumber();
-    }
-
-    async getTradesCounter(companyAddress: string): Promise<number> {
-        if (!utils.isAddress(companyAddress)) {
-            throw new Error('Not an address');
-        }
-        const counter = await this._supplyChainManager.getTradesCounter(companyAddress);
+        const counter = await this._contract.getMaterialsCounter(companyAddress);
         return counter.toNumber();
     }
 
@@ -87,7 +62,7 @@ export class SupplyChainDriver {
         if (!utils.isAddress(companyAddress)) {
             throw new Error('Not an address');
         }
-        const counter = await this._supplyChainManager.getTransformationsCounter(companyAddress);
+        const counter = await this._contract.getTransformationsCounter(companyAddress);
         return counter.toNumber();
     }
 
@@ -95,23 +70,15 @@ export class SupplyChainDriver {
         if (!utils.isAddress(companyAddress)) {
             throw new Error('Not an address');
         }
-        const material = await this._supplyChainManager.getMaterial(companyAddress, id);
+        const material = await this._contract.getMaterial(companyAddress, id);
         return EntityBuilder.buildMaterial(material);
-    }
-
-    async getTrade(companyAddress: string, id: number): Promise<Trade> {
-        if (!utils.isAddress(companyAddress)) {
-            throw new Error('Not an address');
-        }
-        const trade = await this._supplyChainManager.getTrade(companyAddress, id);
-        return EntityBuilder.buildTrade(trade);
     }
 
     async getTransformation(companyAddress: string, id: number): Promise<Transformation> {
         if (!utils.isAddress(companyAddress)) {
             throw new Error('Not an address');
         }
-        const transformation = await this._supplyChainManager.getTransformation(companyAddress, id);
+        const transformation = await this._contract.getTransformation(companyAddress, id);
         return EntityBuilder.buildTransformation(transformation);
     }
 }

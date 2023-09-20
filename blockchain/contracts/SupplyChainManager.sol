@@ -40,17 +40,17 @@ contract SupplyChainManager {
     // Setters
     // --------------------------------------------------------------------------
     function registerMaterial(address company, string memory name) public {
-        uint256 currentId = materialsCounter[company].current();
-        materials[company][currentId] = Material(currentId, name, company);
-        emit ResourceRegistered("material", company, currentId);
+        uint256 materialId = materialsCounter[company].current() + 1;
+        materials[company][materialId] = Material(materialId, name, company);
+        emit ResourceRegistered("material", company, materialId);
         materialsCounter[company].increment();
     }
 
 
     function registerTransformation(address company, string memory name, uint256[] memory inputMaterialsIds, uint256 outputMaterialId) public {
-        uint256 currentId = transformationsCounter[company].current();
-        transformations[company][currentId] = Transformation(currentId, name, inputMaterialsIds, outputMaterialId, company);
-        emit ResourceRegistered("transformation", company, currentId);
+        uint256 transformationId = transformationsCounter[company].current() + 1;
+        transformations[company][transformationId] = Transformation(transformationId, name, inputMaterialsIds, outputMaterialId, company);
+        emit ResourceRegistered("transformation", company, transformationId);
         transformationsCounter[company].increment();
     }
 

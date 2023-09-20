@@ -1,3 +1,5 @@
+import { TradeLine } from './TradeLine';
+
 export class OrderLinePrice {
     private _amount: number;
 
@@ -25,36 +27,15 @@ export class OrderLinePrice {
     }
 }
 
-export class OrderLine {
-    private _id?: number;
-
-    private _productCategory: string;
-
+export class OrderLine extends TradeLine {
     private _quantity: number;
 
     private _price: OrderLinePrice;
 
-    constructor(id: number, productCategory: string, quantity: number, price: OrderLinePrice) {
-        this._id = id;
-        this._productCategory = productCategory;
+    constructor(id: number, materialIds: [number, number], productCategory: string, quantity: number, price: OrderLinePrice) {
+        super(id, materialIds, productCategory);
         this._quantity = quantity;
         this._price = price;
-    }
-
-    get id(): number | undefined {
-        return this._id;
-    }
-
-    set id(value: number | undefined) {
-        this._id = value;
-    }
-
-    get productCategory(): string {
-        return this._productCategory;
-    }
-
-    set productCategory(value: string) {
-        this._productCategory = value;
     }
 
     get quantity(): number {

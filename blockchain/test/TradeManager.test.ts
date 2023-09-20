@@ -111,23 +111,11 @@ describe('TradeManager', () => {
         });
 
         describe('addTradeLine', () => {
-            it('should add and retrieve a trade line', async () => {
+            it('should add a trade line', async () => {
                 await tradeManagerContract.connect(supplier).addTradeLine(supplier.address, tradeCounterId.toNumber(), basicTradeLineMaterialIds, initialProductCategory);
 
                 expect(enumerableProductCategoryManagerContractFake.contains).to.be.called;
                 expect(enumerableProductCategoryManagerContractFake.contains).to.be.calledWith(initialProductCategory);
-
-                const { lineIds } = await tradeManagerContract.connect(supplier).getTradeInfo(supplier.address, tradeCounterId.toNumber());
-                tradeLineCounterId = lineIds.slice(-1)[0];
-
-                const savedTradeLine = await tradeManagerContract.connect(supplier).getTradeLine(supplier.address, tradeCounterId.toNumber(), tradeLineCounterId.toNumber());
-                expect(savedTradeLine.id).to.equal(tradeLineCounterId);
-                expect(savedTradeLine.materialIds.map((m: BigNumber) => m.toNumber())).to.eql(basicTradeLineMaterialIds);
-                expect(savedTradeLine.productCategory.toString()).to.equal(initialProductCategory);
-                expect(savedTradeLine.quantity).to.be.equal(0);
-                expect(savedTradeLine.price.amount).to.be.equal(0);
-                expect(savedTradeLine.price.decimals).to.be.equal(0);
-                expect(savedTradeLine.price.fiat).to.be.empty;
             });
 
             it('should emit TradeLineAdded event', async () => {
@@ -155,6 +143,44 @@ describe('TradeManager', () => {
                 tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
 
                 await expect(tradeManagerContract.connect(supplier).addTradeLine(supplier.address, tradeCounterId.toNumber(), basicTradeLineMaterialIds, initialProductCategory)).to.be.revertedWith('Can\'t perform this operation if not TRADE');
+            });
+        });
+
+        describe('getTradeLine', () => {
+            before(async () => {
+                await tradeManagerContract.connect(supplier).registerTrade(0, supplier.address, customer.address, basicTrade.name, basicTrade.externalUrl);
+                tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
+
+                await tradeManagerContract.connect(supplier).addTradeLine(supplier.address, tradeCounterId.toNumber(), basicTradeLineMaterialIds, initialProductCategory);
+                const { lineIds } = await tradeManagerContract.connect(supplier).getTradeInfo(supplier.address, tradeCounterId.toNumber());
+                tradeLineCounterId = lineIds.slice(-1)[0];
+            });
+
+            it('should get a trade line', async () => {
+                const tL = await tradeManagerContract.connect(supplier).getTradeLine(supplier.address, tradeCounterId.toNumber(), tradeLineCounterId.toNumber());
+                expect(tL.id.toNumber()).to.equal(tradeLineCounterId.toNumber());
+                expect(tL.productCategory.toString()).to.equal(initialProductCategory);
+                expect(tL.quantity.toNumber()).to.equal(0);
+                expect(tL.price.amount).to.be.equal(0);
+                expect(tL.price.decimals).to.be.equal(0);
+                expect(tL.price.fiat).to.be.empty;
+            });
+
+            it('should get a trade line - FAIL (Trade does not exist)', async () => {
+                const otherTradeId = 50;
+                await expect(tradeManagerContract.connect(supplier).getTradeLine(supplier.address, otherTradeId, tradeLineCounterId.toNumber())).to.be.revertedWith('Trade does not exist');
+            });
+
+            it('should get a trade line - FAIL (Trade does not exist)', async () => {
+                const otherTradeLineId = 50;
+                await expect(tradeManagerContract.connect(supplier).getTradeLine(supplier.address, tradeCounterId.toNumber(), otherTradeLineId)).to.be.revertedWith('Trade line does not exist');
+            });
+
+            it('should get a trade line - FAIL (Only a TRADE has trade lines)', async () => {
+                await tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.name, basicTrade.externalUrl);
+                tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
+
+                await expect(tradeManagerContract.connect(supplier).getTradeLine(supplier.address, tradeCounterId.toNumber(), tradeLineCounterId.toNumber())).to.be.revertedWith('Only a TRADE has trade lines');
             });
         });
 
@@ -293,7 +319,7 @@ describe('TradeManager', () => {
                 const { lineIds } = await tradeManagerContract.connect(supplier).getOrderInfo(supplier.address, tradeCounterId.toNumber());
                 orderLineCounterId = lineIds.slice(-1)[0];
 
-                const savedOrderLine = await tradeManagerContract.connect(supplier).getTradeLine(supplier.address, tradeCounterId.toNumber(), orderLineCounterId.toNumber());
+                const savedOrderLine = await tradeManagerContract.connect(supplier).getOrderLine(supplier.address, tradeCounterId.toNumber(), orderLineCounterId.toNumber());
                 expect(savedOrderLine.id.toNumber()).to.equal(orderLineCounterId.toNumber());
                 expect(savedOrderLine.productCategory.toString()).to.equal(initialProductCategory);
                 expect(savedOrderLine.quantity.toNumber()).to.equal(quantity.toNumber());
@@ -343,7 +369,7 @@ describe('TradeManager', () => {
             });
         });
 
-        describe('getTradeLine', () => {
+        describe('getOrderLine', () => {
             before(async () => {
                 await tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.name, basicTrade.externalUrl);
                 tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
@@ -355,11 +381,10 @@ describe('TradeManager', () => {
             });
 
             it('should get an order line', async () => {
-                const cl = await tradeManagerContract.connect(supplier).getTradeLine(supplier.address, tradeCounterId.toNumber(), orderLineCounterId.toNumber());
+                const cl = await tradeManagerContract.connect(supplier).getOrderLine(supplier.address, tradeCounterId.toNumber(), orderLineCounterId.toNumber());
                 expect(cl.id.toNumber()).to.equal(orderLineCounterId.toNumber());
                 expect(cl.productCategory.toString()).to.equal(initialProductCategory);
                 expect(cl.quantity.toNumber()).to.equal(quantity.toNumber());
-
                 expect(cl.price.fiat).to.equal(price.fiat);
                 expect(cl.price.amount.toNumber()).to.equal(price.amount);
                 expect(cl.price.decimals.toNumber()).to.equal(price.decimals);
@@ -367,7 +392,19 @@ describe('TradeManager', () => {
 
             it('should get an order line - FAIL (Trade does not exist)', async () => {
                 const otherOrderId = 50;
-                await expect(tradeManagerContract.connect(supplier).getTradeLine(supplier.address, otherOrderId, orderLineCounterId.toNumber())).to.be.revertedWith('Trade does not exist');
+                await expect(tradeManagerContract.connect(supplier).getOrderLine(supplier.address, otherOrderId, orderLineCounterId.toNumber())).to.be.revertedWith('Order does not exist');
+            });
+
+            it('should get an order line - FAIL (Trade does not exist)', async () => {
+                const otherOrderLineId = 50;
+                await expect(tradeManagerContract.connect(supplier).getOrderLine(supplier.address, tradeCounterId.toNumber(), otherOrderLineId)).to.be.revertedWith('Order line does not exist');
+            });
+
+            it('should get an order line - FAIL (Only an ORDER has order lines)', async () => {
+                await tradeManagerContract.connect(supplier).registerTrade(0, supplier.address, customer.address, basicTrade.name, basicTrade.externalUrl);
+                tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
+
+                await expect(tradeManagerContract.connect(supplier).getOrderLine(supplier.address, tradeCounterId.toNumber(), orderLineCounterId.toNumber())).to.be.revertedWith('Only an ORDER has order lines');
             });
         });
 
@@ -398,14 +435,14 @@ describe('TradeManager', () => {
                 orderLineCounterId = lineIds.slice(-1)[0];
             });
 
-            it('should update a order line', async () => {
+            it('should update an order line', async () => {
                 await tradeManagerContract.connect(supplier).updateOrderLine(supplier.address, tradeCounterId.toNumber(), orderLineCounterId.toNumber(), basicTradeLineMaterialIds, updatedProductCategory, quantity, price);
 
                 expect(enumerableFiatManagerContractFake.contains).to.be.called;
                 expect(enumerableFiatManagerContractFake.contains).to.be.calledWith(price.fiat);
                 expect(enumerableProductCategoryManagerContractFake.contains).to.be.called;
                 expect(enumerableProductCategoryManagerContractFake.contains).to.be.calledWith(updatedProductCategory);
-                const savedOrderLine = await tradeManagerContract.connect(supplier).getTradeLine(supplier.address, tradeCounterId.toNumber(), orderLineCounterId.toNumber());
+                const savedOrderLine = await tradeManagerContract.connect(supplier).getOrderLine(supplier.address, tradeCounterId.toNumber(), orderLineCounterId.toNumber());
                 expect(savedOrderLine.id.toNumber()).to.equal(orderLineCounterId.toNumber());
                 expect(savedOrderLine.productCategory.toString()).to.not.equal(initialProductCategory);
                 expect(savedOrderLine.productCategory.toString()).to.equal(updatedProductCategory);

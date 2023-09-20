@@ -2,11 +2,14 @@
 /* eslint-disable no-await-in-loop */
 import { Signer, utils } from 'ethers';
 import { TradeManager, TradeManager__factory } from '../smart-contracts';
-import { Order } from '../entities/Order';
+import { OrderInfo } from '../entities/OrderInfo';
 import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
 import { NegotiationStatus } from '../types/NegotiationStatus';
 import { EntityBuilder } from '../utils/EntityBuilder';
 import { serial } from '../utils/utils';
+import { TradeType } from '../entities/Trade';
+import { BasicTrade } from '../entities/BasicTrade';
+import { TradeLine } from '../entities/TradeLine';
 
 export enum TradeEvents {
     TradeRegistered,
@@ -17,7 +20,7 @@ export enum TradeEvents {
 }
 
 export class TradeDriver {
-    protected _contract: TradeManager;
+    private _contract: TradeManager;
 
     constructor(
         signer: Signer,
@@ -28,18 +31,12 @@ export class TradeDriver {
             .connect(signer);
     }
 
-    async registerTrade(tradeType: TradeType, supplierAddress: string, customerAddress: string, name: string, externalUrl: string): Promise<void> {
+    async registerTrade(tradeType: TradeType, supplierAddress: string, customerAddress: string, name: string, externalUrl?: string): Promise<void> {
         if (!utils.isAddress(supplierAddress)) throw new Error('Supplier not an address');
         if (!utils.isAddress(customerAddress)) throw new Error('Customer not an address');
 
         try {
-            const tx = await this._contract.registerTrade(
-                tradeType,
-                supplierAddress,
-                customerAddress,
-                name,
-                externalUrl,
-            );
+            const tx = await this._contract.registerTrade(tradeType, supplierAddress, customerAddress, name, externalUrl || '');
             await tx.wait();
             // const receipt = await tx.wait();
             // if (lines && receipt.events) {
@@ -58,93 +55,174 @@ export class TradeDriver {
         }
     }
 
-    async getTradeInfo(supplierAddress: string, tradeId: number): Promise<Trade> {
-
+    async tradeExists(supplierAddress: string, orderId: number): Promise<boolean> {
+        if (!utils.isAddress(supplierAddress)) throw new Error('Supplier not an address');
+        return this._contract.tradeExists(supplierAddress, orderId);
     }
 
-    async addOrderLines(supplierAddress: string, orderId: number, lines: OrderLine[]): Promise<void> {
-        const orderLineFunctions = lines.map((line) => async () => {
-            await this.addOrderLine(supplierAddress, orderId, line.productCategory, line.quantity, line.price);
-        });
-        await serial(orderLineFunctions);
+    async getTradeInfo(supplierAddress: string, tradeId: number, blockNumber?: number): Promise<BasicTrade> {
+        if (!utils.isAddress(supplierAddress)) throw new Error('Supplier not an address');
+        try {
+            const rawTrade = await this._contract.getTradeInfo(supplierAddress, tradeId, { blockTag: blockNumber });
+            return EntityBuilder.buildBasicTrade(rawTrade);
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
     }
 
     async getTradeCounter(supplierAddress: string): Promise<number> {
-        if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
+        if (!utils.isAddress(supplierAddress)) throw new Error('Supplier not an address');
 
         const counter = await this._contract.getTradeCounter(supplierAddress);
         return counter.toNumber();
     }
 
-    async setOrderIncoterms(supplierAddress: string, id: number, incoterms: string): Promise<void> {
-        if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
+    async addTradeLine(supplierAddress: string, tradeId: number, materialIds: [number, number], productCategory: string): Promise<void> {
+        if (!utils.isAddress(supplierAddress)) throw new Error('Supplier not an address');
+        try {
+            const tx = await this._contract.addTradeLine(supplierAddress, tradeId, materialIds, productCategory);
+            await tx.wait();
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
+    }
 
-        const tx = await this._contract.setOrderIncoterms(supplierAddress, id, incoterms);
-        await tx.wait();
+    async addTradeLines(supplierAddress: string, tradeId: number, lines: TradeLine[]): Promise<void> {
+        if (!utils.isAddress(supplierAddress)) throw new Error('Supplier not an address');
+        const tradeLineFunctions = lines.map((line) => async () => {
+            await this.addTradeLine(supplierAddress, tradeId, line.materialIds, line.productCategory);
+        });
+        await serial(tradeLineFunctions);
+    }
+
+    async updateTradeLine(supplierAddress: string, tradeId: number, tradeLineId: number, materialIds: [number, number], productCategory: string): Promise<void> {
+        if (!utils.isAddress(supplierAddress)) throw new Error('Supplier not an address');
+        try {
+            const tx = await this._contract.updateTradeLine(supplierAddress, tradeId, tradeLineId, materialIds, productCategory);
+            await tx.wait();
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
+    }
+
+    async getTradeLine(supplierAddress: string, tradeId: number, tradeLineId: number): Promise<TradeLine> {
+        if (!utils.isAddress(supplierAddress)) throw new Error('Supplier not an address');
+        try {
+            const rawTradeLine = await this._contract.getTradeLine(supplierAddress, tradeId, tradeLineId);
+            return EntityBuilder.buildTradeLine(rawTradeLine);
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
+    }
+
+    async tradeLineExists(supplierAddress: string, tradeId: number, tradeLineId: number): Promise<boolean> {
+        if (!utils.isAddress(supplierAddress)) throw new Error('Supplier not an address');
+        return this._contract.tradeLineExists(supplierAddress, tradeId, tradeLineId);
+    }
+
+    async addOrderOfferee(supplierAddress: string, orderId: number, offeree: string): Promise<void> {
+        if (!utils.isAddress(supplierAddress)) throw new Error('Supplier not an address');
+        try {
+            const tx = await this._contract.addOrderOfferee(supplierAddress, orderId, offeree);
+            await tx.wait();
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
     }
 
     async setOrderPaymentDeadline(supplierAddress: string, id: number, paymentDeadline: Date): Promise<void> {
-        if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
+        if (!utils.isAddress(supplierAddress)) throw new Error('Supplier not an address');
 
-        const tx = await this._contract.setOrderPaymentDeadline(supplierAddress, id, paymentDeadline.getTime());
-        await tx.wait();
+        try {
+            const tx = await this._contract.setOrderPaymentDeadline(supplierAddress, id, paymentDeadline.getTime());
+            await tx.wait();
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
     }
 
     async setOrderDocumentDeliveryDeadline(supplierAddress: string, id: number, documentDeliveryDeadline: Date): Promise<void> {
-        if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
+        if (!utils.isAddress(supplierAddress)) throw new Error('Supplier not an address');
 
-        const tx = await this._contract.setOrderDocumentDeliveryDeadline(supplierAddress, id, documentDeliveryDeadline.getTime());
-        await tx.wait();
-    }
-
-    async setOrderShipper(supplierAddress: string, id: number, shipper: string): Promise<void> {
-        if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
-
-        const tx = await this._contract.setOrderShipper(supplierAddress, id, shipper);
-        await tx.wait();
+        try {
+            const tx = await this._contract.setOrderDocumentDeliveryDeadline(supplierAddress, id, documentDeliveryDeadline.getTime());
+            await tx.wait();
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
     }
 
     async setOrderArbiter(supplierAddress: string, id: number, arbiter: string): Promise<void> {
-        if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
+        if (!utils.isAddress(supplierAddress)) throw new Error('Supplier not an address');
 
-        const tx = await this._contract.setOrderArbiter(supplierAddress, id, arbiter);
-        await tx.wait();
-    }
-
-    async setOrderShippingPort(supplierAddress: string, id: number, shippingPort: string): Promise<void> {
-        if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
-
-        const tx = await this._contract.setOrderShippingPort(supplierAddress, id, shippingPort);
-        await tx.wait();
+        try {
+            const tx = await this._contract.setOrderArbiter(supplierAddress, id, arbiter);
+            await tx.wait();
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
     }
 
     async setOrderShippingDeadline(supplierAddress: string, id: number, shippingDeadline: Date): Promise<void> {
-        if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
+        if (!utils.isAddress(supplierAddress)) throw new Error('Supplier not an address');
 
-        const tx = await this._contract.setOrderShippingDeadline(supplierAddress, id, shippingDeadline.getTime());
-        await tx.wait();
-    }
-
-    async setOrderDeliveryPort(supplierAddress: string, id: number, deliveryPort: string): Promise<void> {
-        if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
-
-        const tx = await this._contract.setOrderDeliveryPort(supplierAddress, id, deliveryPort);
-        await tx.wait();
+        try {
+            const tx = await this._contract.setOrderShippingDeadline(supplierAddress, id, shippingDeadline.getTime());
+            await tx.wait();
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
     }
 
     async setOrderDeliveryDeadline(supplierAddress: string, id: number, deliveryDeadline: Date): Promise<void> {
-        if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
+        if (!utils.isAddress(supplierAddress)) throw new Error('Supplier not an address');
 
-        const tx = await this._contract.setOrderDeliveryDeadline(supplierAddress, id, deliveryDeadline.getTime());
-        await tx.wait();
+        try {
+            const tx = await this._contract.setOrderDeliveryDeadline(supplierAddress, id, deliveryDeadline.getTime());
+            await tx.wait();
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
     }
 
-    async getOrderInfo(supplierAddress: string, id: number, blockNumber?: number): Promise<Order> {
-        if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
+    async confirmOrder(supplierAddress: string, orderId: number): Promise<void> {
+        if (!utils.isAddress(supplierAddress)) throw new Error('Supplier not an address');
+
+        try {
+            const tx = await this._contract.confirmOrder(supplierAddress, orderId);
+            await tx.wait();
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
+    }
+
+    async addDocument(supplierAddress: string, tradeId: number, documentName: string, documentType: string, documentExternalUrl: string): Promise<void> {
+        if (!utils.isAddress(supplierAddress)) throw new Error('Supplier not an address');
+
+        try {
+            const tx = await this._contract.addDocument(supplierAddress, tradeId, documentName, documentType, documentExternalUrl);
+            await tx.wait();
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
+    }
+
+    async getNegotiationStatus(supplierAddress: string, orderId: number): Promise<NegotiationStatus> {
+        if (!utils.isAddress(supplierAddress)) { throw new Error('Supplier not an address'); }
+
+        try {
+            return this._contract.getNegotiationStatus(supplierAddress, orderId);
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
+    }
+
+    async getOrderInfo(supplierAddress: string, id: number, blockNumber?: number): Promise<OrderInfo> {
+        if (!utils.isAddress(supplierAddress)) throw new Error('Supplier not an address');
 
         try {
             const order = await this._contract.getOrderInfo(supplierAddress, id, { blockTag: blockNumber });
-            return EntityBuilder.buildOrder(order);
+            return EntityBuilder.buildOrderInfo(order);
             // const lines: OrderLine[] = (rawLines || []).map((rcl) => new OrderLine(
             //     rcl.id.toNumber(),
             //     rcl.productCategory.toString(),
@@ -164,96 +242,72 @@ export class TradeDriver {
     async isSupplierOrCustomer(supplierAddress: string, orderId: number, senderAddress: string): Promise<boolean> {
         if (!utils.isAddress(supplierAddress)) { throw new Error('Supplier not an address'); }
         if (!utils.isAddress(senderAddress)) { throw new Error('Sender not an address'); }
-        return this._contract.isSupplierOrCustomer(supplierAddress, orderId, senderAddress);
-    }
 
-    async getNegotiationStatus(supplierAddress: string, orderId: number): Promise<NegotiationStatus> {
-        if (!utils.isAddress(supplierAddress)) { throw new Error('Not an address'); }
-        return this._contract.getNegotiationStatus(supplierAddress, orderId);
-    }
-
-    async orderExists(supplierAddress: string, orderId: number): Promise<boolean> {
-        if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
-
-        return this._contract.orderExists(supplierAddress, orderId);
-    }
-
-    async confirmOrder(supplierAddress: string, orderId: number): Promise<void> {
-        if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
-
-        const tx = await this._contract.confirmOrder(supplierAddress, orderId);
-        await tx.wait();
-    }
-
-    async addDocument(supplierAddress: string, orderId: number, orderStatus: string, documentName: string, documentType: string, documentExternalUrl: string): Promise<void> {
-        if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
-
-        const tx = await this._contract.addDocument(supplierAddress, orderId, orderStatus, documentName, documentType, documentExternalUrl);
-        await tx.wait();
-    }
-
-    async getTradeLine(supplierAddress: string, orderId: number, orderLineId: number, blockNumber?: number): Promise<OrderLine> {
-        if (!utils.isAddress(supplierAddress)) {
-            throw new Error('Not an address');
-        }
         try {
-            const rawOrderLine = await this._contract.getTradeLine(supplierAddress, orderId, orderLineId, { blockTag: blockNumber });
+            return this._contract.isSupplierOrCustomer(supplierAddress, orderId, senderAddress);
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
+    }
+
+    async addOrderLine(supplierAddress: string, orderId: number, materialIds: [number, number], productCategory: string, quantity: number, price: OrderLinePrice): Promise<void> {
+        if (!utils.isAddress(supplierAddress)) throw new Error('Supplier not an address');
+
+        try {
+            const priceDecimals = price.amount.toString().split('.')[1]?.length || 0;
+            const rawOrderLinePrice: TradeManager.OrderLinePriceStruct = {
+                amount: price.amount * (10 ** priceDecimals),
+                decimals: priceDecimals,
+                fiat: price.fiat,
+            };
+            const tx = await this._contract.addOrderLine(supplierAddress, orderId, materialIds, productCategory, quantity, rawOrderLinePrice);
+            await tx.wait();
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
+    }
+
+    async addOrderLines(supplierAddress: string, orderId: number, lines: OrderLine[]): Promise<void> {
+        if (!utils.isAddress(supplierAddress)) throw new Error('Supplier not an address');
+        const orderLineFunctions = lines.map((line) => async () => {
+            await this.addOrderLine(supplierAddress, orderId, line.materialIds, line.productCategory, line.quantity, line.price);
+        });
+        await serial(orderLineFunctions);
+    }
+
+    async updateOrderLine(supplierAddress: string, orderId: number, orderLineId: number, materialIds: [number, number], productCategory: string, quantity: number, price: OrderLinePrice): Promise<void> {
+        if (!utils.isAddress(supplierAddress)) throw new Error('Supplier not an address');
+
+        try {
+            const priceDecimals = price.amount.toString().split('.')[1]?.length || 0;
+            const rawOrderLinePrice: TradeManager.OrderLinePriceStruct = {
+                amount: price.amount * (10 ** priceDecimals),
+                decimals: priceDecimals,
+                fiat: price.fiat,
+            };
+            const tx = await this._contract.updateOrderLine(supplierAddress, orderId, orderLineId, materialIds, productCategory, quantity, rawOrderLinePrice);
+            await tx.wait();
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
+    }
+
+    async getOrderLine(supplierAddress: string, orderId: number, orderLineId: number, blockNumber?: number): Promise<OrderLine> {
+        if (!utils.isAddress(supplierAddress)) throw new Error('Supplier not an address');
+
+        try {
+            const rawOrderLine = await this._contract.getOrderLine(supplierAddress, orderId, orderLineId, { blockTag: blockNumber });
             return EntityBuilder.buildOrderLine(rawOrderLine);
         } catch (e: any) {
             throw new Error(e.message);
         }
     }
 
-    async addOrderLine(supplierAddress: string, orderId: number, productCategory: string, quantity: number, price: OrderLinePrice): Promise<void> {
-        if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
-
-        try {
-            const priceDecimals = price.amount.toString().split('.')[1]?.length || 0;
-            const rawOrderLinePrice: TradeManager.OrderLinePriceStruct = {
-                amount: price.amount * (10 ** priceDecimals),
-                decimals: priceDecimals,
-                fiat: price.fiat,
-            };
-            const tx = await this._contract.addOrderLine(
-                supplierAddress,
-                orderId,
-                productCategory,
-                quantity,
-                rawOrderLinePrice,
-            );
-            await tx.wait();
-        } catch (e: any) {
-            throw new Error(e.message);
-        }
-    }
-
-    async updateOrderLine(supplierAddress: string, orderId: number, orderLineId: number, productCategory: string, quantity: number, price: OrderLinePrice): Promise<void> {
-        if (!utils.isAddress(supplierAddress)) throw new Error('Not an address');
-
-        try {
-            const priceDecimals = price.amount.toString().split('.')[1]?.length || 0;
-            const rawOrderLinePrice: TradeManager.OrderLinePriceStruct = {
-                amount: price.amount * (10 ** priceDecimals),
-                decimals: priceDecimals,
-                fiat: price.fiat,
-            };
-            const tx = await this._contract.updateOrderLine(
-                supplierAddress,
-                orderId,
-                orderLineId,
-                productCategory,
-                quantity,
-                rawOrderLinePrice,
-            );
-            await tx.wait();
-        } catch (e: any) {
-            throw new Error(e.message);
-        }
-    }
-
-    async getBlockNumbersByOrderId(id: number): Promise<Map<TradeEvents, number[]>> {
+    async getBlockNumbersByTradeId(id: number): Promise<Map<TradeEvents, number[]>> {
         const totalEvents = await Promise.all([
-            this._contract.queryFilter(this._contract.filters.OrderRegistered(id)),
+            this._contract.queryFilter(this._contract.filters.TradeRegistered(id)),
+            this._contract.queryFilter(this._contract.filters.TradeLineAdded(id)),
+            this._contract.queryFilter(this._contract.filters.TradeLineUpdated(id)),
             this._contract.queryFilter(this._contract.filters.OrderLineAdded(id)),
             this._contract.queryFilter(this._contract.filters.OrderLineUpdated(id)),
         ]);

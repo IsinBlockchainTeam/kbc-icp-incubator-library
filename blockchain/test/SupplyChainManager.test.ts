@@ -18,12 +18,12 @@ describe('SupplyChainManager', () => {
 
     describe('Registration', async () => {
         [
-            { resource: 'Material', args: ['testMaterial'], expectedResource: { id: BigNumber.from(0), name: 'testMaterial' } },
+            { resource: 'Material', args: ['testMaterial'], expectedResource: { id: BigNumber.from(1), name: 'testMaterial' } },
             {
                 resource: 'Transformation',
                 args: ['testTransformation', [1, 2], 3],
                 expectedResource: {
-                    id: BigNumber.from(0), name: 'testTransformation', inputMaterialsIds: [BigNumber.from(1), BigNumber.from(2)], outputMaterialId: BigNumber.from(3),
+                    id: BigNumber.from(1), name: 'testTransformation', inputMaterialsIds: [BigNumber.from(1), BigNumber.from(2)], outputMaterialId: BigNumber.from(3),
                 },
             },
         ]
@@ -38,7 +38,7 @@ describe('SupplyChainManager', () => {
 
                     const currentResourceCounter = await supplyChainManagerContract[`get${resource}sCounter`](address1.address);
                     expect(currentResourceCounter).to.be.equal(1);
-                    const registeredResource = await supplyChainManagerContract[`get${resource}`](address1.address, 0);
+                    const registeredResource = await supplyChainManagerContract[`get${resource}`](address1.address, 1);
 
                     const expectedResourceWithOwner = { ...expectedResource, owner: address1.address };
                     Object.keys(expectedResourceWithOwner).forEach((key) => {
@@ -46,7 +46,7 @@ describe('SupplyChainManager', () => {
                         expect(registeredResource[key]).deep.to.equal(expectedResourceWithOwner[key]);
                     });
 
-                    await expect(tx).to.emit(supplyChainManagerContract, 'ResourceRegistered').withArgs(resource.toLowerCase(), address1.address, 0);
+                    await expect(tx).to.emit(supplyChainManagerContract, 'ResourceRegistered').withArgs(resource.toLowerCase(), address1.address, 1);
                 });
             });
     });
@@ -54,14 +54,14 @@ describe('SupplyChainManager', () => {
     describe('Update', async () => {
         [
             {
-                resource: 'Material', registerArgs: ['testMaterial'], updateArgs: [0, 'testMaterialNew'], expectedResource: { id: BigNumber.from(0), name: 'testMaterialNew' },
+                resource: 'Material', registerArgs: ['testMaterial'], updateArgs: [1, 'testMaterialNew'], expectedResource: { id: BigNumber.from(1), name: 'testMaterialNew' },
             },
             {
                 resource: 'Transformation',
                 registerArgs: ['testTransformation', [1, 2], 3],
-                updateArgs: [0, 'testTransformationNew', [4, 5], 6],
+                updateArgs: [1, 'testTransformationNew', [4, 5], 6],
                 expectedResource: {
-                    id: BigNumber.from(0), name: 'testTransformationNew', inputMaterialsIds: [BigNumber.from(4), BigNumber.from(5)], outputMaterialId: BigNumber.from(6),
+                    id: BigNumber.from(1), name: 'testTransformationNew', inputMaterialsIds: [BigNumber.from(4), BigNumber.from(5)], outputMaterialId: BigNumber.from(6),
                 },
             },
         ]
@@ -77,7 +77,7 @@ describe('SupplyChainManager', () => {
 
                     const currentResourceCounter = await supplyChainManagerContract[`get${resource}sCounter`](address1.address);
                     expect(currentResourceCounter).to.be.equal(1);
-                    const updatedResource = await supplyChainManagerContract[`get${resource}`](address1.address, 0);
+                    const updatedResource = await supplyChainManagerContract[`get${resource}`](address1.address, 1);
 
                     const expectedResourceWithOwner = { ...expectedResource, owner: address1.address };
                     Object.keys(expectedResourceWithOwner).forEach((key) => {
@@ -85,7 +85,7 @@ describe('SupplyChainManager', () => {
                         expect(updatedResource[key]).deep.to.equal(expectedResourceWithOwner[key]);
                     });
 
-                    await expect(tx).to.emit(supplyChainManagerContract, 'ResourceUpdated').withArgs(resource.toLowerCase(), address1.address, 0);
+                    await expect(tx).to.emit(supplyChainManagerContract, 'ResourceUpdated').withArgs(resource.toLowerCase(), address1.address, 1);
                 });
             });
     });

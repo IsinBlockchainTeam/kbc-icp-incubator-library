@@ -7,7 +7,7 @@ import { Relationship } from '../entities/Relationship';
 import { EntityBuilder } from '../utils/EntityBuilder';
 
 export class RelationshipDriver {
-    protected _contract: RelationshipManager;
+    private _contract: RelationshipManager;
 
     constructor(
         signer: Signer,
