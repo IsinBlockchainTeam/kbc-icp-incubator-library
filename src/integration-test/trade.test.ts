@@ -21,7 +21,7 @@ import DocumentService from '../services/DocumentService';
 import { DocumentDriver } from '../drivers/DocumentDriver';
 import { SupplyChainService } from '../services/SupplyChainService';
 import { SupplyChainDriver } from '../drivers/SupplyChainDriver';
-import { TradeType } from '../entities/Trade';
+import { TradeLine } from '../entities/TradeLine';
 
 dotenv.config();
 
@@ -57,6 +57,7 @@ describe('Trade lifecycle', () => {
         shippingPort: 'shipping port 1',
         deliveryPort: 'delivery port',
     };
+    const basicTradeMetadata = { issueDate: new Date() };
     const productCategories = ['CategoryA', 'CategoryB'];
 
     const _defineSender = (privateKey: string, ipfsService?: IPFSService) => {
@@ -88,34 +89,34 @@ describe('Trade lifecycle', () => {
         supplyChainService = new SupplyChainService(supplyChainDriver);
     });
 
+    it('Should register some materials (created two times with two names to simulate material mapping for companies)', async () => {
+        const supplierMaterialName = 'material 1 supplier';
+        const customerMaterialName = 'material 1 customer';
+        await supplyChainService.registerMaterial(SUPPLIER_ADDRESS, supplierMaterialName);
+        await supplyChainService.registerMaterial(CUSTOMER_ADDRESS, customerMaterialName);
+
+        supplierMaterialsCounter = await supplyChainService.getMaterialsCounter(SUPPLIER_ADDRESS);
+        customerMaterialsCounter = await supplyChainService.getMaterialsCounter(CUSTOMER_ADDRESS);
+        expect(supplierMaterialsCounter).toEqual(1);
+        expect(customerMaterialsCounter).toEqual(1);
+
+        const supplierMaterial = await supplyChainService.getMaterial(SUPPLIER_ADDRESS, supplierMaterialsCounter);
+        expect(supplierMaterial.id).toEqual(supplierMaterialsCounter);
+        expect(supplierMaterial.name).toEqual(supplierMaterialName);
+        expect(supplierMaterial.owner).toEqual(SUPPLIER_ADDRESS);
+
+        const customerMaterial = await supplyChainService.getMaterial(CUSTOMER_ADDRESS, customerMaterialsCounter);
+        expect(customerMaterial.id).toEqual(customerMaterialsCounter);
+        expect(customerMaterial.name).toEqual(customerMaterialName);
+        expect(customerMaterial.owner).toEqual(CUSTOMER_ADDRESS);
+    });
+
     describe('Order scenario', () => {
-        it('Should register some materials (created two times with two names to simulate material mapping for companies)', async () => {
-            const supplierMaterialName = 'material 1 supplier';
-            const customerMaterialName = 'material 1 customer';
-            await supplyChainService.registerMaterial(SUPPLIER_ADDRESS, supplierMaterialName);
-            await supplyChainService.registerMaterial(CUSTOMER_ADDRESS, customerMaterialName);
-
-            supplierMaterialsCounter = await supplyChainService.getMaterialsCounter(SUPPLIER_ADDRESS);
-            customerMaterialsCounter = await supplyChainService.getMaterialsCounter(CUSTOMER_ADDRESS);
-            expect(supplierMaterialsCounter).toEqual(1);
-            expect(customerMaterialsCounter).toEqual(1);
-
-            const supplierMaterial = await supplyChainService.getMaterial(SUPPLIER_ADDRESS, supplierMaterialsCounter);
-            expect(supplierMaterial.id).toEqual(supplierMaterialsCounter);
-            expect(supplierMaterial.name).toEqual(supplierMaterialName);
-            expect(supplierMaterial.owner).toEqual(SUPPLIER_ADDRESS);
-
-            const customerMaterial = await supplyChainService.getMaterial(CUSTOMER_ADDRESS, customerMaterialsCounter);
-            expect(customerMaterial.id).toEqual(customerMaterialsCounter);
-            expect(customerMaterial.name).toEqual(customerMaterialName);
-            expect(customerMaterial.owner).toEqual(CUSTOMER_ADDRESS);
-        });
-
         it('Should correctly register and retrieve a order with a line', async () => {
             const orderLine: OrderLine = new OrderLine(0, [customerMaterialsCounter, supplierMaterialsCounter], productCategories[0], 20, new OrderLinePrice(10.25, 'USD'));
 
             const metadataUrl = await pinataService.storeJSON(orderMetadata);
-            await tradeService.registerTrade(TradeType.ORDER, SUPPLIER_ADDRESS, CUSTOMER_ADDRESS, tradeName, metadataUrl);
+            await tradeService.registerOrder(SUPPLIER_ADDRESS, CUSTOMER_ADDRESS, metadataUrl);
 
             tradeCounterId = await tradeService.getTradeCounter(SUPPLIER_ADDRESS);
             await tradeService.addOrderOfferee(SUPPLIER_ADDRESS, tradeCounterId, CUSTOMER_ADDRESS);
@@ -150,8 +151,9 @@ describe('Trade lifecycle', () => {
             expect(savedOrderLine.id).toEqual(tradeLineCounterId);
             expect(savedOrderLine.price).toEqual(orderLine.price);
             expect(savedOrderLine.quantity).toEqual(orderLine.quantity);
+            expect(savedOrderLine.materialIds).toEqual([customerMaterialsCounter, supplierMaterialsCounter]);
             expect(savedOrderLine.productCategory).toEqual(orderLine.productCategory);
-        });
+        }, 20000);
 
         it('Should check if an order exists', async () => {
             const exists = await tradeService.tradeExists(SUPPLIER_ADDRESS, tradeCounterId);
@@ -165,15 +167,15 @@ describe('Trade lifecycle', () => {
         });
 
         it('Should try to add an order line to a trade, fails because an order line must be added to an order', async () => {
-            await tradeService.registerTrade(TradeType.TRADE, SUPPLIER_ADDRESS, CUSTOMER_ADDRESS, tradeName, externalUrl);
+            await tradeService.registerTrade(SUPPLIER_ADDRESS, CUSTOMER_ADDRESS, tradeName, externalUrl);
             tradeCounterId = await tradeService.getTradeCounter(SUPPLIER_ADDRESS);
 
             const fn = async () => tradeService.addOrderLine(SUPPLIER_ADDRESS, tradeCounterId, [customerMaterialsCounter, supplierMaterialsCounter], productCategories[0], 5, new OrderLinePrice(10.25, 'USD'));
-            await expect(fn).rejects.toThrowError(new Error("Can't perform this operation if not ORDER"));
+            await expect(fn).rejects.toThrowError(/Can't perform this operation if not ORDER/);
         });
 
         it('Should check that the order status is INITIALIZED (no signatures)', async () => {
-            await tradeService.registerTrade(TradeType.ORDER, SUPPLIER_ADDRESS, CUSTOMER_ADDRESS, CUSTOMER_ADDRESS, externalUrl);
+            await tradeService.registerOrder(SUPPLIER_ADDRESS, CUSTOMER_ADDRESS, externalUrl);
             tradeCounterId = await tradeService.getTradeCounter(SUPPLIER_ADDRESS);
             await tradeService.addOrderOfferee(SUPPLIER_ADDRESS, tradeCounterId, CUSTOMER_ADDRESS);
             orderStatus = await tradeService.getNegotiationStatus(SUPPLIER_ADDRESS, tradeCounterId);
@@ -281,11 +283,11 @@ describe('Trade lifecycle', () => {
         });
 
         it('should negotiate an order and get its history by navigating with block numbers', async () => {
-            await tradeService.registerTrade(TradeType.ORDER, SUPPLIER_ADDRESS, CUSTOMER_ADDRESS, CUSTOMER_ADDRESS, externalUrl);
+            await tradeService.registerOrder(SUPPLIER_ADDRESS, CUSTOMER_ADDRESS, externalUrl);
             tradeCounterId = await tradeService.getTradeCounter(SUPPLIER_ADDRESS);
-            await tradeService.addOrderOfferee(SUPPLIER_ADDRESS, tradeCounterId, CUSTOMER_ADDRESS);
 
             const orderVersion1 = await tradeService.getOrderInfo(SUPPLIER_ADDRESS, tradeCounterId);
+            await tradeService.addOrderOfferee(SUPPLIER_ADDRESS, tradeCounterId, CUSTOMER_ADDRESS);
             await tradeService.addOrderLine(SUPPLIER_ADDRESS, tradeCounterId, [customerMaterialsCounter, supplierMaterialsCounter], productCategories[0], 50, new OrderLinePrice(50, 'USD'));
             const orderVersion2 = await tradeService.getOrderInfo(SUPPLIER_ADDRESS, tradeCounterId);
 
@@ -312,6 +314,44 @@ describe('Trade lifecycle', () => {
             // the order line added has been updated, so there is another version of it and we can access by the specific block number obtained by searching from "OrderLineAdded" and "OrderLineUpdated" event
             expect(await tradeService.getOrderLine(SUPPLIER_ADDRESS, tradeCounterId, tradeLineCounterId, eventsBlockNumbers.get(TradeEvents.OrderLineAdded)![1])).toEqual(orderLineVersion1);
             expect(await tradeService.getOrderLine(SUPPLIER_ADDRESS, tradeCounterId, tradeLineCounterId, eventsBlockNumbers.get(TradeEvents.OrderLineUpdated)![0])).toEqual(orderLineVersion2);
+        });
+    });
+
+    describe('Trade scenario', () => {
+        it('Should correctly register and retrieve a basic trade with a line', async () => {
+            _defineSender(SUPPLIER_PRIVATE_KEY, pinataService);
+            const tradeLine: TradeLine = new TradeLine(0, [customerMaterialsCounter, supplierMaterialsCounter], productCategories[0]);
+
+            const metadataUrl = await pinataService.storeJSON(basicTradeMetadata);
+            await tradeService.registerTrade(SUPPLIER_ADDRESS, CUSTOMER_ADDRESS, tradeName, metadataUrl);
+
+            tradeCounterId = await tradeService.getTradeCounter(SUPPLIER_ADDRESS);
+            await tradeService.addTradeLines(SUPPLIER_ADDRESS, tradeCounterId, [tradeLine]);
+            const { lineIds } = await tradeService.getTradeInfo(SUPPLIER_ADDRESS, tradeCounterId);
+            tradeLineCounterId = lineIds.splice(-1)[0];
+
+            const savedBasicTradeInfo = await tradeService.getTradeInfo(SUPPLIER_ADDRESS, tradeCounterId);
+            const savedBasicTrade = await tradeService.getCompleteBasicTrade(savedBasicTradeInfo);
+            expect(savedBasicTrade).toBeDefined();
+            expect(savedBasicTradeInfo).toBeDefined();
+            expect(savedBasicTrade!.id).toEqual(tradeCounterId);
+            expect(savedBasicTrade!.supplier).toEqual(SUPPLIER_ADDRESS);
+            expect(savedBasicTrade!.customer).toEqual(CUSTOMER_ADDRESS);
+            expect(savedBasicTrade!.name).toEqual(tradeName);
+            expect(savedBasicTrade!.lineIds).toEqual([tradeLineCounterId]);
+            // metadata
+            expect(savedBasicTrade!.issueDate).toEqual(basicTradeMetadata.issueDate);
+
+            const savedTradeLine = await tradeService.getTradeLine(SUPPLIER_ADDRESS, tradeCounterId, tradeLineCounterId);
+            expect(savedTradeLine.id).toEqual(tradeLineCounterId);
+            expect(savedTradeLine.materialIds).toEqual([customerMaterialsCounter, supplierMaterialsCounter]);
+            expect(savedTradeLine.productCategory).toEqual(tradeLine.productCategory);
+        });
+
+        it('Should check if a trade exists', async () => {
+            const exists = await tradeService.tradeExists(SUPPLIER_ADDRESS, tradeCounterId);
+            expect(exists).toBeDefined();
+            expect(exists).toBeTruthy();
         });
     });
 });

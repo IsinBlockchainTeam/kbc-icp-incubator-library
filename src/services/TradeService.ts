@@ -3,10 +3,10 @@ import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
 import { TradeDriver, TradeEvents } from '../drivers/TradeDriver';
 import { OrderInfo } from '../entities/OrderInfo';
 import { NegotiationStatus } from '../types/NegotiationStatus';
-import { TradeType } from '../entities/Trade';
-import { BasicTrade } from '../entities/BasicTrade';
+import { BasicTradeInfo } from '../entities/BasicTradeInfo';
 import { TradeLine } from '../entities/TradeLine';
 import { Order } from '../entities/Order';
+import { BasicTrade } from '../entities/BasicTrade';
 
 export class TradeService {
     private _tradeDriver: TradeDriver;
@@ -18,16 +18,27 @@ export class TradeService {
         this._ipfsService = ipfsService;
     }
 
-    async registerTrade(tradeType: TradeType, supplierAddress: string, customerAddress: string, name: string, externalUrl?: string): Promise<void> {
-        await this._tradeDriver.registerTrade(tradeType, supplierAddress, customerAddress, name, externalUrl);
+    async registerTrade(supplierAddress: string, customerAddress: string, name: string, externalUrl?: string): Promise<void> {
+        await this._tradeDriver.registerTrade(supplierAddress, customerAddress, name, externalUrl);
     }
 
     async tradeExists(supplierAddress: string, orderId: number): Promise<boolean> {
         return this._tradeDriver.tradeExists(supplierAddress, orderId);
     }
 
-    async getTradeInfo(supplierAddress: string, tradeId: number, blockNumber?: number): Promise<BasicTrade> {
+    async getTradeInfo(supplierAddress: string, tradeId: number, blockNumber?: number): Promise<BasicTradeInfo> {
         return this._tradeDriver.getTradeInfo(supplierAddress, tradeId, blockNumber);
+    }
+
+    async getCompleteBasicTrade(basicTradeInfo: BasicTradeInfo): Promise<BasicTrade | undefined> {
+        if (!this._ipfsService) throw new Error('IPFS Service not available');
+        try {
+            const { issueDate } = await this._ipfsService!.retrieveJSON(basicTradeInfo.externalUrl);
+            return new BasicTrade(basicTradeInfo, new Date(issueDate));
+        } catch (e) {
+            console.error('Error while retrieve basic trade metadata file from IPFS: ', e);
+        }
+        return undefined;
     }
 
     async getTradeCounter(supplierAddress: string): Promise<number> {
@@ -57,6 +68,10 @@ export class TradeService {
 
     async tradeLineExists(supplierAddress: string, tradeId: number, tradeLineId: number): Promise<boolean> {
         return this._tradeDriver.tradeLineExists(supplierAddress, tradeId, tradeLineId);
+    }
+
+    async registerOrder(supplierAddress: string, customerAddress: string, externalUrl?: string): Promise<void> {
+        await this._tradeDriver.registerOrder(supplierAddress, customerAddress, externalUrl);
     }
 
     async addOrderOfferee(supplierAddress: string, orderId: number, offeree: string): Promise<void> {

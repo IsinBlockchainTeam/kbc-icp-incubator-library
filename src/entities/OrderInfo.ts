@@ -19,8 +19,8 @@ export class OrderInfo extends Trade {
 
     private _deliveryDeadline?: Date;
 
-    constructor(id: number, name: string, supplier: string, customer: string, externalUrl: string, offeree: string, offeror: string, lineIds: number[], paymentDeadline: Date, documentDeliveryDeadline: Date, arbiter: string, shippingDeadline: Date, deliveryDeadline: Date) {
-        super(id, name, supplier, customer, externalUrl, lineIds);
+    constructor(id: number, supplier: string, customer: string, externalUrl: string, offeree: string, offeror: string, lineIds: number[], paymentDeadline: Date, documentDeliveryDeadline: Date, arbiter: string, shippingDeadline: Date, deliveryDeadline: Date) {
+        super(id, supplier, customer, externalUrl, lineIds);
         this._offeree = offeree;
         this._offeror = offeror;
         this._offereeSigned = false;

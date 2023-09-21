@@ -1,10 +1,11 @@
-import { Trade } from './Trade';
+import { BasicTradeInfo } from './BasicTradeInfo';
 
-export class BasicTrade extends Trade {
+export class BasicTrade extends BasicTradeInfo {
     private readonly _issueDate?: Date;
 
-    constructor(id: number, name: string, supplier: string, customer: string, externalUrl: string, lineIds: number[], issueDate?: Date) {
-        super(id, name, supplier, customer, externalUrl, lineIds);
+    constructor(basicTradeInfo: BasicTradeInfo, issueDate: Date) {
+        super(basicTradeInfo.id, basicTradeInfo.supplier, basicTradeInfo.customer,
+            basicTradeInfo.externalUrl, basicTradeInfo.lineIds, basicTradeInfo.name);
         this._issueDate = issueDate;
     }
 

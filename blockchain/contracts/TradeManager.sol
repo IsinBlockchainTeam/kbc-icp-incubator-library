@@ -47,16 +47,18 @@ contract TradeManager is AccessControl {
     }
 
     struct Trade {
-        // -------- BASIC TRADE INFORMATION -------------
+        // -------- GENERAL TRADE INFORMATION -------------
         uint256 id;
         TradeType tradeType; // { TRADE, ORDER }
-        string name;
         address supplier;
         address customer;
         string externalUrl;
         uint256[] lineIds;
         mapping(uint256 => TradeLine) lines;
+        // -------------------------------------------------
 
+        // -------- BASIC TRADE INFORMATION ----------------
+        string name;
         // -------------------------------------------------
 
         // -------- ORDER TRADE INFORMATION ----------------
@@ -109,7 +111,7 @@ contract TradeManager is AccessControl {
         documentManager = DocumentManager(documentManagerAddress);
     }
 
-    function registerTrade(TradeType tradeType, address supplier, address customer, string memory name, string memory externalUrl) public {
+    function registerTrade(TradeType tradeType, address supplier, address customer, string memory externalUrl) public {
         require(supplier == msg.sender || customer == msg.sender, "Sender is neither supplier nor customer");
 
         Counters.Counter storage tradeCounter = tradesCounter[supplier];
@@ -118,7 +120,6 @@ contract TradeManager is AccessControl {
 
         Trade storage newTrade = trades[supplier][tradeId];
         newTrade.id = tradeId;
-        newTrade.name = name;
         newTrade.supplier = supplier;
         newTrade.customer = customer;
         newTrade.externalUrl = externalUrl;
@@ -126,6 +127,14 @@ contract TradeManager is AccessControl {
         newTrade.exists = true;
 
         emit TradeRegistered(tradeId, supplier);
+    }
+
+    function addTradeName(address supplier, uint256 tradeId, string memory name) public {
+        Trade storage t = trades[supplier][tradeId];
+        require(t.exists, "Trade does not exist");
+        require(t.tradeType == TradeType.TRADE, "Can't perform this operation if not TRADE");
+
+        t.name = name;
     }
 
     function tradeExists(address supplier, uint256 tradeId) public view returns (bool) {

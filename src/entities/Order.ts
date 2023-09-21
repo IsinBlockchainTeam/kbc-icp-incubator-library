@@ -10,7 +10,7 @@ export class Order extends OrderInfo {
     private readonly _deliveryPort: string;
 
     constructor(orderInfo: OrderInfo, incoterms: string, shipper: string, shippingPort: string, deliveryPort: string) {
-        super(orderInfo.id, orderInfo.name, orderInfo.supplier, orderInfo.customer, orderInfo.externalUrl,
+        super(orderInfo.id, orderInfo.supplier, orderInfo.customer, orderInfo.externalUrl,
             orderInfo.offeree, orderInfo.offeror, orderInfo.lineIds, orderInfo.paymentDeadline || new Date(0),
             orderInfo.documentDeliveryDeadline || new Date(0), orderInfo.arbiter || '',
             orderInfo.shippingDeadline || new Date(0), orderInfo.deliveryDeadline || new Date(0));

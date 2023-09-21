@@ -17,7 +17,6 @@ import {
 } from './config';
 import TradeService from '../services/TradeService';
 import { TradeDriver } from '../drivers/TradeDriver';
-import { TradeType } from '../entities/Trade';
 
 dotenv.config();
 
@@ -71,7 +70,7 @@ describe('DocumentInfo lifecycle', () => {
     };
 
     const createOrderAndConfirm = async (): Promise<number> => {
-        await orderService.registerTrade(TradeType.ORDER, SUPPLIER_ADDRESS, CUSTOMER_ADDRESS, 'Order name', externalUrl);
+        await orderService.registerOrder(SUPPLIER_ADDRESS, CUSTOMER_ADDRESS, externalUrl);
         const orderId = await orderService.getTradeCounter(SUPPLIER_ADDRESS);
         await orderService.addOrderOfferee(SUPPLIER_ADDRESS, orderId, CUSTOMER_ADDRESS);
         // add all the constraints so that an order can be confirmed (it is required to add a document)
@@ -87,7 +86,6 @@ describe('DocumentInfo lifecycle', () => {
     };
 
     beforeAll(async () => {
-        jest.setTimeout(10000);
         provider = new ethers.providers.JsonRpcProvider(NETWORK);
         _defineSender(SUPPLIER_PRIVATE_KEY);
         _defineOrderSender(SUPPLIER_PRIVATE_KEY);

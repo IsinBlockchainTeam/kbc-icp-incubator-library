@@ -6,8 +6,6 @@ export enum TradeType {
 export abstract class Trade {
     private _id: number;
 
-    private _name: string;
-
     private _supplier: string;
 
     private _customer: string;
@@ -16,9 +14,8 @@ export abstract class Trade {
 
     private _lineIds: number[];
 
-    protected constructor(id: number, name: string, supplier: string, customer: string, externalUrl: string, lineIds: number[]) {
+    protected constructor(id: number, supplier: string, customer: string, externalUrl: string, lineIds: number[]) {
         this._id = id;
-        this._name = name;
         this._supplier = supplier;
         this._customer = customer;
         this._externalUrl = externalUrl;
@@ -31,14 +28,6 @@ export abstract class Trade {
 
     set id(value: number) {
         this._id = value;
-    }
-
-    get name(): string {
-        return this._name;
-    }
-
-    set name(value: string) {
-        this._name = value;
     }
 
     get supplier(): string {

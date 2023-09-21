@@ -10,7 +10,7 @@ import {
 import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
 import { Relationship } from '../entities/Relationship';
 import { DocumentInfo } from '../entities/DocumentInfo';
-import { BasicTrade } from '../entities/BasicTrade';
+import { BasicTradeInfo } from '../entities/BasicTradeInfo';
 import { TradeLine } from '../entities/TradeLine';
 
 export class EntityBuilder {
@@ -18,8 +18,8 @@ export class EntityBuilder {
         return new Material(bcMaterial.id.toNumber(), bcMaterial.name, bcMaterial.owner);
     }
 
-    static buildBasicTrade(bcTrade: {id: BigNumber, name: string, supplier: string, customer: string, externalUrl: string, lineIds: BigNumber[]}): BasicTrade {
-        return new BasicTrade(bcTrade.id.toNumber(), bcTrade.name, bcTrade.supplier, bcTrade.customer, bcTrade.externalUrl, bcTrade.lineIds.map((id) => id.toNumber()));
+    static buildBasicTradeInfo(bcTrade: {id: BigNumber, name: string, supplier: string, customer: string, externalUrl: string, lineIds: BigNumber[]}): BasicTradeInfo {
+        return new BasicTradeInfo(bcTrade.id.toNumber(), bcTrade.supplier, bcTrade.customer, bcTrade.externalUrl, bcTrade.lineIds.map((id) => id.toNumber()), bcTrade.name);
     }
 
     static buildTradeLine(bcTradeLine: TradeManager.TradeLineStructOutput): TradeLine {
@@ -30,9 +30,9 @@ export class EntityBuilder {
         return new Transformation(bcTransformation.id.toNumber(), bcTransformation.name, bcTransformation.inputMaterialsIds.map((id) => id.toNumber()), bcTransformation.outputMaterialId.toNumber(), bcTransformation.owner);
     }
 
-    static buildOrderInfo(bcOrder: { id: BigNumber, name: string, supplier: string, customer: string, offeree: string, offeror: string, externalUrl: string, lineIds: BigNumber[], paymentDeadline: BigNumber,
+    static buildOrderInfo(bcOrder: { id: BigNumber, supplier: string, customer: string, offeree: string, offeror: string, externalUrl: string, lineIds: BigNumber[], paymentDeadline: BigNumber,
                         documentDeliveryDeadline: BigNumber, arbiter: string, shippingDeadline: BigNumber, deliveryDeadline: BigNumber }): OrderInfo {
-        return new OrderInfo(bcOrder.id.toNumber(), bcOrder.name, bcOrder.supplier, bcOrder.customer, bcOrder.externalUrl, bcOrder.offeree, bcOrder.offeror,
+        return new OrderInfo(bcOrder.id.toNumber(), bcOrder.supplier, bcOrder.customer, bcOrder.externalUrl, bcOrder.offeree, bcOrder.offeror,
             bcOrder.lineIds.map((l) => l.toNumber()), new Date(bcOrder.paymentDeadline.toNumber()), new Date(bcOrder.documentDeliveryDeadline.toNumber()),
             bcOrder.arbiter, new Date(bcOrder.shippingDeadline.toNumber()), new Date(bcOrder.deliveryDeadline.toNumber()));
     }

@@ -60,8 +60,9 @@ describe('TradeManager', () => {
 
     describe('registerTrade', () => {
         it('should register and retrieve a basic trade', async () => {
-            await tradeManagerContract.connect(supplier).registerTrade(0, supplier.address, customer.address, basicTrade.name, basicTrade.externalUrl);
+            await tradeManagerContract.connect(supplier).registerTrade(0, supplier.address, customer.address, basicTrade.externalUrl);
             tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
+            await tradeManagerContract.connect(supplier).addTradeName(supplier.address, tradeCounterId.toNumber(), basicTrade.name);
 
             const trade = await tradeManagerContract.connect(supplier).getTradeInfo(supplier.address, tradeCounterId.toNumber());
             expect(trade.id).to.equal(tradeCounterId.toNumber());
@@ -72,7 +73,7 @@ describe('TradeManager', () => {
         });
 
         it('should register a trade - FAIL (sender is neither supplier nor customer)', async () => {
-            await expect(tradeManagerContract.connect(otherAccount).registerTrade(0, supplier.address, customer.address, basicTrade.name, basicTrade.externalUrl)).to.be.revertedWith('Sender is neither supplier nor customer');
+            await expect(tradeManagerContract.connect(otherAccount).registerTrade(0, supplier.address, customer.address, basicTrade.externalUrl)).to.be.revertedWith('Sender is neither supplier nor customer');
         });
 
         it('should try to retrieve a trade - FAIL(Trade does not exist)', async () => {
@@ -80,7 +81,7 @@ describe('TradeManager', () => {
         });
 
         it('should try to retrieve a trade - FAIL(Can\'t perform this operation if not TRADE)', async () => {
-            await tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.name, basicTrade.externalUrl);
+            await tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.externalUrl);
             tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
 
             await expect(tradeManagerContract.connect(supplier).getTradeInfo(supplier.address, tradeCounterId.toNumber())).to.be.revertedWith('Can\'t perform this operation if not TRADE');
@@ -88,13 +89,13 @@ describe('TradeManager', () => {
 
         it('should emit TradeRegistered event', async () => {
             tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
-            await expect(tradeManagerContract.connect(supplier).registerTrade(0, supplier.address, customer.address, basicTrade.name, basicTrade.externalUrl))
+            await expect(tradeManagerContract.connect(supplier).registerTrade(0, supplier.address, customer.address, basicTrade.externalUrl))
                 .to.emit(tradeManagerContract, 'TradeRegistered')
                 .withArgs(tradeCounterId.toNumber() + 1, supplier.address);
         });
 
-        it('should check if order exists', async () => {
-            await tradeManagerContract.connect(supplier).registerTrade(0, supplier.address, customer.address, basicTrade.name, basicTrade.externalUrl);
+        it('should check if trade exists', async () => {
+            await tradeManagerContract.connect(supplier).registerTrade(0, supplier.address, customer.address, basicTrade.externalUrl);
             tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
             const exist = await tradeManagerContract.connect(supplier).tradeExists(supplier.address, tradeCounterId.toNumber());
             expect(exist).to.be.true;
@@ -106,7 +107,7 @@ describe('TradeManager', () => {
         const initialProductCategory = categories[0];
 
         before(async () => {
-            await tradeManagerContract.connect(supplier).registerTrade(0, supplier.address, customer.address, basicTrade.name, basicTrade.externalUrl);
+            await tradeManagerContract.connect(supplier).registerTrade(0, supplier.address, customer.address, basicTrade.externalUrl);
             tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
         });
 
@@ -139,7 +140,7 @@ describe('TradeManager', () => {
             });
 
             it('should add a trade line - FAIL (Can\'t perform this operation if not TRADE)', async () => {
-                await tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.name, basicTrade.externalUrl);
+                await tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.externalUrl);
                 tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
 
                 await expect(tradeManagerContract.connect(supplier).addTradeLine(supplier.address, tradeCounterId.toNumber(), basicTradeLineMaterialIds, initialProductCategory)).to.be.revertedWith('Can\'t perform this operation if not TRADE');
@@ -148,7 +149,7 @@ describe('TradeManager', () => {
 
         describe('getTradeLine', () => {
             before(async () => {
-                await tradeManagerContract.connect(supplier).registerTrade(0, supplier.address, customer.address, basicTrade.name, basicTrade.externalUrl);
+                await tradeManagerContract.connect(supplier).registerTrade(0, supplier.address, customer.address, basicTrade.externalUrl);
                 tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
 
                 await tradeManagerContract.connect(supplier).addTradeLine(supplier.address, tradeCounterId.toNumber(), basicTradeLineMaterialIds, initialProductCategory);
@@ -177,7 +178,7 @@ describe('TradeManager', () => {
             });
 
             it('should get a trade line - FAIL (Only a TRADE has trade lines)', async () => {
-                await tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.name, basicTrade.externalUrl);
+                await tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.externalUrl);
                 tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
 
                 await expect(tradeManagerContract.connect(supplier).getTradeLine(supplier.address, tradeCounterId.toNumber(), tradeLineCounterId.toNumber())).to.be.revertedWith('Only a TRADE has trade lines');
@@ -189,7 +190,7 @@ describe('TradeManager', () => {
             const updatedProductCategory = categories[1];
 
             before(async () => {
-                await tradeManagerContract.connect(supplier).registerTrade(0, supplier.address, customer.address, basicTrade.name, basicTrade.externalUrl);
+                await tradeManagerContract.connect(supplier).registerTrade(0, supplier.address, customer.address, basicTrade.externalUrl);
                 tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
 
                 await tradeManagerContract.connect(supplier).addTradeLine(supplier.address, tradeCounterId.toNumber(), basicTradeLineMaterialIds, initialProductCategory);
@@ -235,7 +236,7 @@ describe('TradeManager', () => {
 
     describe('confirmOrder', () => {
         before(async () => {
-            await tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.name, basicTrade.externalUrl);
+            await tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.externalUrl);
             tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
 
             await tradeManagerContract.connect(supplier).addOrderOfferee(supplier.address, tradeCounterId.toNumber(), customer.address);
@@ -261,7 +262,7 @@ describe('TradeManager', () => {
 
     describe('addDocument', () => {
         before(async () => {
-            await tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.name, basicTrade.externalUrl);
+            await tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.externalUrl);
             tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
 
             await tradeManagerContract.connect(supplier).addOrderOfferee(supplier.address, tradeCounterId.toNumber(), customer.address);
@@ -300,7 +301,7 @@ describe('TradeManager', () => {
         };
 
         before(async () => {
-            await tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.name, basicTrade.externalUrl);
+            await tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.externalUrl);
             tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
             await tradeManagerContract.connect(supplier).addOrderOfferee(supplier.address, tradeCounterId.toNumber(), customer.address);
 
@@ -371,7 +372,7 @@ describe('TradeManager', () => {
 
         describe('getOrderLine', () => {
             before(async () => {
-                await tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.name, basicTrade.externalUrl);
+                await tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.externalUrl);
                 tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
                 await tradeManagerContract.connect(supplier).addOrderOfferee(supplier.address, tradeCounterId.toNumber(), customer.address);
 
@@ -401,7 +402,7 @@ describe('TradeManager', () => {
             });
 
             it('should get an order line - FAIL (Only an ORDER has order lines)', async () => {
-                await tradeManagerContract.connect(supplier).registerTrade(0, supplier.address, customer.address, basicTrade.name, basicTrade.externalUrl);
+                await tradeManagerContract.connect(supplier).registerTrade(0, supplier.address, customer.address, basicTrade.externalUrl);
                 tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
 
                 await expect(tradeManagerContract.connect(supplier).getOrderLine(supplier.address, tradeCounterId.toNumber(), orderLineCounterId.toNumber())).to.be.revertedWith('Only an ORDER has order lines');
@@ -410,7 +411,7 @@ describe('TradeManager', () => {
 
         describe('tradeLineExists', () => {
             it('should check if a trade line exists', async () => {
-                await tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.name, basicTrade.externalUrl);
+                await tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.externalUrl);
                 tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
                 await tradeManagerContract.connect(supplier).addOrderOfferee(supplier.address, tradeCounterId.toNumber(), customer.address);
 
@@ -480,7 +481,7 @@ describe('TradeManager', () => {
             let orderStatus;
 
             before(async () => {
-                await tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.name, basicTrade.externalUrl);
+                await tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.externalUrl);
                 tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
 
                 await tradeManagerContract.connect(supplier).addOrderOfferee(supplier.address, tradeCounterId.toNumber(), customer.address);
@@ -525,7 +526,7 @@ describe('TradeManager', () => {
 
     describe('manipulate order by setting constraints', () => {
         before(async () => {
-            await tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.name, basicTrade.externalUrl);
+            await tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.externalUrl);
             tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
         });
 
