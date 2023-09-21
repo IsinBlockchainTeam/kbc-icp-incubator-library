@@ -7,6 +7,7 @@ import { BasicTradeInfo } from '../entities/BasicTradeInfo';
 import { TradeLine } from '../entities/TradeLine';
 import { Order } from '../entities/Order';
 import { BasicTrade } from '../entities/BasicTrade';
+import { serial } from '../utils/utils';
 
 export class TradeService {
     private _tradeDriver: TradeDriver;
@@ -18,16 +19,16 @@ export class TradeService {
         this._ipfsService = ipfsService;
     }
 
-    async registerTrade(supplierAddress: string, customerAddress: string, name: string, externalUrl?: string): Promise<void> {
-        await this._tradeDriver.registerTrade(supplierAddress, customerAddress, name, externalUrl);
+    async registerBasicTrade(supplierAddress: string, customerAddress: string, name: string, externalUrl?: string): Promise<void> {
+        await this._tradeDriver.registerBasicTrade(supplierAddress, customerAddress, name, externalUrl);
     }
 
     async tradeExists(supplierAddress: string, orderId: number): Promise<boolean> {
         return this._tradeDriver.tradeExists(supplierAddress, orderId);
     }
 
-    async getTradeInfo(supplierAddress: string, tradeId: number, blockNumber?: number): Promise<BasicTradeInfo> {
-        return this._tradeDriver.getTradeInfo(supplierAddress, tradeId, blockNumber);
+    async getBasicTradeInfo(supplierAddress: string, tradeId: number, blockNumber?: number): Promise<BasicTradeInfo> {
+        return this._tradeDriver.getBasicTradeInfo(supplierAddress, tradeId, blockNumber);
     }
 
     async getCompleteBasicTrade(basicTradeInfo: BasicTradeInfo): Promise<BasicTrade | undefined> {
@@ -50,7 +51,10 @@ export class TradeService {
     }
 
     async addTradeLines(supplierAddress: string, tradeId: number, lines: TradeLine[]): Promise<void> {
-        await this._tradeDriver.addTradeLines(supplierAddress, tradeId, lines);
+        const tradeLineFunctions = lines.map((line) => async () => {
+            await this.addTradeLine(supplierAddress, tradeId, line.materialIds, line.productCategory);
+        });
+        await serial(tradeLineFunctions);
     }
 
     async updateTradeLine(supplierAddress: string, tradeId: number, tradeLineId: number, materialIds: [number, number], productCategory: string): Promise<void> {
@@ -62,7 +66,7 @@ export class TradeService {
     }
 
     async getTradeLines(supplierAddress: string, tradeId: number) : Promise<TradeLine[]> {
-        const trade = await this.getTradeInfo(supplierAddress, tradeId);
+        const trade = await this.getBasicTradeInfo(supplierAddress, tradeId);
         return Promise.all(trade.lineIds.map(async (lineId) => this.getTradeLine(supplierAddress, tradeId, lineId)));
     }
 
@@ -134,7 +138,10 @@ export class TradeService {
     }
 
     async addOrderLines(supplierAddress: string, orderId: number, lines: OrderLine[]): Promise<void> {
-        await this._tradeDriver.addOrderLines(supplierAddress, orderId, lines);
+        const orderLineFunctions = lines.map((line) => async () => {
+            await this.addOrderLine(supplierAddress, orderId, line.materialIds, line.productCategory, line.quantity, line.price);
+        });
+        await serial(orderLineFunctions);
     }
 
     async updateOrderLine(supplierAddress: string, orderId: number, orderLineId: number, materialIds: [number, number], productCategory: string, quantity: number, price: OrderLinePrice): Promise<void> {

@@ -167,7 +167,7 @@ describe('Trade lifecycle', () => {
         });
 
         it('Should try to add an order line to a trade, fails because an order line must be added to an order', async () => {
-            await tradeService.registerTrade(SUPPLIER_ADDRESS, CUSTOMER_ADDRESS, tradeName, externalUrl);
+            await tradeService.registerBasicTrade(SUPPLIER_ADDRESS, CUSTOMER_ADDRESS, tradeName, externalUrl);
             tradeCounterId = await tradeService.getTradeCounter(SUPPLIER_ADDRESS);
 
             const fn = async () => tradeService.addOrderLine(SUPPLIER_ADDRESS, tradeCounterId, [customerMaterialsCounter, supplierMaterialsCounter], productCategories[0], 5, new OrderLinePrice(10.25, 'USD'));
@@ -323,14 +323,14 @@ describe('Trade lifecycle', () => {
             const tradeLine: TradeLine = new TradeLine(0, [customerMaterialsCounter, supplierMaterialsCounter], productCategories[0]);
 
             const metadataUrl = await pinataService.storeJSON(basicTradeMetadata);
-            await tradeService.registerTrade(SUPPLIER_ADDRESS, CUSTOMER_ADDRESS, tradeName, metadataUrl);
+            await tradeService.registerBasicTrade(SUPPLIER_ADDRESS, CUSTOMER_ADDRESS, tradeName, metadataUrl);
 
             tradeCounterId = await tradeService.getTradeCounter(SUPPLIER_ADDRESS);
             await tradeService.addTradeLines(SUPPLIER_ADDRESS, tradeCounterId, [tradeLine]);
-            const { lineIds } = await tradeService.getTradeInfo(SUPPLIER_ADDRESS, tradeCounterId);
+            const { lineIds } = await tradeService.getBasicTradeInfo(SUPPLIER_ADDRESS, tradeCounterId);
             tradeLineCounterId = lineIds.splice(-1)[0];
 
-            const savedBasicTradeInfo = await tradeService.getTradeInfo(SUPPLIER_ADDRESS, tradeCounterId);
+            const savedBasicTradeInfo = await tradeService.getBasicTradeInfo(SUPPLIER_ADDRESS, tradeCounterId);
             const savedBasicTrade = await tradeService.getCompleteBasicTrade(savedBasicTradeInfo);
             expect(savedBasicTrade).toBeDefined();
             expect(savedBasicTradeInfo).toBeDefined();

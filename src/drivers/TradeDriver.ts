@@ -6,7 +6,6 @@ import { OrderInfo } from '../entities/OrderInfo';
 import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
 import { NegotiationStatus } from '../types/NegotiationStatus';
 import { EntityBuilder } from '../utils/EntityBuilder';
-import { serial } from '../utils/utils';
 import { TradeType } from '../entities/Trade';
 import { BasicTradeInfo } from '../entities/BasicTradeInfo';
 import { TradeLine } from '../entities/TradeLine';
@@ -31,7 +30,7 @@ export class TradeDriver {
             .connect(signer);
     }
 
-    async registerTrade(supplierAddress: string, customerAddress: string, name: string, externalUrl?: string): Promise<void> {
+    async registerBasicTrade(supplierAddress: string, customerAddress: string, name: string, externalUrl?: string): Promise<void> {
         if (!utils.isAddress(supplierAddress)) throw new Error('Supplier not an address');
         if (!utils.isAddress(customerAddress)) throw new Error('Customer not an address');
 
@@ -57,7 +56,7 @@ export class TradeDriver {
         return this._contract.tradeExists(supplierAddress, orderId);
     }
 
-    async getTradeInfo(supplierAddress: string, tradeId: number, blockNumber?: number): Promise<BasicTradeInfo> {
+    async getBasicTradeInfo(supplierAddress: string, tradeId: number, blockNumber?: number): Promise<BasicTradeInfo> {
         if (!utils.isAddress(supplierAddress)) throw new Error('Supplier not an address');
         try {
             const rawTrade = await this._contract.getTradeInfo(supplierAddress, tradeId, { blockTag: blockNumber });
@@ -84,14 +83,6 @@ export class TradeDriver {
         }
     }
 
-    async addTradeLines(supplierAddress: string, tradeId: number, lines: TradeLine[]): Promise<void> {
-        if (!utils.isAddress(supplierAddress)) throw new Error('Supplier not an address');
-        const tradeLineFunctions = lines.map((line) => async () => {
-            await this.addTradeLine(supplierAddress, tradeId, line.materialIds, line.productCategory);
-        });
-        await serial(tradeLineFunctions);
-    }
-
     async updateTradeLine(supplierAddress: string, tradeId: number, tradeLineId: number, materialIds: [number, number], productCategory: string): Promise<void> {
         if (!utils.isAddress(supplierAddress)) throw new Error('Supplier not an address');
         try {
@@ -102,10 +93,10 @@ export class TradeDriver {
         }
     }
 
-    async getTradeLine(supplierAddress: string, tradeId: number, tradeLineId: number): Promise<TradeLine> {
+    async getTradeLine(supplierAddress: string, tradeId: number, tradeLineId: number, blockNumber?: number): Promise<TradeLine> {
         if (!utils.isAddress(supplierAddress)) throw new Error('Supplier not an address');
         try {
-            const rawTradeLine = await this._contract.getTradeLine(supplierAddress, tradeId, tradeLineId);
+            const rawTradeLine = await this._contract.getTradeLine(supplierAddress, tradeId, tradeLineId, { blockTag: blockNumber });
             return EntityBuilder.buildTradeLine(rawTradeLine);
         } catch (e: any) {
             throw new Error(e.message);
@@ -230,8 +221,8 @@ export class TradeDriver {
         if (!utils.isAddress(supplierAddress)) throw new Error('Supplier not an address');
 
         try {
-            const order = await this._contract.getOrderInfo(supplierAddress, id, { blockTag: blockNumber });
-            return EntityBuilder.buildOrderInfo(order);
+            const rawOrder = await this._contract.getOrderInfo(supplierAddress, id, { blockTag: blockNumber });
+            return EntityBuilder.buildOrderInfo(rawOrder);
             // const lines: OrderLine[] = (rawLines || []).map((rcl) => new OrderLine(
             //     rcl.id.toNumber(),
             //     rcl.productCategory.toString(),
@@ -274,14 +265,6 @@ export class TradeDriver {
         } catch (e: any) {
             throw new Error(e.message);
         }
-    }
-
-    async addOrderLines(supplierAddress: string, orderId: number, lines: OrderLine[]): Promise<void> {
-        if (!utils.isAddress(supplierAddress)) throw new Error('Supplier not an address');
-        const orderLineFunctions = lines.map((line) => async () => {
-            await this.addOrderLine(supplierAddress, orderId, line.materialIds, line.productCategory, line.quantity, line.price);
-        });
-        await serial(orderLineFunctions);
     }
 
     async updateOrderLine(supplierAddress: string, orderId: number, orderLineId: number, materialIds: [number, number], productCategory: string, quantity: number, price: OrderLinePrice): Promise<void> {

@@ -1,9 +1,7 @@
 import { OrderInfo } from './OrderInfo';
-import { Order } from './Order';
 
-describe('Order', () => {
+describe('OrderInfo', () => {
     let orderInfo: OrderInfo;
-    let order: Order;
     const deadline = new Date('2030-10-10');
     const deadline2 = new Date('2050-05-05');
     const metadataExternalUrl = 'CID';
@@ -11,26 +9,22 @@ describe('Order', () => {
     beforeAll(() => {
         orderInfo = new OrderInfo(0, 'supplier', 'customer', metadataExternalUrl, 'offeree', 'offeror', [1, 2],
             deadline, deadline, 'arbiter', deadline, deadline);
-        order = new Order(orderInfo, 'FOB', 'shipper', 'shipping port', 'delivery port');
     });
 
     it('should correctly initialize a new Order', () => {
-        expect(order.id).toEqual(orderInfo.id);
-        expect(order.supplier).toEqual(orderInfo.supplier);
-        expect(order.customer).toEqual(orderInfo.customer);
-        expect(order.offeree).toEqual(orderInfo.offeree);
-        expect(order.offeror).toEqual(orderInfo.offeror);
-        expect(order.lineIds).toEqual(orderInfo.lineIds);
-        expect(order.offereeSigned).toBeFalsy();
-        expect(order.offerorSigned).toBeFalsy();
-        expect(order.paymentDeadline).toEqual(orderInfo.paymentDeadline);
-        expect(order.documentDeliveryDeadline).toEqual(orderInfo.documentDeliveryDeadline);
-        expect(order.shipper).toEqual('shipper');
-        expect(order.arbiter).toEqual(orderInfo.arbiter);
-        expect(order.shippingPort).toEqual('shipping port');
-        expect(order.shippingDeadline).toEqual(orderInfo.shippingDeadline);
-        expect(order.deliveryPort).toEqual('delivery port');
-        expect(order.deliveryDeadline).toEqual(orderInfo.deliveryDeadline);
+        expect(orderInfo.id).toEqual(0);
+        expect(orderInfo.supplier).toEqual('supplier');
+        expect(orderInfo.customer).toEqual('customer');
+        expect(orderInfo.offeree).toEqual('offeree');
+        expect(orderInfo.offeror).toEqual('offeror');
+        expect(orderInfo.lineIds).toEqual([1, 2]);
+        expect(orderInfo.offereeSigned).toBeFalsy();
+        expect(orderInfo.offerorSigned).toBeFalsy();
+        expect(orderInfo.paymentDeadline).toEqual(deadline);
+        expect(orderInfo.documentDeliveryDeadline).toEqual(deadline);
+        expect(orderInfo.arbiter).toEqual('arbiter');
+        expect(orderInfo.shippingDeadline).toEqual(deadline);
+        expect(orderInfo.deliveryDeadline).toEqual(deadline);
     });
 
     it('should correctly set the id', () => {
