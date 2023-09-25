@@ -20,7 +20,7 @@ import { TradeDriver } from '../drivers/TradeDriver';
 
 dotenv.config();
 
-describe('DocumentInfo lifecycle', () => {
+describe('Document lifecycle', () => {
     let documentService: DocumentService;
     let documentDriver: DocumentDriver;
     let provider: JsonRpcProvider;

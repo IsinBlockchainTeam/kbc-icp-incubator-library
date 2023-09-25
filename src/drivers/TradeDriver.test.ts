@@ -9,6 +9,7 @@ import { TradeManager, TradeManager__factory } from '../smart-contracts';
 import { EntityBuilder } from '../utils/EntityBuilder';
 import { BasicTradeInfo } from '../entities/BasicTradeInfo';
 import { TradeType } from '../entities/Trade';
+import { TradeLine } from '../entities/TradeLine';
 
 describe('TradeDriver', () => {
     let tradeDriver: TradeDriver;
@@ -43,11 +44,13 @@ describe('TradeDriver', () => {
     const buildOrderLineSpy = jest.spyOn(EntityBuilder, 'buildOrderLine');
     const buildOrderLinePriceSpy = jest.spyOn(EntityBuilder, 'buildOrderLinePrice');
     const buildBasicTradeInfoSpy = jest.spyOn(EntityBuilder, 'buildBasicTradeInfo');
+    const buildTradeLineSpy = jest.spyOn(EntityBuilder, 'buildTradeLine');
 
     const mockedOrderInfo = createMock<OrderInfo>();
     const mockedOrderLine = createMock<OrderLine>();
     const mockedOrderLinePrice = createMock<OrderLinePrice>();
     const mockedBasicTradeInfo = createMock<BasicTradeInfo>();
+    const mockedTradeLine = createMock<TradeLine>();
 
     beforeAll(() => {
         mockedWriteFunction.mockResolvedValue({
@@ -109,10 +112,10 @@ describe('TradeDriver', () => {
 
         buildOrderSpy.mockReturnValue(mockedOrderInfo);
         buildOrderLineSpy.mockReturnValue(mockedOrderLine);
-
         buildOrderLinePriceSpy.mockReturnValue(mockedOrderLinePrice);
 
         buildBasicTradeInfoSpy.mockReturnValue(mockedBasicTradeInfo);
+        buildTradeLineSpy.mockReturnValue(mockedTradeLine);
 
         mockedSigner = createMock<Signer>();
         tradeDriver = new TradeDriver(
@@ -130,12 +133,12 @@ describe('TradeDriver', () => {
             await tradeDriver.registerBasicTrade(supplier.address, customer.address, tradeName, externalUrl);
 
             expect(mockedRegisterTrade).toHaveBeenCalledTimes(1);
-            expect(mockedRegisterTrade).toHaveBeenNthCalledWith(1, TradeType.TRADE, supplier.address, customer.address, tradeName, externalUrl);
+            expect(mockedRegisterTrade).toHaveBeenNthCalledWith(1, TradeType.TRADE, supplier.address, customer.address, externalUrl);
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 
         it('should call and wait for register a trade - transaction fails', async () => {
-            mockedRegisterTrade.mockRejectedValue(new Error(errorMessage));
+            mockedRegisterTrade.mockRejectedValueOnce(new Error(errorMessage));
 
             const fn = async () => tradeDriver.registerBasicTrade(supplier.address, customer.address, tradeName, externalUrl);
             await expect(fn).rejects.toThrowError(new Error(errorMessage));
@@ -161,7 +164,7 @@ describe('TradeDriver', () => {
 
         it('should check if a trade exists - fails for supplier address', async () => {
             const fn = async () => tradeDriver.tradeExists('0xaddress', 1);
-            await expect(fn).rejects.toThrowError(new Error('Not an address'));
+            await expect(fn).rejects.toThrowError(new Error('Supplier not an address'));
         });
     });
 
@@ -258,9 +261,9 @@ describe('TradeDriver', () => {
 
             const resp = await tradeDriver.getTradeLine(supplier.address, 1, 2);
 
-            expect(buildOrderSpy).toHaveBeenCalledTimes(1);
-            expect(buildOrderSpy).toHaveBeenNthCalledWith(1, 'rawTradeLine');
-            expect(resp).toEqual(mockedOrderLine);
+            expect(buildTradeLineSpy).toHaveBeenCalledTimes(1);
+            expect(buildTradeLineSpy).toHaveBeenNthCalledWith(1, 'rawTradeLine');
+            expect(resp).toEqual(mockedTradeLine);
 
             expect(mockedContract.getTradeLine).toHaveBeenCalledTimes(1);
             expect(mockedContract.getTradeLine).toHaveBeenNthCalledWith(1, supplier.address, 1, 2, { blockTag: undefined });
@@ -310,7 +313,7 @@ describe('TradeDriver', () => {
         });
 
         it('should call and wait for register order - transaction fails', async () => {
-            mockedRegisterTrade.mockRejectedValue(new Error(errorMessage));
+            mockedRegisterTrade.mockRejectedValueOnce(new Error(errorMessage));
 
             const fn = async () => tradeDriver.registerOrder(supplier.address, customer.address, externalUrl);
             await expect(fn).rejects.toThrowError(new Error(errorMessage));
@@ -337,6 +340,8 @@ describe('TradeDriver', () => {
         });
 
         it('should call and wait for add offeree to an order - transaction fails', async () => {
+            mockedContract.addOrderOfferee = jest.fn().mockRejectedValue(new Error(errorMessage));
+
             const fn = async () => tradeDriver.addOrderOfferee(supplier.address, 1, 'offeree');
             await expect(fn).rejects.toThrowError(new Error(errorMessage));
         });
@@ -547,7 +552,7 @@ describe('TradeDriver', () => {
             };
             await tradeDriver.addOrderLine(supplier.address, 1, [1, 2], 'categoryA', 100, new OrderLinePrice(100.25, price.fiat));
             expect(mockedContract.addOrderLine).toHaveBeenCalledTimes(1);
-            expect(mockedContract.addOrderLine).toHaveBeenNthCalledWith(1, supplier.address, 1, 'categoryA', 100, price);
+            expect(mockedContract.addOrderLine).toHaveBeenNthCalledWith(1, supplier.address, 1, [1, 2], 'categoryA', 100, price);
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 
@@ -587,7 +592,7 @@ describe('TradeDriver', () => {
 
         it('should call and wait for update order line - fails for supplier not an address', async () => {
             const fn = async () => tradeDriver.updateOrderLine('0xaddress', 1, 2, [3, 4], 'categoryUpdated', 100, new OrderLinePrice(100.25, 'CHF'));
-            await expect(fn).rejects.toThrowError(new Error('Not an address'));
+            await expect(fn).rejects.toThrowError(new Error('Supplier not an address'));
         });
     });
 
@@ -627,7 +632,7 @@ describe('TradeDriver', () => {
     it('should get block numbers per each event name by order id', async () => {
         const tradeId = 1;
         await tradeDriver.getBlockNumbersByTradeId(tradeId);
-        expect(mockedQueryFilter).toHaveBeenCalledTimes(3);
+        expect(mockedQueryFilter).toHaveBeenCalledTimes(5);
 
         expect(mockedTradeRegisteredEventFilter).toHaveBeenCalledTimes(1);
         expect(mockedTradeRegisteredEventFilter).toHaveBeenNthCalledWith(1, tradeId);

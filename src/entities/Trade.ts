@@ -3,7 +3,7 @@ export enum TradeType {
     ORDER
 }
 
-export abstract class Trade {
+export class Trade {
     private _id: number;
 
     private _supplier: string;
@@ -14,12 +14,15 @@ export abstract class Trade {
 
     private _lineIds: number[];
 
-    protected constructor(id: number, supplier: string, customer: string, externalUrl: string, lineIds: number[]) {
+    private readonly _type?: TradeType;
+
+    constructor(id: number, supplier: string, customer: string, externalUrl: string, lineIds: number[], type?: TradeType) {
         this._id = id;
         this._supplier = supplier;
         this._customer = customer;
         this._externalUrl = externalUrl;
         this._lineIds = lineIds;
+        this._type = type;
     }
 
     get id(): number {
@@ -56,5 +59,9 @@ export abstract class Trade {
 
     get externalUrl(): string {
         return this._externalUrl;
+    }
+
+    get type(): TradeType | undefined {
+        return this._type;
     }
 }

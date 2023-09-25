@@ -6,7 +6,7 @@ import { OrderInfo } from '../entities/OrderInfo';
 import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
 import { NegotiationStatus } from '../types/NegotiationStatus';
 import { EntityBuilder } from '../utils/EntityBuilder';
-import { TradeType } from '../entities/Trade';
+import { Trade, TradeType } from '../entities/Trade';
 import { BasicTradeInfo } from '../entities/BasicTradeInfo';
 import { TradeLine } from '../entities/TradeLine';
 
@@ -54,6 +54,16 @@ export class TradeDriver {
     async tradeExists(supplierAddress: string, orderId: number): Promise<boolean> {
         if (!utils.isAddress(supplierAddress)) throw new Error('Supplier not an address');
         return this._contract.tradeExists(supplierAddress, orderId);
+    }
+
+    async getGeneralTrade(supplierAddress: string, tradeId: number, blockNumber?: number): Promise<Trade> {
+        if (!utils.isAddress(supplierAddress)) throw new Error('Supplier not an address');
+        try {
+            const rawTrade = await this._contract.getGeneralTrade(supplierAddress, tradeId, { blockTag: blockNumber });
+            return EntityBuilder.buildGeneralTrade(rawTrade);
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
     }
 
     async getBasicTradeInfo(supplierAddress: string, tradeId: number, blockNumber?: number): Promise<BasicTradeInfo> {

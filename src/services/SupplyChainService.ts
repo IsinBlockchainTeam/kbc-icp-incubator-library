@@ -44,7 +44,7 @@ export class SupplyChainService {
     async getMaterials(companyAddress: string): Promise<Material[]> {
         const materials: Material[] = [];
         const materialsCounter = await this._supplyChainDriver.getMaterialsCounter(companyAddress);
-        for (let i = 0; i < materialsCounter; i++) {
+        for (let i = 1; i <= materialsCounter; i++) {
             materials.push(await this.getMaterial(companyAddress, i));
         }
         return materials;
@@ -53,7 +53,7 @@ export class SupplyChainService {
     async getTransformations(companyAddress: string): Promise<Transformation[]> {
         const transformations: Transformation[] = [];
         const transformationsCounter = await this._supplyChainDriver.getTransformationsCounter(companyAddress);
-        for (let i = 0; i < transformationsCounter; i++) {
+        for (let i = 1; i <= transformationsCounter; i++) {
             transformations.push(await this.getTransformation(companyAddress, i));
         }
         return transformations;

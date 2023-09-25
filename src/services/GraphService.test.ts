@@ -1,96 +1,71 @@
+import { createMock } from 'ts-auto-mock';
+import { GraphService } from './GraphService';
+import { Transformation } from '../entities/Transformation';
+import { Trade } from '../entities/Trade';
+import TradeService from './TradeService';
+import { SupplyChainService } from './SupplyChainService';
+import { TradeLine } from '../entities/TradeLine';
+
 describe('GraphService', () => {
-    // let graphService: GraphService;
-    //
-    // it('should compute a graph', () => {
-    //     const trades = [
-    //         new Trade(1, 'trade', [[2, 7]], 'tradeOwner'),
-    //         new Trade(2, 'trade', [[4, 8]], 'tradeOwner'),
-    //         new Trade(3, 'trade', [[6, 11], [14, 15]], 'tradeOwner'),
-    //         new Trade(4, 'trade', [[9, 10]], 'tradeOwner'),
-    //         new Trade(5, 'trade', [[6, 11]], 'tradeOwner'),
-    //     ];
-    //     const transformations = [
-    //         new Transformation(1, 'transformation', [1], 2, 'transformationOwner'),
-    //         new Transformation(2, 'transformation', [3], 4, 'transformationOwner'),
-    //         new Transformation(3, 'transformation', [5], 6, 'transformationOwner'),
-    //         new Transformation(4, 'transformation', [7, 8], 9, 'transformationOwner'),
-    //         new Transformation(5, 'transformation', [10, 11], 12, 'transformationOwner'),
-    //         new Transformation(6, 'transformation', [13], 14, 'transformationOwner'),
-    //         new Transformation(7, 'transformation', [15], 16, 'transformationOwner'),
-    //     ];
-    //     graphService = new GraphService(trades, transformations);
-    //     const result = graphService.computeGraph(12);
-    //     expect(result).toEqual({
-    //         nodes: [
-    //             { resourceId: 'transformationOwner_5' },
-    //             { resourceId: 'transformationOwner_4' },
-    //             { resourceId: 'transformationOwner_1' },
-    //             { resourceId: 'transformationOwner_2' },
-    //             { resourceId: 'transformationOwner_3' },
-    //         ],
-    //         edges: [
-    //             { resourcesIds: ['tradeOwner_4'], from: 'transformationOwner_4', to: 'transformationOwner_5' },
-    //             { resourcesIds: ['tradeOwner_1'], from: 'transformationOwner_1', to: 'transformationOwner_4' },
-    //             { resourcesIds: ['tradeOwner_2'], from: 'transformationOwner_2', to: 'transformationOwner_4' },
-    //             { resourcesIds: ['tradeOwner_3', 'tradeOwner_5'], from: 'transformationOwner_3', to: 'transformationOwner_5' },
-    //         ],
-    //     });
-    // });
-    //
-    // it('should throw an error if it finds multiple transformation with the same output material', () => {
-    //     const trades = [
-    //         new Trade(1, 'trade', [[2, 7]], 'tradeOwner'),
-    //         new Trade(2, 'trade', [[4, 8]], 'tradeOwner'),
-    //         new Trade(3, 'trade', [[6, 11], [14, 15]], 'tradeOwner'),
-    //         new Trade(4, 'trade', [[9, 10]], 'tradeOwner'),
-    //         new Trade(5, 'trade', [[6, 11]], 'tradeOwner'),
-    //     ];
-    //     const transformations = [
-    //         new Transformation(1, 'transformation', [1], 2, 'transformationOwner'),
-    //         new Transformation(2, 'transformation', [3], 2, 'transformationOwner'),
-    //         new Transformation(3, 'transformation', [5], 6, 'transformationOwner'),
-    //         new Transformation(4, 'transformation', [7, 8], 9, 'transformationOwner'),
-    //         new Transformation(5, 'transformation', [10, 11], 12, 'transformationOwner'),
-    //         new Transformation(6, 'transformation', [13], 14, 'transformationOwner'),
-    //         new Transformation(7, 'transformation', [15], 16, 'transformationOwner'),
-    //     ];
-    //     graphService = new GraphService(trades, transformations);
-    //     expect(() => graphService.computeGraph(12)).toThrowError('Multiple transformations found for material id 2');
-    // });
-    //
-    // it('should throw an error if it finds multiple transformation with the same output material - initial check', () => {
-    //     const transformations = [
-    //         new Transformation(1, 'transformation', [1], 2, 'transformationOwner'),
-    //         new Transformation(2, 'transformation', [3], 2, 'transformationOwner'),
-    //     ];
-    //     graphService = new GraphService([], transformations);
-    //     expect(() => graphService.computeGraph(2)).toThrowError('Multiple transformations found for material id 2');
-    // });
-    //
-    // it('should throw an error if it finds no transformation with specific output material', () => {
-    //     const trades = [
-    //         new Trade(1, 'trade', [[2, 7]], 'tradeOwner'),
-    //         new Trade(2, 'trade', [[4, 8]], 'tradeOwner'),
-    //         new Trade(3, 'trade', [[6, 11], [14, 15]], 'tradeOwner'),
-    //         new Trade(4, 'trade', [[-1, 10]], 'tradeOwner'),
-    //         new Trade(5, 'trade', [[6, 11]], 'tradeOwner'),
-    //     ];
-    //     const transformations = [
-    //         new Transformation(1, 'transformation', [1], 2, 'transformationOwner'),
-    //         new Transformation(2, 'transformation', [3], 4, 'transformationOwner'),
-    //         new Transformation(3, 'transformation', [5], 6, 'transformationOwner'),
-    //         new Transformation(4, 'transformation', [7, 8], 9, 'transformationOwner'),
-    //         new Transformation(5, 'transformation', [10, 11], 12, 'transformationOwner'),
-    //         new Transformation(6, 'transformation', [13], 14, 'transformationOwner'),
-    //         new Transformation(7, 'transformation', [15], 16, 'transformationOwner'),
-    //     ];
-    //     graphService = new GraphService(trades, transformations);
-    //     expect(() => graphService.computeGraph(12)).toThrowError('No transformations found for material id -1');
-    // });
-    //
-    // it('should handle an empty graph', () => {
-    //     graphService = new GraphService([], []);
-    //     const result = graphService.computeGraph(12);
-    //     expect(result).toEqual({ nodes: [], edges: [] });
-    // });
+    let graphService: GraphService;
+
+    const trades = [
+        new Trade(1, 'supplier', 'customer', 'externalUrl', [2, 7]),
+        new Trade(2, 'supplier', 'customer', 'externalUrl', [4, 8]),
+    ];
+    const tradeLines = [
+        new TradeLine(2, [2, 1], 'categoryA'),
+        new TradeLine(7, [3, 4], 'categoryB'),
+        new TradeLine(4, [8, 7], 'categoryC'),
+    ];
+    const transformations = [
+        new Transformation(1, 'transformation', [1], 2, 'transformationOwner'),
+        new Transformation(2, 'transformation', [3], 4, 'transformationOwner'),
+    ];
+
+    const supplier = '0xsupplier_address';
+
+    const findTransformationsByMaterialOutputSpy = jest.spyOn(GraphService.prototype, 'findTransformationsByMaterialOutput');
+    const findTradesByMaterialOutputSpy = jest.spyOn(GraphService.prototype, 'findTradesByMaterialOutput');
+
+    const mockedTradeService = createMock<TradeService>({
+        getGeneralTrades: jest.fn().mockResolvedValue(trades),
+        getTradeLines: jest.fn().mockResolvedValue(tradeLines),
+    });
+    const mockedSupplyChainService = createMock<SupplyChainService>({
+        getTransformations: jest.fn().mockResolvedValue(transformations),
+    });
+
+    beforeAll(() => {
+        graphService = new GraphService(mockedTradeService, mockedSupplyChainService);
+    });
+
+    it('findTransformationsByMaterialOutput', async () => {
+        await graphService.findTransformationsByMaterialOutput(supplier, 2);
+
+        expect(mockedSupplyChainService.getTransformations).toHaveBeenCalledTimes(1);
+        expect(mockedSupplyChainService.getTransformations).toHaveBeenNthCalledWith(1, supplier);
+    });
+
+    it('findTradesByMaterialOutput', async () => {
+        await graphService.findTradesByMaterialOutput(supplier, 2);
+
+        expect(mockedTradeService.getGeneralTrades).toHaveBeenCalledTimes(1);
+        expect(mockedTradeService.getGeneralTrades).toHaveBeenNthCalledWith(1, supplier);
+
+        expect(mockedTradeService.getTradeLines).toHaveBeenCalledTimes(trades.length);
+        trades.forEach((t, index) => expect(mockedTradeService.getTradeLines).toHaveBeenNthCalledWith(index + 1, supplier, t.id));
+    });
+
+    it('computeGraph', async () => {
+        findTransformationsByMaterialOutputSpy.mockResolvedValue([transformations[1]]);
+        findTradesByMaterialOutputSpy.mockResolvedValue(new Map().set(trades[0], [tradeLines[0], tradeLines[1]]));
+        await graphService.computeGraph(supplier, 2);
+
+        expect(findTransformationsByMaterialOutputSpy).toHaveBeenCalledTimes(1);
+        expect(findTransformationsByMaterialOutputSpy).toHaveBeenNthCalledWith(1, supplier, 2);
+
+        expect(findTradesByMaterialOutputSpy).toHaveBeenCalledTimes(1);
+        expect(findTradesByMaterialOutputSpy).toHaveBeenNthCalledWith(1, supplier, transformations[1].inputMaterialsIds[0]);
+    });
 });

@@ -141,9 +141,19 @@ contract TradeManager is AccessControl {
         return trades[supplier][tradeId].exists;
     }
 
+    function getGeneralTrade(address tradeSupplier, uint256 tradeId) public view returns (
+        uint256 id, TradeType tradeType, address supplier, address customer,
+        string memory externalUrl, uint256[] memory lineIds
+    ) {
+        Trade storage t = trades[tradeSupplier][tradeId];
+        require(t.exists, "Trade does not exist");
+
+        return (t.id, t.tradeType, t.supplier, t.customer, t.externalUrl, t.lineIds);
+    }
+
     function getTradeInfo(address tradeSupplier, uint256 tradeId) public view returns (
-        uint256 id, string memory name,
-        address supplier, address customer, string memory externalUrl, uint256[] memory lineIds
+        uint256 id, string memory name, address supplier, address customer,
+        string memory externalUrl, uint256[] memory lineIds
     ) {
         Trade storage t = trades[tradeSupplier][tradeId];
         require(t.exists, "Trade does not exist");

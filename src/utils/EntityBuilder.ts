@@ -3,19 +3,25 @@ import { Material } from '../entities/Material';
 import { Transformation } from '../entities/Transformation';
 import { OrderInfo } from '../entities/OrderInfo';
 import { DocumentManager, RelationshipManager, TradeManager } from '../smart-contracts';
-import {
-    MaterialStructOutput,
-    TransformationStructOutput,
-} from '../smart-contracts/contracts/SupplyChainManager';
+import { MaterialStructOutput, TransformationStructOutput } from '../smart-contracts/contracts/SupplyChainManager';
 import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
 import { Relationship } from '../entities/Relationship';
 import { DocumentInfo } from '../entities/DocumentInfo';
 import { BasicTradeInfo } from '../entities/BasicTradeInfo';
 import { TradeLine } from '../entities/TradeLine';
+import { Trade } from '../entities/Trade';
 
 export class EntityBuilder {
     static buildMaterial(bcMaterial: MaterialStructOutput): Material {
         return new Material(bcMaterial.id.toNumber(), bcMaterial.name, bcMaterial.owner);
+    }
+
+    static buildTransformation(bcTransformation: TransformationStructOutput): Transformation {
+        return new Transformation(bcTransformation.id.toNumber(), bcTransformation.name, bcTransformation.inputMaterialsIds.map((id) => id.toNumber()), bcTransformation.outputMaterialId.toNumber(), bcTransformation.owner);
+    }
+
+    static buildGeneralTrade(bcTrade: {id: BigNumber, tradeType: number, supplier: string, customer: string, externalUrl: string, lineIds: BigNumber[]}): Trade {
+        return new Trade(bcTrade.id.toNumber(), bcTrade.supplier, bcTrade.customer, bcTrade.externalUrl, bcTrade.lineIds.map((id) => id.toNumber()), bcTrade.tradeType);
     }
 
     static buildBasicTradeInfo(bcTrade: {id: BigNumber, name: string, supplier: string, customer: string, externalUrl: string, lineIds: BigNumber[]}): BasicTradeInfo {
@@ -24,10 +30,6 @@ export class EntityBuilder {
 
     static buildTradeLine(bcTradeLine: TradeManager.TradeLineStructOutput): TradeLine {
         return new TradeLine(bcTradeLine.id.toNumber(), [bcTradeLine.materialIds[0].toNumber(), bcTradeLine.materialIds[1].toNumber()], bcTradeLine.productCategory);
-    }
-
-    static buildTransformation(bcTransformation: TransformationStructOutput): Transformation {
-        return new Transformation(bcTransformation.id.toNumber(), bcTransformation.name, bcTransformation.inputMaterialsIds.map((id) => id.toNumber()), bcTransformation.outputMaterialId.toNumber(), bcTransformation.owner);
     }
 
     static buildOrderInfo(bcOrder: { id: BigNumber, supplier: string, customer: string, offeree: string, offeror: string, externalUrl: string, lineIds: BigNumber[], paymentDeadline: BigNumber,

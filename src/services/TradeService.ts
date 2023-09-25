@@ -8,6 +8,7 @@ import { TradeLine } from '../entities/TradeLine';
 import { Order } from '../entities/Order';
 import { BasicTrade } from '../entities/BasicTrade';
 import { serial } from '../utils/utils';
+import { Trade } from '../entities/Trade';
 
 export class TradeService {
     private _tradeDriver: TradeDriver;
@@ -27,6 +28,10 @@ export class TradeService {
         return this._tradeDriver.tradeExists(supplierAddress, orderId);
     }
 
+    async getGeneralTrade(supplierAddress: string, tradeId: number, blockNumber?: number): Promise<Trade> {
+        return this._tradeDriver.getGeneralTrade(supplierAddress, tradeId, blockNumber);
+    }
+
     async getBasicTradeInfo(supplierAddress: string, tradeId: number, blockNumber?: number): Promise<BasicTradeInfo> {
         return this._tradeDriver.getBasicTradeInfo(supplierAddress, tradeId, blockNumber);
     }
@@ -44,6 +49,14 @@ export class TradeService {
 
     async getTradeCounter(supplierAddress: string): Promise<number> {
         return this._tradeDriver.getTradeCounter(supplierAddress);
+    }
+
+    async getGeneralTrades(supplierAddress: string): Promise<Trade[]> {
+        const trades: Trade[] = [];
+        const tradesCounter = await this.getTradeCounter(supplierAddress);
+        for (let i = 1; i <= tradesCounter; i++)
+            trades.push(await this.getGeneralTrade(supplierAddress, i));
+        return trades;
     }
 
     async addTradeLine(supplierAddress: string, tradeId: number, materialIds: [number, number], productCategory: string): Promise<void> {

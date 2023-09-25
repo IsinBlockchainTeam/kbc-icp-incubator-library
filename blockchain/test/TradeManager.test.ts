@@ -65,11 +65,12 @@ describe('TradeManager', () => {
             await tradeManagerContract.connect(supplier).addTradeName(supplier.address, tradeCounterId.toNumber(), basicTrade.name);
 
             const trade = await tradeManagerContract.connect(supplier).getTradeInfo(supplier.address, tradeCounterId.toNumber());
-            expect(trade.id).to.equal(tradeCounterId.toNumber());
+            expect(trade.id).to.equal(tradeCounterId);
             expect(trade.supplier).to.equal(supplier.address);
             expect(trade.customer).to.equal(customer.address);
             expect(trade.name).to.equal(basicTrade.name);
             expect(trade.externalUrl).to.equal(basicTrade.externalUrl);
+            expect(trade.lineIds).to.be.empty;
         });
 
         it('should register a trade - FAIL (sender is neither supplier nor customer)', async () => {
@@ -99,6 +100,23 @@ describe('TradeManager', () => {
             tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
             const exist = await tradeManagerContract.connect(supplier).tradeExists(supplier.address, tradeCounterId.toNumber());
             expect(exist).to.be.true;
+        });
+
+        it('should get general trade with type ORDER', async () => {
+            await tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.externalUrl);
+            tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
+
+            const savedGeneralTrade = await tradeManagerContract.connect(supplier).getGeneralTrade(supplier.address, tradeCounterId.toNumber());
+            expect(savedGeneralTrade.id).to.equal(tradeCounterId);
+            expect(savedGeneralTrade.tradeType).to.equal(1);
+            expect(savedGeneralTrade.supplier).to.equal(supplier.address);
+            expect(savedGeneralTrade.customer).to.equal(customer.address);
+            expect(savedGeneralTrade.externalUrl).to.equal(basicTrade.externalUrl);
+            expect(savedGeneralTrade.lineIds).to.be.empty;
+        });
+
+        it('should get general trade with type ORDER - FAIL (Trade does not exist)', async () => {
+            await expect(tradeManagerContract.connect(supplier).getGeneralTrade(supplier.address, 50)).to.be.revertedWith('Trade does not exist');
         });
     });
 

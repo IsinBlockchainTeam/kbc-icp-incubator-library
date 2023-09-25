@@ -80,6 +80,10 @@
         "one-var-declaration-per-line": "off",
         "object-curly-newline": ["error", {
             "ObjectPattern": { "multiline":  true }
-        }]
+        }],
+        "no-trailing-spaces": "off",
+        "nonblock-statement-body-position": "off",
+        "curly": "off",
+        "class-methods-use-this": "off"
     }
 }

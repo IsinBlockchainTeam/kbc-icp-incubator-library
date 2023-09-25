@@ -13,7 +13,7 @@ describe('BasicTradeInfo', () => {
         expect(basicTradeInfo.customer).toEqual('customer');
         expect(basicTradeInfo.externalUrl).toEqual('externalUrl');
         expect(basicTradeInfo.lineIds).toEqual([1, 2]);
-        expect(basicTradeInfo.name).toEqual('material');
+        expect(basicTradeInfo.name).toEqual('tradeName');
     });
 
     it('should correctly set the id', () => {
