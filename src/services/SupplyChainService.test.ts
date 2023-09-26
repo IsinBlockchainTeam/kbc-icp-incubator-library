@@ -116,7 +116,7 @@ describe('SupplyChainService', () => {
 
         expect(getCounterMockedFunction).toHaveBeenCalledTimes(1);
         expect(getResourceMockedFunction).toHaveBeenCalledTimes(2);
-        expect(getResourceMockedFunction).toHaveBeenNthCalledWith(1, testResource.owner, 0);
-        expect(getResourceMockedFunction).toHaveBeenNthCalledWith(2, testResource.owner, 1);
+        expect(getResourceMockedFunction).toHaveBeenNthCalledWith(1, testResource.owner, 1);
+        expect(getResourceMockedFunction).toHaveBeenNthCalledWith(2, testResource.owner, 2);
     });
 });

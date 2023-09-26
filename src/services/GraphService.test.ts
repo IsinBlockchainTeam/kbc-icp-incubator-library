@@ -1,7 +1,7 @@
 import { createMock } from 'ts-auto-mock';
 import { GraphService } from './GraphService';
 import { Transformation } from '../entities/Transformation';
-import { Trade } from '../entities/Trade';
+import { Trade, TradeType } from '../entities/Trade';
 import TradeService from './TradeService';
 import { SupplyChainService } from './SupplyChainService';
 import { TradeLine } from '../entities/TradeLine';
@@ -10,8 +10,9 @@ describe('GraphService', () => {
     let graphService: GraphService;
 
     const trades = [
-        new Trade(1, 'supplier', 'customer', 'externalUrl', [2, 7]),
-        new Trade(2, 'supplier', 'customer', 'externalUrl', [4, 8]),
+        new Trade(1, 'supplier', 'customer', 'externalUrl', [2, 7], TradeType.TRADE),
+        new Trade(2, 'supplier', 'customer', 'externalUrl', [4, 8], TradeType.ORDER),
+        new Trade(2, 'supplier', 'customer', 'externalUrl', [15, 16]),
     ];
     const tradeLines = [
         new TradeLine(2, [2, 1], 'categoryA'),
@@ -53,8 +54,11 @@ describe('GraphService', () => {
         expect(mockedTradeService.getGeneralTrades).toHaveBeenCalledTimes(1);
         expect(mockedTradeService.getGeneralTrades).toHaveBeenNthCalledWith(1, supplier);
 
-        expect(mockedTradeService.getTradeLines).toHaveBeenCalledTimes(trades.length);
-        trades.forEach((t, index) => expect(mockedTradeService.getTradeLines).toHaveBeenNthCalledWith(index + 1, supplier, t.id));
+        expect(mockedTradeService.getTradeLines).toHaveBeenCalledTimes(1);
+        expect(mockedTradeService.getTradeLines).toHaveBeenNthCalledWith(1, supplier, trades[0].id);
+
+        expect(mockedTradeService.getOrderLines).toHaveBeenCalledTimes(1);
+        expect(mockedTradeService.getOrderLines).toHaveBeenNthCalledWith(1, supplier, trades[1].id);
     });
 
     it('computeGraph', async () => {

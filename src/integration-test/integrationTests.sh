@@ -47,7 +47,6 @@ if [ ! -z "$TEST_IDE" ] && [[ $TEST_IDE == "n" ]]; then
 
   echo "4) Running integration tests..."
   echo "------------------------------------"
-  # npx jest -i --testPathPattern=./integration-test
   NODE_ENV=test npx jest --config ./integration-test/jest.config.ts --runInBand
 
   killLocalNetwork

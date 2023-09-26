@@ -8,13 +8,16 @@ import { TradeDriver } from '../drivers/TradeDriver';
 import { SupplyChainDriver } from '../drivers/SupplyChainDriver';
 import {
     CUSTOMER_ADDRESS,
-    NETWORK, SUPPLIER_ADDRESS,
+    NETWORK,
+    SUPPLIER_ADDRESS,
     SUPPLIER_PRIVATE_KEY,
     SUPPLY_CHAIN_MANAGER_CONTRACT_ADDRESS,
     TRADE_MANAGER_CONTRACT_ADDRESS,
 } from './config';
 import { TradeLine } from '../entities/TradeLine';
 import { serial } from '../utils/utils';
+import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
+import { TradeType } from '../entities/Trade';
 
 describe('GraphService lifecycle', () => {
     let provider: JsonRpcProvider;
@@ -27,6 +30,7 @@ describe('GraphService lifecycle', () => {
     let supplyChainDriver: SupplyChainDriver;
 
     const tradeIds: number[] = [];
+    const orderIds: number[] = [];
     const externalUrl = 'metadataUrl';
 
     let graphService: GraphService;
@@ -56,19 +60,21 @@ describe('GraphService lifecycle', () => {
 
     it('should add data that is then used to compute the graph', async () => {
         const trades = [
-            { supplier: SUPPLIER_ADDRESS, customer: CUSTOMER_ADDRESS, name: 'trade1', externalUrl },
-            { supplier: SUPPLIER_ADDRESS, customer: CUSTOMER_ADDRESS, name: 'trade2', externalUrl },
-            { supplier: SUPPLIER_ADDRESS, customer: CUSTOMER_ADDRESS, name: 'trade3', externalUrl },
-            { supplier: SUPPLIER_ADDRESS, customer: CUSTOMER_ADDRESS, name: 'trade4', externalUrl },
-            { supplier: SUPPLIER_ADDRESS, customer: CUSTOMER_ADDRESS, name: 'trade5', externalUrl },
+            { supplier: SUPPLIER_ADDRESS, customer: CUSTOMER_ADDRESS, name: 'basicTrade1', externalUrl, type: TradeType.TRADE },
+            { supplier: SUPPLIER_ADDRESS, customer: CUSTOMER_ADDRESS, name: 'basicTrade2', externalUrl, type: TradeType.TRADE },
+            { supplier: SUPPLIER_ADDRESS, customer: CUSTOMER_ADDRESS, externalUrl, type: TradeType.ORDER },
+            { supplier: SUPPLIER_ADDRESS, customer: CUSTOMER_ADDRESS, name: 'basicTrade3', externalUrl, type: TradeType.TRADE },
+            { supplier: SUPPLIER_ADDRESS, customer: CUSTOMER_ADDRESS, name: 'basicTrade4', externalUrl, type: TradeType.TRADE },
         ];
         const tradeLines = [
             new TradeLine(0, [2, 7], 'CategoryA'),
             new TradeLine(0, [4, 8], 'CategoryB'),
-            new TradeLine(0, [6, 11], 'CategoryA Superior'),
-            new TradeLine(0, [14, 15], 'CategoryA Superior'),
             new TradeLine(0, [9, 10], 'CategoryA Superior'),
             new TradeLine(0, [6, 11], 'CategoryA'),
+        ];
+        const orderLines = [
+            new OrderLine(0, [6, 11], 'CategoryA Superior', 100, new OrderLinePrice(50, 'CHF')),
+            new OrderLine(0, [14, 15], 'CategoryA Superior', 80, new OrderLinePrice(24.5, 'CHF')),
         ];
         const transformations = [
             new Transformation(0, 'transformation', [1], 2, SUPPLIER_ADDRESS),
@@ -80,52 +86,63 @@ describe('GraphService lifecycle', () => {
             new Transformation(0, 'transformation', [15], 16, SUPPLIER_ADDRESS),
         ];
 
-        // add trades
+        // add trades and orders
         const registerTradesFn = trades.map((t) => async () => {
-            await tradeService.registerBasicTrade(t.supplier, t.customer, t.name, t.externalUrl);
-            tradeIds.push(await tradeService.getTradeCounter(SUPPLIER_ADDRESS));
+            if (t.type === TradeType.TRADE) {
+                await tradeService.registerBasicTrade(t.supplier, t.customer, t.name!, t.externalUrl);
+                tradeIds.push(await tradeService.getTradeCounter(SUPPLIER_ADDRESS));
+            } else if (t.type === TradeType.ORDER) {
+                await tradeService.registerOrder(t.supplier, t.customer, t.externalUrl);
+                orderIds.push(await tradeService.getTradeCounter(SUPPLIER_ADDRESS));
+            }
         });
         await serial(registerTradesFn);
 
-        // add lines to relative trades
+        // add lines to relative trades and orders
         await tradeService.addTradeLines(SUPPLIER_ADDRESS, tradeIds[0], [tradeLines[0]]);
         await tradeService.addTradeLines(SUPPLIER_ADDRESS, tradeIds[1], [tradeLines[1]]);
         await tradeService.addTradeLines(SUPPLIER_ADDRESS, tradeIds[2], [tradeLines[2]]);
-        await tradeService.addTradeLines(SUPPLIER_ADDRESS, tradeIds[2], [tradeLines[3]]);
-        await tradeService.addTradeLines(SUPPLIER_ADDRESS, tradeIds[3], [tradeLines[4]]);
-        await tradeService.addTradeLines(SUPPLIER_ADDRESS, tradeIds[4], [tradeLines[5]]);
+        await tradeService.addTradeLines(SUPPLIER_ADDRESS, tradeIds[3], [tradeLines[3]]);
+
+        await tradeService.addOrderLines(SUPPLIER_ADDRESS, orderIds[0], [orderLines[0]]);
+        await tradeService.addOrderLines(SUPPLIER_ADDRESS, orderIds[0], [orderLines[1]]);
 
         // add transformations
         const registerTransformationsFn = transformations.map((t) => async () => supplyChainService.registerTransformation(t.owner, t.name, t.inputMaterialsIds, t.outputMaterialId));
         await serial(registerTransformationsFn);
-    });
+    }, 20000);
 
     it('should compute a graph', async () => {
         const result = await graphService.computeGraph(SUPPLIER_ADDRESS, 12);
+        result.nodes.sort(({ resourceId: a }, { resourceId: b }) => a.localeCompare(b));
+        result.edges.sort(({ from: a }, { from: b }) => a.localeCompare(b));
+
         expect(result).toEqual({
             nodes: [
-                { resourceId: `${SUPPLIER_ADDRESS}_5` },
-                { resourceId: `${SUPPLIER_ADDRESS}_4` },
                 { resourceId: `${SUPPLIER_ADDRESS}_1` },
                 { resourceId: `${SUPPLIER_ADDRESS}_2` },
                 { resourceId: `${SUPPLIER_ADDRESS}_3` },
+                { resourceId: `${SUPPLIER_ADDRESS}_4` },
+                { resourceId: `${SUPPLIER_ADDRESS}_5` },
             ],
             edges: [
-                { resourcesIds: [`${SUPPLIER_ADDRESS}_4`], from: `${SUPPLIER_ADDRESS}_4`, to: `${SUPPLIER_ADDRESS}_5` },
                 { resourcesIds: [`${SUPPLIER_ADDRESS}_1`], from: `${SUPPLIER_ADDRESS}_1`, to: `${SUPPLIER_ADDRESS}_4` },
                 { resourcesIds: [`${SUPPLIER_ADDRESS}_2`], from: `${SUPPLIER_ADDRESS}_2`, to: `${SUPPLIER_ADDRESS}_4` },
                 { resourcesIds: [`${SUPPLIER_ADDRESS}_3`, `${SUPPLIER_ADDRESS}_5`], from: `${SUPPLIER_ADDRESS}_3`, to: `${SUPPLIER_ADDRESS}_5` },
+                { resourcesIds: [`${SUPPLIER_ADDRESS}_4`], from: `${SUPPLIER_ADDRESS}_4`, to: `${SUPPLIER_ADDRESS}_5` },
             ],
         });
     });
 
     it('should throw an error if it finds multiple transformation with the same output material', async () => {
         await supplyChainService.registerTransformation(SUPPLIER_ADDRESS, 'transformation', [3], 2);
-        expect(() => graphService.computeGraph(SUPPLIER_ADDRESS, 12)).toThrowError('Multiple transformations found for material id 2');
+        const fn = async () => graphService.computeGraph(SUPPLIER_ADDRESS, 12);
+        await expect(fn).rejects.toThrowError('Multiple transformations found for material id 2');
     });
 
     it('should throw an error if it finds no transformation with specific output material', async () => {
-        await tradeService.addTradeLine(SUPPLIER_ADDRESS, tradeIds[3], [-1, 10], 'CategoryA');
-        expect(() => graphService.computeGraph(SUPPLIER_ADDRESS, 12)).toThrowError('No transformations found for material id -1');
+        await tradeService.addTradeLine(SUPPLIER_ADDRESS, tradeIds[3], [100, 10], 'CategoryA');
+        const fn = async () => graphService.computeGraph(SUPPLIER_ADDRESS, 12);
+        await expect(fn).rejects.toThrowError('No transformations found for material id 100');
     });
 });

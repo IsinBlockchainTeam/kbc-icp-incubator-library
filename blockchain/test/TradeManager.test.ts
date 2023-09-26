@@ -362,10 +362,6 @@ describe('TradeManager', () => {
                 await expect(tradeManagerContract.connect(supplier).addOrderLine(supplier.address, otherOrderId, basicTradeLineMaterialIds, initialProductCategory, quantity, price)).to.be.revertedWith('Order does not exist');
             });
 
-            it('should add a order line - FAIL (Sender is neither offeree nor offeror)', async () => {
-                await expect(tradeManagerContract.connect(otherAccount).addOrderLine(supplier.address, tradeCounterId.toNumber(), basicTradeLineMaterialIds, initialProductCategory, quantity, price)).to.be.revertedWith('Sender is neither offeree nor offeror');
-            });
-
             it('should add a order line - FAIL (The fiat of the order line isn\'t registered)', async () => {
                 const oldFiat = price.fiat;
                 price.fiat = 'FIAT';

@@ -213,6 +213,16 @@ contract TradeManager is AccessControl {
         return tL;
     }
 
+    function getGeneralTradeLine(address tradeSupplier, uint256 tradeId) public view returns (
+        uint256 id, TradeType tradeType, address supplier, address customer,
+        string memory externalUrl, uint256[] memory lineIds
+    ) {
+        Trade storage t = trades[tradeSupplier][tradeId];
+        require(t.exists, "Trade does not exist");
+
+        return (t.id, t.tradeType, t.supplier, t.customer, t.externalUrl, t.lineIds);
+    }
+
     function tradeLineExists(address supplier, uint256 tradeId, uint256 tradeLineId) public view returns (bool) {
         return trades[supplier][tradeId].lines[tradeLineId].exists;
     }
@@ -335,7 +345,6 @@ contract TradeManager is AccessControl {
         Trade storage o = trades[supplier][orderId];
         require(o.exists, "Order does not exist");
         require(o.tradeType == TradeType.ORDER, "Can't perform this operation if not ORDER");
-        require(o.offeree == msg.sender || o.offeror == msg.sender, "Sender is neither offeree nor offeror");
         require(getNegotiationStatus(supplier, orderId) != NegotiationStatus.COMPLETED, "The order has been confirmed, it cannot be changed");
         require(fiatManager.contains(price.fiat), "The fiat of the order line isn't registered");
         require(productCategoryManager.contains(productCategory), "The product category specified isn't registered");

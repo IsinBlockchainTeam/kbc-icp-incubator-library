@@ -24,10 +24,6 @@ export default {
         '<rootDir>/*.test.ts',
     ],
 
-    testMatch: [
-        '<rootDir>/*.test.ts',
-    ],
-
     // The directory where Jest should output its coverage files
     coverageDirectory: 'coverage',
 
@@ -55,9 +51,7 @@ export default {
         },
     },
 
-    setupFiles: [
-        '<rootDir>/../ts-config.ts',
-    ],
+    testSequencer: '<rootDir>/sequencer.js',
 
     // A list of reporter names that Jest uses when writing coverage reports
     // coverageReporters: [
@@ -151,7 +145,9 @@ export default {
     // runner: "jest-runner",
 
     // The paths to modules that run some code to configure or set up the testing environment before each test
-    // setupFiles: [],
+    setupFiles: [
+        '<rootDir>/../ts-config.ts',
+    ],
 
     // A list of paths to modules that run some code to configure or set up the testing framework before each test
     // setupFilesAfterEnv: [],
@@ -172,10 +168,11 @@ export default {
     // testLocationInResults: false,
 
     // The glob patterns Jest uses to detect test files
-    // testMatch: [
-    //   "**/__tests__/**/*.[jt]s?(x)",
-    //   "**/?(*.)+(spec|test).[tj]s?(x)"
-    // ],
+    testMatch: [
+        '<rootDir>/*.test.ts',
+        //   "**/__tests__/**/*.[jt]s?(x)",
+        //   "**/?(*.)+(spec|test).[tj]s?(x)"
+    ],
 
     // An array of regexp pattern strings that are matched against all test paths, matched tests are skipped
     // testPathIgnorePatterns: [
