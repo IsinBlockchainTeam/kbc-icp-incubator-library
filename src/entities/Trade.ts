@@ -14,9 +14,9 @@ export class Trade {
 
     private _lineIds: number[];
 
-    private readonly _type?: TradeType;
+    private _type: TradeType;
 
-    constructor(id: number, supplier: string, customer: string, externalUrl: string, lineIds: number[], type?: TradeType) {
+    constructor(id: number, supplier: string, customer: string, externalUrl: string, lineIds: number[], type: TradeType) {
         this._id = id;
         this._supplier = supplier;
         this._customer = customer;
@@ -61,7 +61,7 @@ export class Trade {
         return this._externalUrl;
     }
 
-    get type(): TradeType | undefined {
+    get type(): TradeType {
         return this._type;
     }
 }

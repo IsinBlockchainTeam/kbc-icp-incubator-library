@@ -292,19 +292,6 @@ describe('TradeService', () => {
         expect(mockedTradeDriver.addOrderLine).toHaveBeenNthCalledWith(2, supplier, 1, lines[1].materialIds, lines[1].productCategory, lines[1].quantity, lines[1].price);
     });
 
-    it('should get all orders', async () => {
-        const address = 'testAddress';
-        mockedTradeDriver.getTradeCounter = jest.fn().mockResolvedValue(2);
-        await tradeService.getOrders(address);
-
-        expect(mockedTradeDriver.getTradeCounter).toHaveBeenCalledTimes(1);
-        expect(mockedTradeDriver.getTradeCounter).toHaveBeenNthCalledWith(1, address);
-
-        expect(mockedTradeDriver.getOrderInfo).toHaveBeenCalledTimes(2);
-        expect(mockedTradeDriver.getOrderInfo).toHaveBeenNthCalledWith(1, address, 1, undefined);
-        expect(mockedTradeDriver.getOrderInfo).toHaveBeenNthCalledWith(2, address, 2, undefined);
-    });
-
     it('should get all order lines', async () => {
         const address = 'testAddress';
         mockedTradeDriver.getOrderInfo = jest.fn().mockResolvedValue({ lineIds: [1, 2] });

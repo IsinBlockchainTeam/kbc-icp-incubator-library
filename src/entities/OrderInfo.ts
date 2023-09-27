@@ -1,4 +1,4 @@
-import { Trade } from './Trade';
+import { Trade, TradeType } from './Trade';
 
 export class OrderInfo extends Trade {
     private _offeree: string;
@@ -20,7 +20,7 @@ export class OrderInfo extends Trade {
     private _deliveryDeadline?: Date;
 
     constructor(id: number, supplier: string, customer: string, externalUrl: string, offeree: string, offeror: string, lineIds: number[], paymentDeadline: Date, documentDeliveryDeadline: Date, arbiter: string, shippingDeadline: Date, deliveryDeadline: Date) {
-        super(id, supplier, customer, externalUrl, lineIds);
+        super(id, supplier, customer, externalUrl, lineIds, TradeType.ORDER);
         this._offeree = offeree;
         this._offeror = offeror;
         this._offereeSigned = false;

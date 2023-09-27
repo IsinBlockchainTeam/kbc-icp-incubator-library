@@ -1,8 +1,8 @@
-import { Trade } from './Trade';
+import { Trade, TradeType } from './Trade';
 
 class TestDummyTrade extends Trade {
     constructor(id: number, supplier: string, customer: string, externalUrl: string, lineIds: number[]) {
-        super(id, supplier, customer, externalUrl, lineIds);
+        super(id, supplier, customer, externalUrl, lineIds, TradeType.TRADE);
     }
 }
 
@@ -19,6 +19,7 @@ describe('Trade', () => {
         expect(trade.customer).toEqual('customer');
         expect(trade.externalUrl).toEqual('externalUrl');
         expect(trade.lineIds).toEqual([1, 2]);
+        expect(trade.type).toEqual(TradeType.TRADE);
     });
 
     it('should correctly set the id', () => {

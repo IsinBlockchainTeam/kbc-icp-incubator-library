@@ -12,7 +12,6 @@ describe('GraphService', () => {
     const trades = [
         new Trade(1, 'supplier', 'customer', 'externalUrl', [2, 7], TradeType.TRADE),
         new Trade(2, 'supplier', 'customer', 'externalUrl', [4, 8], TradeType.ORDER),
-        new Trade(2, 'supplier', 'customer', 'externalUrl', [15, 16]),
     ];
     const tradeLines = [
         new TradeLine(2, [2, 1], 'categoryA'),

@@ -16,8 +16,12 @@ export { DocumentDriver } from './drivers/DocumentDriver';
 export { DocumentService } from './services/DocumentService';
 
 export { Material } from './entities/Material';
-export { Trade } from './entities/Trade';
+export { BasicTradeInfo } from './entities/BasicTradeInfo';
+export { BasicTrade } from './entities/BasicTrade';
+export { Trade, TradeType } from './entities/Trade';
+export { TradeLine } from './entities/TradeLine';
 export { OrderInfo } from './entities/OrderInfo';
+export { Order } from './entities/Order';
 export { OrderLine, OrderLinePrice } from './entities/OrderLine';
 export { Transformation } from './entities/Transformation';
 

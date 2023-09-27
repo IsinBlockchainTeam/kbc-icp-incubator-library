@@ -170,15 +170,6 @@ export class TradeService {
         return Promise.all(order.lineIds.map(async (lineId) => this.getOrderLine(supplierAddress, orderId, lineId)));
     }
 
-    async getOrders(supplierAddress: string): Promise<OrderInfo[]> {
-        const orders: OrderInfo[] = [];
-        const orderCounter = await this.getTradeCounter(supplierAddress);
-        for (let i = 1; i <= orderCounter; i++) {
-            orders.push(await this.getOrderInfo(supplierAddress, i));
-        }
-        return orders;
-    }
-
     async getBlockNumbersByOrderId(id: number): Promise<Map<TradeEvents, number[]>> {
         return this._tradeDriver.getBlockNumbersByTradeId(id);
     }
