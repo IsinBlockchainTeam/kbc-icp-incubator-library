@@ -6,7 +6,7 @@ export class Document extends DocumentInfo {
     private _content: Blob;
 
     constructor(documentInfo: DocumentInfo, filename: string, content: Blob) {
-        super(documentInfo.id, documentInfo.owner, documentInfo.transactionId, documentInfo.name, documentInfo.documentType, documentInfo.externalUrl);
+        super(documentInfo.id, documentInfo.transactionId, documentInfo.name, documentInfo.documentType, documentInfo.externalUrl);
         this._filename = filename;
         this._content = content;
     }

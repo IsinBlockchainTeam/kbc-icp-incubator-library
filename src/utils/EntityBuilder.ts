@@ -17,7 +17,7 @@ export class EntityBuilder {
     }
 
     static buildTransformation(bcTransformation: TransformationStructOutput): Transformation {
-        return new Transformation(bcTransformation.id.toNumber(), bcTransformation.name, bcTransformation.inputMaterialsIds.map((id) => id.toNumber()), bcTransformation.outputMaterialId.toNumber(), bcTransformation.owner);
+        return new Transformation(bcTransformation.id.toNumber(), bcTransformation.name, bcTransformation.inputMaterials.map((m) => this.buildMaterial(m)), bcTransformation.outputMaterialId.toNumber(), bcTransformation.owner);
     }
 
     static buildGeneralTrade(bcTrade: {id: BigNumber, tradeType: number, supplier: string, customer: string, externalUrl: string, lineIds: BigNumber[]}): Trade {
@@ -53,6 +53,6 @@ export class EntityBuilder {
     }
 
     static buildDocument(bcDocument: DocumentManager.DocumentStructOutput): DocumentInfo {
-        return new DocumentInfo(bcDocument.id.toNumber(), bcDocument.owner, bcDocument.transactionId.toNumber(), bcDocument.name, bcDocument.documentType, bcDocument.externalUrl);
+        return new DocumentInfo(bcDocument.id.toNumber(), bcDocument.transactionId.toNumber(), bcDocument.name, bcDocument.documentType, bcDocument.externalUrl);
     }
 }

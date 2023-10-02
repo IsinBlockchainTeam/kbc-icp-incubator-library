@@ -10,80 +10,109 @@ struct Material {
     uint256 id;
     string name;
     address owner;
+    bool exists;
 }
 
 struct Transformation {
     uint256 id;
     string name;
-    uint256[] inputMaterialsIds;
+    Material[] inputMaterials;
     uint256 outputMaterialId;
     address owner;
+    bool exists;
 }
 
 
 contract SupplyChainManager {
     using Counters for Counters.Counter;
 
-    mapping(address => Counters.Counter) private materialsCounter;
-    mapping(address => Counters.Counter) private transformationsCounter;
-    // company => resource id => resource
-    mapping(address => mapping(uint256 => Material)) private materials;
-    mapping(address => mapping(uint256 => Transformation)) private transformations;
+    Counters.Counter private materialsCounter;
+    Counters.Counter private transformationsCounter;
+    // company => resource ids
+    mapping(address => uint256[]) private materialIds;
+    mapping(address => uint256[]) private transformationIds;
+    // resource id  => resource
+    mapping(uint256 => Material) private materials;
+    mapping(uint256 => Transformation) private transformations;
 
     // --------------------------------------------------------------------------
     // Events
     // --------------------------------------------------------------------------
     event ResourceRegistered(string resourceType, address indexed owner, uint256 id);
-    event ResourceUpdated(string resourceType, address indexed owner, uint256 id);
+    event ResourceUpdated(string resourceType, uint256 id);
 
     // --------------------------------------------------------------------------
     // Setters
     // --------------------------------------------------------------------------
     function registerMaterial(address company, string memory name) public {
-        uint256 materialId = materialsCounter[company].current() + 1;
-        materials[company][materialId] = Material(materialId, name, company);
+        uint256 materialId = materialsCounter.current() + 1;
+        materialsCounter.increment();
+        materials[materialId] = Material(materialId, name, company, true);
+
+        materialIds[company].push(materialId);
         emit ResourceRegistered("material", company, materialId);
-        materialsCounter[company].increment();
     }
 
 
     function registerTransformation(address company, string memory name, uint256[] memory inputMaterialsIds, uint256 outputMaterialId) public {
-        uint256 transformationId = transformationsCounter[company].current() + 1;
-        transformations[company][transformationId] = Transformation(transformationId, name, inputMaterialsIds, outputMaterialId, company);
+        uint256 transformationId = transformationsCounter.current() + 1;
+        Material[] memory inputMaterials = new Material[](inputMaterialsIds.length);
+        transformationsCounter.increment();
+        for (uint256 i = 0; i < inputMaterialsIds.length; ++i) {
+            Material memory m = getMaterial(inputMaterialsIds[i]);
+            require(m.exists, "Material does not exist");
+            materials[i] = m;
+        }
+        transformations[transformationId] = Transformation(transformationId, name, inputMaterials, outputMaterialId, company, true);
+
+        transformationIds[company].push(transformationId);
         emit ResourceRegistered("transformation", company, transformationId);
-        transformationsCounter[company].increment();
     }
 
-    function updateMaterial(address company, uint256 id, string memory name) public {
-        materials[company][id].name = name;
-        emit ResourceUpdated("material", company, id);
+    function updateMaterial(uint256 id, string memory name) public {
+        materials[id].name = name;
+        emit ResourceUpdated("material", id);
     }
 
-    function updateTransformation(address company, uint256 id, string memory name, uint256[] memory inputMaterialsIds, uint256 outputMaterialId) public {
-        transformations[company][id].name = name;
-        transformations[company][id].inputMaterialsIds = inputMaterialsIds;
-        transformations[company][id].outputMaterialId = outputMaterialId;
-        emit ResourceUpdated("transformation", company, id);
+    function updateTransformation(uint256 id, string memory name, uint256[] memory inputMaterialsIds, uint256 outputMaterialId) public {
+        transformations[id].name = name;
+        // erase the old element inside the inputMaterials array of a transformation
+        transformations[id].inputMaterials = new Material[](inputMaterialsIds.length);
+        for (uint256 i = 0; i < inputMaterialsIds.length; ++i) {
+            Material memory m = getMaterial(inputMaterialsIds[i]);
+            require(m.exists, "Material does not exist");
+            transformations[id].inputMaterials.push(m);
+        }
+        transformations[id].outputMaterialId = outputMaterialId;
+        emit ResourceUpdated("transformation", id);
     }
 
     // --------------------------------------------------------------------------
     // Getters
     // --------------------------------------------------------------------------
-    function getMaterialsCounter(address company) public view returns (uint256) {
-        return materialsCounter[company].current();
+    function getMaterialsCounter() public view returns (uint256) {
+        return materialsCounter.current();
+    }
+
+    function getTransformationsCounter() public view returns (uint256) {
+        return transformationsCounter.current();
+    }
+
+    function getMaterialIds(address company) public view returns (uint256[] memory) {
+        return materialIds[company];
     }
 
 
-    function getTransformationsCounter(address company) public view returns (uint256) {
-        return transformationsCounter[company].current();
+    function getTransformationIds(address company) public view returns (uint256[] memory) {
+        return transformationIds[company];
     }
 
-    function getMaterial(address company, uint256 id) public view returns (Material memory) {
-        return materials[company][id];
+    function getMaterial(uint256 id) public view returns (Material memory) {
+        return materials[id];
     }
 
-    function getTransformation(address company, uint256 id) public view returns (Transformation memory) {
-        return transformations[company][id];
+    function getTransformation(uint256 id) public view returns (Transformation memory) {
+        return transformations[id];
     }
 
 }

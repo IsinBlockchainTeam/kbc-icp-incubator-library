@@ -10,7 +10,7 @@ describe('Transformation', () => {
     it('should correctly initialize a new Transformation', () => {
         expect(transformation.id).toEqual(0);
         expect(transformation.name).toEqual('transformation');
-        expect(transformation.inputMaterialsIds).toEqual([1, 2]);
+        expect(transformation.inputMaterials).toEqual([1, 2]);
         expect(transformation.outputMaterialId).toEqual(3);
         expect(transformation.owner).toEqual('owner');
     });
@@ -26,8 +26,8 @@ describe('Transformation', () => {
     });
 
     it('should correctly set the inputMaterialsIds', () => {
-        transformation.inputMaterialsIds = [4, 5];
-        expect(transformation.inputMaterialsIds).toEqual([4, 5]);
+        transformation.inputMaterials = [4, 5];
+        expect(transformation.inputMaterials).toEqual([4, 5]);
     });
 
     it('should correctly set the outputMaterialId', () => {

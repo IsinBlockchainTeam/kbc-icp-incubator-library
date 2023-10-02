@@ -24,16 +24,20 @@ export class TradeService {
         await this._tradeDriver.registerBasicTrade(supplierAddress, customerAddress, name, externalUrl);
     }
 
-    async tradeExists(supplierAddress: string, orderId: number): Promise<boolean> {
-        return this._tradeDriver.tradeExists(supplierAddress, orderId);
+    async tradeExists(tradeId: number): Promise<boolean> {
+        return this._tradeDriver.tradeExists(tradeId);
     }
 
-    async getGeneralTrade(supplierAddress: string, tradeId: number, blockNumber?: number): Promise<Trade> {
-        return this._tradeDriver.getGeneralTrade(supplierAddress, tradeId, blockNumber);
+    async getCounter(): Promise<number> {
+        return this._tradeDriver.getCounter();
     }
 
-    async getBasicTradeInfo(supplierAddress: string, tradeId: number, blockNumber?: number): Promise<BasicTradeInfo> {
-        return this._tradeDriver.getBasicTradeInfo(supplierAddress, tradeId, blockNumber);
+    async getGeneralTrade(tradeId: number, blockNumber?: number): Promise<Trade> {
+        return this._tradeDriver.getGeneralTrade(tradeId, blockNumber);
+    }
+
+    async getBasicTradeInfo(tradeId: number, blockNumber?: number): Promise<BasicTradeInfo> {
+        return this._tradeDriver.getBasicTradeInfo(tradeId, blockNumber);
     }
 
     async getCompleteBasicTrade(basicTradeInfo: BasicTradeInfo): Promise<BasicTrade | undefined> {
@@ -47,88 +51,88 @@ export class TradeService {
         return undefined;
     }
 
-    async getTradeCounter(supplierAddress: string): Promise<number> {
-        return this._tradeDriver.getTradeCounter(supplierAddress);
+    async getTradeIds(supplierAddress: string): Promise<number[]> {
+        return this._tradeDriver.getTradeIds(supplierAddress);
     }
 
-    async getGeneralTrades(supplierAddress: string): Promise<Trade[]> {
+    async getGeneralTrades(): Promise<Trade[]> {
         const trades: Trade[] = [];
-        const tradesCounter = await this.getTradeCounter(supplierAddress);
+        const tradesCounter = await this.getCounter();
         for (let i = 1; i <= tradesCounter; i++)
-            trades.push(await this.getGeneralTrade(supplierAddress, i));
+            trades.push(await this.getGeneralTrade(i));
         return trades;
     }
 
-    async addTradeLine(supplierAddress: string, tradeId: number, materialIds: [number, number], productCategory: string): Promise<void> {
-        await this._tradeDriver.addTradeLine(supplierAddress, tradeId, materialIds, productCategory);
+    async addTradeLine(tradeId: number, materialIds: [number, number], productCategory: string): Promise<void> {
+        await this._tradeDriver.addTradeLine(tradeId, materialIds, productCategory);
     }
 
-    async addTradeLines(supplierAddress: string, tradeId: number, lines: TradeLine[]): Promise<void> {
+    async addTradeLines(tradeId: number, lines: TradeLine[]): Promise<void> {
         const tradeLineFunctions = lines.map((line) => async () => {
-            await this.addTradeLine(supplierAddress, tradeId, line.materialIds, line.productCategory);
+            await this.addTradeLine(tradeId, line.materialIds, line.productCategory);
         });
         await serial(tradeLineFunctions);
     }
 
-    async updateTradeLine(supplierAddress: string, tradeId: number, tradeLineId: number, materialIds: [number, number], productCategory: string): Promise<void> {
-        await this._tradeDriver.updateTradeLine(supplierAddress, tradeId, tradeLineId, materialIds, productCategory);
+    async updateTradeLine(tradeId: number, tradeLineId: number, materialIds: [number, number], productCategory: string): Promise<void> {
+        await this._tradeDriver.updateTradeLine(tradeId, tradeLineId, materialIds, productCategory);
     }
 
-    async getTradeLine(supplierAddress: string, tradeId: number, tradeLineId: number): Promise<TradeLine> {
-        return this._tradeDriver.getTradeLine(supplierAddress, tradeId, tradeLineId);
+    async getTradeLine(tradeId: number, tradeLineId: number): Promise<TradeLine> {
+        return this._tradeDriver.getTradeLine(tradeId, tradeLineId);
     }
 
-    async getTradeLines(supplierAddress: string, tradeId: number) : Promise<TradeLine[]> {
-        const trade = await this.getBasicTradeInfo(supplierAddress, tradeId);
-        return Promise.all(trade.lineIds.map(async (lineId) => this.getTradeLine(supplierAddress, tradeId, lineId)));
+    async getTradeLines(tradeId: number) : Promise<TradeLine[]> {
+        const trade = await this.getBasicTradeInfo(tradeId);
+        return Promise.all(trade.lineIds.map(async (lineId) => this.getTradeLine(tradeId, lineId)));
     }
 
-    async tradeLineExists(supplierAddress: string, tradeId: number, tradeLineId: number): Promise<boolean> {
-        return this._tradeDriver.tradeLineExists(supplierAddress, tradeId, tradeLineId);
+    async tradeLineExists(tradeId: number, tradeLineId: number): Promise<boolean> {
+        return this._tradeDriver.tradeLineExists(tradeId, tradeLineId);
     }
 
     async registerOrder(supplierAddress: string, customerAddress: string, externalUrl?: string): Promise<void> {
         await this._tradeDriver.registerOrder(supplierAddress, customerAddress, externalUrl);
     }
 
-    async addOrderOfferee(supplierAddress: string, orderId: number, offeree: string): Promise<void> {
-        await this._tradeDriver.addOrderOfferee(supplierAddress, orderId, offeree);
+    async addOrderOfferee(orderId: number, offeree: string): Promise<void> {
+        await this._tradeDriver.addOrderOfferee(orderId, offeree);
     }
 
-    async setOrderPaymentDeadline(supplierAddress: string, id: number, paymentDeadline: Date): Promise<void> {
-        await this._tradeDriver.setOrderPaymentDeadline(supplierAddress, id, paymentDeadline);
+    async setOrderPaymentDeadline(id: number, paymentDeadline: Date): Promise<void> {
+        await this._tradeDriver.setOrderPaymentDeadline(id, paymentDeadline);
     }
 
-    async setOrderDocumentDeliveryDeadline(supplierAddress: string, id: number, documentDeliveryDeadline: Date): Promise<void> {
-        await this._tradeDriver.setOrderDocumentDeliveryDeadline(supplierAddress, id, documentDeliveryDeadline);
+    async setOrderDocumentDeliveryDeadline(id: number, documentDeliveryDeadline: Date): Promise<void> {
+        await this._tradeDriver.setOrderDocumentDeliveryDeadline(id, documentDeliveryDeadline);
     }
 
-    async setOrderArbiter(supplierAddress: string, id: number, arbiter: string): Promise<void> {
-        await this._tradeDriver.setOrderArbiter(supplierAddress, id, arbiter);
+    async setOrderArbiter(id: number, arbiter: string): Promise<void> {
+        await this._tradeDriver.setOrderArbiter(id, arbiter);
     }
 
-    async setOrderShippingDeadline(supplierAddress: string, id: number, shippingDeadline: Date): Promise<void> {
-        await this._tradeDriver.setOrderShippingDeadline(supplierAddress, id, shippingDeadline);
+    async setOrderShippingDeadline(id: number, shippingDeadline: Date): Promise<void> {
+        await this._tradeDriver.setOrderShippingDeadline(id, shippingDeadline);
     }
 
-    async setOrderDeliveryDeadline(supplierAddress: string, id: number, deliveryDeadline: Date): Promise<void> {
-        await this._tradeDriver.setOrderDeliveryDeadline(supplierAddress, id, deliveryDeadline);
+    async setOrderDeliveryDeadline(id: number, deliveryDeadline: Date): Promise<void> {
+        await this._tradeDriver.setOrderDeliveryDeadline(id, deliveryDeadline);
     }
 
-    async confirmOrder(supplierAddress: string, orderId: number): Promise<void> {
-        await this._tradeDriver.confirmOrder(supplierAddress, orderId);
+    async confirmOrder(orderId: number): Promise<void> {
+        await this._tradeDriver.confirmOrder(orderId);
     }
 
-    async addDocument(supplierAddress: string, orderId: number, documentName: string, documentType: string, documentExternalUrl: string): Promise<void> {
-        await this._tradeDriver.addDocument(supplierAddress, orderId, documentName, documentType, documentExternalUrl);
+    async addDocument(orderId: number, documentName: string, documentType: string, documentExternalUrl: string): Promise<void> {
+        await this._tradeDriver.addDocument(orderId, documentName, documentType, documentExternalUrl);
     }
 
-    async getNegotiationStatus(supplierAddress: string, orderId: number): Promise<NegotiationStatus> {
-        return this._tradeDriver.getNegotiationStatus(supplierAddress, orderId);
+    async getNegotiationStatus(orderId: number): Promise<NegotiationStatus> {
+        return this._tradeDriver.getNegotiationStatus(orderId);
     }
 
-    async getOrderInfo(supplierAddress: string, id: number, blockNumber?: number): Promise<OrderInfo> {
-        return this._tradeDriver.getOrderInfo(supplierAddress, id, blockNumber);
+    async getOrderInfo(id: number, blockNumber?: number): Promise<OrderInfo> {
+        return this._tradeDriver.getOrderInfo(id, blockNumber);
     }
 
     async getCompleteOrder(orderInfo: OrderInfo): Promise<Order | undefined> {
@@ -142,32 +146,32 @@ export class TradeService {
         return undefined;
     }
 
-    async isSupplierOrCustomer(supplierAddress: string, id: number, senderAddress: string): Promise<boolean> {
-        return this._tradeDriver.isSupplierOrCustomer(supplierAddress, id, senderAddress);
+    async isSupplierOrCustomer(id: number, senderAddress: string): Promise<boolean> {
+        return this._tradeDriver.isSupplierOrCustomer(id, senderAddress);
     }
 
-    async addOrderLine(supplierAddress: string, orderId: number, materialIds: [number, number], productCategory: string, quantity: number, price: OrderLinePrice): Promise<void> {
-        await this._tradeDriver.addOrderLine(supplierAddress, orderId, materialIds, productCategory, quantity, price);
+    async addOrderLine(orderId: number, materialIds: [number, number], productCategory: string, quantity: number, price: OrderLinePrice): Promise<void> {
+        await this._tradeDriver.addOrderLine(orderId, materialIds, productCategory, quantity, price);
     }
 
-    async addOrderLines(supplierAddress: string, orderId: number, lines: OrderLine[]): Promise<void> {
+    async addOrderLines(orderId: number, lines: OrderLine[]): Promise<void> {
         const orderLineFunctions = lines.map((line) => async () => {
-            await this.addOrderLine(supplierAddress, orderId, line.materialIds, line.productCategory, line.quantity, line.price);
+            await this.addOrderLine(orderId, line.materialIds, line.productCategory, line.quantity, line.price);
         });
         await serial(orderLineFunctions);
     }
 
-    async updateOrderLine(supplierAddress: string, orderId: number, orderLineId: number, materialIds: [number, number], productCategory: string, quantity: number, price: OrderLinePrice): Promise<void> {
-        await this._tradeDriver.updateOrderLine(supplierAddress, orderId, orderLineId, materialIds, productCategory, quantity, price);
+    async updateOrderLine(orderId: number, orderLineId: number, materialIds: [number, number], productCategory: string, quantity: number, price: OrderLinePrice): Promise<void> {
+        await this._tradeDriver.updateOrderLine(orderId, orderLineId, materialIds, productCategory, quantity, price);
     }
 
-    async getOrderLine(supplierAddress: string, orderId: number, orderLineId: number, blockNumber?: number): Promise<OrderLine> {
-        return this._tradeDriver.getOrderLine(supplierAddress, orderId, orderLineId, blockNumber);
+    async getOrderLine(orderId: number, orderLineId: number, blockNumber?: number): Promise<OrderLine> {
+        return this._tradeDriver.getOrderLine(orderId, orderLineId, blockNumber);
     }
 
-    async getOrderLines(supplierAddress: string, orderId: number) : Promise<OrderLine[]> {
-        const order = await this.getOrderInfo(supplierAddress, orderId);
-        return Promise.all(order.lineIds.map(async (lineId) => this.getOrderLine(supplierAddress, orderId, lineId)));
+    async getOrderLines(orderId: number) : Promise<OrderLine[]> {
+        const order = await this.getOrderInfo(orderId);
+        return Promise.all(order.lineIds.map(async (lineId) => this.getOrderLine(orderId, lineId)));
     }
 
     async getBlockNumbersByOrderId(id: number): Promise<Map<TradeEvents, number[]>> {

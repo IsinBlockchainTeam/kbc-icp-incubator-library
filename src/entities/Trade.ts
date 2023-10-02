@@ -14,7 +14,7 @@ export class Trade {
 
     private _lineIds: number[];
 
-    private _type: TradeType;
+    private readonly _type: TradeType;
 
     constructor(id: number, supplier: string, customer: string, externalUrl: string, lineIds: number[], type: TradeType) {
         this._id = id;

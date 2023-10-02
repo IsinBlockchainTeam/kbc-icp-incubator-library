@@ -16,7 +16,7 @@ describe('DocumentService', () => {
 
     const mockedDocumentDriver = createMock<DocumentDriver>({
         registerDocument: jest.fn(),
-        getDocumentCounter: jest.fn(),
+        getDocumentCounterByTransactionId: jest.fn(),
         documentExists: jest.fn(),
         getDocumentInfo: jest.fn(),
         getTransactionDocumentIds: jest.fn(),
@@ -47,8 +47,8 @@ describe('DocumentService', () => {
         },
         {
             serviceFunctionName: 'getDocumentCounter',
-            serviceFunction: () => documentService.getDocumentCounter(owner),
-            expectedMockedFunction: mockedDocumentDriver.getDocumentCounter,
+            serviceFunction: () => documentService.getDocumentCounterByTransactionId(owner),
+            expectedMockedFunction: mockedDocumentDriver.getDocumentCounterByTransactionId,
             expectedMockedFunctionArgs: [owner],
         },
         {

@@ -36,7 +36,7 @@ describe('Document lifecycle', () => {
     const deadline = new Date('2030-10-10');
     const arbiter = 'arbiter 1', shipper = 'shipper 1', deliveryPort = 'delivery port', shippingPort = 'shipping port';
 
-    let documentCounterId = 0;
+    let transactionDocumentCounter = 0;
     const rawDocument = {
         name: 'Document name',
         documentType: 'Bill of lading',
@@ -71,17 +71,17 @@ describe('Document lifecycle', () => {
 
     const createOrderAndConfirm = async (): Promise<number> => {
         await orderService.registerOrder(SUPPLIER_ADDRESS, CUSTOMER_ADDRESS, externalUrl);
-        const orderId = await orderService.getTradeCounter(SUPPLIER_ADDRESS);
-        await orderService.addOrderOfferee(SUPPLIER_ADDRESS, orderId, CUSTOMER_ADDRESS);
+        const orderId = await orderService.getCounter();
+        await orderService.addOrderOfferee(orderId, CUSTOMER_ADDRESS);
         // add all the constraints so that an order can be confirmed (it is required to add a document)
-        await orderService.setOrderDocumentDeliveryDeadline(SUPPLIER_ADDRESS, orderId, deadline);
-        await orderService.setOrderArbiter(SUPPLIER_ADDRESS, orderId, arbiter);
-        await orderService.setOrderPaymentDeadline(SUPPLIER_ADDRESS, orderId, deadline);
-        await orderService.setOrderShippingDeadline(SUPPLIER_ADDRESS, orderId, deadline);
-        await orderService.setOrderDeliveryDeadline(SUPPLIER_ADDRESS, orderId, deadline);
+        await orderService.setOrderDocumentDeliveryDeadline(orderId, deadline);
+        await orderService.setOrderArbiter(orderId, arbiter);
+        await orderService.setOrderPaymentDeadline(orderId, deadline);
+        await orderService.setOrderShippingDeadline(orderId, deadline);
+        await orderService.setOrderDeliveryDeadline(orderId, deadline);
         // confirm the order
         _defineOrderSender(CUSTOMER_PRIVATE_KEY);
-        await orderService.confirmOrder(SUPPLIER_ADDRESS, orderId);
+        await orderService.confirmOrder(orderId);
         return orderId;
     };
 
@@ -108,20 +108,19 @@ describe('Document lifecycle', () => {
         const metadataUrl = await pinataService.storeJSON({ filename, fileUrl: ipfsFileUrl });
 
         transactionId = await createOrderAndConfirm();
-        await orderService.addDocument(SUPPLIER_ADDRESS, transactionId, rawDocument.name, rawDocument.documentType, metadataUrl);
+        await orderService.addDocument(transactionId, rawDocument.name, rawDocument.documentType, metadataUrl);
 
-        documentCounterId = await documentService.getDocumentCounter(SUPPLIER_ADDRESS);
-        expect(documentCounterId).toEqual(1);
+        transactionDocumentCounter = await documentService.getDocumentCounterByTransactionId(transactionId);
+        expect(transactionDocumentCounter).toEqual(1);
 
-        const exist = await documentService.documentExists(SUPPLIER_ADDRESS, transactionId, documentCounterId);
+        const exist = await documentService.documentExists(transactionId, transactionDocumentCounter);
         expect(exist).toBeTruthy();
 
-        const savedDocumentInfo = await documentService.getDocumentInfo(SUPPLIER_ADDRESS, transactionId, documentCounterId);
+        const savedDocumentInfo = await documentService.getDocumentInfo(transactionId, transactionDocumentCounter);
         const savedDocument = await documentService.getCompleteDocument(savedDocumentInfo);
         expect(savedDocument).toBeDefined();
         expect(savedDocumentInfo).toBeDefined();
-        expect(savedDocument!.id).toEqual(documentCounterId);
-        expect(savedDocument!.owner).toEqual(SUPPLIER_ADDRESS);
+        expect(savedDocument!.id).toEqual(transactionDocumentCounter);
         expect(savedDocument!.transactionId).toEqual(transactionId);
         expect(savedDocument!.name).toEqual(rawDocument.name);
         expect(savedDocument!.documentType).toEqual(rawDocument.documentType);
@@ -132,19 +131,14 @@ describe('Document lifecycle', () => {
 
     it('Should add another document for the same transaction id and another to other transaction id', async () => {
         transactionId2 = await createOrderAndConfirm();
-        await orderService.addDocument(SUPPLIER_ADDRESS, transactionId, rawDocument2.name, rawDocument2.documentType, rawDocument2.externalUrl);
-        await orderService.addDocument(SUPPLIER_ADDRESS, transactionId2, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
+        await orderService.addDocument(transactionId, rawDocument2.name, rawDocument2.documentType, rawDocument2.externalUrl);
+        await orderService.addDocument(transactionId2, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
 
-        documentCounterId = await documentService.getDocumentCounter(SUPPLIER_ADDRESS);
+        const transaction2DocumentsCounter = await documentService.getDocumentCounterByTransactionId(transactionId2);
 
-        const transaction1DocumentIds = await documentService.getTransactionDocumentIds(SUPPLIER_ADDRESS, transactionId);
-        const transaction2DocumentIds = await documentService.getTransactionDocumentIds(SUPPLIER_ADDRESS, transactionId2);
-        expect(documentCounterId).toEqual(transaction1DocumentIds.length + transaction2DocumentIds.length);
-
-        const savedTransaction2Document = await documentService.getDocumentInfo(SUPPLIER_ADDRESS, transactionId2, transaction2DocumentIds[0]);
+        const savedTransaction2Document = await documentService.getDocumentInfo(transactionId2, transaction2DocumentsCounter);
         expect(savedTransaction2Document).toBeDefined();
-        expect(savedTransaction2Document.id).toEqual(transaction2DocumentIds[0]);
-        expect(savedTransaction2Document.owner).toEqual(SUPPLIER_ADDRESS);
+        expect(savedTransaction2Document.id).toEqual(transaction2DocumentsCounter);
         expect(savedTransaction2Document.transactionId).toEqual(transactionId2);
         expect(savedTransaction2Document.name).toEqual(rawDocument.name);
         expect(savedTransaction2Document.documentType).toEqual(rawDocument.documentType);

@@ -41,9 +41,9 @@ describe('SupplyChainService', () => {
         },
         {
             serviceFunctionName: 'registerTransformation',
-            serviceFunction: () => supplyChainService.registerTransformation(transformation.owner, transformation.name, transformation.inputMaterialsIds, transformation.outputMaterialId),
+            serviceFunction: () => supplyChainService.registerTransformation(transformation.owner, transformation.name, transformation.inputMaterials, transformation.outputMaterialId),
             expectedMockedFunction: mockedInstance.registerTransformation,
-            expectedMockedFunctionArgs: [transformation.owner, transformation.name, transformation.inputMaterialsIds, transformation.outputMaterialId],
+            expectedMockedFunctionArgs: [transformation.owner, transformation.name, transformation.inputMaterials, transformation.outputMaterialId],
         },
         {
             serviceFunctionName: 'updateMaterial',
@@ -53,9 +53,9 @@ describe('SupplyChainService', () => {
         },
         {
             serviceFunctionName: 'updateTransformation',
-            serviceFunction: () => supplyChainService.updateTransformation(transformation.owner, transformation.id, transformation.name, transformation.inputMaterialsIds, transformation.outputMaterialId),
+            serviceFunction: () => supplyChainService.updateTransformation(transformation.owner, transformation.id, transformation.name, transformation.inputMaterials, transformation.outputMaterialId),
             expectedMockedFunction: mockedInstance.updateTransformation,
-            expectedMockedFunctionArgs: [transformation.owner, transformation.id, transformation.name, transformation.inputMaterialsIds, transformation.outputMaterialId],
+            expectedMockedFunctionArgs: [transformation.owner, transformation.id, transformation.name, transformation.inputMaterials, transformation.outputMaterialId],
         },
         {
             serviceFunctionName: 'getMaterialsCounter',

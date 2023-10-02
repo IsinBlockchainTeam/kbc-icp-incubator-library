@@ -34,51 +34,33 @@ export class SupplyChainDriver {
         await tx.wait();
     }
 
-    async updateMaterial(companyAddress: string, id: number, name: string): Promise<void> {
-        if (!utils.isAddress(companyAddress)) {
-            throw new Error('Not an address');
-        }
-        const tx = await this._contract.updateMaterial(companyAddress, id, name);
+    async updateMaterial(id: number, name: string): Promise<void> {
+        const tx = await this._contract.updateMaterial(id, name);
         await tx.wait();
     }
 
-    async updateTransformation(companyAddress: string, id: number, name: string, inputMaterialsIds: number[], outputMaterialId: number): Promise<void> {
-        if (!utils.isAddress(companyAddress)) {
-            throw new Error('Not an address');
-        }
-        const tx = await this._contract.updateTransformation(companyAddress, id, name, inputMaterialsIds, outputMaterialId);
+    async updateTransformation(id: number, name: string, inputMaterialsIds: number[], outputMaterialId: number): Promise<void> {
+        const tx = await this._contract.updateTransformation(id, name, inputMaterialsIds, outputMaterialId);
         await tx.wait();
     }
 
-    async getMaterialsCounter(companyAddress: string): Promise<number> {
-        if (!utils.isAddress(companyAddress)) {
-            throw new Error('Not an address');
-        }
-        const counter = await this._contract.getMaterialsCounter(companyAddress);
+    async getMaterialsCounter(): Promise<number> {
+        const counter = await this._contract.getMaterialsCounter();
         return counter.toNumber();
     }
 
-    async getTransformationsCounter(companyAddress: string): Promise<number> {
-        if (!utils.isAddress(companyAddress)) {
-            throw new Error('Not an address');
-        }
-        const counter = await this._contract.getTransformationsCounter(companyAddress);
+    async getTransformationsCounter(): Promise<number> {
+        const counter = await this._contract.getTransformationsCounter();
         return counter.toNumber();
     }
 
-    async getMaterial(companyAddress: string, id: number): Promise<Material> {
-        if (!utils.isAddress(companyAddress)) {
-            throw new Error('Not an address');
-        }
-        const material = await this._contract.getMaterial(companyAddress, id);
+    async getMaterial(id: number): Promise<Material> {
+        const material = await this._contract.getMaterial(id);
         return EntityBuilder.buildMaterial(material);
     }
 
-    async getTransformation(companyAddress: string, id: number): Promise<Transformation> {
-        if (!utils.isAddress(companyAddress)) {
-            throw new Error('Not an address');
-        }
-        const transformation = await this._contract.getTransformation(companyAddress, id);
+    async getTransformation(id: number): Promise<Transformation> {
+        const transformation = await this._contract.getTransformation(id);
         return EntityBuilder.buildTransformation(transformation);
     }
 }

@@ -1,5 +1,6 @@
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { ethers, Signer } from 'ethers';
+import { IPFSService } from '@blockchain-lib/common';
 import { GraphService } from '../services/GraphService';
 import { Transformation } from '../entities/Transformation';
 import TradeService from '../services/TradeService';
@@ -7,7 +8,6 @@ import { SupplyChainService } from '../services/SupplyChainService';
 import { TradeDriver } from '../drivers/TradeDriver';
 import { SupplyChainDriver } from '../drivers/SupplyChainDriver';
 import {
-    CUSTOMER_ADDRESS,
     NETWORK,
     SUPPLIER_ADDRESS,
     SUPPLIER_PRIVATE_KEY,
@@ -18,6 +18,7 @@ import { TradeLine } from '../entities/TradeLine';
 import { serial } from '../utils/utils';
 import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
 import { TradeType } from '../entities/Trade';
+import { Material } from '../entities/Material';
 
 describe('GraphService lifecycle', () => {
     let provider: JsonRpcProvider;
@@ -32,8 +33,29 @@ describe('GraphService lifecycle', () => {
     const tradeIds: number[] = [];
     const orderIds: number[] = [];
     const externalUrl = 'metadataUrl';
+    const company1Address = {
+        address: '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC',
+        privateKey: '0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a',
+    };
+    const company2Address = {
+        address: '0x90F79bf6EB2c4f870365E785982E1f101E93b906',
+        privateKey: '0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6',
+    };
+    const company3Address = {
+        address: '0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65',
+        privateKey: '0x47e179ec197488593b187f80a00eb0da91f1b9d0b13f8733639f19c30a34926a',
+    };
 
     let graphService: GraphService;
+
+    const _defineSender = (privateKey: string, ipfsService?: IPFSService) => {
+        signer = new ethers.Wallet(privateKey, provider);
+        tradeDriver = new TradeDriver(
+            signer,
+            TRADE_MANAGER_CONTRACT_ADDRESS,
+        );
+        tradeService = new TradeService(tradeDriver, ipfsService);
+    };
 
     beforeAll(() => {
         provider = new ethers.providers.JsonRpcProvider(NETWORK);
@@ -60,89 +82,96 @@ describe('GraphService lifecycle', () => {
 
     it('should add data that is then used to compute the graph', async () => {
         const trades = [
-            { supplier: SUPPLIER_ADDRESS, customer: CUSTOMER_ADDRESS, name: 'basicTrade1', externalUrl, type: TradeType.TRADE },
-            { supplier: SUPPLIER_ADDRESS, customer: CUSTOMER_ADDRESS, name: 'basicTrade2', externalUrl, type: TradeType.TRADE },
-            { supplier: SUPPLIER_ADDRESS, customer: CUSTOMER_ADDRESS, externalUrl, type: TradeType.ORDER },
-            { supplier: SUPPLIER_ADDRESS, customer: CUSTOMER_ADDRESS, name: 'basicTrade3', externalUrl, type: TradeType.TRADE },
-            { supplier: SUPPLIER_ADDRESS, customer: CUSTOMER_ADDRESS, name: 'basicTrade4', externalUrl, type: TradeType.TRADE },
+            { supplier: company1Address, customer: company2Address, name: 'basicTrade1', externalUrl, type: TradeType.TRADE },
+            { supplier: company2Address, customer: company3Address, externalUrl, type: TradeType.ORDER },
+            { supplier: company2Address, customer: company3Address, name: 'basicTrade2', externalUrl, type: TradeType.TRADE },
         ];
         const tradeLines = [
-            new TradeLine(0, [2, 7], 'CategoryA'),
-            new TradeLine(0, [4, 8], 'CategoryB'),
-            new TradeLine(0, [9, 10], 'CategoryA Superior'),
-            new TradeLine(0, [6, 11], 'CategoryA'),
+            new TradeLine(0, [3, 2], 'CategoryA'),
+            new TradeLine(0, [6, 5], 'CategoryB'),
         ];
         const orderLines = [
-            new OrderLine(0, [6, 11], 'CategoryA Superior', 100, new OrderLinePrice(50, 'CHF')),
-            new OrderLine(0, [14, 15], 'CategoryA Superior', 80, new OrderLinePrice(24.5, 'CHF')),
+            new OrderLine(0, [6, 5], 'CategoryA', 100, new OrderLinePrice(50, 'CHF')),
         ];
+
+        const materials = [
+            new Material(1, 'Material 1', company1Address.address),
+            new Material(2, 'Material 2', company1Address.address),
+            new Material(3, 'Material 3', company2Address.address),
+            new Material(4, 'Material 4', company2Address.address),
+            new Material(5, 'Material 5', company2Address.address),
+            new Material(6, 'Material 6', company3Address.address),
+            new Material(7, 'Material 7', company3Address.address),
+            new Material(8, 'Material 8', company3Address.address),
+        ];
+
         const transformations = [
-            new Transformation(0, 'transformation', [1], 2, SUPPLIER_ADDRESS),
-            new Transformation(0, 'transformation', [3], 4, SUPPLIER_ADDRESS),
-            new Transformation(0, 'transformation', [5], 6, SUPPLIER_ADDRESS),
-            new Transformation(0, 'transformation', [7, 8], 9, SUPPLIER_ADDRESS),
-            new Transformation(0, 'transformation', [10, 11], 12, SUPPLIER_ADDRESS),
-            new Transformation(0, 'transformation', [13], 14, SUPPLIER_ADDRESS),
-            new Transformation(0, 'transformation', [15], 16, SUPPLIER_ADDRESS),
+            new Transformation(0, 'transformation', [materials[0]], 2, SUPPLIER_ADDRESS),
+            new Transformation(0, 'transformation', [materials[2], materials[3]], 5, SUPPLIER_ADDRESS),
+            new Transformation(0, 'transformation', [materials[5], materials[6]], 12, SUPPLIER_ADDRESS),
         ];
+
+        // add materials
+        const registerMaterialsFn = materials.map((m) => async () => {
+            await supplyChainService.registerMaterial(m.owner, m.name);
+        });
+        await serial(registerMaterialsFn);
 
         // add trades and orders
         const registerTradesFn = trades.map((t) => async () => {
+            _defineSender(t.supplier.privateKey);
             if (t.type === TradeType.TRADE) {
-                await tradeService.registerBasicTrade(t.supplier, t.customer, t.name!, t.externalUrl);
-                tradeIds.push(await tradeService.getTradeCounter(SUPPLIER_ADDRESS));
+                await tradeService.registerBasicTrade(t.supplier.address, t.customer.address, t.name!, t.externalUrl);
+                tradeIds.push(await tradeService.getCounter());
             } else if (t.type === TradeType.ORDER) {
-                await tradeService.registerOrder(t.supplier, t.customer, t.externalUrl);
-                orderIds.push(await tradeService.getTradeCounter(SUPPLIER_ADDRESS));
+                await tradeService.registerOrder(t.supplier.address, t.customer.address, t.externalUrl);
+                orderIds.push(await tradeService.getCounter());
             }
         });
         await serial(registerTradesFn);
 
         // add lines to relative trades and orders
-        await tradeService.addTradeLines(SUPPLIER_ADDRESS, tradeIds[0], [tradeLines[0]]);
-        await tradeService.addTradeLines(SUPPLIER_ADDRESS, tradeIds[1], [tradeLines[1]]);
-        await tradeService.addTradeLines(SUPPLIER_ADDRESS, tradeIds[2], [tradeLines[2]]);
-        await tradeService.addTradeLines(SUPPLIER_ADDRESS, tradeIds[3], [tradeLines[3]]);
+        await tradeService.addTradeLines(tradeIds[0], [tradeLines[0]]);
+        await tradeService.addTradeLines(tradeIds[1], [tradeLines[1]]);
 
-        await tradeService.addOrderLines(SUPPLIER_ADDRESS, orderIds[0], [orderLines[0]]);
-        await tradeService.addOrderLines(SUPPLIER_ADDRESS, orderIds[0], [orderLines[1]]);
+        await tradeService.addOrderLines(orderIds[0], [orderLines[0]]);
 
         // add transformations
-        const registerTransformationsFn = transformations.map((t) => async () => supplyChainService.registerTransformation(t.owner, t.name, t.inputMaterialsIds, t.outputMaterialId));
+        const registerTransformationsFn = transformations.map((t) => async () => supplyChainService.registerTransformation(t.owner, t.name, t.inputMaterials.map((m) => m.id), t.outputMaterialId));
         await serial(registerTransformationsFn);
     }, 20000);
 
     it('should compute a graph', async () => {
-        const result = await graphService.computeGraph(SUPPLIER_ADDRESS, 12);
+        const result = await graphService.computeGraph(company3Address.address, 8);
         result.nodes.sort(({ resourceId: a }, { resourceId: b }) => a.localeCompare(b));
         result.edges.sort(({ from: a }, { from: b }) => a.localeCompare(b));
 
         expect(result).toEqual({
             nodes: [
-                { resourceId: `${SUPPLIER_ADDRESS}_1` },
-                { resourceId: `${SUPPLIER_ADDRESS}_2` },
-                { resourceId: `${SUPPLIER_ADDRESS}_3` },
-                { resourceId: `${SUPPLIER_ADDRESS}_4` },
-                { resourceId: `${SUPPLIER_ADDRESS}_5` },
+                { resourceId: `${company1Address}_1` },
+                { resourceId: `${company2Address}_2` },
+                { resourceId: `${company2Address}_3` },
+                { resourceId: `${company3Address}_4` },
+                { resourceId: `${company3Address}_5` },
             ],
             edges: [
-                { resourcesIds: [`${SUPPLIER_ADDRESS}_1`], from: `${SUPPLIER_ADDRESS}_1`, to: `${SUPPLIER_ADDRESS}_4` },
-                { resourcesIds: [`${SUPPLIER_ADDRESS}_2`], from: `${SUPPLIER_ADDRESS}_2`, to: `${SUPPLIER_ADDRESS}_4` },
-                { resourcesIds: [`${SUPPLIER_ADDRESS}_3`, `${SUPPLIER_ADDRESS}_5`], from: `${SUPPLIER_ADDRESS}_3`, to: `${SUPPLIER_ADDRESS}_5` },
-                { resourcesIds: [`${SUPPLIER_ADDRESS}_4`], from: `${SUPPLIER_ADDRESS}_4`, to: `${SUPPLIER_ADDRESS}_5` },
+                { resourcesIds: [`${company1Address}_1`], from: `${company1Address}_1`, to: `${company3Address}_4` },
+                { resourcesIds: [`${company2Address}_2`], from: `${company2Address}_2`, to: `${company3Address}_4` },
+                { resourcesIds: [`${company2Address}_3`, `${company3Address}_5`], from: `${company2Address}_3`, to: `${company3Address}_5` },
+                { resourcesIds: [`${company3Address}_4`], from: `${company3Address}_4`, to: `${company3Address}_5` },
             ],
         });
     });
 
     it('should throw an error if it finds multiple transformation with the same output material', async () => {
         await supplyChainService.registerTransformation(SUPPLIER_ADDRESS, 'transformation', [3], 2);
-        const fn = async () => graphService.computeGraph(SUPPLIER_ADDRESS, 12);
+        const fn = async () => graphService.computeGraph(SUPPLIER_ADDRESS, 8);
         await expect(fn).rejects.toThrowError('Multiple transformations found for material id 2');
     });
 
     it('should throw an error if it finds no transformation with specific output material', async () => {
-        await tradeService.addTradeLine(SUPPLIER_ADDRESS, tradeIds[3], [100, 10], 'CategoryA');
-        const fn = async () => graphService.computeGraph(SUPPLIER_ADDRESS, 12);
+        await tradeService.addTradeLine(tradeIds[3], [100, 10], 'CategoryA');
+        const fn = async () => graphService.computeGraph(SUPPLIER_ADDRESS, 8);
         await expect(fn).rejects.toThrowError('No transformations found for material id 100');
     });
 });

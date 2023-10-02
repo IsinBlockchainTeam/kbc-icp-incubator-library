@@ -22,57 +22,34 @@ export class DocumentDriver {
         if (!utils.isAddress(ownerAddress)) throw new Error('Owner not an address');
 
         try {
-            const tx = await this._contract.registerDocument(
-                ownerAddress,
-                transactionId,
-                name,
-                documentType,
-                externalUrl,
-            );
+            const tx = await this._contract.registerDocument(transactionId, name, documentType, externalUrl);
             await tx.wait();
         } catch (e: any) {
             throw new Error(e.message);
         }
     }
 
-    async getDocumentCounter(ownerAddress: string): Promise<number> {
-        if (!utils.isAddress(ownerAddress)) throw new Error('Owner not an address');
-
+    async getDocumentCounterByTransactionId(transactionId: number): Promise<number> {
         try {
-            const counter = await this._contract.getDocumentCounter(ownerAddress);
+            const counter = await this._contract.getDocumentCounterByTransactionId(transactionId);
             return counter.toNumber();
         } catch (e: any) {
             throw new Error(e.message);
         }
     }
 
-    async documentExists(ownerAddress: string, transactionId: number, documentId: number): Promise<boolean> {
-        if (!utils.isAddress(ownerAddress)) throw new Error('Owner not an address');
-
+    async documentExists(transactionId: number, documentId: number): Promise<boolean> {
         try {
-            return this._contract.documentExists(ownerAddress, transactionId, documentId);
+            return this._contract.documentExists(transactionId, documentId);
         } catch (e: any) {
             throw new Error(e.message);
         }
     }
 
-    async getDocumentInfo(ownerAddress: string, transactionId: number, documentId: number): Promise<DocumentInfo> {
-        if (!utils.isAddress(ownerAddress)) throw new Error('Owner not an address');
-
+    async getDocumentInfo(transactionId: number, documentId: number): Promise<DocumentInfo> {
         try {
-            const document = await this._contract.getDocumentInfo(ownerAddress, transactionId, documentId);
+            const document = await this._contract.getDocumentInfo(transactionId, documentId);
             return EntityBuilder.buildDocument(document);
-        } catch (e: any) {
-            throw new Error(e.message);
-        }
-    }
-
-    async getTransactionDocumentIds(ownerAddress: string, transactionId: number): Promise<number[]> {
-        if (!utils.isAddress(ownerAddress)) throw new Error('Owner not an address');
-
-        try {
-            const ids = await this._contract.getTransactionDocumentIds(ownerAddress, transactionId);
-            return ids.map((id) => id.toNumber());
         } catch (e: any) {
             throw new Error(e.message);
         }

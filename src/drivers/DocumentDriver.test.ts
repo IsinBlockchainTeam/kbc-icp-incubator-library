@@ -101,7 +101,7 @@ describe('DocumentDriver', () => {
 
     describe('getDocumentCounter', () => {
         it('should get the document counter ids', async () => {
-            await documentDriver.getDocumentCounter(owner.address);
+            await documentDriver.getDocumentCounterByTransactionId(owner.address);
             expect(mockedContract.getDocumentCounter).toHaveBeenCalledTimes(1);
             expect(mockedContract.getDocumentCounter).toHaveBeenNthCalledWith(1, owner.address);
         });
@@ -109,12 +109,12 @@ describe('DocumentDriver', () => {
         it('should retrieve document - transaction fails', async () => {
             mockedContract.getDocumentCounter = jest.fn().mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => documentDriver.getDocumentCounter(owner.address);
+            const fn = async () => documentDriver.getDocumentCounterByTransactionId(owner.address);
             await expect(fn).rejects.toThrowError(new Error(errorMessage));
         });
 
         it('should get the document counter ids - FAIL (Owner not an address)', async () => {
-            const fn = async () => documentDriver.getDocumentCounter('0xaddress');
+            const fn = async () => documentDriver.getDocumentCounterByTransactionId('0xaddress');
             await expect(fn).rejects.toThrowError(new Error('Owner not an address'));
         });
     });

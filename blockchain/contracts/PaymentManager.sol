@@ -49,8 +49,8 @@ contract PaymentManager is AccessControl {
     // payer => payment target id counter
     mapping(address => Counters.Counter) private paymentTargetsCounter;
 
-    // payer => order id => orderline id => [payment id]
-    mapping(address => mapping(uint256 => mapping(uint256 => uint256[]))) private orderLinePayments;
+    // order id => orderline id => [payment id]
+    mapping(uint256 => mapping(uint256 => uint256[])) private orderLinePayments;
 
     TradeManager orderManager;
     EnumerableType fiatManager;
@@ -112,8 +112,8 @@ contract PaymentManager is AccessControl {
     function addPaymentTarget(uint256 paymentId, address payer, uint256 orderId, uint256 orderLineId) public {
         Payment storage payment = payments[payer][paymentId];
         require(payment.exists, "Payment does not exist");
-        require(orderManager.tradeExists(payment.supplier, orderId), "Trying to set an order that does not exist");
-        require(orderManager.tradeLineExists(payment.supplier, orderId, orderLineId), "Trying to set an order line that does not exist");
+        require(orderManager.tradeExists(orderId), "Trying to set an order that does not exist");
+        require(orderManager.tradeLineExists(orderId, orderLineId), "Trying to set an order line that does not exist");
         require(payment.status != PaymentStatus.FINALIZED, "Payment is already finalized");
         require(payment.payer == msg.sender || payment.supplier == msg.sender, "Sender is neither payer nor supplier");
 
@@ -130,7 +130,7 @@ contract PaymentManager is AccessControl {
         payment.status = PaymentStatus.PENDING;
         payment.paymentTargetsIds.push(paymentTargetId);
 
-        orderLinePayments[payer][orderId][orderLineId].push(paymentId);
+        orderLinePayments[orderId][orderLineId].push(paymentId);
 
         emit PaymentTargetRegistered(paymentTargetId, paymentId, orderId, orderLineId);
     }
@@ -144,11 +144,11 @@ contract PaymentManager is AccessControl {
         payment.status = PaymentStatus.FINALIZED;
     }
 
-    function getOrderLinePayments(address payer, uint256 orderId, uint256 orderLineId) public view returns (uint256[] memory paymentIds) {
-        require(orderManager.tradeExists(payer, orderId), "Trying to retrieve an order that does not exist");
-        require(orderManager.tradeLineExists(payer, orderId, orderLineId), "Trying to retrieve an order line that does not exist");
+    function getOrderLinePayments(uint256 orderId, uint256 orderLineId) public view returns (uint256[] memory paymentIds) {
+        require(orderManager.tradeExists(orderId), "Trying to retrieve an order that does not exist");
+        require(orderManager.tradeLineExists(orderId, orderLineId), "Trying to retrieve an order line that does not exist");
 
-        return orderLinePayments[payer][orderId][orderLineId];
+        return orderLinePayments[orderId][orderLineId];
     }
 
     // ROLES

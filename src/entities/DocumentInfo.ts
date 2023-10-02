@@ -1,8 +1,6 @@
 export class DocumentInfo {
     private _id: number;
 
-    private _owner: string;
-
     private _transactionId: number;
 
     private _name: string;
@@ -11,9 +9,8 @@ export class DocumentInfo {
 
     private _externalUrl: string;
 
-    constructor(id: number, owner: string, transactionId: number, name: string, documentType: string, externalUrl: string) {
+    constructor(id: number, transactionId: number, name: string, documentType: string, externalUrl: string) {
         this._id = id;
-        this._owner = owner;
         this._transactionId = transactionId;
         this._name = name;
         this._documentType = documentType;
@@ -26,14 +23,6 @@ export class DocumentInfo {
 
     set id(value: number) {
         this._id = value;
-    }
-
-    get owner(): string {
-        return this._owner;
-    }
-
-    set owner(value: string) {
-        this._owner = value;
     }
 
     get transactionId(): number {

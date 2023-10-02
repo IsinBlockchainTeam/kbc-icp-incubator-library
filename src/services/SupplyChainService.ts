@@ -17,44 +17,44 @@ export class SupplyChainService {
         await this._supplyChainDriver.registerTransformation(companyAddress, name, inputMaterialsIds, outputMaterialId);
     }
 
-    async updateMaterial(companyAddress: string, id: number, name: string): Promise<void> {
-        await this._supplyChainDriver.updateMaterial(companyAddress, id, name);
+    async updateMaterial(id: number, name: string): Promise<void> {
+        await this._supplyChainDriver.updateMaterial(id, name);
     }
 
-    async updateTransformation(companyAddress: string, id: number, name: string, inputMaterialsIds: number[], outputMaterialId: number): Promise<void> {
-        await this._supplyChainDriver.updateTransformation(companyAddress, id, name, inputMaterialsIds, outputMaterialId);
+    async updateTransformation(id: number, name: string, inputMaterialsIds: number[], outputMaterialId: number): Promise<void> {
+        await this._supplyChainDriver.updateTransformation(id, name, inputMaterialsIds, outputMaterialId);
     }
 
-    async getMaterialsCounter(companyAddress: string): Promise<number> {
-        return this._supplyChainDriver.getMaterialsCounter(companyAddress);
+    async getMaterialsCounter(): Promise<number> {
+        return this._supplyChainDriver.getMaterialsCounter();
     }
 
-    async getTransformationsCounter(companyAddress: string): Promise<number> {
-        return this._supplyChainDriver.getTransformationsCounter(companyAddress);
+    async getTransformationsCounter(): Promise<number> {
+        return this._supplyChainDriver.getTransformationsCounter();
     }
 
-    async getMaterial(companyAddress: string, id: number): Promise<Material> {
-        return this._supplyChainDriver.getMaterial(companyAddress, id);
+    async getMaterial(id: number): Promise<Material> {
+        return this._supplyChainDriver.getMaterial(id);
     }
 
-    async getTransformation(companyAddress: string, id: number): Promise<Transformation> {
-        return this._supplyChainDriver.getTransformation(companyAddress, id);
+    async getTransformation(id: number): Promise<Transformation> {
+        return this._supplyChainDriver.getTransformation(id);
     }
 
-    async getMaterials(companyAddress: string): Promise<Material[]> {
+    async getMaterials(): Promise<Material[]> {
         const materials: Material[] = [];
-        const materialsCounter = await this._supplyChainDriver.getMaterialsCounter(companyAddress);
+        const materialsCounter = await this._supplyChainDriver.getMaterialsCounter();
         for (let i = 1; i <= materialsCounter; i++) {
-            materials.push(await this.getMaterial(companyAddress, i));
+            materials.push(await this.getMaterial(i));
         }
         return materials;
     }
 
-    async getTransformations(companyAddress: string): Promise<Transformation[]> {
+    async getTransformations(): Promise<Transformation[]> {
         const transformations: Transformation[] = [];
-        const transformationsCounter = await this._supplyChainDriver.getTransformationsCounter(companyAddress);
+        const transformationsCounter = await this._supplyChainDriver.getTransformationsCounter();
         for (let i = 1; i <= transformationsCounter; i++) {
-            transformations.push(await this.getTransformation(companyAddress, i));
+            transformations.push(await this.getTransformation(i));
         }
         return transformations;
     }

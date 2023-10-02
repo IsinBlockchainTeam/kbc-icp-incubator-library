@@ -69,6 +69,6 @@ describe('GraphService', () => {
         expect(findTransformationsByMaterialOutputSpy).toHaveBeenNthCalledWith(1, supplier, 2);
 
         expect(findTradesByMaterialOutputSpy).toHaveBeenCalledTimes(1);
-        expect(findTradesByMaterialOutputSpy).toHaveBeenNthCalledWith(1, supplier, transformations[1].inputMaterialsIds[0]);
+        expect(findTradesByMaterialOutputSpy).toHaveBeenNthCalledWith(1, supplier, transformations[1].inputMaterials[0]);
     });
 });

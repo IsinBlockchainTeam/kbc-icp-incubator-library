@@ -32,7 +32,7 @@ describe('TradeService', () => {
         registerBasicTrade: jest.fn(),
         tradeExists: jest.fn(),
         getBasicTradeInfo: jest.fn(),
-        getTradeCounter: jest.fn(),
+        getTradeIds: jest.fn(),
         addTradeLine: jest.fn(),
         updateTradeLine: jest.fn(),
         getTradeLine: jest.fn(),
@@ -87,7 +87,7 @@ describe('TradeService', () => {
         {
             serviceFunctionName: 'getTradeCounter',
             serviceFunction: () => tradeService.getTradeCounter(supplier),
-            expectedMockedFunction: mockedTradeDriver.getTradeCounter,
+            expectedMockedFunction: mockedTradeDriver.getTradeIds,
             expectedMockedFunctionArgs: [supplier],
         },
         {

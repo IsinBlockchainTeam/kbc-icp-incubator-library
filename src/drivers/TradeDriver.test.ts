@@ -204,13 +204,13 @@ describe('TradeDriver', () => {
 
     describe('getTradeCounter', () => {
         it('should get the order counter ids', async () => {
-            await tradeDriver.getTradeCounter(supplier.address);
+            await tradeDriver.getTradeIds(supplier.address);
             expect(mockedContract.getTradeCounter).toHaveBeenCalledTimes(1);
             expect(mockedContract.getTradeCounter).toHaveBeenNthCalledWith(1, supplier.address);
         });
 
         it('should get the order counter ids - fails for supplier address', async () => {
-            const fn = async () => tradeDriver.getTradeCounter('0xaddress');
+            const fn = async () => tradeDriver.getTradeIds('0xaddress');
             await expect(fn).rejects.toThrowError(new Error('Supplier not an address'));
         });
     });

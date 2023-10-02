@@ -11,7 +11,7 @@ contract DocumentManager is AccessControl {
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant ORDER_MANAGER_ROLE = keccak256("ORDER_MANAGER_ROLE");
 
-    event DocumentRegistered(uint256 indexed id, address owner, uint256 transactionId);
+    event DocumentRegistered(uint256 indexed id, uint256 transactionId);
 
     modifier onlyAdmin() {
         require(hasRole(ADMIN_ROLE, _msgSender()), "Caller is not the admin");
@@ -20,7 +20,6 @@ contract DocumentManager is AccessControl {
 
     struct Document {
         uint256 id;
-        address owner;
         uint256 transactionId;
         string name;
         string documentType;
@@ -29,12 +28,10 @@ contract DocumentManager is AccessControl {
         bool exists;
     }
 
-    // owner => transaction id => document id => document
-    mapping(address => mapping(uint256 => mapping(uint256 => Document))) private documents;
-    // owner => document counter
-    mapping(address => Counters.Counter) private documentsCounter;
-    // owner => transaction id => document ids
-    mapping(address => mapping(uint256 => uint256[])) private transactionDocuments;
+    // transaction id => document counter
+    mapping(uint256 => Counters.Counter) private documentsCounter;
+    // transaction id => document id => document
+    mapping(uint256 => mapping(uint256 => Document)) private documents;
 
     EnumerableType documentTypeManager;
 
@@ -50,45 +47,38 @@ contract DocumentManager is AccessControl {
         documentTypeManager = EnumerableType(documentTypeManagerAddress);
     }
 
-    function registerDocument(address owner, uint256 transactionId, string memory name, string memory documentType, string memory externalUrl) public {
+    function registerDocument(uint256 transactionId, string memory name, string memory documentType, string memory externalUrl) public {
         require(hasRole(ADMIN_ROLE, msg.sender) || hasRole(ORDER_MANAGER_ROLE, msg.sender), "Sender has no permissions");
         require(documentTypeManager.contains(documentType), "The document type isn't registered");
 
-        Counters.Counter storage documentCounter = documentsCounter[owner];
+        Counters.Counter storage documentCounter = documentsCounter[transactionId];
         uint256 documentId = documentCounter.current() + 1;
         documentCounter.increment();
 
-        Document storage newDocument = documents[owner][transactionId][documentId];
+        Document storage newDocument = documents[transactionId][documentId];
         newDocument.id = documentId;
-        newDocument.owner = owner;
         newDocument.transactionId = transactionId;
         newDocument.name = name;
         newDocument.documentType = documentType;
         newDocument.externalUrl = externalUrl;
         newDocument.exists = true;
 
-        transactionDocuments[owner][transactionId].push(documentId);
-
-        emit DocumentRegistered(documentId, owner, transactionId);
+        emit DocumentRegistered(documentId, transactionId);
     }
 
-    function getDocumentCounter(address owner) public view returns (uint256 counter) {
-        return documentsCounter[owner].current();
+    function getDocumentCounterByTransactionId(uint256 transactionId) public view returns (uint256 counter) {
+        return documentsCounter[transactionId].current();
     }
 
-    function documentExists(address owner, uint256 transactionId, uint256 documentId) public view returns (bool) {
-        return documents[owner][transactionId][documentId].exists;
+    function documentExists(uint256 transactionId, uint256 documentId) public view returns (bool) {
+        return documents[transactionId][documentId].exists;
     }
 
-    function getDocumentInfo(address owner, uint256 transactionId, uint256 documentId) public view returns (Document memory) {
-        Document memory document = documents[owner][transactionId][documentId];
+    function getDocumentInfo(uint256 transactionId, uint256 documentId) public view returns (Document memory) {
+        Document memory document = documents[transactionId][documentId];
         require(document.exists, "Document does not exist");
 
         return document;
-    }
-
-    function getTransactionDocumentIds(address owner, uint256 transactionId) public view returns (uint256[] memory) {
-        return transactionDocuments[owner][transactionId];
     }
 
     // ROLES
