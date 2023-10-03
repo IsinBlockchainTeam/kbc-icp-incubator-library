@@ -49,13 +49,12 @@ export class GraphService {
             acc.set(curr, lines);
             return acc;
         }, Promise.resolve(new Map<Trade, TradeLine[]>()));
-        // get only trades in which in the relative lines, as contractor material (materialIds[1]), there is one with 'materialId' value
+        // get only trades in which in the relative lines, as consignee material (materialIds[1]), there is one with 'materialId' value
         return new Map(Array.from(tradesWithLines).filter(([_, lines]) => lines.flatMap((l) => l.materialIds[1]).includes(materialId)));
     }
 
     public async computeGraph(supplierAddress: string, materialId: number, partialGraphData: GraphData = { nodes: [], edges: [] }): Promise<GraphData> {
         const transformations = await this.findTransformationsByMaterialOutput(supplierAddress, materialId);
-        console.log('transformations: ', transformations);
         if (transformations.length === 0) { return partialGraphData; }
         if (transformations.length > 1) {
             throw new Error(`Multiple transformations found for material id ${materialId}`);
@@ -67,17 +66,19 @@ export class GraphService {
 
         await Promise.all(transformations[0].inputMaterials.map(async (transformationInputMaterial) => {
             const tradesWithLines = await this.findTradesByMaterialOutput(transformationInputMaterial.id);
-            console.log('tradesWithLines: ', tradesWithLines);
             if (tradesWithLines.size === 0) { return partialGraphData; }
 
-            // TODO: qui insieme all'id del materiale, tenere anche l'address dell'azienda che lo possiede, in modo tale da richiamare dopo computeGraph passandogli il nuovo address
+            const idsAlreadyPresent: number[] = [];
             const involvedTradeMaterialInputIds = Array.from(tradesWithLines)
                 .filter(([_, lines]) => lines.flatMap((l) => l.materialIds[1]).includes(transformationInputMaterial.id))
                 .reduce((acc, curr) => {
-                    acc.set(curr[0], curr[1].map((tl) => tl.materialIds[0]));
+                    const materialIds = curr[1].map((tl) => tl.materialIds[0]).filter((id) => !idsAlreadyPresent.includes(id));
+                    if (materialIds.length) {
+                        acc.set(curr[0], materialIds);
+                        idsAlreadyPresent.push(...materialIds);
+                    }
                     return acc;
                 }, new Map<Trade, number[]>());
-            console.log('involvedTradeMaterialInputIds: ', involvedTradeMaterialInputIds);
             // const involvedMaterialInputIds = [...new Set(Array.from(tradesWithLines.values())
             //     .flat()
             //     .map((tl) => tl.materialIds)

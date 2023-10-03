@@ -34,7 +34,7 @@ contract TradeManager is AccessControl {
     struct TradeLine {
         // -------- BASIC TRADE LINE INFORMATION -------------
         uint256 id;
-        uint256[2] materialIds; // [consigneeMaterialInId, contractorMaterialOutId]
+        uint256[2] materialIds; // [contractorMaterialOutId, consigneeMaterialInId]
         string productCategory;
         // -----------------------------------------------------
 

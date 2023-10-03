@@ -60,8 +60,7 @@ contract SupplyChainManager {
         transformationsCounter.increment();
         for (uint256 i = 0; i < inputMaterialsIds.length; ++i) {
             Material memory m = getMaterial(inputMaterialsIds[i]);
-            require(m.exists, "Material does not exist");
-            materials[i] = m;
+            inputMaterials[i] = m;
         }
         transformations[transformationId] = Transformation(transformationId, name, inputMaterials, outputMaterialId, company, true);
 
