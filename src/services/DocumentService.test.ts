@@ -16,10 +16,9 @@ describe('DocumentService', () => {
 
     const mockedDocumentDriver = createMock<DocumentDriver>({
         registerDocument: jest.fn(),
-        getDocumentCounterByTransactionId: jest.fn(),
+        getDocumentsCounterByTransactionId: jest.fn(),
         documentExists: jest.fn(),
         getDocumentInfo: jest.fn(),
-        getTransactionDocumentIds: jest.fn(),
         addAdmin: jest.fn(),
         removeAdmin: jest.fn(),
         addOrderManager: jest.fn(),
@@ -41,33 +40,27 @@ describe('DocumentService', () => {
     it.each([
         {
             serviceFunctionName: 'registerDocument',
-            serviceFunction: () => documentService.registerDocument(owner, transactionId, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl),
+            serviceFunction: () => documentService.registerDocument(transactionId, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl),
             expectedMockedFunction: mockedDocumentDriver.registerDocument,
-            expectedMockedFunctionArgs: [owner, transactionId, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl],
-        },
-        {
-            serviceFunctionName: 'getDocumentCounter',
-            serviceFunction: () => documentService.getDocumentCounterByTransactionId(owner),
-            expectedMockedFunction: mockedDocumentDriver.getDocumentCounterByTransactionId,
-            expectedMockedFunctionArgs: [owner],
+            expectedMockedFunctionArgs: [transactionId, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl],
         },
         {
             serviceFunctionName: 'documentExists',
-            serviceFunction: () => documentService.documentExists(owner, transactionId, documentId),
+            serviceFunction: () => documentService.documentExists(transactionId, documentId),
             expectedMockedFunction: mockedDocumentDriver.documentExists,
-            expectedMockedFunctionArgs: [owner, transactionId, documentId],
+            expectedMockedFunctionArgs: [transactionId, documentId],
         },
         {
             serviceFunctionName: 'getDocumentInfo',
-            serviceFunction: () => documentService.getDocumentInfo(owner, transactionId, documentId),
+            serviceFunction: () => documentService.getDocumentInfo(transactionId, documentId),
             expectedMockedFunction: mockedDocumentDriver.getDocumentInfo,
-            expectedMockedFunctionArgs: [owner, transactionId, documentId],
+            expectedMockedFunctionArgs: [transactionId, documentId],
         },
         {
-            serviceFunctionName: 'getTransactionDocumentIds',
-            serviceFunction: () => documentService.getTransactionDocumentIds(owner, transactionId),
-            expectedMockedFunction: mockedDocumentDriver.getTransactionDocumentIds,
-            expectedMockedFunctionArgs: [owner, transactionId],
+            serviceFunctionName: 'getDocumentsCounterByTransactionId',
+            serviceFunction: () => documentService.getDocumentsCounterByTransactionId(transactionId),
+            expectedMockedFunction: mockedDocumentDriver.getDocumentsCounterByTransactionId,
+            expectedMockedFunctionArgs: [transactionId],
         },
         {
             serviceFunctionName: 'addAdmin',
@@ -100,16 +93,16 @@ describe('DocumentService', () => {
         expect(expectedMockedFunction).toHaveBeenNthCalledWith(1, ...expectedMockedFunctionArgs);
     });
 
-    it('should get documents by transaction', async () => {
-        mockedDocumentDriver.getTransactionDocumentIds = jest.fn().mockResolvedValue([1, 2]);
-        await documentService.getDocumentsInfoByTransaction(owner, transactionId);
+    it('should get documents info by transaction', async () => {
+        mockedDocumentDriver.getDocumentsCounterByTransactionId = jest.fn().mockResolvedValue([1, 2]);
+        await documentService.getDocumentsInfoByTransaction(transactionId);
 
-        expect(mockedDocumentDriver.getTransactionDocumentIds).toHaveBeenCalledTimes(1);
-        expect(mockedDocumentDriver.getTransactionDocumentIds).toHaveBeenNthCalledWith(1, owner, transactionId);
+        expect(mockedDocumentDriver.getDocumentsCounterByTransactionId).toHaveBeenCalledTimes(1);
+        expect(mockedDocumentDriver.getDocumentsCounterByTransactionId).toHaveBeenNthCalledWith(1, transactionId);
 
         expect(mockedDocumentDriver.getDocumentInfo).toHaveBeenCalledTimes(2);
-        expect(mockedDocumentDriver.getDocumentInfo).toHaveBeenNthCalledWith(1, owner, transactionId, 1);
-        expect(mockedDocumentDriver.getDocumentInfo).toHaveBeenNthCalledWith(2, owner, transactionId, 2);
+        expect(mockedDocumentDriver.getDocumentInfo).toHaveBeenNthCalledWith(1, transactionId, 1);
+        expect(mockedDocumentDriver.getDocumentInfo).toHaveBeenNthCalledWith(2, transactionId, 2);
     });
 
     it('should get complete document with file retrieved from IPFS', async () => {
@@ -117,7 +110,7 @@ describe('DocumentService', () => {
             mockedDocumentDriver, mockedIPFSService,
         );
         mockedIPFSService.retrieveJSON = jest.fn().mockResolvedValue({ filename: 'file1.pdf', fileUrl: 'fileUrl' });
-        const documentInfo = new DocumentInfo(0, 'owner', 1, 'doc name', 'doc type', 'metadataExternalUrl');
+        const documentInfo = new DocumentInfo(0, 1, 'doc name', 'doc type', 'metadataExternalUrl');
         await documentService.getCompleteDocument(documentInfo);
 
         expect(mockedIPFSService.retrieveJSON).toHaveBeenCalledTimes(1);
@@ -131,7 +124,7 @@ describe('DocumentService', () => {
         documentService = new DocumentService(
             mockedDocumentDriver,
         );
-        const documentInfo = new DocumentInfo(0, 'owner', 1, 'doc name', 'doc type', 'metadataExternalUrl');
+        const documentInfo = new DocumentInfo(0, 1, 'doc name', 'doc type', 'metadataExternalUrl');
         const fn = async () => documentService.getCompleteDocument(documentInfo);
         await expect(fn).rejects.toThrowError(new Error('IPFS Service not available'));
     });

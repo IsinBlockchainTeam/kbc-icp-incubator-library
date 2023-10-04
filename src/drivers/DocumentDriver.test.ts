@@ -43,10 +43,9 @@ describe('DocumentDriver', () => {
 
         mockedContract = createMock<DocumentManager>({
             registerDocument: mockedWriteFunction,
-            getDocumentCounter: mockedReadFunction,
+            getDocumentsCounterByTransactionId: mockedReadFunction,
             documentExists: mockedReadFunction,
             getDocumentInfo: mockedReadFunction,
-            getTransactionDocumentIds: mockedReadFunction,
             addAdmin: mockedWriteFunction,
             removeAdmin: mockedWriteFunction,
             addOrderManager: mockedWriteFunction,
@@ -76,66 +75,48 @@ describe('DocumentDriver', () => {
 
     describe('registerDocument', () => {
         it('should call and wait for register document', async () => {
-            await documentDriver.registerDocument(owner.address, transactionId, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
+            await documentDriver.registerDocument(transactionId, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
 
             expect(mockedContract.registerDocument).toHaveBeenCalledTimes(1);
-            expect(mockedContract.registerDocument).toHaveBeenNthCalledWith(
-                1,
-                owner.address, transactionId, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl,
-            );
+            expect(mockedContract.registerDocument).toHaveBeenNthCalledWith(1, transactionId, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 
         it('should call and wait for register document - transaction fails', async () => {
             mockedContract.registerDocument = jest.fn().mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => documentDriver.registerDocument(owner.address, transactionId, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
+            const fn = async () => documentDriver.registerDocument(transactionId, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
             await expect(fn).rejects.toThrowError(new Error(errorMessage));
-        });
-
-        it('should call and wait for register document - FAIL (Owner not an address)', async () => {
-            const fn = async () => documentDriver.registerDocument('0xaddress', transactionId, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
-            await expect(fn).rejects.toThrowError(new Error('Owner not an address'));
         });
     });
 
-    describe('getDocumentCounter', () => {
-        it('should get the document counter ids', async () => {
-            await documentDriver.getDocumentCounterByTransactionId(owner.address);
-            expect(mockedContract.getDocumentCounter).toHaveBeenCalledTimes(1);
-            expect(mockedContract.getDocumentCounter).toHaveBeenNthCalledWith(1, owner.address);
+    describe('getDocumentCounterByTransactionId', () => {
+        it('should get the document counter by transaction id', async () => {
+            await documentDriver.getDocumentsCounterByTransactionId(2);
+            expect(mockedContract.getDocumentsCounterByTransactionId).toHaveBeenCalledTimes(1);
+            expect(mockedContract.getDocumentsCounterByTransactionId).toHaveBeenNthCalledWith(1, 2);
         });
 
-        it('should retrieve document - transaction fails', async () => {
-            mockedContract.getDocumentCounter = jest.fn().mockRejectedValue(new Error(errorMessage));
+        it('should retrieve document counter - transaction fails', async () => {
+            mockedContract.getDocumentsCounterByTransactionId = jest.fn().mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => documentDriver.getDocumentCounterByTransactionId(owner.address);
+            const fn = async () => documentDriver.getDocumentsCounterByTransactionId(2);
             await expect(fn).rejects.toThrowError(new Error(errorMessage));
-        });
-
-        it('should get the document counter ids - FAIL (Owner not an address)', async () => {
-            const fn = async () => documentDriver.getDocumentCounterByTransactionId('0xaddress');
-            await expect(fn).rejects.toThrowError(new Error('Owner not an address'));
         });
     });
 
     describe('documentExists', () => {
         it('should check if document exists', async () => {
-            await documentDriver.documentExists(owner.address, transactionId, documentId);
+            await documentDriver.documentExists(transactionId, documentId);
             expect(mockedContract.documentExists).toHaveBeenCalledTimes(1);
-            expect(mockedContract.documentExists).toHaveBeenNthCalledWith(1, owner.address, transactionId, documentId);
+            expect(mockedContract.documentExists).toHaveBeenNthCalledWith(1, transactionId, documentId);
         });
 
         it('should check if document exists - transaction fails', async () => {
             mockedContract.documentExists = jest.fn().mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => documentDriver.documentExists(owner.address, transactionId, documentId);
+            const fn = async () => documentDriver.documentExists(transactionId, documentId);
             await expect(fn).rejects.toThrowError(new Error(errorMessage));
-        });
-
-        it('should check if document exists - FAIL (Owner not an address)', async () => {
-            const fn = async () => documentDriver.documentExists('0xaddress', transactionId, documentId);
-            await expect(fn).rejects.toThrowError(new Error('Owner not an address'));
         });
     });
 
@@ -143,50 +124,19 @@ describe('DocumentDriver', () => {
         it('should retrieve document', async () => {
             mockedContract.getDocumentInfo = jest.fn().mockResolvedValue(mockedDocument);
 
-            const resp = await documentDriver.getDocumentInfo(owner.address, transactionId, documentId);
+            const resp = await documentDriver.getDocumentInfo(transactionId, documentId);
 
             expect(resp).toEqual(mockedDocument);
 
             expect(mockedContract.getDocumentInfo).toHaveBeenCalledTimes(1);
-            expect(mockedContract.getDocumentInfo).toHaveBeenNthCalledWith(
-                1,
-                owner.address, transactionId, documentId,
-            );
+            expect(mockedContract.getDocumentInfo).toHaveBeenNthCalledWith(1, transactionId, documentId);
         });
 
         it('should retrieve document - transaction fails', async () => {
             mockedContract.getDocumentInfo = jest.fn().mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => documentDriver.getDocumentInfo(owner.address, transactionId, documentId);
+            const fn = async () => documentDriver.getDocumentInfo(transactionId, documentId);
             await expect(fn).rejects.toThrowError(new Error(errorMessage));
-        });
-
-        it('should retrieve document - FAIL (Owner not an address)', async () => {
-            const fn = async () => documentDriver.getDocumentInfo('0xaddress', transactionId, documentId);
-            await expect(fn).rejects.toThrowError(new Error('Owner not an address'));
-        });
-    });
-
-    describe('getTransactionDocumentIds', () => {
-        it('should retrieve document ids by owner address and transaction id', async () => {
-            mockedContract.getTransactionDocumentIds = jest.fn().mockResolvedValue([{ toNumber: () => 1 }, { toNumber: () => 2 }]);
-
-            const resp = await documentDriver.getTransactionDocumentIds(owner.address, transactionId);
-            expect(resp).toEqual([1, 2]);
-            expect(mockedContract.getTransactionDocumentIds).toHaveBeenCalledTimes(1);
-            expect(mockedContract.getTransactionDocumentIds).toHaveBeenNthCalledWith(1, owner.address, transactionId);
-        });
-
-        it('should retrieve document ids by company address - transaction fails', async () => {
-            mockedContract.getTransactionDocumentIds = jest.fn().mockRejectedValue(new Error(errorMessage));
-
-            const fn = async () => documentDriver.getTransactionDocumentIds(owner.address, transactionId);
-            await expect(fn).rejects.toThrowError(new Error(errorMessage));
-        });
-
-        it('should retrieve document ids by company address - FAIL (Owner not an address)', async () => {
-            const fn = async () => documentDriver.getTransactionDocumentIds('0xaddress', transactionId);
-            await expect(fn).rejects.toThrowError(new Error('Owner not an address'));
         });
     });
 

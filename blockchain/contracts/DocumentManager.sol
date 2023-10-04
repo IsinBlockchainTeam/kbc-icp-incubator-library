@@ -66,7 +66,7 @@ contract DocumentManager is AccessControl {
         emit DocumentRegistered(documentId, transactionId);
     }
 
-    function getDocumentCounterByTransactionId(uint256 transactionId) public view returns (uint256 counter) {
+    function getDocumentsCounterByTransactionId(uint256 transactionId) public view returns (uint256 counter) {
         return documentsCounter[transactionId].current();
     }
 

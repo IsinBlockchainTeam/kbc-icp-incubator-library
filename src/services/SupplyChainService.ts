@@ -41,20 +41,20 @@ export class SupplyChainService {
         return this._supplyChainDriver.getTransformation(id);
     }
 
-    async getMaterials(): Promise<Material[]> {
+    async getMaterials(owner: string): Promise<Material[]> {
         const materials: Material[] = [];
-        const materialsCounter = await this._supplyChainDriver.getMaterialsCounter();
-        for (let i = 1; i <= materialsCounter; i++) {
-            materials.push(await this.getMaterial(i));
+        const materialIds = await this._supplyChainDriver.getMaterialIds(owner);
+        for (let i = 0; i < materialIds.length; i++) {
+            materials.push(await this.getMaterial(materialIds[i]));
         }
         return materials;
     }
 
-    async getTransformations(): Promise<Transformation[]> {
+    async getTransformations(owner: string): Promise<Transformation[]> {
         const transformations: Transformation[] = [];
-        const transformationsCounter = await this._supplyChainDriver.getTransformationsCounter();
-        for (let i = 1; i <= transformationsCounter; i++) {
-            transformations.push(await this.getTransformation(i));
+        const transformationIds = await this._supplyChainDriver.getTransformationIds(owner);
+        for (let i = 0; i < transformationIds.length; i++) {
+            transformations.push(await this.getTransformation(transformationIds[i]));
         }
         return transformations;
     }

@@ -13,12 +13,12 @@ export class DocumentService {
         this._ipfsService = ipfsService;
     }
 
-    async registerDocument(ownerAddress: string, transactionId: number, name: string, documentType: string, externalUrl: string): Promise<void> {
-        await this._documentDriver.registerDocument(ownerAddress, transactionId, name, documentType, externalUrl);
+    async registerDocument(transactionId: number, name: string, documentType: string, externalUrl: string): Promise<void> {
+        await this._documentDriver.registerDocument(transactionId, name, documentType, externalUrl);
     }
 
-    async getDocumentCounterByTransactionId(transactionId: number): Promise<number> {
-        return this._documentDriver.getDocumentCounterByTransactionId(transactionId);
+    async getDocumentsCounterByTransactionId(transactionId: number): Promise<number> {
+        return this._documentDriver.getDocumentsCounterByTransactionId(transactionId);
     }
 
     async documentExists(transactionId: number, documentId: number): Promise<boolean> {
@@ -42,8 +42,8 @@ export class DocumentService {
     }
 
     async getDocumentsInfoByTransaction(transactionId: number): Promise<DocumentInfo[]> {
-        const counter = await this.getDocumentCounterByTransactionId(transactionId);
-        return Promise.all(new Array(counter).map(async (id) => this.getDocumentInfo(transactionId, id + 1)));
+        const counter = await this.getDocumentsCounterByTransactionId(transactionId);
+        return Promise.all(Array.from({ length: counter }, (_, index) => index + 1).map(async (id) => this.getDocumentInfo(transactionId, id)));
     }
 
     async addAdmin(address: string): Promise<void> {

@@ -4,12 +4,11 @@ describe('Document', () => {
     let documentInfo: DocumentInfo;
 
     beforeAll(() => {
-        documentInfo = new DocumentInfo(0, 'owner', 1, 'doc name', 'doc type', 'metadataExternalUrl');
+        documentInfo = new DocumentInfo(0, 1, 'doc name', 'doc type', 'metadataExternalUrl');
     });
 
     it('should correctly initialize a new DocumentInfo', () => {
         expect(documentInfo.id).toEqual(0);
-        expect(documentInfo.owner).toEqual('owner');
         expect(documentInfo.transactionId).toEqual(1);
         expect(documentInfo.name).toEqual('doc name');
         expect(documentInfo.documentType).toEqual('doc type');
@@ -18,11 +17,6 @@ describe('Document', () => {
     it('should correctly set the id', () => {
         documentInfo.id = 1;
         expect(documentInfo.id).toEqual(1);
-    });
-
-    it('should correctly set the owner', () => {
-        documentInfo.owner = 'owner 2';
-        expect(documentInfo.owner).toEqual('owner 2');
     });
 
     it('should correctly set the transactionId', () => {

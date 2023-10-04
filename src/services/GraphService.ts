@@ -31,12 +31,12 @@ export class GraphService {
     }
 
     public async findTransformationsByMaterialOutput(supplierAddress: string, materialId: number): Promise<Transformation[]> {
-        const transformations = await this._supplyChainService.getTransformations();
+        const transformations = await this._supplyChainService.getTransformations(supplierAddress);
         return transformations.filter((t) => t.outputMaterialId === materialId);
     }
 
-    public async findTradesByMaterialOutput(materialId: number): Promise<Map<Trade, (TradeLine | OrderLine)[]>> {
-        const trades = await this._tradeService.getGeneralTrades();
+    public async findTradesByMaterialOutput(supplierAddress: string, materialId: number): Promise<Map<Trade, (TradeLine | OrderLine)[]>> {
+        const trades = await this._tradeService.getGeneralTrades(supplierAddress);
         const tradesWithLines = await trades.reduce(async (accPromise, curr: Trade) => {
             const acc = await accPromise;
             if (curr.type === undefined) return acc;
@@ -54,6 +54,7 @@ export class GraphService {
     }
 
     public async computeGraph(supplierAddress: string, materialId: number, partialGraphData: GraphData = { nodes: [], edges: [] }): Promise<GraphData> {
+        // TODO: quando arriva un trade in ingresso per cui c'è un materiale, non posso vedere la sua chain dal momento che l'utente loggato non sarà l'owner della relativa trasformazione
         const transformations = await this.findTransformationsByMaterialOutput(supplierAddress, materialId);
         if (transformations.length === 0) { return partialGraphData; }
         if (transformations.length > 1) {
@@ -65,7 +66,7 @@ export class GraphService {
         });
 
         await Promise.all(transformations[0].inputMaterials.map(async (transformationInputMaterial) => {
-            const tradesWithLines = await this.findTradesByMaterialOutput(transformationInputMaterial.id);
+            const tradesWithLines = await this.findTradesByMaterialOutput(supplierAddress, transformationInputMaterial.id);
             if (tradesWithLines.size === 0) { return partialGraphData; }
 
             const idsAlreadyPresent: number[] = [];
@@ -125,5 +126,5 @@ export class GraphService {
     }
 
     // @ts-ignore
-    private getGraphEntityId(t: Transformation | Trade): string { return `${t.owner || t.supplier}_${t.id}`; }
+    private getGraphEntityId(t: Transformation | Trade): string { return t.owner ? `${t.owner}_transformation_${t.id}` : `${t.supplier}_trade_${t.id}`; }
 }

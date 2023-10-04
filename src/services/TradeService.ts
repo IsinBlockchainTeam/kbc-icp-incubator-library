@@ -55,11 +55,11 @@ export class TradeService {
         return this._tradeDriver.getTradeIds(supplierAddress);
     }
 
-    async getGeneralTrades(): Promise<Trade[]> {
+    async getGeneralTrades(supplierAddress: string): Promise<Trade[]> {
         const trades: Trade[] = [];
-        const tradesCounter = await this.getCounter();
-        for (let i = 1; i <= tradesCounter; i++)
-            trades.push(await this.getGeneralTrade(i));
+        const tradeIds = await this.getTradeIds(supplierAddress);
+        for (let i = 0; i < tradeIds.length; i++)
+            trades.push(await this.getGeneralTrade(tradeIds[i]));
         return trades;
     }
 

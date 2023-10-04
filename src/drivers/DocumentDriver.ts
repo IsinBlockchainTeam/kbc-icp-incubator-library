@@ -18,9 +18,7 @@ export class DocumentDriver {
             .connect(signer);
     }
 
-    async registerDocument(ownerAddress: string, transactionId: number, name: string, documentType: string, externalUrl: string): Promise<void> {
-        if (!utils.isAddress(ownerAddress)) throw new Error('Owner not an address');
-
+    async registerDocument(transactionId: number, name: string, documentType: string, externalUrl: string): Promise<void> {
         try {
             const tx = await this._contract.registerDocument(transactionId, name, documentType, externalUrl);
             await tx.wait();
@@ -29,9 +27,9 @@ export class DocumentDriver {
         }
     }
 
-    async getDocumentCounterByTransactionId(transactionId: number): Promise<number> {
+    async getDocumentsCounterByTransactionId(transactionId: number): Promise<number> {
         try {
-            const counter = await this._contract.getDocumentCounterByTransactionId(transactionId);
+            const counter = await this._contract.getDocumentsCounterByTransactionId(transactionId);
             return counter.toNumber();
         } catch (e: any) {
             throw new Error(e.message);

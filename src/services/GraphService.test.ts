@@ -5,10 +5,17 @@ import { Trade, TradeType } from '../entities/Trade';
 import TradeService from './TradeService';
 import { SupplyChainService } from './SupplyChainService';
 import { TradeLine } from '../entities/TradeLine';
+import { Material } from '../entities/Material';
 
 describe('GraphService', () => {
     let graphService: GraphService;
 
+    const materials = [
+        new Material(1, 'material1', 'owner'),
+        new Material(2, 'material2', 'owner'),
+        new Material(3, 'material3', 'owner'),
+        new Material(4, 'material4', 'owner'),
+    ];
     const trades = [
         new Trade(1, 'supplier', 'customer', 'externalUrl', [2, 7], TradeType.TRADE),
         new Trade(2, 'supplier', 'customer', 'externalUrl', [4, 8], TradeType.ORDER),
@@ -19,8 +26,8 @@ describe('GraphService', () => {
         new TradeLine(4, [8, 7], 'categoryC'),
     ];
     const transformations = [
-        new Transformation(1, 'transformation', [1], 2, 'transformationOwner'),
-        new Transformation(2, 'transformation', [3], 4, 'transformationOwner'),
+        new Transformation(1, 'transformation', [materials[0]], 2, 'transformationOwner'),
+        new Transformation(2, 'transformation', [materials[2]], 4, 'transformationOwner'),
     ];
 
     const supplier = '0xsupplier_address';
@@ -54,10 +61,10 @@ describe('GraphService', () => {
         expect(mockedTradeService.getGeneralTrades).toHaveBeenNthCalledWith(1, supplier);
 
         expect(mockedTradeService.getTradeLines).toHaveBeenCalledTimes(1);
-        expect(mockedTradeService.getTradeLines).toHaveBeenNthCalledWith(1, supplier, trades[0].id);
+        expect(mockedTradeService.getTradeLines).toHaveBeenNthCalledWith(1, trades[0].id);
 
         expect(mockedTradeService.getOrderLines).toHaveBeenCalledTimes(1);
-        expect(mockedTradeService.getOrderLines).toHaveBeenNthCalledWith(1, supplier, trades[1].id);
+        expect(mockedTradeService.getOrderLines).toHaveBeenNthCalledWith(1, trades[1].id);
     });
 
     it('computeGraph', async () => {

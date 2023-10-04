@@ -303,7 +303,6 @@ contract TradeManager is AccessControl {
         documentManager.registerDocument(tradeId, name, documentType, externalUrl);
     }
 
-
     function getNegotiationStatus(uint256 orderId) public view returns (NegotiationStatus orderStatus) {
         Trade storage o = trades[orderId];
         require(o.exists, "Order does not exist");

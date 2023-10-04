@@ -31,6 +31,8 @@ describe('TradeService', () => {
     const mockedTradeDriver: TradeDriver = createMock<TradeDriver>({
         registerBasicTrade: jest.fn(),
         tradeExists: jest.fn(),
+        getCounter: jest.fn(),
+        getGeneralTrade: jest.fn(),
         getBasicTradeInfo: jest.fn(),
         getTradeIds: jest.fn(),
         addTradeLine: jest.fn(),
@@ -74,45 +76,63 @@ describe('TradeService', () => {
         },
         {
             serviceFunctionName: 'tradeExists',
-            serviceFunction: () => tradeService.tradeExists(supplier, 1),
+            serviceFunction: () => tradeService.tradeExists(1),
             expectedMockedFunction: mockedTradeDriver.tradeExists,
-            expectedMockedFunctionArgs: [supplier, 1],
+            expectedMockedFunctionArgs: [1],
+        },
+        {
+            serviceFunctionName: 'getCounter',
+            serviceFunction: () => tradeService.getCounter(),
+            expectedMockedFunction: mockedTradeDriver.getCounter,
+            expectedMockedFunctionArgs: [],
+        },
+        {
+            serviceFunctionName: 'getGeneralTrade',
+            serviceFunction: () => tradeService.getGeneralTrade(1),
+            expectedMockedFunction: mockedTradeDriver.getGeneralTrade,
+            expectedMockedFunctionArgs: [1, undefined],
+        },
+        {
+            serviceFunctionName: 'getGeneralTrade',
+            serviceFunction: () => tradeService.getGeneralTrade(1, 15),
+            expectedMockedFunction: mockedTradeDriver.getGeneralTrade,
+            expectedMockedFunctionArgs: [1, 15],
         },
         {
             serviceFunctionName: 'getBasicTradeInfo',
-            serviceFunction: () => tradeService.getBasicTradeInfo(supplier, 1),
+            serviceFunction: () => tradeService.getBasicTradeInfo(1),
             expectedMockedFunction: mockedTradeDriver.getBasicTradeInfo,
-            expectedMockedFunctionArgs: [supplier, 1, undefined],
+            expectedMockedFunctionArgs: [1, undefined],
         },
         {
-            serviceFunctionName: 'getTradeCounter',
-            serviceFunction: () => tradeService.getTradeCounter(supplier),
+            serviceFunctionName: 'getTradeIds',
+            serviceFunction: () => tradeService.getTradeIds(supplier),
             expectedMockedFunction: mockedTradeDriver.getTradeIds,
             expectedMockedFunctionArgs: [supplier],
         },
         {
             serviceFunctionName: 'addTradeLine',
-            serviceFunction: () => tradeService.addTradeLine(supplier, 1, [1, 2], productCategory),
+            serviceFunction: () => tradeService.addTradeLine(1, [1, 2], productCategory),
             expectedMockedFunction: mockedTradeDriver.addTradeLine,
-            expectedMockedFunctionArgs: [supplier, 1, [1, 2], productCategory],
+            expectedMockedFunctionArgs: [1, [1, 2], productCategory],
         },
         {
             serviceFunctionName: 'updateTradeLine',
-            serviceFunction: () => tradeService.updateTradeLine(supplier, 1, 2, [3, 4], productCategory),
+            serviceFunction: () => tradeService.updateTradeLine(1, 2, [3, 4], productCategory),
             expectedMockedFunction: mockedTradeDriver.updateTradeLine,
-            expectedMockedFunctionArgs: [supplier, 1, 2, [3, 4], productCategory],
+            expectedMockedFunctionArgs: [1, 2, [3, 4], productCategory],
         },
         {
             serviceFunctionName: 'getTradeLine',
-            serviceFunction: () => tradeService.getTradeLine(supplier, 1, 2),
+            serviceFunction: () => tradeService.getTradeLine(1, 2),
             expectedMockedFunction: mockedTradeDriver.getTradeLine,
-            expectedMockedFunctionArgs: [supplier, 1, 2],
+            expectedMockedFunctionArgs: [1, 2],
         },
         {
             serviceFunctionName: 'tradeLineExists',
-            serviceFunction: () => tradeService.tradeLineExists(supplier, 1, 2),
+            serviceFunction: () => tradeService.tradeLineExists(1, 2),
             expectedMockedFunction: mockedTradeDriver.tradeLineExists,
-            expectedMockedFunctionArgs: [supplier, 1, 2],
+            expectedMockedFunctionArgs: [1, 2],
         },
         {
             serviceFunctionName: 'registerOrder',
@@ -122,87 +142,87 @@ describe('TradeService', () => {
         },
         {
             serviceFunctionName: 'addOrderOfferee',
-            serviceFunction: () => tradeService.addOrderOfferee(supplier, 1, 'offeree'),
+            serviceFunction: () => tradeService.addOrderOfferee(1, 'offeree'),
             expectedMockedFunction: mockedTradeDriver.addOrderOfferee,
-            expectedMockedFunctionArgs: [supplier, 1, 'offeree'],
+            expectedMockedFunctionArgs: [1, 'offeree'],
         },
         {
             serviceFunctionName: 'setOrderPaymentDeadline',
-            serviceFunction: () => tradeService.setOrderPaymentDeadline(supplier, 1, deadline),
+            serviceFunction: () => tradeService.setOrderPaymentDeadline(1, deadline),
             expectedMockedFunction: mockedTradeDriver.setOrderPaymentDeadline,
-            expectedMockedFunctionArgs: [supplier, 1, deadline],
+            expectedMockedFunctionArgs: [1, deadline],
         },
         {
             serviceFunctionName: 'setOrderDocumentDeliveryDeadline',
-            serviceFunction: () => tradeService.setOrderDocumentDeliveryDeadline(supplier, 1, deadline),
+            serviceFunction: () => tradeService.setOrderDocumentDeliveryDeadline(1, deadline),
             expectedMockedFunction: mockedTradeDriver.setOrderDocumentDeliveryDeadline,
-            expectedMockedFunctionArgs: [supplier, 1, deadline],
+            expectedMockedFunctionArgs: [1, deadline],
         },
         {
             serviceFunctionName: 'setOrderArbiter',
-            serviceFunction: () => tradeService.setOrderArbiter(supplier, 1, 'arbiter'),
+            serviceFunction: () => tradeService.setOrderArbiter(1, 'arbiter'),
             expectedMockedFunction: mockedTradeDriver.setOrderArbiter,
-            expectedMockedFunctionArgs: [supplier, 1, 'arbiter'],
+            expectedMockedFunctionArgs: [1, 'arbiter'],
         },
         {
             serviceFunctionName: 'setOrderShippingDeadline',
-            serviceFunction: () => tradeService.setOrderShippingDeadline(supplier, 1, deadline),
+            serviceFunction: () => tradeService.setOrderShippingDeadline(1, deadline),
             expectedMockedFunction: mockedTradeDriver.setOrderShippingDeadline,
-            expectedMockedFunctionArgs: [supplier, 1, deadline],
+            expectedMockedFunctionArgs: [1, deadline],
         },
         {
             serviceFunctionName: 'setOrderDeliveryDeadline',
-            serviceFunction: () => tradeService.setOrderDeliveryDeadline(supplier, 1, deadline),
+            serviceFunction: () => tradeService.setOrderDeliveryDeadline(1, deadline),
             expectedMockedFunction: mockedTradeDriver.setOrderDeliveryDeadline,
-            expectedMockedFunctionArgs: [supplier, 1, deadline],
+            expectedMockedFunctionArgs: [1, deadline],
         },
         {
             serviceFunctionName: 'confirmOrder',
-            serviceFunction: () => tradeService.confirmOrder(supplier, 1),
+            serviceFunction: () => tradeService.confirmOrder(1),
             expectedMockedFunction: mockedTradeDriver.confirmOrder,
-            expectedMockedFunctionArgs: [supplier, 1],
+            expectedMockedFunctionArgs: [1],
         },
         {
             serviceFunctionName: 'addDocument',
-            serviceFunction: () => tradeService.addDocument(supplier, 1, 'doc name', 'doc type', externalUrl),
+            serviceFunction: () => tradeService.addDocument(1, 'doc name', 'doc type', externalUrl),
             expectedMockedFunction: mockedTradeDriver.addDocument,
-            expectedMockedFunctionArgs: [supplier, 1, 'doc name', 'doc type', externalUrl],
+            expectedMockedFunctionArgs: [1, 'doc name', 'doc type', externalUrl],
         },
         {
             serviceFunctionName: 'getNegotiationStatus',
-            serviceFunction: () => tradeService.getNegotiationStatus(supplier, 1),
+            serviceFunction: () => tradeService.getNegotiationStatus(1),
             expectedMockedFunction: mockedTradeDriver.getNegotiationStatus,
-            expectedMockedFunctionArgs: [supplier, 1],
+            expectedMockedFunctionArgs: [1],
         },
         {
             serviceFunctionName: 'getOrderInfo',
-            serviceFunction: () => tradeService.getOrderInfo(supplier, 1, 15),
+            serviceFunction: () => tradeService.getOrderInfo(1, 15),
             expectedMockedFunction: mockedTradeDriver.getOrderInfo,
-            expectedMockedFunctionArgs: [supplier, 1, 15],
+            expectedMockedFunctionArgs: [1, 15],
         },
         {
             serviceFunctionName: 'isSupplierOrCustomer',
-            serviceFunction: () => tradeService.isSupplierOrCustomer(supplier, 1, customer),
+            serviceFunction: () => tradeService.isSupplierOrCustomer(1, customer),
             expectedMockedFunction: mockedTradeDriver.isSupplierOrCustomer,
-            expectedMockedFunctionArgs: [supplier, 1, customer],
+            expectedMockedFunctionArgs: [1, customer],
         },
         {
             serviceFunctionName: 'addOrderLine',
-            serviceFunction: () => tradeService.addOrderLine(supplier, 1, [1, 2], productCategory, quantity, price),
+            serviceFunction: () => tradeService.addOrderLine(1, [1, 2], productCategory, quantity, price),
             expectedMockedFunction: mockedTradeDriver.addOrderLine,
-            expectedMockedFunctionArgs: [supplier, 1, [1, 2], productCategory, quantity, price],
+            expectedMockedFunctionArgs: [1, [1, 2], productCategory, quantity, price],
         },
         {
             serviceFunctionName: 'updateOrderLine',
-            serviceFunction: () => tradeService.updateOrderLine(supplier, 1, 2, [1, 2], productCategory, quantity, price),
+            serviceFunction: () => tradeService.updateOrderLine(1, 2, [1, 2], productCategory, quantity, price),
             expectedMockedFunction: mockedTradeDriver.updateOrderLine,
-            expectedMockedFunctionArgs: [supplier, 1, 2, [1, 2], productCategory, quantity, price],
+            expectedMockedFunctionArgs: [1, 2, [1, 2], productCategory, quantity, price],
         },
         {
             serviceFunctionName: 'getOrderLine',
-            serviceFunction: () => tradeService.getOrderLine(supplier, 1, 2),
+            serviceFunction: () => tradeService.getOrderLine(1, 2),
             expectedMockedFunction: mockedTradeDriver.getOrderLine,
-            expectedMockedFunctionArgs: [supplier, 1, 2, undefined],
+            expectedMockedFunctionArgs: [1, 2, undefined],
         },
         {
             serviceFunctionName: 'getBlockNumbersByOrderId',
@@ -242,12 +262,21 @@ describe('TradeService', () => {
         await expect(fn).rejects.toThrowError(new Error('IPFS Service not available'));
     });
 
+    it('should get general trades', async () => {
+        mockedTradeDriver.getCounter = jest.fn().mockResolvedValue(2);
+
+        await tradeService.getGeneralTrades(supplier);
+        expect(mockedTradeDriver.getGeneralTrade).toHaveBeenCalledTimes(2);
+        expect(mockedTradeDriver.getGeneralTrade).toHaveBeenNthCalledWith(1, 1);
+        expect(mockedTradeDriver.getGeneralTrade).toHaveBeenNthCalledWith(2, 2);
+    });
+
     it('should add trade lines', async () => {
         const lines = [
             new TradeLine(0, [1, 2], 'categoryA'),
             new TradeLine(0, [3, 4], 'categoryB'),
         ];
-        await tradeService.addTradeLines(supplier, 1, lines);
+        await tradeService.addTradeLines(1, lines);
 
         expect(mockedTradeDriver.addTradeLine).toHaveBeenCalledTimes(2);
         expect(mockedTradeDriver.addTradeLine).toHaveBeenNthCalledWith(1, supplier, 1, lines[0].materialIds, lines[0].productCategory);
@@ -257,7 +286,7 @@ describe('TradeService', () => {
     it('should get trade lines', async () => {
         const lineIds = [1, 2];
         mockedTradeDriver.getBasicTradeInfo = jest.fn().mockResolvedValue({ lineIds });
-        await tradeService.getTradeLines(supplier, 1);
+        await tradeService.getTradeLines(1);
 
         expect(mockedTradeDriver.getBasicTradeInfo).toHaveBeenCalledTimes(1);
         expect(mockedTradeDriver.getBasicTradeInfo).toHaveBeenNthCalledWith(1, supplier, 1, undefined);
@@ -285,23 +314,22 @@ describe('TradeService', () => {
             new OrderLine(0, [1, 2], 'categoryA', 100, price),
             new OrderLine(0, [3, 4], 'categoryB', 55, price),
         ];
-        await tradeService.addOrderLines(supplier, 1, lines);
+        await tradeService.addOrderLines(1, lines);
 
         expect(mockedTradeDriver.addOrderLine).toHaveBeenCalledTimes(2);
-        expect(mockedTradeDriver.addOrderLine).toHaveBeenNthCalledWith(1, supplier, 1, lines[0].materialIds, lines[0].productCategory, lines[0].quantity, lines[0].price);
-        expect(mockedTradeDriver.addOrderLine).toHaveBeenNthCalledWith(2, supplier, 1, lines[1].materialIds, lines[1].productCategory, lines[1].quantity, lines[1].price);
+        expect(mockedTradeDriver.addOrderLine).toHaveBeenNthCalledWith(1, 1, lines[0].materialIds, lines[0].productCategory, lines[0].quantity, lines[0].price);
+        expect(mockedTradeDriver.addOrderLine).toHaveBeenNthCalledWith(2, 1, lines[1].materialIds, lines[1].productCategory, lines[1].quantity, lines[1].price);
     });
 
     it('should get all order lines', async () => {
-        const address = 'testAddress';
         mockedTradeDriver.getOrderInfo = jest.fn().mockResolvedValue({ lineIds: [1, 2] });
-        await tradeService.getOrderLines(address, 1);
+        await tradeService.getOrderLines(1);
 
         expect(mockedTradeDriver.getOrderInfo).toHaveBeenCalledTimes(1);
-        expect(mockedTradeDriver.getOrderInfo).toHaveBeenNthCalledWith(1, address, 1, undefined);
+        expect(mockedTradeDriver.getOrderInfo).toHaveBeenNthCalledWith(1, 1, undefined);
 
         expect(mockedTradeDriver.getOrderLine).toHaveBeenCalledTimes(2);
-        expect(mockedTradeDriver.getOrderLine).toHaveBeenNthCalledWith(1, address, 1, 1, undefined);
-        expect(mockedTradeDriver.getOrderLine).toHaveBeenNthCalledWith(2, address, 1, 2, undefined);
+        expect(mockedTradeDriver.getOrderLine).toHaveBeenNthCalledWith(1, 1, 1, undefined);
+        expect(mockedTradeDriver.getOrderLine).toHaveBeenNthCalledWith(2, 1, 2, undefined);
     });
 });

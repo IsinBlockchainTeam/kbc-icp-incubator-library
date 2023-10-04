@@ -97,13 +97,13 @@ contract SupplyChainManager {
         return transformationsCounter.current();
     }
 
-    function getMaterialIds(address company) public view returns (uint256[] memory) {
-        return materialIds[company];
+    function getMaterialIds(address owner) public view returns (uint256[] memory) {
+        return materialIds[owner];
     }
 
 
-    function getTransformationIds(address company) public view returns (uint256[] memory) {
-        return transformationIds[company];
+    function getTransformationIds(address owner) public view returns (uint256[] memory) {
+        return transformationIds[owner];
     }
 
     function getMaterial(uint256 id) public view returns (Material memory) {

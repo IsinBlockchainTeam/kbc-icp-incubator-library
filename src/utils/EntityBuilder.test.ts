@@ -15,10 +15,11 @@ import { Trade } from '../entities/Trade';
 describe('EntityBuilder', () => {
     describe('buildMaterial', () => {
         it('should correctly build a material', () => {
-            const bcMaterial: MaterialStructOutput = [BigNumber.from(0), 'material', 'owner'] as MaterialStructOutput;
+            const bcMaterial: MaterialStructOutput = [BigNumber.from(0), 'material', 'owner', true] as MaterialStructOutput;
             bcMaterial.id = BigNumber.from(0);
             bcMaterial.name = 'material';
             bcMaterial.owner = 'owner';
+            bcMaterial.exists = true;
 
             expect(EntityBuilder.buildMaterial(bcMaterial)).toEqual(new Material(0, 'material', 'owner'));
         });
@@ -26,14 +27,25 @@ describe('EntityBuilder', () => {
 
     describe('buildTransformation', () => {
         it('should correctly build a transformation', () => {
-            const bcTransformation: TransformationStructOutput = [BigNumber.from(0), 'transformation', [BigNumber.from(1), BigNumber.from(2)], BigNumber.from(3), 'owner'] as TransformationStructOutput;
+            const bcMaterial1: MaterialStructOutput = [BigNumber.from(0), 'material1', 'owner', true] as MaterialStructOutput;
+            bcMaterial1.id = BigNumber.from(0);
+            bcMaterial1.name = 'material1';
+            bcMaterial1.owner = 'owner';
+            bcMaterial1.exists = true;
+            const bcMaterial2: MaterialStructOutput = [BigNumber.from(0), 'material2', 'owner', true] as MaterialStructOutput;
+            bcMaterial2.id = BigNumber.from(0);
+            bcMaterial2.name = 'material2';
+            bcMaterial2.owner = 'owner';
+            bcMaterial2.exists = true;
+
+            const bcTransformation: TransformationStructOutput = [BigNumber.from(0), 'transformation', [bcMaterial1, bcMaterial2], BigNumber.from(3), 'owner', true] as TransformationStructOutput;
             bcTransformation.id = BigNumber.from(0);
             bcTransformation.name = 'transformation';
-            bcTransformation.inputMaterialsIds = [BigNumber.from(1), BigNumber.from(2)];
+            bcTransformation.inputMaterials = [bcMaterial1, bcMaterial2];
             bcTransformation.outputMaterialId = BigNumber.from(3);
             bcTransformation.owner = 'owner';
 
-            expect(EntityBuilder.buildTransformation(bcTransformation)).toEqual(new Transformation(0, 'transformation', [1, 2], 3, 'owner'));
+            expect(EntityBuilder.buildTransformation(bcTransformation)).toEqual(new Transformation(0, 'transformation', [EntityBuilder.buildMaterial(bcMaterial1), EntityBuilder.buildMaterial(bcMaterial2)], 3, 'owner'));
         });
     });
 
@@ -148,16 +160,15 @@ describe('EntityBuilder', () => {
 
     describe('buildDocument', () => {
         it('should correctly build a document', () => {
-            const bcDocument: DocumentManager.DocumentStructOutput = [BigNumber.from(0), 'owner', BigNumber.from(2), 'doc name', 'doc type', 'external url', true] as DocumentManager.DocumentStructOutput;
+            const bcDocument: DocumentManager.DocumentStructOutput = [BigNumber.from(0), BigNumber.from(2), 'doc name', 'doc type', 'external url', true] as DocumentManager.DocumentStructOutput;
             bcDocument.id = BigNumber.from(0);
-            bcDocument.owner = 'owner';
             bcDocument.transactionId = BigNumber.from(2);
             bcDocument.name = 'doc name';
             bcDocument.documentType = 'doc type';
             bcDocument.externalUrl = 'external url';
             bcDocument.exists = true;
 
-            const document = new DocumentInfo(0, 'owner', 2, 'doc name', 'doc type', 'external url');
+            const document = new DocumentInfo(0, 2, 'doc name', 'doc type', 'external url');
             expect(EntityBuilder.buildDocument(bcDocument)).toEqual(document);
         });
     });

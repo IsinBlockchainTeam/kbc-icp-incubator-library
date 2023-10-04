@@ -63,4 +63,14 @@ export class SupplyChainDriver {
         const transformation = await this._contract.getTransformation(id);
         return EntityBuilder.buildTransformation(transformation);
     }
+
+    async getMaterialIds(owner: string): Promise<number[]> {
+        const ids = await this._contract.getMaterialIds(owner);
+        return ids.map((id) => id.toNumber());
+    }
+
+    async getTransformationIds(owner: string): Promise<number[]> {
+        const ids = await this._contract.getTransformationIds(owner);
+        return ids.map((id) => id.toNumber());
+    }
 }

@@ -52,12 +52,21 @@ export class TradeDriver {
     }
 
     async tradeExists(tradeId: number): Promise<boolean> {
-        return this._contract.tradeExists(tradeId);
+        try {
+            return this._contract.tradeExists(tradeId);
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
     }
 
     async getCounter(): Promise<number> {
-        const counter = await this._contract.getCounter();
-        return counter.toNumber();
+        try {
+            const counter = await this._contract.getCounter();
+
+            return counter.toNumber();
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
     }
 
     async getGeneralTrade(tradeId: number, blockNumber?: number): Promise<Trade> {
@@ -112,7 +121,11 @@ export class TradeDriver {
     }
 
     async tradeLineExists(tradeId: number, tradeLineId: number): Promise<boolean> {
-        return this._contract.tradeLineExists(tradeId, tradeLineId);
+        try {
+            return this._contract.tradeLineExists(tradeId, tradeLineId);
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
     }
 
     async registerOrder(supplierAddress: string, customerAddress: string, externalUrl?: string): Promise<void> {

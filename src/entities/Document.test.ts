@@ -8,13 +8,12 @@ describe('Document', () => {
     const content = new Blob(['b', 'l', 'o', 'b']);
 
     beforeAll(() => {
-        documentInfo = new DocumentInfo(0, 'owner', 1, 'doc name', 'doc type', 'external url');
+        documentInfo = new DocumentInfo(0, 1, 'doc name', 'doc type', 'external url');
         document = new Document(documentInfo, filename, content);
     });
 
     it('should correctly initialize a new DocumentFile', () => {
         expect(document.id).toEqual(0);
-        expect(document.owner).toEqual('owner');
         expect(document.transactionId).toEqual(1);
         expect(document.name).toEqual('doc name');
         expect(document.documentType).toEqual('doc type');

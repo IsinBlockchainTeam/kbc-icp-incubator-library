@@ -1,16 +1,19 @@
 import { Transformation } from './Transformation';
+import { Material } from './Material';
 
 describe('Transformation', () => {
     let transformation: Transformation;
+    const material1 = new Material(1, 'material1', 'owner');
+    const material2 = new Material(2, 'material1', 'owner');
 
     beforeAll(() => {
-        transformation = new Transformation(0, 'transformation', [1, 2], 3, 'owner');
+        transformation = new Transformation(0, 'transformation', [material1, material2], 3, 'owner');
     });
 
     it('should correctly initialize a new Transformation', () => {
         expect(transformation.id).toEqual(0);
         expect(transformation.name).toEqual('transformation');
-        expect(transformation.inputMaterials).toEqual([1, 2]);
+        expect(transformation.inputMaterials).toEqual([material1, material2]);
         expect(transformation.outputMaterialId).toEqual(3);
         expect(transformation.owner).toEqual('owner');
     });
@@ -26,8 +29,11 @@ describe('Transformation', () => {
     });
 
     it('should correctly set the inputMaterialsIds', () => {
-        transformation.inputMaterials = [4, 5];
-        expect(transformation.inputMaterials).toEqual([4, 5]);
+        const material3 = new Material(3, 'material3', 'owner');
+        const material4 = new Material(4, 'material4', 'owner');
+
+        transformation.inputMaterials = [material3, material4];
+        expect(transformation.inputMaterials).toEqual([material3, material4]);
     });
 
     it('should correctly set the outputMaterialId', () => {

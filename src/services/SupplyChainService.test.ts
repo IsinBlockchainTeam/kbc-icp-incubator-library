@@ -19,8 +19,14 @@ describe('SupplyChainService', () => {
         getTransformation: jest.fn(),
     };
 
-    const material = new Material(1, 'Material 1', 'Owner');
-    const transformation = new Transformation(1, 'Transformation 1', [1, 2], 3, 'Owner');
+    const materials = [
+        new Material(1, 'material1', 'owner'),
+        new Material(2, 'material2', 'owner'),
+        new Material(3, 'material3', 'owner'),
+        new Material(4, 'material4', 'owner'),
+    ];
+    const transformation = new Transformation(1, 'Transformation 1', [materials[0], materials[1]], 3, 'Owner');
+    const companyAddress = '0xaddress';
 
     beforeAll(() => {
         mockedSupplyChainDriver = createMock<SupplyChainDriver>(mockedInstance);
@@ -35,51 +41,51 @@ describe('SupplyChainService', () => {
     it.each([
         {
             serviceFunctionName: 'registerMaterial',
-            serviceFunction: () => supplyChainService.registerMaterial(material.owner, material.name),
+            serviceFunction: () => supplyChainService.registerMaterial(materials[0].owner, materials[0].name),
             expectedMockedFunction: mockedInstance.registerMaterial,
-            expectedMockedFunctionArgs: [material.owner, material.name],
+            expectedMockedFunctionArgs: [materials[0].owner, materials[0].name],
         },
         {
             serviceFunctionName: 'registerTransformation',
-            serviceFunction: () => supplyChainService.registerTransformation(transformation.owner, transformation.name, transformation.inputMaterials, transformation.outputMaterialId),
+            serviceFunction: () => supplyChainService.registerTransformation(transformation.owner, transformation.name, transformation.inputMaterials.map((m) => m.id), transformation.outputMaterialId),
             expectedMockedFunction: mockedInstance.registerTransformation,
-            expectedMockedFunctionArgs: [transformation.owner, transformation.name, transformation.inputMaterials, transformation.outputMaterialId],
+            expectedMockedFunctionArgs: [transformation.owner, transformation.name, transformation.inputMaterials.map((m) => m.id), transformation.outputMaterialId],
         },
         {
             serviceFunctionName: 'updateMaterial',
-            serviceFunction: () => supplyChainService.updateMaterial(material.owner, material.id, material.name),
+            serviceFunction: () => supplyChainService.updateMaterial(materials[1].id, materials[1].name),
             expectedMockedFunction: mockedInstance.updateMaterial,
-            expectedMockedFunctionArgs: [material.owner, material.id, material.name],
+            expectedMockedFunctionArgs: [materials[1].id, materials[1].name],
         },
         {
             serviceFunctionName: 'updateTransformation',
-            serviceFunction: () => supplyChainService.updateTransformation(transformation.owner, transformation.id, transformation.name, transformation.inputMaterials, transformation.outputMaterialId),
+            serviceFunction: () => supplyChainService.updateTransformation(transformation.id, transformation.name, transformation.inputMaterials.map((m) => m.id), transformation.outputMaterialId),
             expectedMockedFunction: mockedInstance.updateTransformation,
-            expectedMockedFunctionArgs: [transformation.owner, transformation.id, transformation.name, transformation.inputMaterials, transformation.outputMaterialId],
+            expectedMockedFunctionArgs: [transformation.id, transformation.name, transformation.inputMaterials.map((m) => m.id), transformation.outputMaterialId],
         },
         {
             serviceFunctionName: 'getMaterialsCounter',
-            serviceFunction: () => supplyChainService.getMaterialsCounter(material.owner),
+            serviceFunction: () => supplyChainService.getMaterialsCounter(),
             expectedMockedFunction: mockedInstance.getMaterialsCounter,
-            expectedMockedFunctionArgs: [material.owner],
+            expectedMockedFunctionArgs: [],
         },
         {
             serviceFunctionName: 'getTransformationsCounter',
-            serviceFunction: () => supplyChainService.getTransformationsCounter(transformation.owner),
+            serviceFunction: () => supplyChainService.getTransformationsCounter(),
             expectedMockedFunction: mockedInstance.getTransformationsCounter,
-            expectedMockedFunctionArgs: [transformation.owner],
+            expectedMockedFunctionArgs: [],
         },
         {
             serviceFunctionName: 'getMaterial',
-            serviceFunction: () => supplyChainService.getMaterial(material.owner, material.id),
+            serviceFunction: () => supplyChainService.getMaterial(materials[0].id),
             expectedMockedFunction: mockedInstance.getMaterial,
-            expectedMockedFunctionArgs: [material.owner, material.id],
+            expectedMockedFunctionArgs: [materials[0].id],
         },
         {
             serviceFunctionName: 'getTransformation',
-            serviceFunction: () => supplyChainService.getTransformation(transformation.owner, transformation.id),
+            serviceFunction: () => supplyChainService.getTransformation(transformation.id),
             expectedMockedFunction: mockedInstance.getTransformation,
-            expectedMockedFunctionArgs: [transformation.owner, transformation.id],
+            expectedMockedFunctionArgs: [transformation.id],
         },
     ])('service should call driver $serviceFunctionName', async ({ serviceFunction, expectedMockedFunction, expectedMockedFunctionArgs }) => {
         await serviceFunction();
@@ -93,15 +99,15 @@ describe('SupplyChainService', () => {
             resource: 'material',
             getCounterMockedFunction: mockedInstance.getMaterialsCounter,
             getResourceMockedFunction: mockedInstance.getMaterial,
-            testResource: material,
-            serviceFunction: () => supplyChainService.getMaterials(material.owner),
+            testResource: materials[0],
+            serviceFunction: () => supplyChainService.getMaterials(companyAddress),
         },
         {
             resource: 'transformation',
             getCounterMockedFunction: mockedInstance.getTransformationsCounter,
             getResourceMockedFunction: mockedInstance.getTransformation,
             testResource: transformation,
-            serviceFunction: () => supplyChainService.getTransformations(material.owner),
+            serviceFunction: () => supplyChainService.getTransformations(companyAddress),
         },
     ])('should retrieve all the $resource', async ({ resource, getCounterMockedFunction, getResourceMockedFunction, testResource, serviceFunction }) => {
         getCounterMockedFunction.mockReturnValue(2);
