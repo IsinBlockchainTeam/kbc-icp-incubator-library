@@ -263,12 +263,14 @@ describe('TradeService', () => {
     });
 
     it('should get general trades', async () => {
-        mockedTradeDriver.getCounter = jest.fn().mockResolvedValue(2);
-
+        mockedTradeDriver.getTradeIds = jest.fn().mockResolvedValue([1, 2]);
         await tradeService.getGeneralTrades(supplier);
+
+        expect(mockedTradeDriver.getTradeIds).toHaveBeenCalledTimes(1);
+        expect(mockedTradeDriver.getTradeIds).toHaveBeenNthCalledWith(1, supplier);
         expect(mockedTradeDriver.getGeneralTrade).toHaveBeenCalledTimes(2);
-        expect(mockedTradeDriver.getGeneralTrade).toHaveBeenNthCalledWith(1, 1);
-        expect(mockedTradeDriver.getGeneralTrade).toHaveBeenNthCalledWith(2, 2);
+        expect(mockedTradeDriver.getGeneralTrade).toHaveBeenNthCalledWith(1, 1, undefined);
+        expect(mockedTradeDriver.getGeneralTrade).toHaveBeenNthCalledWith(2, 2, undefined);
     });
 
     it('should add trade lines', async () => {
@@ -279,8 +281,8 @@ describe('TradeService', () => {
         await tradeService.addTradeLines(1, lines);
 
         expect(mockedTradeDriver.addTradeLine).toHaveBeenCalledTimes(2);
-        expect(mockedTradeDriver.addTradeLine).toHaveBeenNthCalledWith(1, supplier, 1, lines[0].materialIds, lines[0].productCategory);
-        expect(mockedTradeDriver.addTradeLine).toHaveBeenNthCalledWith(2, supplier, 1, lines[1].materialIds, lines[1].productCategory);
+        expect(mockedTradeDriver.addTradeLine).toHaveBeenNthCalledWith(1, 1, lines[0].materialIds, lines[0].productCategory);
+        expect(mockedTradeDriver.addTradeLine).toHaveBeenNthCalledWith(2, 1, lines[1].materialIds, lines[1].productCategory);
     });
 
     it('should get trade lines', async () => {
@@ -289,19 +291,28 @@ describe('TradeService', () => {
         await tradeService.getTradeLines(1);
 
         expect(mockedTradeDriver.getBasicTradeInfo).toHaveBeenCalledTimes(1);
-        expect(mockedTradeDriver.getBasicTradeInfo).toHaveBeenNthCalledWith(1, supplier, 1, undefined);
+        expect(mockedTradeDriver.getBasicTradeInfo).toHaveBeenNthCalledWith(1, 1, undefined);
 
         expect(mockedTradeDriver.getTradeLine).toHaveBeenCalledTimes(2);
-        expect(mockedTradeDriver.getTradeLine).toHaveBeenNthCalledWith(1, supplier, 1, lineIds[0]);
-        expect(mockedTradeDriver.getTradeLine).toHaveBeenNthCalledWith(2, supplier, 1, lineIds[1]);
+        expect(mockedTradeDriver.getTradeLine).toHaveBeenNthCalledWith(1, 1, lineIds[0]);
+        expect(mockedTradeDriver.getTradeLine).toHaveBeenNthCalledWith(2, 1, lineIds[1]);
     });
 
     it('should get complete order', async () => {
         const tradeServiceWithIPFS = new TradeService(mockedTradeDriver, mockedIPFSService);
+        mockedIPFSService.retrieveJSON = jest.fn().mockResolvedValue({ incoterms: 'FOB', shipper: 'shipper', shippingPort: 'port', deliveryPort: 'port' });
         await tradeServiceWithIPFS.getCompleteOrder(orderInfo);
 
         expect(mockedIPFSService.retrieveJSON).toHaveBeenCalledTimes(1);
         expect(mockedIPFSService.retrieveJSON).toHaveBeenNthCalledWith(1, orderInfo.externalUrl);
+    });
+
+    it('should get complete order - FAIL', async () => {
+        const tradeServiceWithIPFS = new TradeService(mockedTradeDriver, mockedIPFSService);
+        mockedIPFSService.retrieveJSON = jest.fn().mockRejectedValueOnce(new Error('error'));
+
+        const fn = async () => tradeServiceWithIPFS.getCompleteOrder(orderInfo);
+        await expect(fn).rejects.toThrowError(new Error('Error while retrieving order metadata file from IPFS: error'));
     });
 
     it('should get complete order - FAIL (IPFS Service not available)', async () => {

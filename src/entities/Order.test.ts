@@ -23,6 +23,7 @@ describe('Order', () => {
         expect(order.lineIds).toEqual(orderInfo.lineIds);
         expect(order.offereeSigned).toBeFalsy();
         expect(order.offerorSigned).toBeFalsy();
+        expect(order.incoterms).toEqual('FOB');
         expect(order.paymentDeadline).toEqual(orderInfo.paymentDeadline);
         expect(order.documentDeliveryDeadline).toEqual(orderInfo.documentDeliveryDeadline);
         expect(order.shipper).toEqual('shipper');

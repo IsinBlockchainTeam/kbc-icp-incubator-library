@@ -140,7 +140,10 @@ describe('TradeDriver', () => {
 
             expect(mockedRegisterTrade).toHaveBeenCalledTimes(1);
             expect(mockedRegisterTrade).toHaveBeenNthCalledWith(1, TradeType.TRADE, supplier.address, customer.address, externalUrl);
-            expect(mockedWait).toHaveBeenCalledTimes(1);
+            expect(mockedWait).toHaveBeenCalledTimes(2);
+
+            expect(mockedContract.addTradeName).toHaveBeenCalledTimes(1);
+            expect(mockedContract.addTradeName).toHaveBeenNthCalledWith(1, 0, tradeName);
         });
 
         it('should call and wait for register a trade - transaction fails', async () => {
@@ -250,6 +253,7 @@ describe('TradeDriver', () => {
 
     describe('getTradeIds', () => {
         it('should get the trade\'s ids by supplier address', async () => {
+            mockedContract.getTradeIds = jest.fn().mockResolvedValue([BigNumber.from(1)]);
             await tradeDriver.getTradeIds(supplier.address);
 
             expect(mockedContract.getTradeIds).toHaveBeenCalledTimes(1);
@@ -403,6 +407,13 @@ describe('TradeDriver', () => {
             expect(mockedContract.setOrderPaymentDeadline).toHaveBeenNthCalledWith(1, 1, deadline.getTime());
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
+
+        it('should set order payment deadline - transaction fails', async () => {
+            mockedContract.setOrderPaymentDeadline = jest.fn().mockRejectedValue(new Error(errorMessage));
+
+            const fn = async () => tradeDriver.setOrderPaymentDeadline(1, deadline);
+            await expect(fn).rejects.toThrowError(new Error(errorMessage));
+        });
     });
 
     describe('setOrderDocumentDeliveryDeadline', () => {
@@ -412,6 +423,13 @@ describe('TradeDriver', () => {
             expect(mockedContract.setOrderDocumentDeliveryDeadline).toHaveBeenCalledTimes(1);
             expect(mockedContract.setOrderDocumentDeliveryDeadline).toHaveBeenNthCalledWith(1, 1, deadline.getTime());
             expect(mockedWait).toHaveBeenCalledTimes(1);
+        });
+
+        it('should set order document delivery deadline - transaction fails', async () => {
+            mockedContract.setOrderDocumentDeliveryDeadline = jest.fn().mockRejectedValue(new Error(errorMessage));
+
+            const fn = async () => tradeDriver.setOrderDocumentDeliveryDeadline(1, deadline);
+            await expect(fn).rejects.toThrowError(new Error(errorMessage));
         });
     });
 
@@ -423,6 +441,13 @@ describe('TradeDriver', () => {
             expect(mockedContract.setOrderArbiter).toHaveBeenNthCalledWith(1, 1, arbiter);
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
+
+        it('should set order arbiter - transaction fails', async () => {
+            mockedContract.setOrderArbiter = jest.fn().mockRejectedValue(new Error(errorMessage));
+
+            const fn = async () => tradeDriver.setOrderArbiter(1, arbiter);
+            await expect(fn).rejects.toThrowError(new Error(errorMessage));
+        });
     });
 
     describe('setOrderShippingDeadline', () => {
@@ -433,6 +458,13 @@ describe('TradeDriver', () => {
             expect(mockedContract.setOrderShippingDeadline).toHaveBeenNthCalledWith(1, 1, deadline.getTime());
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
+
+        it('should set order shipping deadline - transaction fails', async () => {
+            mockedContract.setOrderShippingDeadline = jest.fn().mockRejectedValue(new Error(errorMessage));
+
+            const fn = async () => tradeDriver.setOrderShippingDeadline(1, deadline);
+            await expect(fn).rejects.toThrowError(new Error(errorMessage));
+        });
     });
 
     describe('setOrderDeliveryDeadline', () => {
@@ -442,6 +474,13 @@ describe('TradeDriver', () => {
             expect(mockedContract.setOrderDeliveryDeadline).toHaveBeenCalledTimes(1);
             expect(mockedContract.setOrderDeliveryDeadline).toHaveBeenNthCalledWith(1, 1, deadline.getTime());
             expect(mockedWait).toHaveBeenCalledTimes(1);
+        });
+
+        it('should set order delivery deadline - transaction fails', async () => {
+            mockedContract.setOrderDeliveryDeadline = jest.fn().mockRejectedValue(new Error(errorMessage));
+
+            const fn = async () => tradeDriver.setOrderDeliveryDeadline(1, deadline);
+            await expect(fn).rejects.toThrowError(new Error(errorMessage));
         });
     });
 

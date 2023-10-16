@@ -14,7 +14,9 @@ describe('SupplyChainService', () => {
         updateMaterial: jest.fn(),
         updateTransformation: jest.fn(),
         getMaterialsCounter: jest.fn(),
+        getMaterialIds: jest.fn(),
         getTransformationsCounter: jest.fn(),
+        getTransformationIds: jest.fn(),
         getMaterial: jest.fn(),
         getTransformation: jest.fn(),
     };
@@ -24,8 +26,12 @@ describe('SupplyChainService', () => {
         new Material(2, 'material2', 'owner'),
         new Material(3, 'material3', 'owner'),
         new Material(4, 'material4', 'owner'),
+        new Material(5, 'material5', 'owner'),
     ];
-    const transformation = new Transformation(1, 'Transformation 1', [materials[0], materials[1]], 3, 'Owner');
+    const transformations = [
+        new Transformation(1, 'Transformation 1', [materials[0], materials[1]], 3, 'Owner'),
+        new Transformation(2, 'Transformation 2', [materials[2], materials[3]], 5, 'Owner'),
+    ];
     const companyAddress = '0xaddress';
 
     beforeAll(() => {
@@ -47,9 +53,9 @@ describe('SupplyChainService', () => {
         },
         {
             serviceFunctionName: 'registerTransformation',
-            serviceFunction: () => supplyChainService.registerTransformation(transformation.owner, transformation.name, transformation.inputMaterials.map((m) => m.id), transformation.outputMaterialId),
+            serviceFunction: () => supplyChainService.registerTransformation(transformations[0].owner, transformations[0].name, transformations[0].inputMaterials.map((m) => m.id), transformations[0].outputMaterialId),
             expectedMockedFunction: mockedInstance.registerTransformation,
-            expectedMockedFunctionArgs: [transformation.owner, transformation.name, transformation.inputMaterials.map((m) => m.id), transformation.outputMaterialId],
+            expectedMockedFunctionArgs: [transformations[0].owner, transformations[0].name, transformations[0].inputMaterials.map((m) => m.id), transformations[0].outputMaterialId],
         },
         {
             serviceFunctionName: 'updateMaterial',
@@ -59,9 +65,9 @@ describe('SupplyChainService', () => {
         },
         {
             serviceFunctionName: 'updateTransformation',
-            serviceFunction: () => supplyChainService.updateTransformation(transformation.id, transformation.name, transformation.inputMaterials.map((m) => m.id), transformation.outputMaterialId),
+            serviceFunction: () => supplyChainService.updateTransformation(transformations[0].id, transformations[0].name, transformations[0].inputMaterials.map((m) => m.id), transformations[0].outputMaterialId),
             expectedMockedFunction: mockedInstance.updateTransformation,
-            expectedMockedFunctionArgs: [transformation.id, transformation.name, transformation.inputMaterials.map((m) => m.id), transformation.outputMaterialId],
+            expectedMockedFunctionArgs: [transformations[0].id, transformations[0].name, transformations[0].inputMaterials.map((m) => m.id), transformations[0].outputMaterialId],
         },
         {
             serviceFunctionName: 'getMaterialsCounter',
@@ -83,9 +89,9 @@ describe('SupplyChainService', () => {
         },
         {
             serviceFunctionName: 'getTransformation',
-            serviceFunction: () => supplyChainService.getTransformation(transformation.id),
+            serviceFunction: () => supplyChainService.getTransformation(transformations[0].id),
             expectedMockedFunction: mockedInstance.getTransformation,
-            expectedMockedFunctionArgs: [transformation.id],
+            expectedMockedFunctionArgs: [transformations[0].id],
         },
     ])('service should call driver $serviceFunctionName', async ({ serviceFunction, expectedMockedFunction, expectedMockedFunctionArgs }) => {
         await serviceFunction();
@@ -97,32 +103,32 @@ describe('SupplyChainService', () => {
     it.each([
         {
             resource: 'material',
-            getCounterMockedFunction: mockedInstance.getMaterialsCounter,
+            getIdsMockedFunction: mockedInstance.getMaterialIds,
             getResourceMockedFunction: mockedInstance.getMaterial,
-            testResource: materials[0],
+            testResources: [materials[0], materials[1]],
             serviceFunction: () => supplyChainService.getMaterials(companyAddress),
         },
         {
             resource: 'transformation',
-            getCounterMockedFunction: mockedInstance.getTransformationsCounter,
+            getIdsMockedFunction: mockedInstance.getTransformationIds,
             getResourceMockedFunction: mockedInstance.getTransformation,
-            testResource: transformation,
+            testResources: transformations,
             serviceFunction: () => supplyChainService.getTransformations(companyAddress),
         },
-    ])('should retrieve all the $resource', async ({ resource, getCounterMockedFunction, getResourceMockedFunction, testResource, serviceFunction }) => {
-        getCounterMockedFunction.mockReturnValue(2);
-        getResourceMockedFunction.mockReturnValueOnce(testResource);
-        getResourceMockedFunction.mockReturnValueOnce(testResource);
+    ])('should retrieve all the $resource', async ({ resource, getIdsMockedFunction, getResourceMockedFunction, testResources, serviceFunction }) => {
+        getIdsMockedFunction.mockReturnValue([testResources[0].id, testResources[1].id]);
+        getResourceMockedFunction.mockResolvedValueOnce(testResources[0]);
+        getResourceMockedFunction.mockResolvedValueOnce(testResources[1]);
 
         const response = await serviceFunction();
 
         expect(response).toHaveLength(2);
-        expect(response[0]).toEqual(testResource);
-        expect(response[1]).toEqual(testResource);
+        expect(response[0]).toEqual(testResources[0]);
+        expect(response[1]).toEqual(testResources[1]);
 
-        expect(getCounterMockedFunction).toHaveBeenCalledTimes(1);
+        expect(getIdsMockedFunction).toHaveBeenCalledTimes(1);
         expect(getResourceMockedFunction).toHaveBeenCalledTimes(2);
-        expect(getResourceMockedFunction).toHaveBeenNthCalledWith(1, testResource.owner, 1);
-        expect(getResourceMockedFunction).toHaveBeenNthCalledWith(2, testResource.owner, 2);
+        expect(getResourceMockedFunction).toHaveBeenNthCalledWith(1, testResources[0].id);
+        expect(getResourceMockedFunction).toHaveBeenNthCalledWith(2, testResources[1].id);
     });
 });

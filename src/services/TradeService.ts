@@ -135,15 +135,14 @@ export class TradeService {
         return this._tradeDriver.getOrderInfo(id, blockNumber);
     }
 
-    async getCompleteOrder(orderInfo: OrderInfo): Promise<Order | undefined> {
+    async getCompleteOrder(orderInfo: OrderInfo): Promise<Order> {
         if (!this._ipfsService) throw new Error('IPFS Service not available');
         try {
             const { incoterms, shipper, shippingPort, deliveryPort } = await this._ipfsService!.retrieveJSON(orderInfo.externalUrl);
             return new Order(orderInfo, incoterms, shipper, shippingPort, deliveryPort);
-        } catch (e) {
-            console.error('Error while retrieve order metadata file from IPFS: ', e);
+        } catch (e: any) {
+            throw new Error(`Error while retrieving order metadata file from IPFS: ${e.message}`);
         }
-        return undefined;
     }
 
     async isSupplierOrCustomer(id: number, senderAddress: string): Promise<boolean> {

@@ -94,7 +94,7 @@ describe('DocumentService', () => {
     });
 
     it('should get documents info by transaction', async () => {
-        mockedDocumentDriver.getDocumentsCounterByTransactionId = jest.fn().mockResolvedValue([1, 2]);
+        mockedDocumentDriver.getDocumentsCounterByTransactionId = jest.fn().mockResolvedValue(2);
         await documentService.getDocumentsInfoByTransaction(transactionId);
 
         expect(mockedDocumentDriver.getDocumentsCounterByTransactionId).toHaveBeenCalledTimes(1);
@@ -118,6 +118,17 @@ describe('DocumentService', () => {
 
         expect(mockedIPFSService.retrieveFile).toHaveBeenCalledTimes(1);
         expect(mockedIPFSService.retrieveFile).toHaveBeenNthCalledWith(1, 'fileUrl');
+    });
+
+    it('should get complete document with file retrieved from IPFS - FAIL', async () => {
+        documentService = new DocumentService(
+            mockedDocumentDriver, mockedIPFSService,
+        );
+        mockedIPFSService.retrieveJSON = jest.fn().mockRejectedValueOnce(new Error('error'));
+        const documentInfo = new DocumentInfo(0, 1, 'doc name', 'doc type', 'metadataExternalUrl');
+
+        const fn = async () => documentService.getCompleteDocument(documentInfo);
+        await expect(fn).rejects.toThrowError(new Error('Error while retrieve document file from IPFS: error'));
     });
 
     it('should throw error if try to get complete document with file retrieved from IPFS, without passing ipfs service to constructor', async () => {

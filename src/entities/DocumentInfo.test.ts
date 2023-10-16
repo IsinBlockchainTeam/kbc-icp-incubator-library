@@ -33,4 +33,9 @@ describe('Document', () => {
         documentInfo.documentType = 'doc type 2';
         expect(documentInfo.documentType).toEqual('doc type 2');
     });
+
+    it('should correctly set external url', () => {
+        documentInfo.externalUrl = 'externalUrl Updated';
+        expect(documentInfo.externalUrl).toEqual('externalUrl Updated');
+    });
 });

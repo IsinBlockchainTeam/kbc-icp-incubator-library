@@ -35,8 +35,8 @@ export class DocumentService {
             const { filename, fileUrl } = await this._ipfsService!.retrieveJSON(documentInfo.externalUrl);
             const fileContent = await this._ipfsService!.retrieveFile(fileUrl);
             if (fileContent) return new Document(documentInfo, filename, fileContent);
-        } catch (e) {
-            console.error('Error while retrieve document file from IPFS: ', e);
+        } catch (e: any) {
+            throw new Error(`Error while retrieve document file from IPFS: ${e.message}`);
         }
         return undefined;
     }
