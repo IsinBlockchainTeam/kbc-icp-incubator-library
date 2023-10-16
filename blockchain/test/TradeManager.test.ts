@@ -21,12 +21,12 @@ let customer: SignerWithAddress;
 let otherAccount: SignerWithAddress;
 let tradeCounterId: BigNumber;
 
-const _addAllOrderConstraints = async (senderSigner: SignerWithAddress, supplierAddress: string, orderId: number) => {
-    await tradeManagerContract.connect(senderSigner).setOrderPaymentDeadline(supplierAddress, orderId, new Date().getTime());
-    await tradeManagerContract.connect(senderSigner).setOrderDocumentDeliveryDeadline(supplierAddress, orderId, new Date().getTime());
-    await tradeManagerContract.connect(senderSigner).setOrderArbiter(supplierAddress, orderId, 'arbiter');
-    await tradeManagerContract.connect(senderSigner).setOrderShippingDeadline(supplierAddress, orderId, new Date().getTime());
-    await tradeManagerContract.connect(senderSigner).setOrderDeliveryDeadline(supplierAddress, orderId, new Date().getTime());
+const _addAllOrderConstraints = async (senderSigner: SignerWithAddress, orderId: number) => {
+    await tradeManagerContract.connect(senderSigner).setOrderPaymentDeadline(orderId, new Date().getTime());
+    await tradeManagerContract.connect(senderSigner).setOrderDocumentDeliveryDeadline(orderId, new Date().getTime());
+    await tradeManagerContract.connect(senderSigner).setOrderArbiter(orderId, 'arbiter');
+    await tradeManagerContract.connect(senderSigner).setOrderShippingDeadline(orderId, new Date().getTime());
+    await tradeManagerContract.connect(senderSigner).setOrderDeliveryDeadline(orderId, new Date().getTime());
 };
 
 describe('TradeManager', () => {
@@ -61,10 +61,14 @@ describe('TradeManager', () => {
     describe('registerTrade', () => {
         it('should register and retrieve a basic trade', async () => {
             await tradeManagerContract.connect(supplier).registerTrade(0, supplier.address, customer.address, basicTrade.externalUrl);
-            tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
-            await tradeManagerContract.connect(supplier).addTradeName(supplier.address, tradeCounterId.toNumber(), basicTrade.name);
+            const tradeIds = await tradeManagerContract.connect(supplier).getTradeIds(supplier.address);
+            tradeCounterId = tradeIds[tradeIds.length - 1];
+            await tradeManagerContract.connect(supplier).addTradeName(tradeCounterId.toNumber(), basicTrade.name);
 
-            const trade = await tradeManagerContract.connect(supplier).getTradeInfo(supplier.address, tradeCounterId.toNumber());
+            const totalTradeCounter = await tradeManagerContract.getCounter();
+            expect(tradeCounterId).to.equal(totalTradeCounter);
+
+            const trade = await tradeManagerContract.connect(supplier).getTradeInfo(tradeCounterId.toNumber());
             expect(trade.id).to.equal(tradeCounterId);
             expect(trade.supplier).to.equal(supplier.address);
             expect(trade.customer).to.equal(customer.address);
@@ -78,18 +82,19 @@ describe('TradeManager', () => {
         });
 
         it('should try to retrieve a trade - FAIL(Trade does not exist)', async () => {
-            await expect(tradeManagerContract.connect(supplier).getTradeInfo(supplier.address, 50)).to.be.revertedWith('Trade does not exist');
+            await expect(tradeManagerContract.connect(supplier).getTradeInfo(50)).to.be.revertedWith('Trade does not exist');
         });
 
         it('should try to retrieve a trade - FAIL(Can\'t perform this operation if not TRADE)', async () => {
             await tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.externalUrl);
-            tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
-
-            await expect(tradeManagerContract.connect(supplier).getTradeInfo(supplier.address, tradeCounterId.toNumber())).to.be.revertedWith('Can\'t perform this operation if not TRADE');
+            const tradeIds = await tradeManagerContract.connect(supplier).getTradeIds(supplier.address);
+            tradeCounterId = tradeIds[tradeIds.length - 1];
+            await expect(tradeManagerContract.connect(supplier).getTradeInfo(tradeCounterId.toNumber())).to.be.revertedWith('Can\'t perform this operation if not TRADE');
         });
 
         it('should emit TradeRegistered event', async () => {
-            tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
+            const tradeIds = await tradeManagerContract.connect(supplier).getTradeIds(supplier.address);
+            tradeCounterId = tradeIds[tradeIds.length - 1];
             await expect(tradeManagerContract.connect(supplier).registerTrade(0, supplier.address, customer.address, basicTrade.externalUrl))
                 .to.emit(tradeManagerContract, 'TradeRegistered')
                 .withArgs(tradeCounterId.toNumber() + 1, supplier.address);
@@ -97,16 +102,18 @@ describe('TradeManager', () => {
 
         it('should check if trade exists', async () => {
             await tradeManagerContract.connect(supplier).registerTrade(0, supplier.address, customer.address, basicTrade.externalUrl);
-            tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
-            const exist = await tradeManagerContract.connect(supplier).tradeExists(supplier.address, tradeCounterId.toNumber());
+            const tradeIds = await tradeManagerContract.connect(supplier).getTradeIds(supplier.address);
+            tradeCounterId = tradeIds[tradeIds.length - 1];
+            const exist = await tradeManagerContract.connect(supplier).tradeExists(tradeCounterId.toNumber());
             expect(exist).to.be.true;
         });
 
         it('should get general trade with type ORDER', async () => {
             await tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.externalUrl);
-            tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
+            const tradeIds = await tradeManagerContract.connect(supplier).getTradeIds(supplier.address);
+            tradeCounterId = tradeIds[tradeIds.length - 1];
 
-            const savedGeneralTrade = await tradeManagerContract.connect(supplier).getGeneralTrade(supplier.address, tradeCounterId.toNumber());
+            const savedGeneralTrade = await tradeManagerContract.connect(supplier).getGeneralTrade(tradeCounterId.toNumber());
             expect(savedGeneralTrade.id).to.equal(tradeCounterId);
             expect(savedGeneralTrade.tradeType).to.equal(1);
             expect(savedGeneralTrade.supplier).to.equal(supplier.address);
@@ -116,7 +123,7 @@ describe('TradeManager', () => {
         });
 
         it('should get general trade with type ORDER - FAIL (Trade does not exist)', async () => {
-            await expect(tradeManagerContract.connect(supplier).getGeneralTrade(supplier.address, 50)).to.be.revertedWith('Trade does not exist');
+            await expect(tradeManagerContract.connect(supplier).getGeneralTrade(50)).to.be.revertedWith('Trade does not exist');
         });
     });
 
@@ -126,57 +133,63 @@ describe('TradeManager', () => {
 
         before(async () => {
             await tradeManagerContract.connect(supplier).registerTrade(0, supplier.address, customer.address, basicTrade.externalUrl);
-            tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
+            const tradeIds = await tradeManagerContract.connect(supplier).getTradeIds(supplier.address);
+            tradeCounterId = tradeIds[tradeIds.length - 1];
         });
 
         describe('addTradeLine', () => {
             it('should add a trade line', async () => {
-                await tradeManagerContract.connect(supplier).addTradeLine(supplier.address, tradeCounterId.toNumber(), basicTradeLineMaterialIds, initialProductCategory);
+                await tradeManagerContract.connect(supplier).addTradeLine(tradeCounterId.toNumber(), basicTradeLineMaterialIds, initialProductCategory);
 
                 expect(enumerableProductCategoryManagerContractFake.contains).to.be.called;
                 expect(enumerableProductCategoryManagerContractFake.contains).to.be.calledWith(initialProductCategory);
             });
 
             it('should emit TradeLineAdded event', async () => {
-                tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
-                const { lineIds } = await tradeManagerContract.connect(supplier).getTradeInfo(supplier.address, tradeCounterId.toNumber());
+                const tradeIds = await tradeManagerContract.connect(supplier).getTradeIds(supplier.address);
+                tradeCounterId = tradeIds[tradeIds.length - 1];
+                const { lineIds } = await tradeManagerContract.connect(supplier).getTradeInfo(tradeCounterId.toNumber());
                 tradeLineCounterId = lineIds.slice(-1)[0];
 
-                await expect(tradeManagerContract.connect(supplier).addTradeLine(supplier.address, tradeCounterId.toNumber(), basicTradeLineMaterialIds, initialProductCategory))
+                await expect(tradeManagerContract.connect(supplier).addTradeLine(tradeCounterId.toNumber(), basicTradeLineMaterialIds, initialProductCategory))
                     .to.emit(tradeManagerContract, 'TradeLineAdded')
-                    .withArgs(tradeCounterId.toNumber(), supplier.address, tradeLineCounterId.toNumber() + 1);
+                    .withArgs(tradeCounterId.toNumber(), tradeLineCounterId.toNumber() + 1);
             });
 
             it('should add a trade line - FAIL (Trade does not exist)', async () => {
                 const otherTradeId = 50;
-                await expect(tradeManagerContract.connect(supplier).addTradeLine(supplier.address, otherTradeId, basicTradeLineMaterialIds, initialProductCategory)).to.be.revertedWith('Trade does not exist');
+                await expect(tradeManagerContract.connect(supplier).addTradeLine(otherTradeId, basicTradeLineMaterialIds, initialProductCategory)).to.be.revertedWith('Trade does not exist');
             });
 
             it('should add a trade line - FAIL (The product category specified isn\'t registered)', async () => {
-                tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
-                await expect(tradeManagerContract.connect(supplier).addTradeLine(supplier.address, tradeCounterId.toNumber(), basicTradeLineMaterialIds, 'custom product category')).to.be.revertedWith("The product category specified isn't registered");
+                const tradeIds = await tradeManagerContract.connect(supplier).getTradeIds(supplier.address);
+                tradeCounterId = tradeIds[tradeIds.length - 1];
+
+                await expect(tradeManagerContract.connect(supplier).addTradeLine(tradeCounterId.toNumber(), basicTradeLineMaterialIds, 'custom product category')).to.be.revertedWith("The product category specified isn't registered");
             });
 
             it('should add a trade line - FAIL (Can\'t perform this operation if not TRADE)', async () => {
                 await tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.externalUrl);
-                tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
+                const tradeIds = await tradeManagerContract.connect(supplier).getTradeIds(supplier.address);
+                tradeCounterId = tradeIds[tradeIds.length - 1];
 
-                await expect(tradeManagerContract.connect(supplier).addTradeLine(supplier.address, tradeCounterId.toNumber(), basicTradeLineMaterialIds, initialProductCategory)).to.be.revertedWith('Can\'t perform this operation if not TRADE');
+                await expect(tradeManagerContract.connect(supplier).addTradeLine(tradeCounterId.toNumber(), basicTradeLineMaterialIds, initialProductCategory)).to.be.revertedWith('Can\'t perform this operation if not TRADE');
             });
         });
 
         describe('getTradeLine', () => {
             before(async () => {
                 await tradeManagerContract.connect(supplier).registerTrade(0, supplier.address, customer.address, basicTrade.externalUrl);
-                tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
+                const tradeIds = await tradeManagerContract.connect(supplier).getTradeIds(supplier.address);
+                tradeCounterId = tradeIds[tradeIds.length - 1];
 
-                await tradeManagerContract.connect(supplier).addTradeLine(supplier.address, tradeCounterId.toNumber(), basicTradeLineMaterialIds, initialProductCategory);
-                const { lineIds } = await tradeManagerContract.connect(supplier).getTradeInfo(supplier.address, tradeCounterId.toNumber());
+                await tradeManagerContract.connect(supplier).addTradeLine(tradeCounterId.toNumber(), basicTradeLineMaterialIds, initialProductCategory);
+                const { lineIds } = await tradeManagerContract.connect(supplier).getTradeInfo(tradeCounterId.toNumber());
                 tradeLineCounterId = lineIds.slice(-1)[0];
             });
 
             it('should get a trade line', async () => {
-                const tL = await tradeManagerContract.connect(supplier).getTradeLine(supplier.address, tradeCounterId.toNumber(), tradeLineCounterId.toNumber());
+                const tL = await tradeManagerContract.connect(supplier).getTradeLine(tradeCounterId.toNumber(), tradeLineCounterId.toNumber());
                 expect(tL.id.toNumber()).to.equal(tradeLineCounterId.toNumber());
                 expect(tL.productCategory.toString()).to.equal(initialProductCategory);
                 expect(tL.quantity.toNumber()).to.equal(0);
@@ -187,19 +200,20 @@ describe('TradeManager', () => {
 
             it('should get a trade line - FAIL (Trade does not exist)', async () => {
                 const otherTradeId = 50;
-                await expect(tradeManagerContract.connect(supplier).getTradeLine(supplier.address, otherTradeId, tradeLineCounterId.toNumber())).to.be.revertedWith('Trade does not exist');
+                await expect(tradeManagerContract.connect(supplier).getTradeLine(otherTradeId, tradeLineCounterId.toNumber())).to.be.revertedWith('Trade does not exist');
             });
 
             it('should get a trade line - FAIL (Trade does not exist)', async () => {
                 const otherTradeLineId = 50;
-                await expect(tradeManagerContract.connect(supplier).getTradeLine(supplier.address, tradeCounterId.toNumber(), otherTradeLineId)).to.be.revertedWith('Trade line does not exist');
+                await expect(tradeManagerContract.connect(supplier).getTradeLine(tradeCounterId.toNumber(), otherTradeLineId)).to.be.revertedWith('Trade line does not exist');
             });
 
             it('should get a trade line - FAIL (Only a TRADE has trade lines)', async () => {
                 await tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.externalUrl);
-                tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
+                const tradeIds = await tradeManagerContract.connect(supplier).getTradeIds(supplier.address);
+                tradeCounterId = tradeIds[tradeIds.length - 1];
 
-                await expect(tradeManagerContract.connect(supplier).getTradeLine(supplier.address, tradeCounterId.toNumber(), tradeLineCounterId.toNumber())).to.be.revertedWith('Only a TRADE has trade lines');
+                await expect(tradeManagerContract.connect(supplier).getTradeLine(tradeCounterId.toNumber(), tradeLineCounterId.toNumber())).to.be.revertedWith('Only a TRADE has trade lines');
             });
         });
 
@@ -209,20 +223,21 @@ describe('TradeManager', () => {
 
             before(async () => {
                 await tradeManagerContract.connect(supplier).registerTrade(0, supplier.address, customer.address, basicTrade.externalUrl);
-                tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
+                const tradeIds = await tradeManagerContract.connect(supplier).getTradeIds(supplier.address);
+                tradeCounterId = tradeIds[tradeIds.length - 1];
 
-                await tradeManagerContract.connect(supplier).addTradeLine(supplier.address, tradeCounterId.toNumber(), basicTradeLineMaterialIds, initialProductCategory);
-                const { lineIds } = await tradeManagerContract.connect(supplier).getTradeInfo(supplier.address, tradeCounterId.toNumber());
+                await tradeManagerContract.connect(supplier).addTradeLine(tradeCounterId.toNumber(), basicTradeLineMaterialIds, initialProductCategory);
+                const { lineIds } = await tradeManagerContract.connect(supplier).getTradeInfo(tradeCounterId.toNumber());
                 tradeLineCounterId = lineIds.slice(-1)[0];
             });
 
             it('should update a trade line', async () => {
-                await tradeManagerContract.connect(supplier).updateTradeLine(supplier.address, tradeCounterId.toNumber(), tradeLineCounterId.toNumber(), updatedMaterialIds, updatedProductCategory);
+                await tradeManagerContract.connect(supplier).updateTradeLine(tradeCounterId.toNumber(), tradeLineCounterId.toNumber(), updatedMaterialIds, updatedProductCategory);
 
                 expect(enumerableProductCategoryManagerContractFake.contains).to.be.called;
                 expect(enumerableProductCategoryManagerContractFake.contains).to.be.calledWith(updatedProductCategory);
 
-                const savedTradeLine = await tradeManagerContract.connect(supplier).getTradeLine(supplier.address, tradeCounterId.toNumber(), tradeLineCounterId.toNumber());
+                const savedTradeLine = await tradeManagerContract.connect(supplier).getTradeLine(tradeCounterId.toNumber(), tradeLineCounterId.toNumber());
                 expect(savedTradeLine.id).to.equal(tradeLineCounterId);
                 expect(savedTradeLine.materialIds).to.not.equal(basicTradeLineMaterialIds);
                 expect(savedTradeLine.materialIds.map((m: BigNumber) => m.toNumber())).to.eql(updatedMaterialIds);
@@ -235,19 +250,21 @@ describe('TradeManager', () => {
             });
 
             it('should emit TradeLineUpdated event', async () => {
-                await expect(tradeManagerContract.connect(supplier).updateTradeLine(supplier.address, tradeCounterId.toNumber(), tradeLineCounterId.toNumber(), updatedMaterialIds, updatedProductCategory))
+                await expect(tradeManagerContract.connect(supplier).updateTradeLine(tradeCounterId.toNumber(), tradeLineCounterId.toNumber(), updatedMaterialIds, updatedProductCategory))
                     .to.emit(tradeManagerContract, 'TradeLineUpdated')
-                    .withArgs(tradeCounterId.toNumber(), supplier.address, tradeLineCounterId.toNumber());
+                    .withArgs(tradeCounterId.toNumber(), tradeLineCounterId.toNumber());
             });
 
             it('should update a trade line - FAIL (Trade does not exist)', async () => {
                 const otherTradeId = 50;
-                await expect(tradeManagerContract.connect(supplier).updateTradeLine(supplier.address, otherTradeId, tradeLineCounterId.toNumber(), updatedMaterialIds, updatedProductCategory)).to.be.revertedWith('Trade does not exist');
+                await expect(tradeManagerContract.connect(supplier).updateTradeLine(otherTradeId, tradeLineCounterId.toNumber(), updatedMaterialIds, updatedProductCategory)).to.be.revertedWith('Trade does not exist');
             });
 
             it('should add a trade line - FAIL (The product category specified isn\'t registered)', async () => {
-                tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
-                await expect(tradeManagerContract.connect(supplier).updateTradeLine(supplier.address, tradeCounterId.toNumber(), tradeLineCounterId.toNumber(), basicTradeLineMaterialIds, 'custom product category')).to.be.revertedWith("The product category specified isn't registered");
+                const tradeIds = await tradeManagerContract.connect(supplier).getTradeIds(supplier.address);
+                tradeCounterId = tradeIds[tradeIds.length - 1];
+
+                await expect(tradeManagerContract.connect(supplier).updateTradeLine(tradeCounterId.toNumber(), tradeLineCounterId.toNumber(), basicTradeLineMaterialIds, 'custom product category')).to.be.revertedWith("The product category specified isn't registered");
             });
         });
     });
@@ -255,55 +272,57 @@ describe('TradeManager', () => {
     describe('confirmOrder', () => {
         before(async () => {
             await tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.externalUrl);
-            tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
+            const tradeIds = await tradeManagerContract.connect(supplier).getTradeIds(supplier.address);
+            tradeCounterId = tradeIds[tradeIds.length - 1];
 
-            await tradeManagerContract.connect(supplier).addOrderOfferee(supplier.address, tradeCounterId.toNumber(), customer.address);
+            await tradeManagerContract.connect(supplier).addOrderOfferee(tradeCounterId.toNumber(), customer.address);
         });
 
         it('should confirm an order - FAIL (Cannot confirm an order if all constraints have not been defined', async () => {
-            await expect(tradeManagerContract.connect(supplier).setOrderPaymentDeadline(supplier.address, tradeCounterId, new Date().getTime()));
-            await expect(tradeManagerContract.connect(supplier).confirmOrder(supplier.address, tradeCounterId)).to.be.revertedWith('Cannot confirm an order if all constraints have not been defined');
+            await expect(tradeManagerContract.connect(supplier).setOrderPaymentDeadline(tradeCounterId, new Date().getTime()));
+            await expect(tradeManagerContract.connect(supplier).confirmOrder(tradeCounterId)).to.be.revertedWith('Cannot confirm an order if all constraints have not been defined');
         });
 
         it('should confirm an order', async () => {
-            await _addAllOrderConstraints(supplier, supplier.address, tradeCounterId.toNumber());
-            await tradeManagerContract.connect(supplier).confirmOrder(supplier.address, tradeCounterId);
-            await tradeManagerContract.connect(customer).confirmOrder(supplier.address, tradeCounterId);
-            const negotiationStatus = await tradeManagerContract.connect(supplier).getNegotiationStatus(supplier.address, tradeCounterId);
+            await _addAllOrderConstraints(supplier, tradeCounterId.toNumber());
+            await tradeManagerContract.connect(supplier).confirmOrder(tradeCounterId);
+            await tradeManagerContract.connect(customer).confirmOrder(tradeCounterId);
+            const negotiationStatus = await tradeManagerContract.connect(supplier).getNegotiationStatus(tradeCounterId);
             expect(negotiationStatus).to.be.equal(2);
         });
 
         it('should confirm an order - FAIL (Only an offeree or an offeror can confirm the order)', async () => {
-            await expect(tradeManagerContract.connect(otherAccount).confirmOrder(supplier.address, tradeCounterId)).to.be.revertedWith('Only an offeree or an offeror can confirm the order');
+            await expect(tradeManagerContract.connect(otherAccount).confirmOrder(tradeCounterId)).to.be.revertedWith('Only an offeree or an offeror can confirm the order');
         });
     });
 
     describe('addDocument', () => {
         before(async () => {
             await tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.externalUrl);
-            tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
+            const tradeIds = await tradeManagerContract.connect(supplier).getTradeIds(supplier.address);
+            tradeCounterId = tradeIds[tradeIds.length - 1];
 
-            await tradeManagerContract.connect(supplier).addOrderOfferee(supplier.address, tradeCounterId.toNumber(), customer.address);
-            await _addAllOrderConstraints(supplier, supplier.address, tradeCounterId.toNumber());
+            await tradeManagerContract.connect(supplier).addOrderOfferee(tradeCounterId.toNumber(), customer.address);
+            await _addAllOrderConstraints(supplier, tradeCounterId.toNumber());
         });
 
         it('should add a document to an existing order - FAIL (The order is not already confirmed, cannot add document)', async () => {
-            await expect(tradeManagerContract.connect(supplier).addDocument(supplier.address, tradeCounterId, 'document name', documentTypes[0], 'external_doc_url'))
+            await expect(tradeManagerContract.connect(supplier).addDocument(tradeCounterId, 'document name', documentTypes[0], 'external_doc_url'))
                 .to.be.revertedWith('The order is not already confirmed, cannot add document');
         });
 
         it('should add a document to an existing order', async () => {
-            await tradeManagerContract.connect(supplier).confirmOrder(supplier.address, tradeCounterId);
-            await tradeManagerContract.connect(customer).confirmOrder(supplier.address, tradeCounterId);
-            await tradeManagerContract.connect(supplier).addDocument(supplier.address, tradeCounterId, 'document name', documentTypes[0], 'external_doc_url');
+            await tradeManagerContract.connect(supplier).confirmOrder(tradeCounterId);
+            await tradeManagerContract.connect(customer).confirmOrder(tradeCounterId);
+            await tradeManagerContract.connect(supplier).addDocument(tradeCounterId, 'document name', documentTypes[0], 'external_doc_url');
             expect(documentManagerContractFake.registerDocument).to.have.callCount(1);
-            expect(documentManagerContractFake.registerDocument).to.have.calledWith(supplier.address, tradeCounterId, 'document name', documentTypes[0], 'external_doc_url');
+            expect(documentManagerContractFake.registerDocument).to.have.calledWith(tradeCounterId, 'document name', documentTypes[0], 'external_doc_url');
         });
 
         it('should add a document to an existing order - FAIL (Trade does not exist)', async () => {
-            await tradeManagerContract.connect(supplier).confirmOrder(supplier.address, tradeCounterId);
-            await tradeManagerContract.connect(customer).confirmOrder(supplier.address, tradeCounterId);
-            await expect(tradeManagerContract.connect(supplier).addDocument(supplier.address, 50, 'document name', documentTypes[0], 'external_doc_url'))
+            await tradeManagerContract.connect(supplier).confirmOrder(tradeCounterId);
+            await tradeManagerContract.connect(customer).confirmOrder(tradeCounterId);
+            await expect(tradeManagerContract.connect(supplier).addDocument(50, 'document name', documentTypes[0], 'external_doc_url'))
                 .to.be.revertedWith('Trade does not exist');
         });
     });
@@ -320,25 +339,26 @@ describe('TradeManager', () => {
 
         before(async () => {
             await tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.externalUrl);
-            tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
-            await tradeManagerContract.connect(supplier).addOrderOfferee(supplier.address, tradeCounterId.toNumber(), customer.address);
+            const tradeIds = await tradeManagerContract.connect(supplier).getTradeIds(supplier.address);
+            tradeCounterId = tradeIds[tradeIds.length - 1];
+            await tradeManagerContract.connect(supplier).addOrderOfferee(tradeCounterId.toNumber(), customer.address);
 
-            await _addAllOrderConstraints(supplier, supplier.address, tradeCounterId.toNumber());
+            await _addAllOrderConstraints(supplier, tradeCounterId.toNumber());
         });
 
         describe('addOrderLine', () => {
             it('should add and retrieve an order line', async () => {
-                await tradeManagerContract.connect(supplier).addOrderLine(supplier.address, tradeCounterId.toNumber(), basicTradeLineMaterialIds, initialProductCategory, quantity, price);
+                await tradeManagerContract.connect(supplier).addOrderLine(tradeCounterId.toNumber(), basicTradeLineMaterialIds, initialProductCategory, quantity, price);
 
                 expect(enumerableFiatManagerContractFake.contains).to.be.called;
                 expect(enumerableFiatManagerContractFake.contains).to.be.calledWith(price.fiat);
                 expect(enumerableProductCategoryManagerContractFake.contains).to.be.called;
                 expect(enumerableProductCategoryManagerContractFake.contains).to.be.calledWith(initialProductCategory);
 
-                const { lineIds } = await tradeManagerContract.connect(supplier).getOrderInfo(supplier.address, tradeCounterId.toNumber());
+                const { lineIds } = await tradeManagerContract.connect(supplier).getOrderInfo(tradeCounterId.toNumber());
                 orderLineCounterId = lineIds.slice(-1)[0];
 
-                const savedOrderLine = await tradeManagerContract.connect(supplier).getOrderLine(supplier.address, tradeCounterId.toNumber(), orderLineCounterId.toNumber());
+                const savedOrderLine = await tradeManagerContract.connect(supplier).getOrderLine(tradeCounterId.toNumber(), orderLineCounterId.toNumber());
                 expect(savedOrderLine.id.toNumber()).to.equal(orderLineCounterId.toNumber());
                 expect(savedOrderLine.productCategory.toString()).to.equal(initialProductCategory);
                 expect(savedOrderLine.quantity.toNumber()).to.equal(quantity.toNumber());
@@ -348,55 +368,60 @@ describe('TradeManager', () => {
             });
 
             it('should emit OrderLineAdded event', async () => {
-                tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
-                const { lineIds } = await tradeManagerContract.connect(supplier).getOrderInfo(supplier.address, tradeCounterId.toNumber());
+                const tradeIds = await tradeManagerContract.connect(supplier).getTradeIds(supplier.address);
+                tradeCounterId = tradeIds[tradeIds.length - 1];
+                const { lineIds } = await tradeManagerContract.connect(supplier).getOrderInfo(tradeCounterId.toNumber());
                 orderLineCounterId = lineIds.slice(-1)[0];
 
-                await expect(tradeManagerContract.connect(supplier).addOrderLine(supplier.address, tradeCounterId.toNumber(), basicTradeLineMaterialIds, initialProductCategory, quantity, price))
+                await expect(tradeManagerContract.connect(supplier).addOrderLine(tradeCounterId.toNumber(), basicTradeLineMaterialIds, initialProductCategory, quantity, price))
                     .to.emit(tradeManagerContract, 'OrderLineAdded')
-                    .withArgs(tradeCounterId.toNumber(), supplier.address, orderLineCounterId.toNumber() + 1);
+                    .withArgs(tradeCounterId.toNumber(), orderLineCounterId.toNumber() + 1);
             });
 
             it('should add a order line - FAIL (Order does not exist)', async () => {
                 const otherOrderId = 50;
-                await expect(tradeManagerContract.connect(supplier).addOrderLine(supplier.address, otherOrderId, basicTradeLineMaterialIds, initialProductCategory, quantity, price)).to.be.revertedWith('Order does not exist');
+                await expect(tradeManagerContract.connect(supplier).addOrderLine(otherOrderId, basicTradeLineMaterialIds, initialProductCategory, quantity, price)).to.be.revertedWith('Order does not exist');
             });
 
             it('should add a order line - FAIL (The fiat of the order line isn\'t registered)', async () => {
                 const oldFiat = price.fiat;
                 price.fiat = 'FIAT';
-                tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
-                await expect(tradeManagerContract.connect(supplier).addOrderLine(supplier.address, tradeCounterId.toNumber(), basicTradeLineMaterialIds, initialProductCategory, quantity, price)).to.be.revertedWith("The fiat of the order line isn't registered");
+                const tradeIds = await tradeManagerContract.connect(supplier).getTradeIds(supplier.address);
+                tradeCounterId = tradeIds[tradeIds.length - 1];
+                await expect(tradeManagerContract.connect(supplier).addOrderLine(tradeCounterId.toNumber(), basicTradeLineMaterialIds, initialProductCategory, quantity, price)).to.be.revertedWith("The fiat of the order line isn't registered");
                 price.fiat = oldFiat;
             });
 
             it('should add a order line - FAIL (The product category specified isn\'t registered)', async () => {
-                tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
-                await expect(tradeManagerContract.connect(supplier).addOrderLine(supplier.address, tradeCounterId.toNumber(), basicTradeLineMaterialIds, 'custom product category', quantity, price)).to.be.revertedWith("The product category specified isn't registered");
+                const tradeIds = await tradeManagerContract.connect(supplier).getTradeIds(supplier.address);
+                tradeCounterId = tradeIds[tradeIds.length - 1];
+                await expect(tradeManagerContract.connect(supplier).addOrderLine(tradeCounterId.toNumber(), basicTradeLineMaterialIds, 'custom product category', quantity, price)).to.be.revertedWith("The product category specified isn't registered");
             });
 
             it('should add a order line - FAIL (The order has been confirmed, it cannot be changed)', async () => {
-                tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
-                tradeManagerContract.connect(supplier).confirmOrder(supplier.address, tradeCounterId);
-                tradeManagerContract.connect(customer).confirmOrder(supplier.address, tradeCounterId);
+                const tradeIds = await tradeManagerContract.connect(supplier).getTradeIds(supplier.address);
+                tradeCounterId = tradeIds[tradeIds.length - 1];
+                tradeManagerContract.connect(supplier).confirmOrder(tradeCounterId);
+                tradeManagerContract.connect(customer).confirmOrder(tradeCounterId);
 
-                await expect(tradeManagerContract.connect(supplier).addOrderLine(supplier.address, tradeCounterId.toNumber(), basicTradeLineMaterialIds, initialProductCategory, quantity, price)).to.be.revertedWith('The order has been confirmed, it cannot be changed');
+                await expect(tradeManagerContract.connect(supplier).addOrderLine(tradeCounterId.toNumber(), basicTradeLineMaterialIds, initialProductCategory, quantity, price)).to.be.revertedWith('The order has been confirmed, it cannot be changed');
             });
         });
 
         describe('getOrderLine', () => {
             before(async () => {
                 await tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.externalUrl);
-                tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
-                await tradeManagerContract.connect(supplier).addOrderOfferee(supplier.address, tradeCounterId.toNumber(), customer.address);
+                const tradeIds = await tradeManagerContract.connect(supplier).getTradeIds(supplier.address);
+                tradeCounterId = tradeIds[tradeIds.length - 1];
+                await tradeManagerContract.connect(supplier).addOrderOfferee(tradeCounterId.toNumber(), customer.address);
 
-                await tradeManagerContract.connect(supplier).addOrderLine(supplier.address, tradeCounterId.toNumber(), basicTradeLineMaterialIds, initialProductCategory, quantity, price);
-                const { lineIds } = await tradeManagerContract.connect(supplier).getOrderInfo(supplier.address, tradeCounterId.toNumber());
+                await tradeManagerContract.connect(supplier).addOrderLine(tradeCounterId.toNumber(), basicTradeLineMaterialIds, initialProductCategory, quantity, price);
+                const { lineIds } = await tradeManagerContract.connect(supplier).getOrderInfo(tradeCounterId.toNumber());
                 orderLineCounterId = lineIds.slice(-1)[0];
             });
 
             it('should get an order line', async () => {
-                const cl = await tradeManagerContract.connect(supplier).getOrderLine(supplier.address, tradeCounterId.toNumber(), orderLineCounterId.toNumber());
+                const cl = await tradeManagerContract.connect(supplier).getOrderLine(tradeCounterId.toNumber(), orderLineCounterId.toNumber());
                 expect(cl.id.toNumber()).to.equal(orderLineCounterId.toNumber());
                 expect(cl.productCategory.toString()).to.equal(initialProductCategory);
                 expect(cl.quantity.toNumber()).to.equal(quantity.toNumber());
@@ -407,33 +432,35 @@ describe('TradeManager', () => {
 
             it('should get an order line - FAIL (Trade does not exist)', async () => {
                 const otherOrderId = 50;
-                await expect(tradeManagerContract.connect(supplier).getOrderLine(supplier.address, otherOrderId, orderLineCounterId.toNumber())).to.be.revertedWith('Order does not exist');
+                await expect(tradeManagerContract.connect(supplier).getOrderLine(otherOrderId, orderLineCounterId.toNumber())).to.be.revertedWith('Order does not exist');
             });
 
             it('should get an order line - FAIL (Trade does not exist)', async () => {
                 const otherOrderLineId = 50;
-                await expect(tradeManagerContract.connect(supplier).getOrderLine(supplier.address, tradeCounterId.toNumber(), otherOrderLineId)).to.be.revertedWith('Order line does not exist');
+                await expect(tradeManagerContract.connect(supplier).getOrderLine(tradeCounterId.toNumber(), otherOrderLineId)).to.be.revertedWith('Order line does not exist');
             });
 
             it('should get an order line - FAIL (Only an ORDER has order lines)', async () => {
                 await tradeManagerContract.connect(supplier).registerTrade(0, supplier.address, customer.address, basicTrade.externalUrl);
-                tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
+                const tradeIds = await tradeManagerContract.connect(supplier).getTradeIds(supplier.address);
+                tradeCounterId = tradeIds[tradeIds.length - 1];
 
-                await expect(tradeManagerContract.connect(supplier).getOrderLine(supplier.address, tradeCounterId.toNumber(), orderLineCounterId.toNumber())).to.be.revertedWith('Only an ORDER has order lines');
+                await expect(tradeManagerContract.connect(supplier).getOrderLine(tradeCounterId.toNumber(), orderLineCounterId.toNumber())).to.be.revertedWith('Only an ORDER has order lines');
             });
         });
 
         describe('tradeLineExists', () => {
             it('should check if a trade line exists', async () => {
                 await tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.externalUrl);
-                tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
-                await tradeManagerContract.connect(supplier).addOrderOfferee(supplier.address, tradeCounterId.toNumber(), customer.address);
+                const tradeIds = await tradeManagerContract.connect(supplier).getTradeIds(supplier.address);
+                tradeCounterId = tradeIds[tradeIds.length - 1];
+                await tradeManagerContract.connect(supplier).addOrderOfferee(tradeCounterId.toNumber(), customer.address);
 
-                await tradeManagerContract.connect(supplier).addOrderLine(supplier.address, tradeCounterId.toNumber(), basicTradeLineMaterialIds, initialProductCategory, quantity, price);
-                const { lineIds } = await tradeManagerContract.connect(supplier).getOrderInfo(supplier.address, tradeCounterId.toNumber());
+                await tradeManagerContract.connect(supplier).addOrderLine(tradeCounterId.toNumber(), basicTradeLineMaterialIds, initialProductCategory, quantity, price);
+                const { lineIds } = await tradeManagerContract.connect(supplier).getOrderInfo(tradeCounterId.toNumber());
                 orderLineCounterId = lineIds.slice(-1)[0];
 
-                const exist = await tradeManagerContract.connect(supplier).tradeLineExists(supplier.address, tradeCounterId.toNumber(), orderLineCounterId.toNumber());
+                const exist = await tradeManagerContract.connect(supplier).tradeLineExists(tradeCounterId.toNumber(), orderLineCounterId.toNumber());
                 expect(exist).to.be.true;
             });
         });
@@ -444,50 +471,52 @@ describe('TradeManager', () => {
             const updatedProductCategory = categories[1];
 
             before(async () => {
-                tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
-                await tradeManagerContract.connect(supplier).addOrderLine(supplier.address, tradeCounterId.toNumber(), basicTradeLineMaterialIds, initialProductCategory, quantity, price);
-                const { lineIds } = await tradeManagerContract.connect(supplier).getOrderInfo(supplier.address, tradeCounterId.toNumber());
+                const tradeIds = await tradeManagerContract.connect(supplier).getTradeIds(supplier.address);
+                tradeCounterId = tradeIds[tradeIds.length - 1];
+                await tradeManagerContract.connect(supplier).addOrderLine(tradeCounterId.toNumber(), basicTradeLineMaterialIds, initialProductCategory, quantity, price);
+                const { lineIds } = await tradeManagerContract.connect(supplier).getOrderInfo(tradeCounterId.toNumber());
                 orderLineCounterId = lineIds.slice(-1)[0];
             });
 
             it('should update an order line', async () => {
-                await tradeManagerContract.connect(supplier).updateOrderLine(supplier.address, tradeCounterId.toNumber(), orderLineCounterId.toNumber(), basicTradeLineMaterialIds, updatedProductCategory, quantity, price);
+                await tradeManagerContract.connect(supplier).updateOrderLine(tradeCounterId.toNumber(), orderLineCounterId.toNumber(), basicTradeLineMaterialIds, updatedProductCategory, quantity, price);
 
                 expect(enumerableFiatManagerContractFake.contains).to.be.called;
                 expect(enumerableFiatManagerContractFake.contains).to.be.calledWith(price.fiat);
                 expect(enumerableProductCategoryManagerContractFake.contains).to.be.called;
                 expect(enumerableProductCategoryManagerContractFake.contains).to.be.calledWith(updatedProductCategory);
-                const savedOrderLine = await tradeManagerContract.connect(supplier).getOrderLine(supplier.address, tradeCounterId.toNumber(), orderLineCounterId.toNumber());
+                const savedOrderLine = await tradeManagerContract.connect(supplier).getOrderLine(tradeCounterId.toNumber(), orderLineCounterId.toNumber());
                 expect(savedOrderLine.id.toNumber()).to.equal(orderLineCounterId.toNumber());
                 expect(savedOrderLine.productCategory.toString()).to.not.equal(initialProductCategory);
                 expect(savedOrderLine.productCategory.toString()).to.equal(updatedProductCategory);
             });
 
             it('should emit OrderLineUpdated event', async () => {
-                await expect(tradeManagerContract.connect(supplier).updateOrderLine(supplier.address, tradeCounterId.toNumber(), orderLineCounterId.toNumber(), basicTradeLineMaterialIds, updatedProductCategory, quantity, price))
+                await expect(tradeManagerContract.connect(supplier).updateOrderLine(tradeCounterId.toNumber(), orderLineCounterId.toNumber(), basicTradeLineMaterialIds, updatedProductCategory, quantity, price))
                     .to.emit(tradeManagerContract, 'OrderLineUpdated')
-                    .withArgs(tradeCounterId.toNumber(), supplier.address, orderLineCounterId.toNumber());
+                    .withArgs(tradeCounterId.toNumber(), orderLineCounterId.toNumber());
             });
 
             it('should update a order line - FAIL (Order does not exist)', async () => {
                 const otherOrderId = 50;
-                await expect(tradeManagerContract.connect(supplier).updateOrderLine(supplier.address, otherOrderId, orderLineCounterId.toNumber(), basicTradeLineMaterialIds, updatedProductCategory, quantity, price)).to.be.revertedWith('Order does not exist');
+                await expect(tradeManagerContract.connect(supplier).updateOrderLine(otherOrderId, orderLineCounterId.toNumber(), basicTradeLineMaterialIds, updatedProductCategory, quantity, price)).to.be.revertedWith('Order does not exist');
             });
 
             it('should update a order line - FAIL (Sender is neither offeree nor offeror)', async () => {
-                await expect(tradeManagerContract.connect(otherAccount).updateOrderLine(supplier.address, tradeCounterId.toNumber(), orderLineCounterId.toNumber(), basicTradeLineMaterialIds, updatedProductCategory, quantity, price)).to.be.revertedWith('Sender is neither offeree nor offeror');
+                await expect(tradeManagerContract.connect(otherAccount).updateOrderLine(tradeCounterId.toNumber(), orderLineCounterId.toNumber(), basicTradeLineMaterialIds, updatedProductCategory, quantity, price)).to.be.revertedWith('Sender is neither offeree nor offeror');
             });
 
             it('should update a order line - FAIL (The fiat of the order line isn\'t registered)', async () => {
                 const oldFiat = price.fiat;
                 price.fiat = 'FIAT';
-                await expect(tradeManagerContract.connect(supplier).updateOrderLine(supplier.address, tradeCounterId.toNumber(), orderLineCounterId.toNumber(), basicTradeLineMaterialIds, updatedProductCategory, quantity, price)).to.be.revertedWith("The fiat of the order line isn't registered");
+                await expect(tradeManagerContract.connect(supplier).updateOrderLine(tradeCounterId.toNumber(), orderLineCounterId.toNumber(), basicTradeLineMaterialIds, updatedProductCategory, quantity, price)).to.be.revertedWith("The fiat of the order line isn't registered");
                 price.fiat = oldFiat;
             });
 
             it('should update a order line - FAIL (The product category specified isn\'t registered)', async () => {
-                tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
-                await expect(tradeManagerContract.connect(supplier).updateOrderLine(supplier.address, tradeCounterId.toNumber(), orderLineCounterId.toNumber(), basicTradeLineMaterialIds, 'custom product category', quantity, price)).to.be.revertedWith("The product category specified isn't registered");
+                const tradeIds = await tradeManagerContract.connect(supplier).getTradeIds(supplier.address);
+                tradeCounterId = tradeIds[tradeIds.length - 1];
+                await expect(tradeManagerContract.connect(supplier).updateOrderLine(tradeCounterId.toNumber(), orderLineCounterId.toNumber(), basicTradeLineMaterialIds, 'custom product category', quantity, price)).to.be.revertedWith("The product category specified isn't registered");
             });
         });
 
@@ -496,42 +525,42 @@ describe('TradeManager', () => {
 
             before(async () => {
                 await tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.externalUrl);
-                tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
-
-                await tradeManagerContract.connect(supplier).addOrderOfferee(supplier.address, tradeCounterId.toNumber(), customer.address);
+                const tradeIds = await tradeManagerContract.connect(supplier).getTradeIds(supplier.address);
+                tradeCounterId = tradeIds[tradeIds.length - 1];
+                await tradeManagerContract.connect(supplier).addOrderOfferee(tradeCounterId.toNumber(), customer.address);
             });
 
             describe('Order initialization', () => {
                 it('should try to get order status - FAIL (Order does not exist)', async () => {
-                    await expect(tradeManagerContract.connect(supplier).getNegotiationStatus(supplier.address, 50)).to.be.revertedWith('Order does not exist');
+                    await expect(tradeManagerContract.connect(supplier).getNegotiationStatus(50)).to.be.revertedWith('Order does not exist');
                 });
 
                 it('neither supplier nor customer have been signed the order, result = INITIALIZED', async () => {
-                    orderStatus = await tradeManagerContract.connect(supplier).getNegotiationStatus(supplier.address, tradeCounterId.toNumber());
+                    orderStatus = await tradeManagerContract.connect(supplier).getNegotiationStatus(tradeCounterId.toNumber());
                     expect(orderStatus).to.equal(0);
                 });
             });
 
             describe('Negotiation status with defined constraints', () => {
                 before(async () => {
-                    await _addAllOrderConstraints(supplier, supplier.address, tradeCounterId.toNumber());
+                    await _addAllOrderConstraints(supplier, tradeCounterId.toNumber());
                 });
 
                 it('the supplier should change the order negotiation status by adding line, result = PENDING', async () => {
-                    await tradeManagerContract.connect(supplier).addOrderLine(supplier.address, tradeCounterId, basicTradeLineMaterialIds, initialProductCategory, quantity, price);
-                    orderStatus = await tradeManagerContract.connect(supplier).getNegotiationStatus(supplier.address, tradeCounterId.toNumber());
+                    await tradeManagerContract.connect(supplier).addOrderLine(tradeCounterId, basicTradeLineMaterialIds, initialProductCategory, quantity, price);
+                    orderStatus = await tradeManagerContract.connect(supplier).getNegotiationStatus(tradeCounterId.toNumber());
                     expect(orderStatus).to.equal(1);
                 });
 
                 it('the customer should change again the order negotiation status by adding a line, result = PENDING', async () => {
-                    await tradeManagerContract.connect(customer).addOrderLine(supplier.address, tradeCounterId, basicTradeLineMaterialIds, initialProductCategory, quantity, price);
-                    orderStatus = await tradeManagerContract.connect(customer).getNegotiationStatus(supplier.address, tradeCounterId.toNumber());
+                    await tradeManagerContract.connect(customer).addOrderLine(tradeCounterId, basicTradeLineMaterialIds, initialProductCategory, quantity, price);
+                    orderStatus = await tradeManagerContract.connect(customer).getNegotiationStatus(tradeCounterId.toNumber());
                     expect(orderStatus).to.equal(1);
                 });
 
                 it('the supplier should confirm the order, result = COMPLETED', async () => {
-                    await tradeManagerContract.connect(supplier).confirmOrder(supplier.address, tradeCounterId);
-                    orderStatus = await tradeManagerContract.connect(supplier).getNegotiationStatus(supplier.address, tradeCounterId.toNumber());
+                    await tradeManagerContract.connect(supplier).confirmOrder(tradeCounterId);
+                    orderStatus = await tradeManagerContract.connect(supplier).getNegotiationStatus(tradeCounterId.toNumber());
                     expect(orderStatus).to.equal(2);
                 });
             });
@@ -541,20 +570,21 @@ describe('TradeManager', () => {
     describe('manipulate order by setting constraints', () => {
         before(async () => {
             await tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.externalUrl);
-            tradeCounterId = await tradeManagerContract.connect(supplier).getTradeCounter(supplier.address);
+            const tradeIds = await tradeManagerContract.connect(supplier).getTradeIds(supplier.address);
+            tradeCounterId = tradeIds[tradeIds.length - 1];
         });
 
         describe('setOrderPaymentDeadline', () => {
             const deadline = new Date('2030-10-10').getTime();
 
             it('should set the payment deadline', async () => {
-                await tradeManagerContract.connect(supplier).setOrderPaymentDeadline(supplier.address, tradeCounterId, deadline);
-                const order = await tradeManagerContract.connect(supplier).getOrderInfo(supplier.address, tradeCounterId.toNumber());
+                await tradeManagerContract.connect(supplier).setOrderPaymentDeadline(tradeCounterId, deadline);
+                const order = await tradeManagerContract.connect(supplier).getOrderInfo(tradeCounterId.toNumber());
                 expect(order.paymentDeadline).to.equal(deadline);
             });
 
             it('should set the payment deadline - FAIL(Order does not exist)', async () => {
-                await expect(tradeManagerContract.connect(supplier).setOrderPaymentDeadline(supplier.address, 50, deadline)).to.be.revertedWith('Order does not exist');
+                await expect(tradeManagerContract.connect(supplier).setOrderPaymentDeadline(50, deadline)).to.be.revertedWith('Order does not exist');
             });
         });
 
@@ -562,13 +592,13 @@ describe('TradeManager', () => {
             const deadline = new Date('2030-10-10').getTime();
 
             it('should set the document delivery deadline', async () => {
-                await tradeManagerContract.connect(supplier).setOrderDocumentDeliveryDeadline(supplier.address, tradeCounterId, deadline);
-                const order = await tradeManagerContract.connect(supplier).getOrderInfo(supplier.address, tradeCounterId.toNumber());
+                await tradeManagerContract.connect(supplier).setOrderDocumentDeliveryDeadline(tradeCounterId, deadline);
+                const order = await tradeManagerContract.connect(supplier).getOrderInfo(tradeCounterId.toNumber());
                 expect(order.documentDeliveryDeadline).to.equal(deadline);
             });
 
             it('should set the document delivery deadline - FAIL(Order does not exist)', async () => {
-                await expect(tradeManagerContract.connect(supplier).setOrderDocumentDeliveryDeadline(supplier.address, 50, deadline)).to.be.revertedWith('Order does not exist');
+                await expect(tradeManagerContract.connect(supplier).setOrderDocumentDeliveryDeadline(50, deadline)).to.be.revertedWith('Order does not exist');
             });
         });
 
@@ -576,13 +606,13 @@ describe('TradeManager', () => {
             const arbiter = 'arbiter 1';
 
             it('should set the arbiter', async () => {
-                await tradeManagerContract.connect(supplier).setOrderArbiter(supplier.address, tradeCounterId, arbiter);
-                const order = await tradeManagerContract.connect(supplier).getOrderInfo(supplier.address, tradeCounterId.toNumber());
+                await tradeManagerContract.connect(supplier).setOrderArbiter(tradeCounterId, arbiter);
+                const order = await tradeManagerContract.connect(supplier).getOrderInfo(tradeCounterId.toNumber());
                 expect(order.arbiter).to.equal(arbiter);
             });
 
             it('should set the arbiter - FAIL(Order does not exist)', async () => {
-                await expect(tradeManagerContract.connect(supplier).setOrderArbiter(supplier.address, 50, arbiter)).to.be.revertedWith('Order does not exist');
+                await expect(tradeManagerContract.connect(supplier).setOrderArbiter(50, arbiter)).to.be.revertedWith('Order does not exist');
             });
         });
 
@@ -590,13 +620,13 @@ describe('TradeManager', () => {
             const shippingDeadline = new Date('2030-10-10').getTime();
 
             it('should set the shipping deadline', async () => {
-                await tradeManagerContract.connect(supplier).setOrderShippingDeadline(supplier.address, tradeCounterId, shippingDeadline);
-                const order = await tradeManagerContract.connect(supplier).getOrderInfo(supplier.address, tradeCounterId.toNumber());
+                await tradeManagerContract.connect(supplier).setOrderShippingDeadline(tradeCounterId, shippingDeadline);
+                const order = await tradeManagerContract.connect(supplier).getOrderInfo(tradeCounterId.toNumber());
                 expect(order.shippingDeadline).to.equal(shippingDeadline);
             });
 
             it('should set the shipping deadline - FAIL(Order does not exist)', async () => {
-                await expect(tradeManagerContract.connect(supplier).setOrderShippingDeadline(supplier.address, 50, shippingDeadline)).to.be.revertedWith('Order does not exist');
+                await expect(tradeManagerContract.connect(supplier).setOrderShippingDeadline(50, shippingDeadline)).to.be.revertedWith('Order does not exist');
             });
         });
 
@@ -604,25 +634,25 @@ describe('TradeManager', () => {
             const deliveryDeadline = new Date('2030-10-10').getTime();
 
             it('should set the shipping deadline', async () => {
-                await tradeManagerContract.connect(supplier).setOrderDeliveryDeadline(supplier.address, tradeCounterId, deliveryDeadline);
-                const order = await tradeManagerContract.connect(supplier).getOrderInfo(supplier.address, tradeCounterId.toNumber());
+                await tradeManagerContract.connect(supplier).setOrderDeliveryDeadline(tradeCounterId, deliveryDeadline);
+                const order = await tradeManagerContract.connect(supplier).getOrderInfo(tradeCounterId.toNumber());
                 expect(order.deliveryDeadline).to.equal(deliveryDeadline);
             });
 
             it('should set the shipping deadline - FAIL(Order does not exist)', async () => {
-                await expect(tradeManagerContract.connect(supplier).setOrderDeliveryDeadline(supplier.address, 50, deliveryDeadline)).to.be.revertedWith('Order does not exist');
+                await expect(tradeManagerContract.connect(supplier).setOrderDeliveryDeadline(50, deliveryDeadline)).to.be.revertedWith('Order does not exist');
             });
         });
     });
 
     describe('isSupplierOrCustomer', () => {
         it('should check that the sender is supplier or customer', async () => {
-            const isParty = await tradeManagerContract.connect(supplier).isSupplierOrCustomer(supplier.address, tradeCounterId, customer.address);
+            const isParty = await tradeManagerContract.connect(supplier).isSupplierOrCustomer(tradeCounterId, customer.address);
             expect(isParty).to.be.true;
         });
 
         it('should check that the sender is supplier or customer', async () => {
-            const isParty = await tradeManagerContract.connect(supplier).isSupplierOrCustomer(supplier.address, tradeCounterId, otherAccount.address);
+            const isParty = await tradeManagerContract.connect(supplier).isSupplierOrCustomer(tradeCounterId, otherAccount.address);
             expect(isParty).to.be.false;
         });
     });

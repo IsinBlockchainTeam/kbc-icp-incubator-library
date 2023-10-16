@@ -2,7 +2,7 @@
 pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/utils/Counters.sol";
-
+import "hardhat/console.sol";
 // --------------------------------------------------------------------------
 // STRUCTS
 // --------------------------------------------------------------------------
@@ -58,10 +58,12 @@ contract SupplyChainManager {
         uint256 transformationId = transformationsCounter.current() + 1;
         Material[] memory inputMaterials = new Material[](inputMaterialsIds.length);
         transformationsCounter.increment();
-        for (uint256 i = 0; i < inputMaterialsIds.length; ++i) {
+        for (uint256 i = 0; i < inputMaterialsIds.length; i++) {
             Material memory m = getMaterial(inputMaterialsIds[i]);
+            require(m.exists, "Material does not exist");
             inputMaterials[i] = m;
         }
+
         transformations[transformationId] = Transformation(transformationId, name, inputMaterials, outputMaterialId, company, true);
 
         transformationIds[company].push(transformationId);
@@ -77,10 +79,10 @@ contract SupplyChainManager {
         transformations[id].name = name;
         // erase the old element inside the inputMaterials array of a transformation
         transformations[id].inputMaterials = new Material[](inputMaterialsIds.length);
-        for (uint256 i = 0; i < inputMaterialsIds.length; ++i) {
+        for (uint256 i = 0; i < inputMaterialsIds.length; i++) {
             Material memory m = getMaterial(inputMaterialsIds[i]);
             require(m.exists, "Material does not exist");
-            transformations[id].inputMaterials.push(m);
+            transformations[id].inputMaterials[i] = m;
         }
         transformations[id].outputMaterialId = outputMaterialId;
         emit ResourceUpdated("transformation", id);
@@ -101,7 +103,6 @@ contract SupplyChainManager {
         return materialIds[owner];
     }
 
-
     function getTransformationIds(address owner) public view returns (uint256[] memory) {
         return transformationIds[owner];
     }
@@ -113,5 +114,4 @@ contract SupplyChainManager {
     function getTransformation(uint256 id) public view returns (Transformation memory) {
         return transformations[id];
     }
-
 }
