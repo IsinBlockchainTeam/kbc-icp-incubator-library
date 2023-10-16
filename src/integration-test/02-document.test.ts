@@ -110,7 +110,7 @@ describe('Document lifecycle', () => {
         transactionId = await createOrderAndConfirm();
         await orderService.addDocument(transactionId, rawDocument.name, rawDocument.documentType, metadataUrl);
 
-        transactionDocumentCounter = await documentService.getDocumentsCounterByTransactionId(transactionId);
+        transactionDocumentCounter = await documentService.getDocumentsCounterByTransactionIdAndType(transactionId);
         expect(transactionDocumentCounter).toEqual(1);
 
         const exist = await documentService.documentExists(transactionId, transactionDocumentCounter);
@@ -134,7 +134,7 @@ describe('Document lifecycle', () => {
         await orderService.addDocument(transactionId, rawDocument2.name, rawDocument2.documentType, rawDocument2.externalUrl);
         await orderService.addDocument(transactionId2, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
 
-        const transaction2DocumentsCounter = await documentService.getDocumentsCounterByTransactionId(transactionId2);
+        const transaction2DocumentsCounter = await documentService.getDocumentsCounterByTransactionIdAndType(transactionId2);
 
         const savedTransaction2Document = await documentService.getDocumentInfo(transactionId2, transaction2DocumentsCounter);
         expect(savedTransaction2Document).toBeDefined();

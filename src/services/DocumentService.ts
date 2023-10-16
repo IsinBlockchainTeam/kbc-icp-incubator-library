@@ -17,8 +17,8 @@ export class DocumentService {
         await this._documentDriver.registerDocument(transactionId, name, documentType, externalUrl);
     }
 
-    async getDocumentsCounterByTransactionId(transactionId: number): Promise<number> {
-        return this._documentDriver.getDocumentsCounterByTransactionId(transactionId);
+    async getDocumentsCounterByTransactionIdAndType(transactionId: number): Promise<number> {
+        return this._documentDriver.getDocumentsCounterByTransactionIdAndType(transactionId);
     }
 
     async documentExists(transactionId: number, documentId: number): Promise<boolean> {
@@ -42,7 +42,7 @@ export class DocumentService {
     }
 
     async getDocumentsInfoByTransaction(transactionId: number): Promise<DocumentInfo[]> {
-        const counter = await this.getDocumentsCounterByTransactionId(transactionId);
+        const counter = await this.getDocumentsCounterByTransactionIdAndType(transactionId);
         return Promise.all(Array.from({ length: counter }, (_, index) => index + 1).map(async (id) => this.getDocumentInfo(transactionId, id)));
     }
 

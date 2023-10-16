@@ -43,7 +43,7 @@ describe('DocumentDriver', () => {
 
         mockedContract = createMock<DocumentManager>({
             registerDocument: mockedWriteFunction,
-            getDocumentsCounterByTransactionId: mockedReadFunction,
+            getDocumentsCounterByTransactionIdAndType: mockedReadFunction,
             documentExists: mockedReadFunction,
             getDocumentInfo: mockedReadFunction,
             addAdmin: mockedWriteFunction,
@@ -92,15 +92,15 @@ describe('DocumentDriver', () => {
 
     describe('getDocumentCounterByTransactionId', () => {
         it('should get the document counter by transaction id', async () => {
-            await documentDriver.getDocumentsCounterByTransactionId(2);
-            expect(mockedContract.getDocumentsCounterByTransactionId).toHaveBeenCalledTimes(1);
-            expect(mockedContract.getDocumentsCounterByTransactionId).toHaveBeenNthCalledWith(1, 2);
+            await documentDriver.getDocumentsCounterByTransactionIdAndType(2);
+            expect(mockedContract.getDocumentsCounterByTransactionIdAndType).toHaveBeenCalledTimes(1);
+            expect(mockedContract.getDocumentsCounterByTransactionIdAndType).toHaveBeenNthCalledWith(1, 2);
         });
 
         it('should retrieve document counter - transaction fails', async () => {
-            mockedContract.getDocumentsCounterByTransactionId = jest.fn().mockRejectedValue(new Error(errorMessage));
+            mockedContract.getDocumentsCounterByTransactionIdAndType = jest.fn().mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => documentDriver.getDocumentsCounterByTransactionId(2);
+            const fn = async () => documentDriver.getDocumentsCounterByTransactionIdAndType(2);
             await expect(fn).rejects.toThrowError(new Error(errorMessage));
         });
     });

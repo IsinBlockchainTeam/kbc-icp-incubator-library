@@ -27,9 +27,9 @@ export class DocumentDriver {
         }
     }
 
-    async getDocumentsCounterByTransactionId(transactionId: number): Promise<number> {
+    async getDocumentsCounterByTransactionIdAndType(transactionId: number): Promise<number> {
         try {
-            const counter = await this._contract.getDocumentsCounterByTransactionId(transactionId);
+            const counter = await this._contract.getDocumentsCounterByTransactionIdAndType(transactionId);
             return counter.toNumber();
         } catch (e: any) {
             throw new Error(e.message);

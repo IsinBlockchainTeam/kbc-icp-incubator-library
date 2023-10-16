@@ -16,7 +16,7 @@ describe('DocumentService', () => {
 
     const mockedDocumentDriver = createMock<DocumentDriver>({
         registerDocument: jest.fn(),
-        getDocumentsCounterByTransactionId: jest.fn(),
+        getDocumentsCounterByTransactionIdAndType: jest.fn(),
         documentExists: jest.fn(),
         getDocumentInfo: jest.fn(),
         addAdmin: jest.fn(),
@@ -57,9 +57,9 @@ describe('DocumentService', () => {
             expectedMockedFunctionArgs: [transactionId, documentId],
         },
         {
-            serviceFunctionName: 'getDocumentsCounterByTransactionId',
-            serviceFunction: () => documentService.getDocumentsCounterByTransactionId(transactionId),
-            expectedMockedFunction: mockedDocumentDriver.getDocumentsCounterByTransactionId,
+            serviceFunctionName: 'getDocumentsCounterByTransactionIdAndType',
+            serviceFunction: () => documentService.getDocumentsCounterByTransactionIdAndType(transactionId),
+            expectedMockedFunction: mockedDocumentDriver.getDocumentsCounterByTransactionIdAndType,
             expectedMockedFunctionArgs: [transactionId],
         },
         {
@@ -94,11 +94,11 @@ describe('DocumentService', () => {
     });
 
     it('should get documents info by transaction', async () => {
-        mockedDocumentDriver.getDocumentsCounterByTransactionId = jest.fn().mockResolvedValue(2);
+        mockedDocumentDriver.getDocumentsCounterByTransactionIdAndType = jest.fn().mockResolvedValue(2);
         await documentService.getDocumentsInfoByTransaction(transactionId);
 
-        expect(mockedDocumentDriver.getDocumentsCounterByTransactionId).toHaveBeenCalledTimes(1);
-        expect(mockedDocumentDriver.getDocumentsCounterByTransactionId).toHaveBeenNthCalledWith(1, transactionId);
+        expect(mockedDocumentDriver.getDocumentsCounterByTransactionIdAndType).toHaveBeenCalledTimes(1);
+        expect(mockedDocumentDriver.getDocumentsCounterByTransactionIdAndType).toHaveBeenNthCalledWith(1, transactionId);
 
         expect(mockedDocumentDriver.getDocumentInfo).toHaveBeenCalledTimes(2);
         expect(mockedDocumentDriver.getDocumentInfo).toHaveBeenNthCalledWith(1, transactionId, 1);

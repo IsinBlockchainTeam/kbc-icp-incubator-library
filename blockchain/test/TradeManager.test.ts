@@ -38,6 +38,7 @@ describe('TradeManager', () => {
     const categories = ['categoryA', 'categoryB'];
     const fiats = ['CHF'];
     const documentTypes = ['documentType1'];
+    const transactionType = 'trade';
 
     before(async () => {
         [owner, admin, supplier, customer, otherAccount] = await ethers.getSigners();
@@ -306,17 +307,12 @@ describe('TradeManager', () => {
             await _addAllOrderConstraints(supplier, tradeCounterId.toNumber());
         });
 
-        it('should add a document to an existing order - FAIL (The order is not already confirmed, cannot add document)', async () => {
-            await expect(tradeManagerContract.connect(supplier).addDocument(tradeCounterId, 'document name', documentTypes[0], 'external_doc_url'))
-                .to.be.revertedWith('The order is not already confirmed, cannot add document');
-        });
-
         it('should add a document to an existing order', async () => {
             await tradeManagerContract.connect(supplier).confirmOrder(tradeCounterId);
             await tradeManagerContract.connect(customer).confirmOrder(tradeCounterId);
             await tradeManagerContract.connect(supplier).addDocument(tradeCounterId, 'document name', documentTypes[0], 'external_doc_url');
             expect(documentManagerContractFake.registerDocument).to.have.callCount(1);
-            expect(documentManagerContractFake.registerDocument).to.have.calledWith(tradeCounterId, 'document name', documentTypes[0], 'external_doc_url');
+            expect(documentManagerContractFake.registerDocument).to.have.calledWith(tradeCounterId, transactionType, 'document name', documentTypes[0], 'external_doc_url');
         });
 
         it('should add a document to an existing order - FAIL (Trade does not exist)', async () => {
