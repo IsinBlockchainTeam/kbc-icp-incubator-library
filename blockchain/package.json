@@ -12,22 +12,22 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@nomicfoundation/hardhat-network-helpers": "^1.0.8",
-    "@nomicfoundation/hardhat-toolbox": "^2.0.2",
-    "@nomiclabs/hardhat-ethers": "^2.2.2",
+    "@nomicfoundation/hardhat-network-helpers": "1.0.8",
+    "@nomicfoundation/hardhat-toolbox": "2.0.2",
+    "@nomiclabs/hardhat-ethers": "2.2.2",
     "@typescript-eslint/eslint-plugin": "^6.3.0",
     "@typescript-eslint/parser": "^6.3.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-mocha": "^10.1.0",
-    "ethers": "^5.7.2"
+    "ethers": "5.7.2"
   },
   "dependencies": {
     "@blockchain-lib/blockchain-common": "1.0.1",
     "@defi-wonderland/smock": "^2.3.4",
-    "@openzeppelin/contracts": "^4.8.2",
-    "@openzeppelin/hardhat-upgrades": "^1.22.1",
+    "@openzeppelin/contracts": "4.8.2",
+    "@openzeppelin/hardhat-upgrades": "1.22.1",
     "dotenv": "^16.0.3",
-    "hardhat": "^2.12.7",
-    "hardhat-ethernal": "^3.1.0"
+    "hardhat": "2.13.0",
+    "hardhat-ethernal": "3.1.0"
   }
 }
