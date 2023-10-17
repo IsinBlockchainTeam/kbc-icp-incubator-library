@@ -41,8 +41,9 @@ export class DocumentService {
         return undefined;
     }
 
-    async getDocumentsInfoByTransaction(transactionId: number, transactionType: string): Promise<DocumentInfo[]> {
+    async getDocumentsInfoByTransactionIdAndType(transactionId: number, transactionType: string): Promise<DocumentInfo[]> {
         const counter = await this.getDocumentsCounterByTransactionIdAndType(transactionId, transactionType);
+        console.log('counter: ', counter);
         return Promise.all(Array.from({ length: counter }, (_, index) => index + 1).map(async (id) => this.getDocumentInfo(transactionId, transactionType, id)));
     }
 

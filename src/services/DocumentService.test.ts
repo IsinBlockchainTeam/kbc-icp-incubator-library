@@ -96,7 +96,7 @@ describe('DocumentService', () => {
 
     it('should get documents info by transaction', async () => {
         mockedDocumentDriver.getDocumentsCounterByTransactionIdAndType = jest.fn().mockResolvedValue(2);
-        await documentService.getDocumentsInfoByTransaction(transactionId, transactionType);
+        await documentService.getDocumentsInfoByTransactionIdAndType(transactionId, transactionType);
 
         expect(mockedDocumentDriver.getDocumentsCounterByTransactionIdAndType).toHaveBeenCalledTimes(1);
         expect(mockedDocumentDriver.getDocumentsCounterByTransactionIdAndType).toHaveBeenNthCalledWith(1, transactionId, transactionType);
