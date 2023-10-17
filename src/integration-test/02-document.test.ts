@@ -49,6 +49,7 @@ describe('Document lifecycle', () => {
     };
     let transactionId = 1;
     let transactionId2 = 2;
+    const transactionType = 'trade';
 
     const _defineSender = (privateKey: string) => {
         signer = new ethers.Wallet(privateKey, provider);
@@ -96,7 +97,7 @@ describe('Document lifecycle', () => {
 
     it('Should register a document by another company, fails because the contract cannot directly be invoked to register a new document', async () => {
         _defineSender(CUSTOMER_PRIVATE_KEY);
-        const fn = () => documentService.registerDocument(transactionId, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
+        const fn = () => documentService.registerDocument(transactionId, transactionType, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
         await expect(fn).rejects.toThrowError(/Sender has no permissions/);
     });
 
@@ -110,13 +111,13 @@ describe('Document lifecycle', () => {
         transactionId = await createOrderAndConfirm();
         await orderService.addDocument(transactionId, rawDocument.name, rawDocument.documentType, metadataUrl);
 
-        transactionDocumentCounter = await documentService.getDocumentsCounterByTransactionIdAndType(transactionId);
+        transactionDocumentCounter = await documentService.getDocumentsCounterByTransactionIdAndType(transactionId, transactionType);
         expect(transactionDocumentCounter).toEqual(1);
 
-        const exist = await documentService.documentExists(transactionId, transactionDocumentCounter);
+        const exist = await documentService.documentExists(transactionId, transactionType, transactionDocumentCounter);
         expect(exist).toBeTruthy();
 
-        const savedDocumentInfo = await documentService.getDocumentInfo(transactionId, transactionDocumentCounter);
+        const savedDocumentInfo = await documentService.getDocumentInfo(transactionId, transactionType, transactionDocumentCounter);
         const savedDocument = await documentService.getCompleteDocument(savedDocumentInfo);
         expect(savedDocument).toBeDefined();
         expect(savedDocumentInfo).toBeDefined();
@@ -134,9 +135,9 @@ describe('Document lifecycle', () => {
         await orderService.addDocument(transactionId, rawDocument2.name, rawDocument2.documentType, rawDocument2.externalUrl);
         await orderService.addDocument(transactionId2, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
 
-        const transaction2DocumentsCounter = await documentService.getDocumentsCounterByTransactionIdAndType(transactionId2);
+        const transaction2DocumentsCounter = await documentService.getDocumentsCounterByTransactionIdAndType(transactionId2, transactionType);
 
-        const savedTransaction2Document = await documentService.getDocumentInfo(transactionId2, transaction2DocumentsCounter);
+        const savedTransaction2Document = await documentService.getDocumentInfo(transactionId2, transactionType, transaction2DocumentsCounter);
         expect(savedTransaction2Document).toBeDefined();
         expect(savedTransaction2Document.id).toEqual(transaction2DocumentsCounter);
         expect(savedTransaction2Document.transactionId).toEqual(transactionId2);

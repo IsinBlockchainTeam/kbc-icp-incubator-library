@@ -62,7 +62,6 @@ export class TradeDriver {
     async getCounter(): Promise<number> {
         try {
             const counter = await this._contract.getCounter();
-
             return counter.toNumber();
         } catch (e: any) {
             throw new Error(e.message);

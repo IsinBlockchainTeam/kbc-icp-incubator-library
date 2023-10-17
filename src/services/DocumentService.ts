@@ -13,20 +13,20 @@ export class DocumentService {
         this._ipfsService = ipfsService;
     }
 
-    async registerDocument(transactionId: number, name: string, documentType: string, externalUrl: string): Promise<void> {
-        await this._documentDriver.registerDocument(transactionId, name, documentType, externalUrl);
+    async registerDocument(transactionId: number, transactionType: string, name: string, documentType: string, externalUrl: string): Promise<void> {
+        await this._documentDriver.registerDocument(transactionId, transactionType, name, documentType, externalUrl);
     }
 
-    async getDocumentsCounterByTransactionIdAndType(transactionId: number): Promise<number> {
-        return this._documentDriver.getDocumentsCounterByTransactionIdAndType(transactionId);
+    async getDocumentsCounterByTransactionIdAndType(transactionId: number, transactionType: string): Promise<number> {
+        return this._documentDriver.getDocumentsCounterByTransactionIdAndType(transactionId, transactionType);
     }
 
-    async documentExists(transactionId: number, documentId: number): Promise<boolean> {
-        return this._documentDriver.documentExists(transactionId, documentId);
+    async documentExists(transactionId: number, transactionType: string, documentId: number): Promise<boolean> {
+        return this._documentDriver.documentExists(transactionId, transactionType, documentId);
     }
 
-    async getDocumentInfo(transactionId: number, documentId: number): Promise<DocumentInfo> {
-        return this._documentDriver.getDocumentInfo(transactionId, documentId);
+    async getDocumentInfo(transactionId: number, transactionType: string, documentId: number): Promise<DocumentInfo> {
+        return this._documentDriver.getDocumentInfo(transactionId, transactionType, documentId);
     }
 
     async getCompleteDocument(documentInfo: DocumentInfo): Promise<Document | undefined> {
@@ -41,9 +41,9 @@ export class DocumentService {
         return undefined;
     }
 
-    async getDocumentsInfoByTransaction(transactionId: number): Promise<DocumentInfo[]> {
-        const counter = await this.getDocumentsCounterByTransactionIdAndType(transactionId);
-        return Promise.all(Array.from({ length: counter }, (_, index) => index + 1).map(async (id) => this.getDocumentInfo(transactionId, id)));
+    async getDocumentsInfoByTransaction(transactionId: number, transactionType: string): Promise<DocumentInfo[]> {
+        const counter = await this.getDocumentsCounterByTransactionIdAndType(transactionId, transactionType);
+        return Promise.all(Array.from({ length: counter }, (_, index) => index + 1).map(async (id) => this.getDocumentInfo(transactionId, transactionType, id)));
     }
 
     async addAdmin(address: string): Promise<void> {

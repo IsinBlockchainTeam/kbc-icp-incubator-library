@@ -236,12 +236,6 @@ describe('Trade lifecycle', () => {
             await expect(fn).rejects.toThrowError(/Cannot confirm an order if all constraints have not been defined/);
         });
 
-        it('Should add a document, fails because the order is not already confirmed', async () => {
-            tradeCounterId = await tradeService.getCounter();
-            const fn = async () => tradeService.addDocument(tradeCounterId, 'document name', 'Bill of lading', 'external url');
-            await expect(fn).rejects.toThrowError(/The order is not already confirmed, cannot add document/);
-        });
-
         it('Should add remaining constraints as customer', async () => {
             _defineSender(CUSTOMER_PRIVATE_KEY);
 

@@ -13,6 +13,7 @@ describe('DocumentService', () => {
         documentType: 'Bill of lading',
         externalUrl: 'externalUrl',
     };
+    const transactionType = 'trade';
 
     const mockedDocumentDriver = createMock<DocumentDriver>({
         registerDocument: jest.fn(),
@@ -40,27 +41,27 @@ describe('DocumentService', () => {
     it.each([
         {
             serviceFunctionName: 'registerDocument',
-            serviceFunction: () => documentService.registerDocument(transactionId, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl),
+            serviceFunction: () => documentService.registerDocument(transactionId, transactionType, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl),
             expectedMockedFunction: mockedDocumentDriver.registerDocument,
-            expectedMockedFunctionArgs: [transactionId, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl],
+            expectedMockedFunctionArgs: [transactionId, transactionType, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl],
         },
         {
             serviceFunctionName: 'documentExists',
-            serviceFunction: () => documentService.documentExists(transactionId, documentId),
+            serviceFunction: () => documentService.documentExists(transactionId, transactionType, documentId),
             expectedMockedFunction: mockedDocumentDriver.documentExists,
-            expectedMockedFunctionArgs: [transactionId, documentId],
+            expectedMockedFunctionArgs: [transactionId, transactionType, documentId],
         },
         {
             serviceFunctionName: 'getDocumentInfo',
-            serviceFunction: () => documentService.getDocumentInfo(transactionId, documentId),
+            serviceFunction: () => documentService.getDocumentInfo(transactionId, transactionType, documentId),
             expectedMockedFunction: mockedDocumentDriver.getDocumentInfo,
-            expectedMockedFunctionArgs: [transactionId, documentId],
+            expectedMockedFunctionArgs: [transactionId, transactionType, documentId],
         },
         {
             serviceFunctionName: 'getDocumentsCounterByTransactionIdAndType',
-            serviceFunction: () => documentService.getDocumentsCounterByTransactionIdAndType(transactionId),
+            serviceFunction: () => documentService.getDocumentsCounterByTransactionIdAndType(transactionId, transactionType),
             expectedMockedFunction: mockedDocumentDriver.getDocumentsCounterByTransactionIdAndType,
-            expectedMockedFunctionArgs: [transactionId],
+            expectedMockedFunctionArgs: [transactionId, transactionType],
         },
         {
             serviceFunctionName: 'addAdmin',
@@ -95,14 +96,14 @@ describe('DocumentService', () => {
 
     it('should get documents info by transaction', async () => {
         mockedDocumentDriver.getDocumentsCounterByTransactionIdAndType = jest.fn().mockResolvedValue(2);
-        await documentService.getDocumentsInfoByTransaction(transactionId);
+        await documentService.getDocumentsInfoByTransaction(transactionId, transactionType);
 
         expect(mockedDocumentDriver.getDocumentsCounterByTransactionIdAndType).toHaveBeenCalledTimes(1);
-        expect(mockedDocumentDriver.getDocumentsCounterByTransactionIdAndType).toHaveBeenNthCalledWith(1, transactionId);
+        expect(mockedDocumentDriver.getDocumentsCounterByTransactionIdAndType).toHaveBeenNthCalledWith(1, transactionId, transactionType);
 
         expect(mockedDocumentDriver.getDocumentInfo).toHaveBeenCalledTimes(2);
-        expect(mockedDocumentDriver.getDocumentInfo).toHaveBeenNthCalledWith(1, transactionId, 1);
-        expect(mockedDocumentDriver.getDocumentInfo).toHaveBeenNthCalledWith(2, transactionId, 2);
+        expect(mockedDocumentDriver.getDocumentInfo).toHaveBeenNthCalledWith(1, transactionId, transactionType, 1);
+        expect(mockedDocumentDriver.getDocumentInfo).toHaveBeenNthCalledWith(2, transactionId, transactionType, 2);
     });
 
     it('should get complete document with file retrieved from IPFS', async () => {

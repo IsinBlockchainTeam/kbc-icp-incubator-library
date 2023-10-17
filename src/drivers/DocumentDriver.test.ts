@@ -22,8 +22,8 @@ describe('DocumentDriver', () => {
     const mockedReadFunction = jest.fn();
     const mockedDecodeEventLog = jest.fn();
 
-    const owner = ethers.Wallet.createRandom();
     const transactionId = 2;
+    const transactionType = 'trade';
     const documentId = 1;
     const rawDocument = {
         name: 'Document name',
@@ -75,47 +75,47 @@ describe('DocumentDriver', () => {
 
     describe('registerDocument', () => {
         it('should call and wait for register document', async () => {
-            await documentDriver.registerDocument(transactionId, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
+            await documentDriver.registerDocument(transactionId, transactionType, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
 
             expect(mockedContract.registerDocument).toHaveBeenCalledTimes(1);
-            expect(mockedContract.registerDocument).toHaveBeenNthCalledWith(1, transactionId, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
+            expect(mockedContract.registerDocument).toHaveBeenNthCalledWith(1, transactionId, transactionType, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 
         it('should call and wait for register document - transaction fails', async () => {
             mockedContract.registerDocument = jest.fn().mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => documentDriver.registerDocument(transactionId, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
+            const fn = async () => documentDriver.registerDocument(transactionId, transactionType, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
             await expect(fn).rejects.toThrowError(new Error(errorMessage));
         });
     });
 
     describe('getDocumentCounterByTransactionId', () => {
         it('should get the document counter by transaction id', async () => {
-            await documentDriver.getDocumentsCounterByTransactionIdAndType(2);
+            await documentDriver.getDocumentsCounterByTransactionIdAndType(2, transactionType);
             expect(mockedContract.getDocumentsCounterByTransactionIdAndType).toHaveBeenCalledTimes(1);
-            expect(mockedContract.getDocumentsCounterByTransactionIdAndType).toHaveBeenNthCalledWith(1, 2);
+            expect(mockedContract.getDocumentsCounterByTransactionIdAndType).toHaveBeenNthCalledWith(1, 2, transactionType);
         });
 
         it('should retrieve document counter - transaction fails', async () => {
             mockedContract.getDocumentsCounterByTransactionIdAndType = jest.fn().mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => documentDriver.getDocumentsCounterByTransactionIdAndType(2);
+            const fn = async () => documentDriver.getDocumentsCounterByTransactionIdAndType(2, transactionType);
             await expect(fn).rejects.toThrowError(new Error(errorMessage));
         });
     });
 
     describe('documentExists', () => {
         it('should check if document exists', async () => {
-            await documentDriver.documentExists(transactionId, documentId);
+            await documentDriver.documentExists(transactionId, transactionType, documentId);
             expect(mockedContract.documentExists).toHaveBeenCalledTimes(1);
-            expect(mockedContract.documentExists).toHaveBeenNthCalledWith(1, transactionId, documentId);
+            expect(mockedContract.documentExists).toHaveBeenNthCalledWith(1, transactionId, transactionType, documentId);
         });
 
         it('should check if document exists - transaction fails', async () => {
             mockedContract.documentExists = jest.fn().mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => documentDriver.documentExists(transactionId, documentId);
+            const fn = async () => documentDriver.documentExists(transactionId, transactionType, documentId);
             await expect(fn).rejects.toThrowError(new Error(errorMessage));
         });
     });
@@ -124,18 +124,18 @@ describe('DocumentDriver', () => {
         it('should retrieve document', async () => {
             mockedContract.getDocumentInfo = jest.fn().mockResolvedValue(mockedDocument);
 
-            const resp = await documentDriver.getDocumentInfo(transactionId, documentId);
+            const resp = await documentDriver.getDocumentInfo(transactionId, transactionType, documentId);
 
             expect(resp).toEqual(mockedDocument);
 
             expect(mockedContract.getDocumentInfo).toHaveBeenCalledTimes(1);
-            expect(mockedContract.getDocumentInfo).toHaveBeenNthCalledWith(1, transactionId, documentId);
+            expect(mockedContract.getDocumentInfo).toHaveBeenNthCalledWith(1, transactionId, transactionType, documentId);
         });
 
         it('should retrieve document - transaction fails', async () => {
             mockedContract.getDocumentInfo = jest.fn().mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => documentDriver.getDocumentInfo(transactionId, documentId);
+            const fn = async () => documentDriver.getDocumentInfo(transactionId, transactionType, documentId);
             await expect(fn).rejects.toThrowError(new Error(errorMessage));
         });
     });

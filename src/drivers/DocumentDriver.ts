@@ -18,35 +18,35 @@ export class DocumentDriver {
             .connect(signer);
     }
 
-    async registerDocument(transactionId: number, name: string, documentType: string, externalUrl: string): Promise<void> {
+    async registerDocument(transactionId: number, transactionType: string, name: string, documentType: string, externalUrl: string): Promise<void> {
         try {
-            const tx = await this._contract.registerDocument(transactionId, name, documentType, externalUrl);
+            const tx = await this._contract.registerDocument(transactionId, transactionType, name, documentType, externalUrl);
             await tx.wait();
         } catch (e: any) {
             throw new Error(e.message);
         }
     }
 
-    async getDocumentsCounterByTransactionIdAndType(transactionId: number): Promise<number> {
+    async getDocumentsCounterByTransactionIdAndType(transactionId: number, transactionType: string): Promise<number> {
         try {
-            const counter = await this._contract.getDocumentsCounterByTransactionIdAndType(transactionId);
+            const counter = await this._contract.getDocumentsCounterByTransactionIdAndType(transactionId, transactionType);
             return counter.toNumber();
         } catch (e: any) {
             throw new Error(e.message);
         }
     }
 
-    async documentExists(transactionId: number, documentId: number): Promise<boolean> {
+    async documentExists(transactionId: number, transactionType: string, documentId: number): Promise<boolean> {
         try {
-            return this._contract.documentExists(transactionId, documentId);
+            return this._contract.documentExists(transactionId, transactionType, documentId);
         } catch (e: any) {
             throw new Error(e.message);
         }
     }
 
-    async getDocumentInfo(transactionId: number, documentId: number): Promise<DocumentInfo> {
+    async getDocumentInfo(transactionId: number, transactionType: string, documentId: number): Promise<DocumentInfo> {
         try {
-            const document = await this._contract.getDocumentInfo(transactionId, documentId);
+            const document = await this._contract.getDocumentInfo(transactionId, transactionType, documentId);
             return EntityBuilder.buildDocument(document);
         } catch (e: any) {
             throw new Error(e.message);
