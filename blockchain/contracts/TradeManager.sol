@@ -173,7 +173,6 @@ contract TradeManager is AccessControl {
         return tradeIds[supplier];
     }
 
-//    TODO: check if the sender is supplier or customer of the relative trade
     function addTradeLine(uint256 tradeId, uint256[2] memory materialIds, string memory productCategory) public {
         Trade storage t = trades[tradeId];
         require(t.exists, "Trade does not exist");

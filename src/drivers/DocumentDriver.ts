@@ -46,7 +46,7 @@ export class DocumentDriver {
 
     async getDocumentInfo(transactionId: number, transactionType: string, documentId: number): Promise<DocumentInfo> {
         try {
-            const document = await this._contract.getDocumentInfo(transactionId, transactionType, documentId);
+            const document = await this._contract.getDocument(transactionId, transactionType, documentId);
             return EntityBuilder.buildDocumentInfo(document);
         } catch (e: any) {
             throw new Error(e.message);

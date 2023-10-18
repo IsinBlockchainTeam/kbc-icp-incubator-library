@@ -63,7 +63,7 @@ describe('DocumentManager', () => {
 
             documentCounterId = await documentManagerContract.connect(sender).getDocumentsCounterByTransactionIdAndType(transactionId, transactionTypes[0]);
 
-            const savedDocument = await documentManagerContract.connect(sender).getDocumentInfo(transactionId, transactionTypes[0], documentCounterId.toNumber());
+            const savedDocument = await documentManagerContract.connect(sender).getDocument(transactionId, transactionTypes[0], documentCounterId.toNumber());
             expect(savedDocument.id).to.equal(documentCounterId);
             expect(savedDocument.transactionId).to.equal(transactionId);
             expect(savedDocument.name).to.equal(rawDocument.name);
@@ -96,12 +96,12 @@ describe('DocumentManager', () => {
 
         it('should try to retrieve a document - FAIL (Document does not exist)', async () => {
             documentCounterId = await documentManagerContract.connect(sender).getDocumentsCounterByTransactionIdAndType(transactionId, transactionTypes[0]);
-            expect(documentManagerContract.connect(sender).getDocumentInfo(transactionId, transactionTypes[0], documentCounterId.toNumber() + 10))
+            expect(documentManagerContract.connect(sender).getDocument(transactionId, transactionTypes[0], documentCounterId.toNumber() + 10))
                 .to.be.revertedWith('Document does not exist');
         });
 
         it('should try to retrieve a document - FAIL (The transaction type specified isn\'t registered)', async () => {
-            await expect(documentManagerContract.connect(owner).getDocumentInfo(transactionId, 'custom type', documentCounterId.toNumber() + 10))
+            await expect(documentManagerContract.connect(owner).getDocument(transactionId, 'custom type', documentCounterId.toNumber() + 10))
                 .to.be.revertedWith('The transaction type specified isn\'t registered');
         });
     });
@@ -131,14 +131,14 @@ describe('DocumentManager', () => {
             const documentsCounter = await documentManagerContract.connect(owner).getDocumentsCounterByTransactionIdAndType(transactionId, transactionTypes[1]);
             expect(documentsCounter).to.equal(2);
 
-            let savedDocument = await documentManagerContract.connect(owner).getDocumentInfo(transactionId, transactionTypes[1], documentsCounter.toNumber() - 1);
+            let savedDocument = await documentManagerContract.connect(owner).getDocument(transactionId, transactionTypes[1], documentsCounter.toNumber() - 1);
             expect(savedDocument.id).to.equal(documentsCounter.toNumber() - 1);
             expect(savedDocument.transactionId).to.equal(transactionId);
             expect(savedDocument.name).to.equal(rawDocument.name);
             expect(savedDocument.documentType).to.equal(rawDocument.documentType);
             expect(savedDocument.externalUrl).to.equal(rawDocument.externalUrl);
 
-            savedDocument = await documentManagerContract.connect(owner).getDocumentInfo(transactionId, transactionTypes[1], documentsCounter.toNumber());
+            savedDocument = await documentManagerContract.connect(owner).getDocument(transactionId, transactionTypes[1], documentsCounter.toNumber());
             expect(savedDocument.id).to.equal(documentsCounter.toNumber());
             expect(savedDocument.transactionId).to.equal(transactionId);
             expect(savedDocument.name).to.equal(rawDocument2.name);

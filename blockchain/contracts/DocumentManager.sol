@@ -50,8 +50,8 @@ contract DocumentManager is AccessControl {
         transactionTypeManager = EnumerableType(transactionTypeAddress);
     }
 
-    function registerDocument(uint256 transactionId, string memory transactionType, string memory name, string memory documentType,
-                                string memory externalUrl, uint256 transactionLineId) public {
+    function registerDocument(uint256 transactionId, string memory transactionType, string memory name,
+                            string memory documentType, string memory externalUrl, uint256 transactionLineId) public {
         require(hasRole(ADMIN_ROLE, msg.sender) || hasRole(ORDER_MANAGER_ROLE, msg.sender), "Sender has no permissions");
         require(transactionTypeManager.contains(transactionType), "The transaction type specified isn't registered");
         require(documentTypeManager.contains(documentType), "The document type isn't registered");
@@ -82,7 +82,7 @@ contract DocumentManager is AccessControl {
         return documents[transactionId][transactionType][documentId].exists;
     }
 
-    function getDocumentInfo(uint256 transactionId, string memory transactionType, uint256 documentId) public view returns (Document memory) {
+    function getDocument(uint256 transactionId, string memory transactionType, uint256 documentId) public view returns (Document memory) {
         require(transactionTypeManager.contains(transactionType), "The transaction type specified isn't registered");
         Document memory document = documents[transactionId][transactionType][documentId];
         require(document.exists, "Document does not exist");
