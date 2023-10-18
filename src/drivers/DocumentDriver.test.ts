@@ -78,7 +78,7 @@ describe('DocumentDriver', () => {
             await documentDriver.registerDocument(transactionId, transactionType, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
 
             expect(mockedContract.registerDocument).toHaveBeenCalledTimes(1);
-            expect(mockedContract.registerDocument).toHaveBeenNthCalledWith(1, transactionId, transactionType, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
+            expect(mockedContract.registerDocument).toHaveBeenNthCalledWith(1, transactionId, transactionType, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl, 0);
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 

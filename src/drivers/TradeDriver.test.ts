@@ -496,9 +496,9 @@ describe('TradeDriver', () => {
 
     describe('addDocument', () => {
         it('should add document to an order', async () => {
-            await tradeDriver.addDocument(1, 'doc name', 'doc type', 'external url');
+            await tradeDriver.addDocument(1, 'doc name', 'doc type', 'external url', 4);
             expect(mockedContract.addDocument).toHaveBeenCalledTimes(1);
-            expect(mockedContract.addDocument).toHaveBeenNthCalledWith(1, 1, 'doc name', 'doc type', 'external url');
+            expect(mockedContract.addDocument).toHaveBeenNthCalledWith(1, 1, 'doc name', 'doc type', 'external url', 4);
 
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });

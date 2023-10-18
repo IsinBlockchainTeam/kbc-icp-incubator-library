@@ -6,10 +6,11 @@ describe('Document', () => {
     let documentInfo: DocumentInfo;
     const filename = 'filename1.pdf';
     const content = new Blob(['b', 'l', 'o', 'b']);
+    const today = new Date();
 
     beforeAll(() => {
-        documentInfo = new DocumentInfo(0, 1, 'doc name', 'doc type', 'external url');
-        document = new Document(documentInfo, filename, content);
+        documentInfo = new DocumentInfo(0, 1, 'doc name', 'doc type', 'external url', 3);
+        document = new Document(documentInfo, filename, today, content);
     });
 
     it('should correctly initialize a new DocumentFile', () => {
@@ -18,7 +19,10 @@ describe('Document', () => {
         expect(document.name).toEqual('doc name');
         expect(document.documentType).toEqual('doc type');
         expect(document.externalUrl).toEqual('external url');
+        expect(document.transactionLineId).toEqual(3);
         expect(document.filename).toEqual(filename);
+        expect(document.date).toEqual(today);
+        expect(document.quantity).toBeUndefined();
         expect(document.content.size).toEqual(content.size);
         expect(document.content.type).toEqual(content.type);
     });
@@ -33,5 +37,15 @@ describe('Document', () => {
         document.content = newContent;
         expect(document.content.size).toEqual(newContent.size);
         expect(document.content.type).toEqual(newContent.type);
+    });
+
+    it('should correctly set the date', () => {
+        document.date = new Date(today.getTime() + 10);
+        expect(document.date).toEqual(new Date(today.getTime() + 10));
+    });
+
+    it('should correctly set the quantity', () => {
+        document.quantity = 10.42;
+        expect(document.quantity).toEqual(10.42);
     });
 });

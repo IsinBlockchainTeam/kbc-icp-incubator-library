@@ -65,6 +65,6 @@ export class DocumentInfo {
     }
 
     set transactionLineId(value: number | undefined) {
-        this._transactionLineId = value;
+        this._transactionLineId = value || undefined;
     }
 }

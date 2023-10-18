@@ -4,7 +4,7 @@ describe('Document', () => {
     let documentInfo: DocumentInfo;
 
     beforeAll(() => {
-        documentInfo = new DocumentInfo(0, 1, 'doc name', 'doc type', 'metadataExternalUrl');
+        documentInfo = new DocumentInfo(0, 1, 'doc name', 'doc type', 'metadataExternalUrl', 0);
     });
 
     it('should correctly initialize a new DocumentInfo', () => {
@@ -12,6 +12,7 @@ describe('Document', () => {
         expect(documentInfo.transactionId).toEqual(1);
         expect(documentInfo.name).toEqual('doc name');
         expect(documentInfo.documentType).toEqual('doc type');
+        expect(documentInfo.transactionLineId).toBeUndefined();
     });
 
     it('should correctly set the id', () => {
@@ -37,5 +38,10 @@ describe('Document', () => {
     it('should correctly set external url', () => {
         documentInfo.externalUrl = 'externalUrl Updated';
         expect(documentInfo.externalUrl).toEqual('externalUrl Updated');
+    });
+
+    it('should correctly set transaction line id', () => {
+        documentInfo.transactionLineId = 4;
+        expect(documentInfo.transactionLineId).toEqual(4);
     });
 });
