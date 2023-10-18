@@ -169,7 +169,7 @@ describe('EntityBuilder', () => {
             bcDocument.exists = true;
 
             const document = new DocumentInfo(0, 2, 'doc name', 'doc type', 'external url');
-            expect(EntityBuilder.buildDocument(bcDocument)).toEqual(document);
+            expect(EntityBuilder.buildDocumentInfo(bcDocument)).toEqual(document);
         });
     });
 });

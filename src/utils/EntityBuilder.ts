@@ -52,7 +52,7 @@ export class EntityBuilder {
         return new Relationship(bcRelationship.id.toNumber(), bcRelationship.companyA, bcRelationship.companyB, new Date(bcRelationship.validFrom.toNumber()), new Date(bcRelationship.validUntil.toNumber()));
     }
 
-    static buildDocument(bcDocument: DocumentManager.DocumentStructOutput): DocumentInfo {
-        return new DocumentInfo(bcDocument.id.toNumber(), bcDocument.transactionId.toNumber(), bcDocument.name, bcDocument.documentType, bcDocument.externalUrl);
+    static buildDocumentInfo(bcDocument: DocumentManager.DocumentStructOutput): DocumentInfo {
+        return new DocumentInfo(bcDocument.id.toNumber(), bcDocument.transactionId.toNumber(), bcDocument.name, bcDocument.documentType, bcDocument.externalUrl, bcDocument.transactionLineId.toNumber());
     }
 }

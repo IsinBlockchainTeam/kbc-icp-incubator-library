@@ -59,7 +59,7 @@ describe('DocumentDriver', () => {
         });
         jest.spyOn(DocumentManager__factory, 'connect').mockReturnValue(mockedDocumentManager);
 
-        const buildDocumentSpy = jest.spyOn(EntityBuilder, 'buildDocument');
+        const buildDocumentSpy = jest.spyOn(EntityBuilder, 'buildDocumentInfo');
         buildDocumentSpy.mockReturnValue(mockedDocument);
 
         mockedSigner = createMock<Signer>();

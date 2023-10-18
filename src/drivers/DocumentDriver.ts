@@ -18,9 +18,9 @@ export class DocumentDriver {
             .connect(signer);
     }
 
-    async registerDocument(transactionId: number, transactionType: string, name: string, documentType: string, externalUrl: string): Promise<void> {
+    async registerDocument(transactionId: number, transactionType: string, name: string, documentType: string, externalUrl: string, transactionLineId?: number): Promise<void> {
         try {
-            const tx = await this._contract.registerDocument(transactionId, transactionType, name, documentType, externalUrl);
+            const tx = await this._contract.registerDocument(transactionId, transactionType, name, documentType, externalUrl, transactionLineId || 0);
             await tx.wait();
         } catch (e: any) {
             throw new Error(e.message);
@@ -47,7 +47,7 @@ export class DocumentDriver {
     async getDocumentInfo(transactionId: number, transactionType: string, documentId: number): Promise<DocumentInfo> {
         try {
             const document = await this._contract.getDocumentInfo(transactionId, transactionType, documentId);
-            return EntityBuilder.buildDocument(document);
+            return EntityBuilder.buildDocumentInfo(document);
         } catch (e: any) {
             throw new Error(e.message);
         }

@@ -25,8 +25,8 @@ describe('Document lifecycle', () => {
     let documentDriver: DocumentDriver;
     let provider: JsonRpcProvider;
     let signer: Signer;
-    let orderService: TradeService;
-    let orderDriver: TradeDriver;
+    let tradeService: TradeService;
+    let tradeDriver: TradeDriver;
 
     let pinataDriver: PinataIPFSDriver;
     let pinataService: IPFSService;
@@ -63,26 +63,26 @@ describe('Document lifecycle', () => {
 
     const _defineOrderSender = (privateKey: string) => {
         signer = new ethers.Wallet(privateKey, provider);
-        orderDriver = new TradeDriver(
+        tradeDriver = new TradeDriver(
             signer,
             TRADE_MANAGER_CONTRACT_ADDRESS,
         );
-        orderService = new TradeService(orderDriver);
+        tradeService = new TradeService(tradeDriver);
     };
 
     const createOrderAndConfirm = async (): Promise<number> => {
-        await orderService.registerOrder(SUPPLIER_ADDRESS, CUSTOMER_ADDRESS, externalUrl);
-        const orderId = await orderService.getCounter();
-        await orderService.addOrderOfferee(orderId, CUSTOMER_ADDRESS);
+        await tradeService.registerOrder(SUPPLIER_ADDRESS, CUSTOMER_ADDRESS, externalUrl);
+        const orderId = await tradeService.getCounter();
+        await tradeService.addOrderOfferee(orderId, CUSTOMER_ADDRESS);
         // add all the constraints so that an order can be confirmed (it is required to add a document)
-        await orderService.setOrderDocumentDeliveryDeadline(orderId, deadline);
-        await orderService.setOrderArbiter(orderId, arbiter);
-        await orderService.setOrderPaymentDeadline(orderId, deadline);
-        await orderService.setOrderShippingDeadline(orderId, deadline);
-        await orderService.setOrderDeliveryDeadline(orderId, deadline);
+        await tradeService.setOrderDocumentDeliveryDeadline(orderId, deadline);
+        await tradeService.setOrderArbiter(orderId, arbiter);
+        await tradeService.setOrderPaymentDeadline(orderId, deadline);
+        await tradeService.setOrderShippingDeadline(orderId, deadline);
+        await tradeService.setOrderDeliveryDeadline(orderId, deadline);
         // confirm the order
         _defineOrderSender(CUSTOMER_PRIVATE_KEY);
-        await orderService.confirmOrder(orderId);
+        await tradeService.confirmOrder(orderId);
         return orderId;
     };
 
@@ -101,15 +101,16 @@ describe('Document lifecycle', () => {
         await expect(fn).rejects.toThrowError(/Sender has no permissions/);
     });
 
-    it('Should register a document (and storing it to ipfs) by invoking the order manager contract and retrieve it', async () => {
+    it('Should register a document (and storing it to ipfs) by invoking the trade manager contract, then retrieve the document', async () => {
         const filename = 'file1.pdf';
+        const today = new Date();
         const fileBuffer = fs.readFileSync(path.resolve(__dirname, localFilename));
         const content = new Blob([fileBuffer], { type: 'application/pdf' });
         const ipfsFileUrl = await pinataService.storeFile(content, filename);
-        const metadataUrl = await pinataService.storeJSON({ filename, fileUrl: ipfsFileUrl });
+        const metadataUrl = await pinataService.storeJSON({ filename, date: today, fileUrl: ipfsFileUrl });
 
         transactionId = await createOrderAndConfirm();
-        await orderService.addDocument(transactionId, rawDocument.name, rawDocument.documentType, metadataUrl);
+        await tradeService.addDocument(transactionId, rawDocument.name, rawDocument.documentType, metadataUrl);
 
         transactionDocumentCounter = await documentService.getDocumentsCounterByTransactionIdAndType(transactionId, transactionType);
         expect(transactionDocumentCounter).toEqual(1);
@@ -123,17 +124,20 @@ describe('Document lifecycle', () => {
         expect(savedDocumentInfo).toBeDefined();
         expect(savedDocument!.id).toEqual(transactionDocumentCounter);
         expect(savedDocument!.transactionId).toEqual(transactionId);
+        expect(savedDocument!.transactionLineId).toBeUndefined();
         expect(savedDocument!.name).toEqual(rawDocument.name);
         expect(savedDocument!.documentType).toEqual(rawDocument.documentType);
         expect(savedDocument!.filename).toEqual(filename);
+        expect(savedDocument!.date).toEqual(today);
+        expect(savedDocument!.quantity).toBeUndefined();
         expect(savedDocument!.content.size).toEqual(content.size);
         expect(savedDocument!.content.type).toEqual(content.type);
     }, 20000);
 
     it('Should add another document for the same transaction id and another to other transaction id', async () => {
         transactionId2 = await createOrderAndConfirm();
-        await orderService.addDocument(transactionId, rawDocument2.name, rawDocument2.documentType, rawDocument2.externalUrl);
-        await orderService.addDocument(transactionId2, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
+        await tradeService.addDocument(transactionId, rawDocument2.name, rawDocument2.documentType, rawDocument2.externalUrl);
+        await tradeService.addDocument(transactionId2, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
 
         const transaction2DocumentsCounter = await documentService.getDocumentsCounterByTransactionIdAndType(transactionId2, transactionType);
 
@@ -144,4 +148,34 @@ describe('Document lifecycle', () => {
         expect(savedTransaction2Document.name).toEqual(rawDocument.name);
         expect(savedTransaction2Document.documentType).toEqual(rawDocument.documentType);
     });
+
+    it('Should add another document for the same transaction id, but specifying also the transaction line id as reference', async () => {
+        const filename = 'file2.pdf';
+        const today = new Date();
+        const fileBuffer = fs.readFileSync(path.resolve(__dirname, localFilename));
+        const content = new Blob([fileBuffer], { type: 'application/pdf' });
+        const ipfsFileUrl = await pinataService.storeFile(content, filename);
+        const metadataUrl = await pinataService.storeJSON({ filename, date: today, quantity: 55.5, fileUrl: ipfsFileUrl });
+
+        transactionId2 = await createOrderAndConfirm();
+        await tradeService.addDocument(transactionId2, rawDocument2.name, rawDocument2.documentType, metadataUrl, 3);
+
+        const transaction2DocumentsCounter = await documentService.getDocumentsCounterByTransactionIdAndType(transactionId2, transactionType);
+
+        const savedTransaction2DocumentInfo = await documentService.getDocumentInfo(transactionId2, transactionType, transaction2DocumentsCounter);
+        const savedTransaction2Document = await documentService.getCompleteDocument(savedTransaction2DocumentInfo);
+
+        expect(savedTransaction2Document).toBeDefined();
+        expect(savedTransaction2Document!.id).toEqual(transaction2DocumentsCounter);
+        expect(savedTransaction2Document!.transactionId).toEqual(transactionId2);
+        expect(savedTransaction2Document!.transactionLineId).toEqual(3);
+        expect(savedTransaction2Document!.name).toEqual(rawDocument2.name);
+        expect(savedTransaction2Document!.documentType).toEqual(rawDocument2.documentType);
+        expect(savedTransaction2Document!.transactionLineId).toEqual(3);
+        expect(savedTransaction2Document!.filename).toEqual(filename);
+        expect(savedTransaction2Document!.date).toEqual(today);
+        expect(savedTransaction2Document!.quantity).toEqual(55.5);
+        expect(savedTransaction2Document!.content.size).toEqual(content.size);
+        expect(savedTransaction2Document!.content.type).toEqual(content.type);
+    }, 20000);
 });

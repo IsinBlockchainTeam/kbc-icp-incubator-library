@@ -9,12 +9,15 @@ export class DocumentInfo {
 
     private _externalUrl: string;
 
-    constructor(id: number, transactionId: number, name: string, documentType: string, externalUrl: string) {
+    private _transactionLineId?: number;
+
+    constructor(id: number, transactionId: number, name: string, documentType: string, externalUrl: string, transactionLineId: number) {
         this._id = id;
         this._transactionId = transactionId;
         this._name = name;
         this._documentType = documentType;
         this._externalUrl = externalUrl;
+        this._transactionLineId = transactionLineId || undefined;
     }
 
     get id(): number {
@@ -55,5 +58,13 @@ export class DocumentInfo {
 
     set externalUrl(value: string) {
         this._externalUrl = value;
+    }
+
+    get transactionLineId(): number | undefined {
+        return this._transactionLineId;
+    }
+
+    set transactionLineId(value: number | undefined) {
+        this._transactionLineId = value;
     }
 }

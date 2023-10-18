@@ -202,9 +202,9 @@ export class TradeDriver {
         }
     }
 
-    async addDocument(tradeId: number, documentName: string, documentType: string, documentExternalUrl: string): Promise<void> {
+    async addDocument(tradeId: number, documentName: string, documentType: string, documentExternalUrl: string, transactionLineId?: number): Promise<void> {
         try {
-            const tx = await this._contract.addDocument(tradeId, documentName, documentType, documentExternalUrl);
+            const tx = await this._contract.addDocument(tradeId, documentName, documentType, documentExternalUrl, transactionLineId || 0);
             await tx.wait();
         } catch (e: any) {
             throw new Error(e.message);
