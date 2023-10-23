@@ -9,7 +9,7 @@ import { ContractName } from '../utils/constants';
 
 describe('TransformationManager', () => {
     let transformationManagerContract: Contract;
-    let supplyChainManagerContract: Contract;
+    let materialManagerContract: Contract;
     let owner: SignerWithAddress, admin: SignerWithAddress, address1: SignerWithAddress;
 
     let materialsCounter: number;
@@ -17,19 +17,19 @@ describe('TransformationManager', () => {
     beforeEach(async () => {
         [owner, admin, address1] = await ethers.getSigners();
 
-        const SupplyChainManager = await ethers.getContractFactory('SupplyChainManager');
-        supplyChainManagerContract = await SupplyChainManager.deploy();
+        const MaterialManager = await ethers.getContractFactory('MaterialManager');
+        materialManagerContract = await MaterialManager.deploy([admin.address]);
 
         const TransformationManager = await ethers.getContractFactory('TransformationManager');
-        transformationManagerContract = await TransformationManager.deploy([admin.address], supplyChainManagerContract.address);
+        transformationManagerContract = await TransformationManager.deploy([admin.address], materialManagerContract.address);
         await transformationManagerContract.deployed();
     });
 
     const addMaterials = async (inputIds: number[], outputId: number): Promise<number> => {
-        await (await supplyChainManagerContract.registerMaterial(address1.address, `testMaterial${inputIds[0]}`)).wait();
-        await (await supplyChainManagerContract.registerMaterial(address1.address, `testMaterial${inputIds[1]}`)).wait();
-        await (await supplyChainManagerContract.registerMaterial(address1.address, `testMaterial${outputId}`)).wait();
-        return (await supplyChainManagerContract.getMaterialsCounter()).toNumber();
+        await (await materialManagerContract.registerMaterial(address1.address, `testMaterial${inputIds[0]}`)).wait();
+        await (await materialManagerContract.registerMaterial(address1.address, `testMaterial${inputIds[1]}`)).wait();
+        await (await materialManagerContract.registerMaterial(address1.address, `testMaterial${outputId}`)).wait();
+        return (await materialManagerContract.getMaterialsCounter()).toNumber();
     };
 
     describe('registerTransformation', () => {

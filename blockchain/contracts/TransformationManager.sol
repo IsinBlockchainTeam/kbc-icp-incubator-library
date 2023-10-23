@@ -3,7 +3,7 @@ pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-import "./SupplyChainManager.sol";
+import "./MaterialManager.sol";
 
 contract TransformationManager is AccessControl {
     using Counters for Counters.Counter;
@@ -21,7 +21,7 @@ contract TransformationManager is AccessControl {
     struct Transformation {
         uint256 id;
         string name;
-        Material[] inputMaterials;
+        MaterialManager.Material[] inputMaterials;
         uint256 outputMaterialId;
         address owner;
         bool exists;
@@ -33,9 +33,9 @@ contract TransformationManager is AccessControl {
     // resource id  => resource
     mapping(uint256 => Transformation) private transformations;
 
-    SupplyChainManager supplyChainManager;
+    MaterialManager materialManager;
 
-    constructor(address[] memory admins, address supplyChainManagerAddress) {
+    constructor(address[] memory admins, address materialManagerAddress) {
         _setupRole(ADMIN_ROLE, msg.sender);
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
 
@@ -43,16 +43,16 @@ contract TransformationManager is AccessControl {
             grantRole(ADMIN_ROLE, admins[i]);
         }
 
-        supplyChainManager = SupplyChainManager(supplyChainManagerAddress);
+        materialManager = MaterialManager(materialManagerAddress);
     }
 
 
     function registerTransformation(address company, string memory name, uint256[] memory inputMaterialsIds, uint256 outputMaterialId) public {
         uint256 transformationId = transformationsCounter.current() + 1;
-        Material[] memory inputMaterials = new Material[](inputMaterialsIds.length);
+        MaterialManager.Material[] memory inputMaterials = new MaterialManager.Material[](inputMaterialsIds.length);
         transformationsCounter.increment();
         for (uint256 i = 0; i < inputMaterialsIds.length; i++) {
-            Material memory m = supplyChainManager.getMaterial(inputMaterialsIds[i]);
+            MaterialManager.Material memory m = materialManager.getMaterial(inputMaterialsIds[i]);
             require(m.exists, "Material does not exist");
             inputMaterials[i] = m;
         }
@@ -66,9 +66,9 @@ contract TransformationManager is AccessControl {
     function updateTransformation(uint256 id, string memory name, uint256[] memory inputMaterialsIds, uint256 outputMaterialId) public {
         transformations[id].name = name;
         // erase the old element inside the inputMaterials array of a transformation
-        transformations[id].inputMaterials = new Material[](inputMaterialsIds.length);
+        transformations[id].inputMaterials = new MaterialManager.Material[](inputMaterialsIds.length);
         for (uint256 i = 0; i < inputMaterialsIds.length; i++) {
-            Material memory m = supplyChainManager.getMaterial(inputMaterialsIds[i]);
+            MaterialManager.Material memory m = materialManager.getMaterial(inputMaterialsIds[i]);
             require(m.exists, "Material does not exist");
             transformations[id].inputMaterials[i] = m;
         }

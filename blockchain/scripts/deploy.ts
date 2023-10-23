@@ -81,8 +81,9 @@ serial([
         ],
     ),
     () => deploy(
-        ContractName.SUPPLY_CHAIN_MANAGER,
-        [],
+        ContractName.MATERIAL_MANAGER, [
+            [process.env.SUPPLIER_ADMIN || ''],
+        ],
     ),
     () => deploy(ContractName.RELATIONSHIP_MANAGER, [
         [process.env.SUPPLIER_ADMIN || ''],
@@ -90,7 +91,7 @@ serial([
     () => deploy(
         ContractName.TRANSFORMATION_MANAGER, [
             [process.env.SUPPLIER_ADMIN || ''],
-            contractMap.get(ContractName.SUPPLY_CHAIN_MANAGER)?.address,
+            contractMap.get(ContractName.MATERIAL_MANAGER)?.address,
         ],
     ),
 ])

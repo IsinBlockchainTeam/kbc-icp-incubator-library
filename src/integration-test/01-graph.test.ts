@@ -4,12 +4,12 @@ import { IPFSService } from '@blockchain-lib/common';
 import { GraphService } from '../services/GraphService';
 import { Transformation } from '../entities/Transformation';
 import TradeService from '../services/TradeService';
-import { SupplyChainService } from '../services/SupplyChainService';
+import { MaterialService } from '../services/MaterialService';
 import { TradeDriver } from '../drivers/TradeDriver';
-import { SupplyChainDriver } from '../drivers/SupplyChainDriver';
+import { MaterialDriver } from '../drivers/MaterialDriver';
 import {
     NETWORK,
-    SUPPLY_CHAIN_MANAGER_CONTRACT_ADDRESS,
+    MATERIAL_MANAGER_CONTRACT_ADDRESS,
     TRADE_MANAGER_CONTRACT_ADDRESS, TRANSFORMATION_MANAGER_CONTRACT_ADDRESS,
 } from './config';
 import { serial } from '../utils/utils';
@@ -30,8 +30,8 @@ describe('GraphService lifecycle', () => {
     let transformationDriver: TransformationDriver;
     let transformationService: TransformationService;
 
-    let supplyChainService: SupplyChainService;
-    let supplyChainDriver: SupplyChainDriver;
+    let materialService: MaterialService;
+    let materialDriver: MaterialDriver;
 
     const externalUrl = 'metadataUrl';
     const company1 = {
@@ -67,11 +67,11 @@ describe('GraphService lifecycle', () => {
         );
         transformationService = new TransformationService(transformationDriver);
 
-        supplyChainDriver = new SupplyChainDriver(
+        materialDriver = new MaterialDriver(
             signer,
-            SUPPLY_CHAIN_MANAGER_CONTRACT_ADDRESS,
+            MATERIAL_MANAGER_CONTRACT_ADDRESS,
         );
-        supplyChainService = new SupplyChainService(supplyChainDriver);
+        materialService = new MaterialService(materialDriver);
     };
 
     beforeAll(() => {
@@ -102,7 +102,7 @@ describe('GraphService lifecycle', () => {
             new Material(11, 'purified water', company1.address),
         ];
         const registerMaterialsFn = materials.map((m) => async () => {
-            await supplyChainService.registerMaterial(m.owner, m.name);
+            await materialService.registerMaterial(m.owner, m.name);
         });
         await serial(registerMaterialsFn);
 

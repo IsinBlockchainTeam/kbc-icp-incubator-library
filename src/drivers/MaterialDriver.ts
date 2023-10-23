@@ -1,19 +1,19 @@
 /* eslint-disable camelcase */
 
 import { Signer, utils } from 'ethers';
-import { SupplyChainManager__factory, SupplyChainManager } from '../smart-contracts';
+import { MaterialManager, MaterialManager__factory } from '../smart-contracts';
 import { EntityBuilder } from '../utils/EntityBuilder';
 import { Material } from '../entities/Material';
 
-export class SupplyChainDriver {
-    private _contract: SupplyChainManager;
+export class MaterialDriver {
+    private _contract: MaterialManager;
 
     constructor(
         signer: Signer,
-        supplyChainManagerAddress: string,
+        materialManagerAddress: string,
     ) {
-        this._contract = SupplyChainManager__factory
-            .connect(supplyChainManagerAddress, signer.provider!)
+        this._contract = MaterialManager__factory
+            .connect(materialManagerAddress, signer.provider!)
             .connect(signer);
     }
 

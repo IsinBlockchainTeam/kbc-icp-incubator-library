@@ -13,14 +13,14 @@ import {
     TRADE_MANAGER_CONTRACT_ADDRESS,
     SUPPLIER_ADDRESS,
     SUPPLIER_PRIVATE_KEY,
-    SUPPLY_CHAIN_MANAGER_CONTRACT_ADDRESS,
+    MATERIAL_MANAGER_CONTRACT_ADDRESS,
 } from './config';
 import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
 import { NegotiationStatus } from '../types/NegotiationStatus';
 import DocumentService from '../services/DocumentService';
 import { DocumentDriver } from '../drivers/DocumentDriver';
-import { SupplyChainService } from '../services/SupplyChainService';
-import { SupplyChainDriver } from '../drivers/SupplyChainDriver';
+import { MaterialService } from '../services/MaterialService';
+import { MaterialDriver } from '../drivers/MaterialDriver';
 import { TradeLine } from '../entities/TradeLine';
 
 dotenv.config();
@@ -35,8 +35,8 @@ describe('Trade lifecycle', () => {
     let documentService: DocumentService;
     let documentDriver: DocumentDriver;
 
-    let supplyChainService: SupplyChainService;
-    let supplyChainDriver: SupplyChainDriver;
+    let materialService: MaterialService;
+    let materialDriver: MaterialDriver;
 
     let pinataDriver: PinataIPFSDriver;
     let pinataService: IPFSService;
@@ -82,28 +82,28 @@ describe('Trade lifecycle', () => {
         );
         documentService = new DocumentService(documentDriver);
 
-        supplyChainDriver = new SupplyChainDriver(
+        materialDriver = new MaterialDriver(
             signer,
-            SUPPLY_CHAIN_MANAGER_CONTRACT_ADDRESS,
+            MATERIAL_MANAGER_CONTRACT_ADDRESS,
         );
-        supplyChainService = new SupplyChainService(supplyChainDriver);
+        materialService = new MaterialService(materialDriver);
     });
 
     it('Should register some materials (created two times with two names to simulate material mapping for companies)', async () => {
         const supplierMaterialName = 'material 1 supplier';
         const customerMaterialName = 'material 1 customer';
-        await supplyChainService.registerMaterial(SUPPLIER_ADDRESS, supplierMaterialName);
-        supplierMaterialsCounter = await supplyChainService.getMaterialsCounter();
+        await materialService.registerMaterial(SUPPLIER_ADDRESS, supplierMaterialName);
+        supplierMaterialsCounter = await materialService.getMaterialsCounter();
 
-        await supplyChainService.registerMaterial(CUSTOMER_ADDRESS, customerMaterialName);
-        customerMaterialsCounter = await supplyChainService.getMaterialsCounter();
+        await materialService.registerMaterial(CUSTOMER_ADDRESS, customerMaterialName);
+        customerMaterialsCounter = await materialService.getMaterialsCounter();
 
-        const supplierMaterial = await supplyChainService.getMaterial(supplierMaterialsCounter);
+        const supplierMaterial = await materialService.getMaterial(supplierMaterialsCounter);
         expect(supplierMaterial.id).toEqual(supplierMaterialsCounter);
         expect(supplierMaterial.name).toEqual(supplierMaterialName);
         expect(supplierMaterial.owner).toEqual(SUPPLIER_ADDRESS);
 
-        const customerMaterial = await supplyChainService.getMaterial(customerMaterialsCounter);
+        const customerMaterial = await materialService.getMaterial(customerMaterialsCounter);
         expect(customerMaterial.id).toEqual(customerMaterialsCounter);
         expect(customerMaterial.name).toEqual(customerMaterialName);
         expect(customerMaterial.owner).toEqual(CUSTOMER_ADDRESS);
@@ -186,10 +186,10 @@ describe('Trade lifecycle', () => {
 
         it('Should add a line to an order as a supplier and check that the status is still PENDING', async () => {
             // add other materials
-            await supplyChainService.registerMaterial(SUPPLIER_ADDRESS, 'material 2 supplier');
-            await supplyChainService.registerMaterial(CUSTOMER_ADDRESS, 'material 2 customer');
-            supplierMaterialsCounter = await supplyChainService.getMaterialsCounter();
-            customerMaterialsCounter = await supplyChainService.getMaterialsCounter();
+            await materialService.registerMaterial(SUPPLIER_ADDRESS, 'material 2 supplier');
+            await materialService.registerMaterial(CUSTOMER_ADDRESS, 'material 2 customer');
+            supplierMaterialsCounter = await materialService.getMaterialsCounter();
+            customerMaterialsCounter = await materialService.getMaterialsCounter();
 
             tradeCounterId = await tradeService.getCounter();
             const line = new OrderLine(0, [customerMaterialsCounter, supplierMaterialsCounter], productCategories[1], 20, new OrderLinePrice(10.25, 'USD'));
@@ -209,10 +209,10 @@ describe('Trade lifecycle', () => {
         it('Should add a line to a new order as a customer and status again in PENDING', async () => {
             _defineSender(CUSTOMER_PRIVATE_KEY);
             // add other materials
-            await supplyChainService.registerMaterial(SUPPLIER_ADDRESS, 'material 3 supplier');
-            await supplyChainService.registerMaterial(CUSTOMER_ADDRESS, 'material 3 customer');
-            supplierMaterialsCounter = await supplyChainService.getMaterialsCounter();
-            customerMaterialsCounter = await supplyChainService.getMaterialsCounter();
+            await materialService.registerMaterial(SUPPLIER_ADDRESS, 'material 3 supplier');
+            await materialService.registerMaterial(CUSTOMER_ADDRESS, 'material 3 customer');
+            supplierMaterialsCounter = await materialService.getMaterialsCounter();
+            customerMaterialsCounter = await materialService.getMaterialsCounter();
 
             tradeCounterId = await tradeService.getCounter();
             const line = new OrderLine(0, [supplierMaterialsCounter, customerMaterialsCounter], productCategories[0], 50, new OrderLinePrice(50.5, 'USD'));

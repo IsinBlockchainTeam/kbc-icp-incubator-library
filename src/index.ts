@@ -6,11 +6,14 @@ export { Relationship } from './entities/Relationship';
 export { RelationshipDriver } from './drivers/RelationshipDriver';
 export { RelationshipService } from './services/RelationshipService';
 
-export { SupplyChainDriver } from './drivers/SupplyChainDriver';
-export { SupplyChainService } from './services/SupplyChainService';
+export { MaterialDriver } from './drivers/MaterialDriver';
+export { MaterialService } from './services/MaterialService';
 
 export { TradeDriver } from './drivers/TradeDriver';
 export { TradeService } from './services/TradeService';
+
+export { TransformationDriver } from './drivers/TransformationDriver';
+export { TransformationService } from './services/TransformationService';
 
 export { DocumentDriver } from './drivers/DocumentDriver';
 export { DocumentService } from './services/DocumentService';
