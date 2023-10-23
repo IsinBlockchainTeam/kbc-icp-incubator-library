@@ -1,9 +1,9 @@
 import { Trade, TradeType } from '../entities/Trade';
 import { Transformation } from '../entities/Transformation';
 import TradeService from './TradeService';
-import { SupplyChainService } from './SupplyChainService';
 import { TradeLine } from '../entities/TradeLine';
 import { OrderLine } from '../entities/OrderLine';
+import { TransformationService } from './TransformationService';
 
 export type Node = {
     resourceId: string,
@@ -23,15 +23,15 @@ export type GraphData = {
 export class GraphService {
     private _tradeService: TradeService;
 
-    private _supplyChainService: SupplyChainService;
+    private _transformationService: TransformationService;
 
-    constructor(tradeService: TradeService, supplyChainService: SupplyChainService) {
+    constructor(tradeService: TradeService, transformationService: TransformationService) {
         this._tradeService = tradeService;
-        this._supplyChainService = supplyChainService;
+        this._transformationService = transformationService;
     }
 
     public async findTransformationsByMaterialOutput(supplierAddress: string, materialId: number): Promise<Transformation[]> {
-        const transformations = await this._supplyChainService.getTransformations(supplierAddress);
+        const transformations = await this._transformationService.getTransformations(supplierAddress);
         return transformations.filter((t) => t.outputMaterialId === materialId);
     }
 

@@ -10,13 +10,15 @@ import { SupplyChainDriver } from '../drivers/SupplyChainDriver';
 import {
     NETWORK,
     SUPPLY_CHAIN_MANAGER_CONTRACT_ADDRESS,
-    TRADE_MANAGER_CONTRACT_ADDRESS,
+    TRADE_MANAGER_CONTRACT_ADDRESS, TRANSFORMATION_MANAGER_CONTRACT_ADDRESS,
 } from './config';
 import { serial } from '../utils/utils';
 import { Material } from '../entities/Material';
 import { TradeType } from '../entities/Trade';
 import { TradeLine } from '../entities/TradeLine';
 import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
+import { TransformationDriver } from '../drivers/TransformationDriver';
+import { TransformationService } from '../services/TransformationService';
 
 describe('GraphService lifecycle', () => {
     let provider: JsonRpcProvider;
@@ -24,6 +26,9 @@ describe('GraphService lifecycle', () => {
 
     let tradeService: TradeService;
     let tradeDriver: TradeDriver;
+
+    let transformationDriver: TransformationDriver;
+    let transformationService: TransformationService;
 
     let supplyChainService: SupplyChainService;
     let supplyChainDriver: SupplyChainDriver;
@@ -56,6 +61,12 @@ describe('GraphService lifecycle', () => {
         );
         tradeService = new TradeService(tradeDriver, ipfsService);
 
+        transformationDriver = new TransformationDriver(
+            signer,
+            TRANSFORMATION_MANAGER_CONTRACT_ADDRESS,
+        );
+        transformationService = new TransformationService(transformationDriver);
+
         supplyChainDriver = new SupplyChainDriver(
             signer,
             SUPPLY_CHAIN_MANAGER_CONTRACT_ADDRESS,
@@ -67,7 +78,7 @@ describe('GraphService lifecycle', () => {
         provider = new ethers.providers.JsonRpcProvider(NETWORK);
 
         _defineSender(company1.privateKey);
-        graphService = new GraphService(tradeService, supplyChainService);
+        graphService = new GraphService(tradeService, transformationService);
     });
 
     it('should handle an empty graph', async () => {
@@ -101,7 +112,7 @@ describe('GraphService lifecycle', () => {
             new Transformation(0, 'final coffee production', [materials[5], materials[6]], 8, company3.address),
             new Transformation(0, 'water purification', [materials[9]], 11, company1.address),
         ];
-        const registerTransformationsFn = transformations.map((t) => async () => supplyChainService.registerTransformation(t.owner, t.name, t.inputMaterials.map((m) => m.id), t.outputMaterialId));
+        const registerTransformationsFn = transformations.map((t) => async () => transformationService.registerTransformation(t.owner, t.name, t.inputMaterials.map((m) => m.id), t.outputMaterialId));
         await serial(registerTransformationsFn);
 
         const tradeIds: number[] = [];
@@ -189,7 +200,7 @@ describe('GraphService lifecycle', () => {
     });
 
     it('should throw an error if it finds multiple transformation with the same output material', async () => {
-        await supplyChainService.registerTransformation(company3.address, 'transformation', [4], 8);
+        await transformationService.registerTransformation(company3.address, 'transformation', [4], 8);
         const fn = async () => graphService.computeGraph(company3.address, 8);
         await expect(fn).rejects.toThrowError('Multiple transformations found for material id 8');
     });

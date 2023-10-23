@@ -70,13 +70,15 @@ serial([
         [process.env.SUPPLIER_ADMIN || ''],
         contractMap.get('EnumerableDocumentTypeManager')?.address,
         contractMap.get('EnumerableTransactionTypeManager')?.address,
-    ]),
+    ],
+    ),
     () => deploy(
-        ContractName.TRADE_MANAGER,
-        [[process.env.SUPPLIER_ADMIN || '', process.env.CUSTOMER_ADMIN || ''],
+        ContractName.TRADE_MANAGER, [
+            [process.env.SUPPLIER_ADMIN || '', process.env.CUSTOMER_ADMIN || ''],
             contractMap.get('EnumerableFiatManager')?.address,
             contractMap.get('EnumerableProductCategoryManager')?.address,
-            contractMap.get(ContractName.DOCUMENT_MANAGER)?.address],
+            contractMap.get(ContractName.DOCUMENT_MANAGER)?.address,
+        ],
     ),
     () => deploy(
         ContractName.SUPPLY_CHAIN_MANAGER,
@@ -85,7 +87,12 @@ serial([
     () => deploy(ContractName.RELATIONSHIP_MANAGER, [
         [process.env.SUPPLIER_ADMIN || ''],
     ]),
-
+    () => deploy(
+        ContractName.TRANSFORMATION_MANAGER, [
+            [process.env.SUPPLIER_ADMIN || ''],
+            contractMap.get(ContractName.SUPPLY_CHAIN_MANAGER)?.address,
+        ],
+    ),
 ])
     .catch((error: any) => {
         console.error(error);

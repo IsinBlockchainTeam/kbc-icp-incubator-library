@@ -2,8 +2,8 @@ import { BigNumber } from 'ethers';
 import { Material } from '../entities/Material';
 import { Transformation } from '../entities/Transformation';
 import { OrderInfo } from '../entities/OrderInfo';
-import { DocumentManager, RelationshipManager, TradeManager } from '../smart-contracts';
-import { MaterialStructOutput, TransformationStructOutput } from '../smart-contracts/contracts/SupplyChainManager';
+import { DocumentManager, RelationshipManager, TradeManager, TransformationManager } from '../smart-contracts';
+import { MaterialStructOutput } from '../smart-contracts/contracts/SupplyChainManager';
 import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
 import { Relationship } from '../entities/Relationship';
 import { DocumentInfo } from '../entities/DocumentInfo';
@@ -16,7 +16,7 @@ export class EntityBuilder {
         return new Material(bcMaterial.id.toNumber(), bcMaterial.name, bcMaterial.owner);
     }
 
-    static buildTransformation(bcTransformation: TransformationStructOutput): Transformation {
+    static buildTransformation(bcTransformation: TransformationManager.TransformationStructOutput): Transformation {
         return new Transformation(bcTransformation.id.toNumber(), bcTransformation.name, bcTransformation.inputMaterials.map((m) => this.buildMaterial(m)), bcTransformation.outputMaterialId.toNumber(), bcTransformation.owner);
     }
 

@@ -10,12 +10,12 @@ import { ContractName } from '../utils/constants';
 describe('TransformationManager', () => {
     let transformationManagerContract: Contract;
     let supplyChainManagerContract: Contract;
-    let admin: SignerWithAddress, address1: SignerWithAddress;
+    let owner: SignerWithAddress, admin: SignerWithAddress, address1: SignerWithAddress;
 
     let materialsCounter: number;
 
     beforeEach(async () => {
-        [, admin, address1] = await ethers.getSigners();
+        [owner, admin, address1] = await ethers.getSigners();
 
         const SupplyChainManager = await ethers.getContractFactory('SupplyChainManager');
         supplyChainManagerContract = await SupplyChainManager.deploy();
@@ -110,6 +110,20 @@ describe('TransformationManager', () => {
         it('should update a Transformation - FAIL(Material does not exist)', async () => {
             await expect(transformationManagerContract.updateTransformation(1, 'testTransformation_updated', [materialsCounter - 2, 15], materialsCounter))
                 .to.be.revertedWith('Material does not exist');
+        });
+    });
+
+    describe('roles', () => {
+        it('should add and remove admin roles', async () => {
+            await transformationManagerContract.connect(owner).addAdmin(admin.address);
+            expect(await transformationManagerContract.hasRole(await transformationManagerContract.ADMIN_ROLE(), admin.address)).to.be.true;
+            await transformationManagerContract.connect(owner).removeAdmin(admin.address);
+            expect(await transformationManagerContract.hasRole(await transformationManagerContract.ADMIN_ROLE(), admin.address)).to.be.false;
+        });
+
+        it('should fail to add and remove admin roles if the caller is not an admin', async () => {
+            await expect(transformationManagerContract.connect(address1).addAdmin(admin.address)).to.be.revertedWith('Caller is not the admin');
+            await expect(transformationManagerContract.connect(address1).removeAdmin(admin.address)).to.be.revertedWith('Caller is not the admin');
         });
     });
 });

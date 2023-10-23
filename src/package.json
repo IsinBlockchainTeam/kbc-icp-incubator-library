@@ -33,7 +33,7 @@
     "ttypescript": "1.5.15"
   },
   "dependencies": {
-    "@blockchain-lib/common": "file:../../../Libreria blockchain/one_lib_to_rule_them_all/packages/common",
+    "@blockchain-lib/common": "file:../../../Blockchain_Library/one_lib_to_rule_them_all/packages/common",
     "@ethersproject/providers": "^5.6.4",
     "@jest/test-sequencer": "^29.7.0",
     "dotenv": "^16.3.1",
