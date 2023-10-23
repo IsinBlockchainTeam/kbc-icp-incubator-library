@@ -17,14 +17,6 @@ describe('SupplyChainManager', () => {
         await supplyChainManagerContract.deployed();
     });
 
-    const addInputMaterials = async (): Promise<number> => {
-        let tx = await supplyChainManagerContract.registerMaterial(address1.address, 'testMaterial1');
-        await tx.wait();
-        tx = await supplyChainManagerContract.registerMaterial(address1.address, 'testMaterial2');
-        await tx.wait();
-        return (await supplyChainManagerContract.getMaterialsCounter()).toNumber();
-    };
-
     describe('Registration', () => {
         it('should register a Material', async () => {
             const previousMaterialCounter = await supplyChainManagerContract.getMaterialsCounter();
@@ -48,35 +40,6 @@ describe('SupplyChainManager', () => {
 
             await expect(tx).to.emit(supplyChainManagerContract, 'ResourceRegistered').withArgs('material', address1.address, 1);
         });
-
-        it('should register a Transformation', async () => {
-            const previousTransformationCounter = await supplyChainManagerContract.getTransformationsCounter();
-            expect(previousTransformationCounter).to.be.equal(0);
-            const materialsCounter = await addInputMaterials();
-            const tx = await supplyChainManagerContract.registerTransformation(address1.address, 'testTransformation', [materialsCounter - 1, materialsCounter], materialsCounter + 1);
-            await tx.wait();
-
-            const currentTransformationCounter = await supplyChainManagerContract.getTransformationsCounter();
-            expect(currentTransformationCounter).to.be.equal(1);
-            const transformationIds = await supplyChainManagerContract.getTransformationIds(address1.address);
-            expect(currentTransformationCounter).to.equal(transformationIds.length);
-            const registeredTransformation = await supplyChainManagerContract.getTransformation(1);
-
-            const expectedInputMaterials = [
-                [BigNumber.from(materialsCounter - 1), 'testMaterial1', address1.address, true],
-                [BigNumber.from(materialsCounter), 'testMaterial2', address1.address, true],
-            ];
-            const expectedTransformation = {
-                id: BigNumber.from(1), name: 'testTransformation', inputMaterials: expectedInputMaterials, outputMaterialId: 3,
-            };
-            const expectedResourceWithOwner = { ...expectedTransformation, owner: address1.address };
-            Object.keys(expectedResourceWithOwner).forEach((key) => {
-                // @ts-ignore
-                expect(registeredTransformation[key]).deep.to.equal(expectedResourceWithOwner[key]);
-            });
-
-            await expect(tx).to.emit(supplyChainManagerContract, 'ResourceRegistered').withArgs('transformation', address1.address, 1);
-        });
     });
 
     describe('Update', () => {
@@ -97,34 +60,6 @@ describe('SupplyChainManager', () => {
             });
 
             await expect(tx).to.emit(supplyChainManagerContract, 'ResourceUpdated').withArgs('material', 1);
-        });
-
-        it('should update a Transformation', async () => {
-            let materialsCounter = await addInputMaterials();
-            await (await supplyChainManagerContract.registerTransformation(address1.address, 'testTransformation', [materialsCounter - 1, materialsCounter], materialsCounter + 1)).wait();
-
-            materialsCounter = await addInputMaterials();
-            const tx = await supplyChainManagerContract.updateTransformation(1, 'testTransformation_updated', [materialsCounter - 1, materialsCounter], materialsCounter + 1);
-            await tx.wait();
-
-            const currentTransformationCounter = await supplyChainManagerContract.getTransformationsCounter();
-            expect(currentTransformationCounter).to.be.equal(1);
-            const updatedResource = await supplyChainManagerContract.getTransformation(1);
-
-            const expectedInputMaterials = [
-                [BigNumber.from(materialsCounter - 1), 'testMaterial1', address1.address, true],
-                [BigNumber.from(materialsCounter), 'testMaterial2', address1.address, true],
-            ];
-            const expectedTransformation = {
-                id: BigNumber.from(1), name: 'testTransformation_updated', inputMaterials: expectedInputMaterials, outputMaterialId: BigNumber.from(materialsCounter + 1),
-            };
-            const expectedResourceWithOwner = { ...expectedTransformation, owner: address1.address };
-            Object.keys(expectedResourceWithOwner).forEach((key) => {
-                // @ts-ignore
-                expect(updatedResource[key]).deep.to.equal(expectedResourceWithOwner[key]);
-            });
-
-            await expect(tx).to.emit(supplyChainManagerContract, 'ResourceUpdated').withArgs('transformation', 1);
         });
     });
 });

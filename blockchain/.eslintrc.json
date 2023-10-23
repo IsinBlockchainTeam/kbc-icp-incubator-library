@@ -74,6 +74,7 @@
         "one-var-declaration-per-line": "off",
         "one-var": "off",
         "function-paren-newline": "off",
-        "function-call-argument-newline": "off"
+        "function-call-argument-newline": "off",
+        "object-curly-newline": "off"
     }
 }
