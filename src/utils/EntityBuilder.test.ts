@@ -1,9 +1,9 @@
 import { BigNumber } from 'ethers';
-import { MaterialStructOutput, TransformationStructOutput } from '../smart-contracts/contracts/SupplyChainManager';
+import { MaterialStructOutput } from '../smart-contracts/contracts/SupplyChainManager';
 import { Material } from '../entities/Material';
 import { EntityBuilder } from './EntityBuilder';
 import { BasicTradeInfo } from '../entities/BasicTradeInfo';
-import { DocumentManager, RelationshipManager, TradeManager } from '../smart-contracts';
+import { DocumentManager, RelationshipManager, TradeManager, TransformationManager } from '../smart-contracts';
 import { TradeLine } from '../entities/TradeLine';
 import { OrderInfo } from '../entities/OrderInfo';
 import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
@@ -38,7 +38,7 @@ describe('EntityBuilder', () => {
             bcMaterial2.owner = 'owner';
             bcMaterial2.exists = true;
 
-            const bcTransformation: TransformationStructOutput = [BigNumber.from(0), 'transformation', [bcMaterial1, bcMaterial2], BigNumber.from(3), 'owner', true] as TransformationStructOutput;
+            const bcTransformation: TransformationManager.TransformationStructOutput = [BigNumber.from(0), 'transformation', [bcMaterial1, bcMaterial2], BigNumber.from(3), 'owner', true] as TransformationManager.TransformationStructOutput;
             bcTransformation.id = BigNumber.from(0);
             bcTransformation.name = 'transformation';
             bcTransformation.inputMaterials = [bcMaterial1, bcMaterial2];

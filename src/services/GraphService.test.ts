@@ -3,9 +3,9 @@ import { GraphService } from './GraphService';
 import { Transformation } from '../entities/Transformation';
 import { Trade, TradeType } from '../entities/Trade';
 import TradeService from './TradeService';
-import { SupplyChainService } from './SupplyChainService';
 import { TradeLine } from '../entities/TradeLine';
 import { Material } from '../entities/Material';
+import { TransformationService } from './TransformationService';
 
 describe('GraphService', () => {
     let graphService: GraphService;
@@ -39,19 +39,19 @@ describe('GraphService', () => {
         getGeneralTrades: jest.fn().mockResolvedValue(trades),
         getTradeLines: jest.fn().mockResolvedValue(tradeLines),
     });
-    const mockedSupplyChainService = createMock<SupplyChainService>({
+    const mockedTransformationService = createMock<TransformationService>({
         getTransformations: jest.fn().mockResolvedValue(transformations),
     });
 
     beforeAll(() => {
-        graphService = new GraphService(mockedTradeService, mockedSupplyChainService);
+        graphService = new GraphService(mockedTradeService, mockedTransformationService);
     });
 
     it('findTransformationsByMaterialOutput', async () => {
         await graphService.findTransformationsByMaterialOutput(supplier, 2);
 
-        expect(mockedSupplyChainService.getTransformations).toHaveBeenCalledTimes(1);
-        expect(mockedSupplyChainService.getTransformations).toHaveBeenNthCalledWith(1, supplier);
+        expect(mockedTransformationService.getTransformations).toHaveBeenCalledTimes(1);
+        expect(mockedTransformationService.getTransformations).toHaveBeenNthCalledWith(1, supplier);
     });
 
     it('findTradesByMaterialOutput', async () => {
