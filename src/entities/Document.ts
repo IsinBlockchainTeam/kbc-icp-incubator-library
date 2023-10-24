@@ -11,7 +11,7 @@ export class Document extends DocumentInfo {
     private _content: Blob;
 
     constructor(documentInfo: DocumentInfo, filename: string, date: Date, content: Blob, quantity?: number) {
-        super(documentInfo.id, documentInfo.transactionId, documentInfo.name, documentInfo.documentType, documentInfo.externalUrl, documentInfo.transactionLineId || 0);
+        super(documentInfo.id, documentInfo.transactionId, documentInfo.name, documentInfo.documentType, documentInfo.externalUrl, documentInfo.transactionLineIds || []);
         this._filename = filename;
         this._date = date;
         this._content = content;

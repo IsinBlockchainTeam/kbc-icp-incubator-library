@@ -58,6 +58,6 @@ export class EntityBuilder {
     }
 
     static buildDocumentInfo(bcDocument: DocumentManager.DocumentStructOutput): DocumentInfo {
-        return new DocumentInfo(bcDocument.id.toNumber(), bcDocument.transactionId.toNumber(), bcDocument.name, bcDocument.documentType, bcDocument.externalUrl, bcDocument.transactionLineId.toNumber());
+        return new DocumentInfo(bcDocument.id.toNumber(), bcDocument.transactionId.toNumber(), bcDocument.name, bcDocument.documentType, bcDocument.externalUrl, bcDocument.transactionLineIds.map((id) => id.toNumber()));
     }
 }

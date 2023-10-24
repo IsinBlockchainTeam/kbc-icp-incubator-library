@@ -18,9 +18,9 @@ export class DocumentDriver {
             .connect(signer);
     }
 
-    async registerDocument(transactionId: number, transactionType: string, name: string, documentType: string, externalUrl: string, transactionLineId?: number): Promise<void> {
+    async registerDocument(transactionId: number, transactionType: string, name: string, documentType: string, externalUrl: string, transactionLineIds?: number[]): Promise<void> {
         try {
-            const tx = await this._contract.registerDocument(transactionId, transactionType, name, documentType, externalUrl, transactionLineId || 0);
+            const tx = await this._contract.registerDocument(transactionId, transactionType, name, documentType, externalUrl, transactionLineIds || []);
             await tx.wait();
         } catch (e: any) {
             throw new Error(e.message);

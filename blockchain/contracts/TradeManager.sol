@@ -295,10 +295,10 @@ contract TradeManager is AccessControl {
         }
     }
 
-    function addDocument(uint256 tradeId, string memory name, string memory documentType, string memory externalUrl, uint256 tradeLineId) public {
+    function addDocument(uint256 tradeId, string memory name, string memory documentType, string memory externalUrl, uint256[] memory tradeLineIds) public {
         require(trades[tradeId].exists, "Trade does not exist");
 
-        documentManager.registerDocument(tradeId, 'trade', name, documentType, externalUrl, tradeLineId);
+        documentManager.registerDocument(tradeId, 'trade', name, documentType, externalUrl, tradeLineIds);
     }
 
     function getNegotiationStatus(uint256 orderId) public view returns (NegotiationStatus orderStatus) {

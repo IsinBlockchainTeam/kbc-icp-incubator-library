@@ -39,7 +39,7 @@ describe('TradeManager', () => {
     const fiats = ['CHF'];
     const documentTypes = ['documentType1'];
     const transactionType = 'trade';
-    const transactionLineId = 3;
+    const transactionLineIds = [3, 4];
 
     before(async () => {
         [owner, admin, supplier, customer, otherAccount] = await ethers.getSigners();
@@ -311,15 +311,15 @@ describe('TradeManager', () => {
         it('should add a document to an existing order', async () => {
             await tradeManagerContract.connect(supplier).confirmOrder(tradeCounterId);
             await tradeManagerContract.connect(customer).confirmOrder(tradeCounterId);
-            await tradeManagerContract.connect(supplier).addDocument(tradeCounterId, 'document name', documentTypes[0], 'external_doc_url', transactionLineId);
+            await tradeManagerContract.connect(supplier).addDocument(tradeCounterId, 'document name', documentTypes[0], 'external_doc_url', transactionLineIds);
             expect(documentManagerContractFake.registerDocument).to.have.callCount(1);
-            expect(documentManagerContractFake.registerDocument).to.have.calledWith(tradeCounterId, transactionType, 'document name', documentTypes[0], 'external_doc_url', transactionLineId);
+            expect(documentManagerContractFake.registerDocument).to.have.calledWith(tradeCounterId, transactionType, 'document name', documentTypes[0], 'external_doc_url', transactionLineIds);
         });
 
         it('should add a document to an existing order - FAIL (Trade does not exist)', async () => {
             await tradeManagerContract.connect(supplier).confirmOrder(tradeCounterId);
             await tradeManagerContract.connect(customer).confirmOrder(tradeCounterId);
-            await expect(tradeManagerContract.connect(supplier).addDocument(50, 'document name', documentTypes[0], 'external_doc_url', transactionLineId))
+            await expect(tradeManagerContract.connect(supplier).addDocument(50, 'document name', documentTypes[0], 'external_doc_url', transactionLineIds))
                 .to.be.revertedWith('Trade does not exist');
         });
     });

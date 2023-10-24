@@ -124,7 +124,7 @@ describe('Document lifecycle', () => {
         expect(savedDocumentInfo).toBeDefined();
         expect(savedDocument!.id).toEqual(transactionDocumentCounter);
         expect(savedDocument!.transactionId).toEqual(transactionId);
-        expect(savedDocument!.transactionLineId).toBeUndefined();
+        expect(savedDocument!.transactionLineIds).toBeUndefined();
         expect(savedDocument!.name).toEqual(rawDocument.name);
         expect(savedDocument!.documentType).toEqual(rawDocument.documentType);
         expect(savedDocument!.filename).toEqual(filename);
@@ -158,7 +158,7 @@ describe('Document lifecycle', () => {
         const metadataUrl = await pinataService.storeJSON({ filename, date: today, quantity: 55.5, fileUrl: ipfsFileUrl });
 
         transactionId2 = await createOrderAndConfirm();
-        await tradeService.addDocument(transactionId2, rawDocument2.name, rawDocument2.documentType, metadataUrl, 3);
+        await tradeService.addDocument(transactionId2, rawDocument2.name, rawDocument2.documentType, metadataUrl, [3]);
 
         const transaction2DocumentsCounter = await documentService.getDocumentsCounterByTransactionIdAndType(transactionId2, transactionType);
 
@@ -168,10 +168,9 @@ describe('Document lifecycle', () => {
         expect(savedTransaction2Document).toBeDefined();
         expect(savedTransaction2Document!.id).toEqual(transaction2DocumentsCounter);
         expect(savedTransaction2Document!.transactionId).toEqual(transactionId2);
-        expect(savedTransaction2Document!.transactionLineId).toEqual(3);
+        expect(savedTransaction2Document!.transactionLineIds).toEqual([3]);
         expect(savedTransaction2Document!.name).toEqual(rawDocument2.name);
         expect(savedTransaction2Document!.documentType).toEqual(rawDocument2.documentType);
-        expect(savedTransaction2Document!.transactionLineId).toEqual(3);
         expect(savedTransaction2Document!.filename).toEqual(filename);
         expect(savedTransaction2Document!.date).toEqual(today);
         expect(savedTransaction2Document!.quantity).toEqual(55.5);

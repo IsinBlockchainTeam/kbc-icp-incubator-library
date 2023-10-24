@@ -13,8 +13,8 @@ export class DocumentService {
         this._ipfsService = ipfsService;
     }
 
-    async registerDocument(transactionId: number, transactionType: string, name: string, documentType: string, externalUrl: string, transactionLineId?: number): Promise<void> {
-        await this._documentDriver.registerDocument(transactionId, transactionType, name, documentType, externalUrl, transactionLineId);
+    async registerDocument(transactionId: number, transactionType: string, name: string, documentType: string, externalUrl: string, transactionLineIds?: number[]): Promise<void> {
+        await this._documentDriver.registerDocument(transactionId, transactionType, name, documentType, externalUrl, transactionLineIds);
     }
 
     async getDocumentsCounterByTransactionIdAndType(transactionId: number, transactionType: string): Promise<number> {

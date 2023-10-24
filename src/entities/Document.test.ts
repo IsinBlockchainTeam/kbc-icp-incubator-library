@@ -9,7 +9,7 @@ describe('Document', () => {
     const today = new Date();
 
     beforeAll(() => {
-        documentInfo = new DocumentInfo(0, 1, 'doc name', 'doc type', 'external url', 3);
+        documentInfo = new DocumentInfo(0, 1, 'doc name', 'doc type', 'external url', [3]);
         document = new Document(documentInfo, filename, today, content);
     });
 
@@ -19,7 +19,7 @@ describe('Document', () => {
         expect(document.name).toEqual('doc name');
         expect(document.documentType).toEqual('doc type');
         expect(document.externalUrl).toEqual('external url');
-        expect(document.transactionLineId).toEqual(3);
+        expect(document.transactionLineIds).toEqual([3]);
         expect(document.filename).toEqual(filename);
         expect(document.date).toEqual(today);
         expect(document.quantity).toBeUndefined();
