@@ -7,10 +7,8 @@ import { EntityBuilder } from '../utils/EntityBuilder';
 import {
     MaterialManager,
     MaterialManager__factory,
-    SupplyChainManager,
 } from '../smart-contracts';
 import { Material } from '../entities/Material';
-import { MaterialStructOutput } from '../smart-contracts/contracts/SupplyChainManager';
 
 describe('MaterialDriver', () => {
     let materialDriver: MaterialDriver;
@@ -27,7 +25,7 @@ describe('MaterialDriver', () => {
     const mockedReadFunction = jest.fn();
     const mockedGetMaterial = jest.fn();
 
-    const mockedMaterialStructOutput = createMock<MaterialStructOutput>();
+    const mockedMaterialStructOutput = createMock<MaterialManager.MaterialStructOutput>();
     const mockedMaterial = createMock<Material>();
 
     mockedWriteFunction.mockResolvedValue({
@@ -38,7 +36,7 @@ describe('MaterialDriver', () => {
     });
     mockedGetMaterial.mockReturnValue(Promise.resolve(mockedMaterialStructOutput));
 
-    const mockedContract = createMock<SupplyChainManager>({
+    const mockedContract = createMock<MaterialManager>({
         registerMaterial: mockedWriteFunction,
         updateMaterial: mockedWriteFunction,
         getMaterialsCounter: mockedReadFunction,

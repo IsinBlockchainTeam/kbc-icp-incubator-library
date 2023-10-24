@@ -2,8 +2,13 @@ import { BigNumber } from 'ethers';
 import { Material } from '../entities/Material';
 import { Transformation } from '../entities/Transformation';
 import { OrderInfo } from '../entities/OrderInfo';
-import { DocumentManager, RelationshipManager, TradeManager, TransformationManager } from '../smart-contracts';
-import { MaterialStructOutput } from '../smart-contracts/contracts/SupplyChainManager';
+import {
+    DocumentManager,
+    MaterialManager,
+    RelationshipManager,
+    TradeManager,
+    TransformationManager,
+} from '../smart-contracts';
 import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
 import { Relationship } from '../entities/Relationship';
 import { DocumentInfo } from '../entities/DocumentInfo';
@@ -12,7 +17,7 @@ import { TradeLine } from '../entities/TradeLine';
 import { Trade } from '../entities/Trade';
 
 export class EntityBuilder {
-    static buildMaterial(bcMaterial: MaterialStructOutput): Material {
+    static buildMaterial(bcMaterial: MaterialManager.MaterialStructOutput): Material {
         return new Material(bcMaterial.id.toNumber(), bcMaterial.name, bcMaterial.owner);
     }
 

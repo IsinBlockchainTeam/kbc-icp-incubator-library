@@ -1,9 +1,8 @@
 import { BigNumber } from 'ethers';
-import { MaterialStructOutput } from '../smart-contracts/contracts/SupplyChainManager';
 import { Material } from '../entities/Material';
 import { EntityBuilder } from './EntityBuilder';
 import { BasicTradeInfo } from '../entities/BasicTradeInfo';
-import { DocumentManager, RelationshipManager, TradeManager, TransformationManager } from '../smart-contracts';
+import { DocumentManager, RelationshipManager, TradeManager, TransformationManager, MaterialManager } from '../smart-contracts';
 import { TradeLine } from '../entities/TradeLine';
 import { OrderInfo } from '../entities/OrderInfo';
 import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
@@ -15,7 +14,7 @@ import { Trade } from '../entities/Trade';
 describe('EntityBuilder', () => {
     describe('buildMaterial', () => {
         it('should correctly build a material', () => {
-            const bcMaterial: MaterialStructOutput = [BigNumber.from(0), 'material', 'owner', true] as MaterialStructOutput;
+            const bcMaterial: MaterialManager.MaterialStructOutput = [BigNumber.from(0), 'material', 'owner', true] as MaterialManager.MaterialStructOutput;
             bcMaterial.id = BigNumber.from(0);
             bcMaterial.name = 'material';
             bcMaterial.owner = 'owner';
@@ -27,12 +26,12 @@ describe('EntityBuilder', () => {
 
     describe('buildTransformation', () => {
         it('should correctly build a transformation', () => {
-            const bcMaterial1: MaterialStructOutput = [BigNumber.from(0), 'material1', 'owner', true] as MaterialStructOutput;
+            const bcMaterial1: MaterialManager.MaterialStructOutput = [BigNumber.from(0), 'material1', 'owner', true] as MaterialManager.MaterialStructOutput;
             bcMaterial1.id = BigNumber.from(0);
             bcMaterial1.name = 'material1';
             bcMaterial1.owner = 'owner';
             bcMaterial1.exists = true;
-            const bcMaterial2: MaterialStructOutput = [BigNumber.from(0), 'material2', 'owner', true] as MaterialStructOutput;
+            const bcMaterial2: MaterialManager.MaterialStructOutput = [BigNumber.from(0), 'material2', 'owner', true] as MaterialManager.MaterialStructOutput;
             bcMaterial2.id = BigNumber.from(0);
             bcMaterial2.name = 'material2';
             bcMaterial2.owner = 'owner';
