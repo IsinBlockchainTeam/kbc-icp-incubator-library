@@ -82,9 +82,9 @@ describe('EntityBuilder', () => {
         const bcTradeLinePrice: TradeManager.OrderLinePriceStructOutput = [BigNumber.from(10005), BigNumber.from(2), 'CHF'] as TradeManager.OrderLinePriceStructOutput;
 
         it('should correctly build a TradeLine', () => {
-            const bcTradeLine: TradeManager.TradeLineStructOutput = [BigNumber.from(0), [BigNumber.from(1), BigNumber.from(2)], 'categoryA', BigNumber.from(100), bcTradeLinePrice, true] as TradeManager.TradeLineStructOutput;
+            const bcTradeLine: TradeManager.TradeLineStructOutput = [BigNumber.from(0), [BigNumber.from(1), BigNumber.from(2)], 'Arabic 85', BigNumber.from(100), bcTradeLinePrice, true] as TradeManager.TradeLineStructOutput;
             bcTradeLine.id = BigNumber.from(0);
-            bcTradeLine.productCategory = 'categoryA';
+            bcTradeLine.productCategory = 'Arabic 85';
             bcTradeLine.materialIds = [BigNumber.from(1), BigNumber.from(2)];
             bcTradeLine.exists = true;
 
@@ -128,9 +128,9 @@ describe('EntityBuilder', () => {
         });
 
         it('should correctly build an OrderLine', () => {
-            const bcTradeLine: TradeManager.TradeLineStructOutput = [BigNumber.from(0), [BigNumber.from(1), BigNumber.from(2)], 'categoryA', BigNumber.from(40), bcOrderLinePrice, true] as TradeManager.TradeLineStructOutput;
+            const bcTradeLine: TradeManager.TradeLineStructOutput = [BigNumber.from(0), [BigNumber.from(1), BigNumber.from(2)], 'Arabic 85', BigNumber.from(40), bcOrderLinePrice, true] as TradeManager.TradeLineStructOutput;
             bcTradeLine.id = BigNumber.from(0);
-            bcTradeLine.productCategory = 'categoryA';
+            bcTradeLine.productCategory = 'Arabic 85';
             bcTradeLine.materialIds = [BigNumber.from(1), BigNumber.from(2)];
             bcTradeLine.quantity = BigNumber.from(40);
             bcTradeLine.price = bcOrderLinePrice;

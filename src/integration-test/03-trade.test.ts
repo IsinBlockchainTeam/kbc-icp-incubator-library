@@ -58,7 +58,7 @@ describe('Trade lifecycle', () => {
         deliveryPort: 'delivery port',
     };
     const basicTradeMetadata = { issueDate: new Date() };
-    const productCategories = ['CategoryA', 'CategoryB'];
+    const productCategories = ['Arabic 85', 'Excelsa 88'];
 
     const _defineSender = (privateKey: string, ipfsService?: IPFSService) => {
         signer = new ethers.Wallet(privateKey, provider);
@@ -288,7 +288,7 @@ describe('Trade lifecycle', () => {
 
             _defineSender(SUPPLIER_PRIVATE_KEY);
 
-            await tradeService.updateOrderLine(tradeCounterId, tradeLineCounterId, [supplierMaterialsCounter, customerMaterialsCounter], 'CategoryA Superior', 40, new OrderLinePrice(20, 'USD'));
+            await tradeService.updateOrderLine(tradeCounterId, tradeLineCounterId, [supplierMaterialsCounter, customerMaterialsCounter], 'Arabic 85 Superior', 40, new OrderLinePrice(20, 'USD'));
             const orderVersion4 = await tradeService.getOrderInfo(tradeCounterId);
             const orderLineVersion2 = await tradeService.getOrderLine(tradeCounterId, tradeLineCounterId);
 

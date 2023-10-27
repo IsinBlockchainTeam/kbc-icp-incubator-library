@@ -35,7 +35,7 @@ describe('TradeManager', () => {
         externalUrl: 'https://testurl.ch/ipfs',
     };
     const basicTradeLineMaterialIds = [1, 2];
-    const categories = ['categoryA', 'categoryB'];
+    const categories = ['Arabic 85', 'Excelsa 88'];
     const fiats = ['CHF'];
     const documentTypes = ['documentType1'];
     const transactionType = 'trade';

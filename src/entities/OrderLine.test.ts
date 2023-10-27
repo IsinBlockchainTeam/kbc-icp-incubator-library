@@ -7,12 +7,12 @@ describe('OrderLine', () => {
     beforeAll(() => {
         orderLinePrice = new OrderLinePrice(10.25, 'USD');
 
-        orderLine = new OrderLine(0, [1, 2], 'CategoryA', 20, orderLinePrice);
+        orderLine = new OrderLine(0, [1, 2], 'Arabic 85', 20, orderLinePrice);
     });
 
     it('should correctly initialize a new OrderLine', () => {
         expect(orderLine.id).toEqual(0);
-        expect(orderLine.productCategory).toEqual('CategoryA');
+        expect(orderLine.productCategory).toEqual('Arabic 85');
         expect(orderLine.quantity).toEqual(20);
         expect(orderLine.price.amount).toEqual(orderLinePrice.amount);
         expect(orderLine.price.fiat).toEqual(orderLinePrice.fiat);
@@ -24,8 +24,8 @@ describe('OrderLine', () => {
     });
 
     it('should correctly set the productCategory', () => {
-        orderLine.productCategory = 'categoryB';
-        expect(orderLine.productCategory).toEqual('categoryB');
+        orderLine.productCategory = 'Excelsa 88';
+        expect(orderLine.productCategory).toEqual('Excelsa 88');
     });
 
     it('should correctly set the quantity', () => {

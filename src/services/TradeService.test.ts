@@ -12,7 +12,7 @@ describe('TradeService', () => {
     const customer = '0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199';
     const externalUrl = 'https://externalurl.com';
     const tradeName = 'trade 1';
-    const productCategory = 'categoryA';
+    const productCategory = 'Arabic 85';
     const quantity = 100;
     const price = new OrderLinePrice(100.25, 'CHF');
     const deadline = new Date('2030-10-10');
@@ -275,8 +275,8 @@ describe('TradeService', () => {
 
     it('should add trade lines', async () => {
         const lines = [
-            new TradeLine(0, [1, 2], 'categoryA'),
-            new TradeLine(0, [3, 4], 'categoryB'),
+            new TradeLine(0, [1, 2], 'Arabic 85'),
+            new TradeLine(0, [3, 4], 'Excelsa 88'),
         ];
         await tradeService.addTradeLines(1, lines);
 
@@ -322,8 +322,8 @@ describe('TradeService', () => {
 
     it('should add order lines', async () => {
         const lines = [
-            new OrderLine(0, [1, 2], 'categoryA', 100, price),
-            new OrderLine(0, [3, 4], 'categoryB', 55, price),
+            new OrderLine(0, [1, 2], 'Arabic 85', 100, price),
+            new OrderLine(0, [3, 4], 'Excelsa 88', 55, price),
         ];
         await tradeService.addOrderLines(1, lines);
 

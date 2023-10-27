@@ -41,7 +41,7 @@ serial([
     },
     () => deploy(ContractName.ENUMERABLE_TYPE_MANAGER, [[]], 'EnumerableProductCategoryManager'),
     async () => {
-        const enums: string[] = ['CategoryA', 'CategoryB', 'CategoryA Superior'];
+        const enums: string[] = ['Arabic 85', 'Excelsa 88', 'Arabic 85 Superior'];
         for (let i = 0; i < enums.length; i++) {
             const tx = await contractMap.get('EnumerableProductCategoryManager')
                 ?.add(enums[i]);

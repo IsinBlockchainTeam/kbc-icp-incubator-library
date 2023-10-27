@@ -4,13 +4,13 @@ describe('TradeLine', () => {
     let tradeLine: TradeLine;
 
     beforeAll(() => {
-        tradeLine = new TradeLine(0, [1, 2], 'categoryA');
+        tradeLine = new TradeLine(0, [1, 2], 'Arabic 85');
     });
 
     it('should correctly initialize a new BasicTrade', () => {
         expect(tradeLine.id).toEqual(0);
         expect(tradeLine.materialIds).toEqual([1, 2]);
-        expect(tradeLine.productCategory).toEqual('categoryA');
+        expect(tradeLine.productCategory).toEqual('Arabic 85');
     });
 
     it('should correctly set the id', () => {

@@ -21,8 +21,8 @@ describe('GraphService', () => {
         new Trade(2, 'supplier', 'customer', 'externalUrl', [4, 8], TradeType.ORDER),
     ];
     const tradeLines = [
-        new TradeLine(2, [2, 1], 'categoryA'),
-        new TradeLine(7, [3, 4], 'categoryB'),
+        new TradeLine(2, [2, 1], 'Arabic 85'),
+        new TradeLine(7, [3, 4], 'Excelsa 88'),
         new TradeLine(4, [8, 7], 'categoryC'),
     ];
     const transformations = [

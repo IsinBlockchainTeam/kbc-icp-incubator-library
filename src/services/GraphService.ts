@@ -126,5 +126,5 @@ export class GraphService {
     }
 
     // @ts-ignore
-    private getGraphEntityId(t: Transformation | Trade): string { return t.owner ? `${t.owner}_transformation_${t.id}` : `${t.supplier}_trade_${t.id}`; }
+    private getGraphEntityId(t: Transformation | Trade): string { return t.owner ? t.name : `${t.supplier}_trade_${t.id}`; }
 }

@@ -280,9 +280,9 @@ describe('TradeDriver', () => {
             // }));
             // mockedDecodeEventLog.mockImplementation((eventName: string, data: Order, topics: string[]) => ({ id: BigNumber.from(data.id) }));
 
-            await tradeDriver.addTradeLine(1, [1, 2], 'categoryA');
+            await tradeDriver.addTradeLine(1, [1, 2], 'Arabic 85');
             expect(mockedContract.addTradeLine).toHaveBeenCalledTimes(1);
-            expect(mockedContract.addTradeLine).toHaveBeenNthCalledWith(1, 1, [1, 2], 'categoryA');
+            expect(mockedContract.addTradeLine).toHaveBeenNthCalledWith(1, 1, [1, 2], 'Arabic 85');
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 
@@ -574,16 +574,16 @@ describe('TradeDriver', () => {
                 decimals: 2,
                 fiat: 'CHF',
             };
-            await tradeDriver.addOrderLine(1, [1, 2], 'categoryA', 100, new OrderLinePrice(100.25, price.fiat));
+            await tradeDriver.addOrderLine(1, [1, 2], 'Arabic 85', 100, new OrderLinePrice(100.25, price.fiat));
             expect(mockedContract.addOrderLine).toHaveBeenCalledTimes(1);
-            expect(mockedContract.addOrderLine).toHaveBeenNthCalledWith(1, 1, [1, 2], 'categoryA', 100, price);
+            expect(mockedContract.addOrderLine).toHaveBeenNthCalledWith(1, 1, [1, 2], 'Arabic 85', 100, price);
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 
         it('should call and wait for add order line - fails', async () => {
             mockedContract.addOrderLine = jest.fn().mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => tradeDriver.addOrderLine(1, [1, 2], 'categoryA', 100, new OrderLinePrice(100.25, 'CHF'));
+            const fn = async () => tradeDriver.addOrderLine(1, [1, 2], 'Arabic 85', 100, new OrderLinePrice(100.25, 'CHF'));
             await expect(fn).rejects.toThrowError(new Error(errorMessage));
         });
     });

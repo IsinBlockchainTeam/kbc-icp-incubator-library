@@ -123,12 +123,12 @@ describe('GraphService lifecycle', () => {
             { supplier: company3, customer: company4, externalUrl, type: TradeType.ORDER },
         ];
         const tradeLines = [
-            new TradeLine(0, [3, 4], 'CategoryA'),
-            new TradeLine(0, [11, 7], 'CategoryB'),
+            new TradeLine(0, [3, 4], 'Arabic 85'),
+            new TradeLine(0, [11, 7], 'Excelsa 88'),
         ];
         const orderLines = [
-            new OrderLine(0, [5, 6], 'CategoryB', 100, new OrderLinePrice(50, 'CHF')),
-            new OrderLine(0, [8, 9], 'CategoryA Superior', 600, new OrderLinePrice(10, 'EUR')),
+            new OrderLine(0, [5, 6], 'Excelsa 88', 100, new OrderLinePrice(50, 'CHF')),
+            new OrderLine(0, [8, 9], 'Arabic 85 Superior', 600, new OrderLinePrice(10, 'EUR')),
         ];
         // add trades and orders
         const registerTradesFn = trades.map((t) => async () => {
@@ -172,7 +172,7 @@ describe('GraphService lifecycle', () => {
     it('should compute a graph with 2 trades with same line', async () => {
         await tradeService.registerBasicTrade(company2.address, company3.address, 'basicTrade2', externalUrl);
         const tradeId = await tradeService.getCounter();
-        await tradeService.addTradeLines(tradeId, [new TradeLine(0, [5, 6], 'CategoryB')]);
+        await tradeService.addTradeLines(tradeId, [new TradeLine(0, [5, 6], 'Excelsa 88')]);
 
         const result = await graphService.computeGraph(company3.address, 8);
         result.nodes.sort(({ resourceId: a }, { resourceId: b }) => a.charAt(a.length - 1).localeCompare(b.charAt(b.length - 1)));
@@ -194,7 +194,7 @@ describe('GraphService lifecycle', () => {
     });
 
     it('should throw an error if it finds no transformation with specific output material', async () => {
-        await tradeService.addTradeLine(1, [100, 10], 'CategoryA');
+        await tradeService.addTradeLine(1, [100, 10], 'Arabic 85');
         const fn = async () => graphService.computeGraph(company3.address, 8);
         await expect(fn).rejects.toThrowError('No transformations found for material id 100');
     });
