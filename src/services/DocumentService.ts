@@ -13,8 +13,8 @@ export class DocumentService {
         this._ipfsService = ipfsService;
     }
 
-    async registerDocument(transactionId: number, transactionType: string, name: string, documentType: string, externalUrl: string, transactionLineIds?: number[]): Promise<void> {
-        await this._documentDriver.registerDocument(transactionId, transactionType, name, documentType, externalUrl, transactionLineIds);
+    async registerDocument(transactionId: number, transactionType: string, name: string, documentType: string, externalUrl: string): Promise<void> {
+        await this._documentDriver.registerDocument(transactionId, transactionType, name, documentType, externalUrl);
     }
 
     async getDocumentsCounterByTransactionIdAndType(transactionId: number, transactionType: string): Promise<number> {
@@ -32,9 +32,9 @@ export class DocumentService {
     async getCompleteDocument(documentInfo: DocumentInfo): Promise<Document | undefined> {
         if (!this._ipfsService) throw new Error('IPFS Service not available');
         try {
-            const { filename, date, fileUrl, quantity } = await this._ipfsService!.retrieveJSON(documentInfo.externalUrl);
+            const { filename, date, fileUrl, transactionLineIds, quantity } = await this._ipfsService!.retrieveJSON(documentInfo.externalUrl);
             const fileContent = await this._ipfsService!.retrieveFile(fileUrl);
-            if (fileContent) return new Document(documentInfo, filename, new Date(date), fileContent, quantity);
+            if (fileContent) return new Document(documentInfo, filename, new Date(date), fileContent, transactionLineIds, quantity);
         } catch (e: any) {
             throw new Error(`Error while retrieve document file from IPFS: ${e.message}`);
         }

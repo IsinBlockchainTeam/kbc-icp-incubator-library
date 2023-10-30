@@ -156,15 +156,15 @@ describe('GraphService lifecycle', () => {
 
         expect(result).toEqual({
             nodes: [
-                { resourceId: `${company1.address}_transformation_1` },
-                { resourceId: `${company2.address}_transformation_2` },
-                { resourceId: `${company3.address}_transformation_3` },
-                { resourceId: `${company1.address}_transformation_4` },
+                { resourceId: 'coffee grinding' },
+                { resourceId: 'coffee beans processing' },
+                { resourceId: 'final coffee production' },
+                { resourceId: 'water purification' },
             ],
             edges: [
-                { resourcesIds: [`${company1.address}_trade_1`], from: `${company1.address}_transformation_1`, to: `${company2.address}_transformation_2` },
-                { resourcesIds: [`${company2.address}_trade_2`], from: `${company2.address}_transformation_2`, to: `${company3.address}_transformation_3` },
-                { resourcesIds: [`${company1.address}_trade_3`], from: `${company1.address}_transformation_4`, to: `${company3.address}_transformation_3` },
+                { resourcesIds: [`${company2.address}_trade_2`], from: 'coffee grinding', to: 'final coffee production' },
+                { resourcesIds: [`${company1.address}_trade_1`], from: 'coffee beans processing', to: 'coffee grinding' },
+                { resourcesIds: [`${company1.address}_trade_3`], from: 'water purification', to: 'final coffee production' },
             ],
         });
     }, 20000);
@@ -180,15 +180,15 @@ describe('GraphService lifecycle', () => {
 
         expect(result).toEqual({
             nodes: [
-                { resourceId: `${company1.address}_transformation_1` },
-                { resourceId: `${company2.address}_transformation_2` },
-                { resourceId: `${company3.address}_transformation_3` },
-                { resourceId: `${company1.address}_transformation_4` },
+                { resourceId: 'coffee grinding' },
+                { resourceId: 'coffee beans processing' },
+                { resourceId: 'final coffee production' },
+                { resourceId: 'water purification' },
             ],
             edges: [
-                { resourcesIds: [`${company1.address}_trade_1`], from: `${company1.address}_transformation_1`, to: `${company2.address}_transformation_2` },
-                { resourcesIds: [`${company2.address}_trade_2`, `${company2.address}_trade_5`], from: `${company2.address}_transformation_2`, to: `${company3.address}_transformation_3` },
-                { resourcesIds: [`${company1.address}_trade_3`], from: `${company1.address}_transformation_4`, to: `${company3.address}_transformation_3` },
+                { resourcesIds: [`${company2.address}_trade_2`, `${company2.address}_trade_5`], from: 'coffee grinding', to: 'final coffee production' },
+                { resourcesIds: [`${company1.address}_trade_1`], from: 'coffee beans processing', to: 'coffee grinding' },
+                { resourcesIds: [`${company1.address}_trade_3`], from: 'water purification', to: 'final coffee production' },
             ],
         });
     });

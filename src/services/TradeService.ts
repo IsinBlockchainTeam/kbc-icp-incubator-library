@@ -123,8 +123,8 @@ export class TradeService {
         await this._tradeDriver.confirmOrder(orderId);
     }
 
-    async addDocument(orderId: number, documentName: string, documentType: string, documentExternalUrl: string, transactionLineIds?: number[]): Promise<void> {
-        await this._tradeDriver.addDocument(orderId, documentName, documentType, documentExternalUrl, transactionLineIds);
+    async addDocument(orderId: number, documentName: string, documentType: string, documentExternalUrl: string): Promise<void> {
+        await this._tradeDriver.addDocument(orderId, documentName, documentType, documentExternalUrl);
     }
 
     async getNegotiationStatus(orderId: number): Promise<NegotiationStatus> {

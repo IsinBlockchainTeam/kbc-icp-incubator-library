@@ -9,7 +9,7 @@ describe('Document', () => {
     const today = new Date();
 
     beforeAll(() => {
-        documentInfo = new DocumentInfo(0, 1, 'doc name', 'doc type', 'external url', [3]);
+        documentInfo = new DocumentInfo(0, 1, 'doc name', 'doc type', 'external url');
         document = new Document(documentInfo, filename, today, content);
     });
 
@@ -19,9 +19,9 @@ describe('Document', () => {
         expect(document.name).toEqual('doc name');
         expect(document.documentType).toEqual('doc type');
         expect(document.externalUrl).toEqual('external url');
-        expect(document.transactionLineIds).toEqual([3]);
         expect(document.filename).toEqual(filename);
         expect(document.date).toEqual(today);
+        expect(document.transactionLineIds).toBeUndefined();
         expect(document.quantity).toBeUndefined();
         expect(document.content.size).toEqual(content.size);
         expect(document.content.type).toEqual(content.type);
@@ -42,6 +42,11 @@ describe('Document', () => {
     it('should correctly set the date', () => {
         document.date = new Date(today.getTime() + 10);
         expect(document.date).toEqual(new Date(today.getTime() + 10));
+    });
+
+    it('should correctly set the transaction line ids', () => {
+        document.transactionLineIds = [5, 6];
+        expect(document.transactionLineIds).toEqual([5, 6]);
     });
 
     it('should correctly set the quantity', () => {

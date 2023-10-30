@@ -186,7 +186,7 @@ describe('TradeService', () => {
             serviceFunctionName: 'addDocument',
             serviceFunction: () => tradeService.addDocument(1, 'doc name', 'doc type', externalUrl),
             expectedMockedFunction: mockedTradeDriver.addDocument,
-            expectedMockedFunctionArgs: [1, 'doc name', 'doc type', externalUrl, undefined],
+            expectedMockedFunctionArgs: [1, 'doc name', 'doc type', externalUrl],
         },
         {
             serviceFunctionName: 'getNegotiationStatus',

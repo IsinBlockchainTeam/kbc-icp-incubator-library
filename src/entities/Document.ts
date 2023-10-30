@@ -6,15 +6,18 @@ export class Document extends DocumentInfo {
 
     private _date: Date;
 
+    private _transactionLineIds?: number[];
+
     private _quantity?: number;
 
     private _content: Blob;
 
-    constructor(documentInfo: DocumentInfo, filename: string, date: Date, content: Blob, quantity?: number) {
-        super(documentInfo.id, documentInfo.transactionId, documentInfo.name, documentInfo.documentType, documentInfo.externalUrl, documentInfo.transactionLineIds || []);
+    constructor(documentInfo: DocumentInfo, filename: string, date: Date, content: Blob, transactionLineIds?: number[], quantity?: number) {
+        super(documentInfo.id, documentInfo.transactionId, documentInfo.name, documentInfo.documentType, documentInfo.externalUrl);
         this._filename = filename;
         this._date = date;
         this._content = content;
+        this._transactionLineIds = transactionLineIds;
         this._quantity = quantity;
     }
 
@@ -48,5 +51,13 @@ export class Document extends DocumentInfo {
 
     set quantity(value: number | undefined) {
         this._quantity = value;
+    }
+
+    get transactionLineIds(): number[] | undefined {
+        return this._transactionLineIds;
+    }
+
+    set transactionLineIds(value: number[] | undefined) {
+        this._transactionLineIds = value;
     }
 }

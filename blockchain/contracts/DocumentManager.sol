@@ -21,7 +21,6 @@ contract DocumentManager is AccessControl {
     struct Document {
         uint256 id;
         uint256 transactionId;
-        uint256[] transactionLineIds;
         string name;
         string documentType;
         string externalUrl;
@@ -51,7 +50,7 @@ contract DocumentManager is AccessControl {
     }
 
     function registerDocument(uint256 transactionId, string memory transactionType, string memory name,
-                            string memory documentType, string memory externalUrl, uint256[] memory transactionLineIds) public {
+                            string memory documentType, string memory externalUrl) public {
         require(hasRole(ADMIN_ROLE, msg.sender) || hasRole(ORDER_MANAGER_ROLE, msg.sender), "Sender has no permissions");
         require(transactionTypeManager.contains(transactionType), "The transaction type specified isn't registered");
         require(documentTypeManager.contains(documentType), "The document type isn't registered");
@@ -66,7 +65,6 @@ contract DocumentManager is AccessControl {
         newDocument.name = name;
         newDocument.documentType = documentType;
         newDocument.externalUrl = externalUrl;
-        newDocument.transactionLineIds = transactionLineIds;
         newDocument.exists = true;
 
         emit DocumentRegistered(documentId, transactionId);
