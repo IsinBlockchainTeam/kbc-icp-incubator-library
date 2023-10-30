@@ -1,24 +1,24 @@
 import { Blob } from 'buffer';
 import { DocumentInfo } from './DocumentInfo';
 
+export type TransactionLine = {id: number, quantity?: number}
 export class Document extends DocumentInfo {
     private _filename: string;
 
     private _date: Date;
 
-    private _transactionLineIds?: number[];
+    private _transactionLines?: TransactionLine[];
 
     private _quantity?: number;
 
     private _content: Blob;
 
-    constructor(documentInfo: DocumentInfo, filename: string, date: Date, content: Blob, transactionLineIds?: number[], quantity?: number) {
+    constructor(documentInfo: DocumentInfo, filename: string, date: Date, content: Blob, transactionLines?: TransactionLine[]) {
         super(documentInfo.id, documentInfo.transactionId, documentInfo.name, documentInfo.documentType, documentInfo.externalUrl);
         this._filename = filename;
         this._date = date;
         this._content = content;
-        this._transactionLineIds = transactionLineIds;
-        this._quantity = quantity;
+        this._transactionLines = transactionLines;
     }
 
     get filename(): string {
@@ -53,11 +53,11 @@ export class Document extends DocumentInfo {
         this._quantity = value;
     }
 
-    get transactionLineIds(): number[] | undefined {
-        return this._transactionLineIds;
+    get transactionLines(): TransactionLine[] | undefined {
+        return this._transactionLines;
     }
 
-    set transactionLineIds(value: number[] | undefined) {
-        this._transactionLineIds = value;
+    set transactionLines(value: TransactionLine[] | undefined) {
+        this._transactionLines = value;
     }
 }

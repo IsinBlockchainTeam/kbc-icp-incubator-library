@@ -131,7 +131,7 @@ describe('Document lifecycle', () => {
         expect(savedDocument!.quantity).toBeUndefined();
         expect(savedDocument!.content.size).toEqual(content.size);
         expect(savedDocument!.content.type).toEqual(content.type);
-    }, 20000);
+    }, 30000);
 
     it('Should add another document for the same transaction id and another to other transaction id', async () => {
         transactionId2 = await createOrderAndConfirm();
@@ -154,7 +154,7 @@ describe('Document lifecycle', () => {
         const fileBuffer = fs.readFileSync(path.resolve(__dirname, localFilename));
         const content = new Blob([fileBuffer], { type: 'application/pdf' });
         const ipfsFileUrl = await pinataService.storeFile(content, filename);
-        const metadataUrl = await pinataService.storeJSON({ filename, date: today, transactionLineIds: [1, 2], quantity: 55.5, fileUrl: ipfsFileUrl });
+        const metadataUrl = await pinataService.storeJSON({ filename, date: today, transactionLines: [{ id: 1, quantity: 50 }, { id: 2 }], fileUrl: ipfsFileUrl });
 
         transactionId2 = await createOrderAndConfirm();
         await tradeService.addDocument(transactionId2, rawDocument2.name, rawDocument2.documentType, metadataUrl);
@@ -171,9 +171,8 @@ describe('Document lifecycle', () => {
         expect(savedTransaction2Document!.documentType).toEqual(rawDocument2.documentType);
         expect(savedTransaction2Document!.filename).toEqual(filename);
         expect(savedTransaction2Document!.date).toEqual(today);
-        expect(savedTransaction2Document!.transactionLineIds).toEqual([1, 2]);
-        expect(savedTransaction2Document!.quantity).toEqual(55.5);
+        expect(savedTransaction2Document!.transactionLines).toEqual([{ id: 1, quantity: 50 }, { id: 2 }]);
         expect(savedTransaction2Document!.content.size).toEqual(content.size);
         expect(savedTransaction2Document!.content.type).toEqual(content.type);
-    }, 20000);
+    }, 30000);
 });

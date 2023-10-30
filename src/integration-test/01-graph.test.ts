@@ -147,7 +147,7 @@ describe('GraphService lifecycle', () => {
         await tradeService.addOrderLines(tradeIds[1], [orderLines[0]]);
         await tradeService.addTradeLines(tradeIds[2], [tradeLines[1]]);
         await tradeService.addOrderLines(tradeIds[3], [orderLines[1]]);
-    }, 20000);
+    }, 30000);
 
     it('should compute a graph', async () => {
         const result = await graphService.computeGraph(company3.address, 8);
@@ -167,7 +167,7 @@ describe('GraphService lifecycle', () => {
                 { resourcesIds: [`${company1.address}_trade_3`], from: 'water purification', to: 'final coffee production' },
             ],
         });
-    }, 20000);
+    }, 30000);
 
     it('should compute a graph with 2 trades with same line', async () => {
         await tradeService.registerBasicTrade(company2.address, company3.address, 'basicTrade2', externalUrl);

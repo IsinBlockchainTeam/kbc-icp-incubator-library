@@ -21,7 +21,7 @@ describe('Document', () => {
         expect(document.externalUrl).toEqual('external url');
         expect(document.filename).toEqual(filename);
         expect(document.date).toEqual(today);
-        expect(document.transactionLineIds).toBeUndefined();
+        expect(document.transactionLines).toBeUndefined();
         expect(document.quantity).toBeUndefined();
         expect(document.content.size).toEqual(content.size);
         expect(document.content.type).toEqual(content.type);
@@ -44,9 +44,9 @@ describe('Document', () => {
         expect(document.date).toEqual(new Date(today.getTime() + 10));
     });
 
-    it('should correctly set the transaction line ids', () => {
-        document.transactionLineIds = [5, 6];
-        expect(document.transactionLineIds).toEqual([5, 6]);
+    it('should correctly set the transaction lines', () => {
+        document.transactionLines = [{ id: 1, quantity: 50 }, { id: 2 }];
+        expect(document.transactionLines).toEqual([{ id: 1, quantity: 50 }, { id: 2 }]);
     });
 
     it('should correctly set the quantity', () => {

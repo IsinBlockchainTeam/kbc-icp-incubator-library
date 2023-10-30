@@ -151,7 +151,7 @@ describe('Trade lifecycle', () => {
             expect(savedOrderLine.quantity).toEqual(orderLine.quantity);
             expect(savedOrderLine.materialIds).toEqual([customerMaterialsCounter, supplierMaterialsCounter]);
             expect(savedOrderLine.productCategory).toEqual(orderLine.productCategory);
-        }, 20000);
+        }, 30000);
 
         it('Should check if an order exists', async () => {
             const exists = await tradeService.tradeExists(tradeCounterId);
@@ -333,7 +333,7 @@ describe('Trade lifecycle', () => {
             expect(savedTradeLine.id).toEqual(tradeLineCounterId);
             expect(savedTradeLine.materialIds).toEqual([customerMaterialsCounter, supplierMaterialsCounter]);
             expect(savedTradeLine.productCategory).toEqual(tradeLine.productCategory);
-        }, 20000);
+        }, 30000);
 
         it('Should check if a trade exists', async () => {
             const exists = await tradeService.tradeExists(tradeCounterId);

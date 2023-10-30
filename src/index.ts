@@ -27,5 +27,7 @@ export { OrderInfo } from './entities/OrderInfo';
 export { Order } from './entities/Order';
 export { OrderLine, OrderLinePrice } from './entities/OrderLine';
 export { Transformation } from './entities/Transformation';
+export { DocumentInfo } from './entities/DocumentInfo';
+export { Document, TransactionLine } from './entities/Document';
 
 export { GraphService } from './services/GraphService';

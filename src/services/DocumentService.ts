@@ -32,9 +32,9 @@ export class DocumentService {
     async getCompleteDocument(documentInfo: DocumentInfo): Promise<Document | undefined> {
         if (!this._ipfsService) throw new Error('IPFS Service not available');
         try {
-            const { filename, date, fileUrl, transactionLineIds, quantity } = await this._ipfsService!.retrieveJSON(documentInfo.externalUrl);
+            const { filename, date, fileUrl, transactionLines } = await this._ipfsService!.retrieveJSON(documentInfo.externalUrl);
             const fileContent = await this._ipfsService!.retrieveFile(fileUrl);
-            if (fileContent) return new Document(documentInfo, filename, new Date(date), fileContent, transactionLineIds, quantity);
+            if (fileContent) return new Document(documentInfo, filename, new Date(date), fileContent, transactionLines);
         } catch (e: any) {
             throw new Error(`Error while retrieve document file from IPFS: ${e.message}`);
         }
