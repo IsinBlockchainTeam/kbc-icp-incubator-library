@@ -9,6 +9,7 @@ import { EntityBuilder } from '../utils/EntityBuilder';
 import { Trade, TradeType } from '../entities/Trade';
 import { BasicTradeInfo } from '../entities/BasicTradeInfo';
 import { TradeLine } from '../entities/TradeLine';
+import { TradeStatus } from '../types/TradeStatus';
 
 export enum TradeEvents {
     TradeRegistered,
@@ -81,6 +82,14 @@ export class TradeDriver {
         try {
             const rawTrade = await this._contract.getTradeInfo(tradeId, { blockTag: blockNumber });
             return EntityBuilder.buildBasicTradeInfo(rawTrade);
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
+    }
+
+    async getTradeStatus(tradeId: number, blockNumber?: number): Promise<TradeStatus> {
+        try {
+            return this._contract.getTradeStatus(tradeId, { blockTag: blockNumber });
         } catch (e: any) {
             throw new Error(e.message);
         }

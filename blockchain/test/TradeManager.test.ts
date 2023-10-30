@@ -37,7 +37,7 @@ describe('TradeManager', () => {
     const basicTradeLineMaterialIds = [1, 2];
     const categories = ['Arabic 85', 'Excelsa 88'];
     const fiats = ['CHF'];
-    const documentTypes = ['documentType1'];
+    const documentTypes = ['Bill of lading'];
     const transactionType = 'trade';
 
     before(async () => {
@@ -320,6 +320,49 @@ describe('TradeManager', () => {
             await tradeManagerContract.connect(customer).confirmOrder(tradeCounterId);
             await expect(tradeManagerContract.connect(supplier).addDocument(50, 'document name', documentTypes[0], 'external_doc_url'))
                 .to.be.revertedWith('Trade does not exist');
+        });
+    });
+
+    describe('getTradeStatus', () => {
+        before(async () => {
+            await tradeManagerContract.connect(supplier).registerTrade(0, supplier.address, customer.address, basicTrade.externalUrl);
+            const tradeIds = await tradeManagerContract.connect(supplier).getTradeIds(supplier.address);
+            tradeCounterId = tradeIds[tradeIds.length - 1];
+        });
+
+        it('should compute the trade status - FAIL(There are no documents related to this trade)', async () => {
+            documentManagerContractFake.getDocumentsCounterByTransactionIdAndType.returns(0);
+            await expect(tradeManagerContract.connect(supplier).getTradeStatus(tradeCounterId))
+                .to.be.revertedWith('There are no documents related to this trade');
+        });
+
+        it('should compute the trade status', async () => {
+            documentManagerContractFake.getDocumentsCounterByTransactionIdAndType.returns(2);
+            documentManagerContractFake.getDocument.returns({
+                id: 1,
+                transactionId: 2,
+                name: 'document',
+                documentType: documentTypes[0],
+                externalUrl: 'url',
+            });
+
+            await tradeManagerContract.connect(supplier).getTradeStatus(tradeCounterId);
+            expect(documentManagerContractFake.getDocument).to.have.callCount(1);
+            expect(documentManagerContractFake.getDocument).to.have.calledWith(tradeCounterId, transactionType, 1);
+        });
+
+        it('should compute the trade status - FAIL(There are no documents with correct document type)', async () => {
+            documentManagerContractFake.getDocumentsCounterByTransactionIdAndType.returns(2);
+            documentManagerContractFake.getDocument.returns({
+                id: 1,
+                transactionId: 2,
+                name: 'document',
+                documentType: 'custom document type',
+                externalUrl: 'url',
+            });
+
+            await expect(tradeManagerContract.connect(supplier).getTradeStatus(tradeCounterId))
+                .to.be.revertedWith('There are no documents with correct document type');
         });
     });
 

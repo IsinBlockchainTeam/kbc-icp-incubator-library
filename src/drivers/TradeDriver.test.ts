@@ -75,6 +75,7 @@ describe('TradeDriver', () => {
             getCounter: mockedReadFunction,
             getGeneralTrade: mockedReadFunction,
             getTradeInfo: mockedReadFunction,
+            getTradeStatus: mockedReadFunction,
             getTradeIds: mockedReadFunction,
             addTradeLine: mockedWriteFunction,
             updateTradeLine: mockedWriteFunction,
@@ -247,6 +248,22 @@ describe('TradeDriver', () => {
             mockedContract.getTradeInfo = jest.fn().mockRejectedValue(new Error(errorMessage));
 
             const fn = async () => tradeDriver.getBasicTradeInfo(1);
+            await expect(fn).rejects.toThrowError(new Error(errorMessage));
+        });
+    });
+
+    describe('getTradeStatus', () => {
+        it('should get the trade status', async () => {
+            await tradeDriver.getTradeStatus(3);
+
+            expect(mockedContract.getTradeStatus).toHaveBeenCalledTimes(1);
+            expect(mockedContract.getTradeStatus).toHaveBeenNthCalledWith(1, 3, { blockTag: undefined });
+        });
+
+        it('should get the trade status - transaction fails', async () => {
+            mockedContract.getTradeStatus = jest.fn().mockRejectedValue(new Error(errorMessage));
+
+            const fn = async () => tradeDriver.getTradeStatus(1);
             await expect(fn).rejects.toThrowError(new Error(errorMessage));
         });
     });
