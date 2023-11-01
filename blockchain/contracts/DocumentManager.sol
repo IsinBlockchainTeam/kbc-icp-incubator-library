@@ -30,6 +30,9 @@ contract DocumentManager is AccessControl {
 
     // transaction id => transaction type => document counter
     mapping(uint256 => mapping(string => Counters.Counter)) private documentsCounter;
+    // TODO: si potrebbe cambiare nella seguente struttura e rimuovere il counter (la ricerca non verrà più fatta tramite id, ma direttamente a seconda del tipo di documento interessato)
+    // transaction id => transaction type => document type => documents
+//    mapping(uint256 => mapping(string => mapping(string => Document[]))) private documents;
     // transaction id => transaction type => document id => document
     mapping(uint256 => mapping(string => mapping(uint256 => Document))) private documents;
 

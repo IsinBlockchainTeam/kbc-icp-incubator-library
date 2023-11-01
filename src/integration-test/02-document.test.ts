@@ -17,6 +17,7 @@ import {
 } from './config';
 import TradeService from '../services/TradeService';
 import { TradeDriver } from '../drivers/TradeDriver';
+import { TradeStatus } from '../types/TradeStatus';
 
 dotenv.config();
 
@@ -37,12 +38,12 @@ describe('Document lifecycle', () => {
     const arbiter = 'arbiter 1', shipper = 'shipper 1', deliveryPort = 'delivery port', shippingPort = 'shipping port';
 
     let transactionDocumentCounter = 0;
-    const rawDocument = {
+    const billOfLading = {
         name: 'Document name',
         documentType: 'Bill of lading',
         externalUrl: 'externalUrl',
     };
-    const rawDocument2 = {
+    const deliveryNote = {
         name: 'Document name2',
         documentType: 'Delivery note',
         externalUrl: 'externalUr2',
@@ -97,7 +98,7 @@ describe('Document lifecycle', () => {
 
     it('Should register a document by another company, fails because the contract cannot directly be invoked to register a new document', async () => {
         _defineSender(CUSTOMER_PRIVATE_KEY);
-        const fn = () => documentService.registerDocument(transactionId, transactionType, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
+        const fn = () => documentService.registerDocument(transactionId, transactionType, billOfLading.name, billOfLading.documentType, billOfLading.externalUrl);
         await expect(fn).rejects.toThrowError(/Sender has no permissions/);
     });
 
@@ -110,10 +111,13 @@ describe('Document lifecycle', () => {
         const metadataUrl = await pinataService.storeJSON({ filename, date: today, fileUrl: ipfsFileUrl });
 
         transactionId = await createOrderAndConfirm();
-        await tradeService.addDocument(transactionId, rawDocument.name, rawDocument.documentType, metadataUrl);
+        await tradeService.addDocument(transactionId, deliveryNote.name, deliveryNote.documentType, metadataUrl);
 
         transactionDocumentCounter = await documentService.getDocumentsCounterByTransactionIdAndType(transactionId, transactionType);
         expect(transactionDocumentCounter).toEqual(1);
+
+        const status = await tradeService.getTradeStatus(transactionId);
+        expect(status).toEqual(TradeStatus.SHIPPED);
 
         const exist = await documentService.documentExists(transactionId, transactionType, transactionDocumentCounter);
         expect(exist).toBeTruthy();
@@ -124,8 +128,8 @@ describe('Document lifecycle', () => {
         expect(savedDocumentInfo).toBeDefined();
         expect(savedDocument!.id).toEqual(transactionDocumentCounter);
         expect(savedDocument!.transactionId).toEqual(transactionId);
-        expect(savedDocument!.name).toEqual(rawDocument.name);
-        expect(savedDocument!.documentType).toEqual(rawDocument.documentType);
+        expect(savedDocument!.name).toEqual(deliveryNote.name);
+        expect(savedDocument!.documentType).toEqual(deliveryNote.documentType);
         expect(savedDocument!.filename).toEqual(filename);
         expect(savedDocument!.date).toEqual(today);
         expect(savedDocument!.quantity).toBeUndefined();
@@ -135,8 +139,8 @@ describe('Document lifecycle', () => {
 
     it('Should add another document for the same transaction id and another to other transaction id', async () => {
         transactionId2 = await createOrderAndConfirm();
-        await tradeService.addDocument(transactionId, rawDocument2.name, rawDocument2.documentType, rawDocument2.externalUrl);
-        await tradeService.addDocument(transactionId2, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
+        await tradeService.addDocument(transactionId, deliveryNote.name, deliveryNote.documentType, deliveryNote.externalUrl);
+        await tradeService.addDocument(transactionId2, billOfLading.name, billOfLading.documentType, billOfLading.externalUrl);
 
         const transaction2DocumentsCounter = await documentService.getDocumentsCounterByTransactionIdAndType(transactionId2, transactionType);
 
@@ -144,8 +148,8 @@ describe('Document lifecycle', () => {
         expect(savedTransaction2Document).toBeDefined();
         expect(savedTransaction2Document.id).toEqual(transaction2DocumentsCounter);
         expect(savedTransaction2Document.transactionId).toEqual(transactionId2);
-        expect(savedTransaction2Document.name).toEqual(rawDocument.name);
-        expect(savedTransaction2Document.documentType).toEqual(rawDocument.documentType);
+        expect(savedTransaction2Document.name).toEqual(billOfLading.name);
+        expect(savedTransaction2Document.documentType).toEqual(billOfLading.documentType);
     });
 
     it('Should add another document for the same transaction id, but specifying also the transaction line id as reference', async () => {
@@ -156,8 +160,7 @@ describe('Document lifecycle', () => {
         const ipfsFileUrl = await pinataService.storeFile(content, filename);
         const metadataUrl = await pinataService.storeJSON({ filename, date: today, transactionLines: [{ id: 1, quantity: 50 }, { id: 2 }], fileUrl: ipfsFileUrl });
 
-        transactionId2 = await createOrderAndConfirm();
-        await tradeService.addDocument(transactionId2, rawDocument2.name, rawDocument2.documentType, metadataUrl);
+        await tradeService.addDocument(transactionId2, deliveryNote.name, deliveryNote.documentType, metadataUrl);
 
         const transaction2DocumentsCounter = await documentService.getDocumentsCounterByTransactionIdAndType(transactionId2, transactionType);
 
@@ -167,12 +170,17 @@ describe('Document lifecycle', () => {
         expect(savedTransaction2Document).toBeDefined();
         expect(savedTransaction2Document!.id).toEqual(transaction2DocumentsCounter);
         expect(savedTransaction2Document!.transactionId).toEqual(transactionId2);
-        expect(savedTransaction2Document!.name).toEqual(rawDocument2.name);
-        expect(savedTransaction2Document!.documentType).toEqual(rawDocument2.documentType);
+        expect(savedTransaction2Document!.name).toEqual(deliveryNote.name);
+        expect(savedTransaction2Document!.documentType).toEqual(deliveryNote.documentType);
         expect(savedTransaction2Document!.filename).toEqual(filename);
         expect(savedTransaction2Document!.date).toEqual(today);
         expect(savedTransaction2Document!.transactionLines).toEqual([{ id: 1, quantity: 50 }, { id: 2 }]);
         expect(savedTransaction2Document!.content.size).toEqual(content.size);
         expect(savedTransaction2Document!.content.type).toEqual(content.type);
     }, 30000);
+
+    it("should get the trade status ON_BOARD because document 'Bill of lading' has been uploaded before", async () => {
+        const status = await tradeService.getTradeStatus(transactionId2);
+        expect(status).toEqual(TradeStatus.ON_BOARD);
+    });
 });

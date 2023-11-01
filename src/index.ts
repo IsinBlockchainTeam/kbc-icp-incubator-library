@@ -22,6 +22,7 @@ export { Material } from './entities/Material';
 export { BasicTradeInfo } from './entities/BasicTradeInfo';
 export { BasicTrade } from './entities/BasicTrade';
 export { Trade, TradeType } from './entities/Trade';
+export { TradeStatus } from './types/TradeStatus';
 export { TradeLine } from './entities/TradeLine';
 export { OrderInfo } from './entities/OrderInfo';
 export { Order } from './entities/Order';
