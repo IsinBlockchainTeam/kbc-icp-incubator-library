@@ -255,13 +255,6 @@ describe('Trade lifecycle', () => {
             expect(orderStatus).toEqual(NegotiationStatus.COMPLETED);
         });
 
-        it('Should add a document, fails because the document type is wrong', async () => {
-            await documentService.addOrderManager(TRADE_MANAGER_CONTRACT_ADDRESS);
-            tradeCounterId = await tradeService.getCounter();
-            const fn = async () => tradeService.addDocument(tradeCounterId, 'document name', 'custom doc type', 'external url');
-            await expect(fn).rejects.toThrowError(/The document type isn't registered/);
-        });
-
         it('should try to add a line to a negotiated order', async () => {
             const orderLine = new OrderLine(0, [customerMaterialsCounter, supplierMaterialsCounter], productCategories[0], 50, new OrderLinePrice(50, 'USD'));
             // updates cannot be possible because the order has been confirmed by both parties

@@ -10,6 +10,7 @@ import { Trade, TradeType } from '../entities/Trade';
 import { BasicTradeInfo } from '../entities/BasicTradeInfo';
 import { TradeLine } from '../entities/TradeLine';
 import { TradeStatus } from '../types/TradeStatus';
+import { DocumentType } from '../entities/DocumentInfo';
 
 export enum TradeEvents {
     TradeRegistered,
@@ -211,7 +212,7 @@ export class TradeDriver {
         }
     }
 
-    async addDocument(tradeId: number, documentName: string, documentType: string, documentExternalUrl: string): Promise<void> {
+    async addDocument(tradeId: number, documentName: string, documentType: DocumentType, documentExternalUrl: string): Promise<void> {
         try {
             const tx = await this._contract.addDocument(tradeId, documentName, documentType, documentExternalUrl);
             await tx.wait();

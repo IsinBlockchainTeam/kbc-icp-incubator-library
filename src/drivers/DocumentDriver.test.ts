@@ -124,7 +124,7 @@ describe('DocumentDriver', () => {
         it('should retrieve document', async () => {
             mockedContract.getDocument = jest.fn().mockResolvedValue(mockedDocument);
 
-            const resp = await documentDriver.getDocumentInfo(transactionId, transactionType, documentId);
+            const resp = await documentDriver.getDocumentsInfoByDocumentType(transactionId, transactionType, documentId);
 
             expect(resp).toEqual(mockedDocument);
 
@@ -135,7 +135,7 @@ describe('DocumentDriver', () => {
         it('should retrieve document - transaction fails', async () => {
             mockedContract.getDocument = jest.fn().mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => documentDriver.getDocumentInfo(transactionId, transactionType, documentId);
+            const fn = async () => documentDriver.getDocumentsInfoByDocumentType(transactionId, transactionType, documentId);
             await expect(fn).rejects.toThrowError(new Error(errorMessage));
         });
     });

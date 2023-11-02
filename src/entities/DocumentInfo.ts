@@ -1,3 +1,7 @@
+export enum DocumentType {
+    DELIVERY_NOTE, BILL_OF_LADING
+}
+
 export class DocumentInfo {
     private _id: number;
 

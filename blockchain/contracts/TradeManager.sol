@@ -179,14 +179,16 @@ contract TradeManager is AccessControl {
         bool hasBillOfLading = false;
         bool hasDeliveryNote = false;
 
-        for (uint256 i = 1; i <= documentsCounter; i++) {
-            DocumentManager.Document memory document = documentManager.getDocument(tradeId, "trade", i);
-            if (document.documentType.equals("Bill of lading")) {
-                hasBillOfLading = true;
-            } else if (document.documentType.equals("Delivery note")) {
-                hasDeliveryNote = true;
-            }
-        }
+        DocumentManager.DocumentType docType = DocumentManager.DocumentType.DELIVERY_NOTE;
+
+//        for (uint256 i = 1; i <= documentsCounter; i++) {
+//            DocumentManager.Document memory document = documentManager.getDocument(tradeId, "trade", i);
+//            if (document.documentType.equals("Bill of lading")) {
+//                hasBillOfLading = true;
+//            } else if (document.documentType.equals("Delivery note")) {
+//                hasDeliveryNote = true;
+//            }
+//        }
         if (hasBillOfLading) return TradeStatus.ON_BOARD;
         if (hasDeliveryNote) return TradeStatus.SHIPPED;
         revert("There are no documents with correct document type");
@@ -318,7 +320,7 @@ contract TradeManager is AccessControl {
         }
     }
 
-    function addDocument(uint256 tradeId, string memory name, string memory documentType, string memory externalUrl) public {
+    function addDocument(uint256 tradeId, string memory name, DocumentManager.DocumentType documentType, string memory externalUrl) public {
         require(trades[tradeId].exists, "Trade does not exist");
 
         documentManager.registerDocument(tradeId, "trade", name, documentType, externalUrl);

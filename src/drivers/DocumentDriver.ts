@@ -3,7 +3,7 @@
 /* eslint-disable no-await-in-loop */
 import { Signer, utils } from 'ethers';
 import { DocumentManager, DocumentManager__factory } from '../smart-contracts';
-import { DocumentInfo } from '../entities/DocumentInfo';
+import { DocumentInfo, DocumentType } from '../entities/DocumentInfo';
 import { EntityBuilder } from '../utils/EntityBuilder';
 
 export class DocumentDriver {
@@ -18,7 +18,7 @@ export class DocumentDriver {
             .connect(signer);
     }
 
-    async registerDocument(transactionId: number, transactionType: string, name: string, documentType: string, externalUrl: string): Promise<void> {
+    async registerDocument(transactionId: number, transactionType: string, name: string, documentType: DocumentType, externalUrl: string): Promise<void> {
         try {
             const tx = await this._contract.registerDocument(transactionId, transactionType, name, documentType, externalUrl);
             await tx.wait();
@@ -36,18 +36,10 @@ export class DocumentDriver {
         }
     }
 
-    async documentExists(transactionId: number, transactionType: string, documentId: number): Promise<boolean> {
+    async getDocumentsInfoByDocumentType(transactionId: number, transactionType: string, documentType: DocumentType): Promise<DocumentInfo[]> {
         try {
-            return this._contract.documentExists(transactionId, transactionType, documentId);
-        } catch (e: any) {
-            throw new Error(e.message);
-        }
-    }
-
-    async getDocumentInfo(transactionId: number, transactionType: string, documentId: number): Promise<DocumentInfo> {
-        try {
-            const document = await this._contract.getDocument(transactionId, transactionType, documentId);
-            return EntityBuilder.buildDocumentInfo(document);
+            const documents = await this._contract.getDocumentsByDocumentType(transactionId, transactionType, documentType);
+            return documents.map((d) => EntityBuilder.buildDocumentInfo(d));
         } catch (e: any) {
             throw new Error(e.message);
         }

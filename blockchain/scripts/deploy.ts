@@ -57,15 +57,6 @@ serial([
             await tx.wait();
         }
     },
-    () => deploy(ContractName.ENUMERABLE_TYPE_MANAGER, [[]], 'EnumerableDocumentTypeManager'),
-    async () => {
-        const enums: string[] = ['Bill of lading', 'Delivery note', 'Country of Origin'];
-        for (let i = 0; i < enums.length; i++) {
-            const tx = await contractMap.get('EnumerableDocumentTypeManager')
-                ?.add(enums[i]);
-            await tx.wait();
-        }
-    },
     () => deploy(ContractName.DOCUMENT_MANAGER, [
         [process.env.SUPPLIER_ADMIN || ''],
         contractMap.get('EnumerableDocumentTypeManager')?.address,

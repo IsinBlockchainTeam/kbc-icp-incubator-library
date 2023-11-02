@@ -1,6 +1,6 @@
 import { IPFSService } from '@blockchain-lib/common';
 import { DocumentDriver } from '../drivers/DocumentDriver';
-import { DocumentInfo } from '../entities/DocumentInfo';
+import { DocumentInfo, DocumentType } from '../entities/DocumentInfo';
 import { Document } from '../entities/Document';
 
 export class DocumentService {
@@ -13,7 +13,7 @@ export class DocumentService {
         this._ipfsService = ipfsService;
     }
 
-    async registerDocument(transactionId: number, transactionType: string, name: string, documentType: string, externalUrl: string): Promise<void> {
+    async registerDocument(transactionId: number, transactionType: string, name: string, documentType: DocumentType, externalUrl: string): Promise<void> {
         await this._documentDriver.registerDocument(transactionId, transactionType, name, documentType, externalUrl);
     }
 
@@ -21,12 +21,8 @@ export class DocumentService {
         return this._documentDriver.getDocumentsCounterByTransactionIdAndType(transactionId, transactionType);
     }
 
-    async documentExists(transactionId: number, transactionType: string, documentId: number): Promise<boolean> {
-        return this._documentDriver.documentExists(transactionId, transactionType, documentId);
-    }
-
-    async getDocumentInfo(transactionId: number, transactionType: string, documentId: number): Promise<DocumentInfo> {
-        return this._documentDriver.getDocumentInfo(transactionId, transactionType, documentId);
+    async getDocumentsInfoByDocumentType(transactionId: number, transactionType: string, documentType: DocumentType): Promise<DocumentInfo[]> {
+        return this._documentDriver.getDocumentsInfoByDocumentType(transactionId, transactionType, documentType);
     }
 
     async getCompleteDocument(documentInfo: DocumentInfo): Promise<Document | undefined> {
@@ -42,8 +38,10 @@ export class DocumentService {
     }
 
     async getDocumentsInfoByTransactionIdAndType(transactionId: number, transactionType: string): Promise<DocumentInfo[]> {
-        const counter = await this.getDocumentsCounterByTransactionIdAndType(transactionId, transactionType);
-        return Promise.all(Array.from({ length: counter }, (_, index) => index + 1).map(async (id) => this.getDocumentInfo(transactionId, transactionType, id)));
+        const docTypesCounter = Object.keys(DocumentType).length / 2;
+        const results = await Promise.all(Array.from({ length: docTypesCounter }, (_, index) => index)
+            .map(async (docTypeIndex) => this.getDocumentsInfoByDocumentType(transactionId, transactionType, docTypeIndex)));
+        return results.reduce((acc, currentResult) => acc.concat(currentResult), []);
     }
 
     async addAdmin(address: string): Promise<void> {

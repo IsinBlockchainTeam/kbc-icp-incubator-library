@@ -19,7 +19,7 @@ describe('DocumentService', () => {
         registerDocument: jest.fn(),
         getDocumentsCounterByTransactionIdAndType: jest.fn(),
         documentExists: jest.fn(),
-        getDocumentInfo: jest.fn(),
+        getDocumentsInfoByDocumentType: jest.fn(),
         addAdmin: jest.fn(),
         removeAdmin: jest.fn(),
         addOrderManager: jest.fn(),
@@ -54,7 +54,7 @@ describe('DocumentService', () => {
         {
             serviceFunctionName: 'getDocumentInfo',
             serviceFunction: () => documentService.getDocumentInfo(transactionId, transactionType, documentId),
-            expectedMockedFunction: mockedDocumentDriver.getDocumentInfo,
+            expectedMockedFunction: mockedDocumentDriver.getDocumentsInfoByDocumentType,
             expectedMockedFunctionArgs: [transactionId, transactionType, documentId],
         },
         {
@@ -101,9 +101,9 @@ describe('DocumentService', () => {
         expect(mockedDocumentDriver.getDocumentsCounterByTransactionIdAndType).toHaveBeenCalledTimes(1);
         expect(mockedDocumentDriver.getDocumentsCounterByTransactionIdAndType).toHaveBeenNthCalledWith(1, transactionId, transactionType);
 
-        expect(mockedDocumentDriver.getDocumentInfo).toHaveBeenCalledTimes(2);
-        expect(mockedDocumentDriver.getDocumentInfo).toHaveBeenNthCalledWith(1, transactionId, transactionType, 1);
-        expect(mockedDocumentDriver.getDocumentInfo).toHaveBeenNthCalledWith(2, transactionId, transactionType, 2);
+        expect(mockedDocumentDriver.getDocumentsInfoByDocumentType).toHaveBeenCalledTimes(2);
+        expect(mockedDocumentDriver.getDocumentsInfoByDocumentType).toHaveBeenNthCalledWith(1, transactionId, transactionType, 1);
+        expect(mockedDocumentDriver.getDocumentsInfoByDocumentType).toHaveBeenNthCalledWith(2, transactionId, transactionType, 2);
     });
 
     it('should get complete document with file retrieved from IPFS', async () => {

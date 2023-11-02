@@ -10,6 +10,7 @@ import { BasicTrade } from '../entities/BasicTrade';
 import { serial } from '../utils/utils';
 import { Trade } from '../entities/Trade';
 import { TradeStatus } from '../types/TradeStatus';
+import { DocumentType } from '../entities/DocumentInfo';
 
 export class TradeService {
     private _tradeDriver: TradeDriver;
@@ -128,7 +129,7 @@ export class TradeService {
         await this._tradeDriver.confirmOrder(orderId);
     }
 
-    async addDocument(orderId: number, documentName: string, documentType: string, documentExternalUrl: string): Promise<void> {
+    async addDocument(orderId: number, documentName: string, documentType: DocumentType, documentExternalUrl: string): Promise<void> {
         await this._tradeDriver.addDocument(orderId, documentName, documentType, documentExternalUrl);
     }
 

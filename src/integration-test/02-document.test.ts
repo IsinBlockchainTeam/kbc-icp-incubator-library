@@ -18,6 +18,7 @@ import {
 import TradeService from '../services/TradeService';
 import { TradeDriver } from '../drivers/TradeDriver';
 import { TradeStatus } from '../types/TradeStatus';
+import { DocumentType } from '../entities/DocumentInfo';
 
 dotenv.config();
 
@@ -40,12 +41,12 @@ describe('Document lifecycle', () => {
     let transactionDocumentCounter = 0;
     const billOfLading = {
         name: 'Document name',
-        documentType: 'Bill of lading',
+        documentType: DocumentType.BILL_OF_LADING,
         externalUrl: 'externalUrl',
     };
     const deliveryNote = {
         name: 'Document name2',
-        documentType: 'Delivery note',
+        documentType: DocumentType.DELIVERY_NOTE,
         externalUrl: 'externalUr2',
     };
     let transactionId = 1;
@@ -119,10 +120,10 @@ describe('Document lifecycle', () => {
         const status = await tradeService.getTradeStatus(transactionId);
         expect(status).toEqual(TradeStatus.SHIPPED);
 
-        const exist = await documentService.documentExists(transactionId, transactionType, transactionDocumentCounter);
-        expect(exist).toBeTruthy();
+        const documentsInfo = await documentService.getDocumentsInfoByDocumentType(transactionId, transactionType, deliveryNote.documentType);
+        expect(documentsInfo.length).toBeGreaterThan(0);
 
-        const savedDocumentInfo = await documentService.getDocumentInfo(transactionId, transactionType, transactionDocumentCounter);
+        const savedDocumentInfo = documentsInfo[0];
         const savedDocument = await documentService.getCompleteDocument(savedDocumentInfo);
         expect(savedDocument).toBeDefined();
         expect(savedDocumentInfo).toBeDefined();
@@ -142,14 +143,17 @@ describe('Document lifecycle', () => {
         await tradeService.addDocument(transactionId, deliveryNote.name, deliveryNote.documentType, deliveryNote.externalUrl);
         await tradeService.addDocument(transactionId2, billOfLading.name, billOfLading.documentType, billOfLading.externalUrl);
 
+        const transactionDocumentsCounter = await documentService.getDocumentsCounterByTransactionIdAndType(transactionId, transactionType);
         const transaction2DocumentsCounter = await documentService.getDocumentsCounterByTransactionIdAndType(transactionId2, transactionType);
+        expect(transactionDocumentsCounter).toEqual(2);
+        expect(transaction2DocumentsCounter).toEqual(1);
 
-        const savedTransaction2Document = await documentService.getDocumentInfo(transactionId2, transactionType, transaction2DocumentsCounter);
-        expect(savedTransaction2Document).toBeDefined();
-        expect(savedTransaction2Document.id).toEqual(transaction2DocumentsCounter);
-        expect(savedTransaction2Document.transactionId).toEqual(transactionId2);
-        expect(savedTransaction2Document.name).toEqual(billOfLading.name);
-        expect(savedTransaction2Document.documentType).toEqual(billOfLading.documentType);
+        const savedTransaction2Documents = await documentService.getDocumentsInfoByDocumentType(transactionId2, transactionType, billOfLading.documentType);
+        expect(savedTransaction2Documents).toBeDefined();
+        expect(savedTransaction2Documents[0].id).toEqual(transaction2DocumentsCounter);
+        expect(savedTransaction2Documents[0].transactionId).toEqual(transactionId2);
+        expect(savedTransaction2Documents[0].name).toEqual(billOfLading.name);
+        expect(savedTransaction2Documents[0].documentType).toEqual(billOfLading.documentType);
     });
 
     it('Should add another document for the same transaction id, but specifying also the transaction line id as reference', async () => {
@@ -163,8 +167,12 @@ describe('Document lifecycle', () => {
         await tradeService.addDocument(transactionId2, deliveryNote.name, deliveryNote.documentType, metadataUrl);
 
         const transaction2DocumentsCounter = await documentService.getDocumentsCounterByTransactionIdAndType(transactionId2, transactionType);
+        expect(transaction2DocumentsCounter).toEqual(2);
 
-        const savedTransaction2DocumentInfo = await documentService.getDocumentInfo(transactionId2, transactionType, transaction2DocumentsCounter);
+        const documentsInfo = await documentService.getDocumentsInfoByTransactionIdAndType(transactionId2, transactionType);
+        expect(documentsInfo.length).toBeGreaterThan(2);
+
+        const savedTransaction2DocumentInfo = documentsInfo[1];
         const savedTransaction2Document = await documentService.getCompleteDocument(savedTransaction2DocumentInfo);
 
         expect(savedTransaction2Document).toBeDefined();
