@@ -3,7 +3,7 @@ import { createMock } from 'ts-auto-mock';
 import { BigNumber, ethers, Signer } from 'ethers';
 import { DocumentManager, DocumentManager__factory } from '../smart-contracts';
 import { DocumentDriver } from './DocumentDriver';
-import { DocumentInfo } from '../entities/DocumentInfo';
+import { DocumentInfo, DocumentType } from '../entities/DocumentInfo';
 import { EntityBuilder } from '../utils/EntityBuilder';
 
 describe('DocumentDriver', () => {
@@ -27,7 +27,7 @@ describe('DocumentDriver', () => {
     const documentId = 1;
     const rawDocument = {
         name: 'Document name',
-        documentType: 'Bill of lading',
+        documentType: DocumentType.BILL_OF_LADING,
         externalUrl: 'externalUrl',
     };
     const mockedDocument = createMock<DocumentInfo>();
@@ -44,8 +44,7 @@ describe('DocumentDriver', () => {
         mockedContract = createMock<DocumentManager>({
             registerDocument: mockedWriteFunction,
             getDocumentsCounterByTransactionIdAndType: mockedReadFunction,
-            documentExists: mockedReadFunction,
-            getDocument: mockedReadFunction,
+            getDocumentsByDocumentType: mockedReadFunction,
             addAdmin: mockedWriteFunction,
             removeAdmin: mockedWriteFunction,
             addOrderManager: mockedWriteFunction,
@@ -105,37 +104,22 @@ describe('DocumentDriver', () => {
         });
     });
 
-    describe('documentExists', () => {
-        it('should check if document exists', async () => {
-            await documentDriver.documentExists(transactionId, transactionType, documentId);
-            expect(mockedContract.documentExists).toHaveBeenCalledTimes(1);
-            expect(mockedContract.documentExists).toHaveBeenNthCalledWith(1, transactionId, transactionType, documentId);
-        });
+    describe('getDocumentsInfoByDocumentType', () => {
+        it('should retrieve documents by document type', async () => {
+            mockedContract.getDocumentsByDocumentType = jest.fn().mockResolvedValue([mockedDocument]);
 
-        it('should check if document exists - transaction fails', async () => {
-            mockedContract.documentExists = jest.fn().mockRejectedValue(new Error(errorMessage));
-
-            const fn = async () => documentDriver.documentExists(transactionId, transactionType, documentId);
-            await expect(fn).rejects.toThrowError(new Error(errorMessage));
-        });
-    });
-
-    describe('getDocumentInfo', () => {
-        it('should retrieve document', async () => {
-            mockedContract.getDocument = jest.fn().mockResolvedValue(mockedDocument);
-
-            const resp = await documentDriver.getDocumentsInfoByDocumentType(transactionId, transactionType, documentId);
+            const resp = await documentDriver.getDocumentsInfoByDocumentType(transactionId, transactionType, rawDocument.documentType);
 
             expect(resp).toEqual(mockedDocument);
 
-            expect(mockedContract.getDocument).toHaveBeenCalledTimes(1);
-            expect(mockedContract.getDocument).toHaveBeenNthCalledWith(1, transactionId, transactionType, documentId);
+            expect(mockedContract.getDocumentsByDocumentType).toHaveBeenCalledTimes(1);
+            expect(mockedContract.getDocumentsByDocumentType).toHaveBeenNthCalledWith(1, transactionId, transactionType, rawDocument.documentType);
         });
 
-        it('should retrieve document - transaction fails', async () => {
-            mockedContract.getDocument = jest.fn().mockRejectedValue(new Error(errorMessage));
+        it('should retrieve documents by document type - transaction fails', async () => {
+            mockedContract.getDocumentsByDocumentType = jest.fn().mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => documentDriver.getDocumentsInfoByDocumentType(transactionId, transactionType, documentId);
+            const fn = async () => documentDriver.getDocumentsInfoByDocumentType(transactionId, transactionType, rawDocument.documentType);
             await expect(fn).rejects.toThrowError(new Error(errorMessage));
         });
     });

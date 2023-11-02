@@ -6,6 +6,7 @@ import TradeService from './TradeService';
 import { BasicTradeInfo } from '../entities/BasicTradeInfo';
 import { TradeLine } from '../entities/TradeLine';
 import { OrderInfo } from '../entities/OrderInfo';
+import { DocumentType } from '../entities/DocumentInfo';
 
 describe('TradeService', () => {
     const supplier = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8';
@@ -197,9 +198,9 @@ describe('TradeService', () => {
         },
         {
             serviceFunctionName: 'addDocument',
-            serviceFunction: () => tradeService.addDocument(1, 'doc name', 'doc type', externalUrl),
+            serviceFunction: () => tradeService.addDocument(1, 'doc name', DocumentType.DELIVERY_NOTE, externalUrl),
             expectedMockedFunction: mockedTradeDriver.addDocument,
-            expectedMockedFunctionArgs: [1, 'doc name', 'doc type', externalUrl],
+            expectedMockedFunctionArgs: [1, 'doc name', DocumentType.DELIVERY_NOTE, externalUrl],
         },
         {
             serviceFunctionName: 'getNegotiationStatus',

@@ -176,21 +176,9 @@ contract TradeManager is AccessControl {
     function getTradeStatus(uint256 tradeId) public view returns (TradeStatus) {
         uint256 documentsCounter = documentManager.getDocumentsCounterByTransactionIdAndType(tradeId, "trade");
         require(documentsCounter > 0, "There are no documents related to this trade");
-        bool hasBillOfLading = false;
-        bool hasDeliveryNote = false;
 
-        DocumentManager.DocumentType docType = DocumentManager.DocumentType.DELIVERY_NOTE;
-
-//        for (uint256 i = 1; i <= documentsCounter; i++) {
-//            DocumentManager.Document memory document = documentManager.getDocument(tradeId, "trade", i);
-//            if (document.documentType.equals("Bill of lading")) {
-//                hasBillOfLading = true;
-//            } else if (document.documentType.equals("Delivery note")) {
-//                hasDeliveryNote = true;
-//            }
-//        }
-        if (hasBillOfLading) return TradeStatus.ON_BOARD;
-        if (hasDeliveryNote) return TradeStatus.SHIPPED;
+        if ((documentManager.getDocumentsByDocumentType(tradeId, "trade", DocumentManager.DocumentType.BILL_OF_LADING)).length > 0) return TradeStatus.ON_BOARD;
+        if ((documentManager.getDocumentsByDocumentType(tradeId, "trade", DocumentManager.DocumentType.DELIVERY_NOTE)).length > 0) return TradeStatus.SHIPPED;
         revert("There are no documents with correct document type");
     }
 

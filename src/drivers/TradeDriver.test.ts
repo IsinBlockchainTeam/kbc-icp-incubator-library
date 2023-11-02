@@ -10,6 +10,7 @@ import { EntityBuilder } from '../utils/EntityBuilder';
 import { BasicTradeInfo } from '../entities/BasicTradeInfo';
 import { Trade, TradeType } from '../entities/Trade';
 import { TradeLine } from '../entities/TradeLine';
+import { DocumentType } from '../entities/DocumentInfo';
 
 describe('TradeDriver', () => {
     let tradeDriver: TradeDriver;
@@ -513,7 +514,7 @@ describe('TradeDriver', () => {
 
     describe('addDocument', () => {
         it('should add document to an order', async () => {
-            await tradeDriver.addDocument(1, 'doc name', 'doc type', 'external url');
+            await tradeDriver.addDocument(1, 'doc name', DocumentType.BILL_OF_LADING, 'external url');
             expect(mockedContract.addDocument).toHaveBeenCalledTimes(1);
             expect(mockedContract.addDocument).toHaveBeenNthCalledWith(1, 1, 'doc name', 'doc type', 'external url');
 
@@ -523,7 +524,7 @@ describe('TradeDriver', () => {
         it('should add document to an order - transaction fails', async () => {
             mockedContract.addDocument = jest.fn().mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => tradeDriver.addDocument(1, 'doc name', 'doc type', 'external url');
+            const fn = async () => tradeDriver.addDocument(1, 'doc name', DocumentType.BILL_OF_LADING, 'external url');
             await expect(fn).rejects.toThrowError(new Error(errorMessage));
         });
     });

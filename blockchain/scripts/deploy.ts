@@ -59,7 +59,6 @@ serial([
     },
     () => deploy(ContractName.DOCUMENT_MANAGER, [
         [process.env.SUPPLIER_ADMIN || ''],
-        contractMap.get('EnumerableDocumentTypeManager')?.address,
         contractMap.get('EnumerableTransactionTypeManager')?.address,
     ],
     ),
