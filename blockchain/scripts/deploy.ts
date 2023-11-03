@@ -94,6 +94,12 @@ serial([
             contractMap.get(ContractName.MATERIAL_MANAGER)?.address,
         ],
     ),
+    () => deploy(
+        ContractName.ESCROW_MANAGER, [
+            process.env.SUPPLIER_ADMIN || '',
+            60 * 60 * 24 * 30 // 30 days
+        ]
+    ),
 ])
     .catch((error: any) => {
         console.error(error);
