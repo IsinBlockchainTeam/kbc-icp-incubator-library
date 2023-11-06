@@ -94,7 +94,7 @@ describe('Document lifecycle', () => {
         _defineOrderSender(SUPPLIER_PRIVATE_KEY);
         pinataDriver = new PinataIPFSDriver(process.env.PINATA_API_KEY!, process.env.PINATA_SECRET_API_KEY!, process.env.PINATA_GATEWAY_URL!, process.env.PINATA_GATEWAY_TOKEN!);
         pinataService = new IPFSService(pinataDriver);
-        await documentService.addOrderManager(TRADE_MANAGER_CONTRACT_ADDRESS);
+        await documentService.addTradeManager(TRADE_MANAGER_CONTRACT_ADDRESS);
     });
 
     it('Should register a document by another company, fails because the contract cannot directly be invoked to register a new document', async () => {
@@ -170,10 +170,10 @@ describe('Document lifecycle', () => {
         expect(transaction2DocumentsCounter).toEqual(2);
 
         const documentsInfo = await documentService.getDocumentsInfoByTransactionIdAndType(transactionId2, transactionType);
-        expect(documentsInfo.length).toBeGreaterThan(2);
+        expect(documentsInfo.length).toEqual(2);
 
-        const savedTransaction2DocumentInfo = documentsInfo[1];
-        const savedTransaction2Document = await documentService.getCompleteDocument(savedTransaction2DocumentInfo);
+        const savedTransaction2DocumentInfo = documentsInfo.find((d) => d.documentType === deliveryNote.documentType);
+        const savedTransaction2Document = await documentService.getCompleteDocument(savedTransaction2DocumentInfo!);
 
         expect(savedTransaction2Document).toBeDefined();
         expect(savedTransaction2Document!.id).toEqual(transaction2DocumentsCounter);

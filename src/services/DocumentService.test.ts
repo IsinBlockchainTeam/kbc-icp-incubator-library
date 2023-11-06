@@ -21,8 +21,8 @@ describe('DocumentService', () => {
         getDocumentsInfoByDocumentType: jest.fn(),
         addAdmin: jest.fn(),
         removeAdmin: jest.fn(),
-        addOrderManager: jest.fn(),
-        removeOrderManager: jest.fn(),
+        addTradeManager: jest.fn(),
+        removeTradeManager: jest.fn(),
     });
     const mockedIPFSService = createMock<IPFSService>({
         retrieveJSON: jest.fn(),
@@ -69,15 +69,15 @@ describe('DocumentService', () => {
             expectedMockedFunctionArgs: ['testAddress'],
         },
         {
-            serviceFunctionName: 'addOrderManager',
-            serviceFunction: () => documentService.addOrderManager('testAddress'),
-            expectedMockedFunction: mockedDocumentDriver.addOrderManager,
+            serviceFunctionName: 'addTradeManager',
+            serviceFunction: () => documentService.addTradeManager('testAddress'),
+            expectedMockedFunction: mockedDocumentDriver.addTradeManager,
             expectedMockedFunctionArgs: ['testAddress'],
         },
         {
-            serviceFunctionName: 'removeOrderManager',
-            serviceFunction: () => documentService.removeOrderManager('testAddress'),
-            expectedMockedFunction: mockedDocumentDriver.removeOrderManager,
+            serviceFunctionName: 'removeTradeManager',
+            serviceFunction: () => documentService.removeTradeManager('testAddress'),
+            expectedMockedFunction: mockedDocumentDriver.removeTradeManager,
             expectedMockedFunctionArgs: ['testAddress'],
         },
     ])('should call driver $serviceFunctionName', async ({ serviceFunction, expectedMockedFunction, expectedMockedFunctionArgs }) => {
@@ -91,12 +91,9 @@ describe('DocumentService', () => {
         mockedDocumentDriver.getDocumentsCounterByTransactionIdAndType = jest.fn().mockResolvedValue(2);
         await documentService.getDocumentsInfoByTransactionIdAndType(transactionId, transactionType);
 
-        expect(mockedDocumentDriver.getDocumentsCounterByTransactionIdAndType).toHaveBeenCalledTimes(1);
-        expect(mockedDocumentDriver.getDocumentsCounterByTransactionIdAndType).toHaveBeenNthCalledWith(1, transactionId, transactionType);
-
         expect(mockedDocumentDriver.getDocumentsInfoByDocumentType).toHaveBeenCalledTimes(2);
-        expect(mockedDocumentDriver.getDocumentsInfoByDocumentType).toHaveBeenNthCalledWith(1, transactionId, transactionType, 1);
-        expect(mockedDocumentDriver.getDocumentsInfoByDocumentType).toHaveBeenNthCalledWith(2, transactionId, transactionType, 2);
+        expect(mockedDocumentDriver.getDocumentsInfoByDocumentType).toHaveBeenNthCalledWith(1, transactionId, transactionType, DocumentType.DELIVERY_NOTE);
+        expect(mockedDocumentDriver.getDocumentsInfoByDocumentType).toHaveBeenNthCalledWith(2, transactionId, transactionType, DocumentType.BILL_OF_LADING);
     });
 
     it('should get complete document with file retrieved from IPFS', async () => {

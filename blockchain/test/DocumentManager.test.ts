@@ -10,7 +10,6 @@ import { ContractName } from '../utils/constants';
 chai.use(smock.matchers);
 
 let documentManagerContract: Contract;
-let enumerableDocumentTypeManagerContractFake: FakeContract;
 let enumerableTransactionTypeContractFake: FakeContract;
 let owner: SignerWithAddress;
 let sender: SignerWithAddress;
@@ -20,7 +19,7 @@ let tradeManager: SignerWithAddress;
 let documentCounterId: BigNumber;
 
 describe('DocumentManager', () => {
-    const documentTypes = ['documentType1', 'documentType2'];
+    const documentTypes = [0, 1];
     const transactionTypes = ['trade', 'transformation'];
     const rawDocument = {
         name: 'Document name',
@@ -39,30 +38,27 @@ describe('DocumentManager', () => {
 
         const DocumentManager = await ethers.getContractFactory(ContractName.DOCUMENT_MANAGER);
 
-        enumerableDocumentTypeManagerContractFake = await smock.fake(ContractName.ENUMERABLE_TYPE_MANAGER);
-        enumerableDocumentTypeManagerContractFake.contains.returns((value: string) => documentTypes.includes(value[0]));
-
         enumerableTransactionTypeContractFake = await smock.fake(ContractName.ENUMERABLE_TYPE_MANAGER);
         enumerableTransactionTypeContractFake.contains.returns((value: string) => transactionTypes.includes(value[0]));
 
-        documentManagerContract = await DocumentManager.deploy([], enumerableDocumentTypeManagerContractFake.address, enumerableTransactionTypeContractFake.address);
+        documentManagerContract = await DocumentManager.deploy([], enumerableTransactionTypeContractFake.address);
         await documentManagerContract.deployed();
 
-        await documentManagerContract.connect(owner).addOrderManager(tradeManager.address);
+        await documentManagerContract.connect(owner).addTradeManager(tradeManager.address);
     });
 
     describe('registerDocument', () => {
         it('should register a document (as trade manager contract)', async () => {
             await documentManagerContract.connect(tradeManager).registerDocument(transactionId, transactionTypes[0], rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
 
-            expect(enumerableDocumentTypeManagerContractFake.contains).to.be.called;
-            expect(enumerableDocumentTypeManagerContractFake.contains).to.be.calledWith(rawDocument.documentType);
             expect(enumerableTransactionTypeContractFake.contains).to.be.called;
             expect(enumerableTransactionTypeContractFake.contains).to.be.calledWith(transactionTypes[0]);
 
             documentCounterId = await documentManagerContract.connect(sender).getDocumentsCounterByTransactionIdAndType(transactionId, transactionTypes[0]);
+            expect(documentCounterId).to.equal(1);
 
-            const savedDocument = await documentManagerContract.connect(sender).getDocument(transactionId, transactionTypes[0], documentCounterId.toNumber());
+            const savedDocuments = await documentManagerContract.connect(sender).getDocumentsByDocumentType(transactionId, transactionTypes[0], rawDocument.documentType);
+            const savedDocument = savedDocuments[0];
             expect(savedDocument.id).to.equal(documentCounterId);
             expect(savedDocument.transactionId).to.equal(transactionId);
             expect(savedDocument.name).to.equal(rawDocument.name);
@@ -80,11 +76,6 @@ describe('DocumentManager', () => {
                 .to.be.revertedWith('The transaction type specified isn\'t registered');
         });
 
-        it('should register a document - FAIL (The document type isn\'t registered)', async () => {
-            await expect(documentManagerContract.connect(owner).registerDocument(transactionId, transactionTypes[0], rawDocument.name, 'custom document type', rawDocument.externalUrl))
-                .to.be.revertedWith('The document type isn\'t registered');
-        });
-
         it('should emit DocumentRegistered event', async () => {
             documentCounterId = await documentManagerContract.connect(sender).getDocumentsCounterByTransactionIdAndType(transactionId, transactionTypes[0]);
             await expect(documentManagerContract.connect(owner).registerDocument(transactionId, transactionTypes[0], rawDocument.name, rawDocument.documentType, rawDocument.externalUrl))
@@ -92,31 +83,8 @@ describe('DocumentManager', () => {
                 .withArgs(documentCounterId.toNumber() + 1, transactionId);
         });
 
-        it('should try to retrieve a document - FAIL (Document does not exist)', async () => {
-            documentCounterId = await documentManagerContract.connect(sender).getDocumentsCounterByTransactionIdAndType(transactionId, transactionTypes[0]);
-            expect(documentManagerContract.connect(sender).getDocument(transactionId, transactionTypes[0], documentCounterId.toNumber() + 10))
-                .to.be.revertedWith('Document does not exist');
-        });
-
         it('should try to retrieve a document - FAIL (The transaction type specified isn\'t registered)', async () => {
-            await expect(documentManagerContract.connect(owner).getDocument(transactionId, 'custom type', documentCounterId.toNumber() + 10))
-                .to.be.revertedWith('The transaction type specified isn\'t registered');
-        });
-    });
-
-    describe('documentExists', () => {
-        before(async () => {
-            await documentManagerContract.connect(tradeManager).registerDocument(transactionId, transactionTypes[0], rawDocument.name, rawDocument.documentType, rawDocument.externalUrl);
-            documentCounterId = await documentManagerContract.connect(sender).getDocumentsCounterByTransactionIdAndType(transactionId, transactionTypes[0]);
-        });
-
-        it('should check if document exists', async () => {
-            const exist = await documentManagerContract.connect(sender).documentExists(transactionId, transactionTypes[0], documentCounterId.toNumber());
-            expect(exist).to.be.true;
-        });
-
-        it('should check if document exists - FAIL (The transaction type specified isn\'t registered)', async () => {
-            await expect(documentManagerContract.connect(sender).documentExists(transactionId, 'custom type', documentCounterId.toNumber()))
+            await expect(documentManagerContract.connect(owner).getDocumentsByDocumentType(transactionId, 'custom type', rawDocument.documentType))
                 .to.be.revertedWith('The transaction type specified isn\'t registered');
         });
     });
@@ -129,19 +97,22 @@ describe('DocumentManager', () => {
             const documentsCounter = await documentManagerContract.connect(owner).getDocumentsCounterByTransactionIdAndType(transactionId, transactionTypes[1]);
             expect(documentsCounter).to.equal(2);
 
-            let savedDocument = await documentManagerContract.connect(owner).getDocument(transactionId, transactionTypes[1], documentsCounter.toNumber() - 1);
-            expect(savedDocument.id).to.equal(documentsCounter.toNumber() - 1);
-            expect(savedDocument.transactionId).to.equal(transactionId);
-            expect(savedDocument.name).to.equal(rawDocument.name);
-            expect(savedDocument.documentType).to.equal(rawDocument.documentType);
-            expect(savedDocument.externalUrl).to.equal(rawDocument.externalUrl);
+            const savedDocuments1 = await documentManagerContract.connect(owner).getDocumentsByDocumentType(transactionId, transactionTypes[1], rawDocument.documentType);
+            const savedDocuments2 = await documentManagerContract.connect(owner).getDocumentsByDocumentType(transactionId, transactionTypes[1], rawDocument2.documentType);
 
-            savedDocument = await documentManagerContract.connect(owner).getDocument(transactionId, transactionTypes[1], documentsCounter.toNumber());
-            expect(savedDocument.id).to.equal(documentsCounter.toNumber());
-            expect(savedDocument.transactionId).to.equal(transactionId);
-            expect(savedDocument.name).to.equal(rawDocument2.name);
-            expect(savedDocument.documentType).to.equal(rawDocument2.documentType);
-            expect(savedDocument.externalUrl).to.equal(rawDocument2.externalUrl);
+            const savedDocument1 = savedDocuments1[savedDocuments1.length - 1];
+            expect(savedDocument1.id).to.equal(documentsCounter.toNumber() - 1);
+            expect(savedDocument1.transactionId).to.equal(transactionId);
+            expect(savedDocument1.name).to.equal(rawDocument.name);
+            expect(savedDocument1.documentType).to.equal(rawDocument.documentType);
+            expect(savedDocument1.externalUrl).to.equal(rawDocument.externalUrl);
+
+            const savedDocument2 = savedDocuments2[savedDocuments2.length - 1];
+            expect(savedDocument2.id).to.equal(documentsCounter.toNumber());
+            expect(savedDocument2.transactionId).to.equal(transactionId);
+            expect(savedDocument2.name).to.equal(rawDocument2.name);
+            expect(savedDocument2.documentType).to.equal(rawDocument2.documentType);
+            expect(savedDocument2.externalUrl).to.equal(rawDocument2.externalUrl);
         });
     });
 
@@ -158,16 +129,16 @@ describe('DocumentManager', () => {
             await expect(documentManagerContract.connect(otherAccount).removeAdmin(admin.address)).to.be.revertedWith('Caller is not the admin');
         });
 
-        it('should add and remove order manager roles', async () => {
-            await documentManagerContract.connect(owner).addOrderManager(tradeManager.address);
-            expect(await documentManagerContract.hasRole(await documentManagerContract.ORDER_MANAGER_ROLE(), tradeManager.address)).to.be.true;
-            await documentManagerContract.connect(owner).removeOrderManager(tradeManager.address);
-            expect(await documentManagerContract.hasRole(await documentManagerContract.ORDER_MANAGER_ROLE(), tradeManager.address)).to.be.false;
+        it('should add and remove trade manager roles', async () => {
+            await documentManagerContract.connect(owner).addTradeManager(tradeManager.address);
+            expect(await documentManagerContract.hasRole(await documentManagerContract.TRADE_MANAGER_ROLE(), tradeManager.address)).to.be.true;
+            await documentManagerContract.connect(owner).removeTradeManager(tradeManager.address);
+            expect(await documentManagerContract.hasRole(await documentManagerContract.TRADE_MANAGER_ROLE(), tradeManager.address)).to.be.false;
         });
 
-        it('should fail to add and remove order manager roles if the caller is not an admin', async () => {
-            await expect(documentManagerContract.connect(otherAccount).addOrderManager(tradeManager.address)).to.be.revertedWith('Caller is not the admin');
-            await expect(documentManagerContract.connect(otherAccount).removeOrderManager(tradeManager.address)).to.be.revertedWith('Caller is not the admin');
+        it('should fail to add and remove trade manager roles if the caller is not an admin', async () => {
+            await expect(documentManagerContract.connect(otherAccount).addTradeManager(tradeManager.address)).to.be.revertedWith('Caller is not the admin');
+            await expect(documentManagerContract.connect(otherAccount).removeTradeManager(tradeManager.address)).to.be.revertedWith('Caller is not the admin');
         });
     });
 });

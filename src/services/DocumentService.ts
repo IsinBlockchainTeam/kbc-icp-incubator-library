@@ -52,12 +52,12 @@ export class DocumentService {
         await this._documentDriver.removeAdmin(address);
     }
 
-    async addOrderManager(address: string): Promise<void> {
-        await this._documentDriver.addOrderManager(address);
+    async addTradeManager(address: string): Promise<void> {
+        await this._documentDriver.addTradeManager(address);
     }
 
-    async removeOrderManager(address: string): Promise<void> {
-        await this._documentDriver.removeOrderManager(address);
+    async removeTradeManager(address: string): Promise<void> {
+        await this._documentDriver.removeTradeManager(address);
     }
 }
 

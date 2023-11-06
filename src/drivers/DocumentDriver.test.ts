@@ -47,8 +47,8 @@ describe('DocumentDriver', () => {
             getDocumentsByDocumentType: mockedReadFunction,
             addAdmin: mockedWriteFunction,
             removeAdmin: mockedWriteFunction,
-            addOrderManager: mockedWriteFunction,
-            removeOrderManager: mockedWriteFunction,
+            addTradeManager: mockedWriteFunction,
+            removeTradeManager: mockedWriteFunction,
             interface: { decodeEventLog: mockedDecodeEventLog },
         });
 
@@ -110,7 +110,7 @@ describe('DocumentDriver', () => {
 
             const resp = await documentDriver.getDocumentsInfoByDocumentType(transactionId, transactionType, rawDocument.documentType);
 
-            expect(resp).toEqual(mockedDocument);
+            expect(resp).toEqual([mockedDocument]);
 
             expect(mockedContract.getDocumentsByDocumentType).toHaveBeenCalledTimes(1);
             expect(mockedContract.getDocumentsByDocumentType).toHaveBeenNthCalledWith(1, transactionId, transactionType, rawDocument.documentType);
@@ -182,13 +182,13 @@ describe('DocumentDriver', () => {
         });
     });
 
-    describe('addOrderManager', () => {
+    describe('addTradeManager', () => {
         it('should call and wait for add order manager', async () => {
             const { address } = ethers.Wallet.createRandom();
-            await documentDriver.addOrderManager(address);
+            await documentDriver.addTradeManager(address);
 
-            expect(mockedContract.addOrderManager).toHaveBeenCalledTimes(1);
-            expect(mockedContract.addOrderManager).toHaveBeenNthCalledWith(
+            expect(mockedContract.addTradeManager).toHaveBeenCalledTimes(1);
+            expect(mockedContract.addTradeManager).toHaveBeenNthCalledWith(
                 1,
                 address,
             );
@@ -197,27 +197,27 @@ describe('DocumentDriver', () => {
 
         it('should call and wait for add order manager - transaction fails', async () => {
             const { address } = ethers.Wallet.createRandom();
-            mockedContract.addOrderManager = jest.fn().mockRejectedValue(new Error(errorMessage));
+            mockedContract.addTradeManager = jest.fn().mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => documentDriver.addOrderManager(address);
+            const fn = async () => documentDriver.addTradeManager(address);
             await expect(fn).rejects.toThrowError(new Error(errorMessage));
         });
 
         it('should call and wait for add order manager - fails for address', async () => {
             const address = '123';
 
-            const fn = async () => documentDriver.addOrderManager(address);
+            const fn = async () => documentDriver.addTradeManager(address);
             await expect(fn).rejects.toThrowError(new Error('Not an address'));
         });
     });
 
-    describe('removeOrderManager', () => {
+    describe('removeTradeManager', () => {
         it('should call and wait for remove order manager', async () => {
             const { address } = ethers.Wallet.createRandom();
-            await documentDriver.removeOrderManager(address);
+            await documentDriver.removeTradeManager(address);
 
-            expect(mockedContract.removeOrderManager).toHaveBeenCalledTimes(1);
-            expect(mockedContract.removeOrderManager).toHaveBeenNthCalledWith(
+            expect(mockedContract.removeTradeManager).toHaveBeenCalledTimes(1);
+            expect(mockedContract.removeTradeManager).toHaveBeenNthCalledWith(
                 1,
                 address,
             );
@@ -226,16 +226,16 @@ describe('DocumentDriver', () => {
 
         it('should call and wait for remove order manager - transaction fails', async () => {
             const { address } = ethers.Wallet.createRandom();
-            mockedContract.removeOrderManager = jest.fn().mockRejectedValue(new Error(errorMessage));
+            mockedContract.removeTradeManager = jest.fn().mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => documentDriver.removeOrderManager(address);
+            const fn = async () => documentDriver.removeTradeManager(address);
             await expect(fn).rejects.toThrowError(new Error(errorMessage));
         });
 
         it('should call and wait for remove order manager - fails for address', async () => {
             const address = '123';
 
-            const fn = async () => documentDriver.removeOrderManager(address);
+            const fn = async () => documentDriver.removeTradeManager(address);
             await expect(fn).rejects.toThrowError(new Error('Not an address'));
         });
     });
