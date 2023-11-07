@@ -18,6 +18,9 @@ export { TransformationService } from './services/TransformationService';
 export { DocumentDriver } from './drivers/DocumentDriver';
 export { DocumentService } from './services/DocumentService';
 
+export { OfferDriver } from './drivers/OfferDriver';
+export { OfferService } from './services/OfferService';
+
 export { Material } from './entities/Material';
 export { BasicTradeInfo } from './entities/BasicTradeInfo';
 export { BasicTrade } from './entities/BasicTrade';

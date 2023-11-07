@@ -4,13 +4,11 @@ pragma solidity ^0.8.17;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@blockchain-lib/blockchain-common/contracts/EnumerableType.sol";
-import "@blockchain-lib/blockchain-common/contracts/StringUtils.sol";
 import "./DocumentManager.sol";
 import "hardhat/console.sol";
 
 contract TradeManager is AccessControl {
     using Counters for Counters.Counter;
-    using StringUtils for string;
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
