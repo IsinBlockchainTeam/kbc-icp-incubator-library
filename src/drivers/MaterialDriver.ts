@@ -18,9 +18,8 @@ export class MaterialDriver {
     }
 
     async registerMaterial(companyAddress: string, name: string): Promise<void> {
-        if (!utils.isAddress(companyAddress)) {
-            throw new Error('Not an address');
-        }
+        if (!utils.isAddress(companyAddress)) throw new Error('Not an address');
+
         const tx = await this._contract.registerMaterial(companyAddress, name);
         await tx.wait();
     }

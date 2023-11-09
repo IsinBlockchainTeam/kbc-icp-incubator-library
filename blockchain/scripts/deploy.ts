@@ -41,7 +41,7 @@ serial([
     },
     () => deploy(ContractName.ENUMERABLE_TYPE_MANAGER, [[]], 'EnumerableProductCategoryManager'),
     async () => {
-        const enums: string[] = ['Arabic 85', 'Excelsa 88', 'Arabic 85 Superior'];
+        const enums: string[] = ['Arabic 85', 'Excelsa 88', 'Arabic 85 Superior', 'Liberica 85', 'Robusta 87'];
         for (let i = 0; i < enums.length; i++) {
             const tx = await contractMap.get('EnumerableProductCategoryManager')
                 ?.add(enums[i]);
@@ -57,18 +57,8 @@ serial([
             await tx.wait();
         }
     },
-    () => deploy(ContractName.ENUMERABLE_TYPE_MANAGER, [[]], 'EnumerableDocumentTypeManager'),
-    async () => {
-        const enums: string[] = ['Bill of lading', 'Delivery note', 'Country of Origin'];
-        for (let i = 0; i < enums.length; i++) {
-            const tx = await contractMap.get('EnumerableDocumentTypeManager')
-                ?.add(enums[i]);
-            await tx.wait();
-        }
-    },
     () => deploy(ContractName.DOCUMENT_MANAGER, [
         [process.env.SUPPLIER_ADMIN || ''],
-        contractMap.get('EnumerableDocumentTypeManager')?.address,
         contractMap.get('EnumerableTransactionTypeManager')?.address,
     ],
     ),
@@ -92,6 +82,12 @@ serial([
         ContractName.TRANSFORMATION_MANAGER, [
             [process.env.SUPPLIER_ADMIN || ''],
             contractMap.get(ContractName.MATERIAL_MANAGER)?.address,
+        ],
+    ),
+    () => deploy(
+        ContractName.OFFER_MANAGER, [
+            [process.env.SUPPLIER_ADMIN || ''],
+            contractMap.get('EnumerableProductCategoryManager')?.address,
         ],
     ),
     () => deploy(

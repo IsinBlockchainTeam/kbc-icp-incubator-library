@@ -8,7 +8,6 @@ import { TradeDriver, TradeEvents } from '../drivers/TradeDriver';
 import {
     CUSTOMER_ADDRESS,
     CUSTOMER_PRIVATE_KEY,
-    DOCUMENT_MANAGER_CONTRACT_ADDRESS,
     NETWORK,
     TRADE_MANAGER_CONTRACT_ADDRESS,
     SUPPLIER_ADDRESS,
@@ -17,8 +16,6 @@ import {
 } from './config';
 import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
 import { NegotiationStatus } from '../types/NegotiationStatus';
-import DocumentService from '../services/DocumentService';
-import { DocumentDriver } from '../drivers/DocumentDriver';
 import { MaterialService } from '../services/MaterialService';
 import { MaterialDriver } from '../drivers/MaterialDriver';
 import { TradeLine } from '../entities/TradeLine';
@@ -31,9 +28,6 @@ describe('Trade lifecycle', () => {
 
     let tradeService: TradeService;
     let tradeDriver: TradeDriver;
-
-    let documentService: DocumentService;
-    let documentDriver: DocumentDriver;
 
     let materialService: MaterialService;
     let materialDriver: MaterialDriver;
@@ -76,11 +70,6 @@ describe('Trade lifecycle', () => {
         pinataService = new IPFSService(pinataDriver);
 
         _defineSender(SUPPLIER_PRIVATE_KEY, pinataService);
-        documentDriver = new DocumentDriver(
-            signer,
-            DOCUMENT_MANAGER_CONTRACT_ADDRESS,
-        );
-        documentService = new DocumentService(documentDriver);
 
         materialDriver = new MaterialDriver(
             signer,
@@ -253,13 +242,6 @@ describe('Trade lifecycle', () => {
 
             orderStatus = await tradeService.getNegotiationStatus(tradeCounterId);
             expect(orderStatus).toEqual(NegotiationStatus.COMPLETED);
-        });
-
-        it('Should add a document, fails because the document type is wrong', async () => {
-            await documentService.addOrderManager(TRADE_MANAGER_CONTRACT_ADDRESS);
-            tradeCounterId = await tradeService.getCounter();
-            const fn = async () => tradeService.addDocument(tradeCounterId, 'document name', 'custom doc type', 'external url');
-            await expect(fn).rejects.toThrowError(/The document type isn't registered/);
         });
 
         it('should try to add a line to a negotiated order', async () => {

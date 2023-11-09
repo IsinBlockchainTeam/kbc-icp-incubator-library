@@ -6,6 +6,7 @@ import TradeService from './TradeService';
 import { BasicTradeInfo } from '../entities/BasicTradeInfo';
 import { TradeLine } from '../entities/TradeLine';
 import { OrderInfo } from '../entities/OrderInfo';
+import { DocumentType } from '../entities/DocumentInfo';
 
 describe('TradeService', () => {
     const supplier = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8';
@@ -34,6 +35,7 @@ describe('TradeService', () => {
         getCounter: jest.fn(),
         getGeneralTrade: jest.fn(),
         getBasicTradeInfo: jest.fn(),
+        getTradeStatus: jest.fn(),
         getTradeIds: jest.fn(),
         addTradeLine: jest.fn(),
         updateTradeLine: jest.fn(),
@@ -103,6 +105,18 @@ describe('TradeService', () => {
             serviceFunction: () => tradeService.getBasicTradeInfo(1),
             expectedMockedFunction: mockedTradeDriver.getBasicTradeInfo,
             expectedMockedFunctionArgs: [1, undefined],
+        },
+        {
+            serviceFunctionName: 'getTradeStatus',
+            serviceFunction: () => tradeService.getTradeStatus(1),
+            expectedMockedFunction: mockedTradeDriver.getTradeStatus,
+            expectedMockedFunctionArgs: [1, undefined],
+        },
+        {
+            serviceFunctionName: 'getTradeStatus (with block number)',
+            serviceFunction: () => tradeService.getTradeStatus(1, 15),
+            expectedMockedFunction: mockedTradeDriver.getTradeStatus,
+            expectedMockedFunctionArgs: [1, 15],
         },
         {
             serviceFunctionName: 'getTradeIds',
@@ -184,9 +198,9 @@ describe('TradeService', () => {
         },
         {
             serviceFunctionName: 'addDocument',
-            serviceFunction: () => tradeService.addDocument(1, 'doc name', 'doc type', externalUrl),
+            serviceFunction: () => tradeService.addDocument(1, 'doc name', DocumentType.DELIVERY_NOTE, externalUrl),
             expectedMockedFunction: mockedTradeDriver.addDocument,
-            expectedMockedFunctionArgs: [1, 'doc name', 'doc type', externalUrl],
+            expectedMockedFunctionArgs: [1, 'doc name', DocumentType.DELIVERY_NOTE, externalUrl],
         },
         {
             serviceFunctionName: 'getNegotiationStatus',

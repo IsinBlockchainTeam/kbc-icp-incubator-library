@@ -10,6 +10,7 @@ import { EntityBuilder } from '../utils/EntityBuilder';
 import { BasicTradeInfo } from '../entities/BasicTradeInfo';
 import { Trade, TradeType } from '../entities/Trade';
 import { TradeLine } from '../entities/TradeLine';
+import { DocumentType } from '../entities/DocumentInfo';
 
 describe('TradeDriver', () => {
     let tradeDriver: TradeDriver;
@@ -75,6 +76,7 @@ describe('TradeDriver', () => {
             getCounter: mockedReadFunction,
             getGeneralTrade: mockedReadFunction,
             getTradeInfo: mockedReadFunction,
+            getTradeStatus: mockedReadFunction,
             getTradeIds: mockedReadFunction,
             addTradeLine: mockedWriteFunction,
             updateTradeLine: mockedWriteFunction,
@@ -247,6 +249,22 @@ describe('TradeDriver', () => {
             mockedContract.getTradeInfo = jest.fn().mockRejectedValue(new Error(errorMessage));
 
             const fn = async () => tradeDriver.getBasicTradeInfo(1);
+            await expect(fn).rejects.toThrowError(new Error(errorMessage));
+        });
+    });
+
+    describe('getTradeStatus', () => {
+        it('should get the trade status', async () => {
+            await tradeDriver.getTradeStatus(3);
+
+            expect(mockedContract.getTradeStatus).toHaveBeenCalledTimes(1);
+            expect(mockedContract.getTradeStatus).toHaveBeenNthCalledWith(1, 3, { blockTag: undefined });
+        });
+
+        it('should get the trade status - transaction fails', async () => {
+            mockedContract.getTradeStatus = jest.fn().mockRejectedValue(new Error(errorMessage));
+
+            const fn = async () => tradeDriver.getTradeStatus(1);
             await expect(fn).rejects.toThrowError(new Error(errorMessage));
         });
     });
@@ -496,9 +514,9 @@ describe('TradeDriver', () => {
 
     describe('addDocument', () => {
         it('should add document to an order', async () => {
-            await tradeDriver.addDocument(1, 'doc name', 'doc type', 'external url');
+            await tradeDriver.addDocument(1, 'doc name', DocumentType.BILL_OF_LADING, 'external url');
             expect(mockedContract.addDocument).toHaveBeenCalledTimes(1);
-            expect(mockedContract.addDocument).toHaveBeenNthCalledWith(1, 1, 'doc name', 'doc type', 'external url');
+            expect(mockedContract.addDocument).toHaveBeenNthCalledWith(1, 1, 'doc name', DocumentType.BILL_OF_LADING, 'external url');
 
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
@@ -506,7 +524,7 @@ describe('TradeDriver', () => {
         it('should add document to an order - transaction fails', async () => {
             mockedContract.addDocument = jest.fn().mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => tradeDriver.addDocument(1, 'doc name', 'doc type', 'external url');
+            const fn = async () => tradeDriver.addDocument(1, 'doc name', DocumentType.BILL_OF_LADING, 'external url');
             await expect(fn).rejects.toThrowError(new Error(errorMessage));
         });
     });

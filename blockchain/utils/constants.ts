@@ -5,6 +5,7 @@ export enum ContractName {
     MATERIAL_MANAGER = 'MaterialManager',
     RELATIONSHIP_MANAGER = 'RelationshipManager',
     DOCUMENT_MANAGER = 'DocumentManager',
+    OFFER_MANAGER = 'OfferManager',
     ESCROW_MANAGER = 'EscrowManager',
     ESCROW = 'Escrow',
     MY_TOKEN = 'MyToken',

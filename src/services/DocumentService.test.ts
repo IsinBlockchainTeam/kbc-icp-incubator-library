@@ -2,7 +2,7 @@ import { createMock } from 'ts-auto-mock';
 import { IPFSService } from '@blockchain-lib/common';
 import DocumentService from './DocumentService';
 import { DocumentDriver } from '../drivers/DocumentDriver';
-import { DocumentInfo } from '../entities/DocumentInfo';
+import { DocumentInfo, DocumentType } from '../entities/DocumentInfo';
 
 describe('DocumentService', () => {
     const owner = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8';
@@ -10,7 +10,7 @@ describe('DocumentService', () => {
     const documentId = 1;
     const rawDocument = {
         name: 'Document name',
-        documentType: 'Bill of lading',
+        documentType: DocumentType.BILL_OF_LADING,
         externalUrl: 'externalUrl',
     };
     const transactionType = 'trade';
@@ -18,12 +18,11 @@ describe('DocumentService', () => {
     const mockedDocumentDriver = createMock<DocumentDriver>({
         registerDocument: jest.fn(),
         getDocumentsCounterByTransactionIdAndType: jest.fn(),
-        documentExists: jest.fn(),
-        getDocumentInfo: jest.fn(),
+        getDocumentsInfoByDocumentType: jest.fn(),
         addAdmin: jest.fn(),
         removeAdmin: jest.fn(),
-        addOrderManager: jest.fn(),
-        removeOrderManager: jest.fn(),
+        addTradeManager: jest.fn(),
+        removeTradeManager: jest.fn(),
     });
     const mockedIPFSService = createMock<IPFSService>({
         retrieveJSON: jest.fn(),
@@ -46,16 +45,10 @@ describe('DocumentService', () => {
             expectedMockedFunctionArgs: [transactionId, transactionType, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl],
         },
         {
-            serviceFunctionName: 'documentExists',
-            serviceFunction: () => documentService.documentExists(transactionId, transactionType, documentId),
-            expectedMockedFunction: mockedDocumentDriver.documentExists,
-            expectedMockedFunctionArgs: [transactionId, transactionType, documentId],
-        },
-        {
-            serviceFunctionName: 'getDocumentInfo',
-            serviceFunction: () => documentService.getDocumentInfo(transactionId, transactionType, documentId),
-            expectedMockedFunction: mockedDocumentDriver.getDocumentInfo,
-            expectedMockedFunctionArgs: [transactionId, transactionType, documentId],
+            serviceFunctionName: 'getDocumentsInfoByDocumentType',
+            serviceFunction: () => documentService.getDocumentsInfoByDocumentType(transactionId, transactionType, rawDocument.documentType),
+            expectedMockedFunction: mockedDocumentDriver.getDocumentsInfoByDocumentType,
+            expectedMockedFunctionArgs: [transactionId, transactionType, rawDocument.documentType],
         },
         {
             serviceFunctionName: 'getDocumentsCounterByTransactionIdAndType',
@@ -76,15 +69,15 @@ describe('DocumentService', () => {
             expectedMockedFunctionArgs: ['testAddress'],
         },
         {
-            serviceFunctionName: 'addOrderManager',
-            serviceFunction: () => documentService.addOrderManager('testAddress'),
-            expectedMockedFunction: mockedDocumentDriver.addOrderManager,
+            serviceFunctionName: 'addTradeManager',
+            serviceFunction: () => documentService.addTradeManager('testAddress'),
+            expectedMockedFunction: mockedDocumentDriver.addTradeManager,
             expectedMockedFunctionArgs: ['testAddress'],
         },
         {
-            serviceFunctionName: 'removeOrderManager',
-            serviceFunction: () => documentService.removeOrderManager('testAddress'),
-            expectedMockedFunction: mockedDocumentDriver.removeOrderManager,
+            serviceFunctionName: 'removeTradeManager',
+            serviceFunction: () => documentService.removeTradeManager('testAddress'),
+            expectedMockedFunction: mockedDocumentDriver.removeTradeManager,
             expectedMockedFunctionArgs: ['testAddress'],
         },
     ])('should call driver $serviceFunctionName', async ({ serviceFunction, expectedMockedFunction, expectedMockedFunctionArgs }) => {
@@ -98,12 +91,9 @@ describe('DocumentService', () => {
         mockedDocumentDriver.getDocumentsCounterByTransactionIdAndType = jest.fn().mockResolvedValue(2);
         await documentService.getDocumentsInfoByTransactionIdAndType(transactionId, transactionType);
 
-        expect(mockedDocumentDriver.getDocumentsCounterByTransactionIdAndType).toHaveBeenCalledTimes(1);
-        expect(mockedDocumentDriver.getDocumentsCounterByTransactionIdAndType).toHaveBeenNthCalledWith(1, transactionId, transactionType);
-
-        expect(mockedDocumentDriver.getDocumentInfo).toHaveBeenCalledTimes(2);
-        expect(mockedDocumentDriver.getDocumentInfo).toHaveBeenNthCalledWith(1, transactionId, transactionType, 1);
-        expect(mockedDocumentDriver.getDocumentInfo).toHaveBeenNthCalledWith(2, transactionId, transactionType, 2);
+        expect(mockedDocumentDriver.getDocumentsInfoByDocumentType).toHaveBeenCalledTimes(2);
+        expect(mockedDocumentDriver.getDocumentsInfoByDocumentType).toHaveBeenNthCalledWith(1, transactionId, transactionType, DocumentType.DELIVERY_NOTE);
+        expect(mockedDocumentDriver.getDocumentsInfoByDocumentType).toHaveBeenNthCalledWith(2, transactionId, transactionType, DocumentType.BILL_OF_LADING);
     });
 
     it('should get complete document with file retrieved from IPFS', async () => {
@@ -111,7 +101,7 @@ describe('DocumentService', () => {
             mockedDocumentDriver, mockedIPFSService,
         );
         mockedIPFSService.retrieveJSON = jest.fn().mockResolvedValue({ filename: 'file1.pdf', fileUrl: 'fileUrl' });
-        const documentInfo = new DocumentInfo(0, 1, 'doc name', 'doc type', 'metadataExternalUrl');
+        const documentInfo = new DocumentInfo(0, 1, 'doc name', rawDocument.documentType, 'metadataExternalUrl');
         await documentService.getCompleteDocument(documentInfo);
 
         expect(mockedIPFSService.retrieveJSON).toHaveBeenCalledTimes(1);
@@ -126,7 +116,7 @@ describe('DocumentService', () => {
             mockedDocumentDriver, mockedIPFSService,
         );
         mockedIPFSService.retrieveJSON = jest.fn().mockRejectedValueOnce(new Error('error'));
-        const documentInfo = new DocumentInfo(0, 1, 'doc name', 'doc type', 'metadataExternalUrl');
+        const documentInfo = new DocumentInfo(0, 1, 'doc name', rawDocument.documentType, 'metadataExternalUrl');
 
         const fn = async () => documentService.getCompleteDocument(documentInfo);
         await expect(fn).rejects.toThrowError(new Error('Error while retrieve document file from IPFS: error'));
@@ -136,7 +126,7 @@ describe('DocumentService', () => {
         documentService = new DocumentService(
             mockedDocumentDriver,
         );
-        const documentInfo = new DocumentInfo(0, 1, 'doc name', 'doc type', 'metadataExternalUrl');
+        const documentInfo = new DocumentInfo(0, 1, 'doc name', rawDocument.documentType, 'metadataExternalUrl');
         const fn = async () => documentService.getCompleteDocument(documentInfo);
         await expect(fn).rejects.toThrowError(new Error('IPFS Service not available'));
     });

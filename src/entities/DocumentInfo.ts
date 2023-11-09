@@ -1,3 +1,7 @@
+export enum DocumentType {
+    DELIVERY_NOTE, BILL_OF_LADING
+}
+
 export class DocumentInfo {
     private _id: number;
 
@@ -5,11 +9,11 @@ export class DocumentInfo {
 
     private _name: string;
 
-    private _documentType: string;
+    private _documentType: DocumentType;
 
     private _externalUrl: string;
 
-    constructor(id: number, transactionId: number, name: string, documentType: string, externalUrl: string) {
+    constructor(id: number, transactionId: number, name: string, documentType: DocumentType, externalUrl: string) {
         this._id = id;
         this._transactionId = transactionId;
         this._name = name;
@@ -41,11 +45,11 @@ export class DocumentInfo {
         this._name = value;
     }
 
-    get documentType(): string {
+    get documentType(): DocumentType {
         return this._documentType;
     }
 
-    set documentType(value: string) {
+    set documentType(value: DocumentType) {
         this._documentType = value;
     }
 

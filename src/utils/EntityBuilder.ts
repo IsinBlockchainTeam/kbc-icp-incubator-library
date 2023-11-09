@@ -4,7 +4,7 @@ import { Transformation } from '../entities/Transformation';
 import { OrderInfo } from '../entities/OrderInfo';
 import {
     DocumentManager,
-    MaterialManager,
+    MaterialManager, OfferManager,
     RelationshipManager,
     TradeManager,
     TransformationManager,
@@ -15,6 +15,7 @@ import { DocumentInfo } from '../entities/DocumentInfo';
 import { BasicTradeInfo } from '../entities/BasicTradeInfo';
 import { TradeLine } from '../entities/TradeLine';
 import { Trade } from '../entities/Trade';
+import { Offer } from '../entities/Offer';
 import { Escrow } from '../entities/Escrow';
 import {EscrowStatus} from "../types/EscrowStatus";
 
@@ -61,6 +62,10 @@ export class EntityBuilder {
 
     static buildDocumentInfo(bcDocument: DocumentManager.DocumentStructOutput): DocumentInfo {
         return new DocumentInfo(bcDocument.id.toNumber(), bcDocument.transactionId.toNumber(), bcDocument.name, bcDocument.documentType, bcDocument.externalUrl);
+    }
+
+    static buildOffer(bcOffer: OfferManager.OfferStructOutput): Offer {
+        return new Offer(bcOffer.id.toNumber(), bcOffer.owner, bcOffer.productCategory);
     }
 
     static buildEscrow(bcEscrow: {payee: string, payer: string, depositAmount: BigNumber, duration: BigNumber, status: EscrowStatus, deployedAt: BigNumber, tokenAddress: string }): Escrow {

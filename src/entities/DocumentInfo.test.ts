@@ -1,17 +1,17 @@
-import { DocumentInfo } from './DocumentInfo';
+import { DocumentInfo, DocumentType } from './DocumentInfo';
 
 describe('Document', () => {
     let documentInfo: DocumentInfo;
 
     beforeAll(() => {
-        documentInfo = new DocumentInfo(0, 1, 'doc name', 'doc type', 'metadataExternalUrl');
+        documentInfo = new DocumentInfo(0, 1, 'doc name', DocumentType.DELIVERY_NOTE, 'metadataExternalUrl');
     });
 
     it('should correctly initialize a new DocumentInfo', () => {
         expect(documentInfo.id).toEqual(0);
         expect(documentInfo.transactionId).toEqual(1);
         expect(documentInfo.name).toEqual('doc name');
-        expect(documentInfo.documentType).toEqual('doc type');
+        expect(documentInfo.documentType).toEqual(DocumentType.DELIVERY_NOTE);
     });
 
     it('should correctly set the id', () => {
@@ -30,8 +30,8 @@ describe('Document', () => {
     });
 
     it('should correctly set the documentInfo type', () => {
-        documentInfo.documentType = 'doc type 2';
-        expect(documentInfo.documentType).toEqual('doc type 2');
+        documentInfo.documentType = DocumentType.BILL_OF_LADING;
+        expect(documentInfo.documentType).toEqual(DocumentType.BILL_OF_LADING);
     });
 
     it('should correctly set external url', () => {

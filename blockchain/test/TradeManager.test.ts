@@ -13,7 +13,6 @@ let tradeManagerContract: Contract;
 let enumerableFiatManagerContractFake: FakeContract;
 let enumerableProductCategoryManagerContractFake: FakeContract;
 let documentManagerContractFake: FakeContract;
-let enumerableDocumentTypeManagerContractFake: FakeContract;
 let owner: SignerWithAddress;
 let admin: SignerWithAddress;
 let supplier: SignerWithAddress;
@@ -37,7 +36,7 @@ describe('TradeManager', () => {
     const basicTradeLineMaterialIds = [1, 2];
     const categories = ['Arabic 85', 'Excelsa 88'];
     const fiats = ['CHF'];
-    const documentTypes = ['documentType1'];
+    const documentTypes = [1];
     const transactionType = 'trade';
 
     before(async () => {
@@ -46,12 +45,10 @@ describe('TradeManager', () => {
         const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER);
         enumerableFiatManagerContractFake = await smock.fake(ContractName.ENUMERABLE_TYPE_MANAGER);
         enumerableProductCategoryManagerContractFake = await smock.fake(ContractName.ENUMERABLE_TYPE_MANAGER);
-        enumerableDocumentTypeManagerContractFake = await smock.fake(ContractName.ENUMERABLE_TYPE_MANAGER);
         documentManagerContractFake = await smock.fake(ContractName.DOCUMENT_MANAGER);
 
         enumerableFiatManagerContractFake.contains.returns((value: string) => fiats.includes(value[0]));
         enumerableProductCategoryManagerContractFake.contains.returns((value: string) => categories.includes(value[0]));
-        enumerableDocumentTypeManagerContractFake.contains.returns((value: string) => documentTypes.includes(value[0]));
 
         tradeManagerContract = await TradeManager.deploy([admin.address], enumerableFiatManagerContractFake.address,
             enumerableProductCategoryManagerContractFake.address, documentManagerContractFake.address);
@@ -320,6 +317,43 @@ describe('TradeManager', () => {
             await tradeManagerContract.connect(customer).confirmOrder(tradeCounterId);
             await expect(tradeManagerContract.connect(supplier).addDocument(50, 'document name', documentTypes[0], 'external_doc_url'))
                 .to.be.revertedWith('Trade does not exist');
+        });
+    });
+
+    describe('getTradeStatus', () => {
+        before(async () => {
+            await tradeManagerContract.connect(supplier).registerTrade(0, supplier.address, customer.address, basicTrade.externalUrl);
+            const tradeIds = await tradeManagerContract.connect(supplier).getTradeIds(supplier.address);
+            tradeCounterId = tradeIds[tradeIds.length - 1];
+        });
+
+        it('should compute the trade status - FAIL(There are no documents related to this trade)', async () => {
+            documentManagerContractFake.getDocumentsCounterByTransactionIdAndType.returns(0);
+            await expect(tradeManagerContract.connect(supplier).getTradeStatus(tradeCounterId))
+                .to.be.revertedWith('There are no documents related to this trade');
+        });
+
+        it('should compute the trade status', async () => {
+            documentManagerContractFake.getDocumentsCounterByTransactionIdAndType.returns(2);
+            documentManagerContractFake.getDocumentsByDocumentType.returns([{
+                id: 1,
+                transactionId: 2,
+                name: 'document',
+                documentType: documentTypes[0],
+                externalUrl: 'url',
+            }]);
+
+            await tradeManagerContract.connect(supplier).getTradeStatus(tradeCounterId);
+            expect(documentManagerContractFake.getDocumentsByDocumentType).to.have.callCount(1);
+            expect(documentManagerContractFake.getDocumentsByDocumentType).to.have.calledWith(tradeCounterId, transactionType, documentTypes[0]);
+        });
+
+        it('should compute the trade status - FAIL(There are no documents with correct document type)', async () => {
+            documentManagerContractFake.getDocumentsCounterByTransactionIdAndType.returns(2);
+            documentManagerContractFake.getDocumentsByDocumentType.returns([]);
+
+            await expect(tradeManagerContract.connect(supplier).getTradeStatus(tradeCounterId))
+                .to.be.revertedWith('There are no documents with correct document type');
         });
     });
 

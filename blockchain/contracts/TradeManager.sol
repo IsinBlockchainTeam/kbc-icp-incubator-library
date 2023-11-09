@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@blockchain-lib/blockchain-common/contracts/EnumerableType.sol";
 import "./DocumentManager.sol";
+import "hardhat/console.sol";
 
 contract TradeManager is AccessControl {
     using Counters for Counters.Counter;
@@ -13,6 +14,7 @@ contract TradeManager is AccessControl {
 
     enum TradeType { TRADE, ORDER }
     enum NegotiationStatus { INITIALIZED, PENDING, COMPLETED }
+    enum TradeStatus { SHIPPED, ON_BOARD }
 
     event TradeRegistered(uint256 indexed id, address supplier);
     event TradeLineAdded(uint256 indexed id, uint256 tradeLineId);
@@ -169,6 +171,15 @@ contract TradeManager is AccessControl {
         return (t.id, t.name, t.supplier, t.customer, t.externalUrl, t.lineIds);
     }
 
+    function getTradeStatus(uint256 tradeId) public view returns (TradeStatus) {
+        uint256 documentsCounter = documentManager.getDocumentsCounterByTransactionIdAndType(tradeId, "trade");
+        require(documentsCounter > 0, "There are no documents related to this trade");
+
+        if ((documentManager.getDocumentsByDocumentType(tradeId, "trade", DocumentManager.DocumentType.BILL_OF_LADING)).length > 0) return TradeStatus.ON_BOARD;
+        if ((documentManager.getDocumentsByDocumentType(tradeId, "trade", DocumentManager.DocumentType.DELIVERY_NOTE)).length > 0) return TradeStatus.SHIPPED;
+        revert("There are no documents with correct document type");
+    }
+
     function getTradeIds(address supplier) public view returns (uint256[] memory) {
         return tradeIds[supplier];
     }
@@ -295,10 +306,10 @@ contract TradeManager is AccessControl {
         }
     }
 
-    function addDocument(uint256 tradeId, string memory name, string memory documentType, string memory externalUrl) public {
+    function addDocument(uint256 tradeId, string memory name, DocumentManager.DocumentType documentType, string memory externalUrl) public {
         require(trades[tradeId].exists, "Trade does not exist");
 
-        documentManager.registerDocument(tradeId, 'trade', name, documentType, externalUrl);
+        documentManager.registerDocument(tradeId, "trade", name, documentType, externalUrl);
     }
 
     function getNegotiationStatus(uint256 orderId) public view returns (NegotiationStatus orderStatus) {

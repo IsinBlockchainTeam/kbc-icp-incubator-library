@@ -9,6 +9,8 @@ import { Order } from '../entities/Order';
 import { BasicTrade } from '../entities/BasicTrade';
 import { serial } from '../utils/utils';
 import { Trade } from '../entities/Trade';
+import { TradeStatus } from '../types/TradeStatus';
+import { DocumentType } from '../entities/DocumentInfo';
 
 export class TradeService {
     private _tradeDriver: TradeDriver;
@@ -49,6 +51,10 @@ export class TradeService {
             console.error('Error while retrieve basic trade metadata file from IPFS: ', e);
         }
         return undefined;
+    }
+
+    async getTradeStatus(tradeId: number, blockNumber?: number): Promise<TradeStatus> {
+        return this._tradeDriver.getTradeStatus(tradeId, blockNumber);
     }
 
     async getTradeIds(supplierAddress: string): Promise<number[]> {
@@ -123,7 +129,7 @@ export class TradeService {
         await this._tradeDriver.confirmOrder(orderId);
     }
 
-    async addDocument(orderId: number, documentName: string, documentType: string, documentExternalUrl: string): Promise<void> {
+    async addDocument(orderId: number, documentName: string, documentType: DocumentType, documentExternalUrl: string): Promise<void> {
         await this._tradeDriver.addDocument(orderId, documentName, documentType, documentExternalUrl);
     }
 
