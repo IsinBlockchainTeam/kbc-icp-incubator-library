@@ -5,9 +5,10 @@ import {expect} from "chai";
 
 describe("Escrow.sol", () => {
     let escrowContract: Contract;
+    let tokenContract: Contract;
     let admin: SignerWithAddress, payee: SignerWithAddress, payer: SignerWithAddress;
     const duration = 60 * 60 * 24 * 30; // 30 days
-    const depositAmount = ethers.utils.parseEther('100');
+    const depositAmount: number = 100;
 
     const mineBlocks = async (n: number) => {
         await ethers.provider.send('hardhat_mine', [`0x${n.toString(16)}`]);
@@ -20,8 +21,13 @@ describe("Escrow.sol", () => {
     beforeEach(async () => {
         [admin, payee, payer] = await ethers.getSigners();
 
+        const Token = await ethers.getContractFactory('MyToken');
+        tokenContract = await Token.deploy(depositAmount * 10);
+        await tokenContract.deployed();
+        await tokenContract.transfer(payer.address, depositAmount * 2);
+
         const Escrow = await ethers.getContractFactory('Escrow');
-        escrowContract = await Escrow.deploy([admin.address], payee.address, payer.address, duration);
+        escrowContract = await Escrow.deploy([admin.address], payee.address, payer.address, duration, tokenContract.address);
         await escrowContract.deployed();
     });
 
@@ -53,18 +59,47 @@ describe("Escrow.sol", () => {
     });
 
     describe("Deposit", () => {
+        /*
+        it("should deposit tokens", async () => {
+            const depositAmount = 100;
+            await tokenContract.transfer(payer.address, 200);
+            expect(await tokenContract.balanceOf(payer.address)).to.equal(200);
+
+            await tokenContract.connect(payer).approve(escrowContract.address, depositAmount);
+            const tx = await escrowContract.connect(payer).depositTokens(depositAmount);
+
+            await expect(tx).to.emit(escrowContract, 'Deposited').withArgs(depositAmount);
+            expect(await tokenContract.balanceOf(escrowContract.address)).to.equal(depositAmount);
+        });
+         */
         it("should deposit funds", async () => {
-            const tx = await escrowContract.connect(payer).deposit({ value: depositAmount });
+            await tokenContract.connect(payer).approve(escrowContract.address, depositAmount);
+            const tx = await escrowContract.connect(payer).deposit(depositAmount);
 
             await expect(tx).to.emit(escrowContract, 'Deposited').withArgs(depositAmount);
             expect(await escrowContract.getDepositAmount()).to.equal(depositAmount);
+            expect(await tokenContract.balanceOf(escrowContract.address)).to.equal(depositAmount);
+        });
+
+        it("should fail deposit if payer has not approved token transfer", async () => {
+            await expect(escrowContract.connect(payer).deposit(depositAmount)).to.be.revertedWith("ERC20: insufficient allowance");
         });
 
         it("should fail deposit if escrow is not in 'Active' state", async () => {
-            await escrowContract.connect(payer).deposit({ value: depositAmount });
             await escrowContract.connect(admin).close();
 
-            await expect(escrowContract.connect(payer).deposit({ value: depositAmount })).to.be.revertedWith("Escrow: can only deposit while active");
+            await tokenContract.connect(payer).approve(escrowContract.address, depositAmount);
+            await expect(escrowContract.connect(payer).deposit(depositAmount)).to.be.revertedWith("Escrow: can only deposit while active");
+        });
+
+        it("should fail deposit if caller is not payer", async () => {
+            await tokenContract.connect(payer).approve(escrowContract.address, depositAmount);
+            await expect(escrowContract.connect(payee).deposit(depositAmount)).to.be.revertedWith("Escrow: caller is not the payer");
+        });
+
+        it("should fail deposit if amount is not greater than 0", async () => {
+            await tokenContract.connect(payer).approve(escrowContract.address, depositAmount);
+            await expect(escrowContract.connect(payer).deposit(0)).to.be.revertedWith("Escrow: can only deposit positive amount");
         });
     });
 
@@ -107,15 +142,16 @@ describe("Escrow.sol", () => {
 
     describe("Refund", () => {
         it("should refund funds", async () => {
-            await escrowContract.connect(payer).deposit({ value: depositAmount });
-            const initialBalance = await payer.getBalance();
+            await tokenContract.connect(payer).approve(escrowContract.address, depositAmount);
+            await escrowContract.connect(payer).deposit(depositAmount);
+            const initialBalance = await tokenContract.balanceOf(payer.address);
 
             await escrowContract.connect(admin).enableRefund();
             const tx = await escrowContract.connect(payer).refund();
             await tx.wait();
             expect(tx).emit(escrowContract, 'Refunded').withArgs(depositAmount);
 
-            expect(await payer.getBalance()).to.be.greaterThan(initialBalance);
+            expect(await tokenContract.balanceOf(payer.address)).to.be.greaterThan(initialBalance);
         });
 
         it("refundAllowed should return true if state is 'Refunding'", async () => {
@@ -130,15 +166,16 @@ describe("Escrow.sol", () => {
 
     describe("Withdraw", () => {
         it("should withdraw funds", async () => {
-            await escrowContract.connect(payer).deposit({ value: depositAmount });
-            const initialBalance = await payee.getBalance();
+            await tokenContract.connect(payer).approve(escrowContract.address, depositAmount);
+            await escrowContract.connect(payer).deposit(depositAmount);
+            const initialBalance = await tokenContract.balanceOf(payee.address);
 
             await escrowContract.connect(admin).close();
             const tx = await escrowContract.connect(payee).withdraw();
             await tx.wait();
             expect(tx).emit(escrowContract, 'Withdrawn').withArgs(depositAmount);
 
-            expect(await payee.getBalance()).to.be.greaterThan(initialBalance);
+            expect(await tokenContract.balanceOf(payee.address)).to.be.greaterThan(initialBalance);
         });
 
         it("should fail withdrawing funds if not payee", async () => {

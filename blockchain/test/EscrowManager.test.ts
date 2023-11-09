@@ -7,6 +7,7 @@ describe("EscrowManager.sol", () => {
     let escrowManagerContract: Contract;
     let admin: SignerWithAddress, payee: SignerWithAddress, payer: SignerWithAddress, other: SignerWithAddress
     const duration = 60 * 60 * 24 * 30; // 30 days
+    const tokenAddress = "0x71C7656EC7ab88b098defB751B7401B5f6d8976F";
 
     beforeEach(async () => {
         [admin, payee, payer, other] = await ethers.getSigners();
@@ -22,6 +23,7 @@ describe("EscrowManager.sol", () => {
                 payee.address,
                 payer.address,
                 duration,
+                tokenAddress
             );
 
             const receipt = await tx.wait();
@@ -38,6 +40,7 @@ describe("EscrowManager.sol", () => {
             expect(await escrowContract.getPayee()).to.equal(payee.address);
             expect(await escrowContract.getPayer()).to.equal(payer.address);
             expect(await escrowContract.getDuration()).to.equal(duration);
+            expect(await escrowContract.getTokenAddress()).to.equal(tokenAddress);
         });
 
         it("should return all payees of payer", async () => {
@@ -45,16 +48,19 @@ describe("EscrowManager.sol", () => {
                 payee.address,
                 payer.address,
                 duration,
+                tokenAddress
             );
             await escrowManagerContract.registerEscrow(
                 payee.address,
                 other.address,
                 duration,
+                tokenAddress
             );
             await escrowManagerContract.registerEscrow(
                 other.address,
                 payer.address,
                 duration,
+                tokenAddress
             );
 
             const payerPayees = await escrowManagerContract.getPayees(payer.address);
@@ -75,6 +81,7 @@ describe("EscrowManager.sol", () => {
                 ethers.constants.AddressZero,
                 payer.address,
                 duration,
+                tokenAddress
             )).to.be.revertedWith("EscrowManager: payee is the zero address");
         });
 
@@ -83,7 +90,17 @@ describe("EscrowManager.sol", () => {
                 payee.address,
                 ethers.constants.AddressZero,
                 duration,
+                tokenAddress
             )).to.be.revertedWith("EscrowManager: payer is the zero address");
+        });
+
+        it("should fail escrow registration if token address is zero address", async () => {
+            await expect(escrowManagerContract.registerEscrow(
+                payee.address,
+                payer.address,
+                duration,
+                ethers.constants.AddressZero
+            )).to.be.revertedWith("EscrowManager: token address is the zero address");
         });
     });
 });

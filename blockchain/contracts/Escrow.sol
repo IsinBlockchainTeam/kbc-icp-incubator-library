@@ -6,10 +6,13 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 
 import "hardhat/console.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract Escrow is AccessControl {
-    using Address for address payable;
+    using Address for address;
     using Counters for Counters.Counter;
+    using SafeERC20 for IERC20;
     Counters.Counter private _counter;
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
@@ -43,18 +46,15 @@ contract Escrow is AccessControl {
     }
 
 
-    address payable private _payee;
-    address payable private _payer;
+    address private _payee;
+    address private _payer;
     uint256 private _deployedAt;
     uint256 private _duration;
     State private _state;
     uint256 private _depositAmount;
+    IERC20 private _token;
 
-    // escrow id => escrow
-    mapping(uint256 => Escrow) private escrows;
-
-
-    constructor(address[] memory admins, address payable payee, address payable payer, uint256 duration) {
+    constructor(address[] memory admins, address payee, address payer, uint256 duration, address tokenAddress) {
         _setupRole(ADMIN_ROLE, msg.sender);
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
         for (uint256 i = 0; i < admins.length; ++i) {
@@ -67,13 +67,16 @@ contract Escrow is AccessControl {
         _duration = duration;
         _state = State.Active;
         _depositAmount = 0;
+
+        _token = IERC20(tokenAddress);
     }
 
-    function getPayee() public view returns (address payable) {
+
+    function getPayee() public view returns (address) {
         return _payee;
     }
 
-    function getPayer() public view returns (address payable) {
+    function getPayer() public view returns (address) {
         return _payer;
     }
 
@@ -93,6 +96,14 @@ contract Escrow is AccessControl {
         return _depositAmount;
     }
 
+    function getToken() public view returns (IERC20) {
+        return _token;
+    }
+
+    function getTokenAddress() public view returns (address) {
+        return address(_token);
+    }
+
     function getDeadline() public view returns (uint256) {
         return _deployedAt + _duration;
     }
@@ -109,10 +120,12 @@ contract Escrow is AccessControl {
         return _state == State.Refunding || hasExpired();
     }
 
-    function deposit() public payable onlyPayer() {
+    function deposit(uint256 amount) public onlyPayer() {
         require(_state == State.Active, "Escrow: can only deposit while active");
-        _depositAmount += msg.value;
-        emit Deposited(msg.value);
+        require(amount > 0, "Escrow: can only deposit positive amount");
+        _token.safeTransferFrom(_payer, address(this), amount);
+        _depositAmount += amount;
+        emit Deposited(amount);
     }
 
     function close() public onlyAdmin {
@@ -140,7 +153,8 @@ contract Escrow is AccessControl {
         require(_state == State.Closed, "Escrow: can only withdraw while closed");
         uint256 payment = _depositAmount;
         _depositAmount = 0;
-        _payee.sendValue(payment);
+        _token.approve(address(this), payment);
+        _token.safeTransferFrom(address(this), _payee, payment);
         emit Withdrawn(payment);
     }
 
@@ -148,7 +162,8 @@ contract Escrow is AccessControl {
         require(refundAllowed(), "Escrow: can only refund when allowed");
         uint256 payment = _depositAmount;
         _depositAmount = 0;
-        _payer.sendValue(payment);
+        _token.approve(address(this), payment);
+        _token.safeTransferFrom(address(this), _payer, payment);
         emit Refunded(payment);
     }
 }

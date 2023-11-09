@@ -36,27 +36,27 @@ contract EscrowManager is AccessControl {
         }
     }
 
-    function getEscrow(uint256 id) public view returns (Escrow) {
-        return escrows[id];
-    }
-
-    function getPayees(address payer) public view returns (address[] memory) {
-        return payeesOfPayer[payer];
-    }
-
-    function registerEscrow(address payable _payee, address payable _payer, uint256 _duration) public returns (uint256) {
+    function registerEscrow(address payable _payee, address payable _payer, uint256 _duration, address _tokenAddress) public  {
         require(_payee != address(0), "EscrowManager: payee is the zero address");
         require(_payer != address(0), "EscrowManager: payer is the zero address");
+        require(_tokenAddress != address(0), "EscrowManager: token address is the zero address");
         uint256 id = _counter.current();
         _counter.increment();
 
         address[] memory adminArray = new address[](1);
         adminArray[0] = address(this);
 
-        Escrow newEscrow = new Escrow(adminArray, _payee, _payer, _duration);
+        Escrow newEscrow = new Escrow(adminArray, _payee, _payer, _duration, _tokenAddress);
         escrows[id] = newEscrow;
         payeesOfPayer[_payer].push(_payee);
         emit EscrowRegistered(id, _payee, _payer);
-        return id;
+    }
+
+    function getEscrow(uint256 id) public view returns (Escrow) {
+        return escrows[id];
+    }
+
+    function getPayees(address payer) public view returns (address[] memory) {
+        return payeesOfPayer[payer];
     }
 }
