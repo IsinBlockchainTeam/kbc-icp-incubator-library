@@ -10,6 +10,6 @@ contract MyToken is ERC20 {
     }
 
     function decimals() public view virtual override returns (uint8) {
-        return 18;  // eg. return 12;
+        return 18;
     }
 }
