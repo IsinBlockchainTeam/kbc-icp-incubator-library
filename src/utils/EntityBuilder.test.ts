@@ -10,6 +10,8 @@ import { Relationship } from '../entities/Relationship';
 import { DocumentInfo, DocumentType } from '../entities/DocumentInfo';
 import { Transformation } from '../entities/Transformation';
 import { Trade } from '../entities/Trade';
+import {EscrowStatus} from "../types/EscrowStatus";
+import {Escrow} from "../entities/Escrow";
 
 describe('EntityBuilder', () => {
     describe('buildMaterial', () => {
@@ -169,6 +171,24 @@ describe('EntityBuilder', () => {
 
             const document = new DocumentInfo(0, 2, 'doc name', DocumentType.DELIVERY_NOTE, 'external url');
             expect(EntityBuilder.buildDocumentInfo(bcDocument)).toEqual(document);
+        });
+    });
+
+    describe('buildEscrow', () => {
+        it('should correctly build an escrow', () => {
+            const bcEscrow = {
+                payee: 'payee',
+                payer: 'payer',
+                depositAmount: BigNumber.from(0),
+                duration: BigNumber.from(100),
+                status: EscrowStatus.ACTIVE,
+                deployedAt: BigNumber.from(0),
+                tokenAddress: 'tokenAddress',
+            }
+
+            expect(EntityBuilder.buildEscrow(bcEscrow)).toEqual(
+                new Escrow(bcEscrow.payee, bcEscrow.payer, bcEscrow.depositAmount.toNumber(), bcEscrow.duration.toNumber(), bcEscrow.status, bcEscrow.deployedAt.toNumber(), bcEscrow.tokenAddress
+            ));
         });
     });
 });

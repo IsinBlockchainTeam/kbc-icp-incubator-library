@@ -90,6 +90,16 @@ serial([
             contractMap.get('EnumerableProductCategoryManager')?.address,
         ],
     ),
+    () => deploy(
+        ContractName.MY_TOKEN, [
+            1000,
+        ],
+    ),
+    () => deploy(
+        ContractName.ESCROW_MANAGER, [
+            [process.env.SUPPLIER_ADMIN || ''],
+        ]
+    ),
 ])
     .catch((error: any) => {
         console.error(error);

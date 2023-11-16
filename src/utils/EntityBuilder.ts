@@ -16,6 +16,8 @@ import { BasicTradeInfo } from '../entities/BasicTradeInfo';
 import { TradeLine } from '../entities/TradeLine';
 import { Trade } from '../entities/Trade';
 import { Offer } from '../entities/Offer';
+import { Escrow } from '../entities/Escrow';
+import {EscrowStatus} from "../types/EscrowStatus";
 
 export class EntityBuilder {
     static buildMaterial(bcMaterial: MaterialManager.MaterialStructOutput): Material {
@@ -64,5 +66,13 @@ export class EntityBuilder {
 
     static buildOffer(bcOffer: OfferManager.OfferStructOutput): Offer {
         return new Offer(bcOffer.id.toNumber(), bcOffer.owner, bcOffer.productCategory);
+    }
+
+    static buildEscrow(bcEscrow: {payee: string, payer: string, depositAmount: BigNumber, duration: BigNumber, status: EscrowStatus, deployedAt: BigNumber, tokenAddress: string }): Escrow {
+        return new Escrow(bcEscrow.payee, bcEscrow.payer, bcEscrow.depositAmount.toNumber(), bcEscrow.duration.toNumber(), bcEscrow.status, bcEscrow.deployedAt.toNumber(), bcEscrow.tokenAddress);
+    }
+
+    static buildEscrowFromString(bcEscrow: string): Escrow {
+        return this.buildEscrow(JSON.parse(bcEscrow));
     }
 }
