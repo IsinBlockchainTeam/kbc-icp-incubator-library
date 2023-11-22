@@ -98,7 +98,7 @@ serial([
     () => deploy(
         ContractName.ESCROW_MANAGER, [
             [process.env.SUPPLIER_ADMIN || ''],
-        ]
+        ],
     ),
 ])
     .catch((error: any) => {

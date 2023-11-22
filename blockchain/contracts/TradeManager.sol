@@ -78,12 +78,6 @@ contract TradeManager is AccessControl {
         uint256 shippingDeadline;
         uint256 deliveryDeadline;
 
-//        TODO: mettere su IPFS
-//        string incoterms;
-//        string shipper;
-//        string shippingPort;
-//        string deliveryPort;
-
         // -------------------------------------------------
 
         bool exists;
