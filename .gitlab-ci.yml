@@ -57,19 +57,20 @@ blockchain-lib-test:
     - docker run bc-lib-tests 2>&1
 
 blockchain-lib-build:
-  image: docker:latest
-  services:
-    - docker:dind
+  image: node:18-alpine3.17
   stage: build
   only:
     - dev
     - main
     - feature/#64
   script:
-    - docker build -f docker/package/BlockchainLibDockerfile --build-arg BLOCKCHAIN_LIB_REGISTRY_DOMAIN=$BLOCKCHAIN_LIB_REGISTRY_DOMAIN --build-arg BLOCKCHAIN_LIB_REGISTRY_READ_TOKEN=$BLOCKCHAIN_LIB_REGISTRY_READ_TOKEN -t bc-lib ./
+    - cd $CI_PROJECT_DIR/blockchain
+    - npm install --force && npm run compile
+    - cd $CI_PROJECT_DIR/src
+    - npm run build
   artifacts:
     paths:
-      - dist/
+      - $CI_PROJECT_DIR/src/dist/
 
 blockchain-lib-publish:
   image: node:20-alpine3.17

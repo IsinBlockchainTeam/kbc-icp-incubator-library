@@ -75,7 +75,7 @@ describe('Document lifecycle', () => {
     const createOrderAndConfirm = async (): Promise<number> => {
         await tradeService.registerOrder(SUPPLIER_ADDRESS, CUSTOMER_ADDRESS, externalUrl);
         const orderId = await tradeService.getCounter();
-        await tradeService.addOrderOfferee(orderId, CUSTOMER_ADDRESS);
+        await tradeService.addOrderOfferee(orderId, 'CUSTOMER_ADDRESS');
         // add all the constraints so that an order can be confirmed (it is required to add a document)
         await tradeService.setOrderDocumentDeliveryDeadline(orderId, deadline);
         await tradeService.setOrderArbiter(orderId, arbiter);
