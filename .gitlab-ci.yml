@@ -55,7 +55,7 @@ blockchain-lib-test:
   script:
     - cp $DOCKER_ENV_FILE .env
     - docker build -f docker/package/BlockchainLibTestDockerfile --build-arg BLOCKCHAIN_LIB_REGISTRY_DOMAIN=$BLOCKCHAIN_LIB_REGISTRY_DOMAIN --build-arg BLOCKCHAIN_LIB_REGISTRY_READ_TOKEN=$BLOCKCHAIN_LIB_REGISTRY_READ_TOKEN -t bc-lib-tests ./
-    - docker run --env-file .env bc-lib-tests 2>&1
+    - docker run --env-file=.env bc-lib-tests 2>&1
 
 blockchain-lib-build:
   image: node:18-alpine3.17
