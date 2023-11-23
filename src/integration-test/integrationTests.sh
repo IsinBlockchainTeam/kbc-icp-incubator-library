@@ -14,11 +14,6 @@ smartContractsCleanDeploy () {
       exit 1
   fi
 
-  echo "PRIVATE KEY: $PRIVATE_KEY"
-  echo "SUPPLIER_ADMIN: $SUPPLIER_ADMIN"
-  echo "CUSTOMER_ADMIN: $CUSTOMER_ADMIN"
-  echo "RPC_URL: $RPC_URL"
-
   echo "2) Starting new local network..."
   echo "------------------------------------"
   #create local network
