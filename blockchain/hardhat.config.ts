@@ -8,7 +8,8 @@ require('@openzeppelin/hardhat-upgrades');
 dotenv.config();
 
 const {
-    PRIVATE_KEY,
+    PRIVATE_KEY_SEPOLIA,
+    PRIVATE_KEY_TESTNET,
     DEFAULT_DEPLOY_NETWORK,
     ETHERNAL_EMAIL,
     NODE_ENV,
@@ -36,11 +37,11 @@ const config: HardhatUserConfig = {
         },
         testnet: {
             url: RPC_URL || '',
-            accounts: PRIVATE_KEY ? [`0x${PRIVATE_KEY}`] : [],
+            accounts: PRIVATE_KEY_TESTNET ? [`0x${PRIVATE_KEY_TESTNET}`] : [],
         },
         sepolia: {
             url: RPC_URL || '',
-            accounts: PRIVATE_KEY ? [`0x${PRIVATE_KEY}`] : [],
+            accounts: PRIVATE_KEY_SEPOLIA ? [`0x${PRIVATE_KEY_SEPOLIA}`] : [],
         },
     },
     // @ts-ignore
