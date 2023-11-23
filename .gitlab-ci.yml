@@ -17,9 +17,6 @@ blockchain-test:
     - docker run bc-tests 2>&1
 
 blockchain-node:
-  variables:
-    SUPPLIER_ADMIN: "The address of a company supplier"
-    CUSTOMER_ADMIN: "The address of a company customer"
   image: docker:latest
   services:
     - docker:dind
@@ -29,24 +26,22 @@ blockchain-node:
     - main
     - feature/#64
   script:
-    - docker build -f docker/blockchain/BlockchainDockerfile --build-arg BLOCKCHAIN_LIB_REGISTRY_DOMAIN=$BLOCKCHAIN_LIB_REGISTRY_DOMAIN --build-arg BLOCKCHAIN_LIB_REGISTRY_READ_TOKEN=$BLOCKCHAIN_LIB_REGISTRY_READ_TOKEN -t bc-node ./blockchain
-    - docker run -e SUPPLIER_ADMIN=$SUPPLIER_ADMIN -e CUSTOMER_ADMIN=$CUSTOMER_ADMIN bc-node 2>&1
+    - docker build -f docker/blockchain/BlockchainDockerfile --build-arg BLOCKCHAIN_LIB_REGISTRY_DOMAIN=$BLOCKCHAIN_LIB_REGISTRY_DOMAIN --build-arg BLOCKCHAIN_LIB_REGISTRY_READ_TOKEN=$BLOCKCHAIN_LIB_REGISTRY_READ_TOKEN -t gitlab-core.supsi.ch:5050/dti-isin/giuliano.gremlich/blockchain/one-lib-to-rule-them-all/coffe-trading-management/blockchain-node ./blockchain
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker push gitlab-core.supsi.ch:5050/dti-isin/giuliano.gremlich/blockchain/one-lib-to-rule-them-all/coffe-trading-management/blockchain-node
 
-blockchain-contract-deployer:
-  variables:
-    SUPPLIER_ADMIN: "The address of a company supplier"
-    CUSTOMER_ADMIN: "The address of a company customer"
-  image: docker:latest
-  services:
-    - docker:dind
+blockchain-node-deploy:
   stage: deploy
   only:
     - dev
     - main
     - feature/#64
   script:
-    - docker build -f docker/blockchain/BlockchainDockerfile --build-arg BLOCKCHAIN_LIB_REGISTRY_DOMAIN=$BLOCKCHAIN_LIB_REGISTRY_DOMAIN --build-arg BLOCKCHAIN_LIB_REGISTRY_READ_TOKEN=$BLOCKCHAIN_LIB_REGISTRY_READ_TOKEN -t bc-contract-deployer ./blockchain
-    - docker run -e SUPPLIER_ADMIN=$SUPPLIER_ADMIN -e CUSTOMER_ADMIN=$CUSTOMER_ADMIN -e RPC_URL=http://blockchain_node:8545/ -e PRIVATE_KEY=ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --entrypoint npx hardhat run scripts/deploy.ts --network testnet bc-contract-deployer 2>&1
+    - cp $GCLOUD_SA_AUTH_KEY gcloud_auth.json
+    - cp $COMPOSE_ENV_FILE .env.compose
+    - docker build -f docker/GCloudDockerfile -t gcloud-deployer .
+    - docker run -e GCLOUD_PULL_PASSWORD=$REGISTRY_PULL_PASSWORD -e GCLOUD_PULL_USERNAME=$REGISTRY_PULL_USERNAME gcloud-deployer 2>&1
+
 
 
 blockchain-lib-test:
@@ -59,7 +54,7 @@ blockchain-lib-test:
     - main
     - feature/#64
   script:
-    - docker build -f docker/package/BlockchainLibTestDockerfile --build-arg BLOCKCHAIN_LIB_REGISTRY_DOMAIN=$BLOCKCHAIN_LIB_REGISTRY_DOMAIN --build-arg BLOCKCHAIN_LIB_REGISTRY_READ_TOKEN=$BLOCKCHAIN_LIB_REGISTRY_READ_TOKEN -t bc-lib-tests ./blockchain
+    - docker build -f docker/package/BlockchainLibTestDockerfile --build-arg BLOCKCHAIN_LIB_REGISTRY_DOMAIN=$BLOCKCHAIN_LIB_REGISTRY_DOMAIN --build-arg BLOCKCHAIN_LIB_REGISTRY_READ_TOKEN=$BLOCKCHAIN_LIB_REGISTRY_READ_TOKEN -t bc-lib-tests ./
     - docker run bc-lib-tests 2>&1
 
 blockchain-lib-build:
