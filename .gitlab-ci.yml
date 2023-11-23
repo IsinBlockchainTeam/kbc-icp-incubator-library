@@ -43,7 +43,6 @@ blockchain-node-deploy:
     - docker run -e GCLOUD_PULL_PASSWORD=$REGISTRY_PULL_PASSWORD -e GCLOUD_PULL_USERNAME=$REGISTRY_PULL_USERNAME gcloud-deployer 2>&1
 
 
-
 blockchain-lib-test:
   image: docker:latest
   services:

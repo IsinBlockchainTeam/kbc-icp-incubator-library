@@ -3,6 +3,8 @@ FROM node:18-alpine3.17
 ARG BLOCKCHAIN_LIB_REGISTRY_READ_TOKEN=blockchain_lib_registry_read_token
 ARG BLOCKCHAIN_LIB_REGISTRY_DOMAIN=blockchain_lib_registry_domain
 
+RUN apk --no-cache add curl
+
 WORKDIR /bc_coffee_lib
 COPY blockchain ./blockchain
 COPY src ./src
@@ -16,4 +18,4 @@ RUN cd /bc_coffee_lib/src && npm install
 # install blockchain dependencies
 RUN cd /bc_coffee_lib/blockchain && npm install --force && npm run compile
 
-ENTRYPOINT cd /bc_coffee_lib/src && npm run test && echo "n" | ./integration-test/integrationTests.sh
+ENTRYPOINT cd /bc_coffee_lib/src && npm run test && echo "n" | sh ./integration-test/integrationTests.sh

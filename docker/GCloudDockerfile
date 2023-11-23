@@ -10,3 +10,5 @@ COPY gcloud_auth.json ./
 COPY docker-compose-prod.yml ./
 RUN chmod +x gcloud_deploy.sh
 CMD ["sh", "-c","./gcloud_deploy.sh"]
+
+https://myraspddns.ddns.net/nextcloud/remote.php/dav/files/ncpadmin/

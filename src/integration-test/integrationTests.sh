@@ -32,11 +32,15 @@ smartContractsCleanDeploy () {
 }
 
 killLocalNetwork () {
-    echo "...Killing local network ($local_network_pid)..."
+    echo "...Killing local network..."
     echo "------------------------------------"
     #pkill -TERM -P $local_network_pid
-    kill -9 $(lsof -t -i:8545)
+#    kill -9 $(lsof -t -i:8545)
     # kill -9 -$(ps -o pgid=$local_network_pid | grep -o '[0-9]*')
+    PID=$(netstat -nlp | awk -v port=8545 '$4 ~ port {print $7}' | awk -F"/" '{print $1}')
+    if [ -n "$PID" ]; then
+      kill -9 "$PID"
+    fi
 }
 
 killLocalNetwork
