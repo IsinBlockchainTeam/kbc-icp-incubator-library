@@ -15,8 +15,16 @@ export class EscrowDriver {
         return await this._contract.getPayee();
     }
 
-    async getPayer(): Promise<string> {
-        return await this._contract.getPayer();
+    async getPurchaser(): Promise<string> {
+        return await this._contract.getPurchaser();
+    }
+
+    async getPayers(): Promise<EscrowContract.PayersStructOutput[]> {
+        return await this._contract.getPayers();
+    }
+
+    async getAgreedAmount(): Promise<number> {
+        return (await this._contract.getAgreedAmount()).toNumber();
     }
 
     async getDeployedAt(): Promise<number> {

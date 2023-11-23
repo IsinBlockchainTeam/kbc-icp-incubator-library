@@ -1,14 +1,15 @@
-import { Signer, Wallet } from 'ethers';
+import {BigNumber, Signer, Wallet} from 'ethers';
 import { createMock } from 'ts-auto-mock';
 import {EscrowManagerDriver} from "./EscrowManagerDriver";
 import { EntityBuilder } from '../utils/EntityBuilder';
-import { EscrowManager, EscrowManager__factory } from "../smart-contracts";
+import { EscrowManager, EscrowManager__factory, Escrow as EscrowContract } from "../smart-contracts";
 import {Escrow} from "../entities/Escrow";
+import {EscrowStatus} from "../types/EscrowStatus";
 
 describe('EscrowManagerDriver', () => {
     let escrowManagerDriver: EscrowManagerDriver;
     const payee: string = Wallet.createRandom().address;
-    const payer: string = Wallet.createRandom().address;
+    const purchaser: string = Wallet.createRandom().address;
     const contractAddress: string = Wallet.createRandom().address;
 
     let mockedSigner: Signer;
@@ -18,7 +19,7 @@ describe('EscrowManagerDriver', () => {
 
     const mockedWriteFunction = jest.fn();
     const mockedGetEscrow = jest.fn();
-    const mockedGetPayees = jest.fn();
+    const mockedGetEscrowsId = jest.fn();
 
     const mockedEscrow = createMock<Escrow>();
 
@@ -26,19 +27,24 @@ describe('EscrowManagerDriver', () => {
         wait: mockedWait,
     });
     mockedGetEscrow.mockReturnValue(Promise.resolve(JSON.stringify({
-        payee: payee,
-        payer: payer,
-        deployedAt: 1,
-        duration: 1,
-        tokenAddress: contractAddress,
-        state: 1,
+        payee: 'payee',
+        purchaser: 'purchaser',
+        payers: [{
+            payerAddress: 'payer',
+            depositedAmount: BigNumber.from(0),
+        }] as EscrowContract.PayersStructOutput[],
+        agreedAmount: BigNumber.from(1000),
+        deployedAt: BigNumber.from(0),
+        duration: BigNumber.from(100),
+        status: EscrowStatus.ACTIVE,
+        tokenAddress: 'tokenAddress',
     })));
-    mockedGetPayees.mockReturnValue(Promise.resolve([payee]));
+    mockedGetEscrowsId.mockReturnValue(Promise.resolve([BigNumber.from(0)]));
 
     const mockedContract = createMock<EscrowManager>({
         registerEscrow: mockedWriteFunction,
         getEscrow: mockedGetEscrow,
-        getPayees: mockedGetPayees,
+        getEscrowsId: mockedGetEscrowsId,
     });
 
     beforeAll(() => {mockedEscrowManagerConnect.mockReturnValue(mockedContract);
@@ -56,16 +62,16 @@ describe('EscrowManagerDriver', () => {
     afterAll(() => jest.clearAllMocks());
 
     it('should correctly register a new Escrow', async () => {
-        await escrowManagerDriver.registerEscrow(payee, payer, 1, contractAddress);
+        await escrowManagerDriver.registerEscrow(payee, purchaser, 1000,1, contractAddress);
 
         expect(mockedContract.registerEscrow).toHaveBeenCalledTimes(1);
-        expect(mockedContract.registerEscrow).toHaveBeenNthCalledWith(1, payee, payer, 1, contractAddress);
+        expect(mockedContract.registerEscrow).toHaveBeenNthCalledWith(1, payee, purchaser, 1000, 1, contractAddress);
 
         expect(mockedWait).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly register a new Escrow - FAIL(Not an address)', async () => {
-        await expect(escrowManagerDriver.registerEscrow('notAnAddress', payer, 1, contractAddress)).rejects.toThrowError(new Error('Not an address'));
+        await expect(escrowManagerDriver.registerEscrow('notAnAddress', purchaser, 1000, 1, contractAddress)).rejects.toThrowError(new Error('Not an address'));
 
         expect(mockedContract.registerEscrow).toHaveBeenCalledTimes(0);
         expect(mockedWait).toHaveBeenCalledTimes(0)
@@ -82,12 +88,12 @@ describe('EscrowManagerDriver', () => {
     });
 
     it('should correctly retrieve payees', async () => {
-        const response = await escrowManagerDriver.getPayees(payer);
+        const response = await escrowManagerDriver.getEscrowsId(purchaser);
 
-        expect(response).toEqual([payee]);
+        expect(response).toEqual([0]);
 
-        expect(mockedContract.getPayees).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getPayees).toHaveBeenNthCalledWith(1, payer);
-        expect(mockedGetPayees).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getEscrowsId).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getEscrowsId).toHaveBeenNthCalledWith(1, purchaser);
+        expect(mockedGetEscrowsId).toHaveBeenCalledTimes(1);
     });
 });

@@ -1,4 +1,4 @@
-import { Signer, Wallet } from 'ethers';
+import {BigNumber, Signer, Wallet} from 'ethers';
 import { createMock } from 'ts-auto-mock';
 import { EscrowDriver } from "./EscrowDriver";
 import { EntityBuilder } from '../utils/EntityBuilder';
@@ -9,7 +9,8 @@ import { EscrowStatus } from "../types/EscrowStatus";
 describe('EscrowDriver', () => {
     let escrowDriver: EscrowDriver;
     const payee: string = Wallet.createRandom().address;
-    const payer: string = Wallet.createRandom().address;
+    const purchaser: string = Wallet.createRandom().address;
+    const delegate: string = Wallet.createRandom().address;
     const contractAddress: string = Wallet.createRandom().address;
     const boolean = false;
 
@@ -23,7 +24,8 @@ describe('EscrowDriver', () => {
     const mockedReadFunction = jest.fn();
     //const mockedGetEscrow = jest.fn();
     const mockedGetPayee = jest.fn();
-    const mockedGetPayer = jest.fn();
+    const mockedGetPurchaser = jest.fn();
+    const mockedGetPayers= jest.fn();
     const mockedGetState = jest.fn();
     const mockedGetTokenAddress = jest.fn();
     const mockedGetBoolean = jest.fn();
@@ -39,14 +41,20 @@ describe('EscrowDriver', () => {
     });
     //mockedGetEscrow.mockReturnValue(Promise.resolve(mockedEscrowStructOutput));
     mockedGetPayee.mockReturnValue(Promise.resolve(payee));
-    mockedGetPayer.mockReturnValue(Promise.resolve(payer));
+    mockedGetPurchaser.mockReturnValue(Promise.resolve(purchaser));
+    mockedGetPayers.mockReturnValue(Promise.resolve([{
+        payerAddress: delegate,
+        depositedAmount: BigNumber.from(0),
+    }] as EscrowContract.PayersStructOutput[]));
     mockedGetState.mockReturnValue(Promise.resolve(EscrowStatus.ACTIVE));
     mockedGetTokenAddress.mockReturnValue(Promise.resolve(contractAddress));
     mockedGetBoolean.mockReturnValue(Promise.resolve(boolean));
 
     const mockedContract = createMock<EscrowContract>({
         getPayee: mockedGetPayee,
-        getPayer: mockedGetPayer,
+        getPurchaser: mockedGetPurchaser,
+        getPayers: mockedGetPayers,
+        getAgreedAmount: mockedReadFunction,
         getDeployedAt: mockedReadFunction,
         getDuration: mockedReadFunction,
         getState: mockedGetState,
@@ -92,14 +100,37 @@ describe('EscrowDriver', () => {
         expect(mockedGetPayee).toHaveBeenCalledTimes(1);
     });
 
-    it('should correctly retrieve payer', async () => {
-        const response = await escrowDriver.getPayer();
+    it('should correctly retrieve purchaser', async () => {
+        const response = await escrowDriver.getPurchaser();
 
-        expect(response).toEqual(payer);
+        expect(response).toEqual(purchaser);
 
-        expect(mockedContract.getPayer).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getPayer).toHaveBeenNthCalledWith(1);
-        expect(mockedGetPayer).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getPurchaser).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getPurchaser).toHaveBeenNthCalledWith(1);
+        expect(mockedGetPurchaser).toHaveBeenCalledTimes(1);
+    });
+
+    it('should correctly retrieve payers', async () => {
+        const response = await escrowDriver.getPayers();
+
+        expect(response).toEqual([{
+            payerAddress: delegate,
+            depositedAmount: BigNumber.from(0),
+        }] as EscrowContract.PayersStructOutput[]);
+
+        expect(mockedContract.getPayers).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getPayers).toHaveBeenNthCalledWith(1);
+        expect(mockedGetPayers).toHaveBeenCalledTimes(1);
+    });
+
+    it('should correctly retrieve agrees amount', async () => {
+        const response = await escrowDriver.getAgreedAmount();
+
+        expect(response).toEqual(1);
+
+        expect(mockedContract.getAgreedAmount).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getAgreedAmount).toHaveBeenNthCalledWith(1);
+        expect(mockedToNumber).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly retrieve deployed at', async () => {

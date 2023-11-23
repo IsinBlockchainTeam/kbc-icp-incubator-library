@@ -17,6 +17,7 @@ import { TradeLine } from '../entities/TradeLine';
 import { Trade } from '../entities/Trade';
 import { Offer } from '../entities/Offer';
 import { Escrow } from '../entities/Escrow';
+import { Escrow as EscrowContract } from '../smart-contracts';
 import {EscrowStatus} from "../types/EscrowStatus";
 
 export class EntityBuilder {
@@ -68,8 +69,8 @@ export class EntityBuilder {
         return new Offer(bcOffer.id.toNumber(), bcOffer.owner, bcOffer.productCategory);
     }
 
-    static buildEscrow(bcEscrow: {payee: string, payer: string, depositAmount: BigNumber, duration: BigNumber, status: EscrowStatus, deployedAt: BigNumber, tokenAddress: string }): Escrow {
-        return new Escrow(bcEscrow.payee, bcEscrow.payer, bcEscrow.depositAmount.toNumber(), bcEscrow.duration.toNumber(), bcEscrow.status, bcEscrow.deployedAt.toNumber(), bcEscrow.tokenAddress);
+    static buildEscrow(bcEscrow: {payee: string, purchaser: string, payers: EscrowContract.PayersStructOutput[], agreedAmount: BigNumber, deployedAt: BigNumber, duration: BigNumber, status: EscrowStatus, tokenAddress: string }): Escrow {
+        return new Escrow(bcEscrow.payee, bcEscrow.purchaser, bcEscrow.payers, bcEscrow.agreedAmount.toNumber(), bcEscrow.deployedAt.toNumber(), bcEscrow.duration.toNumber(), bcEscrow.status, bcEscrow.tokenAddress);
     }
 
     static buildEscrowFromString(bcEscrow: string): Escrow {

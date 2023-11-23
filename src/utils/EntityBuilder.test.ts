@@ -10,8 +10,9 @@ import { Relationship } from '../entities/Relationship';
 import { DocumentInfo, DocumentType } from '../entities/DocumentInfo';
 import { Transformation } from '../entities/Transformation';
 import { Trade } from '../entities/Trade';
-import {EscrowStatus} from "../types/EscrowStatus";
-import {Escrow} from "../entities/Escrow";
+import { EscrowStatus } from "../types/EscrowStatus";
+import { Escrow } from "../entities/Escrow";
+import { Escrow as EscrowContract } from '../smart-contracts';
 
 describe('EntityBuilder', () => {
     describe('buildMaterial', () => {
@@ -178,17 +179,21 @@ describe('EntityBuilder', () => {
         it('should correctly build an escrow', () => {
             const bcEscrow = {
                 payee: 'payee',
-                payer: 'payer',
-                depositAmount: BigNumber.from(0),
+                purchaser: 'purchaser',
+                payers: [{
+                    payerAddress: 'payer',
+                    depositedAmount: BigNumber.from(0),
+                }] as EscrowContract.PayersStructOutput[],
+                agreedAmount: BigNumber.from(1000),
+                deployedAt: BigNumber.from(0),
                 duration: BigNumber.from(100),
                 status: EscrowStatus.ACTIVE,
-                deployedAt: BigNumber.from(0),
                 tokenAddress: 'tokenAddress',
             }
 
             expect(EntityBuilder.buildEscrow(bcEscrow)).toEqual(
-                new Escrow(bcEscrow.payee, bcEscrow.payer, bcEscrow.depositAmount.toNumber(), bcEscrow.duration.toNumber(), bcEscrow.status, bcEscrow.deployedAt.toNumber(), bcEscrow.tokenAddress
-            ));
+                new Escrow(bcEscrow.payee, bcEscrow.purchaser, bcEscrow.payers, bcEscrow.agreedAmount.toNumber(), bcEscrow.deployedAt.toNumber(), bcEscrow.duration.toNumber(), bcEscrow.status, bcEscrow.tokenAddress),
+            );
         });
     });
 });

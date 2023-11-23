@@ -1,6 +1,6 @@
-import { createMock } from 'ts-auto-mock';
-import { EscrowService } from './EscrowService';
-import { EscrowDriver } from '../drivers/EscrowDriver';
+import {createMock} from 'ts-auto-mock';
+import {EscrowService} from './EscrowService';
+import {EscrowDriver} from '../drivers/EscrowDriver';
 
 describe('EscrowService', () => {
     let escrowService: EscrowService;
@@ -8,7 +8,9 @@ describe('EscrowService', () => {
     let mockedEscrowDriver: EscrowDriver;
     const mockedInstance = {
         getPayee: jest.fn(),
-        getPayer: jest.fn(),
+        getPurchaser: jest.fn(),
+        getPayers: jest.fn(),
+        getAgreedAmount: jest.fn(),
         getDeployedAt: jest.fn(),
         getDuration: jest.fn(),
         getState: jest.fn(),
@@ -44,9 +46,21 @@ describe('EscrowService', () => {
             expectedMockedFunctionArgs: [],
         },
         {
-            serviceFunctionName: 'getPayer',
-            serviceFunction: () => escrowService.getPayer(),
-            expectedMockedFunction: mockedInstance.getPayer,
+            serviceFunctionName: 'getPurchaser',
+            serviceFunction: () => escrowService.getPurchaser(),
+            expectedMockedFunction: mockedInstance.getPurchaser,
+            expectedMockedFunctionArgs: [],
+        },
+        {
+            serviceFunctionName: 'getPayers',
+            serviceFunction: () => escrowService.getPayers(),
+            expectedMockedFunction: mockedInstance.getPayers,
+            expectedMockedFunctionArgs: [],
+        },
+        {
+            serviceFunctionName: 'getAgreedAmount',
+            serviceFunction: () => escrowService.getAgreedAmount(),
+            expectedMockedFunction: mockedInstance.getAgreedAmount,
             expectedMockedFunctionArgs: [],
         },
         {
@@ -140,7 +154,11 @@ describe('EscrowService', () => {
             expectedMockedFunctionArgs: [],
         }
 
-    ])('should call driver $serviceFunctionName', async ({serviceFunction, expectedMockedFunction, expectedMockedFunctionArgs}) => {
+    ])('should call driver $serviceFunctionName', async ({
+                                                             serviceFunction,
+                                                             expectedMockedFunction,
+                                                             expectedMockedFunctionArgs
+                                                         }) => {
         await serviceFunction();
 
         expect(expectedMockedFunction).toHaveBeenCalledTimes(1);

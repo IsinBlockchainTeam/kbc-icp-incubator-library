@@ -1,5 +1,6 @@
 import { EscrowDriver } from "../drivers/EscrowDriver";
 import { EscrowStatus } from "../types/EscrowStatus";
+import { Escrow } from "../smart-contracts";
 
 export class EscrowService {
     private _escrowDriver: EscrowDriver;
@@ -12,8 +13,16 @@ export class EscrowService {
         return this._escrowDriver.getPayee();
     }
 
-    async getPayer(): Promise<string> {
-        return this._escrowDriver.getPayer();
+    async getPurchaser(): Promise<string> {
+        return this._escrowDriver.getPurchaser();
+    }
+
+    async getPayers(): Promise<Escrow.PayersStructOutput[]> {
+        return this._escrowDriver.getPayers();
+    }
+
+    async getAgreedAmount(): Promise<number> {
+        return this._escrowDriver.getAgreedAmount();
     }
 
     async getDeployedAt(): Promise<number> {

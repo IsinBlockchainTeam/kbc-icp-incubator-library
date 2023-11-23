@@ -1,4 +1,4 @@
-import { Signer, utils } from 'ethers';
+import {BigNumber, Signer, utils} from 'ethers';
 import { EscrowManager, EscrowManager__factory } from "../smart-contracts";
 import {Escrow} from "../entities/Escrow";
 import {EntityBuilder} from "../utils/EntityBuilder";
@@ -12,11 +12,11 @@ export class EscrowManagerDriver {
             .connect(signer);
     }
 
-    async registerEscrow(payee: string, payer: string, duration: number, tokenAddress: string): Promise<void> {
-        if(!utils.isAddress(payee) || !utils.isAddress(payer) || !utils.isAddress(tokenAddress)) {
+    async registerEscrow(payee: string, purchaser: string, agreedAmount: number, duration: number, tokenAddress: string): Promise<void> {
+        if(!utils.isAddress(payee) || !utils.isAddress(purchaser) || !utils.isAddress(tokenAddress)) {
             throw new Error('Not an address');
         }
-        const tx = await this._contract.registerEscrow(payee, payer, duration, tokenAddress);
+        const tx = await this._contract.registerEscrow(payee, purchaser, agreedAmount, duration, tokenAddress);
         await tx.wait();
     }
 
@@ -25,7 +25,8 @@ export class EscrowManagerDriver {
         return EntityBuilder.buildEscrowFromString(escrow);
     }
 
-    async getPayees(payer: string): Promise<string[]> {
-        return await this._contract.getPayees(payer);
+    async getEscrowsId(purchaser: string): Promise<number[]> {
+        const escrowsId = await this._contract.getEscrowsId(purchaser);
+        return escrowsId.map((id: BigNumber) => id.toNumber());
     }
 }

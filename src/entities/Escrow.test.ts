@@ -1,20 +1,28 @@
 import {Escrow} from "./Escrow";
+import {Escrow as EscrowContract} from "../smart-contracts";
 import {EscrowStatus} from "../types/EscrowStatus";
+import {BigNumber} from "ethers";
 
 describe('Escrow', () => {
     let escrow: Escrow;
 
+    const payers: EscrowContract.PayersStructOutput[] = [{
+        payerAddress: 'payer',
+        depositedAmount: BigNumber.from(0),
+    }] as EscrowContract.PayersStructOutput[];
+
     beforeAll(() => {
-        escrow = new Escrow('payee', 'payer', 0, 100, EscrowStatus.ACTIVE, 100, 'tokenAddress');
+        escrow = new Escrow('payee', 'purchaser', payers, 1000, 0, 1000, EscrowStatus.ACTIVE, 'tokenAddress');
     });
 
     it('should correctly initialize a new Escrow', () => {
         expect(escrow.payee).toEqual('payee');
-        expect(escrow.payer).toEqual('payer');
+        expect(escrow.purchaser).toEqual('purchaser');
+        expect(escrow.payers).toEqual(payers);
+        expect(escrow.agreedAmount).toEqual(1000);
         expect(escrow.deployedAt).toEqual(0);
-        expect(escrow.duration).toEqual(100);
+        expect(escrow.duration).toEqual(1000);
         expect(escrow.state).toEqual(EscrowStatus.ACTIVE);
-        expect(escrow.depositAmount).toEqual(100);
         expect(escrow.tokenAddress).toEqual('tokenAddress');
     });
 
@@ -23,9 +31,23 @@ describe('Escrow', () => {
         expect(escrow.payee).toEqual('payee2');
     });
 
-    it('should correctly set the payer', () => {
-        escrow.payer = 'payer2';
-        expect(escrow.payer).toEqual('payer2');
+    it('should correctly set the purchaser', () => {
+        escrow.purchaser = 'purchaser2';
+        expect(escrow.purchaser).toEqual('purchaser2');
+    });
+
+    it('should correctly set the payers', () => {
+        const newPayers: EscrowContract.PayersStructOutput[] = [{
+            payerAddress: 'payer2',
+            depositedAmount: BigNumber.from(0),
+        }] as EscrowContract.PayersStructOutput[];
+        escrow.payers = newPayers;
+        expect(escrow.payers).toEqual(newPayers);
+    });
+
+    it('should correctly set the agreed amount', () => {
+        escrow.agreedAmount = 1001;
+        expect(escrow.agreedAmount).toEqual(1001);
     });
 
     it('should correctly set the deployedAt', () => {
@@ -41,11 +63,6 @@ describe('Escrow', () => {
     it('should correctly set the state', () => {
         escrow.state = EscrowStatus.CLOSED;
         expect(escrow.state).toEqual(EscrowStatus.CLOSED);
-    });
-
-    it('should correctly set the depositAmount', () => {
-        escrow.depositAmount = 101;
-        expect(escrow.depositAmount).toEqual(101);
     });
 
     it('should correctly set the tokenAddress', () => {

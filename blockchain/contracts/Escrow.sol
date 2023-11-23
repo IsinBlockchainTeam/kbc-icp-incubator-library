@@ -23,11 +23,13 @@ contract Escrow is AccessControl {
         Closed
     }
 
-    event Deposited(uint256 amount);
+    event DelegateRegistered(address delegateAddress);
+    event DelegateRemoved(address delegateAddress);
+    event Deposited(address depositorAddress, uint256 amount);
     event Closed();
     event RefundEnabled();
     event Withdrawn(uint256 amount);
-    event Refunded(uint256 amount);
+    event Refunded(address refundedAddress, uint256 amount);
 
 
     modifier onlyAdmin() {
@@ -40,21 +42,31 @@ contract Escrow is AccessControl {
         _;
     }
 
-    modifier onlyPayer() {
-        require(_payer == _msgSender(), "Escrow: caller is not the payer");
+    modifier onlyPurchaser() {
+        require(_purchaser == _msgSender(), "Escrow: caller is not the purchaser");
         _;
     }
 
+    modifier onlyPayers() {
+        require(_isPayer(_msgSender()), "Escrow: caller is not a payer");
+        _;
+    }
+
+    struct Payers {
+        address payerAddress;
+        uint256 depositedAmount;
+    }
 
     address private _payee;
-    address private _payer;
+    address private _purchaser;
+    Payers[] private _payers;
+    uint256 private _agreedAmount;
     uint256 private _deployedAt;
     uint256 private _duration;
     State private _state;
-    uint256 private _depositAmount;
     IERC20 private _token;
 
-    constructor(address[] memory admins, address payee, address payer, uint256 duration, address tokenAddress) {
+    constructor(address[] memory admins, address payee, address purchaser, uint256 agreedAmount,uint256 duration, address tokenAddress) {
         _setupRole(ADMIN_ROLE, msg.sender);
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
         for (uint256 i = 0; i < admins.length; ++i) {
@@ -62,22 +74,39 @@ contract Escrow is AccessControl {
         }
 
         _payee = payee;
-        _payer = payer;
+        _purchaser = purchaser;
+        _payers.push(Payers(purchaser, 0));
+        _agreedAmount = agreedAmount;
         _deployedAt = block.timestamp;
         _duration = duration;
         _state = State.Active;
-        _depositAmount = 0;
 
         _token = IERC20(tokenAddress);
     }
 
+    function _isPayer(address payerAddress) private view returns (bool) {
+        for (uint256 i = 0; i < _payers.length; ++i) {
+            if (_payers[i].payerAddress == payerAddress) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     function getPayee() public view returns (address) {
         return _payee;
     }
 
-    function getPayer() public view returns (address) {
-        return _payer;
+    function getPurchaser() public view returns (address) {
+        return _purchaser;
+    }
+
+    function getPayers() public view returns (Payers[] memory) {
+        return _payers;
+    }
+
+    function getAgreedAmount() public view returns (uint256) {
+        return _agreedAmount;
     }
 
     function getDeployedAt() public view returns (uint256) {
@@ -93,7 +122,7 @@ contract Escrow is AccessControl {
     }
 
     function getDepositAmount() public view returns (uint256) {
-        return _depositAmount;
+        return _token.balanceOf(address(this));
     }
 
     function getToken() public view returns (IERC20) {
@@ -120,12 +149,38 @@ contract Escrow is AccessControl {
         return _state == State.Refunding || hasExpired();
     }
 
-    function deposit(uint256 amount) public onlyPayer() {
+    function addDelegate(address delegateAddress) public onlyPurchaser {
+        require(delegateAddress != address(0), "Escrow: delegate is the zero address");
+        _payers.push(Payers(delegateAddress, 0));
+        emit DelegateRegistered(delegateAddress);
+    }
+
+    function removeDelegate(address delegateAddress) public onlyPurchaser {
+        require(delegateAddress != _purchaser, "Escrow: purchaser cannot be removed from payers list");
+        require(_isPayer(delegateAddress), "Escrow: delegate not present");
+
+        for(uint256 i = 0; i < _payers.length; i++) {
+            if (_payers[i].payerAddress == delegateAddress) {
+                delete _payers[i];
+                emit DelegateRemoved(delegateAddress);
+                break;
+            }
+        }
+    }
+
+    function deposit(uint256 amount) public onlyPayers() {
         require(_state == State.Active, "Escrow: can only deposit while active");
         require(amount > 0, "Escrow: can only deposit positive amount");
-        _token.safeTransferFrom(_payer, address(this), amount);
-        _depositAmount += amount;
-        emit Deposited(amount);
+        _token.safeTransferFrom(_msgSender(), address(this), amount);
+
+        for(uint256 i = 0; i < _payers.length; i++) {
+            if (_payers[i].payerAddress == msg.sender) {
+                _payers[i].depositedAmount += amount;
+                break;
+            }
+        }
+
+        emit Deposited(msg.sender, amount);
     }
 
     function close() public onlyAdmin {
@@ -151,19 +206,25 @@ contract Escrow is AccessControl {
 
     function withdraw() public onlyPayee() {
         require(_state == State.Closed, "Escrow: can only withdraw while closed");
-        uint256 payment = _depositAmount;
-        _depositAmount = 0;
+        uint256 payment = getDepositAmount();
         _token.approve(address(this), payment);
         _token.safeTransferFrom(address(this), _payee, payment);
         emit Withdrawn(payment);
     }
 
-    function refund() public onlyPayer() {
+    function refund() public onlyPayers() {
         require(refundAllowed(), "Escrow: can only refund when allowed");
-        uint256 payment = _depositAmount;
-        _depositAmount = 0;
+
+        uint256 payment;
+        for(uint256 i = 0; i < _payers.length; i++) {
+            if (_payers[i].payerAddress == msg.sender) {
+                payment = _payers[i].depositedAmount;
+                break;
+            }
+        }
+
         _token.approve(address(this), payment);
-        _token.safeTransferFrom(address(this), _payer, payment);
-        emit Refunded(payment);
+        _token.safeTransferFrom(address(this), msg.sender, payment);
+        emit Refunded(msg.sender, payment);
     }
 }
