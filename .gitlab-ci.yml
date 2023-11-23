@@ -38,7 +38,7 @@ blockchain-node-deploy:
     - feature/#64
   script:
     - cp $GCLOUD_SA_AUTH_KEY gcloud_auth.json
-    - cp $COMPOSE_ENV_FILE .env.compose
+    - cp $DOCKER_ENV_FILE .env
     - docker build -f docker/GCloudDockerfile -t gcloud-deployer .
     - docker run -e GCLOUD_PULL_PASSWORD=$REGISTRY_PULL_PASSWORD -e GCLOUD_PULL_USERNAME=$REGISTRY_PULL_USERNAME gcloud-deployer 2>&1
 
@@ -53,8 +53,9 @@ blockchain-lib-test:
     - main
     - feature/#64
   script:
+    - cp $DOCKER_ENV_FILE .env
     - docker build -f docker/package/BlockchainLibTestDockerfile --build-arg BLOCKCHAIN_LIB_REGISTRY_DOMAIN=$BLOCKCHAIN_LIB_REGISTRY_DOMAIN --build-arg BLOCKCHAIN_LIB_REGISTRY_READ_TOKEN=$BLOCKCHAIN_LIB_REGISTRY_READ_TOKEN -t bc-lib-tests ./
-    - docker run bc-lib-tests 2>&1
+    - docker run --env-file .env bc-lib-tests 2>&1
 
 blockchain-lib-build:
   image: node:18-alpine3.17

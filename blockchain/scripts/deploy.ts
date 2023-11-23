@@ -58,13 +58,13 @@ serial([
         }
     },
     () => deploy(ContractName.DOCUMENT_MANAGER, [
-        [process.env.SUPPLIER_ADMIN || ''],
+        [process.env.SUPPLIER_ADMIN],
         contractMap.get('EnumerableTransactionTypeManager')?.address,
     ],
     ),
     () => deploy(
         ContractName.TRADE_MANAGER, [
-            [process.env.SUPPLIER_ADMIN || '', process.env.CUSTOMER_ADMIN || ''],
+            [process.env.SUPPLIER_ADMIN, process.env.CUSTOMER_ADMIN],
             contractMap.get('EnumerableFiatManager')?.address,
             contractMap.get('EnumerableProductCategoryManager')?.address,
             contractMap.get(ContractName.DOCUMENT_MANAGER)?.address,
@@ -72,21 +72,21 @@ serial([
     ),
     () => deploy(
         ContractName.MATERIAL_MANAGER, [
-            [process.env.SUPPLIER_ADMIN || ''],
+            [process.env.SUPPLIER_ADMIN],
         ],
     ),
     () => deploy(ContractName.RELATIONSHIP_MANAGER, [
-        [process.env.SUPPLIER_ADMIN || ''],
+        [process.env.SUPPLIER_ADMIN],
     ]),
     () => deploy(
         ContractName.TRANSFORMATION_MANAGER, [
-            [process.env.SUPPLIER_ADMIN || ''],
+            [process.env.SUPPLIER_ADMIN],
             contractMap.get(ContractName.MATERIAL_MANAGER)?.address,
         ],
     ),
     () => deploy(
         ContractName.OFFER_MANAGER, [
-            [process.env.SUPPLIER_ADMIN || ''],
+            [process.env.SUPPLIER_ADMIN],
             contractMap.get('EnumerableProductCategoryManager')?.address,
         ],
     ),
@@ -97,7 +97,7 @@ serial([
     ),
     () => deploy(
         ContractName.ESCROW_MANAGER, [
-            [process.env.SUPPLIER_ADMIN || ''],
+            [process.env.SUPPLIER_ADMIN],
         ],
     ),
 ])
