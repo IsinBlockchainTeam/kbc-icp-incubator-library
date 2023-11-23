@@ -16,6 +16,7 @@ describe('EscrowService', () => {
         getState: jest.fn(),
         getDepositAmount: jest.fn(),
         getTokenAddress: jest.fn(),
+        getCommissioner: jest.fn(),
         getDeadline: jest.fn(),
         hasExpired: jest.fn(),
         withdrawalAllowed: jest.fn(),
@@ -91,6 +92,12 @@ describe('EscrowService', () => {
             serviceFunctionName: 'getTokenAddress',
             serviceFunction: () => escrowService.getTokenAddress(),
             expectedMockedFunction: mockedInstance.getTokenAddress,
+            expectedMockedFunctionArgs: [],
+        },
+        {
+            serviceFunctionName: 'getCommissioner',
+            serviceFunction: () => escrowService.getCommissioner(),
+            expectedMockedFunction: mockedInstance.getCommissioner,
             expectedMockedFunctionArgs: [],
         },
         {

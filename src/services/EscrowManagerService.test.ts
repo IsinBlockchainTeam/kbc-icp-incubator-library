@@ -12,6 +12,8 @@ describe('EscrowManagerService', () => {
     let mockedEscrowManagerDriver: EscrowManagerDriver;
     const mockedInstance = {
         registerEscrow: jest.fn(),
+        getCommissioner: jest.fn(),
+        updateCommissioner: jest.fn(),
         getEscrow: jest.fn(),
         getEscrowsId: jest.fn(),
     };
@@ -20,7 +22,7 @@ describe('EscrowManagerService', () => {
         depositedAmount: BigNumber.from(0),
     }] as EscrowContract.PayersStructOutput[];
 
-    const escrow = new Escrow("payee", "purchaser", payers, 1000, 100, EscrowStatus.ACTIVE, 0, "tokenAddress");
+    const escrow = new Escrow("payee", "purchaser", payers, 1000, 100, EscrowStatus.ACTIVE, 0, "tokenAddress", "commissioner");
 
     beforeAll(() => {
         mockedEscrowManagerDriver = createMock<EscrowManagerDriver>(mockedInstance);
@@ -36,6 +38,18 @@ describe('EscrowManagerService', () => {
             serviceFunction: () => escrowManagerService.registerEscrow(escrow.payee, escrow.purchaser, escrow.agreedAmount, escrow.duration, escrow.tokenAddress),
             expectedMockedFunction: mockedInstance.registerEscrow,
             expectedMockedFunctionArgs: [escrow.payee, escrow.purchaser, escrow.agreedAmount, escrow.duration, escrow.tokenAddress],
+        },
+        {
+            serviceFunctionName: 'getCommissioner',
+            serviceFunction: () => escrowManagerService.getCommissioner(),
+            expectedMockedFunction: mockedInstance.getCommissioner,
+            expectedMockedFunctionArgs: [],
+        },
+        {
+            serviceFunctionName: 'updateCommissioner',
+            serviceFunction: () => escrowManagerService.updateCommissioner(escrow.commissioner),
+            expectedMockedFunction: mockedInstance.updateCommissioner,
+            expectedMockedFunctionArgs: [escrow.commissioner],
         },
         {
             serviceFunctionName: 'getEscrow',

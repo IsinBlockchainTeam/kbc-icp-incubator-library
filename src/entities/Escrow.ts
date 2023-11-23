@@ -18,9 +18,9 @@ export class Escrow {
 
     private _tokenAddress: string;
 
-    //private _token: ERC20;
+    private _commissioner: string;
 
-    constructor(payee: string, purchaser: string, payers: EscrowContract.PayersStructOutput[], agreedAmount: number, deployedAt: number, duration: number, state: EscrowStatus, tokenAddress: string) {
+    constructor(payee: string, purchaser: string, payers: EscrowContract.PayersStructOutput[], agreedAmount: number, deployedAt: number, duration: number, state: EscrowStatus, tokenAddress: string, commissioner: string) {
         this._payee = payee;
         this._purchaser = purchaser;
         this._payers = payers;
@@ -29,6 +29,7 @@ export class Escrow {
         this._duration = duration;
         this._state = state;
         this._tokenAddress = tokenAddress;
+        this._commissioner = commissioner;
     }
 
     get payee(): string {
@@ -93,5 +94,13 @@ export class Escrow {
 
     set tokenAddress(value: string) {
         this._tokenAddress = value;
+    }
+
+    get commissioner(): string {
+        return this._commissioner;
+    }
+
+    set commissioner(value: string) {
+        this._commissioner = value;
     }
 }

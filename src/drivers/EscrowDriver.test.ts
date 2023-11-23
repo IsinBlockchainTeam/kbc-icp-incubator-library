@@ -12,6 +12,7 @@ describe('EscrowDriver', () => {
     const purchaser: string = Wallet.createRandom().address;
     const delegate: string = Wallet.createRandom().address;
     const contractAddress: string = Wallet.createRandom().address;
+    const commissioner: string = Wallet.createRandom().address;
     const boolean = false;
 
     let mockedSigner: Signer;
@@ -28,9 +29,9 @@ describe('EscrowDriver', () => {
     const mockedGetPayers= jest.fn();
     const mockedGetState = jest.fn();
     const mockedGetTokenAddress = jest.fn();
+    const mockedGetCommissioner = jest.fn();
     const mockedGetBoolean = jest.fn();
 
-    //const mockedEscrowStructOutput = createMock<EscrowContract.EscrowStructOutput>();
     const mockedEscrow: Escrow = createMock<Escrow>();
 
     mockedWriteFunction.mockResolvedValue({
@@ -39,7 +40,6 @@ describe('EscrowDriver', () => {
     mockedReadFunction.mockResolvedValue({
         toNumber: mockedToNumber,
     });
-    //mockedGetEscrow.mockReturnValue(Promise.resolve(mockedEscrowStructOutput));
     mockedGetPayee.mockReturnValue(Promise.resolve(payee));
     mockedGetPurchaser.mockReturnValue(Promise.resolve(purchaser));
     mockedGetPayers.mockReturnValue(Promise.resolve([{
@@ -48,6 +48,7 @@ describe('EscrowDriver', () => {
     }] as EscrowContract.PayersStructOutput[]));
     mockedGetState.mockReturnValue(Promise.resolve(EscrowStatus.ACTIVE));
     mockedGetTokenAddress.mockReturnValue(Promise.resolve(contractAddress));
+    mockedGetCommissioner.mockReturnValue(Promise.resolve(commissioner));
     mockedGetBoolean.mockReturnValue(Promise.resolve(boolean));
 
     const mockedContract = createMock<EscrowContract>({
@@ -59,8 +60,8 @@ describe('EscrowDriver', () => {
         getDuration: mockedReadFunction,
         getState: mockedGetState,
         getDepositAmount: mockedReadFunction,
-        //getToken: mockedReadFunction,
         getTokenAddress: mockedGetTokenAddress,
+        getCommissioner: mockedGetCommissioner,
         getDeadline: mockedReadFunction,
         hasExpired: mockedGetBoolean,
         withdrawalAllowed: mockedGetBoolean,
@@ -181,6 +182,16 @@ describe('EscrowDriver', () => {
         expect(mockedContract.getTokenAddress).toHaveBeenCalledTimes(1);
         expect(mockedContract.getTokenAddress).toHaveBeenNthCalledWith(1);
         expect(mockedGetTokenAddress).toHaveBeenCalledTimes(1);
+    });
+
+    it('should correctly retrieve commissioner', async () => {
+        const response = await escrowDriver.getCommissioner();
+
+        expect(response).toEqual(commissioner);
+
+        expect(mockedContract.getCommissioner).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getCommissioner).toHaveBeenNthCalledWith(1);
+        expect(mockedGetCommissioner).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly retrieve deadline', async () => {

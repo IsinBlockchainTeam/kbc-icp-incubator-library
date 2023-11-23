@@ -11,6 +11,7 @@ describe('EscrowManagerDriver', () => {
     const payee: string = Wallet.createRandom().address;
     const purchaser: string = Wallet.createRandom().address;
     const contractAddress: string = Wallet.createRandom().address;
+    const commissioner: string = Wallet.createRandom().address;
 
     let mockedSigner: Signer;
 
@@ -18,6 +19,7 @@ describe('EscrowManagerDriver', () => {
     const mockedWait = jest.fn();
 
     const mockedWriteFunction = jest.fn();
+    const mockedGetCommissioner = jest.fn();
     const mockedGetEscrow = jest.fn();
     const mockedGetEscrowsId = jest.fn();
 
@@ -26,6 +28,7 @@ describe('EscrowManagerDriver', () => {
     mockedWriteFunction.mockResolvedValue({
         wait: mockedWait,
     });
+    mockedGetCommissioner.mockReturnValue(Promise.resolve(commissioner));
     mockedGetEscrow.mockReturnValue(Promise.resolve(JSON.stringify({
         payee: 'payee',
         purchaser: 'purchaser',
@@ -43,6 +46,8 @@ describe('EscrowManagerDriver', () => {
 
     const mockedContract = createMock<EscrowManager>({
         registerEscrow: mockedWriteFunction,
+        getCommissioner: mockedGetCommissioner,
+        updateCommissioner: mockedWriteFunction,
         getEscrow: mockedGetEscrow,
         getEscrowsId: mockedGetEscrowsId,
     });
@@ -74,6 +79,31 @@ describe('EscrowManagerDriver', () => {
         await expect(escrowManagerDriver.registerEscrow('notAnAddress', purchaser, 1000, 1, contractAddress)).rejects.toThrowError(new Error('Not an address'));
 
         expect(mockedContract.registerEscrow).toHaveBeenCalledTimes(0);
+        expect(mockedWait).toHaveBeenCalledTimes(0)
+    });
+
+    it('should correctly retrieve commissioner', async () => {
+        const response = await escrowManagerDriver.getCommissioner();
+
+        expect(response).toEqual(commissioner);
+
+        expect(mockedContract.getCommissioner).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getCommissioner).toHaveBeenNthCalledWith(1);
+        expect(mockedGetCommissioner).toHaveBeenCalledTimes(1);
+    });
+
+    it('should correctly update commissioner', async () => {
+        await escrowManagerDriver.updateCommissioner(payee);
+
+        expect(mockedContract.updateCommissioner).toHaveBeenCalledTimes(1);
+        expect(mockedContract.updateCommissioner).toHaveBeenNthCalledWith(1, payee);
+        expect(mockedWait).toHaveBeenCalledTimes(1);
+    });
+
+    it('should correctly update commissioner - FAIL(Not an address)', async () => {
+        await expect(escrowManagerDriver.updateCommissioner('notAnAddress')).rejects.toThrowError(new Error('Not an address'));
+
+        expect(mockedContract.updateCommissioner).toHaveBeenCalledTimes(0);
         expect(mockedWait).toHaveBeenCalledTimes(0)
     });
 

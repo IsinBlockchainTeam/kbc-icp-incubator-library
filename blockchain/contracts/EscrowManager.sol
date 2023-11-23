@@ -15,7 +15,8 @@ contract EscrowManager is AccessControl {
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
-    event EscrowRegistered(uint256 indexed id, address payable payee, address payable purchaser, uint256 agreedAmount);
+    event EscrowRegistered(uint256 indexed id, address payable payee, address payable purchaser, uint256 agreedAmount, address tokenAddress, address commissionAddress);
+    event CommissionerUpdated(address commissionAddress);
 
     modifier onlyAdmin() {
         require(hasRole(ADMIN_ROLE, _msgSender()), "EscrowManager: caller is not the admin");
@@ -23,18 +24,20 @@ contract EscrowManager is AccessControl {
     }
 
 
-    mapping(uint256 => Escrow) private escrows;
-
+    address private _commissioner;
+    mapping(uint256 => Escrow) private _escrows;
     //mapping(payer => Escrow_id[])
-    mapping(address => uint256[]) private escrowsOfPurchaser;
+    mapping(address => uint256[]) private _escrowsOfPurchaser;
 
-    constructor(address[] memory admins) {
+    constructor(address[] memory admins, address commissioner) {
+        require(commissioner != address(0), "EscrowManager: commissioner is the zero address");
+
         _setupRole(ADMIN_ROLE, msg.sender);
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
-
         for (uint256 i = 0; i < admins.length; ++i) {
             grantRole(ADMIN_ROLE, admins[i]);
         }
+        _commissioner = commissioner;
     }
 
     function registerEscrow(address payable payee, address payable purchaser, uint256 agreedAmount, uint256 duration, address tokenAddress) public  {
@@ -47,17 +50,33 @@ contract EscrowManager is AccessControl {
         address[] memory adminArray = new address[](1);
         adminArray[0] = address(this);
 
-        Escrow newEscrow = new Escrow(adminArray, payee, purchaser, agreedAmount, duration, tokenAddress);
-        escrows[id] = newEscrow;
-        escrowsOfPurchaser[purchaser].push(id);
-        emit EscrowRegistered(id, payee, purchaser, agreedAmount);
+        Escrow newEscrow = new Escrow(adminArray, payee, purchaser, agreedAmount, duration, tokenAddress, _commissioner);
+        _escrows[id] = newEscrow;
+        _escrowsOfPurchaser[purchaser].push(id);
+        emit EscrowRegistered(id, payee, purchaser, agreedAmount, tokenAddress, _commissioner);
+    }
+
+    function getCommissioner() public view returns (address) {
+        return _commissioner;
+    }
+
+    function updateCommissioner(address commissioner) public onlyAdmin {
+        require(commissioner != address(0), "EscrowManager: commission address is the zero address");
+        require(commissioner != _commissioner, "EscrowManager: new commission address is the same of the current one");
+        _commissioner = commissioner;
+        for(uint256 i = 0; i < _counter.current(); i++) {
+            if(_escrows[i].getState() == Escrow.State.Active) {
+                _escrows[i].updateCommissioner(commissioner);
+            }
+        }
+        emit CommissionerUpdated(commissioner);
     }
 
     function getEscrow(uint256 id) public view returns (Escrow) {
-        return escrows[id];
+        return _escrows[id];
     }
 
     function getEscrowsId(address purchaser) public view returns (uint256[] memory) {
-        return escrowsOfPurchaser[purchaser];
+        return _escrowsOfPurchaser[purchaser];
     }
 }

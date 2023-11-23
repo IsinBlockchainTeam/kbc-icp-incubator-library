@@ -43,10 +43,12 @@ export class EscrowDriver {
         return (await this._contract.getDepositAmount()).toNumber();
     }
 
-    //async getToken()
-
     async getTokenAddress(): Promise<string> {
         return await this._contract.getTokenAddress();
+    }
+
+    async getCommissioner(): Promise<string> {
+        return await this._contract.getCommissioner();
     }
 
     async getDeadline(): Promise<number> {

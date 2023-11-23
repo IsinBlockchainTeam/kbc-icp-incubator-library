@@ -1,12 +1,12 @@
 import {ethers} from 'hardhat';
-import {Contract} from 'ethers';
+import {BigNumber, Contract} from 'ethers';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {expect} from 'chai';
 
 describe('Escrow.sol', () => {
     let escrowContract: Contract;
     let tokenContract: Contract;
-    let admin: SignerWithAddress, payee: SignerWithAddress, purchaser: SignerWithAddress, delegate: SignerWithAddress;
+    let admin: SignerWithAddress, payee: SignerWithAddress, purchaser: SignerWithAddress, delegate: SignerWithAddress, commissioner: SignerWithAddress, anotherCommissioner: SignerWithAddress
     const duration = 60 * 60 * 24 * 30; // 30 days
     const agreedAmount = 1000;
     const depositAmount: number = 100;
@@ -20,7 +20,7 @@ describe('Escrow.sol', () => {
     };
 
     beforeEach(async () => {
-        [admin, payee, purchaser, delegate] = await ethers.getSigners();
+        [admin, payee, purchaser, delegate, commissioner, anotherCommissioner] = await ethers.getSigners();
 
         const Token = await ethers.getContractFactory('MyToken');
         tokenContract = await Token.deploy(depositAmount * 10);
@@ -29,7 +29,7 @@ describe('Escrow.sol', () => {
         await tokenContract.transfer(delegate.address, depositAmount * 2);
 
         const Escrow = await ethers.getContractFactory('Escrow');
-        escrowContract = await Escrow.deploy([admin.address], payee.address, purchaser.address, agreedAmount, duration, tokenContract.address);
+        escrowContract = await Escrow.deploy([admin.address], payee.address, purchaser.address, agreedAmount, duration, tokenContract.address, commissioner.address);
         await escrowContract.deployed();
     });
 
@@ -37,9 +37,21 @@ describe('Escrow.sol', () => {
         it('should retrieve escrow correctly', async () => {
             expect(await escrowContract.getPayee()).to.equal(payee.address);
             expect(await escrowContract.getPurchaser()).to.equal(purchaser.address);
+
+            const payers = await escrowContract.getPayers();
+            expect(payers).to.have.length(1);
+            const [payerAddress, depositedAmount] = payers[0];
+            expect(payerAddress).to.equal(purchaser.address);
+            expect(depositedAmount).to.equal(BigNumber.from(0));
+
+            expect(await escrowContract.getAgreedAmount()).to.equal(agreedAmount);
+            expect(await escrowContract.getAgreedAmount()).to.equal(agreedAmount);
+            expect(await escrowContract.getDeployedAt()).to.be.closeTo(Math.floor(Date.now() / 1000), 100);
             expect(await escrowContract.getDuration()).to.equal(duration);
             expect(await escrowContract.getState()).to.equal(0);
             expect(await escrowContract.getDepositAmount()).to.equal(0);
+            expect(await escrowContract.getTokenAddress()).to.equal(tokenContract.address);
+            expect(await escrowContract.getCommissioner()).to.equal(commissioner.address);
         });
     });
 
@@ -247,4 +259,50 @@ describe('Escrow.sol', () => {
             expect(await escrowContract.withdrawalAllowed()).to.true;
         });
     });
+
+    describe('Fees', () => {
+        it('should pay fees on withdrawal', async () => {
+            await tokenContract.connect(purchaser).approve(escrowContract.address, depositAmount);
+            await escrowContract.connect(purchaser).deposit(depositAmount);
+            expect(await tokenContract.balanceOf(commissioner.address)).to.equal(0);
+
+            await escrowContract.connect(admin).close();
+            await escrowContract.connect(payee).withdraw();
+            expect(await tokenContract.balanceOf(commissioner.address)).to.equal(Math.floor(depositAmount * 0.01));
+            expect(await tokenContract.balanceOf(payee.address)).to.equal(Math.floor(depositAmount * 0.99));
+        });
+
+        it('should pay fees on refund', async () => {
+            await tokenContract.connect(purchaser).approve(escrowContract.address, depositAmount);
+            await escrowContract.connect(purchaser).deposit(depositAmount);
+            await escrowContract.connect(purchaser).addDelegate(delegate.address);
+            await tokenContract.connect(delegate).approve(escrowContract.address, depositAmount);
+            await escrowContract.connect(delegate).deposit(depositAmount);
+            expect(await tokenContract.balanceOf(commissioner.address)).to.equal(0);
+
+            await escrowContract.connect(admin).enableRefund();
+            await escrowContract.connect(purchaser).refund();
+            await escrowContract.connect(delegate).refund();
+            expect(await tokenContract.balanceOf(commissioner.address)).to.equal(Math.floor(depositAmount * 0.01) * 2);
+        });
+
+        it('should update commission address', async () => {
+            await tokenContract.connect(purchaser).approve(escrowContract.address, depositAmount);
+            await escrowContract.connect(purchaser).deposit(depositAmount);
+            await escrowContract.connect(admin).updateCommissioner(anotherCommissioner.address);
+
+            await escrowContract.connect(admin).close();
+            await escrowContract.connect(payee).withdraw();
+            expect(await tokenContract.balanceOf(commissioner.address)).to.equal(0);
+            expect(await tokenContract.balanceOf(anotherCommissioner.address)).to.equal(Math.floor(depositAmount * 0.01));
+        });
+
+        it('should fail updating commission address if caller is not admin', async () => {
+            await expect(escrowContract.connect(purchaser).updateCommissioner(anotherCommissioner.address)).to.be.revertedWith('Escrow: caller is not the admin');
+        });
+
+        it('should fail updating commission address if new address is zero address', async () => {
+            await expect(escrowContract.connect(admin).updateCommissioner(ethers.constants.AddressZero)).to.be.revertedWith('Escrow: commissioner is the zero address');
+        });
+    })
 });

@@ -45,6 +45,10 @@ export class EscrowService {
         return this._escrowDriver.getTokenAddress();
     }
 
+    async getCommissioner(): Promise<string> {
+        return this._escrowDriver.getCommissioner();
+    }
+
     async getDeadline(): Promise<number> {
         return this._escrowDriver.getDeadline();
     }

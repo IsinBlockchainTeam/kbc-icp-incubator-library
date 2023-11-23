@@ -20,6 +20,18 @@ export class EscrowManagerDriver {
         await tx.wait();
     }
 
+    async getCommissioner(): Promise<string> {
+        return this._contract.getCommissioner();
+    }
+
+    async updateCommissioner(newCommissioner: string): Promise<void> {
+        if(!utils.isAddress(newCommissioner)) {
+            throw new Error('Not an address');
+        }
+        const tx = await this._contract.updateCommissioner(newCommissioner);
+        await tx.wait();
+    }
+
     async getEscrow(id: number): Promise<Escrow> {
         const escrow = await this._contract.getEscrow(id);
         return EntityBuilder.buildEscrowFromString(escrow);

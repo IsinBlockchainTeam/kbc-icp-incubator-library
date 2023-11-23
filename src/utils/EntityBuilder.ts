@@ -69,8 +69,8 @@ export class EntityBuilder {
         return new Offer(bcOffer.id.toNumber(), bcOffer.owner, bcOffer.productCategory);
     }
 
-    static buildEscrow(bcEscrow: {payee: string, purchaser: string, payers: EscrowContract.PayersStructOutput[], agreedAmount: BigNumber, deployedAt: BigNumber, duration: BigNumber, status: EscrowStatus, tokenAddress: string }): Escrow {
-        return new Escrow(bcEscrow.payee, bcEscrow.purchaser, bcEscrow.payers, bcEscrow.agreedAmount.toNumber(), bcEscrow.deployedAt.toNumber(), bcEscrow.duration.toNumber(), bcEscrow.status, bcEscrow.tokenAddress);
+    static buildEscrow(bcEscrow: {payee: string, purchaser: string, payers: EscrowContract.PayersStructOutput[], agreedAmount: BigNumber, deployedAt: BigNumber, duration: BigNumber, status: EscrowStatus, tokenAddress: string, commissioner: string }): Escrow {
+        return new Escrow(bcEscrow.payee, bcEscrow.purchaser, bcEscrow.payers, bcEscrow.agreedAmount.toNumber(), bcEscrow.deployedAt.toNumber(), bcEscrow.duration.toNumber(), bcEscrow.status, bcEscrow.tokenAddress, bcEscrow.commissioner);
     }
 
     static buildEscrowFromString(bcEscrow: string): Escrow {
