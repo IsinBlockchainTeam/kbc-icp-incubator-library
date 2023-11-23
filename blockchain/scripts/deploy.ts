@@ -91,13 +91,9 @@ serial([
         ],
     ),
     () => deploy(
-        ContractName.MY_TOKEN, [
-            1000,
-        ],
-    ),
-    () => deploy(
         ContractName.ESCROW_MANAGER, [
             [process.env.SUPPLIER_ADMIN || ''],
+            process.env.COMMISSIONER_ADMIN || ''
         ]
     ),
 ])
