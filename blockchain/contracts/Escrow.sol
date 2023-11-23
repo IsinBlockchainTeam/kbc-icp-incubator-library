@@ -65,8 +65,9 @@ contract Escrow is AccessControl {
     uint256 private _duration;
     State private _state;
     IERC20 private _token;
+    address private _commissioner;
 
-    constructor(address[] memory admins, address payee, address purchaser, uint256 agreedAmount,uint256 duration, address tokenAddress) {
+    constructor(address[] memory admins, address payee, address purchaser, uint256 agreedAmount,uint256 duration, address tokenAddress, address commissioner) {
         _setupRole(ADMIN_ROLE, msg.sender);
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
         for (uint256 i = 0; i < admins.length; ++i) {
@@ -80,6 +81,7 @@ contract Escrow is AccessControl {
         _deployedAt = block.timestamp;
         _duration = duration;
         _state = State.Active;
+        _commissioner = commissioner;
 
         _token = IERC20(tokenAddress);
     }
@@ -131,6 +133,15 @@ contract Escrow is AccessControl {
 
     function getTokenAddress() public view returns (address) {
         return address(_token);
+    }
+
+    function getCommissioner() public view returns (address) {
+        return _commissioner;
+    }
+
+    function updateCommissioner(address commissioner) public onlyAdmin {
+        require(commissioner != address(0), "Escrow: commissioner is the zero address");
+        _commissioner = commissioner;
     }
 
     function getDeadline() public view returns (uint256) {
@@ -204,9 +215,17 @@ contract Escrow is AccessControl {
         _enableRefund();
     }
 
+    function _payFees(uint256 withdrawal) private returns (uint256) {
+        uint256 fees = withdrawal * 1 / 100;
+        _token.approve(address(this), fees);
+        _token.safeTransferFrom(address(this), _commissioner, fees);
+        return fees;
+    }
+
     function withdraw() public onlyPayee() {
         require(_state == State.Closed, "Escrow: can only withdraw while closed");
         uint256 payment = getDepositAmount();
+        payment -= _payFees(payment);
         _token.approve(address(this), payment);
         _token.safeTransferFrom(address(this), _payee, payment);
         emit Withdrawn(payment);
@@ -223,6 +242,7 @@ contract Escrow is AccessControl {
             }
         }
 
+        payment -= _payFees(payment);
         _token.approve(address(this), payment);
         _token.safeTransferFrom(address(this), msg.sender, payment);
         emit Refunded(msg.sender, payment);

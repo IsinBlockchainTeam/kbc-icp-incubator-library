@@ -5,16 +5,16 @@ import {expect} from "chai";
 
 describe("EscrowManager.sol", () => {
     let escrowManagerContract: Contract;
-    let admin: SignerWithAddress, payee: SignerWithAddress, purchaser: SignerWithAddress, other: SignerWithAddress
+    let admin: SignerWithAddress, payee: SignerWithAddress, purchaser: SignerWithAddress, other: SignerWithAddress, commissionAddress: SignerWithAddress;
     const agreedAmount: number = 1000;
     const duration: number = 60 * 60 * 24 * 30; // 30 days
-    const tokenAddress: string = "0x71C7656EC7ab88b098defB751B7401B5f6d8976F";
+    const tokenAddress: string = ethers.Wallet.createRandom().address;
 
     beforeEach(async () => {
-        [admin, payee, purchaser, other] = await ethers.getSigners();
+        [admin, payee, purchaser, other, commissionAddress] = await ethers.getSigners();
 
         const EscrowManager = await ethers.getContractFactory('EscrowManager');
-        escrowManagerContract = await EscrowManager.deploy([admin.address]);
+        escrowManagerContract = await EscrowManager.deploy([admin.address], commissionAddress.address);
         await escrowManagerContract.deployed();
     });
 
@@ -23,6 +23,13 @@ describe("EscrowManager.sol", () => {
         const escrowContract = await ethers.getContractAt("Escrow", escrowAddress);
         return escrowContract.getPayee();
     }
+
+    describe("EscrowManager", () => {
+        it("should fail creating an escrow manager if commissioner is the zero address", async () => {
+            const EscrowManager = await ethers.getContractFactory('EscrowManager');
+            await expect(EscrowManager.deploy([admin.address], ethers.constants.AddressZero)).to.be.revertedWith("EscrowManager: commissioner is the zero address");
+        });
+    })
 
     describe("Escrow creation", () => {
         it("should create an escrow", async () => {
@@ -39,7 +46,7 @@ describe("EscrowManager.sol", () => {
             const id = event.args.id.toNumber();
 
             expect(id).to.equal(0);
-            expect(tx).to.emit(escrowManagerContract, 'EscrowRegistered').withArgs(id, payee, purchaser);
+            expect(tx).to.emit(escrowManagerContract, 'EscrowRegistered').withArgs(id, payee, purchaser, commissionAddress);
 
             const escrowAddress = await escrowManagerContract.getEscrow(id);
             expect(escrowAddress).to.not.equal(ethers.constants.AddressZero);
@@ -115,6 +122,28 @@ describe("EscrowManager.sol", () => {
                 duration,
                 ethers.constants.AddressZero
             )).to.be.revertedWith("EscrowManager: token address is the zero address");
+        });
+
+        it("should update commission address", async () => {
+            let tx = await escrowManagerContract.registerEscrow(
+                payee.address,
+                purchaser.address,
+                agreedAmount,
+                duration,
+                tokenAddress
+            );
+
+            const receipt = await tx.wait();
+            const event = receipt.events.find((event: Event) => event.event === 'EscrowRegistered');
+            const id = event.args.id.toNumber();
+
+            tx = await escrowManagerContract.updateCommissioner(other.address);
+            expect(tx).to.emit(escrowManagerContract, 'CommissionAddressUpdated').withArgs(other.address);
+            expect(await escrowManagerContract.getCommissioner()).to.equal(other.address);
+
+            const escrowAddress = await escrowManagerContract.getEscrow(id);
+            const escrowContract = await ethers.getContractAt("Escrow", escrowAddress);
+            expect(await escrowContract.getCommissioner()).to.equal(other.address);
         });
     });
 });

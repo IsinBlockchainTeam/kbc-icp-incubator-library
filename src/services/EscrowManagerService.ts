@@ -12,6 +12,14 @@ export class EscrowManagerService {
         await this._escrowManagerDriver.registerEscrow(payee, purchaser, agreedAmount, duration, tokenAddress);
     }
 
+    async getCommissioner(): Promise<string> {
+        return this._escrowManagerDriver.getCommissioner();
+    }
+
+    async updateCommissioner(newCommissioner: string): Promise<void> {
+        await this._escrowManagerDriver.updateCommissioner(newCommissioner);
+    }
+
     async getEscrow(id: number): Promise<Escrow> {
         return this._escrowManagerDriver.getEscrow(id);
     }

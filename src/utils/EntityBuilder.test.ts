@@ -189,10 +189,11 @@ describe('EntityBuilder', () => {
                 duration: BigNumber.from(100),
                 status: EscrowStatus.ACTIVE,
                 tokenAddress: 'tokenAddress',
+                commissioner: 'commissioner',
             }
 
             expect(EntityBuilder.buildEscrow(bcEscrow)).toEqual(
-                new Escrow(bcEscrow.payee, bcEscrow.purchaser, bcEscrow.payers, bcEscrow.agreedAmount.toNumber(), bcEscrow.deployedAt.toNumber(), bcEscrow.duration.toNumber(), bcEscrow.status, bcEscrow.tokenAddress),
+                new Escrow(bcEscrow.payee, bcEscrow.purchaser, bcEscrow.payers, bcEscrow.agreedAmount.toNumber(), bcEscrow.deployedAt.toNumber(), bcEscrow.duration.toNumber(), bcEscrow.status, bcEscrow.tokenAddress, bcEscrow.commissioner),
             );
         });
     });

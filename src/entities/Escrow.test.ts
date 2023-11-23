@@ -12,7 +12,7 @@ describe('Escrow', () => {
     }] as EscrowContract.PayersStructOutput[];
 
     beforeAll(() => {
-        escrow = new Escrow('payee', 'purchaser', payers, 1000, 0, 1000, EscrowStatus.ACTIVE, 'tokenAddress');
+        escrow = new Escrow('payee', 'purchaser', payers, 1000, 0, 1000, EscrowStatus.ACTIVE, 'tokenAddress', 'commissioner');
     });
 
     it('should correctly initialize a new Escrow', () => {
@@ -24,6 +24,7 @@ describe('Escrow', () => {
         expect(escrow.duration).toEqual(1000);
         expect(escrow.state).toEqual(EscrowStatus.ACTIVE);
         expect(escrow.tokenAddress).toEqual('tokenAddress');
+        expect(escrow.commissioner).toEqual('commissioner');
     });
 
     it('should correctly set the payee', () => {
@@ -68,5 +69,10 @@ describe('Escrow', () => {
     it('should correctly set the tokenAddress', () => {
         escrow.tokenAddress = 'tokenAddress2';
         expect(escrow.tokenAddress).toEqual('tokenAddress2');
+    });
+
+    it('should correctly set the commissioner', () => {
+        escrow.commissioner = 'commissioner2';
+        expect(escrow.commissioner).toEqual('commissioner2');
     });
 });
