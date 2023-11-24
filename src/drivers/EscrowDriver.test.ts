@@ -62,10 +62,15 @@ describe('EscrowDriver', () => {
         getDepositAmount: mockedReadFunction,
         getTokenAddress: mockedGetTokenAddress,
         getCommissioner: mockedGetCommissioner,
+        getBaseFee: mockedReadFunction,
+        getPercentageFee: mockedReadFunction,
+        updateCommissioner: mockedWriteFunction,
         getDeadline: mockedReadFunction,
         hasExpired: mockedGetBoolean,
         withdrawalAllowed: mockedGetBoolean,
         refundAllowed: mockedGetBoolean,
+        addDelegate: mockedWriteFunction,
+        removeDelegate: mockedWriteFunction,
         deposit: mockedWriteFunction,
         close: mockedWriteFunction,
         enableRefund: mockedWriteFunction,
@@ -194,6 +199,34 @@ describe('EscrowDriver', () => {
         expect(mockedGetCommissioner).toHaveBeenCalledTimes(1);
     });
 
+    it('should correctly retrieve base fee', async () => {
+        const response = await escrowDriver.getBaseFee();
+
+        expect(response).toEqual(1);
+
+        expect(mockedContract.getBaseFee).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getBaseFee).toHaveBeenNthCalledWith(1);
+        expect(mockedToNumber).toHaveBeenCalledTimes(1);
+    });
+
+    it('should correctly retrieve percentage fee', async () => {
+        const response = await escrowDriver.getPercentageFee();
+
+        expect(response).toEqual(1);
+
+        expect(mockedContract.getPercentageFee).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getPercentageFee).toHaveBeenNthCalledWith(1);
+        expect(mockedToNumber).toHaveBeenCalledTimes(1);
+    });
+
+    it('should correctly update commissioner', async () => {
+        await escrowDriver.updateCommissioner(commissioner);
+
+        expect(mockedContract.updateCommissioner).toHaveBeenCalledTimes(1);
+        expect(mockedContract.updateCommissioner).toHaveBeenNthCalledWith(1, commissioner);
+        expect(mockedWait).toHaveBeenCalledTimes(1);
+    });
+
     it('should correctly retrieve deadline', async () => {
         const response = await escrowDriver.getDeadline();
 
@@ -232,6 +265,22 @@ describe('EscrowDriver', () => {
         expect(mockedContract.refundAllowed).toHaveBeenCalledTimes(1);
         expect(mockedContract.refundAllowed).toHaveBeenNthCalledWith(1);
         expect(mockedGetBoolean).toHaveBeenCalledTimes(1);
+    });
+
+    it('should correctly add delegate', async () => {
+        await escrowDriver.addDelegate(delegate);
+
+        expect(mockedContract.addDelegate).toHaveBeenCalledTimes(1);
+        expect(mockedContract.addDelegate).toHaveBeenNthCalledWith(1, delegate);
+        expect(mockedWait).toHaveBeenCalledTimes(1);
+    });
+
+    it('should correctly remove delegate', async () => {
+        await escrowDriver.removeDelegate(delegate);
+
+        expect(mockedContract.removeDelegate).toHaveBeenCalledTimes(1);
+        expect(mockedContract.removeDelegate).toHaveBeenNthCalledWith(1, delegate);
+        expect(mockedWait).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly deposit', async () => {

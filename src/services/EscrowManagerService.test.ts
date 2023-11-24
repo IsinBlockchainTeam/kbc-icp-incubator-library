@@ -22,7 +22,7 @@ describe('EscrowManagerService', () => {
         depositedAmount: BigNumber.from(0),
     }] as EscrowContract.PayersStructOutput[];
 
-    const escrow = new Escrow("payee", "purchaser", payers, 1000, 100, EscrowStatus.ACTIVE, 0, "tokenAddress", "commissioner");
+    const escrow = new Escrow("payee", "purchaser", payers, 1000, 100, EscrowStatus.ACTIVE, 0, "tokenAddress", "commissioner", 20, 1);
 
     beforeAll(() => {
         mockedEscrowManagerDriver = createMock<EscrowManagerDriver>(mockedInstance);
@@ -35,9 +35,9 @@ describe('EscrowManagerService', () => {
     it.each([
         {
             serviceFunctionName: 'registerEscrow',
-            serviceFunction: () => escrowManagerService.registerEscrow(escrow.payee, escrow.purchaser, escrow.agreedAmount, escrow.duration, escrow.tokenAddress),
+            serviceFunction: () => escrowManagerService.registerEscrow(escrow.payee, escrow.purchaser, escrow.agreedAmount, escrow.duration, escrow.tokenAddress, escrow.baseFee, escrow.percentageFee),
             expectedMockedFunction: mockedInstance.registerEscrow,
-            expectedMockedFunctionArgs: [escrow.payee, escrow.purchaser, escrow.agreedAmount, escrow.duration, escrow.tokenAddress],
+            expectedMockedFunctionArgs: [escrow.payee, escrow.purchaser, escrow.agreedAmount, escrow.duration, escrow.tokenAddress, escrow.baseFee, escrow.percentageFee],
         },
         {
             serviceFunctionName: 'getCommissioner',

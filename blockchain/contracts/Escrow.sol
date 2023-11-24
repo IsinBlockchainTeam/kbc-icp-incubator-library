@@ -66,8 +66,16 @@ contract Escrow is AccessControl {
     State private _state;
     IERC20 private _token;
     address private _commissioner;
+    uint256 private _baseFee;
+    uint256 private _percentageFee;
 
-    constructor(address[] memory admins, address payee, address purchaser, uint256 agreedAmount,uint256 duration, address tokenAddress, address commissioner) {
+    constructor(address[] memory admins, address payee, address purchaser, uint256 agreedAmount,uint256 duration, address tokenAddress, address commissioner, uint256 baseFee, uint256 percentageFee) {
+        require(payee != address(0), "Escrow: payee is the zero address");
+        require(purchaser != address(0), "Escrow: purchaser is the zero address");
+        require(tokenAddress != address(0), "Escrow: token address is the zero address");
+        require(commissioner != address(0), "Escrow: commissioner is the zero address");
+        require(percentageFee <= 100, "Escrow: percentage fee cannot be greater than 100");
+
         _setupRole(ADMIN_ROLE, msg.sender);
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
         for (uint256 i = 0; i < admins.length; ++i) {
@@ -82,6 +90,8 @@ contract Escrow is AccessControl {
         _duration = duration;
         _state = State.Active;
         _commissioner = commissioner;
+        _baseFee = baseFee;
+        _percentageFee = percentageFee;
 
         _token = IERC20(tokenAddress);
     }
@@ -137,6 +147,14 @@ contract Escrow is AccessControl {
 
     function getCommissioner() public view returns (address) {
         return _commissioner;
+    }
+
+    function getBaseFee() public view returns (uint256) {
+        return _baseFee;
+    }
+
+    function getPercentageFee() public view returns (uint256) {
+        return _percentageFee;
     }
 
     function updateCommissioner(address commissioner) public onlyAdmin {
@@ -216,7 +234,10 @@ contract Escrow is AccessControl {
     }
 
     function _payFees(uint256 withdrawal) private returns (uint256) {
-        uint256 fees = withdrawal * 1 / 100;
+        uint256 fees = withdrawal > _baseFee ? _baseFee : withdrawal;
+        uint256 expectedPercentageFee = (withdrawal - fees) * _percentageFee / 100;
+        fees = expectedPercentageFee > withdrawal - fees ? withdrawal : fees + expectedPercentageFee;
+
         _token.approve(address(this), fees);
         _token.safeTransferFrom(address(this), _commissioner, fees);
         return fees;

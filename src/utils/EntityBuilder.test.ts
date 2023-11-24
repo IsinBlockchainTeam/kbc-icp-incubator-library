@@ -190,10 +190,12 @@ describe('EntityBuilder', () => {
                 status: EscrowStatus.ACTIVE,
                 tokenAddress: 'tokenAddress',
                 commissioner: 'commissioner',
+                baseFee: 20,
+                percentageFee: 1,
             }
 
             expect(EntityBuilder.buildEscrow(bcEscrow)).toEqual(
-                new Escrow(bcEscrow.payee, bcEscrow.purchaser, bcEscrow.payers, bcEscrow.agreedAmount.toNumber(), bcEscrow.deployedAt.toNumber(), bcEscrow.duration.toNumber(), bcEscrow.status, bcEscrow.tokenAddress, bcEscrow.commissioner),
+                new Escrow(bcEscrow.payee, bcEscrow.purchaser, bcEscrow.payers, bcEscrow.agreedAmount.toNumber(), bcEscrow.deployedAt.toNumber(), bcEscrow.duration.toNumber(), bcEscrow.status, bcEscrow.tokenAddress, bcEscrow.commissioner, bcEscrow.baseFee, bcEscrow.percentageFee),
             );
         });
     });

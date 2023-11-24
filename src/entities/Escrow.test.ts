@@ -12,7 +12,7 @@ describe('Escrow', () => {
     }] as EscrowContract.PayersStructOutput[];
 
     beforeAll(() => {
-        escrow = new Escrow('payee', 'purchaser', payers, 1000, 0, 1000, EscrowStatus.ACTIVE, 'tokenAddress', 'commissioner');
+        escrow = new Escrow('payee', 'purchaser', payers, 1000, 0, 1000, EscrowStatus.ACTIVE, 'tokenAddress', 'commissioner', 20, 1);
     });
 
     it('should correctly initialize a new Escrow', () => {
@@ -75,4 +75,14 @@ describe('Escrow', () => {
         escrow.commissioner = 'commissioner2';
         expect(escrow.commissioner).toEqual('commissioner2');
     });
+
+    it('should correctly set the base fee', () => {
+        escrow.baseFee = 21;
+        expect(escrow.baseFee).toEqual(21);
+    })
+
+    it('should correctly set the percentage fee', () => {
+        escrow.percentageFee = 2;
+        expect(escrow.percentageFee).toEqual(2);
+    })
 });
