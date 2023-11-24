@@ -5,17 +5,26 @@ import {expect} from "chai";
 
 describe("EscrowManager.sol", () => {
     let escrowManagerContract: Contract;
-    let admin: SignerWithAddress, payee: SignerWithAddress, purchaser: SignerWithAddress, other: SignerWithAddress, commissionAddress: SignerWithAddress;
+    let tokenContract: Contract;
+    let admin: SignerWithAddress, payee: SignerWithAddress, purchaser: SignerWithAddress, other: SignerWithAddress,
+        commissioner: SignerWithAddress;
     const agreedAmount: number = 1000;
+    const depositAmount: number = 120;
     const duration: number = 60 * 60 * 24 * 30; // 30 days
-    const tokenAddress: string = ethers.Wallet.createRandom().address;
+    const baseFee: number = 20;
+    const percentageFee: number = 1;
 
     beforeEach(async () => {
-        [admin, payee, purchaser, other, commissionAddress] = await ethers.getSigners();
+        [admin, payee, purchaser, other, commissioner] = await ethers.getSigners();
 
         const EscrowManager = await ethers.getContractFactory('EscrowManager');
-        escrowManagerContract = await EscrowManager.deploy([admin.address], commissionAddress.address);
+        escrowManagerContract = await EscrowManager.deploy([admin.address], commissioner.address);
         await escrowManagerContract.deployed();
+
+        const Token = await ethers.getContractFactory('MyToken');
+        tokenContract = await Token.deploy(depositAmount * 10);
+        await tokenContract.deployed();
+        await tokenContract.transfer(purchaser.address, depositAmount * 2);
     });
 
     async function getPayeeFromEscrowId(escrowId: number): Promise<string> {
@@ -24,10 +33,63 @@ describe("EscrowManager.sol", () => {
         return escrowContract.getPayee();
     }
 
+    async function registerNewEscrow(payee: SignerWithAddress, purchaser: SignerWithAddress, agreedAmount: number, duration: number): Promise<number> {
+        const tx = await escrowManagerContract.registerEscrow(
+            payee.address,
+            purchaser.address,
+            agreedAmount,
+            duration,
+            tokenContract.address,
+            baseFee,
+            percentageFee
+        );
+        const receipt = await tx.wait();
+        return receipt.events.find((event: Event) => event.event === 'EscrowRegistered').args.id.toNumber();
+    }
+
     describe("EscrowManager", () => {
         it("should fail creating an escrow manager if commissioner is the zero address", async () => {
             const EscrowManager = await ethers.getContractFactory('EscrowManager');
             await expect(EscrowManager.deploy([admin.address], ethers.constants.AddressZero)).to.be.revertedWith("EscrowManager: commissioner is the zero address");
+        });
+
+        it("should update commission address", async () => {
+            const id = registerNewEscrow(payee, purchaser, agreedAmount, duration);
+
+            const tx = await escrowManagerContract.updateCommissioner(other.address);
+            expect(tx).to.emit(escrowManagerContract, 'CommissionerUpdated').withArgs(other.address);
+            expect(await escrowManagerContract.getCommissioner()).to.equal(other.address);
+
+            const escrowAddress = await escrowManagerContract.getEscrow(id);
+            const escrowContract = await ethers.getContractAt("Escrow", escrowAddress);
+            expect(await escrowContract.getCommissioner()).to.equal(other.address);
+        });
+
+        it("should not update commission address for escrows with state 'Refunding' or 'Closed' where funds have been withdrawn", async () => {
+            const firstEscrowId = registerNewEscrow(payee, purchaser, agreedAmount, duration);
+            const secondEscrowId = registerNewEscrow(payee, purchaser, agreedAmount, duration);
+            const thirdEscrowId = registerNewEscrow(payee, purchaser, agreedAmount, duration);
+
+            // STATE: ACTIVE
+            const firstEscrowAddress = await escrowManagerContract.getEscrow(firstEscrowId);
+            const firstEscrowContract = await ethers.getContractAt("Escrow", firstEscrowAddress);
+
+            // STATE: CLOSED - funds available
+            const secondEscrowAddress = await escrowManagerContract.getEscrow(secondEscrowId);
+            const secondEscrowContract = await ethers.getContractAt("Escrow", secondEscrowAddress);
+            await tokenContract.connect(purchaser).approve(secondEscrowAddress, depositAmount);
+            await secondEscrowContract.connect(purchaser).deposit(depositAmount);
+            await secondEscrowContract.connect(admin).close();
+
+            // STATE: CLOSED - no funds
+            const thirdEscrowAddress = await escrowManagerContract.getEscrow(thirdEscrowId);
+            const thirdEscrowContract = await ethers.getContractAt("Escrow", thirdEscrowAddress);
+            await thirdEscrowContract.connect(admin).close();
+
+            await escrowManagerContract.connect(admin).updateCommissioner(other.address);
+            expect(await firstEscrowContract.connect(purchaser).getCommissioner()).to.equal(other.address);
+            expect(await secondEscrowContract.connect(purchaser).getCommissioner()).to.equal(other.address);
+            expect(await thirdEscrowContract.connect(purchaser).getCommissioner()).to.equal(commissioner.address);
         });
     })
 
@@ -38,7 +100,9 @@ describe("EscrowManager.sol", () => {
                 purchaser.address,
                 agreedAmount,
                 duration,
-                tokenAddress
+                tokenContract.address,
+                baseFee,
+                percentageFee
             );
 
             const receipt = await tx.wait();
@@ -46,7 +110,7 @@ describe("EscrowManager.sol", () => {
             const id = event.args.id.toNumber();
 
             expect(id).to.equal(0);
-            expect(tx).to.emit(escrowManagerContract, 'EscrowRegistered').withArgs(id, payee, purchaser, commissionAddress);
+            expect(tx).to.emit(escrowManagerContract, 'EscrowRegistered').withArgs(id, payee, purchaser, commissioner);
 
             const escrowAddress = await escrowManagerContract.getEscrow(id);
             expect(escrowAddress).to.not.equal(ethers.constants.AddressZero);
@@ -55,30 +119,27 @@ describe("EscrowManager.sol", () => {
             expect(await escrowContract.getPayee()).to.equal(payee.address);
             expect(await escrowContract.getPurchaser()).to.equal(purchaser.address);
             expect(await escrowContract.getDuration()).to.equal(duration);
-            expect(await escrowContract.getTokenAddress()).to.equal(tokenAddress);
+            expect(await escrowContract.getTokenAddress()).to.equal(tokenContract.address);
         });
 
         it("should return IDs of all escrow involving a specific purchaser", async () => {
-            await escrowManagerContract.registerEscrow(
-                payee.address,
-                purchaser.address,
+            await registerNewEscrow(
+                payee,
+                purchaser,
                 agreedAmount,
                 duration,
-                tokenAddress
             );
-            await escrowManagerContract.registerEscrow(
-                payee.address,
-                other.address,
+            await registerNewEscrow(
+                payee,
+                other,
                 agreedAmount,
                 duration,
-                tokenAddress
             );
-            await escrowManagerContract.registerEscrow(
-                other.address,
-                purchaser.address,
+            await registerNewEscrow(
+                other,
+                purchaser,
                 agreedAmount,
                 duration,
-                tokenAddress
             );
 
             const purchaserIds = await escrowManagerContract.getEscrowsId(purchaser.address);
@@ -100,7 +161,9 @@ describe("EscrowManager.sol", () => {
                 purchaser.address,
                 agreedAmount,
                 duration,
-                tokenAddress
+                tokenContract.address,
+                baseFee,
+                percentageFee
             )).to.be.revertedWith("EscrowManager: payee is the zero address");
         });
 
@@ -110,7 +173,9 @@ describe("EscrowManager.sol", () => {
                 ethers.constants.AddressZero,
                 agreedAmount,
                 duration,
-                tokenAddress
+                tokenContract.address,
+                baseFee,
+                percentageFee
             )).to.be.revertedWith("EscrowManager: purchaser is the zero address");
         });
 
@@ -120,30 +185,22 @@ describe("EscrowManager.sol", () => {
                 purchaser.address,
                 agreedAmount,
                 duration,
-                ethers.constants.AddressZero
+                ethers.constants.AddressZero,
+                baseFee,
+                percentageFee
             )).to.be.revertedWith("EscrowManager: token address is the zero address");
         });
 
-        it("should update commission address", async () => {
-            let tx = await escrowManagerContract.registerEscrow(
+        it('should fail escrow registration if percentage fee is greater than 100', async () => {
+            await expect(escrowManagerContract.registerEscrow(
                 payee.address,
                 purchaser.address,
                 agreedAmount,
                 duration,
-                tokenAddress
-            );
-
-            const receipt = await tx.wait();
-            const event = receipt.events.find((event: Event) => event.event === 'EscrowRegistered');
-            const id = event.args.id.toNumber();
-
-            tx = await escrowManagerContract.updateCommissioner(other.address);
-            expect(tx).to.emit(escrowManagerContract, 'CommissionAddressUpdated').withArgs(other.address);
-            expect(await escrowManagerContract.getCommissioner()).to.equal(other.address);
-
-            const escrowAddress = await escrowManagerContract.getEscrow(id);
-            const escrowContract = await ethers.getContractAt("Escrow", escrowAddress);
-            expect(await escrowContract.getCommissioner()).to.equal(other.address);
+                tokenContract.address,
+                baseFee,
+                101
+            )).to.be.revertedWith("EscrowManager: percentage fee cannot be greater than 100");
         });
     });
 });

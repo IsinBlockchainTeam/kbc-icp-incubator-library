@@ -41,6 +41,9 @@ describe('EscrowManagerDriver', () => {
         duration: BigNumber.from(100),
         status: EscrowStatus.ACTIVE,
         tokenAddress: 'tokenAddress',
+        commissioner: 'commissioner',
+        baseFee: BigNumber.from(20),
+        percentageFee: BigNumber.from(1),
     })));
     mockedGetEscrowsId.mockReturnValue(Promise.resolve([BigNumber.from(0)]));
 
@@ -67,16 +70,16 @@ describe('EscrowManagerDriver', () => {
     afterAll(() => jest.clearAllMocks());
 
     it('should correctly register a new Escrow', async () => {
-        await escrowManagerDriver.registerEscrow(payee, purchaser, 1000,1, contractAddress);
+        await escrowManagerDriver.registerEscrow(payee, purchaser, 1000,1, contractAddress, 20, 1);
 
         expect(mockedContract.registerEscrow).toHaveBeenCalledTimes(1);
-        expect(mockedContract.registerEscrow).toHaveBeenNthCalledWith(1, payee, purchaser, 1000, 1, contractAddress);
+        expect(mockedContract.registerEscrow).toHaveBeenNthCalledWith(1, payee, purchaser, 1000, 1, contractAddress, 20, 1);
 
         expect(mockedWait).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly register a new Escrow - FAIL(Not an address)', async () => {
-        await expect(escrowManagerDriver.registerEscrow('notAnAddress', purchaser, 1000, 1, contractAddress)).rejects.toThrowError(new Error('Not an address'));
+        await expect(escrowManagerDriver.registerEscrow('notAnAddress', purchaser, 1000, 1, contractAddress, 20, 1)).rejects.toThrowError(new Error('Not an address'));
 
         expect(mockedContract.registerEscrow).toHaveBeenCalledTimes(0);
         expect(mockedWait).toHaveBeenCalledTimes(0)

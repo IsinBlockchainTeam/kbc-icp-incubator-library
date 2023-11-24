@@ -1,4 +1,4 @@
-import { Signer } from 'ethers';
+import {Signer, utils} from 'ethers';
 import { Escrow as EscrowContract, Escrow__factory } from "../smart-contracts";
 import { EscrowStatus } from "../types/EscrowStatus";
 
@@ -51,6 +51,22 @@ export class EscrowDriver {
         return await this._contract.getCommissioner();
     }
 
+    async getBaseFee(): Promise<number> {
+        return (await this._contract.getBaseFee()).toNumber();
+    }
+
+    async getPercentageFee(): Promise<number> {
+        return (await this._contract.getPercentageFee()).toNumber();
+    }
+
+    async updateCommissioner(newCommissioner: string): Promise<void> {
+        if(!utils.isAddress(newCommissioner)) {
+            throw new Error('Not an address');
+        }
+        const tx = await this._contract.updateCommissioner(newCommissioner);
+        await tx.wait();
+    }
+
     async getDeadline(): Promise<number> {
         return (await this._contract.getDeadline()).toNumber();
     }
@@ -65,6 +81,22 @@ export class EscrowDriver {
 
     async refundAllowed(): Promise<boolean> {
         return await this._contract.refundAllowed();
+    }
+
+    async addDelegate(delegate: string): Promise<void> {
+        if(!utils.isAddress(delegate)) {
+            throw new Error('Not an address');
+        }
+        const tx = await this._contract.addDelegate(delegate);
+        await tx.wait();
+    }
+
+    async removeDelegate(delegate: string): Promise<void> {
+        if(!utils.isAddress(delegate)) {
+            throw new Error('Not an address');
+        }
+        const tx = await this._contract.removeDelegate(delegate);
+        await tx.wait();
     }
 
     async deposit(amount: number): Promise<void> {

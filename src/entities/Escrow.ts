@@ -20,7 +20,11 @@ export class Escrow {
 
     private _commissioner: string;
 
-    constructor(payee: string, purchaser: string, payers: EscrowContract.PayersStructOutput[], agreedAmount: number, deployedAt: number, duration: number, state: EscrowStatus, tokenAddress: string, commissioner: string) {
+    private _baseFee: number;
+
+    private _percentageFee: number;
+
+    constructor(payee: string, purchaser: string, payers: EscrowContract.PayersStructOutput[], agreedAmount: number, deployedAt: number, duration: number, state: EscrowStatus, tokenAddress: string, commissioner: string, baseFee: number, percentageFee: number) {
         this._payee = payee;
         this._purchaser = purchaser;
         this._payers = payers;
@@ -30,6 +34,8 @@ export class Escrow {
         this._state = state;
         this._tokenAddress = tokenAddress;
         this._commissioner = commissioner;
+        this._baseFee = baseFee;
+        this._percentageFee = percentageFee;
     }
 
     get payee(): string {
@@ -102,5 +108,21 @@ export class Escrow {
 
     set commissioner(value: string) {
         this._commissioner = value;
+    }
+
+    get baseFee(): number {
+        return this._baseFee;
+    }
+
+    set baseFee(value: number) {
+        this._baseFee = value;
+    }
+
+    get percentageFee(): number {
+        return this._percentageFee;
+    }
+
+    set percentageFee(value: number) {
+        this._percentageFee = value;
     }
 }

@@ -12,11 +12,11 @@ export class EscrowManagerDriver {
             .connect(signer);
     }
 
-    async registerEscrow(payee: string, purchaser: string, agreedAmount: number, duration: number, tokenAddress: string): Promise<void> {
+    async registerEscrow(payee: string, purchaser: string, agreedAmount: number, duration: number, tokenAddress: string, baseFee: number, percentageFee: number): Promise<void> {
         if(!utils.isAddress(payee) || !utils.isAddress(purchaser) || !utils.isAddress(tokenAddress)) {
             throw new Error('Not an address');
         }
-        const tx = await this._contract.registerEscrow(payee, purchaser, agreedAmount, duration, tokenAddress);
+        const tx = await this._contract.registerEscrow(payee, purchaser, agreedAmount, duration, tokenAddress, baseFee, percentageFee);
         await tx.wait();
     }
 
