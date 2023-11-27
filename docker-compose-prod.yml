@@ -21,7 +21,7 @@ services:
       blockchain_node:
         condition: service_healthy
     image: gitlab-core.supsi.ch:5050/dti-isin/giuliano.gremlich/blockchain/one-lib-to-rule-them-all/coffe-trading-management/blockchain-node
-    entrypoint: sh -c "npx hardhat run scripts/deploy.ts --network testnet"
+    entrypoint: sh -c "NODE_ENV=test npx hardhat run scripts/deploy.ts --network testnet"
     environment:
       SUPPLIER_ADMIN: ${SUPPLIER_ADMIN}
       CUSTOMER_ADMIN: ${CUSTOMER_ADMIN}
