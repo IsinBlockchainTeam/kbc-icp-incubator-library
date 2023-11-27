@@ -39,6 +39,7 @@ blockchain-node-deploy:
     - dev
     - main
     - feature/#64
+  when: manual
   script:
     - cp $GCLOUD_SA_AUTH_KEY gcloud_auth.json
     - cp $DOCKER_ENV_FILE .env.docker
