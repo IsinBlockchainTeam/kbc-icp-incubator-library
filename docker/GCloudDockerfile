@@ -5,7 +5,7 @@ ENV GCLOUD_PULL_USERNAME=gcloud_pull_username
 
 COPY ci-scripts/gcloud_deploy.sh ./
 COPY ci-scripts/gcloud_vm_deploy.sh ./
-COPY .env ./
+COPY .env.docker ./.env
 COPY gcloud_auth.json ./
 COPY docker-compose-prod.yml ./
 RUN chmod +x gcloud_deploy.sh
