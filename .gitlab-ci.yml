@@ -31,6 +31,9 @@ blockchain-node:
     - docker push gitlab-core.supsi.ch:5050/dti-isin/giuliano.gremlich/blockchain/one-lib-to-rule-them-all/coffe-trading-management/blockchain-node
 
 blockchain-node-deploy:
+  image: docker:latest
+  services:
+    - docker:dind
   stage: deploy
   only:
     - dev
@@ -39,6 +42,7 @@ blockchain-node-deploy:
   script:
     - cp $GCLOUD_SA_AUTH_KEY gcloud_auth.json
     - cp $DOCKER_ENV_FILE .env
+    - ls -la
     - docker build -f docker/GCloudDockerfile -t gcloud-deployer .
     - docker run -e GCLOUD_PULL_PASSWORD=$REGISTRY_PULL_PASSWORD -e GCLOUD_PULL_USERNAME=$REGISTRY_PULL_USERNAME gcloud-deployer 2>&1
 
@@ -65,14 +69,11 @@ blockchain-lib-build:
     - main
     - feature/#64
   script:
-    - echo $CI_PROJECT_DIR
     - cd $CI_PROJECT_DIR/blockchain
-    - pwd
     - npm config set @blockchain-lib:registry https://$BLOCKCHAIN_LIB_REGISTRY_DOMAIN
     - npm config set -- "//$BLOCKCHAIN_LIB_REGISTRY_DOMAIN:_authToken" "$BLOCKCHAIN_LIB_REGISTRY_READ_TOKEN"
     - npm install --force && npm run compile
     - cd $CI_PROJECT_DIR/src
-    - pwd
     - npm install
     - npm run build
   artifacts:
@@ -89,6 +90,8 @@ blockchain-lib-publish:
   dependencies:
     - blockchain-lib-build
   script:
+    - cd $CI_PROJECT_DIR/src
+    - ls -la $CI_PROJECT_DIR/src/dist/
     - npm config set @coffe-trading-lib:registry https://$COFFEE_TRADING_LIB_REGISTRY_DOMAIN
     - npm config set -- "//$COFFEE_TRADING_LIB_REGISTRY_DOMAIN:_authToken" "$COFFEE_TRADING_LIB_REGISTRY_WRITE_TOKEN"
     - npm publish
