@@ -65,11 +65,15 @@ blockchain-lib-build:
     - main
     - feature/#64
   script:
+    - echo $CI_PROJECT_DIR
     - cd $CI_PROJECT_DIR/blockchain
+    - pwd
     - npm config set @blockchain-lib:registry https://$BLOCKCHAIN_LIB_REGISTRY_DOMAIN
     - npm config set -- "//$BLOCKCHAIN_LIB_REGISTRY_DOMAIN:_authToken" "$BLOCKCHAIN_LIB_REGISTRY_READ_TOKEN"
     - npm install --force && npm run compile
     - cd $CI_PROJECT_DIR/src
+    - pwd
+    - npm install
     - npm run build
   artifacts:
     paths:
