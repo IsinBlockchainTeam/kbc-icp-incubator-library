@@ -1,16 +1,14 @@
 import {BigNumber, Signer, Wallet} from 'ethers';
 import { createMock } from 'ts-auto-mock';
 import {EscrowManagerDriver} from "./EscrowManagerDriver";
-import { EntityBuilder } from '../utils/EntityBuilder';
-import { EscrowManager, EscrowManager__factory, Escrow as EscrowContract } from "../smart-contracts";
-import {Escrow} from "../entities/Escrow";
-import {EscrowStatus} from "../types/EscrowStatus";
+import { EscrowManager, EscrowManager__factory } from "../smart-contracts";
 
 describe('EscrowManagerDriver', () => {
     let escrowManagerDriver: EscrowManagerDriver;
     const payee: string = Wallet.createRandom().address;
     const purchaser: string = Wallet.createRandom().address;
     const contractAddress: string = Wallet.createRandom().address;
+    const escrowAddress: string = Wallet.createRandom().address;
     const commissioner: string = Wallet.createRandom().address;
 
     let mockedSigner: Signer;
@@ -23,28 +21,11 @@ describe('EscrowManagerDriver', () => {
     const mockedGetEscrow = jest.fn();
     const mockedGetEscrowsId = jest.fn();
 
-    const mockedEscrow = createMock<Escrow>();
-
     mockedWriteFunction.mockResolvedValue({
         wait: mockedWait,
     });
     mockedGetCommissioner.mockReturnValue(Promise.resolve(commissioner));
-    mockedGetEscrow.mockReturnValue(Promise.resolve(JSON.stringify({
-        payee: 'payee',
-        purchaser: 'purchaser',
-        payers: [{
-            payerAddress: 'payer',
-            depositedAmount: BigNumber.from(0),
-        }] as EscrowContract.PayersStructOutput[],
-        agreedAmount: BigNumber.from(1000),
-        deployedAt: BigNumber.from(0),
-        duration: BigNumber.from(100),
-        status: EscrowStatus.ACTIVE,
-        tokenAddress: 'tokenAddress',
-        commissioner: 'commissioner',
-        baseFee: BigNumber.from(20),
-        percentageFee: BigNumber.from(1),
-    })));
+    mockedGetEscrow.mockReturnValue(Promise.resolve(escrowAddress));
     mockedGetEscrowsId.mockReturnValue(Promise.resolve([BigNumber.from(0)]));
 
     const mockedContract = createMock<EscrowManager>({
@@ -60,8 +41,6 @@ describe('EscrowManagerDriver', () => {
             connect: mockedEscrowManagerConnect,
         });
         jest.spyOn(EscrowManager__factory, 'connect').mockReturnValue(mockedEscrowManager);
-        const buildEscrowManagerSpy = jest.spyOn(EntityBuilder, 'buildEscrow');
-        buildEscrowManagerSpy.mockReturnValue(mockedEscrow);
 
         mockedSigner = createMock<Signer>();
         escrowManagerDriver = new EscrowManagerDriver(mockedSigner, contractAddress);
@@ -113,7 +92,7 @@ describe('EscrowManagerDriver', () => {
     it('should correctly retrieve an Escrow', async () => {
         const response = await escrowManagerDriver.getEscrow(1);
 
-        expect(response).toEqual(mockedEscrow);
+        expect(response).toEqual(escrowAddress);
 
         expect(mockedContract.getEscrow).toHaveBeenCalledTimes(1);
         expect(mockedContract.getEscrow).toHaveBeenNthCalledWith(1, 1);

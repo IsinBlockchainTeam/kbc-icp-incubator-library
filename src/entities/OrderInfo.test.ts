@@ -8,7 +8,7 @@ describe('OrderInfo', () => {
 
     beforeAll(() => {
         orderInfo = new OrderInfo(0, 'supplier', 'customer', metadataExternalUrl, 'offeree', 'offeror', [1, 2],
-            deadline, deadline, 'arbiter', deadline, deadline);
+            deadline, deadline, 'arbiter', deadline, deadline, 'escrow');
     });
 
     it('should correctly initialize a new Order', () => {
@@ -25,6 +25,7 @@ describe('OrderInfo', () => {
         expect(orderInfo.arbiter).toEqual('arbiter');
         expect(orderInfo.shippingDeadline).toEqual(deadline);
         expect(orderInfo.deliveryDeadline).toEqual(deadline);
+        expect(orderInfo.escrow).toEqual('escrow');
     });
 
     it('should correctly set the id', () => {
@@ -90,5 +91,10 @@ describe('OrderInfo', () => {
     it('should correctly set the deliveryDeadline', () => {
         orderInfo.deliveryDeadline = deadline2;
         expect(orderInfo.deliveryDeadline).toEqual(deadline2);
+    });
+
+    it('should correctly set the escrow', () => {
+        orderInfo.escrow = 'escrow 2';
+        expect(orderInfo.escrow).toEqual('escrow 2');
     });
 });

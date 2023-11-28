@@ -16,9 +16,6 @@ import { BasicTradeInfo } from '../entities/BasicTradeInfo';
 import { TradeLine } from '../entities/TradeLine';
 import { Trade } from '../entities/Trade';
 import { Offer } from '../entities/Offer';
-import { Escrow } from '../entities/Escrow';
-import { Escrow as EscrowContract } from '../smart-contracts';
-import {EscrowStatus} from "../types/EscrowStatus";
 
 export class EntityBuilder {
     static buildMaterial(bcMaterial: MaterialManager.MaterialStructOutput): Material {
@@ -42,10 +39,10 @@ export class EntityBuilder {
     }
 
     static buildOrderInfo(bcOrder: { id: BigNumber, supplier: string, customer: string, offeree: string, offeror: string, externalUrl: string, lineIds: BigNumber[], paymentDeadline: BigNumber,
-                        documentDeliveryDeadline: BigNumber, arbiter: string, shippingDeadline: BigNumber, deliveryDeadline: BigNumber }): OrderInfo {
+                        documentDeliveryDeadline: BigNumber, arbiter: string, shippingDeadline: BigNumber, deliveryDeadline: BigNumber, escrow: string }): OrderInfo {
         return new OrderInfo(bcOrder.id.toNumber(), bcOrder.supplier, bcOrder.customer, bcOrder.externalUrl, bcOrder.offeree, bcOrder.offeror,
             bcOrder.lineIds.map((l) => l.toNumber()), new Date(bcOrder.paymentDeadline.toNumber()), new Date(bcOrder.documentDeliveryDeadline.toNumber()),
-            bcOrder.arbiter, new Date(bcOrder.shippingDeadline.toNumber()), new Date(bcOrder.deliveryDeadline.toNumber()));
+            bcOrder.arbiter, new Date(bcOrder.shippingDeadline.toNumber()), new Date(bcOrder.deliveryDeadline.toNumber()), bcOrder.escrow);
     }
 
     static buildOrderLinePrice(bcOrderLinePrice: TradeManager.OrderLinePriceStructOutput): OrderLinePrice {
@@ -67,13 +64,5 @@ export class EntityBuilder {
 
     static buildOffer(bcOffer: OfferManager.OfferStructOutput): Offer {
         return new Offer(bcOffer.id.toNumber(), bcOffer.owner, bcOffer.productCategory);
-    }
-
-    static buildEscrow(bcEscrow: {payee: string, purchaser: string, payers: EscrowContract.PayersStructOutput[], agreedAmount: BigNumber, deployedAt: BigNumber, duration: BigNumber, status: EscrowStatus, tokenAddress: string, commissioner: string, baseFee: number, percentageFee: number }): Escrow {
-        return new Escrow(bcEscrow.payee, bcEscrow.purchaser, bcEscrow.payers, bcEscrow.agreedAmount.toNumber(), bcEscrow.deployedAt.toNumber(), bcEscrow.duration.toNumber(), bcEscrow.status, bcEscrow.tokenAddress, bcEscrow.commissioner, bcEscrow.baseFee, bcEscrow.percentageFee);
-    }
-
-    static buildEscrowFromString(bcEscrow: string): Escrow {
-        return this.buildEscrow(JSON.parse(bcEscrow));
     }
 }

@@ -15,7 +15,7 @@ contract EscrowManager is AccessControl {
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
-    event EscrowRegistered(uint256 indexed id, address payable payee, address payable purchaser, uint256 agreedAmount, address tokenAddress, address commissionAddress);
+    event EscrowRegistered(uint256 indexed id, address payee, address purchaser, uint256 agreedAmount, address tokenAddress, address commissionAddress);
     event CommissionerUpdated(address commissionAddress);
 
     modifier onlyAdmin() {
@@ -41,7 +41,7 @@ contract EscrowManager is AccessControl {
         _commissioner = commissioner;
     }
 
-    function registerEscrow(address payable payee, address payable purchaser, uint256 agreedAmount, uint256 duration, address tokenAddress, uint256 baseFee, uint256 percentageFee) public  {
+    function registerEscrow(address payee, address purchaser, uint256 agreedAmount, uint256 duration, address tokenAddress, uint256 baseFee, uint256 percentageFee) public returns(Escrow)  {
         require(payee != address(0), "EscrowManager: payee is the zero address");
         require(purchaser != address(0), "EscrowManager: purchaser is the zero address");
         require(tokenAddress != address(0), "EscrowManager: token address is the zero address");
@@ -59,6 +59,7 @@ contract EscrowManager is AccessControl {
         _escrows[id] = newEscrow;
         _escrowsOfPurchaser[purchaser].push(id);
         emit EscrowRegistered(id, payee, purchaser, agreedAmount, tokenAddress, _commissioner);
+        return newEscrow;
     }
 
     function getCommissioner() public view returns (address) {

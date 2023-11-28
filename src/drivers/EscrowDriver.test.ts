@@ -1,9 +1,7 @@
 import {BigNumber, Signer, Wallet} from 'ethers';
 import { createMock } from 'ts-auto-mock';
 import { EscrowDriver } from "./EscrowDriver";
-import { EntityBuilder } from '../utils/EntityBuilder';
 import { Escrow as EscrowContract, Escrow__factory } from "../smart-contracts";
-import { Escrow } from "../entities/Escrow";
 import { EscrowStatus } from "../types/EscrowStatus";
 
 describe('EscrowDriver', () => {
@@ -13,7 +11,7 @@ describe('EscrowDriver', () => {
     const delegate: string = Wallet.createRandom().address;
     const contractAddress: string = Wallet.createRandom().address;
     const commissioner: string = Wallet.createRandom().address;
-    const boolean = false;
+    const boolean: boolean = false;
 
     let mockedSigner: Signer;
 
@@ -23,7 +21,6 @@ describe('EscrowDriver', () => {
 
     const mockedWriteFunction = jest.fn();
     const mockedReadFunction = jest.fn();
-    //const mockedGetEscrow = jest.fn();
     const mockedGetPayee = jest.fn();
     const mockedGetPurchaser = jest.fn();
     const mockedGetPayers= jest.fn();
@@ -31,8 +28,6 @@ describe('EscrowDriver', () => {
     const mockedGetTokenAddress = jest.fn();
     const mockedGetCommissioner = jest.fn();
     const mockedGetBoolean = jest.fn();
-
-    const mockedEscrow: Escrow = createMock<Escrow>();
 
     mockedWriteFunction.mockResolvedValue({
         wait: mockedWait,
@@ -87,8 +82,6 @@ describe('EscrowDriver', () => {
             connect: mockedEscrowConnect,
         });
         jest.spyOn(Escrow__factory, 'connect').mockReturnValue(mockedEscrowContract);
-        const buildEscrowSpy = jest.spyOn(EntityBuilder, 'buildEscrow');
-        buildEscrowSpy.mockReturnValue(mockedEscrow);
 
         mockedSigner = createMock<Signer>();
         escrowDriver = new EscrowDriver(mockedSigner, contractAddress);

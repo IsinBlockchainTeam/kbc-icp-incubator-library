@@ -13,7 +13,7 @@ export class Order extends OrderInfo {
         super(orderInfo.id, orderInfo.supplier, orderInfo.customer, orderInfo.externalUrl,
             orderInfo.offeree, orderInfo.offeror, orderInfo.lineIds, orderInfo.paymentDeadline || new Date(0),
             orderInfo.documentDeliveryDeadline || new Date(0), orderInfo.arbiter || '',
-            orderInfo.shippingDeadline || new Date(0), orderInfo.deliveryDeadline || new Date(0));
+            orderInfo.shippingDeadline || new Date(0), orderInfo.deliveryDeadline || new Date(0), orderInfo.escrow || '');
         this._incoterms = incoterms;
         this._shipper = shipper;
         this._shippingPort = shippingPort;

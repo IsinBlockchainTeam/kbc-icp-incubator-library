@@ -125,6 +125,10 @@ export class TradeService {
         await this._tradeDriver.setOrderDeliveryDeadline(id, deliveryDeadline);
     }
 
+    async addOrderEscrow(orderId: number, agreedAmount: number, tokenAddress: string, baseFee: number, percentageFee: number): Promise<void> {
+        await this._tradeDriver.addOrderEscrow(orderId, agreedAmount, tokenAddress, baseFee, percentageFee);
+    }
+
     async confirmOrder(orderId: number): Promise<void> {
         await this._tradeDriver.confirmOrder(orderId);
     }
@@ -139,6 +143,10 @@ export class TradeService {
 
     async getOrderInfo(id: number, blockNumber?: number): Promise<OrderInfo> {
         return this._tradeDriver.getOrderInfo(id, blockNumber);
+    }
+
+    async getOrderEscrow(orderId: number): Promise<string> {
+        return this._tradeDriver.getOrderEscrow(orderId);
     }
 
     async getCompleteOrder(orderInfo: OrderInfo): Promise<Order> {

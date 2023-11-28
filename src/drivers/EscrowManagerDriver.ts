@@ -1,7 +1,5 @@
 import {BigNumber, Signer, utils} from 'ethers';
 import { EscrowManager, EscrowManager__factory } from "../smart-contracts";
-import {Escrow} from "../entities/Escrow";
-import {EntityBuilder} from "../utils/EntityBuilder";
 
 export class EscrowManagerDriver {
     private _contract: EscrowManager;
@@ -32,9 +30,8 @@ export class EscrowManagerDriver {
         await tx.wait();
     }
 
-    async getEscrow(id: number): Promise<Escrow> {
-        const escrow = await this._contract.getEscrow(id);
-        return EntityBuilder.buildEscrowFromString(escrow);
+    async getEscrow(id: number): Promise<string> {
+        return await this._contract.getEscrow(id);
     }
 
     async getEscrowsId(purchaser: string): Promise<number[]> {

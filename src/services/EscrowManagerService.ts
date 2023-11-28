@@ -1,5 +1,4 @@
 import { EscrowManagerDriver } from "../drivers/EscrowManagerDriver";
-import {Escrow} from "../entities/Escrow";
 
 export class EscrowManagerService {
     private _escrowManagerDriver: EscrowManagerDriver;
@@ -20,7 +19,7 @@ export class EscrowManagerService {
         await this._escrowManagerDriver.updateCommissioner(newCommissioner);
     }
 
-    async getEscrow(id: number): Promise<Escrow> {
+    async getEscrow(id: number): Promise<string> {
         return this._escrowManagerDriver.getEscrow(id);
     }
 
