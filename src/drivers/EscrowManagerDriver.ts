@@ -1,7 +1,5 @@
-import { Signer, utils } from 'ethers';
+import {BigNumber, Signer, utils} from 'ethers';
 import { EscrowManager, EscrowManager__factory } from "../smart-contracts";
-import {Escrow} from "../entities/Escrow";
-import {EntityBuilder} from "../utils/EntityBuilder";
 
 export class EscrowManagerDriver {
     private _contract: EscrowManager;
@@ -12,20 +10,32 @@ export class EscrowManagerDriver {
             .connect(signer);
     }
 
-    async registerEscrow(payee: string, payer: string, duration: number, tokenAddress: string): Promise<void> {
-        if(!utils.isAddress(payee) || !utils.isAddress(payer) || !utils.isAddress(tokenAddress)) {
+    async registerEscrow(payee: string, purchaser: string, agreedAmount: number, duration: number, tokenAddress: string, baseFee: number, percentageFee: number): Promise<void> {
+        if(!utils.isAddress(payee) || !utils.isAddress(purchaser) || !utils.isAddress(tokenAddress)) {
             throw new Error('Not an address');
         }
-        const tx = await this._contract.registerEscrow(payee, payer, duration, tokenAddress);
+        const tx = await this._contract.registerEscrow(payee, purchaser, agreedAmount, duration, tokenAddress, baseFee, percentageFee);
         await tx.wait();
     }
 
-    async getEscrow(id: number): Promise<Escrow> {
-        const escrow = await this._contract.getEscrow(id);
-        return EntityBuilder.buildEscrowFromString(escrow);
+    async getCommissioner(): Promise<string> {
+        return this._contract.getCommissioner();
     }
 
-    async getPayees(payer: string): Promise<string[]> {
-        return await this._contract.getPayees(payer);
+    async updateCommissioner(newCommissioner: string): Promise<void> {
+        if(!utils.isAddress(newCommissioner)) {
+            throw new Error('Not an address');
+        }
+        const tx = await this._contract.updateCommissioner(newCommissioner);
+        await tx.wait();
+    }
+
+    async getEscrow(id: number): Promise<string> {
+        return await this._contract.getEscrow(id);
+    }
+
+    async getEscrowsId(purchaser: string): Promise<number[]> {
+        const escrowsId = await this._contract.getEscrowsId(purchaser);
+        return escrowsId.map((id: BigNumber) => id.toNumber());
     }
 }

@@ -10,7 +10,7 @@ describe('Order', () => {
 
     beforeAll(() => {
         orderInfo = new OrderInfo(0, 'supplier', 'customer', metadataExternalUrl, 'offeree', 'offeror', [1, 2],
-            deadline, deadline, 'arbiter', deadline, deadline);
+            deadline, deadline, 'arbiter', deadline, deadline, 'escrow');
         order = new Order(orderInfo, 'FOB', 'shipper', 'shipping port', 'delivery port');
     });
 

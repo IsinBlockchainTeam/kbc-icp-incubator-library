@@ -63,11 +63,18 @@ serial([
     ],
     ),
     () => deploy(
+        ContractName.ESCROW_MANAGER, [
+            [process.env.SUPPLIER_ADMIN],
+            process.env.COMMISSIONER_ADMIN
+        ]
+    ),
+    () => deploy(
         ContractName.TRADE_MANAGER, [
             [process.env.SUPPLIER_ADMIN, process.env.CUSTOMER_ADMIN],
             contractMap.get('EnumerableFiatManager')?.address,
             contractMap.get('EnumerableProductCategoryManager')?.address,
             contractMap.get(ContractName.DOCUMENT_MANAGER)?.address,
+            contractMap.get(ContractName.ESCROW_MANAGER)?.address,
         ],
     ),
     () => deploy(
@@ -88,16 +95,6 @@ serial([
         ContractName.OFFER_MANAGER, [
             [process.env.SUPPLIER_ADMIN],
             contractMap.get('EnumerableProductCategoryManager')?.address,
-        ],
-    ),
-    () => deploy(
-        ContractName.MY_TOKEN, [
-            1000,
-        ],
-    ),
-    () => deploy(
-        ContractName.ESCROW_MANAGER, [
-            [process.env.SUPPLIER_ADMIN],
         ],
     ),
 ])

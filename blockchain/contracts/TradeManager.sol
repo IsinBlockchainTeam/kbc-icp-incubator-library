@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@blockchain-lib/blockchain-common/contracts/EnumerableType.sol";
 import "./DocumentManager.sol";
 import "hardhat/console.sol";
+import "./EscrowManager.sol";
 
 contract TradeManager is AccessControl {
     using Counters for Counters.Counter;
@@ -78,6 +79,8 @@ contract TradeManager is AccessControl {
         uint256 shippingDeadline;
         uint256 deliveryDeadline;
 
+        Escrow escrow;
+
         // -------------------------------------------------
 
         bool exists;
@@ -90,11 +93,12 @@ contract TradeManager is AccessControl {
     // trade id => trade
     mapping(uint256 => Trade) private trades;
 
-    EnumerableType fiatManager;
-    EnumerableType productCategoryManager;
-    DocumentManager documentManager;
+    EnumerableType private fiatManager;
+    EnumerableType private productCategoryManager;
+    DocumentManager private documentManager;
+    EscrowManager private escrowManager;
 
-    constructor(address[] memory admins, address fiatManagerAddress, address productCategoryAddress, address documentManagerAddress) {
+    constructor(address[] memory admins, address fiatManagerAddress, address productCategoryAddress, address documentManagerAddress, address escrowManagerAddress) {
         _setupRole(ADMIN_ROLE, msg.sender);
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
 
@@ -105,6 +109,7 @@ contract TradeManager is AccessControl {
         fiatManager = EnumerableType(fiatManagerAddress);
         productCategoryManager = EnumerableType(productCategoryAddress);
         documentManager = DocumentManager(documentManagerAddress);
+        escrowManager = EscrowManager(escrowManagerAddress);
     }
 
     function registerTrade(TradeType tradeType, address supplier, address customer, string memory externalUrl) public {
@@ -283,6 +288,18 @@ contract TradeManager is AccessControl {
         _updateSignatures(msg.sender, o);
     }
 
+    function addOrderEscrow(uint256 orderId, uint256 agreedAmount, address tokenAddress, uint256 baseFee, uint256 percentageFee) public {
+        Trade storage o = trades[orderId];
+        require(o.exists, "Order does not exist");
+        require(o.tradeType == TradeType.ORDER, "Can't perform this operation if not ORDER");
+        require(address(o.escrow) == address(0), "Escrow already exists");
+        require(address(tokenAddress) != address(0), "Token address is the zero address");
+        require(o.paymentDeadline != 0, "Payment deadline not set");
+        require(o.paymentDeadline > block.timestamp, "Payment deadline has already been passed");
+
+        o.escrow = escrowManager.registerEscrow(o.supplier, o.customer, agreedAmount, o.paymentDeadline - block.timestamp, tokenAddress, baseFee, percentageFee);
+    }
+
     function confirmOrder(uint256 orderId) public {
         Trade storage o = trades[orderId];
         require(o.exists, "Order does not exist");
@@ -322,15 +339,23 @@ contract TradeManager is AccessControl {
 
     function getOrderInfo(uint256 orderId) public view returns (
         uint256 id, string memory name, address supplier, address customer, address offeree, address offeror, string memory externalUrl, uint256[] memory lineIds,
-        uint256 paymentDeadline, uint256 documentDeliveryDeadline, string memory arbiter, uint256 shippingDeadline, uint256 deliveryDeadline
+        uint256 paymentDeadline, uint256 documentDeliveryDeadline, string memory arbiter, uint256 shippingDeadline, uint256 deliveryDeadline, Escrow escrow
     ) {
         Trade storage o = trades[orderId];
         require(o.exists, "Order does not exist");
         require(o.tradeType == TradeType.ORDER, "Can't perform this operation if not ORDER");
 
         return (o.id, o.name, o.supplier, o.customer, o.offeree, o.offeror, o.externalUrl, o.lineIds,
-                o.paymentDeadline, o.documentDeliveryDeadline, o.arbiter, o.shippingDeadline, o.deliveryDeadline
+                o.paymentDeadline, o.documentDeliveryDeadline, o.arbiter, o.shippingDeadline, o.deliveryDeadline, o.escrow
         );
+    }
+
+    function getOrderEscrow(uint256 orderId) public view returns (Escrow) {
+        Trade storage o = trades[orderId];
+        require(o.exists, "Order does not exist");
+        require(o.tradeType == TradeType.ORDER, "Can't perform this operation if not ORDER");
+
+        return o.escrow;
     }
 
     function isSupplierOrCustomer(uint256 orderId, address sender) public view returns (bool) {

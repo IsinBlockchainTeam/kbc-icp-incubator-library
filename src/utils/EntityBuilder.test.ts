@@ -10,8 +10,6 @@ import { Relationship } from '../entities/Relationship';
 import { DocumentInfo, DocumentType } from '../entities/DocumentInfo';
 import { Transformation } from '../entities/Transformation';
 import { Trade } from '../entities/Trade';
-import {EscrowStatus} from "../types/EscrowStatus";
-import {Escrow} from "../entities/Escrow";
 
 describe('EntityBuilder', () => {
     describe('buildMaterial', () => {
@@ -109,11 +107,12 @@ describe('EntityBuilder', () => {
                 arbiter: 'arbiter',
                 shippingDeadline: BigNumber.from(1692001147),
                 deliveryDeadline: BigNumber.from(1692001147),
+                escrow: 'escrow',
             };
             expect(EntityBuilder.buildOrderInfo(bcOrder)).toEqual(
                 new OrderInfo(bcOrder.id.toNumber(), bcOrder.supplier, bcOrder.customer, bcOrder.externalUrl, bcOrder.offeree, bcOrder.offeror,
                     bcOrder.lineIds.map((l) => l.toNumber()), new Date(bcOrder.paymentDeadline.toNumber()), new Date(bcOrder.documentDeliveryDeadline.toNumber()),
-                    bcOrder.arbiter, new Date(bcOrder.shippingDeadline.toNumber()), new Date(bcOrder.deliveryDeadline.toNumber())),
+                    bcOrder.arbiter, new Date(bcOrder.shippingDeadline.toNumber()), new Date(bcOrder.deliveryDeadline.toNumber()), bcOrder.escrow),
             );
         });
     });
@@ -171,24 +170,6 @@ describe('EntityBuilder', () => {
 
             const document = new DocumentInfo(0, 2, 'doc name', DocumentType.DELIVERY_NOTE, 'external url');
             expect(EntityBuilder.buildDocumentInfo(bcDocument)).toEqual(document);
-        });
-    });
-
-    describe('buildEscrow', () => {
-        it('should correctly build an escrow', () => {
-            const bcEscrow = {
-                payee: 'payee',
-                payer: 'payer',
-                depositAmount: BigNumber.from(0),
-                duration: BigNumber.from(100),
-                status: EscrowStatus.ACTIVE,
-                deployedAt: BigNumber.from(0),
-                tokenAddress: 'tokenAddress',
-            }
-
-            expect(EntityBuilder.buildEscrow(bcEscrow)).toEqual(
-                new Escrow(bcEscrow.payee, bcEscrow.payer, bcEscrow.depositAmount.toNumber(), bcEscrow.duration.toNumber(), bcEscrow.status, bcEscrow.deployedAt.toNumber(), bcEscrow.tokenAddress
-            ));
         });
     });
 });

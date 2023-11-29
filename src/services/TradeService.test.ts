@@ -19,7 +19,7 @@ describe('TradeService', () => {
     const deadline = new Date('2030-10-10');
 
     const basicTradeInfo = new BasicTradeInfo(0, 'supplier', 'customer', 'externalUrl', [1, 2], 'tradeName');
-    const orderInfo = new OrderInfo(0, 'supplier', 'customer', externalUrl, 'offeree', 'offeror', [1, 2], deadline, deadline, 'arbiter', deadline, deadline);
+    const orderInfo = new OrderInfo(0, 'supplier', 'customer', externalUrl, 'offeree', 'offeror', [1, 2], deadline, deadline, 'arbiter', deadline, deadline, 'escrow');
 
     const mockedIPFSService: IPFSService = createMock<IPFSService>({
         storeJSON: jest.fn(),
@@ -48,10 +48,12 @@ describe('TradeService', () => {
         setOrderArbiter: jest.fn(),
         setOrderShippingDeadline: jest.fn(),
         setOrderDeliveryDeadline: jest.fn(),
+        addOrderEscrow: jest.fn(),
         confirmOrder: jest.fn(),
         addDocument: jest.fn(),
         getNegotiationStatus: jest.fn(),
         getOrderInfo: jest.fn(),
+        getOrderEscrow: jest.fn(),
         isSupplierOrCustomer: jest.fn(),
         addOrderLine: jest.fn(),
         updateOrderLine: jest.fn(),
@@ -191,6 +193,12 @@ describe('TradeService', () => {
             expectedMockedFunctionArgs: [1, deadline],
         },
         {
+            serviceFunctionName: 'addOrderEscrow',
+            serviceFunction: () => tradeService.addOrderEscrow(1, 100, 'tokenAddress', 10, 10),
+            expectedMockedFunction: mockedTradeDriver.addOrderEscrow,
+            expectedMockedFunctionArgs: [1, 100, 'tokenAddress', 10, 10],
+        },
+        {
             serviceFunctionName: 'confirmOrder',
             serviceFunction: () => tradeService.confirmOrder(1),
             expectedMockedFunction: mockedTradeDriver.confirmOrder,
@@ -213,6 +221,12 @@ describe('TradeService', () => {
             serviceFunction: () => tradeService.getOrderInfo(1, 15),
             expectedMockedFunction: mockedTradeDriver.getOrderInfo,
             expectedMockedFunctionArgs: [1, 15],
+        },
+        {
+            serviceFunctionName: 'getOrderEscrow',
+            serviceFunction: () => tradeService.getOrderEscrow(1),
+            expectedMockedFunction: mockedTradeDriver.getOrderEscrow,
+            expectedMockedFunctionArgs: [1],
         },
         {
             serviceFunctionName: 'isSupplierOrCustomer',
