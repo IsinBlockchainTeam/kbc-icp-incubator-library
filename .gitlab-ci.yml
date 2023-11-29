@@ -84,6 +84,7 @@ blockchain-lib-build:
 blockchain-lib-publish:
   image: node:20-alpine3.17
   stage: deploy
+  when: manual
   only:
     - dev
     - main
