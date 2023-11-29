@@ -21,12 +21,12 @@ export { DocumentService } from './services/DocumentService';
 export { OfferDriver } from './drivers/OfferDriver';
 export { OfferService } from './services/OfferService';
 
-export { EscrowManagerDriver } from "./drivers/EscrowManagerDriver";
-export { EscrowManagerService } from "./services/EscrowManagerService";
-export { EscrowDriver } from "./drivers/EscrowDriver";
-export { EscrowService } from "./services/EscrowService";
+export { EscrowManagerDriver } from './drivers/EscrowManagerDriver';
+export { EscrowManagerService } from './services/EscrowManagerService';
+export { EscrowDriver } from './drivers/EscrowDriver';
+export { EscrowService } from './services/EscrowService';
 
-export { Escrow } from "./entities/Escrow";
+export { Escrow } from './entities/Escrow';
 export { Material } from './entities/Material';
 export { BasicTradeInfo } from './entities/BasicTradeInfo';
 export { BasicTrade } from './entities/BasicTrade';
