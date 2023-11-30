@@ -1,9 +1,14 @@
 import {EscrowStatus} from "../types/EscrowStatus";
+import {Escrow as EscrowContract} from "../smart-contracts";
 
 export class Escrow {
     private _payee: string;
 
-    private _payer: string;
+    private _purchaser: string;
+
+    private _payers: EscrowContract.PayersStructOutput[];
+
+    private _agreedAmount: number;
 
     private _deployedAt: number;
 
@@ -11,20 +16,26 @@ export class Escrow {
 
     private _state: EscrowStatus;
 
-    private _depositAmount: number;
-
     private _tokenAddress: string;
 
-    //private _token: ERC20;
+    private _commissioner: string;
 
-    constructor(payee: string, payer: string, deployedAt: number, duration: number, state: EscrowStatus, depositAmount: number, tokenAddress: string) {
+    private _baseFee: number;
+
+    private _percentageFee: number;
+
+    constructor(payee: string, purchaser: string, payers: EscrowContract.PayersStructOutput[], agreedAmount: number, deployedAt: number, duration: number, state: EscrowStatus, tokenAddress: string, commissioner: string, baseFee: number, percentageFee: number) {
         this._payee = payee;
-        this._payer = payer;
+        this._purchaser = purchaser;
+        this._payers = payers;
+        this._agreedAmount = agreedAmount;
         this._deployedAt = deployedAt;
         this._duration = duration;
         this._state = state;
-        this._depositAmount = depositAmount;
         this._tokenAddress = tokenAddress;
+        this._commissioner = commissioner;
+        this._baseFee = baseFee;
+        this._percentageFee = percentageFee;
     }
 
     get payee(): string {
@@ -35,12 +46,28 @@ export class Escrow {
         this._payee = value;
     }
 
-    get payer(): string {
-        return this._payer;
+    get purchaser(): string {
+        return this._purchaser;
     }
 
-    set payer(value: string) {
-        this._payer = value;
+    set purchaser(value: string) {
+        this._purchaser = value;
+    }
+
+    get payers(): EscrowContract.PayersStructOutput[] {
+        return this._payers;
+    }
+
+    set payers(value: EscrowContract.PayersStructOutput[]) {
+        this._payers = value;
+    }
+
+    get agreedAmount(): number {
+        return this._agreedAmount;
+    }
+
+    set agreedAmount(value: number) {
+        this._agreedAmount = value;
     }
 
     get deployedAt(): number {
@@ -67,19 +94,35 @@ export class Escrow {
         this._state = value;
     }
 
-    get depositAmount(): number {
-        return this._depositAmount;
-    }
-
-    set depositAmount(value: number) {
-        this._depositAmount = value;
-    }
-
     get tokenAddress(): string {
         return this._tokenAddress;
     }
 
     set tokenAddress(value: string) {
         this._tokenAddress = value;
+    }
+
+    get commissioner(): string {
+        return this._commissioner;
+    }
+
+    set commissioner(value: string) {
+        this._commissioner = value;
+    }
+
+    get baseFee(): number {
+        return this._baseFee;
+    }
+
+    set baseFee(value: number) {
+        this._baseFee = value;
+    }
+
+    get percentageFee(): number {
+        return this._percentageFee;
+    }
+
+    set percentageFee(value: number) {
+        this._percentageFee = value;
     }
 }

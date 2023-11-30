@@ -1,17 +1,17 @@
-import { Signer, Wallet } from 'ethers';
+import {BigNumber, Signer, Wallet} from 'ethers';
 import { createMock } from 'ts-auto-mock';
 import { EscrowDriver } from "./EscrowDriver";
-import { EntityBuilder } from '../utils/EntityBuilder';
 import { Escrow as EscrowContract, Escrow__factory } from "../smart-contracts";
-import { Escrow } from "../entities/Escrow";
 import { EscrowStatus } from "../types/EscrowStatus";
 
 describe('EscrowDriver', () => {
     let escrowDriver: EscrowDriver;
     const payee: string = Wallet.createRandom().address;
-    const payer: string = Wallet.createRandom().address;
+    const purchaser: string = Wallet.createRandom().address;
+    const delegate: string = Wallet.createRandom().address;
     const contractAddress: string = Wallet.createRandom().address;
-    const boolean = false;
+    const commissioner: string = Wallet.createRandom().address;
+    const boolean: boolean = false;
 
     let mockedSigner: Signer;
 
@@ -21,15 +21,13 @@ describe('EscrowDriver', () => {
 
     const mockedWriteFunction = jest.fn();
     const mockedReadFunction = jest.fn();
-    //const mockedGetEscrow = jest.fn();
     const mockedGetPayee = jest.fn();
-    const mockedGetPayer = jest.fn();
+    const mockedGetPurchaser = jest.fn();
+    const mockedGetPayers= jest.fn();
     const mockedGetState = jest.fn();
     const mockedGetTokenAddress = jest.fn();
+    const mockedGetCommissioner = jest.fn();
     const mockedGetBoolean = jest.fn();
-
-    //const mockedEscrowStructOutput = createMock<EscrowContract.EscrowStructOutput>();
-    const mockedEscrow: Escrow = createMock<Escrow>();
 
     mockedWriteFunction.mockResolvedValue({
         wait: mockedWait,
@@ -37,26 +35,37 @@ describe('EscrowDriver', () => {
     mockedReadFunction.mockResolvedValue({
         toNumber: mockedToNumber,
     });
-    //mockedGetEscrow.mockReturnValue(Promise.resolve(mockedEscrowStructOutput));
     mockedGetPayee.mockReturnValue(Promise.resolve(payee));
-    mockedGetPayer.mockReturnValue(Promise.resolve(payer));
+    mockedGetPurchaser.mockReturnValue(Promise.resolve(purchaser));
+    mockedGetPayers.mockReturnValue(Promise.resolve([{
+        payerAddress: delegate,
+        depositedAmount: BigNumber.from(0),
+    }] as EscrowContract.PayersStructOutput[]));
     mockedGetState.mockReturnValue(Promise.resolve(EscrowStatus.ACTIVE));
     mockedGetTokenAddress.mockReturnValue(Promise.resolve(contractAddress));
+    mockedGetCommissioner.mockReturnValue(Promise.resolve(commissioner));
     mockedGetBoolean.mockReturnValue(Promise.resolve(boolean));
 
     const mockedContract = createMock<EscrowContract>({
         getPayee: mockedGetPayee,
-        getPayer: mockedGetPayer,
+        getPurchaser: mockedGetPurchaser,
+        getPayers: mockedGetPayers,
+        getAgreedAmount: mockedReadFunction,
         getDeployedAt: mockedReadFunction,
         getDuration: mockedReadFunction,
         getState: mockedGetState,
         getDepositAmount: mockedReadFunction,
-        //getToken: mockedReadFunction,
         getTokenAddress: mockedGetTokenAddress,
+        getCommissioner: mockedGetCommissioner,
+        getBaseFee: mockedReadFunction,
+        getPercentageFee: mockedReadFunction,
+        updateCommissioner: mockedWriteFunction,
         getDeadline: mockedReadFunction,
         hasExpired: mockedGetBoolean,
         withdrawalAllowed: mockedGetBoolean,
         refundAllowed: mockedGetBoolean,
+        addDelegate: mockedWriteFunction,
+        removeDelegate: mockedWriteFunction,
         deposit: mockedWriteFunction,
         close: mockedWriteFunction,
         enableRefund: mockedWriteFunction,
@@ -73,8 +82,6 @@ describe('EscrowDriver', () => {
             connect: mockedEscrowConnect,
         });
         jest.spyOn(Escrow__factory, 'connect').mockReturnValue(mockedEscrowContract);
-        const buildEscrowSpy = jest.spyOn(EntityBuilder, 'buildEscrow');
-        buildEscrowSpy.mockReturnValue(mockedEscrow);
 
         mockedSigner = createMock<Signer>();
         escrowDriver = new EscrowDriver(mockedSigner, contractAddress);
@@ -92,14 +99,37 @@ describe('EscrowDriver', () => {
         expect(mockedGetPayee).toHaveBeenCalledTimes(1);
     });
 
-    it('should correctly retrieve payer', async () => {
-        const response = await escrowDriver.getPayer();
+    it('should correctly retrieve purchaser', async () => {
+        const response = await escrowDriver.getPurchaser();
 
-        expect(response).toEqual(payer);
+        expect(response).toEqual(purchaser);
 
-        expect(mockedContract.getPayer).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getPayer).toHaveBeenNthCalledWith(1);
-        expect(mockedGetPayer).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getPurchaser).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getPurchaser).toHaveBeenNthCalledWith(1);
+        expect(mockedGetPurchaser).toHaveBeenCalledTimes(1);
+    });
+
+    it('should correctly retrieve payers', async () => {
+        const response = await escrowDriver.getPayers();
+
+        expect(response).toEqual([{
+            payerAddress: delegate,
+            depositedAmount: BigNumber.from(0),
+        }] as EscrowContract.PayersStructOutput[]);
+
+        expect(mockedContract.getPayers).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getPayers).toHaveBeenNthCalledWith(1);
+        expect(mockedGetPayers).toHaveBeenCalledTimes(1);
+    });
+
+    it('should correctly retrieve agrees amount', async () => {
+        const response = await escrowDriver.getAgreedAmount();
+
+        expect(response).toEqual(1);
+
+        expect(mockedContract.getAgreedAmount).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getAgreedAmount).toHaveBeenNthCalledWith(1);
+        expect(mockedToNumber).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly retrieve deployed at', async () => {
@@ -152,6 +182,44 @@ describe('EscrowDriver', () => {
         expect(mockedGetTokenAddress).toHaveBeenCalledTimes(1);
     });
 
+    it('should correctly retrieve commissioner', async () => {
+        const response = await escrowDriver.getCommissioner();
+
+        expect(response).toEqual(commissioner);
+
+        expect(mockedContract.getCommissioner).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getCommissioner).toHaveBeenNthCalledWith(1);
+        expect(mockedGetCommissioner).toHaveBeenCalledTimes(1);
+    });
+
+    it('should correctly retrieve base fee', async () => {
+        const response = await escrowDriver.getBaseFee();
+
+        expect(response).toEqual(1);
+
+        expect(mockedContract.getBaseFee).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getBaseFee).toHaveBeenNthCalledWith(1);
+        expect(mockedToNumber).toHaveBeenCalledTimes(1);
+    });
+
+    it('should correctly retrieve percentage fee', async () => {
+        const response = await escrowDriver.getPercentageFee();
+
+        expect(response).toEqual(1);
+
+        expect(mockedContract.getPercentageFee).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getPercentageFee).toHaveBeenNthCalledWith(1);
+        expect(mockedToNumber).toHaveBeenCalledTimes(1);
+    });
+
+    it('should correctly update commissioner', async () => {
+        await escrowDriver.updateCommissioner(commissioner);
+
+        expect(mockedContract.updateCommissioner).toHaveBeenCalledTimes(1);
+        expect(mockedContract.updateCommissioner).toHaveBeenNthCalledWith(1, commissioner);
+        expect(mockedWait).toHaveBeenCalledTimes(1);
+    });
+
     it('should correctly retrieve deadline', async () => {
         const response = await escrowDriver.getDeadline();
 
@@ -190,6 +258,22 @@ describe('EscrowDriver', () => {
         expect(mockedContract.refundAllowed).toHaveBeenCalledTimes(1);
         expect(mockedContract.refundAllowed).toHaveBeenNthCalledWith(1);
         expect(mockedGetBoolean).toHaveBeenCalledTimes(1);
+    });
+
+    it('should correctly add delegate', async () => {
+        await escrowDriver.addDelegate(delegate);
+
+        expect(mockedContract.addDelegate).toHaveBeenCalledTimes(1);
+        expect(mockedContract.addDelegate).toHaveBeenNthCalledWith(1, delegate);
+        expect(mockedWait).toHaveBeenCalledTimes(1);
+    });
+
+    it('should correctly remove delegate', async () => {
+        await escrowDriver.removeDelegate(delegate);
+
+        expect(mockedContract.removeDelegate).toHaveBeenCalledTimes(1);
+        expect(mockedContract.removeDelegate).toHaveBeenNthCalledWith(1, delegate);
+        expect(mockedWait).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly deposit', async () => {

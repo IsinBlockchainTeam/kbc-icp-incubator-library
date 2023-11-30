@@ -1,14 +1,17 @@
-import { ethers } from 'hardhat';
-import { Contract } from 'ethers';
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { expect } from 'chai';
+import {ethers} from 'hardhat';
+import {BigNumber, Contract} from 'ethers';
+import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
+import {expect} from 'chai';
 
 describe('Escrow.sol', () => {
     let escrowContract: Contract;
     let tokenContract: Contract;
-    let admin: SignerWithAddress, payee: SignerWithAddress, payer: SignerWithAddress;
+    let admin: SignerWithAddress, payee: SignerWithAddress, purchaser: SignerWithAddress, delegate: SignerWithAddress, commissioner: SignerWithAddress, anotherCommissioner: SignerWithAddress
     const duration = 60 * 60 * 24 * 30; // 30 days
-    const depositAmount: number = 100;
+    const agreedAmount: number = 1000;
+    const depositAmount: number = 120;
+    const baseFee: number = 20;
+    const percentageFee: number = 1;
 
     const mineBlocks = async (n: number) => {
         await ethers.provider.send('hardhat_mine', [`0x${n.toString(16)}`]);
@@ -18,26 +21,68 @@ describe('Escrow.sol', () => {
         await mineBlocks(Number(proposalDeadline));
     };
 
+    const calculateFee = (amount: number) => {
+        return baseFee + Math.floor((amount - baseFee) * percentageFee / 100);
+    }
+
     beforeEach(async () => {
-        [admin, payee, payer] = await ethers.getSigners();
+        [admin, payee, purchaser, delegate, commissioner, anotherCommissioner] = await ethers.getSigners();
 
         const Token = await ethers.getContractFactory('MyToken');
         tokenContract = await Token.deploy(depositAmount * 10);
         await tokenContract.deployed();
-        await tokenContract.transfer(payer.address, depositAmount * 2);
+        await tokenContract.transfer(purchaser.address, depositAmount * 2);
+        await tokenContract.transfer(delegate.address, depositAmount * 2);
 
         const Escrow = await ethers.getContractFactory('Escrow');
-        escrowContract = await Escrow.deploy([admin.address], payee.address, payer.address, duration, tokenContract.address);
+        escrowContract = await Escrow.deploy([admin.address], payee.address, purchaser.address, agreedAmount, duration, tokenContract.address, commissioner.address, baseFee, percentageFee);
         await escrowContract.deployed();
     });
 
     describe('Escrow', () => {
         it('should retrieve escrow correctly', async () => {
             expect(await escrowContract.getPayee()).to.equal(payee.address);
-            expect(await escrowContract.getPayer()).to.equal(payer.address);
+            expect(await escrowContract.getPurchaser()).to.equal(purchaser.address);
+
+            const payers = await escrowContract.getPayers();
+            expect(payers).to.have.length(1);
+            const [payerAddress, depositedAmount] = payers[0];
+            expect(payerAddress).to.equal(purchaser.address);
+            expect(depositedAmount).to.equal(BigNumber.from(0));
+
+            expect(await escrowContract.getAgreedAmount()).to.equal(agreedAmount);
+            expect(await escrowContract.getAgreedAmount()).to.equal(agreedAmount);
+            expect(await escrowContract.getDeployedAt()).to.be.closeTo(Math.floor(Date.now() / 1000), 100);
             expect(await escrowContract.getDuration()).to.equal(duration);
             expect(await escrowContract.getState()).to.equal(0);
             expect(await escrowContract.getDepositAmount()).to.equal(0);
+            expect(await escrowContract.getTokenAddress()).to.equal(tokenContract.address);
+            expect(await escrowContract.getCommissioner()).to.equal(commissioner.address);
+        });
+
+        it('should fail creating an escrow if payee is the zero address', async () => {
+            const Escrow = await ethers.getContractFactory('Escrow');
+            await expect(Escrow.deploy([admin.address], ethers.constants.AddressZero, purchaser.address, agreedAmount, duration, tokenContract.address, commissioner.address, baseFee, percentageFee)).to.be.revertedWith('Escrow: payee is the zero address');
+        });
+
+        it('should fail creating an escrow if purchaser is the zero address', async () => {
+            const Escrow = await ethers.getContractFactory('Escrow');
+            await expect(Escrow.deploy([admin.address], payee.address, ethers.constants.AddressZero, agreedAmount, duration, tokenContract.address, commissioner.address, baseFee, percentageFee)).to.be.revertedWith('Escrow: purchaser is the zero address');
+        });
+
+        it('should fail creating an escrow if token address is the zero address', async () => {
+            const Escrow = await ethers.getContractFactory('Escrow');
+            await expect(Escrow.deploy([admin.address], payee.address, purchaser.address, agreedAmount, duration, ethers.constants.AddressZero, commissioner.address, baseFee, percentageFee)).to.be.revertedWith('Escrow: token address is the zero address');
+        });
+
+        it('should fail creating an escrow if commissioner is the zero address', async () => {
+            const Escrow = await ethers.getContractFactory('Escrow');
+            await expect(Escrow.deploy([admin.address], payee.address, purchaser.address, agreedAmount, duration, tokenContract.address, ethers.constants.AddressZero, baseFee, percentageFee)).to.be.revertedWith('Escrow: commissioner is the zero address');
+        });
+
+        it('should fail creating an escrow if percentage fee is greater than 100', async () => {
+            const Escrow = await ethers.getContractFactory('Escrow');
+            await expect(Escrow.deploy([admin.address], payee.address, purchaser.address, agreedAmount, duration, tokenContract.address, commissioner.address, baseFee, 101)).to.be.revertedWith('Escrow: percentage fee cannot be greater than 100');
         });
     });
 
@@ -49,7 +94,7 @@ describe('Escrow.sol', () => {
         });
 
         it('should fail closing escrow if caller is not admin', async () => {
-            await expect(escrowContract.connect(payer).close()).to.be.revertedWith('Escrow: caller is not the admin');
+            await expect(escrowContract.connect(purchaser).close()).to.be.revertedWith('Escrow: caller is not the admin');
         });
 
         it("should fail closing escrow if it is not in 'Active' state", async () => {
@@ -60,33 +105,66 @@ describe('Escrow.sol', () => {
 
     describe('Deposit', () => {
         it('should deposit funds', async () => {
-            await tokenContract.connect(payer).approve(escrowContract.address, depositAmount);
-            const tx = await escrowContract.connect(payer).deposit(depositAmount);
+            await tokenContract.connect(purchaser).approve(escrowContract.address, depositAmount);
+            const tx = await escrowContract.connect(purchaser).deposit(depositAmount);
 
-            await expect(tx).to.emit(escrowContract, 'Deposited').withArgs(depositAmount);
+            await expect(tx).to.emit(escrowContract, 'Deposited').withArgs(purchaser.address, depositAmount);
             expect(await escrowContract.getDepositAmount()).to.equal(depositAmount);
             expect(await tokenContract.balanceOf(escrowContract.address)).to.equal(depositAmount);
         });
 
-        it('should fail deposit if payer has not approved token transfer', async () => {
-            await expect(escrowContract.connect(payer).deposit(depositAmount)).to.be.revertedWith('ERC20: insufficient allowance');
+        it('should fail deposit if purchaser has not approved token transfer', async () => {
+            await expect(escrowContract.connect(purchaser).deposit(depositAmount)).to.be.revertedWith('ERC20: insufficient allowance');
+        });
+
+        it('should fail if purchaser has not enough funds', async () => {
+            await tokenContract.connect(purchaser).approve(escrowContract.address, depositAmount * 20);
+            await expect(escrowContract.connect(purchaser).deposit(depositAmount * 20)).to.be.revertedWith('ERC20: transfer amount exceeds balance');
         });
 
         it("should fail deposit if escrow is not in 'Active' state", async () => {
             await escrowContract.connect(admin).close();
 
-            await tokenContract.connect(payer).approve(escrowContract.address, depositAmount);
-            await expect(escrowContract.connect(payer).deposit(depositAmount)).to.be.revertedWith('Escrow: can only deposit while active');
+            await tokenContract.connect(purchaser).approve(escrowContract.address, depositAmount);
+            await expect(escrowContract.connect(purchaser).deposit(depositAmount)).to.be.revertedWith('Escrow: can only deposit while active');
         });
 
-        it('should fail deposit if caller is not payer', async () => {
-            await tokenContract.connect(payer).approve(escrowContract.address, depositAmount);
-            await expect(escrowContract.connect(payee).deposit(depositAmount)).to.be.revertedWith('Escrow: caller is not the payer');
+        it('should fail deposit if caller is not a payer', async () => {
+            await tokenContract.connect(purchaser).approve(escrowContract.address, depositAmount);
+            await expect(escrowContract.connect(payee).deposit(depositAmount)).to.be.revertedWith('Escrow: caller is not a payer');
         });
 
         it('should fail deposit if amount is not greater than 0', async () => {
-            await tokenContract.connect(payer).approve(escrowContract.address, depositAmount);
-            await expect(escrowContract.connect(payer).deposit(0)).to.be.revertedWith('Escrow: can only deposit positive amount');
+            await tokenContract.connect(purchaser).approve(escrowContract.address, depositAmount);
+            await expect(escrowContract.connect(purchaser).deposit(0)).to.be.revertedWith('Escrow: can only deposit positive amount');
+        });
+    });
+
+    describe('Delegation', () => {
+        it('should allow delegate to deposit funds', async () => {
+            await escrowContract.connect(purchaser).addDelegate(delegate.address);
+            await tokenContract.connect(delegate).approve(escrowContract.address, depositAmount);
+            const tx = await escrowContract.connect(delegate).deposit(depositAmount);
+
+            await expect(tx).to.emit(escrowContract, 'Deposited').withArgs(delegate.address, depositAmount);
+            expect(await escrowContract.getDepositAmount()).to.equal(depositAmount);
+            expect(await tokenContract.balanceOf(escrowContract.address)).to.equal(depositAmount);
+        });
+
+        it('should remove delegate', async () => {
+            await escrowContract.connect(purchaser).addDelegate(delegate.address);
+            await escrowContract.connect(purchaser).removeDelegate(delegate.address);
+
+            await tokenContract.connect(delegate).approve(escrowContract.address, depositAmount);
+            await expect(escrowContract.connect(delegate).deposit(depositAmount)).to.be.revertedWith('Escrow: caller is not a payer');
+        });
+
+        it('should fail if third party has not being delegated to deposit', async () => {
+            await expect(escrowContract.connect(delegate).deposit(depositAmount)).to.be.revertedWith('Escrow: caller is not a payer');
+        });
+
+        it('should fail if delegate is the zero address', async () => {
+            await expect(escrowContract.connect(purchaser).addDelegate(ethers.constants.AddressZero)).to.be.revertedWith('Escrow: delegate is the zero address');
         });
     });
 
@@ -97,7 +175,7 @@ describe('Escrow.sol', () => {
         });
 
         it('should fail enabling refund if caller is not admin', async () => {
-            await expect(escrowContract.connect(payer).enableRefund()).to.be.revertedWith('Escrow: caller is not the admin');
+            await expect(escrowContract.connect(purchaser).enableRefund()).to.be.revertedWith('Escrow: caller is not the admin');
         });
 
         it("should fail enabling refunds if escrow is not in 'Active' state", async () => {
@@ -117,7 +195,7 @@ describe('Escrow.sol', () => {
         it('should externally enable refund for expired escrow', async () => {
             expect(await escrowContract.hasExpired()).to.false;
             await skipToDeadline();
-            await escrowContract.connect(payer).enableRefundForExpiredEscrow();
+            await escrowContract.connect(purchaser).enableRefundForExpiredEscrow();
             expect(await escrowContract.hasExpired()).to.true;
         });
 
@@ -128,18 +206,52 @@ describe('Escrow.sol', () => {
     });
 
     describe('Refund', () => {
-        it('should refund funds', async () => {
-            await tokenContract.connect(payer).approve(escrowContract.address, depositAmount);
-            await escrowContract.connect(payer).deposit(depositAmount);
-            const initialBalance = await tokenContract.balanceOf(payer.address);
+        it('should refund funds to purchaser', async () => {
+            await tokenContract.connect(purchaser).approve(escrowContract.address, depositAmount);
+            await escrowContract.connect(purchaser).deposit(depositAmount);
+            const initialBalance = await tokenContract.balanceOf(purchaser.address);
 
             await escrowContract.connect(admin).enableRefund();
-            const tx = await escrowContract.connect(payer).refund();
+            const tx = await escrowContract.connect(purchaser).refund();
             await tx.wait();
-            expect(tx).emit(escrowContract, 'Refunded').withArgs(depositAmount);
+            expect(tx).emit(escrowContract, 'Refunded').withArgs(purchaser.address, depositAmount);
 
-            expect(await tokenContract.balanceOf(payer.address)).to.be.greaterThan(initialBalance);
+            expect(await tokenContract.balanceOf(purchaser.address)).to.be.greaterThan(initialBalance);
         });
+
+        it('should refund funds to delegate', async () => {
+            await tokenContract.connect(delegate).approve(escrowContract.address, depositAmount);
+            await escrowContract.connect(purchaser).addDelegate(delegate.address);
+            await escrowContract.connect(delegate).deposit(depositAmount);
+            const delegateInitialBalance = await tokenContract.balanceOf(delegate.address);
+            const purchaserInitialBalance = await tokenContract.balanceOf(purchaser.address);
+
+            await escrowContract.connect(admin).enableRefund();
+            const tx = await escrowContract.connect(delegate).refund();
+            await tx.wait();
+            expect(tx).emit(escrowContract, 'Refunded').withArgs(delegate.address, depositAmount);
+
+            expect(await tokenContract.balanceOf(delegate.address)).to.be.greaterThan(delegateInitialBalance);
+            expect(await tokenContract.balanceOf(purchaser.address)).to.be.equal(purchaserInitialBalance);
+        });
+
+        it('should refund purchaser and delegate funds if both have deposited', async () => {
+            await escrowContract.connect(purchaser).addDelegate(delegate.address);
+            await tokenContract.connect(purchaser).approve(escrowContract.address, depositAmount / 2);
+            await tokenContract.connect(delegate).approve(escrowContract.address, depositAmount / 4);
+            await escrowContract.connect(purchaser).deposit(depositAmount / 2);
+            await escrowContract.connect(delegate).deposit(depositAmount / 4);
+
+            await escrowContract.connect(admin).enableRefund();
+            let tx = await escrowContract.connect(purchaser).refund();
+            await tx.wait();
+            expect(tx).emit(escrowContract, 'Refunded').withArgs(purchaser.address, depositAmount / 2);
+
+            tx = await escrowContract.connect(delegate).refund();
+            await tx.wait();
+            expect(tx).emit(escrowContract, 'Refunded').withArgs(delegate.address, depositAmount / 4);
+        });
+
 
         it("refundAllowed should return true if state is 'Refunding'", async () => {
             const tx = await escrowContract.connect(admin).enableRefund();
@@ -153,8 +265,8 @@ describe('Escrow.sol', () => {
 
     describe('Withdraw', () => {
         it('should withdraw funds', async () => {
-            await tokenContract.connect(payer).approve(escrowContract.address, depositAmount);
-            await escrowContract.connect(payer).deposit(depositAmount);
+            await tokenContract.connect(purchaser).approve(escrowContract.address, depositAmount);
+            await escrowContract.connect(purchaser).deposit(depositAmount);
             const initialBalance = await tokenContract.balanceOf(payee.address);
 
             await escrowContract.connect(admin).close();
@@ -166,7 +278,7 @@ describe('Escrow.sol', () => {
         });
 
         it('should fail withdrawing funds if not payee', async () => {
-            await expect(escrowContract.connect(payer).withdraw()).to.be.revertedWith('Escrow: caller is not the payee');
+            await expect(escrowContract.connect(purchaser).withdraw()).to.be.revertedWith('Escrow: caller is not the payee');
         });
 
         it("should fail withdrawing funds if escrow is not in 'Closed' state", async () => {
@@ -179,4 +291,92 @@ describe('Escrow.sol', () => {
             expect(await escrowContract.withdrawalAllowed()).to.true;
         });
     });
+
+    describe('Fees', () => {
+        it('should pay fees on withdrawal', async () => {
+            await tokenContract.connect(purchaser).approve(escrowContract.address, depositAmount);
+            await escrowContract.connect(purchaser).deposit(depositAmount);
+            expect(await tokenContract.balanceOf(commissioner.address)).to.equal(0);
+
+            await escrowContract.connect(admin).close();
+            await escrowContract.connect(payee).withdraw();
+            expect(await tokenContract.balanceOf(commissioner.address)).to.equal(calculateFee(depositAmount));
+            expect(await tokenContract.balanceOf(payee.address)).to.equal(depositAmount - calculateFee(depositAmount));
+        });
+
+        it('should pay fees on refund', async () => {
+            await tokenContract.connect(purchaser).approve(escrowContract.address, depositAmount);
+            await escrowContract.connect(purchaser).deposit(depositAmount);
+            await escrowContract.connect(purchaser).addDelegate(delegate.address);
+            await tokenContract.connect(delegate).approve(escrowContract.address, depositAmount);
+            await escrowContract.connect(delegate).deposit(depositAmount);
+            expect(await tokenContract.balanceOf(commissioner.address)).to.equal(0);
+
+            await escrowContract.connect(admin).enableRefund();
+            await escrowContract.connect(purchaser).refund();
+            await escrowContract.connect(delegate).refund();
+            expect(await tokenContract.balanceOf(commissioner.address)).to.equal(calculateFee(depositAmount) * 2);
+        });
+
+        it('should pay fees equal to deposit amount if base fee is equal to deposited amount', async () => {
+            const Escrow = await ethers.getContractFactory('Escrow');
+            escrowContract = await Escrow.deploy([admin.address], payee.address, purchaser.address, agreedAmount, duration, tokenContract.address, commissioner.address, depositAmount, percentageFee);
+            await escrowContract.deployed();
+
+            await tokenContract.connect(purchaser).approve(escrowContract.address, depositAmount);
+            await escrowContract.connect(purchaser).deposit(depositAmount);
+            expect(await tokenContract.balanceOf(commissioner.address)).to.equal(0);
+
+            await escrowContract.connect(admin).close();
+            await escrowContract.connect(payee).withdraw();
+            expect(await tokenContract.balanceOf(commissioner.address)).to.equal(depositAmount);
+        });
+
+        it('should pay fees equal to deposit amount if base fee is greater than deposited amount', async () => {
+            const Escrow = await ethers.getContractFactory('Escrow');
+            escrowContract = await Escrow.deploy([admin.address], payee.address, purchaser.address, agreedAmount, duration, tokenContract.address, commissioner.address, depositAmount + 1, percentageFee);
+            await escrowContract.deployed();
+
+            await tokenContract.connect(purchaser).approve(escrowContract.address, depositAmount);
+            await escrowContract.connect(purchaser).deposit(depositAmount);
+            expect(await tokenContract.balanceOf(commissioner.address)).to.equal(0);
+
+            await escrowContract.connect(admin).close();
+            await escrowContract.connect(payee).withdraw();
+            expect(await tokenContract.balanceOf(commissioner.address)).to.equal(depositAmount);
+        });
+
+        it('should pay fees equal to deposit amount if percentage fee is 100', async () => {
+            const Escrow = await ethers.getContractFactory('Escrow');
+            escrowContract = await Escrow.deploy([admin.address], payee.address, purchaser.address, agreedAmount, duration, tokenContract.address, commissioner.address, baseFee, 100);
+            await escrowContract.deployed();
+
+            await tokenContract.connect(purchaser).approve(escrowContract.address, depositAmount);
+            await escrowContract.connect(purchaser).deposit(depositAmount);
+            expect(await tokenContract.balanceOf(commissioner.address)).to.equal(0);
+
+            await escrowContract.connect(admin).close();
+            await escrowContract.connect(payee).withdraw();
+            expect(await tokenContract.balanceOf(commissioner.address)).to.equal(depositAmount);
+        });
+
+        it('should update commission address', async () => {
+            await tokenContract.connect(purchaser).approve(escrowContract.address, depositAmount);
+            await escrowContract.connect(purchaser).deposit(depositAmount);
+            await escrowContract.connect(admin).updateCommissioner(anotherCommissioner.address);
+
+            await escrowContract.connect(admin).close();
+            await escrowContract.connect(payee).withdraw();
+            expect(await tokenContract.balanceOf(commissioner.address)).to.equal(0);
+            expect(await tokenContract.balanceOf(anotherCommissioner.address)).to.equal(calculateFee(depositAmount));
+        });
+
+        it('should fail updating commission address if caller is not admin', async () => {
+            await expect(escrowContract.connect(purchaser).updateCommissioner(anotherCommissioner.address)).to.be.revertedWith('Escrow: caller is not the admin');
+        });
+
+        it('should fail updating commission address if new address is zero address', async () => {
+            await expect(escrowContract.connect(admin).updateCommissioner(ethers.constants.AddressZero)).to.be.revertedWith('Escrow: commissioner is the zero address');
+        });
+    })
 });

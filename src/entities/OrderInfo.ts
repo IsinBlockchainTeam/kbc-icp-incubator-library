@@ -19,7 +19,9 @@ export class OrderInfo extends Trade {
 
     private _deliveryDeadline?: Date;
 
-    constructor(id: number, supplier: string, customer: string, externalUrl: string, offeree: string, offeror: string, lineIds: number[], paymentDeadline: Date, documentDeliveryDeadline: Date, arbiter: string, shippingDeadline: Date, deliveryDeadline: Date) {
+    private _escrow?: string;
+
+    constructor(id: number, supplier: string, customer: string, externalUrl: string, offeree: string, offeror: string, lineIds: number[], paymentDeadline: Date, documentDeliveryDeadline: Date, arbiter: string, shippingDeadline: Date, deliveryDeadline: Date, escrow: string) {
         super(id, supplier, customer, externalUrl, lineIds, TradeType.ORDER);
         this._offeree = offeree;
         this._offeror = offeror;
@@ -30,6 +32,7 @@ export class OrderInfo extends Trade {
         this._arbiter = arbiter !== '' ? arbiter : undefined;
         this._shippingDeadline = shippingDeadline.getTime() !== 0 ? shippingDeadline : undefined;
         this._deliveryDeadline = deliveryDeadline.getTime() !== 0 ? deliveryDeadline : undefined;
+        this._escrow = escrow;
     }
 
     get offeree(): string {
@@ -102,5 +105,13 @@ export class OrderInfo extends Trade {
 
     set deliveryDeadline(value: Date | undefined) {
         this._deliveryDeadline = value;
+    }
+
+    get escrow(): string | undefined {
+        return this._escrow;
+    }
+
+    set escrow(value: string | undefined) {
+        this._escrow = value;
     }
 }

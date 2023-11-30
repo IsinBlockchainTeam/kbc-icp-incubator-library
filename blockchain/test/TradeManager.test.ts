@@ -13,6 +13,7 @@ let tradeManagerContract: Contract;
 let enumerableFiatManagerContractFake: FakeContract;
 let enumerableProductCategoryManagerContractFake: FakeContract;
 let documentManagerContractFake: FakeContract;
+let escrowManagerContract: Contract;
 let owner: SignerWithAddress;
 let admin: SignerWithAddress;
 let supplier: SignerWithAddress;
@@ -47,11 +48,15 @@ describe('TradeManager', () => {
         enumerableProductCategoryManagerContractFake = await smock.fake(ContractName.ENUMERABLE_TYPE_MANAGER);
         documentManagerContractFake = await smock.fake(ContractName.DOCUMENT_MANAGER);
 
+        const EscrowManager = await ethers.getContractFactory(ContractName.ESCROW_MANAGER);
+        escrowManagerContract = await EscrowManager.deploy([admin.address], admin.address);
+        await escrowManagerContract.deployed();
+
         enumerableFiatManagerContractFake.contains.returns((value: string) => fiats.includes(value[0]));
         enumerableProductCategoryManagerContractFake.contains.returns((value: string) => categories.includes(value[0]));
 
         tradeManagerContract = await TradeManager.deploy([admin.address], enumerableFiatManagerContractFake.address,
-            enumerableProductCategoryManagerContractFake.address, documentManagerContractFake.address);
+            enumerableProductCategoryManagerContractFake.address, documentManagerContractFake.address, escrowManagerContract.address);
 
         await tradeManagerContract.deployed();
     });
@@ -672,6 +677,83 @@ describe('TradeManager', () => {
             it('should set the shipping deadline - FAIL(Order does not exist)', async () => {
                 await expect(tradeManagerContract.connect(supplier).setOrderDeliveryDeadline(50, deliveryDeadline)).to.be.revertedWith('Order does not exist');
             });
+        });
+    });
+
+    describe('Escrow', () => {
+        const agreedAmount: number = 1000;
+        const tokenAddress: string = ethers.Wallet.createRandom().address;
+        const baseFee: number = 20;
+        const percentageFee: number = 1;
+
+        async function initializeOrder(): Promise<number> {
+            tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.externalUrl);
+            const tradeIds = await tradeManagerContract.connect(supplier).getTradeIds(supplier.address);
+            return tradeIds[tradeIds.length - 1];
+        }
+
+        it('should not initialize Escrow on Order creation', async () => {
+            const id: number = await initializeOrder();
+
+            expect(await tradeManagerContract.getOrderEscrow(id)).to.equal(ethers.constants.AddressZero);
+        });
+
+        it('should initialize an Escrow and retrieve it', async () => {
+            const id: number = await initializeOrder();
+            await tradeManagerContract.connect(supplier).setOrderPaymentDeadline(id, new Date().getTime() + 2592000000);
+
+            await tradeManagerContract.connect(supplier).addOrderEscrow(id, agreedAmount, tokenAddress, baseFee, percentageFee);
+            expect(await tradeManagerContract.getOrderEscrow(id)).to.not.equal(ethers.constants.AddressZero);
+        });
+
+        it('should initialize an Escrow - FAIL(Order does not exist)', async () => {
+            expect(tradeManagerContract.connect(supplier).addOrderEscrow(50, agreedAmount, tokenAddress, baseFee, percentageFee)).to.be.revertedWith('Order does not exist');
+        });
+
+        it('should initialize an Escrow - Fail(Can\'t perform this operation if not ORDER)', async () => {
+            tradeManagerContract.connect(supplier).registerTrade(0, supplier.address, customer.address, basicTrade.externalUrl);
+            const tradeIds = await tradeManagerContract.connect(supplier).getTradeIds(supplier.address);
+            const id = tradeIds[tradeIds.length - 1];
+
+            expect(tradeManagerContract.connect(supplier).addOrderEscrow(id, agreedAmount, tokenAddress, baseFee, percentageFee)).to.be.revertedWith('Can\'t perform this operation if not ORDER');
+        });
+
+        it('should initialize an Escrow - FAIL(Escrow already exists)', async () => {
+            const id: number = await initializeOrder();
+
+            await tradeManagerContract.connect(supplier).setOrderPaymentDeadline(id, new Date().getTime() + 2592000000);
+            await tradeManagerContract.connect(supplier).addOrderEscrow(id, agreedAmount, tokenAddress, baseFee, percentageFee);
+            expect(tradeManagerContract.connect(supplier).addOrderEscrow(id, agreedAmount, tokenAddress, baseFee, percentageFee)).to.be.revertedWith('Escrow already exists');
+        });
+
+        it('should initialize an Escrow - FAIL(Token address is the zero address)', async () => {
+            const id: number = await initializeOrder();
+
+            expect(tradeManagerContract.connect(supplier).addOrderEscrow(id, agreedAmount, ethers.constants.AddressZero, baseFee, percentageFee)).to.be.revertedWith('Token address is the zero address');
+        });
+
+        it('should initialize an Escrow - FAIL(Payment deadline not set)', async () => {
+            const id: number = await initializeOrder();
+
+            expect(tradeManagerContract.connect(supplier).addOrderEscrow(id, agreedAmount, tokenAddress, baseFee, percentageFee)).to.be.revertedWith('Payment deadline not set');
+        });
+
+        it('should initialize an Escrow - FAIL(Payment deadline has already been passed)', async () => {
+            const id: number = await initializeOrder();
+
+            expect(tradeManagerContract.connect(supplier).setOrderPaymentDeadline(id, new Date().getTime() - 2592000000)).to.be.revertedWith('Payment deadline has already been passed');
+        });
+
+        it('should retrieve an Escrow - FAIL(Order does not exist)', async () => {
+            expect(tradeManagerContract.connect(supplier).getOrderEscrow(50)).to.be.revertedWith('Order does not exist');
+        });
+
+        it('should retrieve an Escrow - FAIL(Can\'t perform this operation if not ORDER)', async () => {
+            tradeManagerContract.connect(supplier).registerTrade(0, supplier.address, customer.address, basicTrade.externalUrl);
+            const tradeIds = await tradeManagerContract.connect(supplier).getTradeIds(supplier.address);
+            const id = tradeIds[tradeIds.length - 1];
+
+            expect(tradeManagerContract.connect(supplier).getOrderEscrow(id)).to.be.revertedWith('Can\'t perform this operation if not ORDER');
         });
     });
 

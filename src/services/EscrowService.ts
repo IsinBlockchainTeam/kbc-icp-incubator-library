@@ -1,5 +1,6 @@
 import { EscrowDriver } from "../drivers/EscrowDriver";
 import { EscrowStatus } from "../types/EscrowStatus";
+import { Escrow } from "../smart-contracts";
 
 export class EscrowService {
     private _escrowDriver: EscrowDriver;
@@ -12,8 +13,16 @@ export class EscrowService {
         return this._escrowDriver.getPayee();
     }
 
-    async getPayer(): Promise<string> {
-        return this._escrowDriver.getPayer();
+    async getPurchaser(): Promise<string> {
+        return this._escrowDriver.getPurchaser();
+    }
+
+    async getPayers(): Promise<Escrow.PayersStructOutput[]> {
+        return this._escrowDriver.getPayers();
+    }
+
+    async getAgreedAmount(): Promise<number> {
+        return this._escrowDriver.getAgreedAmount();
     }
 
     async getDeployedAt(): Promise<number> {
@@ -36,6 +45,22 @@ export class EscrowService {
         return this._escrowDriver.getTokenAddress();
     }
 
+    async getCommissioner(): Promise<string> {
+        return this._escrowDriver.getCommissioner();
+    }
+
+    async getBaseFee(): Promise<number> {
+        return this._escrowDriver.getBaseFee();
+    }
+
+    async getPercentageFee(): Promise<number> {
+        return this._escrowDriver.getPercentageFee();
+    }
+
+    async updateCommissioner(newCommissioner: string): Promise<void> {
+        await this._escrowDriver.updateCommissioner(newCommissioner);
+    }
+
     async getDeadline(): Promise<number> {
         return this._escrowDriver.getDeadline();
     }
@@ -50,6 +75,14 @@ export class EscrowService {
 
     async refundAllowed(): Promise<boolean> {
         return this._escrowDriver.refundAllowed();
+    }
+
+    async addDelegate(delegate: string): Promise<void> {
+        await this._escrowDriver.addDelegate(delegate);
+    }
+
+    async removeDelegate(delegate: string): Promise<void> {
+        await this._escrowDriver.removeDelegate(delegate);
     }
 
     async deposit(amount: number): Promise<void> {

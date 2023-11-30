@@ -1,10 +1,10 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import hre, { ethers } from 'hardhat';
+import hre, {ethers} from 'hardhat';
 import * as dotenv from 'dotenv';
-import { Contract } from 'ethers';
-import { ContractName } from '../utils/constants';
+import {Contract} from 'ethers';
+import {ContractName} from '../utils/constants';
 
-dotenv.config({ path: '../.env' });
+dotenv.config({path: '../.env'});
 
 const contractMap = new Map<string, Contract>();
 
@@ -58,9 +58,15 @@ serial([
         }
     },
     () => deploy(ContractName.DOCUMENT_MANAGER, [
-        [process.env.SUPPLIER_ADMIN || ''],
-        contractMap.get('EnumerableTransactionTypeManager')?.address,
-    ],
+            [process.env.SUPPLIER_ADMIN || ''],
+            contractMap.get('EnumerableTransactionTypeManager')?.address,
+        ],
+    ),
+    () => deploy(
+        ContractName.ESCROW_MANAGER, [
+            [process.env.SUPPLIER_ADMIN || ''],
+            process.env.COMMISSIONER_ADMIN || ''
+        ]
     ),
     () => deploy(
         ContractName.TRADE_MANAGER, [
@@ -68,6 +74,7 @@ serial([
             contractMap.get('EnumerableFiatManager')?.address,
             contractMap.get('EnumerableProductCategoryManager')?.address,
             contractMap.get(ContractName.DOCUMENT_MANAGER)?.address,
+            contractMap.get(ContractName.ESCROW_MANAGER)?.address,
         ],
     ),
     () => deploy(
@@ -89,16 +96,6 @@ serial([
             [process.env.SUPPLIER_ADMIN || ''],
             contractMap.get('EnumerableProductCategoryManager')?.address,
         ],
-    ),
-    () => deploy(
-        ContractName.MY_TOKEN, [
-            1000,
-        ],
-    ),
-    () => deploy(
-        ContractName.ESCROW_MANAGER, [
-            [process.env.SUPPLIER_ADMIN || ''],
-        ]
     ),
 ])
     .catch((error: any) => {

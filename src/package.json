@@ -1,6 +1,6 @@
 {
-  "name": "@blockchain-lib/decentralized-coffe-trading",
-  "version": "1.0.0",
+  "name": "@coffe-trading-lib/decentralized-coffe-trading",
+  "version": "1.0.3",
   "description": "",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -11,6 +11,10 @@
   "repository": {
     "type": "git",
     "url": "https://gitlab-core.supsi.ch/dti-isin/giuliano.gremlich/blockchain/coffe-trading/blockchain-coffe-trading"
+  },
+  "publishConfig": {
+    "registry": "https://gitlab-core.supsi.ch/api/v4/projects/389/packages/npm/",
+    "tag": "latest"
   },
   "keywords": [
     "Decentralized",
@@ -33,7 +37,7 @@
     "ttypescript": "1.5.15"
   },
   "dependencies": {
-    "@blockchain-lib/common": "file:../../../Blockchain_Library/one_lib_to_rule_them_all/packages/common",
+    "@blockchain-lib/common": "2.0.2",
     "@ethersproject/providers": "^5.6.4",
     "@jest/test-sequencer": "^29.7.0",
     "dotenv": "^16.3.1",

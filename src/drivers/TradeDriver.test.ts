@@ -27,6 +27,7 @@ describe('TradeDriver', () => {
 
     const mockedWriteFunction = jest.fn();
     const mockedReadFunction = jest.fn();
+    const mockedReadStringFunction = jest.fn();
     const mockedDecodeEventLog = jest.fn();
 
     const mockedQueryFilter = jest.fn();
@@ -40,6 +41,10 @@ describe('TradeDriver', () => {
     const customer = ethers.Wallet.createRandom();
     const tradeName = 'trade 1';
     const externalUrl = 'https://testurl.ch';
+    const agreedAmount: number = 1000;
+    const tokenAddress: string = 'token';
+    const baseFee: number = 20;
+    const percentageFee: number = 1;
 
     const buildOrderSpy = jest.spyOn(EntityBuilder, 'buildOrderInfo');
     const buildOrderLineSpy = jest.spyOn(EntityBuilder, 'buildOrderLine');
@@ -62,6 +67,7 @@ describe('TradeDriver', () => {
         mockedReadFunction.mockResolvedValue({
             toNumber: jest.fn(),
         });
+        mockedReadStringFunction.mockResolvedValue('test');
         mockedRegisterTrade.mockReturnValue(Promise.resolve({
             wait: mockedWait.mockReturnValue({ events: [{ event: 'TradeRegistered' }] }),
         }));
@@ -89,10 +95,12 @@ describe('TradeDriver', () => {
             setOrderArbiter: mockedWriteFunction,
             setOrderShippingDeadline: mockedWriteFunction,
             setOrderDeliveryDeadline: mockedWriteFunction,
+            addOrderEscrow: mockedWriteFunction,
             confirmOrder: mockedWriteFunction,
             addDocument: mockedWriteFunction,
             getNegotiationStatus: mockedReadFunction,
             getOrderInfo: mockedReadFunction,
+            getOrderEscrow: mockedReadStringFunction,
             isSupplierOrCustomer: mockedReadFunction,
             addOrderLine: mockedWriteFunction,
             updateOrderLine: mockedWriteFunction,
@@ -468,6 +476,22 @@ describe('TradeDriver', () => {
         });
     });
 
+    describe('addOrderEscrow', () => {
+        it('should set order escrow', async () => {
+            await tradeDriver.addOrderEscrow(1, agreedAmount, tokenAddress, baseFee, percentageFee);
+            expect(mockedContract.addOrderEscrow).toHaveBeenCalledTimes(1);
+            expect(mockedContract.addOrderEscrow).toHaveBeenNthCalledWith(1, 1, agreedAmount, tokenAddress, baseFee, percentageFee);
+            expect(mockedWait).toHaveBeenCalledTimes(1);
+        });
+
+        it('should set order escrow - transaction fails', async () => {
+            mockedContract.addOrderEscrow = jest.fn().mockRejectedValue(new Error(errorMessage));
+
+            const fn = async () => tradeDriver.addOrderEscrow(1, agreedAmount, tokenAddress, baseFee, percentageFee);
+            await expect(fn).rejects.toThrowError(new Error(errorMessage));
+        });
+    });
+
     describe('setOrderShippingDeadline', () => {
         const deadline = new Date('2030-10-10');
         it('should set order shipping deadline', async () => {
@@ -570,6 +594,23 @@ describe('TradeDriver', () => {
             const fn = async () => tradeDriver.getOrderInfo(1);
             await expect(fn).rejects.toThrowError(new Error(errorMessage));
         });
+    });
+
+    describe('getOrderEscrow', () => {
+        it('should retrieve an order escrow', async () => {
+            await tradeDriver.getOrderEscrow(1);
+
+            expect(mockedContract.getOrderEscrow).toHaveBeenCalledTimes(1);
+            expect(mockedContract.getOrderEscrow).toHaveBeenNthCalledWith(1, 1);
+            expect(mockedReadStringFunction).toHaveBeenCalledTimes(1);
+        });
+        it('should retrieve an order escrow - transaction fails', async () => {
+            mockedContract.getOrderEscrow = jest.fn().mockRejectedValue(new Error(errorMessage));
+
+            const fn = async () => tradeDriver.getOrderEscrow(1);
+            await expect(fn).rejects.toThrowError(new Error(errorMessage));
+        });
+
     });
 
     describe('isSupplierOrCustomer', () => {

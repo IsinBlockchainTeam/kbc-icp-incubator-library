@@ -203,6 +203,15 @@ export class TradeDriver {
         }
     }
 
+    async addOrderEscrow(orderId: number, agreedAmount: number, tokenAddress: string, baseFee: number, percentageFee: number): Promise<void> {
+        try {
+            const tx = await this._contract.addOrderEscrow(orderId, agreedAmount, tokenAddress, baseFee, percentageFee);
+            await tx.wait();
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
+    }
+
     async confirmOrder(orderId: number): Promise<void> {
         try {
             const tx = await this._contract.confirmOrder(orderId);
@@ -244,6 +253,14 @@ export class TradeDriver {
             //         fiat: rcl.price.fiat,
             //     },
             // ));
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
+    }
+
+    async getOrderEscrow(orderId: number): Promise<string> {
+        try {
+            return this._contract.getOrderEscrow(orderId);
         } catch (e: any) {
             throw new Error(e.message);
         }
