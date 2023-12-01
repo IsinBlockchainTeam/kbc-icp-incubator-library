@@ -1,15 +1,10 @@
 import {Escrow} from "./Escrow";
-import {Escrow as EscrowContract} from "../smart-contracts";
 import {EscrowStatus} from "../types/EscrowStatus";
-import {BigNumber} from "ethers";
 
 describe('Escrow', () => {
     let escrow: Escrow;
 
-    const payers: EscrowContract.PayersStructOutput[] = [{
-        payerAddress: 'payer',
-        depositedAmount: BigNumber.from(0),
-    }] as EscrowContract.PayersStructOutput[];
+    const payers: string[] = ['payer1', 'payer2'];
 
     beforeAll(() => {
         escrow = new Escrow('payee', 'purchaser', payers, 1000, 0, 1000, EscrowStatus.ACTIVE, 'tokenAddress', 'commissioner', 20, 1);
@@ -38,10 +33,7 @@ describe('Escrow', () => {
     });
 
     it('should correctly set the payers', () => {
-        const newPayers: EscrowContract.PayersStructOutput[] = [{
-            payerAddress: 'payer2',
-            depositedAmount: BigNumber.from(0),
-        }] as EscrowContract.PayersStructOutput[];
+        const newPayers: string[] = ['payer3', 'payer4'];
         escrow.payers = newPayers;
         expect(escrow.payers).toEqual(newPayers);
     });

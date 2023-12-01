@@ -52,14 +52,15 @@ contract Escrow is AccessControl {
         _;
     }
 
-    struct Payers {
-        address payerAddress;
+    struct Payer {
         uint256 depositedAmount;
+        bool isPresent;
     }
 
     address private _payee;
     address private _purchaser;
-    Payers[] private _payers;
+    mapping(address => Payer) private _payers;
+    address[] private _payersList;
     uint256 private _agreedAmount;
     uint256 private _deployedAt;
     uint256 private _duration;
@@ -76,7 +77,7 @@ contract Escrow is AccessControl {
         require(commissioner != address(0), "Escrow: commissioner is the zero address");
         require(percentageFee <= 100, "Escrow: percentage fee cannot be greater than 100");
 
-        _setupRole(ADMIN_ROLE, msg.sender);
+        _setupRole(ADMIN_ROLE, _msgSender());
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
         for (uint256 i = 0; i < admins.length; ++i) {
             grantRole(ADMIN_ROLE, admins[i]);
@@ -84,7 +85,8 @@ contract Escrow is AccessControl {
 
         _payee = payee;
         _purchaser = purchaser;
-        _payers.push(Payers(purchaser, 0));
+        _payers[purchaser] = Payer(0, true);
+        _payersList.push(purchaser);
         _agreedAmount = agreedAmount;
         _deployedAt = block.timestamp;
         _duration = duration;
@@ -97,12 +99,7 @@ contract Escrow is AccessControl {
     }
 
     function _isPayer(address payerAddress) private view returns (bool) {
-        for (uint256 i = 0; i < _payers.length; ++i) {
-            if (_payers[i].payerAddress == payerAddress) {
-                return true;
-            }
-        }
-        return false;
+        return _payers[payerAddress].isPresent;
     }
 
     function getPayee() public view returns (address) {
@@ -113,8 +110,13 @@ contract Escrow is AccessControl {
         return _purchaser;
     }
 
-    function getPayers() public view returns (Payers[] memory) {
-        return _payers;
+    function getPayers() public view returns (address[] memory) {
+        return _payersList;
+    }
+
+    function getPayer(address payer) public view returns (Payer memory) {
+        require(_isPayer(payer), "Escrow: caller is not a payer");
+        return _payers[payer];
     }
 
     function getAgreedAmount() public view returns (uint256) {
@@ -180,7 +182,8 @@ contract Escrow is AccessControl {
 
     function addDelegate(address delegateAddress) public onlyPurchaser {
         require(delegateAddress != address(0), "Escrow: delegate is the zero address");
-        _payers.push(Payers(delegateAddress, 0));
+        _payers[delegateAddress] = Payer(0, true);
+        _payersList.push(delegateAddress);
         emit DelegateRegistered(delegateAddress);
     }
 
@@ -188,10 +191,13 @@ contract Escrow is AccessControl {
         require(delegateAddress != _purchaser, "Escrow: purchaser cannot be removed from payers list");
         require(_isPayer(delegateAddress), "Escrow: delegate not present");
 
-        for(uint256 i = 0; i < _payers.length; i++) {
-            if (_payers[i].payerAddress == delegateAddress) {
-                delete _payers[i];
-                emit DelegateRemoved(delegateAddress);
+        _payers[delegateAddress].depositedAmount = 0;
+        _payers[delegateAddress].isPresent = false;
+
+        for (uint256 i = 1; i < _payersList.length; i++) {
+            if (_payersList[i] == delegateAddress) {
+                _payersList[i] = _payersList[_payersList.length - 1];
+                _payersList.pop();
                 break;
             }
         }
@@ -202,14 +208,9 @@ contract Escrow is AccessControl {
         require(amount > 0, "Escrow: can only deposit positive amount");
         _token.safeTransferFrom(_msgSender(), address(this), amount);
 
-        for(uint256 i = 0; i < _payers.length; i++) {
-            if (_payers[i].payerAddress == msg.sender) {
-                _payers[i].depositedAmount += amount;
-                break;
-            }
-        }
+        _payers[_msgSender()].depositedAmount += amount;
 
-        emit Deposited(msg.sender, amount);
+        emit Deposited(_msgSender(), amount);
     }
 
     function close() public onlyAdmin {
@@ -246,26 +247,22 @@ contract Escrow is AccessControl {
     function withdraw() public onlyPayee() {
         require(_state == State.Closed, "Escrow: can only withdraw while closed");
         uint256 payment = getDepositAmount();
+
         payment -= _payFees(payment);
         _token.approve(address(this), payment);
         _token.safeTransferFrom(address(this), _payee, payment);
+
         emit Withdrawn(payment);
     }
 
     function refund() public onlyPayers() {
         require(refundAllowed(), "Escrow: can only refund when allowed");
 
-        uint256 payment;
-        for(uint256 i = 0; i < _payers.length; i++) {
-            if (_payers[i].payerAddress == msg.sender) {
-                payment = _payers[i].depositedAmount;
-                break;
-            }
-        }
+        uint256 payment = _payers[_msgSender()].depositedAmount;
 
         payment -= _payFees(payment);
         _token.approve(address(this), payment);
-        _token.safeTransferFrom(address(this), msg.sender, payment);
-        emit Refunded(msg.sender, payment);
+        _token.safeTransferFrom(address(this), _msgSender(), payment);
+        emit Refunded(_msgSender(), payment);
     }
 }

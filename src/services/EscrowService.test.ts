@@ -10,6 +10,7 @@ describe('EscrowService', () => {
         getPayee: jest.fn(),
         getPurchaser: jest.fn(),
         getPayers: jest.fn(),
+        getPayer: jest.fn(),
         getAgreedAmount: jest.fn(),
         getDeployedAt: jest.fn(),
         getDuration: jest.fn(),
@@ -62,6 +63,12 @@ describe('EscrowService', () => {
             serviceFunction: () => escrowService.getPayers(),
             expectedMockedFunction: mockedInstance.getPayers,
             expectedMockedFunctionArgs: [],
+        },
+        {
+            serviceFunctionName: 'getPayer',
+            serviceFunction: () => escrowService.getPayer("0x123"),
+            expectedMockedFunction: mockedInstance.getPayer,
+            expectedMockedFunctionArgs: ["0x123"],
         },
         {
             serviceFunctionName: 'getAgreedAmount',

@@ -17,8 +17,12 @@ export class EscrowService {
         return this._escrowDriver.getPurchaser();
     }
 
-    async getPayers(): Promise<Escrow.PayersStructOutput[]> {
+    async getPayers(): Promise<string[]> {
         return this._escrowDriver.getPayers();
+    }
+
+    async getPayer(address: string): Promise<Escrow.PayerStructOutput> {
+        return this._escrowDriver.getPayer(address);
     }
 
     async getAgreedAmount(): Promise<number> {

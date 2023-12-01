@@ -2,9 +2,7 @@ import {createMock} from 'ts-auto-mock';
 import {EscrowManagerService} from "./EscrowManagerService";
 import {EscrowManagerDriver} from "../drivers/EscrowManagerDriver";
 import {Escrow} from "../entities/Escrow";
-import {Escrow as EscrowContract} from "../smart-contracts";
 import {EscrowStatus} from "../types/EscrowStatus";
-import {BigNumber} from "ethers";
 
 describe('EscrowManagerService', () => {
     let escrowManagerService: EscrowManagerService;
@@ -17,12 +15,8 @@ describe('EscrowManagerService', () => {
         getEscrow: jest.fn(),
         getEscrowsId: jest.fn(),
     };
-    const payers: EscrowContract.PayersStructOutput[] = [{
-        payerAddress: 'payer',
-        depositedAmount: BigNumber.from(0),
-    }] as EscrowContract.PayersStructOutput[];
 
-    const escrow = new Escrow("payee", "purchaser", payers, 1000, 100, EscrowStatus.ACTIVE, 0, "tokenAddress", "commissioner", 20, 1);
+    const escrow = new Escrow("payee", "purchaser", ["purchaser", "delegate"], 1000, 100, EscrowStatus.ACTIVE, 0, "tokenAddress", "commissioner", 20, 1);
 
     beforeAll(() => {
         mockedEscrowManagerDriver = createMock<EscrowManagerDriver>(mockedInstance);

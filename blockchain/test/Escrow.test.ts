@@ -2,6 +2,7 @@ import {ethers} from 'hardhat';
 import {BigNumber, Contract} from 'ethers';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {expect} from 'chai';
+import {Escrow} from "../typechain-types";
 
 describe('Escrow.sol', () => {
     let escrowContract: Contract;
@@ -46,9 +47,11 @@ describe('Escrow.sol', () => {
 
             const payers = await escrowContract.getPayers();
             expect(payers).to.have.length(1);
-            const [payerAddress, depositedAmount] = payers[0];
-            expect(payerAddress).to.equal(purchaser.address);
-            expect(depositedAmount).to.equal(BigNumber.from(0));
+            expect(payers[0]).to.equal(purchaser.address);
+
+            const payer: Escrow.PayerStructOutput = await escrowContract.getPayer(payers[0]);
+            expect(payer.depositedAmount).to.equal(BigNumber.from(0));
+            expect(payer.isPresent).to.be.true;
 
             expect(await escrowContract.getAgreedAmount()).to.equal(agreedAmount);
             expect(await escrowContract.getAgreedAmount()).to.equal(agreedAmount);
