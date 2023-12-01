@@ -20,6 +20,8 @@ describe('EscrowService', () => {
         getCommissioner: jest.fn(),
         getBaseFee: jest.fn(),
         getPercentageFee: jest.fn(),
+        updateBaseFee: jest.fn(),
+        updatePercentageFee: jest.fn(),
         updateCommissioner: jest.fn(),
         getDeadline: jest.fn(),
         hasExpired: jest.fn(),
@@ -119,10 +121,22 @@ describe('EscrowService', () => {
             expectedMockedFunctionArgs: [],
         },
         {
+            serviceFunctionName: 'updateBaseFee',
+            serviceFunction: () => escrowService.updateBaseFee(1),
+            expectedMockedFunction: mockedInstance.updateBaseFee,
+            expectedMockedFunctionArgs: [1],
+        },
+        {
             serviceFunctionName: 'getPercentageFee',
             serviceFunction: () => escrowService.getPercentageFee(),
             expectedMockedFunction: mockedInstance.getPercentageFee,
             expectedMockedFunctionArgs: [],
+        },
+        {
+            serviceFunctionName: 'updatePercentageFee',
+            serviceFunction: () => escrowService.updatePercentageFee(1),
+            expectedMockedFunction: mockedInstance.updatePercentageFee,
+            expectedMockedFunctionArgs: [1],
         },
         {
             serviceFunctionName: 'updateCommissioner',

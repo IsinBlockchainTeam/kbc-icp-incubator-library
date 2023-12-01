@@ -17,6 +17,8 @@ contract EscrowManager is AccessControl {
 
     event EscrowRegistered(uint256 indexed id, address payee, address purchaser, uint256 agreedAmount, address tokenAddress, address commissionAddress);
     event CommissionerUpdated(address commissionAddress);
+    event BaseFeeUpdated(uint256 baseFee);
+    event PercentageFeeUpdated(uint256 percentageFee);
 
     modifier onlyAdmin() {
         require(hasRole(ADMIN_ROLE, _msgSender()), "EscrowManager: caller is not the admin");
@@ -25,12 +27,15 @@ contract EscrowManager is AccessControl {
 
     address[] private _admins;
     address private _commissioner;
+    uint256 private _baseFee;
+    uint256 private _percentageFee;
     mapping(uint256 => Escrow) private _escrows;
     //mapping(payer => Escrow_id[])
     mapping(address => uint256[]) private _escrowsOfPurchaser;
 
-    constructor(address[] memory admins, address commissioner) {
+    constructor(address[] memory admins, address commissioner, uint256 baseFee, uint256 percentageFee) {
         require(commissioner != address(0), "EscrowManager: commissioner is the zero address");
+        require(percentageFee <= 100, "EscrowManager: percentage fee cannot be greater than 100");
 
         _setupRole(ADMIN_ROLE, msg.sender);
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
@@ -39,13 +44,14 @@ contract EscrowManager is AccessControl {
         }
         _admins = admins;
         _commissioner = commissioner;
+        _baseFee = baseFee;
+        _percentageFee = percentageFee;
     }
 
-    function registerEscrow(address payee, address purchaser, uint256 agreedAmount, uint256 duration, address tokenAddress, uint256 baseFee, uint256 percentageFee) public returns(Escrow)  {
+    function registerEscrow(address payee, address purchaser, uint256 agreedAmount, uint256 duration, address tokenAddress) public returns(Escrow)  {
         require(payee != address(0), "EscrowManager: payee is the zero address");
         require(purchaser != address(0), "EscrowManager: purchaser is the zero address");
         require(tokenAddress != address(0), "EscrowManager: token address is the zero address");
-        require(percentageFee <= 100, "EscrowManager: percentage fee cannot be greater than 100");
         uint256 id = _counter.current();
         _counter.increment();
 
@@ -55,7 +61,7 @@ contract EscrowManager is AccessControl {
         }
         adminArray[_admins.length] = address(this);
 
-        Escrow newEscrow = new Escrow(adminArray, payee, purchaser, agreedAmount, duration, tokenAddress, _commissioner, baseFee, percentageFee);
+        Escrow newEscrow = new Escrow(adminArray, payee, purchaser, agreedAmount, duration, tokenAddress, _commissioner, _baseFee, _percentageFee);
         _escrows[id] = newEscrow;
         _escrowsOfPurchaser[purchaser].push(id);
         emit EscrowRegistered(id, payee, purchaser, agreedAmount, tokenAddress, _commissioner);
@@ -76,6 +82,37 @@ contract EscrowManager is AccessControl {
             }
         }
         emit CommissionerUpdated(commissioner);
+    }
+
+    function getBaseFee() public view returns (uint256) {
+        return _baseFee;
+    }
+
+    function updateBaseFee(uint256 baseFee) public onlyAdmin {
+        require(baseFee != _baseFee, "EscrowManager: new base fee is the same of the current one");
+        _baseFee = baseFee;
+        for(uint256 i = 0; i < _counter.current(); i++) {
+            if(_escrows[i].getState() == Escrow.State.Active || _escrows[i].getDepositAmount() > 0) {
+                _escrows[i].updateBaseFee(baseFee);
+            }
+        }
+        emit BaseFeeUpdated(baseFee);
+    }
+
+    function getPercentageFee() public view returns (uint256) {
+        return _percentageFee;
+    }
+
+    function updatePercentageFee(uint256 percentageFee) public onlyAdmin {
+        require(percentageFee != _percentageFee, "EscrowManager: new percentage fee is the same of the current one");
+        require(percentageFee <= 100, "EscrowManager: percentage fee cannot be greater than 100");
+        _percentageFee = percentageFee;
+        for(uint256 i = 0; i < _counter.current(); i++) {
+            if(_escrows[i].getState() == Escrow.State.Active || _escrows[i].getDepositAmount() > 0) {
+                _escrows[i].updatePercentageFee(percentageFee);
+            }
+        }
+        emit PercentageFeeUpdated(percentageFee);
     }
 
     function getEscrow(uint256 id) public view returns (Escrow) {

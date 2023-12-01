@@ -164,6 +164,14 @@ contract Escrow is AccessControl {
         _commissioner = commissioner;
     }
 
+    function updateBaseFee(uint256 baseFee) public onlyAdmin {
+        _baseFee = baseFee;
+    }
+
+    function updatePercentageFee(uint256 percentageFee) public onlyAdmin {
+        _percentageFee = percentageFee;
+    }
+
     function getDeadline() public view returns (uint256) {
         return _deployedAt + _duration;
     }

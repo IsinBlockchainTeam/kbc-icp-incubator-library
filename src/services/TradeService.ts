@@ -125,8 +125,8 @@ export class TradeService {
         await this._tradeDriver.setOrderDeliveryDeadline(id, deliveryDeadline);
     }
 
-    async addOrderEscrow(orderId: number, agreedAmount: number, tokenAddress: string, baseFee: number, percentageFee: number): Promise<void> {
-        await this._tradeDriver.addOrderEscrow(orderId, agreedAmount, tokenAddress, baseFee, percentageFee);
+    async addOrderEscrow(orderId: number, agreedAmount: number, tokenAddress: string): Promise<void> {
+        await this._tradeDriver.addOrderEscrow(orderId, agreedAmount, tokenAddress);
     }
 
     async confirmOrder(orderId: number): Promise<void> {

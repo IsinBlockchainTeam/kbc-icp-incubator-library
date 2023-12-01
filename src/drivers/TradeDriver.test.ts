@@ -43,8 +43,6 @@ describe('TradeDriver', () => {
     const externalUrl = 'https://testurl.ch';
     const agreedAmount: number = 1000;
     const tokenAddress: string = 'token';
-    const baseFee: number = 20;
-    const percentageFee: number = 1;
 
     const buildOrderSpy = jest.spyOn(EntityBuilder, 'buildOrderInfo');
     const buildOrderLineSpy = jest.spyOn(EntityBuilder, 'buildOrderLine');
@@ -478,16 +476,16 @@ describe('TradeDriver', () => {
 
     describe('addOrderEscrow', () => {
         it('should set order escrow', async () => {
-            await tradeDriver.addOrderEscrow(1, agreedAmount, tokenAddress, baseFee, percentageFee);
+            await tradeDriver.addOrderEscrow(1, agreedAmount, tokenAddress);
             expect(mockedContract.addOrderEscrow).toHaveBeenCalledTimes(1);
-            expect(mockedContract.addOrderEscrow).toHaveBeenNthCalledWith(1, 1, agreedAmount, tokenAddress, baseFee, percentageFee);
+            expect(mockedContract.addOrderEscrow).toHaveBeenNthCalledWith(1, 1, agreedAmount, tokenAddress);
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 
         it('should set order escrow - transaction fails', async () => {
             mockedContract.addOrderEscrow = jest.fn().mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => tradeDriver.addOrderEscrow(1, agreedAmount, tokenAddress, baseFee, percentageFee);
+            const fn = async () => tradeDriver.addOrderEscrow(1, agreedAmount, tokenAddress);
             await expect(fn).rejects.toThrowError(new Error(errorMessage));
         });
     });

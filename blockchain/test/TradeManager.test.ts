@@ -49,7 +49,7 @@ describe('TradeManager', () => {
         documentManagerContractFake = await smock.fake(ContractName.DOCUMENT_MANAGER);
 
         const EscrowManager = await ethers.getContractFactory(ContractName.ESCROW_MANAGER);
-        escrowManagerContract = await EscrowManager.deploy([admin.address], admin.address);
+        escrowManagerContract = await EscrowManager.deploy([admin.address], admin.address, 20, 1);
         await escrowManagerContract.deployed();
 
         enumerableFiatManagerContractFake.contains.returns((value: string) => fiats.includes(value[0]));
@@ -683,8 +683,6 @@ describe('TradeManager', () => {
     describe('Escrow', () => {
         const agreedAmount: number = 1000;
         const tokenAddress: string = ethers.Wallet.createRandom().address;
-        const baseFee: number = 20;
-        const percentageFee: number = 1;
 
         async function initializeOrder(): Promise<number> {
             tradeManagerContract.connect(supplier).registerTrade(1, supplier.address, customer.address, basicTrade.externalUrl);
@@ -702,12 +700,12 @@ describe('TradeManager', () => {
             const id: number = await initializeOrder();
             await tradeManagerContract.connect(supplier).setOrderPaymentDeadline(id, new Date().getTime() + 2592000000);
 
-            await tradeManagerContract.connect(supplier).addOrderEscrow(id, agreedAmount, tokenAddress, baseFee, percentageFee);
+            await tradeManagerContract.connect(supplier).addOrderEscrow(id, agreedAmount, tokenAddress);
             expect(await tradeManagerContract.getOrderEscrow(id)).to.not.equal(ethers.constants.AddressZero);
         });
 
         it('should initialize an Escrow - FAIL(Order does not exist)', async () => {
-            expect(tradeManagerContract.connect(supplier).addOrderEscrow(50, agreedAmount, tokenAddress, baseFee, percentageFee)).to.be.revertedWith('Order does not exist');
+            expect(tradeManagerContract.connect(supplier).addOrderEscrow(50, agreedAmount, tokenAddress)).to.be.revertedWith('Order does not exist');
         });
 
         it('should initialize an Escrow - Fail(Can\'t perform this operation if not ORDER)', async () => {
@@ -715,27 +713,27 @@ describe('TradeManager', () => {
             const tradeIds = await tradeManagerContract.connect(supplier).getTradeIds(supplier.address);
             const id = tradeIds[tradeIds.length - 1];
 
-            expect(tradeManagerContract.connect(supplier).addOrderEscrow(id, agreedAmount, tokenAddress, baseFee, percentageFee)).to.be.revertedWith('Can\'t perform this operation if not ORDER');
+            expect(tradeManagerContract.connect(supplier).addOrderEscrow(id, agreedAmount, tokenAddress)).to.be.revertedWith('Can\'t perform this operation if not ORDER');
         });
 
         it('should initialize an Escrow - FAIL(Escrow already exists)', async () => {
             const id: number = await initializeOrder();
 
             await tradeManagerContract.connect(supplier).setOrderPaymentDeadline(id, new Date().getTime() + 2592000000);
-            await tradeManagerContract.connect(supplier).addOrderEscrow(id, agreedAmount, tokenAddress, baseFee, percentageFee);
-            expect(tradeManagerContract.connect(supplier).addOrderEscrow(id, agreedAmount, tokenAddress, baseFee, percentageFee)).to.be.revertedWith('Escrow already exists');
+            await tradeManagerContract.connect(supplier).addOrderEscrow(id, agreedAmount, tokenAddress);
+            expect(tradeManagerContract.connect(supplier).addOrderEscrow(id, agreedAmount, tokenAddress)).to.be.revertedWith('Escrow already exists');
         });
 
         it('should initialize an Escrow - FAIL(Token address is the zero address)', async () => {
             const id: number = await initializeOrder();
 
-            expect(tradeManagerContract.connect(supplier).addOrderEscrow(id, agreedAmount, ethers.constants.AddressZero, baseFee, percentageFee)).to.be.revertedWith('Token address is the zero address');
+            expect(tradeManagerContract.connect(supplier).addOrderEscrow(id, agreedAmount, ethers.constants.AddressZero)).to.be.revertedWith('Token address is the zero address');
         });
 
         it('should initialize an Escrow - FAIL(Payment deadline not set)', async () => {
             const id: number = await initializeOrder();
 
-            expect(tradeManagerContract.connect(supplier).addOrderEscrow(id, agreedAmount, tokenAddress, baseFee, percentageFee)).to.be.revertedWith('Payment deadline not set');
+            expect(tradeManagerContract.connect(supplier).addOrderEscrow(id, agreedAmount, tokenAddress)).to.be.revertedWith('Payment deadline not set');
         });
 
         it('should initialize an Escrow - FAIL(Payment deadline has already been passed)', async () => {

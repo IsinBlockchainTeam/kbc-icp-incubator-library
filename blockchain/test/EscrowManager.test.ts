@@ -18,7 +18,7 @@ describe("EscrowManager.sol", () => {
         [admin, payee, purchaser, other, commissioner] = await ethers.getSigners();
 
         const EscrowManager = await ethers.getContractFactory('EscrowManager');
-        escrowManagerContract = await EscrowManager.deploy([admin.address], commissioner.address);
+        escrowManagerContract = await EscrowManager.deploy([admin.address], commissioner.address, baseFee, percentageFee);
         await escrowManagerContract.deployed();
 
         const Token = await ethers.getContractFactory('MyToken');
@@ -40,8 +40,6 @@ describe("EscrowManager.sol", () => {
             agreedAmount,
             duration,
             tokenContract.address,
-            baseFee,
-            percentageFee
         );
         const receipt = await tx.wait();
         return receipt.events.find((event: Event) => event.event === 'EscrowRegistered').args.id.toNumber();
@@ -50,7 +48,12 @@ describe("EscrowManager.sol", () => {
     describe("EscrowManager", () => {
         it("should fail creating an escrow manager if commissioner is the zero address", async () => {
             const EscrowManager = await ethers.getContractFactory('EscrowManager');
-            await expect(EscrowManager.deploy([admin.address], ethers.constants.AddressZero)).to.be.revertedWith("EscrowManager: commissioner is the zero address");
+            await expect(EscrowManager.deploy([admin.address], ethers.constants.AddressZero, baseFee, percentageFee)).to.be.revertedWith("EscrowManager: commissioner is the zero address");
+        });
+
+        it("should fail creating an escrow manager if commissioner is percentageFee is greater than 100", async () => {
+            const EscrowManager = await ethers.getContractFactory('EscrowManager');
+            await expect(EscrowManager.deploy([admin.address], commissioner.address, baseFee, 101)).to.be.revertedWith("EscrowManager: percentage fee cannot be greater than 100");
         });
 
         it("should update commission address", async () => {
@@ -91,6 +94,18 @@ describe("EscrowManager.sol", () => {
             expect(await secondEscrowContract.connect(purchaser).getCommissioner()).to.equal(other.address);
             expect(await thirdEscrowContract.connect(purchaser).getCommissioner()).to.equal(commissioner.address);
         });
+
+        it('should update base fee', async () => {
+            const tx = await escrowManagerContract.updateBaseFee(30);
+            expect(tx).to.emit(escrowManagerContract, 'BaseFeeUpdated').withArgs(30);
+            expect(await escrowManagerContract.getBaseFee()).to.equal(30);
+        });
+
+        it('should update percentage fee', async () => {
+            const tx = await escrowManagerContract.updatePercentageFee(2);
+            expect(tx).to.emit(escrowManagerContract, 'PercentageFeeUpdated').withArgs(2);
+            expect(await escrowManagerContract.getPercentageFee()).to.equal(2);
+        });
     })
 
     describe("Escrow creation", () => {
@@ -101,8 +116,6 @@ describe("EscrowManager.sol", () => {
                 agreedAmount,
                 duration,
                 tokenContract.address,
-                baseFee,
-                percentageFee
             );
 
             const receipt = await tx.wait();
@@ -162,8 +175,6 @@ describe("EscrowManager.sol", () => {
                 agreedAmount,
                 duration,
                 tokenContract.address,
-                baseFee,
-                percentageFee
             )).to.be.revertedWith("EscrowManager: payee is the zero address");
         });
 
@@ -174,8 +185,6 @@ describe("EscrowManager.sol", () => {
                 agreedAmount,
                 duration,
                 tokenContract.address,
-                baseFee,
-                percentageFee
             )).to.be.revertedWith("EscrowManager: purchaser is the zero address");
         });
 
@@ -186,21 +195,7 @@ describe("EscrowManager.sol", () => {
                 agreedAmount,
                 duration,
                 ethers.constants.AddressZero,
-                baseFee,
-                percentageFee
             )).to.be.revertedWith("EscrowManager: token address is the zero address");
-        });
-
-        it('should fail escrow registration if percentage fee is greater than 100', async () => {
-            await expect(escrowManagerContract.registerEscrow(
-                payee.address,
-                purchaser.address,
-                agreedAmount,
-                duration,
-                tokenContract.address,
-                baseFee,
-                101
-            )).to.be.revertedWith("EscrowManager: percentage fee cannot be greater than 100");
         });
     });
 });

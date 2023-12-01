@@ -63,6 +63,8 @@ describe('EscrowDriver', () => {
         getBaseFee: mockedReadFunction,
         getPercentageFee: mockedReadFunction,
         updateCommissioner: mockedWriteFunction,
+        updateBaseFee: mockedWriteFunction,
+        updatePercentageFee: mockedWriteFunction,
         getDeadline: mockedReadFunction,
         hasExpired: mockedGetBoolean,
         withdrawalAllowed: mockedGetBoolean,
@@ -235,6 +237,26 @@ describe('EscrowDriver', () => {
 
     it('should update commissioner - FAIL(Not an address)', async () => {
         await expect(escrowDriver.updateCommissioner('')).rejects.toThrow('Not an address');
+    });
+
+    it('should correctly update base fee', async () => {
+        await escrowDriver.updateBaseFee(1);
+
+        expect(mockedContract.updateBaseFee).toHaveBeenCalledTimes(1);
+        expect(mockedContract.updateBaseFee).toHaveBeenNthCalledWith(1, 1);
+        expect(mockedWait).toHaveBeenCalledTimes(1);
+    });
+
+    it('should correctly update percentage fee', async () => {
+        await escrowDriver.updatePercentageFee(1);
+
+        expect(mockedContract.updatePercentageFee).toHaveBeenCalledTimes(1);
+        expect(mockedContract.updatePercentageFee).toHaveBeenNthCalledWith(1, 1);
+        expect(mockedWait).toHaveBeenCalledTimes(1);
+    });
+
+    it('should update percentage fee - FAIL(Percentage fee must be between 0 and 100)', async () => {
+        await expect(escrowDriver.updatePercentageFee(101)).rejects.toThrow('Percentage fee must be between 0 and 100');
     });
 
     it('should correctly retrieve deadline', async () => {

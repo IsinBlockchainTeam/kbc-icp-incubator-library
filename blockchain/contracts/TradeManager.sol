@@ -294,7 +294,7 @@ contract TradeManager is AccessControl {
         _updateSignatures(msg.sender, o);
     }
 
-    function addOrderEscrow(uint256 orderId, uint256 agreedAmount, address tokenAddress, uint256 baseFee, uint256 percentageFee) public {
+    function addOrderEscrow(uint256 orderId, uint256 agreedAmount, address tokenAddress) public {
         Trade storage o = trades[orderId];
         require(o.exists, "Order does not exist");
         require(o.tradeType == TradeType.ORDER, "Can't perform this operation if not ORDER");
@@ -303,7 +303,7 @@ contract TradeManager is AccessControl {
         require(o.paymentDeadline != 0, "Payment deadline not set");
         require(o.paymentDeadline > block.timestamp, "Payment deadline has already been passed");
 
-        o.escrow = escrowManager.registerEscrow(o.supplier, o.customer, agreedAmount, o.paymentDeadline - block.timestamp, tokenAddress, baseFee, percentageFee);
+        o.escrow = escrowManager.registerEscrow(o.supplier, o.customer, agreedAmount, o.paymentDeadline - block.timestamp, tokenAddress);
     }
 
     function confirmOrder(uint256 orderId) public {

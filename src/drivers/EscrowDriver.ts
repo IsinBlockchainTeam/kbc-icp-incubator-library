@@ -40,7 +40,16 @@ export class EscrowDriver {
     }
 
     async getState(): Promise<EscrowStatus> {
-        return await this._contract.getState();
+        switch (await this._contract.getState()) {
+            case 0:
+                return EscrowStatus.ACTIVE;
+            case 1:
+                return EscrowStatus.REFUNDING;
+            case 2:
+                return EscrowStatus.CLOSED;
+            default:
+                throw new Error('Invalid state');
+        }
     }
 
     async getDepositAmount(): Promise<number> {
@@ -68,6 +77,19 @@ export class EscrowDriver {
             throw new Error('Not an address');
         }
         const tx = await this._contract.updateCommissioner(newCommissioner);
+        await tx.wait();
+    }
+
+    async updateBaseFee(newBaseFee: number): Promise<void> {
+        const tx = await this._contract.updateBaseFee(newBaseFee);
+        await tx.wait();
+    }
+
+    async updatePercentageFee(newPercentageFee: number): Promise<void> {
+        if(newPercentageFee < 0 || newPercentageFee > 100) {
+            throw new Error('Percentage fee must be between 0 and 100');
+        }
+        const tx = await this._contract.updatePercentageFee(newPercentageFee);
         await tx.wait();
     }
 

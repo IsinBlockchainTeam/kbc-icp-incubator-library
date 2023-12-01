@@ -57,8 +57,16 @@ export class EscrowService {
         return this._escrowDriver.getBaseFee();
     }
 
+    async updateBaseFee(newBaseFee: number): Promise<void> {
+        await this._escrowDriver.updateBaseFee(newBaseFee);
+    }
+
     async getPercentageFee(): Promise<number> {
         return this._escrowDriver.getPercentageFee();
+    }
+
+    async updatePercentageFee(newPercentageFee: number): Promise<void> {
+        await this._escrowDriver.updatePercentageFee(newPercentageFee);
     }
 
     async updateCommissioner(newCommissioner: string): Promise<void> {

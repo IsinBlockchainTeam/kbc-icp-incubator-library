@@ -65,7 +65,9 @@ serial([
     () => deploy(
         ContractName.ESCROW_MANAGER, [
             [process.env.SUPPLIER_ADMIN || ''],
-            process.env.COMMISSIONER_ADMIN || ''
+            process.env.COMMISSIONER_ADMIN || '',
+            process.env.ESCROW_BASE_FEE || 20,
+            process.env.ESCROW_PERCENTAGE_FEE || 1,
         ]
     ),
     () => deploy(
@@ -97,6 +99,9 @@ serial([
             contractMap.get('EnumerableProductCategoryManager')?.address,
         ],
     ),
+    () => deploy(
+        ContractName.MY_TOKEN, [1000]
+    )
 ])
     .catch((error: any) => {
         console.error(error);
