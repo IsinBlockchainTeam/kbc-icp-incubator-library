@@ -5,6 +5,7 @@
     "test": "NODE_ENV=test npx hardhat test",
     "coverage": "NODE_ENV=test npx hardhat coverage",
     "gasReport": "REPORT_GAS=true npx hardhat test",
+    "compileOnly": "npx hardhat compile",
     "compile": "npx hardhat compile && rm -rf ../src/smart-contracts && cp -R ./typechain-types ../src/smart-contracts",
     "deploy": "npx hardhat run ./scripts/deploy.ts",
     "node": "npx hardhat node"

@@ -10,9 +10,9 @@ dotenv.config();
 const {
     PRIVATE_KEY,
     DEFAULT_DEPLOY_NETWORK,
-    SEPOLIA_API_URL,
     ETHERNAL_EMAIL,
     NODE_ENV,
+    RPC_URL,
 } = process.env;
 
 const config: HardhatUserConfig = {
@@ -34,8 +34,12 @@ const config: HardhatUserConfig = {
         hardhat: {
             allowUnlimitedContractSize: true,
         },
+        testnet: {
+            url: RPC_URL || '',
+            accounts: PRIVATE_KEY ? [`0x${PRIVATE_KEY}`] : [],
+        },
         sepolia: {
-            url: SEPOLIA_API_URL || '',
+            url: RPC_URL || '',
             accounts: PRIVATE_KEY ? [`0x${PRIVATE_KEY}`] : [],
         },
     },

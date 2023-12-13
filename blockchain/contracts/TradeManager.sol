@@ -81,12 +81,6 @@ contract TradeManager is AccessControl {
 
         Escrow escrow;
 
-//        TODO: mettere su IPFS
-//        string incoterms;
-//        string shipper;
-//        string shippingPort;
-//        string deliveryPort;
-
         // -------------------------------------------------
 
         bool exists;

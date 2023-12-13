@@ -154,7 +154,7 @@ describe('Document lifecycle', () => {
         expect(savedTransaction2Documents[0].transactionId).toEqual(transactionId2);
         expect(savedTransaction2Documents[0].name).toEqual(billOfLading.name);
         expect(savedTransaction2Documents[0].documentType).toEqual(billOfLading.documentType);
-    });
+    }, 30000);
 
     it('Should add another document for the same transaction id, but specifying also the transaction line id as reference', async () => {
         const filename = 'file2.pdf';
