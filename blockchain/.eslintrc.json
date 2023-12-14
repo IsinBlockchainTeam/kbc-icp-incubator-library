@@ -55,6 +55,7 @@
             "error",
             {
                 "devDependencies": [
+                    "hardhat.config.ts",
                     "**/*.test.ts",
                     "**/*.test.tsx"
                 ]
@@ -75,6 +76,7 @@
         "one-var": "off",
         "function-paren-newline": "off",
         "function-call-argument-newline": "off",
-        "object-curly-newline": "off"
+        "object-curly-newline": "off",
+        "no-await-in-loop": "off"
     }
 }
