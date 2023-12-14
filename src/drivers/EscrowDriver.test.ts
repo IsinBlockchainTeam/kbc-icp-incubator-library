@@ -24,6 +24,7 @@ describe('EscrowDriver', () => {
     const mockedGetPayee = jest.fn();
     const mockedGetPurchaser = jest.fn();
     const mockedGetPayers= jest.fn();
+    const mockedGetPayer = jest.fn();
     const mockedGetState = jest.fn();
     const mockedGetTokenAddress = jest.fn();
     const mockedGetCommissioner = jest.fn();
@@ -37,10 +38,11 @@ describe('EscrowDriver', () => {
     });
     mockedGetPayee.mockReturnValue(Promise.resolve(payee));
     mockedGetPurchaser.mockReturnValue(Promise.resolve(purchaser));
-    mockedGetPayers.mockReturnValue(Promise.resolve([{
-        payerAddress: delegate,
+    mockedGetPayers.mockReturnValue(Promise.resolve([delegate]));
+    mockedGetPayer.mockReturnValue(Promise.resolve({
         depositedAmount: BigNumber.from(0),
-    }] as EscrowContract.PayersStructOutput[]));
+        isPresent: true
+    } as EscrowContract.PayerStructOutput));
     mockedGetState.mockReturnValue(Promise.resolve(EscrowStatus.ACTIVE));
     mockedGetTokenAddress.mockReturnValue(Promise.resolve(contractAddress));
     mockedGetCommissioner.mockReturnValue(Promise.resolve(commissioner));
@@ -50,6 +52,7 @@ describe('EscrowDriver', () => {
         getPayee: mockedGetPayee,
         getPurchaser: mockedGetPurchaser,
         getPayers: mockedGetPayers,
+        getPayer: mockedGetPayer,
         getAgreedAmount: mockedReadFunction,
         getDeployedAt: mockedReadFunction,
         getDuration: mockedReadFunction,
@@ -60,6 +63,8 @@ describe('EscrowDriver', () => {
         getBaseFee: mockedReadFunction,
         getPercentageFee: mockedReadFunction,
         updateCommissioner: mockedWriteFunction,
+        updateBaseFee: mockedWriteFunction,
+        updatePercentageFee: mockedWriteFunction,
         getDeadline: mockedReadFunction,
         hasExpired: mockedGetBoolean,
         withdrawalAllowed: mockedGetBoolean,
@@ -112,14 +117,24 @@ describe('EscrowDriver', () => {
     it('should correctly retrieve payers', async () => {
         const response = await escrowDriver.getPayers();
 
-        expect(response).toEqual([{
-            payerAddress: delegate,
-            depositedAmount: BigNumber.from(0),
-        }] as EscrowContract.PayersStructOutput[]);
+        expect(response).toEqual([delegate]);
 
         expect(mockedContract.getPayers).toHaveBeenCalledTimes(1);
         expect(mockedContract.getPayers).toHaveBeenNthCalledWith(1);
         expect(mockedGetPayers).toHaveBeenCalledTimes(1);
+    });
+
+    it('should correctly retrieve payer', async () => {
+        const response = await escrowDriver.getPayer(delegate);
+
+        expect(response).toEqual({
+            depositedAmount: BigNumber.from(0),
+            isPresent: true
+        } as EscrowContract.PayerStructOutput);
+
+        expect(mockedContract.getPayer).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getPayer).toHaveBeenNthCalledWith(1, delegate);
+        expect(mockedGetPayer).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly retrieve agrees amount', async () => {
@@ -220,6 +235,30 @@ describe('EscrowDriver', () => {
         expect(mockedWait).toHaveBeenCalledTimes(1);
     });
 
+    it('should update commissioner - FAIL(Not an address)', async () => {
+        await expect(escrowDriver.updateCommissioner('')).rejects.toThrow('Not an address');
+    });
+
+    it('should correctly update base fee', async () => {
+        await escrowDriver.updateBaseFee(1);
+
+        expect(mockedContract.updateBaseFee).toHaveBeenCalledTimes(1);
+        expect(mockedContract.updateBaseFee).toHaveBeenNthCalledWith(1, 1);
+        expect(mockedWait).toHaveBeenCalledTimes(1);
+    });
+
+    it('should correctly update percentage fee', async () => {
+        await escrowDriver.updatePercentageFee(1);
+
+        expect(mockedContract.updatePercentageFee).toHaveBeenCalledTimes(1);
+        expect(mockedContract.updatePercentageFee).toHaveBeenNthCalledWith(1, 1);
+        expect(mockedWait).toHaveBeenCalledTimes(1);
+    });
+
+    it('should update percentage fee - FAIL(Percentage fee must be between 0 and 100)', async () => {
+        await expect(escrowDriver.updatePercentageFee(101)).rejects.toThrow('Percentage fee must be between 0 and 100');
+    });
+
     it('should correctly retrieve deadline', async () => {
         const response = await escrowDriver.getDeadline();
 
@@ -268,12 +307,20 @@ describe('EscrowDriver', () => {
         expect(mockedWait).toHaveBeenCalledTimes(1);
     });
 
+    it('should add delegate - FAIL(Not an address)', async () => {
+        await expect(escrowDriver.addDelegate('')).rejects.toThrow('Not an address');
+    });
+
     it('should correctly remove delegate', async () => {
         await escrowDriver.removeDelegate(delegate);
 
         expect(mockedContract.removeDelegate).toHaveBeenCalledTimes(1);
         expect(mockedContract.removeDelegate).toHaveBeenNthCalledWith(1, delegate);
         expect(mockedWait).toHaveBeenCalledTimes(1);
+    });
+
+    it('should remove delegate - FAIL(Not an address)', async () => {
+        await expect(escrowDriver.removeDelegate('')).rejects.toThrow('Not an address');
     });
 
     it('should correctly deposit', async () => {

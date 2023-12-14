@@ -1,12 +1,13 @@
-import {ethers} from 'hardhat';
-import {BigNumber, Contract} from 'ethers';
-import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
-import {expect} from 'chai';
+import { ethers } from 'hardhat';
+import { BigNumber, Contract } from 'ethers';
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import { expect } from 'chai';
+import { Escrow } from '../typechain-types';
 
 describe('Escrow.sol', () => {
     let escrowContract: Contract;
     let tokenContract: Contract;
-    let admin: SignerWithAddress, payee: SignerWithAddress, purchaser: SignerWithAddress, delegate: SignerWithAddress, commissioner: SignerWithAddress, anotherCommissioner: SignerWithAddress
+    let admin: SignerWithAddress, payee: SignerWithAddress, purchaser: SignerWithAddress, delegate: SignerWithAddress, commissioner: SignerWithAddress, anotherCommissioner: SignerWithAddress;
     const duration = 60 * 60 * 24 * 30; // 30 days
     const agreedAmount: number = 1000;
     const depositAmount: number = 120;
@@ -21,9 +22,7 @@ describe('Escrow.sol', () => {
         await mineBlocks(Number(proposalDeadline));
     };
 
-    const calculateFee = (amount: number) => {
-        return baseFee + Math.floor((amount - baseFee) * percentageFee / 100);
-    }
+    const calculateFee = (amount: number) => baseFee + Math.floor((amount - baseFee) * percentageFee / 100);
 
     beforeEach(async () => {
         [admin, payee, purchaser, delegate, commissioner, anotherCommissioner] = await ethers.getSigners();
@@ -46,9 +45,11 @@ describe('Escrow.sol', () => {
 
             const payers = await escrowContract.getPayers();
             expect(payers).to.have.length(1);
-            const [payerAddress, depositedAmount] = payers[0];
-            expect(payerAddress).to.equal(purchaser.address);
-            expect(depositedAmount).to.equal(BigNumber.from(0));
+            expect(payers[0]).to.equal(purchaser.address);
+
+            const payer: Escrow.PayerStructOutput = await escrowContract.getPayer(payers[0]);
+            expect(payer.depositedAmount).to.equal(BigNumber.from(0));
+            expect(payer.isPresent).to.be.true;
 
             expect(await escrowContract.getAgreedAmount()).to.equal(agreedAmount);
             expect(await escrowContract.getAgreedAmount()).to.equal(agreedAmount);
@@ -252,7 +253,6 @@ describe('Escrow.sol', () => {
             expect(tx).emit(escrowContract, 'Refunded').withArgs(delegate.address, depositAmount / 4);
         });
 
-
         it("refundAllowed should return true if state is 'Refunding'", async () => {
             const tx = await escrowContract.connect(admin).enableRefund();
 
@@ -378,5 +378,5 @@ describe('Escrow.sol', () => {
         it('should fail updating commission address if new address is zero address', async () => {
             await expect(escrowContract.connect(admin).updateCommissioner(ethers.constants.AddressZero)).to.be.revertedWith('Escrow: commissioner is the zero address');
         });
-    })
+    });
 });

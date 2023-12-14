@@ -2,9 +2,7 @@ import {createMock} from 'ts-auto-mock';
 import {EscrowManagerService} from "./EscrowManagerService";
 import {EscrowManagerDriver} from "../drivers/EscrowManagerDriver";
 import {Escrow} from "../entities/Escrow";
-import {Escrow as EscrowContract} from "../smart-contracts";
 import {EscrowStatus} from "../types/EscrowStatus";
-import {BigNumber} from "ethers";
 
 describe('EscrowManagerService', () => {
     let escrowManagerService: EscrowManagerService;
@@ -14,15 +12,15 @@ describe('EscrowManagerService', () => {
         registerEscrow: jest.fn(),
         getCommissioner: jest.fn(),
         updateCommissioner: jest.fn(),
+        getBaseFee: jest.fn(),
+        updateBaseFee: jest.fn(),
+        getPercentageFee: jest.fn(),
+        updatePercentageFee: jest.fn(),
         getEscrow: jest.fn(),
         getEscrowsId: jest.fn(),
     };
-    const payers: EscrowContract.PayersStructOutput[] = [{
-        payerAddress: 'payer',
-        depositedAmount: BigNumber.from(0),
-    }] as EscrowContract.PayersStructOutput[];
 
-    const escrow = new Escrow("payee", "purchaser", payers, 1000, 100, EscrowStatus.ACTIVE, 0, "tokenAddress", "commissioner", 20, 1);
+    const escrow = new Escrow("payee", "purchaser", ["purchaser", "delegate"], 1000, 100, EscrowStatus.ACTIVE, 0, "tokenAddress", "commissioner", 20, 1);
 
     beforeAll(() => {
         mockedEscrowManagerDriver = createMock<EscrowManagerDriver>(mockedInstance);
@@ -35,9 +33,9 @@ describe('EscrowManagerService', () => {
     it.each([
         {
             serviceFunctionName: 'registerEscrow',
-            serviceFunction: () => escrowManagerService.registerEscrow(escrow.payee, escrow.purchaser, escrow.agreedAmount, escrow.duration, escrow.tokenAddress, escrow.baseFee, escrow.percentageFee),
+            serviceFunction: () => escrowManagerService.registerEscrow(escrow.payee, escrow.purchaser, escrow.agreedAmount, escrow.duration, escrow.tokenAddress),
             expectedMockedFunction: mockedInstance.registerEscrow,
-            expectedMockedFunctionArgs: [escrow.payee, escrow.purchaser, escrow.agreedAmount, escrow.duration, escrow.tokenAddress, escrow.baseFee, escrow.percentageFee],
+            expectedMockedFunctionArgs: [escrow.payee, escrow.purchaser, escrow.agreedAmount, escrow.duration, escrow.tokenAddress],
         },
         {
             serviceFunctionName: 'getCommissioner',
@@ -50,6 +48,30 @@ describe('EscrowManagerService', () => {
             serviceFunction: () => escrowManagerService.updateCommissioner(escrow.commissioner),
             expectedMockedFunction: mockedInstance.updateCommissioner,
             expectedMockedFunctionArgs: [escrow.commissioner],
+        },
+        {
+            serviceFunctionName: 'getBaseFee',
+            serviceFunction: () => escrowManagerService.getBaseFee(),
+            expectedMockedFunction: mockedInstance.getBaseFee,
+            expectedMockedFunctionArgs: [],
+        },
+        {
+            serviceFunctionName: 'updateBaseFee',
+            serviceFunction: () => escrowManagerService.updateBaseFee(escrow.baseFee),
+            expectedMockedFunction: mockedInstance.updateBaseFee,
+            expectedMockedFunctionArgs: [escrow.baseFee],
+        },
+        {
+            serviceFunctionName: 'getPercentageFee',
+            serviceFunction: () => escrowManagerService.getPercentageFee(),
+            expectedMockedFunction: mockedInstance.getPercentageFee,
+            expectedMockedFunctionArgs: [],
+        },
+        {
+            serviceFunctionName: 'updatePercentageFee',
+            serviceFunction: () => escrowManagerService.updatePercentageFee(escrow.percentageFee),
+            expectedMockedFunction: mockedInstance.updatePercentageFee,
+            expectedMockedFunctionArgs: [escrow.percentageFee],
         },
         {
             serviceFunctionName: 'getEscrow',

@@ -203,9 +203,9 @@ export class TradeDriver {
         }
     }
 
-    async addOrderEscrow(orderId: number, agreedAmount: number, tokenAddress: string, baseFee: number, percentageFee: number): Promise<void> {
+    async addOrderEscrow(orderId: number, agreedAmount: number, tokenAddress: string): Promise<void> {
         try {
-            const tx = await this._contract.addOrderEscrow(orderId, agreedAmount, tokenAddress, baseFee, percentageFee);
+            const tx = await this._contract.addOrderEscrow(orderId, agreedAmount, tokenAddress);
             await tx.wait();
         } catch (e: any) {
             throw new Error(e.message);

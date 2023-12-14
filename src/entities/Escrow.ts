@@ -1,12 +1,11 @@
 import {EscrowStatus} from "../types/EscrowStatus";
-import {Escrow as EscrowContract} from "../smart-contracts";
 
 export class Escrow {
     private _payee: string;
 
     private _purchaser: string;
 
-    private _payers: EscrowContract.PayersStructOutput[];
+    private _payers: string[];
 
     private _agreedAmount: number;
 
@@ -24,7 +23,7 @@ export class Escrow {
 
     private _percentageFee: number;
 
-    constructor(payee: string, purchaser: string, payers: EscrowContract.PayersStructOutput[], agreedAmount: number, deployedAt: number, duration: number, state: EscrowStatus, tokenAddress: string, commissioner: string, baseFee: number, percentageFee: number) {
+    constructor(payee: string, purchaser: string, payers: string[], agreedAmount: number, deployedAt: number, duration: number, state: EscrowStatus, tokenAddress: string, commissioner: string, baseFee: number, percentageFee: number) {
         this._payee = payee;
         this._purchaser = purchaser;
         this._payers = payers;
@@ -54,11 +53,11 @@ export class Escrow {
         this._purchaser = value;
     }
 
-    get payers(): EscrowContract.PayersStructOutput[] {
+    get payers(): string[] {
         return this._payers;
     }
 
-    set payers(value: EscrowContract.PayersStructOutput[]) {
+    set payers(value: string[]) {
         this._payers = value;
     }
 

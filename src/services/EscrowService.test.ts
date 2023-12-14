@@ -10,6 +10,7 @@ describe('EscrowService', () => {
         getPayee: jest.fn(),
         getPurchaser: jest.fn(),
         getPayers: jest.fn(),
+        getPayer: jest.fn(),
         getAgreedAmount: jest.fn(),
         getDeployedAt: jest.fn(),
         getDuration: jest.fn(),
@@ -19,6 +20,8 @@ describe('EscrowService', () => {
         getCommissioner: jest.fn(),
         getBaseFee: jest.fn(),
         getPercentageFee: jest.fn(),
+        updateBaseFee: jest.fn(),
+        updatePercentageFee: jest.fn(),
         updateCommissioner: jest.fn(),
         getDeadline: jest.fn(),
         hasExpired: jest.fn(),
@@ -62,6 +65,12 @@ describe('EscrowService', () => {
             serviceFunction: () => escrowService.getPayers(),
             expectedMockedFunction: mockedInstance.getPayers,
             expectedMockedFunctionArgs: [],
+        },
+        {
+            serviceFunctionName: 'getPayer',
+            serviceFunction: () => escrowService.getPayer("0x123"),
+            expectedMockedFunction: mockedInstance.getPayer,
+            expectedMockedFunctionArgs: ["0x123"],
         },
         {
             serviceFunctionName: 'getAgreedAmount',
@@ -112,10 +121,22 @@ describe('EscrowService', () => {
             expectedMockedFunctionArgs: [],
         },
         {
+            serviceFunctionName: 'updateBaseFee',
+            serviceFunction: () => escrowService.updateBaseFee(1),
+            expectedMockedFunction: mockedInstance.updateBaseFee,
+            expectedMockedFunctionArgs: [1],
+        },
+        {
             serviceFunctionName: 'getPercentageFee',
             serviceFunction: () => escrowService.getPercentageFee(),
             expectedMockedFunction: mockedInstance.getPercentageFee,
             expectedMockedFunctionArgs: [],
+        },
+        {
+            serviceFunctionName: 'updatePercentageFee',
+            serviceFunction: () => escrowService.updatePercentageFee(1),
+            expectedMockedFunction: mockedInstance.updatePercentageFee,
+            expectedMockedFunctionArgs: [1],
         },
         {
             serviceFunctionName: 'updateCommissioner',

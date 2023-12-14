@@ -194,9 +194,9 @@ describe('TradeService', () => {
         },
         {
             serviceFunctionName: 'addOrderEscrow',
-            serviceFunction: () => tradeService.addOrderEscrow(1, 100, 'tokenAddress', 10, 10),
+            serviceFunction: () => tradeService.addOrderEscrow(1, 100, 'tokenAddress'),
             expectedMockedFunction: mockedTradeDriver.addOrderEscrow,
-            expectedMockedFunctionArgs: [1, 100, 'tokenAddress', 10, 10],
+            expectedMockedFunctionArgs: [1, 100, 'tokenAddress'],
         },
         {
             serviceFunctionName: 'confirmOrder',
