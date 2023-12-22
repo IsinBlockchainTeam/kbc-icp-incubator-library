@@ -1,7 +1,7 @@
-import {BigNumber, Signer, Wallet} from 'ethers';
+import { BigNumber, Signer, Wallet } from 'ethers';
 import { createMock } from 'ts-auto-mock';
-import {EscrowManagerDriver} from "./EscrowManagerDriver";
-import { EscrowManager, EscrowManager__factory } from "../smart-contracts";
+import { EscrowManagerDriver } from './EscrowManagerDriver';
+import { EscrowManager, EscrowManager__factory } from '../smart-contracts';
 
 describe('EscrowManagerDriver', () => {
     let escrowManagerDriver: EscrowManagerDriver;
@@ -23,7 +23,7 @@ describe('EscrowManagerDriver', () => {
     const mockedGetBaseFee = jest.fn();
     const mockedGetPercentageFee = jest.fn();
     const mockedGetEscrow = jest.fn();
-    const mockedGetEscrowId = jest.fn();
+    const mockedGetEscrowIdsOfPurchaser = jest.fn();
 
     mockedWriteFunction.mockResolvedValue({
         wait: mockedWait,
@@ -32,7 +32,7 @@ describe('EscrowManagerDriver', () => {
     mockedGetBaseFee.mockReturnValue(Promise.resolve(BigNumber.from(baseFee)));
     mockedGetPercentageFee.mockReturnValue(Promise.resolve(BigNumber.from(percentageFee)));
     mockedGetEscrow.mockReturnValue(Promise.resolve(escrowAddress));
-    mockedGetEscrowId.mockReturnValue(Promise.resolve([BigNumber.from(0)]));
+    mockedGetEscrowIdsOfPurchaser.mockReturnValue(Promise.resolve([BigNumber.from(0)]));
 
     const mockedContract = createMock<EscrowManager>({
         registerEscrow: mockedWriteFunction,
@@ -43,14 +43,16 @@ describe('EscrowManagerDriver', () => {
         getPercentageFee: mockedGetPercentageFee,
         updatePercentageFee: mockedWriteFunction,
         getEscrow: mockedGetEscrow,
-        getEscrowsId: mockedGetEscrowId,
+        getEscrowIdsOfPurchaser: mockedGetEscrowIdsOfPurchaser,
     });
 
-    beforeAll(() => {mockedEscrowManagerConnect.mockReturnValue(mockedContract);
+    beforeAll(() => {
+        mockedEscrowManagerConnect.mockReturnValue(mockedContract);
         const mockedEscrowManager = createMock<EscrowManager>({
             connect: mockedEscrowManagerConnect,
         });
-        jest.spyOn(EscrowManager__factory, 'connect').mockReturnValue(mockedEscrowManager);
+        jest.spyOn(EscrowManager__factory, 'connect')
+            .mockReturnValue(mockedEscrowManager);
 
         mockedSigner = createMock<Signer>();
         escrowManagerDriver = new EscrowManagerDriver(mockedSigner, contractAddress);
@@ -59,106 +61,150 @@ describe('EscrowManagerDriver', () => {
     afterAll(() => jest.clearAllMocks());
 
     it('should correctly register a new Escrow', async () => {
-        await escrowManagerDriver.registerEscrow(payee, purchaser, 1000,1, contractAddress);
+        await escrowManagerDriver.registerEscrow(payee, purchaser, 1000, 1, contractAddress);
 
-        expect(mockedContract.registerEscrow).toHaveBeenCalledTimes(1);
-        expect(mockedContract.registerEscrow).toHaveBeenNthCalledWith(1, payee, purchaser, 1000, 1, contractAddress);
+        expect(mockedContract.registerEscrow)
+            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.registerEscrow)
+            .toHaveBeenNthCalledWith(1, payee, purchaser, 1000, 1, contractAddress);
 
-        expect(mockedWait).toHaveBeenCalledTimes(1);
+        expect(mockedWait)
+            .toHaveBeenCalledTimes(1);
     });
 
     it('should correctly register a new Escrow - FAIL(Not an address)', async () => {
-        await expect(escrowManagerDriver.registerEscrow('notAnAddress', purchaser, 1000, 1, contractAddress)).rejects.toThrowError(new Error('Not an address'));
+        await expect(escrowManagerDriver.registerEscrow('notAnAddress', purchaser, 1000, 1, contractAddress))
+            .rejects
+            .toThrowError(new Error('Not an address'));
 
-        expect(mockedContract.registerEscrow).toHaveBeenCalledTimes(0);
-        expect(mockedWait).toHaveBeenCalledTimes(0)
+        expect(mockedContract.registerEscrow)
+            .toHaveBeenCalledTimes(0);
+        expect(mockedWait)
+            .toHaveBeenCalledTimes(0);
     });
 
     it('should correctly retrieve commissioner', async () => {
         const response = await escrowManagerDriver.getCommissioner();
 
-        expect(response).toEqual(commissioner);
+        expect(response)
+            .toEqual(commissioner);
 
-        expect(mockedContract.getCommissioner).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getCommissioner).toHaveBeenNthCalledWith(1);
-        expect(mockedGetCommissioner).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getCommissioner)
+            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.getCommissioner)
+            .toHaveBeenNthCalledWith(1);
+        expect(mockedGetCommissioner)
+            .toHaveBeenCalledTimes(1);
     });
 
     it('should correctly update commissioner', async () => {
         await escrowManagerDriver.updateCommissioner(payee);
 
-        expect(mockedContract.updateCommissioner).toHaveBeenCalledTimes(1);
-        expect(mockedContract.updateCommissioner).toHaveBeenNthCalledWith(1, payee);
-        expect(mockedWait).toHaveBeenCalledTimes(1);
+        expect(mockedContract.updateCommissioner)
+            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.updateCommissioner)
+            .toHaveBeenNthCalledWith(1, payee);
+        expect(mockedWait)
+            .toHaveBeenCalledTimes(1);
     });
 
     it('should correctly update commissioner - FAIL(Not an address)', async () => {
-        await expect(escrowManagerDriver.updateCommissioner('notAnAddress')).rejects.toThrowError(new Error('Not an address'));
+        await expect(escrowManagerDriver.updateCommissioner('notAnAddress'))
+            .rejects
+            .toThrowError(new Error('Not an address'));
 
-        expect(mockedContract.updateCommissioner).toHaveBeenCalledTimes(0);
-        expect(mockedWait).toHaveBeenCalledTimes(0)
+        expect(mockedContract.updateCommissioner)
+            .toHaveBeenCalledTimes(0);
+        expect(mockedWait)
+            .toHaveBeenCalledTimes(0);
     });
 
     it('should correctly retrieve base fee', async () => {
         const response = await escrowManagerDriver.getBaseFee();
 
-        expect(response).toEqual(baseFee);
+        expect(response)
+            .toEqual(baseFee);
 
-        expect(mockedContract.getBaseFee).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getBaseFee).toHaveBeenNthCalledWith(1);
-        expect(mockedGetBaseFee).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getBaseFee)
+            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.getBaseFee)
+            .toHaveBeenNthCalledWith(1);
+        expect(mockedGetBaseFee)
+            .toHaveBeenCalledTimes(1);
     });
 
     it('should correctly update base fee', async () => {
         await escrowManagerDriver.updateBaseFee(10);
 
-        expect(mockedContract.updateBaseFee).toHaveBeenCalledTimes(1);
-        expect(mockedContract.updateBaseFee).toHaveBeenNthCalledWith(1, 10);
-        expect(mockedWait).toHaveBeenCalledTimes(1);
+        expect(mockedContract.updateBaseFee)
+            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.updateBaseFee)
+            .toHaveBeenNthCalledWith(1, 10);
+        expect(mockedWait)
+            .toHaveBeenCalledTimes(1);
     });
 
     it('should correctly retrieve percentage fee', async () => {
         const response = await escrowManagerDriver.getPercentageFee();
 
-        expect(response).toEqual(percentageFee);
+        expect(response)
+            .toEqual(percentageFee);
 
-        expect(mockedContract.getPercentageFee).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getPercentageFee).toHaveBeenNthCalledWith(1);
-        expect(mockedGetPercentageFee).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getPercentageFee)
+            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.getPercentageFee)
+            .toHaveBeenNthCalledWith(1);
+        expect(mockedGetPercentageFee)
+            .toHaveBeenCalledTimes(1);
     });
 
     it('should correctly update percentage fee', async () => {
         await escrowManagerDriver.updatePercentageFee(10);
 
-        expect(mockedContract.updatePercentageFee).toHaveBeenCalledTimes(1);
-        expect(mockedContract.updatePercentageFee).toHaveBeenNthCalledWith(1, 10);
-        expect(mockedWait).toHaveBeenCalledTimes(1);
+        expect(mockedContract.updatePercentageFee)
+            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.updatePercentageFee)
+            .toHaveBeenNthCalledWith(1, 10);
+        expect(mockedWait)
+            .toHaveBeenCalledTimes(1);
     });
 
     it('should correctly update percentage fee - FAIL(Percentage fee must be between 0 and 100)', async () => {
-        await expect(escrowManagerDriver.updatePercentageFee(101)).rejects.toThrowError(new Error('Percentage fee must be between 0 and 100'));
+        await expect(escrowManagerDriver.updatePercentageFee(101))
+            .rejects
+            .toThrowError(new Error('Percentage fee must be between 0 and 100'));
 
-        expect(mockedContract.updatePercentageFee).toHaveBeenCalledTimes(0);
-        expect(mockedWait).toHaveBeenCalledTimes(0);
+        expect(mockedContract.updatePercentageFee)
+            .toHaveBeenCalledTimes(0);
+        expect(mockedWait)
+            .toHaveBeenCalledTimes(0);
     });
 
     it('should correctly retrieve an Escrow', async () => {
         const response = await escrowManagerDriver.getEscrow(1);
 
-        expect(response).toEqual(escrowAddress);
+        expect(response)
+            .toEqual(escrowAddress);
 
-        expect(mockedContract.getEscrow).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getEscrow).toHaveBeenNthCalledWith(1, 1);
-        expect(mockedGetEscrow).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getEscrow)
+            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.getEscrow)
+            .toHaveBeenNthCalledWith(1, 1);
+        expect(mockedGetEscrow)
+            .toHaveBeenCalledTimes(1);
     });
 
-    it('should correctly retrieve payees', async () => {
-        const response = await escrowManagerDriver.getEscrowsId(purchaser);
+    it('should correctly retrieve IDs of purchaser\'s escrows', async () => {
+        const response = await escrowManagerDriver.getEscrowIdsOfPurchaser(purchaser);
 
-        expect(response).toEqual([0]);
+        expect(response)
+            .toEqual([0]);
 
-        expect(mockedContract.getEscrowsId).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getEscrowsId).toHaveBeenNthCalledWith(1, purchaser);
-        expect(mockedGetEscrowId).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getEscrowIdsOfPurchaser)
+            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.getEscrowIdsOfPurchaser)
+            .toHaveBeenNthCalledWith(1, purchaser);
+        expect(mockedGetEscrowIdsOfPurchaser)
+            .toHaveBeenCalledTimes(1);
     });
 });

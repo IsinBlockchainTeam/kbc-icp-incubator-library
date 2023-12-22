@@ -1,8 +1,8 @@
-import {createMock} from 'ts-auto-mock';
-import {EscrowManagerService} from "./EscrowManagerService";
-import {EscrowManagerDriver} from "../drivers/EscrowManagerDriver";
-import {Escrow} from "../entities/Escrow";
-import {EscrowStatus} from "../types/EscrowStatus";
+import { createMock } from 'ts-auto-mock';
+import { EscrowManagerService } from './EscrowManagerService';
+import { EscrowManagerDriver } from '../drivers/EscrowManagerDriver';
+import { Escrow } from '../entities/Escrow';
+import { EscrowStatus } from '../types/EscrowStatus';
 
 describe('EscrowManagerService', () => {
     let escrowManagerService: EscrowManagerService;
@@ -17,16 +17,16 @@ describe('EscrowManagerService', () => {
         getPercentageFee: jest.fn(),
         updatePercentageFee: jest.fn(),
         getEscrow: jest.fn(),
-        getEscrowsId: jest.fn(),
+        getEscrowIdsOfPurchaser: jest.fn(),
     };
 
-    const escrow = new Escrow("payee", "purchaser", ["purchaser", "delegate"], 1000, 100, EscrowStatus.ACTIVE, 0, "tokenAddress", "commissioner", 20, 1);
+    const escrow = new Escrow('payee', 'purchaser', ['purchaser', 'delegate'], 1000, 100, EscrowStatus.ACTIVE, 0, 'tokenAddress', 'commissioner', 20, 1);
 
     beforeAll(() => {
         mockedEscrowManagerDriver = createMock<EscrowManagerDriver>(mockedInstance);
 
         escrowManagerService = new EscrowManagerService(mockedEscrowManagerDriver);
-    })
+    });
 
     afterAll(() => jest.restoreAllMocks());
 
@@ -80,15 +80,21 @@ describe('EscrowManagerService', () => {
             expectedMockedFunctionArgs: [1],
         },
         {
-            serviceFunctionName: 'getEscrowsId',
-            serviceFunction: () => escrowManagerService.getEscrowsId(escrow.purchaser),
-            expectedMockedFunction: mockedInstance.getEscrowsId,
+            serviceFunctionName: 'getEscrowIdsOfPurchaser',
+            serviceFunction: () => escrowManagerService.getEscrowIdsOfPurchaser(escrow.purchaser),
+            expectedMockedFunction: mockedInstance.getEscrowIdsOfPurchaser,
             expectedMockedFunctionArgs: [escrow.purchaser],
         },
-    ])('service should call driver $serviceFunctionName', async ({ serviceFunction, expectedMockedFunction, expectedMockedFunctionArgs }) => {
+    ])('service should call driver $serviceFunctionName', async ({
+        serviceFunction,
+        expectedMockedFunction,
+        expectedMockedFunctionArgs,
+    }) => {
         await serviceFunction();
 
-        expect(expectedMockedFunction).toHaveBeenCalledTimes(1);
-        expect(expectedMockedFunction).toHaveBeenCalledWith(...expectedMockedFunctionArgs);
+        expect(expectedMockedFunction)
+            .toHaveBeenCalledTimes(1);
+        expect(expectedMockedFunction)
+            .toHaveBeenCalledWith(...expectedMockedFunctionArgs);
     });
 });

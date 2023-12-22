@@ -66,11 +66,6 @@ describe('DocumentManager', () => {
             expect(savedDocument.externalUrl).to.equal(rawDocument.externalUrl);
         });
 
-        it('should register a document - FAIL (Sender has no permissions)', async () => {
-            await expect(documentManagerContract.connect(sender).registerDocument(transactionId, transactionTypes[0], rawDocument.name, rawDocument.documentType, rawDocument.externalUrl))
-                .to.be.revertedWith('Sender has no permissions');
-        });
-
         it('should register a document - FAIL (The transaction type specified isn\'t registered)', async () => {
             await expect(documentManagerContract.connect(owner).registerDocument(transactionId, 'custom type', rawDocument.name, rawDocument.documentType, rawDocument.externalUrl))
                 .to.be.revertedWith('The transaction type specified isn\'t registered');

@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-
 import { BigNumber, Signer, Wallet } from 'ethers';
 import { createMock } from 'ts-auto-mock';
 import { MaterialDriver } from './MaterialDriver';

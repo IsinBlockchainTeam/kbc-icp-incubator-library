@@ -2,14 +2,12 @@
 pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "./Escrow.sol";
 
 import "hardhat/console.sol";
 
 contract EscrowManager is AccessControl {
-    using Address for address payable;
     using Counters for Counters.Counter;
     Counters.Counter private _counter;
 
@@ -30,14 +28,14 @@ contract EscrowManager is AccessControl {
     uint256 private _baseFee;
     uint256 private _percentageFee;
     mapping(uint256 => Escrow) private _escrows;
-    //mapping(payer => Escrow_id[])
+    // mapping(payer => Escrow_id[])
     mapping(address => uint256[]) private _escrowsOfPurchaser;
 
     constructor(address[] memory admins, address commissioner, uint256 baseFee, uint256 percentageFee) {
         require(commissioner != address(0), "EscrowManager: commissioner is the zero address");
         require(percentageFee <= 100, "EscrowManager: percentage fee cannot be greater than 100");
 
-        _setupRole(ADMIN_ROLE, msg.sender);
+        _setupRole(ADMIN_ROLE, _msgSender());
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
         for (uint256 i = 0; i < admins.length; ++i) {
             grantRole(ADMIN_ROLE, admins[i]);
@@ -52,6 +50,7 @@ contract EscrowManager is AccessControl {
         require(payee != address(0), "EscrowManager: payee is the zero address");
         require(purchaser != address(0), "EscrowManager: purchaser is the zero address");
         require(tokenAddress != address(0), "EscrowManager: token address is the zero address");
+
         uint256 id = _counter.current();
         _counter.increment();
 
@@ -64,6 +63,7 @@ contract EscrowManager is AccessControl {
         Escrow newEscrow = new Escrow(adminArray, payee, purchaser, agreedAmount, duration, tokenAddress, _commissioner, _baseFee, _percentageFee);
         _escrows[id] = newEscrow;
         _escrowsOfPurchaser[purchaser].push(id);
+
         emit EscrowRegistered(id, payee, purchaser, agreedAmount, tokenAddress, _commissioner);
         return newEscrow;
     }
@@ -119,7 +119,7 @@ contract EscrowManager is AccessControl {
         return _escrows[id];
     }
 
-    function getEscrowsId(address purchaser) public view returns (uint256[] memory) {
+    function getEscrowIdsOfPurchaser(address purchaser) public view returns (uint256[] memory) {
         return _escrowsOfPurchaser[purchaser];
     }
 }

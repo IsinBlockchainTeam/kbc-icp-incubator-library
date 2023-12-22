@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-
 import { Signer, utils } from 'ethers';
 import { MaterialManager, MaterialManager__factory } from '../smart-contracts';
 import { EntityBuilder } from '../utils/EntityBuilder';

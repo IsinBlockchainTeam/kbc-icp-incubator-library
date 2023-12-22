@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 /* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
 import { Signer, utils } from 'ethers';

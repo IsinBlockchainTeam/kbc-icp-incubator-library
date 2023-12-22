@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { createMock } from 'ts-auto-mock';
 import { BigNumber, ethers, Signer } from 'ethers';
 import { RelationshipManager, RelationshipManager__factory } from '../smart-contracts';

@@ -1,11 +1,15 @@
 export enum ContractName {
     ENUMERABLE_TYPE_MANAGER = 'EnumerableType',
     TRADE_MANAGER = 'TradeManager',
+    BASIC_TRADE = 'BasicTrade',
+    ORDER_TRADE = 'OrderTrade',
+    OLD_TRADE_MANAGER = 'OldTradeManager',
     TRANSFORMATION_MANAGER = 'TransformationManager',
     MATERIAL_MANAGER = 'MaterialManager',
     RELATIONSHIP_MANAGER = 'RelationshipManager',
     DOCUMENT_MANAGER = 'DocumentManager',
     OFFER_MANAGER = 'OfferManager',
     ESCROW_MANAGER = 'EscrowManager',
+    ESCROW = 'Escrow',
     MY_TOKEN = 'MyToken',
 }

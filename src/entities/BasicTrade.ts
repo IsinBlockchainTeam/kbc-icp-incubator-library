@@ -1,15 +1,18 @@
-import { BasicTradeInfo } from './BasicTradeInfo';
+import { Line, Trade } from './Trade';
 
-export class BasicTrade extends BasicTradeInfo {
-    private readonly _issueDate?: Date;
+export class BasicTrade extends Trade {
+    private _name: string;
 
-    constructor(basicTradeInfo: BasicTradeInfo, issueDate: Date) {
-        super(basicTradeInfo.id, basicTradeInfo.supplier, basicTradeInfo.customer,
-            basicTradeInfo.externalUrl, basicTradeInfo.lineIds, basicTradeInfo.name);
-        this._issueDate = issueDate;
+    constructor(tradeId: number, supplier: string, customer: string, commissioner: string, externalUrl: string, lines: Map<number, Line>, lineIds: number[], name: string) {
+        super(tradeId, supplier, customer, commissioner, externalUrl, lines, lineIds);
+        this._name = name;
     }
 
-    get issueDate(): Date | undefined {
-        return this._issueDate;
+    get name(): string {
+        return this._name;
+    }
+
+    set name(newName: string) {
+        this._name = newName;
     }
 }

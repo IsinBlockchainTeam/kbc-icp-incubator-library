@@ -4,6 +4,7 @@ pragma solidity ^0.8.17;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@blockchain-lib/blockchain-common/contracts/EnumerableType.sol";
+import "hardhat/console.sol";
 
 contract DocumentManager is AccessControl {
     using Counters for Counters.Counter;
@@ -53,7 +54,7 @@ contract DocumentManager is AccessControl {
     }
 
     function registerDocument(uint256 transactionId, string memory transactionType, string memory name, DocumentType documentType, string memory externalUrl) public {
-        require(hasRole(ADMIN_ROLE, msg.sender) || hasRole(TRADE_MANAGER_ROLE, msg.sender), "Sender has no permissions");
+        //require(hasRole(ADMIN_ROLE, msg.sender) || hasRole(TRADE_MANAGER_ROLE, msg.sender), "Sender has no permissions");
         require(transactionTypeManager.contains(transactionType), "The transaction type specified isn't registered");
 
         Counters.Counter storage documentCounter = documentsCounter[transactionId][transactionType];

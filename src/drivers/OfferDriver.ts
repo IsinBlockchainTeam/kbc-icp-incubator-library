@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-
 import { Signer, utils } from 'ethers';
 import { OfferManager, OfferManager__factory } from '../smart-contracts';
 import { Offer } from '../entities/Offer';

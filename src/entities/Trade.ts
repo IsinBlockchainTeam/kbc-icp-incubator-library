@@ -1,28 +1,14 @@
-export enum TradeType {
-    TRADE,
-    ORDER
-}
+export class Line {
+    protected _id: number;
 
-export class Trade {
-    private _id: number;
+    protected _materialsId: [number, number];
 
-    private _supplier: string;
+    protected _productCategory: string;
 
-    private _customer: string;
-
-    private readonly _externalUrl: string;
-
-    private _lineIds: number[];
-
-    private readonly _type: TradeType;
-
-    constructor(id: number, supplier: string, customer: string, externalUrl: string, lineIds: number[], type: TradeType) {
+    constructor(id: number, materialsId: [number, number], productCategory: string) {
         this._id = id;
-        this._supplier = supplier;
-        this._customer = customer;
-        this._externalUrl = externalUrl;
-        this._lineIds = lineIds;
-        this._type = type;
+        this._materialsId = materialsId;
+        this._productCategory = productCategory;
     }
 
     get id(): number {
@@ -31,6 +17,56 @@ export class Trade {
 
     set id(value: number) {
         this._id = value;
+    }
+
+    get materialsId(): [number, number] {
+        return this._materialsId;
+    }
+
+    set materialsId(value: [number, number]) {
+        this._materialsId = value;
+    }
+
+    get productCategory(): string {
+        return this._productCategory;
+    }
+
+    set productCategory(value: string) {
+        this._productCategory = value;
+    }
+}
+
+export abstract class Trade {
+    protected _tradeId: number;
+
+    protected _supplier: string;
+
+    protected _customer: string;
+
+    protected _commissioner: string;
+
+    protected _externalUrl: string;
+
+    protected _lines: Map<number, Line>;
+
+    protected _lineIds: number[];
+
+    protected constructor(tradeId: number, supplier: string, customer: string, commissioner: string, externalUrl: string, lines: Map<number, Line>, lineIds: number[]) {
+        this._tradeId = tradeId;
+        this._supplier = supplier;
+        this._customer = customer;
+        this._commissioner = commissioner;
+        this._externalUrl = externalUrl;
+        this._lines = lines;
+        this._lineIds = lineIds;
+    }
+
+    get tradeId(): number {
+        return this._tradeId;
+    }
+
+    set tradeId(value: number) {
+        this._tradeId = value;
     }
 
     get supplier(): string {
@@ -49,19 +85,35 @@ export class Trade {
         this._customer = value;
     }
 
-    get lineIds(): number[] {
-        return this._lineIds;
+    get commissioner(): string {
+        return this._commissioner;
     }
 
-    set lineIds(value: number[]) {
-        this._lineIds = value;
+    set commissioner(value: string) {
+        this._commissioner = value;
     }
 
     get externalUrl(): string {
         return this._externalUrl;
     }
 
-    get type(): TradeType {
-        return this._type;
+    set externalUrl(value: string) {
+        this._externalUrl = value;
+    }
+
+    get lines(): Map<number, Line> {
+        return this._lines;
+    }
+
+    set lines(value: Map<number, Line>) {
+        this._lines = value;
+    }
+
+    get lineIds(): number[] {
+        return this._lineIds;
+    }
+
+    set lineIds(value: number[]) {
+        this._lineIds = value;
     }
 }

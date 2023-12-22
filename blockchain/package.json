@@ -2,6 +2,7 @@
   "name": "decentralized-coffe-trading",
   "version": "1.0.0",
   "scripts": {
+    "clear": "rm -rf ./cache ./artifacts ./typechain-types ../src/smart-contracts",
     "test": "NODE_ENV=test npx hardhat test",
     "coverage": "NODE_ENV=test npx hardhat coverage",
     "gasReport": "REPORT_GAS=true npx hardhat test",

@@ -70,7 +70,7 @@ contract Escrow is AccessControl {
     uint256 private _baseFee;
     uint256 private _percentageFee;
 
-    constructor(address[] memory admins, address payee, address purchaser, uint256 agreedAmount,uint256 duration, address tokenAddress, address commissioner, uint256 baseFee, uint256 percentageFee) {
+    constructor(address[] memory admins, address payee, address purchaser, uint256 agreedAmount, uint256 duration, address tokenAddress, address commissioner, uint256 baseFee, uint256 percentageFee) {
         require(payee != address(0), "Escrow: payee is the zero address");
         require(purchaser != address(0), "Escrow: purchaser is the zero address");
         require(tokenAddress != address(0), "Escrow: token address is the zero address");

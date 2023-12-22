@@ -1,44 +1,121 @@
-import { Trade, TradeType } from './Trade';
+import { BigNumber } from 'ethers';
+import { Line, Trade } from './Trade';
+import { Trade as TradeContract } from '../smart-contracts';
+import { EntityBuilder } from '../utils/EntityBuilder';
 
-class TestDummyTrade extends Trade {
-    constructor(id: number, supplier: string, customer: string, externalUrl: string, lineIds: number[]) {
-        super(id, supplier, customer, externalUrl, lineIds, TradeType.TRADE);
+class TestTrade extends Trade {
+    constructor(tradeId: number, supplier: string, customer: string, commissioner: string, externalUrl: string, lines: Map<number, Line>, lineIds: number[]) {
+        super(tradeId, supplier, customer, commissioner, externalUrl, lines, lineIds);
     }
 }
 
-describe('Trade', () => {
-    let trade: TestDummyTrade;
+describe('Line', () => {
+    let line: Line;
 
     beforeAll(() => {
-        trade = new TestDummyTrade(0, 'supplier', 'customer', 'externalUrl', [1, 2]);
+        line = new Line(0, [1, 2], 'test');
     });
 
-    it('should correctly initialize a new BasicTrade', () => {
-        expect(trade.id).toEqual(0);
-        expect(trade.supplier).toEqual('supplier');
-        expect(trade.customer).toEqual('customer');
-        expect(trade.externalUrl).toEqual('externalUrl');
-        expect(trade.lineIds).toEqual([1, 2]);
-        expect(trade.type).toEqual(TradeType.TRADE);
+    it('should correctly initialize a Line', () => {
+        expect(line.id)
+            .toEqual(0);
+        expect(line.materialsId)
+            .toEqual([1, 2]);
+        expect(line.productCategory)
+            .toEqual('test');
     });
 
     it('should correctly set the id', () => {
-        trade.id = 1;
-        expect(trade.id).toEqual(1);
+        line.id = 42;
+        expect(line.id)
+            .toEqual(42);
+    });
+
+    it('should correctly set the materialsId', () => {
+        line.materialsId = [3, 4];
+        expect(line.materialsId)
+            .toEqual([3, 4]);
+    });
+
+    it('should correctly set the product category', () => {
+        line.productCategory = 'new';
+        expect(line.productCategory)
+            .toEqual('new');
+    });
+});
+
+describe('Trade', () => {
+    let trade: TestTrade;
+
+    beforeAll(() => {
+        trade = new TestTrade(0, 'supplier', 'customer', 'commissioner', 'https://test.com', new Map<number, Line>(), []);
+    });
+
+    it('should correctly initialize a Trade', () => {
+        expect(trade.tradeId)
+            .toEqual(0);
+        expect(trade.supplier)
+            .toEqual('supplier');
+        expect(trade.customer)
+            .toEqual('customer');
+        expect(trade.commissioner)
+            .toEqual('commissioner');
+        expect(trade.externalUrl)
+            .toEqual('https://test.com');
+        expect(trade.lines)
+            .toEqual(new Map<number, TradeContract.LineStructOutput>());
+        expect(trade.lineIds)
+            .toEqual([]);
+    });
+
+    it('should correctly set the tradeId', () => {
+        trade.tradeId = 42;
+        expect(trade.tradeId)
+            .toEqual(42);
     });
 
     it('should correctly set the supplier', () => {
-        trade.supplier = 'supplier 2';
-        expect(trade.supplier).toEqual('supplier 2');
+        trade.supplier = 'newSupplier';
+        expect(trade.supplier)
+            .toEqual('newSupplier');
     });
 
     it('should correctly set the customer', () => {
-        trade.customer = 'customer 2';
-        expect(trade.customer).toEqual('customer 2');
+        trade.customer = 'newCustomer';
+        expect(trade.customer)
+            .toEqual('newCustomer');
+    });
+
+    it('should correctly set the commissioner', () => {
+        trade.commissioner = 'newCommissioner';
+        expect(trade.commissioner)
+            .toEqual('newCommissioner');
+    });
+
+    it('should correctly set the externalUrl', () => {
+        trade.externalUrl = 'https://new-test.com';
+        expect(trade.externalUrl)
+            .toEqual('https://new-test.com');
+    });
+
+    it('should correctly set the lines', () => {
+        const newLines = new Map<number, Line>();
+        const newLine: TradeContract.LineStructOutput = {
+            id: BigNumber.from(0),
+            materialsId: [BigNumber.from(0), BigNumber.from(1)],
+            productCategory: 'test category',
+            exists: true,
+        } as TradeContract.LineStructOutput;
+        newLines.set(1, EntityBuilder.buildTradeLine(newLine));
+        trade.lines = newLines;
+        expect(trade.lines)
+            .toEqual(newLines);
     });
 
     it('should correctly set the lineIds', () => {
-        trade.lineIds = [4, 5];
-        expect(trade.lineIds).toEqual([4, 5]);
+        const newLineIds = [1, 2, 3];
+        trade.lineIds = newLineIds;
+        expect(trade.lineIds)
+            .toEqual(newLineIds);
     });
 });

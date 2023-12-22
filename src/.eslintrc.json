@@ -41,6 +41,7 @@
             "error",
             4
         ], // Indent with 4 spaces
+        "camelcase": "off",
         "unused-imports/no-unused-imports": "error",
         "no-underscore-dangle": "off",
         "linebreak-style": [

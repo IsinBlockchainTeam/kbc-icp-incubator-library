@@ -1,4 +1,4 @@
-import { EscrowManagerDriver } from "../drivers/EscrowManagerDriver";
+import { EscrowManagerDriver } from '../drivers/EscrowManagerDriver';
 
 export class EscrowManagerService {
     private _escrowManagerDriver: EscrowManagerDriver;
@@ -39,7 +39,7 @@ export class EscrowManagerService {
         return this._escrowManagerDriver.getEscrow(id);
     }
 
-    async getEscrowsId(purchaser: string): Promise<number[]> {
-        return this._escrowManagerDriver.getEscrowsId(purchaser);
+    async getEscrowIdsOfPurchaser(purchaser: string): Promise<number[]> {
+        return this._escrowManagerDriver.getEscrowIdsOfPurchaser(purchaser);
     }
 }

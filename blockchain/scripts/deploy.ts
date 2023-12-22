@@ -58,44 +58,43 @@ serial([
         }
     },
     () => deploy(ContractName.DOCUMENT_MANAGER, [
-        [process.env.SUPPLIER_ADMIN],
+        [process.env.SUPPLIER_ADMIN || ''],
         contractMap.get('EnumerableTransactionTypeManager')?.address,
     ],
     ),
     () => deploy(
         ContractName.ESCROW_MANAGER, [
-            [process.env.SUPPLIER_ADMIN],
-            process.env.COMMISSIONER_ADMIN,
+            [process.env.SUPPLIER_ADMIN || ''],
+            process.env.COMMISSIONER_ADMIN || '',
             process.env.ESCROW_BASE_FEE || 20,
             process.env.ESCROW_PERCENTAGE_FEE || 1,
         ],
     ),
     () => deploy(
         ContractName.TRADE_MANAGER, [
-            [process.env.SUPPLIER_ADMIN, process.env.CUSTOMER_ADMIN],
-            contractMap.get('EnumerableFiatManager')?.address,
             contractMap.get('EnumerableProductCategoryManager')?.address,
             contractMap.get(ContractName.DOCUMENT_MANAGER)?.address,
+            contractMap.get('EnumerableFiatManager')?.address,
             contractMap.get(ContractName.ESCROW_MANAGER)?.address,
         ],
     ),
     () => deploy(
         ContractName.MATERIAL_MANAGER, [
-            [process.env.SUPPLIER_ADMIN],
+            [process.env.SUPPLIER_ADMIN || ''],
         ],
     ),
     () => deploy(ContractName.RELATIONSHIP_MANAGER, [
-        [process.env.SUPPLIER_ADMIN],
+        [process.env.SUPPLIER_ADMIN || ''],
     ]),
     () => deploy(
         ContractName.TRANSFORMATION_MANAGER, [
-            [process.env.SUPPLIER_ADMIN],
+            [process.env.SUPPLIER_ADMIN || ''],
             contractMap.get(ContractName.MATERIAL_MANAGER)?.address,
         ],
     ),
     () => deploy(
         ContractName.OFFER_MANAGER, [
-            [process.env.SUPPLIER_ADMIN],
+            [process.env.SUPPLIER_ADMIN || ''],
             contractMap.get('EnumerableProductCategoryManager')?.address,
         ],
     ),

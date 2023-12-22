@@ -9,8 +9,14 @@ export { RelationshipService } from './services/RelationshipService';
 export { MaterialDriver } from './drivers/MaterialDriver';
 export { MaterialService } from './services/MaterialService';
 
+export { TradeManagerDriver } from './drivers/TradeManagerDriver';
+export { TradeManagerService } from './services/TradeManagerService';
 export { TradeDriver } from './drivers/TradeDriver';
 export { TradeService } from './services/TradeService';
+export { BasicTradeDriver } from './drivers/BasicTradeDriver';
+export { BasicTradeService } from './services/BasicTradeService';
+export { OrderTradeDriver } from './drivers/OrderTradeDriver';
+export { OrderTradeService } from './services/OrderTradeService';
 
 export { TransformationDriver } from './drivers/TransformationDriver';
 export { TransformationService } from './services/TransformationService';
@@ -28,14 +34,14 @@ export { EscrowService } from './services/EscrowService';
 
 export { Escrow } from './entities/Escrow';
 export { Material } from './entities/Material';
-export { BasicTradeInfo } from './entities/BasicTradeInfo';
+export { Trade } from './entities/Trade';
+export { Line } from './entities/Trade';
 export { BasicTrade } from './entities/BasicTrade';
-export { Trade, TradeType } from './entities/Trade';
+export { OrderTrade } from './entities/OrderTrade';
+export { OrderLine } from './entities/OrderTrade';
+export { TradeType } from './types/TradeType';
+export { OrderLinePrice } from './entities/OrderTrade';
 export { TradeStatus } from './types/TradeStatus';
-export { TradeLine } from './entities/TradeLine';
-export { OrderInfo } from './entities/OrderInfo';
-export { Order } from './entities/Order';
-export { OrderLine, OrderLinePrice } from './entities/OrderLine';
 export { Transformation } from './entities/Transformation';
 export { DocumentInfo, DocumentType } from './entities/DocumentInfo';
 export { Document, TransactionLine } from './entities/Document';

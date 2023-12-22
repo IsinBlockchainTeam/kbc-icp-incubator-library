@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-
 import { Signer, utils } from 'ethers';
 import {
     TransformationManager,

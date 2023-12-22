@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { createMock } from 'ts-auto-mock';
 import { BigNumber, ethers, Signer } from 'ethers';
 import { DocumentManager, DocumentManager__factory } from '../smart-contracts';
@@ -24,7 +23,6 @@ describe('DocumentDriver', () => {
 
     const transactionId = 2;
     const transactionType = 'trade';
-    const documentId = 1;
     const rawDocument = {
         name: 'Document name',
         documentType: DocumentType.BILL_OF_LADING,

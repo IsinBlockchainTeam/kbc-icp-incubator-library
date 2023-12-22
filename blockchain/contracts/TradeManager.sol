@@ -3,434 +3,115 @@ pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-import "@blockchain-lib/blockchain-common/contracts/EnumerableType.sol";
-import "./DocumentManager.sol";
-import "hardhat/console.sol";
+import "./Trade.sol";
 import "./EscrowManager.sol";
+import {BasicTrade} from "./BasicTrade.sol";
+import {OrderTrade} from "./OrderTrade.sol";
 
 contract TradeManager is AccessControl {
     using Counters for Counters.Counter;
+    Counters.Counter private _counter;
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
-    enum TradeType { TRADE, ORDER }
-    enum NegotiationStatus { INITIALIZED, PENDING, COMPLETED }
-    enum TradeStatus { SHIPPED, ON_BOARD }
-
-    event TradeRegistered(uint256 indexed id, address supplier);
-    event TradeLineAdded(uint256 indexed id, uint256 tradeLineId);
-    event TradeLineUpdated(uint256 indexed id, uint256 tradeLineId);
-    event OrderLineAdded(uint256 indexed id, uint256 orderLineId);
-    event OrderLineUpdated(uint256 indexed id, uint256 orderLineId);
+    event BasicTradeRegistered(uint256 indexed id, address supplier, address customer, address commissioner);
+    event OrderTradeRegistered(uint256 indexed id, address supplier, address customer, address commissioner);
 
     modifier onlyAdmin() {
-        require(hasRole(ADMIN_ROLE, _msgSender()), "Caller is not the admin");
+        require(hasRole(ADMIN_ROLE, _msgSender()), "TradeManager: caller is not the admin");
         _;
     }
 
-    struct OrderLinePrice {
-        uint256 amount;
-        uint256 decimals;
-        string fiat;
-    }
+    mapping(uint256 => Trade) private _trades;
+    // mapping(supplier => Trade_id[])
+    mapping(address => uint256[]) private _tradeIdsOfSupplier;
+    // mapping(commissioner => Trade_id[])
+    mapping(address => uint256[]) private _tradeIdsOfCommissioner;
 
-    struct TradeLine {
-        // -------- BASIC TRADE LINE INFORMATION -------------
-        uint256 id;
-        uint256[2] materialIds; // [contractorMaterialOutId, consigneeMaterialInId]
-        string productCategory;
-        // -----------------------------------------------------
+    address private _productCategoryManagerAddress;
+    address private _documentManagerAddress;
+    address private _fiatManagerAddress;
+    EscrowManager private _escrowManager;
 
-        // -------- ORDER TRADE LINE INFORMATION ----------------
-        uint256 quantity;
-        OrderLinePrice price;
-        // ------------------------------------------------------
+    constructor(address productCategoryManagerAddress, address documentManagerAddress, address fiatManagerAddress, address escrowManagerAddress) {
+        require(productCategoryManagerAddress != address(0), "TradeManager: product category manager address is the zero address");
+        require(documentManagerAddress != address(0), "TradeManager: document category manager address is the zero address");
+        require(fiatManagerAddress != address(0), "TradeManager: fiat manager address is the zero address");
+        require(escrowManagerAddress != address(0), "TradeManager: escrow manager address is the zero address");
 
-        bool exists;
-    }
-
-    struct Trade {
-        // -------- GENERAL TRADE INFORMATION -------------
-        uint256 id;
-        TradeType tradeType; // { TRADE, ORDER }
-        address supplier;
-        address customer;
-        string externalUrl;
-        uint256[] lineIds;
-        mapping(uint256 => TradeLine) lines;
-        // -------------------------------------------------
-
-        // -------- BASIC TRADE INFORMATION ----------------
-        string name;
-        // -------------------------------------------------
-
-        // -------- ORDER TRADE INFORMATION ----------------
-        address offeror;
-        //        TODO: pensare ad un map (supplier -> sign) per le firme (permetterebbe la gestione di firme da parte di più entità)
-        bool offerorSigned;
-        address offeree;
-        bool offereeSigned;
-        // constraints
-        // TODO: capire se questo vincolo è definito a livello di ordine o di linea
-
-        uint256 paymentDeadline;
-        uint256 documentDeliveryDeadline;
-        string arbiter;
-        uint256 shippingDeadline;
-        uint256 deliveryDeadline;
-
-        Escrow escrow;
-
-        // -------------------------------------------------
-
-        bool exists;
-    }
-
-    Counters.Counter private tradesCounter;
-    Counters.Counter private tradeLinesCounter;
-    // supplier => trade ids
-    mapping(address => uint256[]) private tradeIds;
-    // trade id => trade
-    mapping(uint256 => Trade) private trades;
-
-    EnumerableType private fiatManager;
-    EnumerableType private productCategoryManager;
-    DocumentManager private documentManager;
-    EscrowManager private escrowManager;
-
-    constructor(address[] memory admins, address fiatManagerAddress, address productCategoryAddress, address documentManagerAddress, address escrowManagerAddress) {
-        _setupRole(ADMIN_ROLE, msg.sender);
+        _setupRole(ADMIN_ROLE, _msgSender());
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
 
-        for (uint256 i = 0; i < admins.length; ++i) {
-            grantRole(ADMIN_ROLE, admins[i]);
+        _productCategoryManagerAddress = productCategoryManagerAddress;
+        _documentManagerAddress = documentManagerAddress;
+        _fiatManagerAddress = fiatManagerAddress;
+        _escrowManager = EscrowManager(escrowManagerAddress);
+    }
+
+    function registerBasicTrade(address supplier, address customer, address commissioner, string memory externalUrl, string memory name) public returns(uint256) {
+        require(supplier != address(0), "TradeManager: supplier is the zero address");
+        require(customer != address(0), "TradeManager: customer is the zero address");
+        require(commissioner != address(0), "TradeManager: commissioner is the zero address");
+
+        uint256 id = _counter.current();
+        _counter.increment();
+
+        BasicTrade newTrade = new BasicTrade(id, _productCategoryManagerAddress, _documentManagerAddress, supplier, customer, commissioner, externalUrl, name);
+        _trades[id] = newTrade;
+        _tradeIdsOfSupplier[supplier].push(id);
+        _tradeIdsOfCommissioner[commissioner].push(id);
+
+        emit BasicTradeRegistered(id, supplier, customer, commissioner);
+        return id;
+    }
+
+    function registerOrderTrade(address supplier, address customer, address commissioner, string memory externalUrl, uint256 paymentDeadline, uint256 documentDeliveryDeadline, address arbiter, uint256 shippingDeadline, uint256 deliveryDeadline, uint256 agreedAmount, address tokenAddress) public returns(uint256) {
+        require(supplier != address(0), "TradeManager: supplier is the zero address");
+        require(customer != address(0), "TradeManager: customer is the zero address");
+        require(commissioner != address(0), "TradeManager: commissioner is the zero address");
+        require(arbiter != address(0), "TradeManager: arbiter is the zero address");
+        require(paymentDeadline > block.timestamp, "TradeManager: payment deadline must be in the future");
+
+        uint256 id = _counter.current();
+        _counter.increment();
+
+        Escrow escrow = _escrowManager.registerEscrow(supplier, commissioner, agreedAmount, paymentDeadline - block.timestamp, tokenAddress);
+        OrderTrade newTrade = new OrderTrade(id, _productCategoryManagerAddress, _documentManagerAddress, supplier, customer, commissioner, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, address(escrow), _fiatManagerAddress);
+        _trades[id] = newTrade;
+        _tradeIdsOfSupplier[supplier].push(id);
+        _tradeIdsOfCommissioner[commissioner].push(id);
+
+        emit OrderTradeRegistered(id, supplier, customer, commissioner);
+        return id;
+    }
+
+    function getTrades() public view returns (Trade[] memory) {
+        Trade[] memory trades = new Trade[](_counter.current());
+        for (uint256 i = 0; i < _counter.current(); i++) {
+            trades[i] = _trades[i];
         }
-
-        fiatManager = EnumerableType(fiatManagerAddress);
-        productCategoryManager = EnumerableType(productCategoryAddress);
-        documentManager = DocumentManager(documentManagerAddress);
-        escrowManager = EscrowManager(escrowManagerAddress);
+        return trades;
     }
 
-    function registerTrade(TradeType tradeType, address supplier, address customer, string memory externalUrl) public {
-        require(supplier == msg.sender || customer == msg.sender, "Sender is neither supplier nor customer");
-
-        uint256 tradeId = tradesCounter.current() + 1;
-        tradesCounter.increment();
-
-        Trade storage newTrade = trades[tradeId];
-        newTrade.id = tradeId;
-        newTrade.supplier = supplier;
-        newTrade.customer = customer;
-        newTrade.externalUrl = externalUrl;
-        newTrade.tradeType = tradeType;
-        newTrade.exists = true;
-
-        tradeIds[supplier].push(tradeId);
-        tradeIds[customer].push(tradeId);
-
-        emit TradeRegistered(tradeId, supplier);
-        emit TradeRegistered(tradeId, customer);
-    }
-
-    function addTradeName(uint256 tradeId, string memory name) public {
-        Trade storage t = trades[tradeId];
-        require(t.exists, "Trade does not exist");
-        require(t.tradeType == TradeType.TRADE, "Can't perform this operation if not TRADE");
-
-        t.name = name;
-    }
-
-    function tradeExists(uint256 tradeId) public view returns (bool) {
-        return trades[tradeId].exists;
-    }
-
-    function getCounter() public view returns (uint256) {
-        return tradesCounter.current();
-    }
-
-    function getGeneralTrade(uint256 tradeId) public view returns (
-        uint256 id, TradeType tradeType, address supplier, address customer,
-        string memory externalUrl, uint256[] memory lineIds
-    ) {
-        Trade storage t = trades[tradeId];
-        require(t.exists, "Trade does not exist");
-
-        return (t.id, t.tradeType, t.supplier, t.customer, t.externalUrl, t.lineIds);
-    }
-
-    function getTradeInfo(uint256 tradeId) public view returns (
-        uint256 id, string memory name, address supplier, address customer,
-        string memory externalUrl, uint256[] memory lineIds
-    ) {
-        Trade storage t = trades[tradeId];
-        require(t.exists, "Trade does not exist");
-        require(t.tradeType == TradeType.TRADE, "Can't perform this operation if not TRADE");
-
-        return (t.id, t.name, t.supplier, t.customer, t.externalUrl, t.lineIds);
-    }
-
-    function getTradeStatus(uint256 tradeId) public view returns (TradeStatus) {
-        uint256 documentsCounter = documentManager.getDocumentsCounterByTransactionIdAndType(tradeId, "trade");
-        require(documentsCounter > 0, "There are no documents related to this trade");
-
-        if ((documentManager.getDocumentsByDocumentType(tradeId, "trade", DocumentManager.DocumentType.BILL_OF_LADING)).length > 0) return TradeStatus.ON_BOARD;
-        if ((documentManager.getDocumentsByDocumentType(tradeId, "trade", DocumentManager.DocumentType.DELIVERY_NOTE)).length > 0) return TradeStatus.SHIPPED;
-        revert("There are no documents with correct document type");
-    }
-
-    function getTradeIds(address supplier) public view returns (uint256[] memory) {
-        return tradeIds[supplier];
-    }
-
-    function addTradeLine(uint256 tradeId, uint256[2] memory materialIds, string memory productCategory) public {
-        Trade storage t = trades[tradeId];
-        require(t.exists, "Trade does not exist");
-        require(t.tradeType == TradeType.TRADE, "Can't perform this operation if not TRADE");
-        require(productCategoryManager.contains(productCategory), "The product category specified isn't registered");
-
-        uint256 tradeLineId = tradeLinesCounter.current() + 1;
-        tradeLinesCounter.increment();
-
-        TradeLine memory tradeLine;
-        tradeLine.id = tradeLineId;
-        tradeLine.materialIds = materialIds;
-        tradeLine.productCategory = productCategory;
-        tradeLine.exists = true;
-
-        t.lineIds.push(tradeLineId);
-        t.lines[tradeLineId] = tradeLine;
-
-        emit TradeLineAdded(tradeId, tradeLineId);
-    }
-
-    function updateTradeLine(uint256 tradeId, uint256 tradeLineId, uint256[2] memory materialIds, string memory productCategory) public {
-        Trade storage t = trades[tradeId];
-
-        require(t.exists, "Trade does not exist");
-        require(t.lines[tradeLineId].exists, "Trade line does not exist");
-        require(productCategoryManager.contains(productCategory), "The product category specified isn't registered");
-
-        TradeLine storage tradeLine = t.lines[tradeLineId];
-        tradeLine.id = tradeLineId;
-        tradeLine.materialIds = materialIds;
-        tradeLine.productCategory = productCategory;
-
-        emit TradeLineUpdated(tradeId, tradeLineId);
-    }
-
-    function getTradeLine(uint256 tradeId, uint256 tradeLineId) public view returns (TradeLine memory) {
-        Trade storage t = trades[tradeId];
-        require(t.exists, "Trade does not exist");
-        require(t.tradeType == TradeType.TRADE, "Only a TRADE has trade lines");
-
-        TradeLine memory tL = t.lines[tradeLineId];
-        require(tL.exists, "Trade line does not exist");
-
-        return tL;
-    }
-
-    function tradeLineExists(uint256 tradeId, uint256 tradeLineId) public view returns (bool) {
-        return trades[tradeId].lines[tradeLineId].exists;
-    }
-
-    function addOrderOfferee(uint256 orderId, address offeree) public {
-        Trade storage o = trades[orderId];
-        require(o.exists, "Order does not exist");
-        require(o.tradeType == TradeType.ORDER, "Can't perform this operation if not ORDER");
-
-        o.offeror = msg.sender;
-        o.offeree = offeree;
-    }
-
-    function setOrderPaymentDeadline(uint256 orderId, uint256 paymentDeadline) public {
-        Trade storage o = trades[orderId];
-        require(o.exists, "Order does not exist");
-        require(o.tradeType == TradeType.ORDER, "Can't perform this operation if not ORDER");
-
-        o.paymentDeadline = paymentDeadline;
-        _updateSignatures(msg.sender, o);
-    }
-
-    function setOrderDocumentDeliveryDeadline(uint256 orderId, uint256 documentDeliveryDeadline) public {
-        Trade storage o = trades[orderId];
-        require(o.exists, "Order does not exist");
-        require(o.tradeType == TradeType.ORDER, "Can't perform this operation if not ORDER");
-
-        o.documentDeliveryDeadline = documentDeliveryDeadline;
-        _updateSignatures(msg.sender, o);
-    }
-
-    function setOrderArbiter(uint256 orderId, string memory arbiter) public {
-        Trade storage o = trades[orderId];
-        require(o.exists, "Order does not exist");
-        require(o.tradeType == TradeType.ORDER, "Can't perform this operation if not ORDER");
-
-        o.arbiter = arbiter;
-        _updateSignatures(msg.sender, o);
-    }
-
-    function setOrderShippingDeadline(uint256 orderId, uint256 shippingDeadline) public {
-        Trade storage o = trades[orderId];
-        require(o.exists, "Order does not exist");
-        require(o.tradeType == TradeType.ORDER, "Can't perform this operation if not ORDER");
-
-        o.shippingDeadline = shippingDeadline;
-        _updateSignatures(msg.sender, o);
-    }
-
-    function setOrderDeliveryDeadline(uint256 orderId, uint256 deliveryDeadline) public {
-        Trade storage o = trades[orderId];
-        require(o.exists, "Order does not exist");
-        require(o.tradeType == TradeType.ORDER, "Can't perform this operation if not ORDER");
-
-        o.deliveryDeadline = deliveryDeadline;
-        _updateSignatures(msg.sender, o);
-    }
-
-    function addOrderEscrow(uint256 orderId, uint256 agreedAmount, address tokenAddress) public {
-        Trade storage o = trades[orderId];
-        require(o.exists, "Order does not exist");
-        require(o.tradeType == TradeType.ORDER, "Can't perform this operation if not ORDER");
-        require(address(o.escrow) == address(0), "Escrow already exists");
-        require(address(tokenAddress) != address(0), "Token address is the zero address");
-        require(o.paymentDeadline != 0, "Payment deadline not set");
-        require(o.paymentDeadline > block.timestamp, "Payment deadline has already been passed");
-
-        o.escrow = escrowManager.registerEscrow(o.supplier, o.customer, agreedAmount, o.paymentDeadline - block.timestamp, tokenAddress);
-    }
-
-    function confirmOrder(uint256 orderId) public {
-        Trade storage o = trades[orderId];
-        require(o.exists, "Order does not exist");
-        require(o.tradeType == TradeType.ORDER, "Can't perform this operation if not ORDER");
-        require(msg.sender == o.offeree || msg.sender == o.offeror, "Only an offeree or an offeror can confirm the order");
-        require(o.paymentDeadline != 0 && o.documentDeliveryDeadline != 0 &&
-                bytes(o.arbiter).length != 0 && o.shippingDeadline != 0 && o.deliveryDeadline != 0,
-            "Cannot confirm an order if all constraints have not been defined");
-
-        if (msg.sender == o.offeror) {
-            o.offerorSigned = true;
+    function getTradesAndTypes() public view returns (Trade[] memory, Trade.TradeType[] memory) {
+        Trade[] memory trades = new Trade[](_counter.current());
+        Trade.TradeType[] memory tradeTypes = new Trade.TradeType[](_counter.current());
+        for (uint256 i = 0; i < _counter.current(); i++) {
+            trades[i] = _trades[i];
+            tradeTypes[i] = _trades[i].getTradeType();
         }
-        else {
-            o.offereeSigned = true;
-        }
+        return (trades, tradeTypes);
     }
 
-    function addDocument(uint256 tradeId, string memory name, DocumentManager.DocumentType documentType, string memory externalUrl) public {
-        require(trades[tradeId].exists, "Trade does not exist");
-
-        documentManager.registerDocument(tradeId, "trade", name, documentType, externalUrl);
+    function getTrade(uint256 id) public view returns (Trade) {
+        return _trades[id];
     }
 
-    function getNegotiationStatus(uint256 orderId) public view returns (NegotiationStatus orderStatus) {
-        Trade storage o = trades[orderId];
-        require(o.exists, "Order does not exist");
-        require(o.tradeType == TradeType.ORDER, "Can't perform this operation if not ORDER");
-
-        if (!o.offereeSigned && !o.offerorSigned) {
-            return NegotiationStatus.INITIALIZED;
-        } else if (o.offerorSigned && o.offereeSigned) {
-            return NegotiationStatus.COMPLETED;
-        } else {
-            return NegotiationStatus.PENDING;
-        }
+    function getTradeIdsOfSupplier(address supplier) public view returns (uint256[] memory) {
+        return _tradeIdsOfSupplier[supplier];
     }
 
-    function getOrderInfo(uint256 orderId) public view returns (
-        uint256 id, string memory name, address supplier, address customer, address offeree, address offeror, string memory externalUrl, uint256[] memory lineIds,
-        uint256 paymentDeadline, uint256 documentDeliveryDeadline, string memory arbiter, uint256 shippingDeadline, uint256 deliveryDeadline, Escrow escrow
-    ) {
-        Trade storage o = trades[orderId];
-        require(o.exists, "Order does not exist");
-        require(o.tradeType == TradeType.ORDER, "Can't perform this operation if not ORDER");
-
-        return (o.id, o.name, o.supplier, o.customer, o.offeree, o.offeror, o.externalUrl, o.lineIds,
-                o.paymentDeadline, o.documentDeliveryDeadline, o.arbiter, o.shippingDeadline, o.deliveryDeadline, o.escrow
-        );
-    }
-
-    function getOrderEscrow(uint256 orderId) public view returns (Escrow) {
-        Trade storage o = trades[orderId];
-        require(o.exists, "Order does not exist");
-        require(o.tradeType == TradeType.ORDER, "Can't perform this operation if not ORDER");
-
-        return o.escrow;
-    }
-
-    function isSupplierOrCustomer(uint256 orderId, address sender) public view returns (bool) {
-        Trade storage o = trades[orderId];
-        require(o.exists, "Order does not exist");
-        require(o.tradeType == TradeType.ORDER, "Can't perform this operation if not ORDER");
-
-        return o.supplier == sender || o.customer == sender;
-    }
-
-    function addOrderLine(uint256 orderId, uint256[2] memory materialIds, string memory productCategory, uint256 quantity, OrderLinePrice memory price) public {
-        Trade storage o = trades[orderId];
-        require(o.exists, "Order does not exist");
-        require(o.tradeType == TradeType.ORDER, "Can't perform this operation if not ORDER");
-        require(getNegotiationStatus(orderId) != NegotiationStatus.COMPLETED, "The order has been confirmed, it cannot be changed");
-        require(fiatManager.contains(price.fiat), "The fiat of the order line isn't registered");
-        require(productCategoryManager.contains(productCategory), "The product category specified isn't registered");
-
-        uint256 orderLineId = tradeLinesCounter.current() + 1;
-        tradeLinesCounter.increment();
-
-        TradeLine memory orderLine = TradeLine(orderLineId, materialIds, productCategory, quantity, price, true);
-        o.lineIds.push(orderLineId);
-        o.lines[orderLineId] = orderLine;
-
-        _updateSignatures(msg.sender, o);
-
-        emit OrderLineAdded(orderId, orderLineId);
-    }
-
-    function updateOrderLine(uint256 orderId, uint256 orderLineId, uint256[2] memory materialIds, string memory productCategory, uint256 quantity, OrderLinePrice memory price) public {
-        Trade storage o = trades[orderId];
-        require(o.exists, "Order does not exist");
-        require(o.lines[orderLineId].exists, "Order line does not exist");
-        require(o.offeree == msg.sender || o.offeror == msg.sender, "Sender is neither offeree nor offeror");
-        require(getNegotiationStatus(orderId) != NegotiationStatus.COMPLETED, "The order has been confirmed, it cannot be changed");
-        require(fiatManager.contains(price.fiat), "The fiat of the order line isn't registered");
-        require(productCategoryManager.contains(productCategory), "The product category specified isn't registered");
-
-        TradeLine memory orderLine = TradeLine(orderLineId, materialIds, productCategory, quantity, price, true);
-        o.lines[orderLineId] = orderLine;
-
-        _updateSignatures(msg.sender, o);
-
-        emit OrderLineUpdated(orderId, orderLineId);
-    }
-
-    function getOrderLine(uint256 orderId, uint256 orderLineId) public view returns (TradeLine memory) {
-        Trade storage o = trades[orderId];
-        require(o.exists, "Order does not exist");
-        require(o.tradeType == TradeType.ORDER, "Only an ORDER has order lines");
-
-        TradeLine memory oL = o.lines[orderLineId];
-        require(oL.exists, "Order line does not exist");
-
-        return oL;
-    }
-
-    // ROLES
-    function addAdmin(address admin) public onlyAdmin {
-        grantRole(ADMIN_ROLE, admin);
-    }
-
-    function removeAdmin(address admin) public onlyAdmin {
-        revokeRole(ADMIN_ROLE, admin);
-    }
-
-    function _updateSignatures(address sender, Trade storage c) private {
-        if (sender == c.offeree) {
-            c.offereeSigned = true;
-            c.offerorSigned = false;
-        }
-        else {
-            c.offereeSigned = false;
-            c.offerorSigned = true;
-        }
+    function getTradeIdsOfCommissioner(address commissioner) public view returns (uint256[] memory) {
+        return _tradeIdsOfCommissioner[commissioner];
     }
 }

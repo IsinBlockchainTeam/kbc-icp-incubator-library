@@ -1,15 +1,11 @@
 import { BigNumber } from 'ethers';
 import { Material } from '../entities/Material';
 import { EntityBuilder } from './EntityBuilder';
-import { BasicTradeInfo } from '../entities/BasicTradeInfo';
-import { DocumentManager, RelationshipManager, TradeManager, TransformationManager, MaterialManager } from '../smart-contracts';
-import { TradeLine } from '../entities/TradeLine';
-import { OrderInfo } from '../entities/OrderInfo';
-import { OrderLine, OrderLinePrice } from '../entities/OrderLine';
+import { DocumentManager, RelationshipManager, TransformationManager, MaterialManager, Trade } from '../smart-contracts';
 import { Relationship } from '../entities/Relationship';
 import { DocumentInfo, DocumentType } from '../entities/DocumentInfo';
 import { Transformation } from '../entities/Transformation';
-import { Trade } from '../entities/Trade';
+import { Line } from '../entities/Trade';
 
 describe('EntityBuilder', () => {
     describe('buildMaterial', () => {
@@ -48,100 +44,6 @@ describe('EntityBuilder', () => {
         });
     });
 
-    describe('buildGeneralTrade', () => {
-        it('should correctly build a Trade', () => {
-            const bcTrade = {
-                id: BigNumber.from(0),
-                tradeType: 0,
-                supplier: 'supplier',
-                customer: 'customer',
-                externalUrl: 'extUrl',
-                lineIds: [BigNumber.from(1)],
-            };
-
-            expect(EntityBuilder.buildGeneralTrade(bcTrade)).toEqual(new Trade(bcTrade.id.toNumber(), bcTrade.supplier, bcTrade.customer, bcTrade.externalUrl, bcTrade.lineIds.map((id) => id.toNumber()), bcTrade.tradeType));
-        });
-    });
-
-    describe('buildBasicTradeInfo', () => {
-        it('should correctly build a BasicTradeInfo', () => {
-            const bcTrade = {
-                id: BigNumber.from(0),
-                name: 'trade 1',
-                supplier: 'supplier',
-                customer: 'customer',
-                externalUrl: 'extUrl',
-                lineIds: [BigNumber.from(1)],
-            };
-
-            expect(EntityBuilder.buildBasicTradeInfo(bcTrade)).toEqual(new BasicTradeInfo(bcTrade.id.toNumber(), bcTrade.supplier, bcTrade.customer, bcTrade.externalUrl, bcTrade.lineIds.map((id) => id.toNumber()), bcTrade.name));
-        });
-    });
-
-    describe('buildTradeLine', () => {
-        const bcTradeLinePrice: TradeManager.OrderLinePriceStructOutput = [BigNumber.from(10005), BigNumber.from(2), 'CHF'] as TradeManager.OrderLinePriceStructOutput;
-
-        it('should correctly build a TradeLine', () => {
-            const bcTradeLine: TradeManager.TradeLineStructOutput = [BigNumber.from(0), [BigNumber.from(1), BigNumber.from(2)], 'Arabic 85', BigNumber.from(100), bcTradeLinePrice, true] as TradeManager.TradeLineStructOutput;
-            bcTradeLine.id = BigNumber.from(0);
-            bcTradeLine.productCategory = 'Arabic 85';
-            bcTradeLine.materialIds = [BigNumber.from(1), BigNumber.from(2)];
-            bcTradeLine.exists = true;
-
-            expect(EntityBuilder.buildTradeLine(bcTradeLine)).toEqual(new TradeLine(bcTradeLine.id.toNumber(), [bcTradeLine.materialIds[0].toNumber(), bcTradeLine.materialIds[1].toNumber()], bcTradeLine.productCategory));
-        });
-    });
-
-    describe('buildOrderInfo', () => {
-        it('should correctly build an OrderInfo', () => {
-            const bcOrder = {
-                id: BigNumber.from(0),
-                supplier: 'supplier',
-                customer: 'customer',
-                offeree: 'offeree',
-                offeror: 'offeror',
-                externalUrl: 'extUrl',
-                lineIds: [BigNumber.from(1)],
-                paymentDeadline: BigNumber.from(1692001147),
-                documentDeliveryDeadline: BigNumber.from(1692001147),
-                arbiter: 'arbiter',
-                shippingDeadline: BigNumber.from(1692001147),
-                deliveryDeadline: BigNumber.from(1692001147),
-                escrow: 'escrow',
-            };
-            expect(EntityBuilder.buildOrderInfo(bcOrder)).toEqual(
-                new OrderInfo(bcOrder.id.toNumber(), bcOrder.supplier, bcOrder.customer, bcOrder.externalUrl, bcOrder.offeree, bcOrder.offeror,
-                    bcOrder.lineIds.map((l) => l.toNumber()), new Date(bcOrder.paymentDeadline.toNumber()), new Date(bcOrder.documentDeliveryDeadline.toNumber()),
-                    bcOrder.arbiter, new Date(bcOrder.shippingDeadline.toNumber()), new Date(bcOrder.deliveryDeadline.toNumber()), bcOrder.escrow),
-            );
-        });
-    });
-
-    describe('buildOrderLine', () => {
-        const bcOrderLinePrice: TradeManager.OrderLinePriceStructOutput = [BigNumber.from(10005), BigNumber.from(2), 'CHF'] as TradeManager.OrderLinePriceStructOutput;
-
-        it('should correctly build an OrderLinePrice', () => {
-            bcOrderLinePrice.amount = BigNumber.from(10005);
-            bcOrderLinePrice.decimals = BigNumber.from(2);
-            bcOrderLinePrice.fiat = 'CHF';
-
-            expect(EntityBuilder.buildOrderLinePrice(bcOrderLinePrice)).toEqual(new OrderLinePrice(bcOrderLinePrice.amount.toNumber() / BigNumber.from(10).pow(bcOrderLinePrice.decimals).toNumber(), bcOrderLinePrice.fiat));
-        });
-
-        it('should correctly build an OrderLine', () => {
-            const bcTradeLine: TradeManager.TradeLineStructOutput = [BigNumber.from(0), [BigNumber.from(1), BigNumber.from(2)], 'Arabic 85', BigNumber.from(40), bcOrderLinePrice, true] as TradeManager.TradeLineStructOutput;
-            bcTradeLine.id = BigNumber.from(0);
-            bcTradeLine.productCategory = 'Arabic 85';
-            bcTradeLine.materialIds = [BigNumber.from(1), BigNumber.from(2)];
-            bcTradeLine.quantity = BigNumber.from(40);
-            bcTradeLine.price = bcOrderLinePrice;
-            bcTradeLine.exists = true;
-
-            expect(EntityBuilder.buildOrderLine(bcTradeLine)).toEqual(new OrderLine(bcTradeLine.id.toNumber(), [bcTradeLine.materialIds[0].toNumber(), bcTradeLine.materialIds[1].toNumber()], bcTradeLine.productCategory,
-                bcTradeLine.quantity.toNumber(), EntityBuilder.buildOrderLinePrice(bcTradeLine.price)));
-        });
-    });
-
     describe('buildRelationship', () => {
         it('should correctly build a relationship', () => {
             const bcRelationship: RelationshipManager.RelationshipStructOutput = [BigNumber.from(0), 'companyA_address', 'companyB_address', BigNumber.from(1692001147), BigNumber.from(0), true] as RelationshipManager.RelationshipStructOutput;
@@ -170,6 +72,25 @@ describe('EntityBuilder', () => {
 
             const document = new DocumentInfo(0, 2, 'doc name', DocumentType.DELIVERY_NOTE, 'external url');
             expect(EntityBuilder.buildDocumentInfo(bcDocument)).toEqual(document);
+        });
+    });
+
+    describe('buildTradeLine', () => {
+        it('should correctly build a trade line', () => {
+            const id: number = 0;
+            const materialsId: [number, number] = [1, 2];
+            const productCategory: string = 'test product';
+            const exists: boolean = true;
+
+            const bcLine: Trade.LineStructOutput = {
+                id: BigNumber.from(id),
+                materialsId:
+                    [BigNumber.from(materialsId[0]), BigNumber.from(materialsId[1])],
+                productCategory,
+                exists,
+            } as Trade.LineStructOutput;
+            const line: Line = new Line(id, materialsId, productCategory);
+            expect(EntityBuilder.buildTradeLine(bcLine)).toStrictEqual(line);
         });
     });
 });

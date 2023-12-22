@@ -1,9 +1,9 @@
-import { Trade, TradeType } from '../entities/Trade';
+import { Signer } from 'ethers';
+import { Trade } from '../entities/Trade';
 import { Transformation } from '../entities/Transformation';
-import TradeService from './TradeService';
-import { TradeLine } from '../entities/TradeLine';
-import { OrderLine } from '../entities/OrderLine';
+import { TradeManagerService } from './TradeManagerService';
 import { TransformationService } from './TransformationService';
+import { Trade as TradeContract } from '../smart-contracts';
 
 export type Node = {
     resourceId: string,
@@ -21,13 +21,16 @@ export type GraphData = {
 }
 
 export class GraphService {
-    private _tradeService: TradeService;
+    private _tradeManagerService: TradeManagerService;
 
     private _transformationService: TransformationService;
 
-    constructor(tradeService: TradeService, transformationService: TransformationService) {
-        this._tradeService = tradeService;
+    private _signer: Signer;
+
+    constructor(tradeManagerService: TradeManagerService, transformationService: TransformationService, signer: Signer) {
+        this._tradeManagerService = tradeManagerService;
         this._transformationService = transformationService;
+        this._signer = signer;
     }
 
     public async findTransformationsByMaterialOutput(supplierAddress: string, materialId: number): Promise<Transformation[]> {
@@ -35,16 +38,17 @@ export class GraphService {
         return transformations.filter((t) => t.outputMaterialId === materialId);
     }
 
+    /*
     public async findTradesByMaterialOutput(supplierAddress: string, materialId: number): Promise<Map<Trade, (TradeLine | OrderLine)[]>> {
-        const trades = await this._tradeService.getGeneralTrades(supplierAddress);
+        const trades = await this._tradeManagerService.getGeneralTrades(supplierAddress);
         const tradesWithLines = await trades.reduce(async (accPromise, curr: Trade) => {
             const acc = await accPromise;
             if (curr.type === undefined) return acc;
             // @ts-ignore
             const lines = curr.type === TradeType.TRADE
-                ? await this._tradeService.getTradeLines(curr.id)
+                ? await this._tradeManagerService.getTradeLines(curr.id)
                 : curr.type === TradeType.ORDER
-                    ? await this._tradeService.getOrderLines(curr.id)
+                    ? await this._tradeManagerService.getOrderLines(curr.id)
                     : [];
             acc.set(curr, lines);
             return acc;
@@ -52,8 +56,36 @@ export class GraphService {
         // get only trades in which in the relative lines, as consignee material (materialIds[1]), there is one with 'materialId' value
         return new Map(Array.from(tradesWithLines).filter(([_, lines]) => lines.flatMap((l) => l.materialIds[1]).includes(materialId)));
     }
+    */
 
-    public async computeGraph(supplierAddress: string, materialId: number, partialGraphData: GraphData = { nodes: [], edges: [] }): Promise<GraphData> {
+    // TODO: this function is currently under development. It returns a map of <trade_id, line> for each trade whose lines contain the wanted materialId as output
+    // !!! Warning: If a trade has multiple lines with the same materialId as output, only the first one will be returned !!!
+
+    public async findTradesByMaterialOutput(supplierAddress: string, materialId: number): Promise<Map<number, TradeContract.LineStructOutput>> {
+        const trades: Map<number, TradeContract.LineStructOutput> = new Map<number, TradeContract.LineStructOutput>();
+        /*
+        const tradeIds = await this._tradeManagerService.getTradeIdsOfSupplier(supplierAddress);
+        for (const tradeId of tradeIds) {
+            const tradeAddress: string = await this._tradeManagerService.getTrade(tradeId);
+            const tradeDriver: TradeDriver = new TradeDriver(this._signer, tradeAddress);
+            const { lineIds } = await tradeDriver.getTrade();
+            for (const lineId of lineIds) {
+                const line = await tradeDriver.getLine(lineId);
+                if (line.materialsId[1].toNumber() === materialId) {
+                    trades.set(tradeId, line);
+                    break;
+                }
+            }
+        }
+         */
+        return trades;
+    }
+
+    public async computeGraph(supplierAddress: string, materialId: number, partialGraphData: GraphData = {
+        nodes: [],
+        edges: [],
+    }): Promise<GraphData> {
+        /*
         // TODO: quando arriva un trade in ingresso per cui c'è un materiale, non posso vedere la sua chain dal momento che l'utente loggato non sarà l'owner della relativa trasformazione
         const transformations = await this.findTransformationsByMaterialOutput(supplierAddress, materialId);
         if (transformations.length === 0) { return partialGraphData; }
@@ -121,10 +153,12 @@ export class GraphService {
             //
             //     await this.computeGraph(supplierAddress, involvedMaterialInputId, partialGraphData);
             // }));
-        }));
+        })); */
         return partialGraphData;
     }
 
     // @ts-ignore
-    private getGraphEntityId(t: Transformation | Trade): string { return t.owner ? t.name : `${t.supplier}_trade_${t.id}`; }
+    private getGraphEntityId(t: Transformation | Trade): string {
+        // return t.owner ? t.name : `${t.supplier}_trade_${t.id}`;
+    }
 }
