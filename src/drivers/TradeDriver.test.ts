@@ -4,26 +4,13 @@ import { TradeDriver } from './TradeDriver';
 import { Trade as TradeContract, Trade__factory } from '../smart-contracts';
 import { TradeStatus } from '../types/TradeStatus';
 import { DocumentType } from '../entities/DocumentInfo';
-import { Line } from '../entities/Trade';
-import { EntityBuilder } from '../utils/EntityBuilder';
 import { TradeType } from '../types/TradeType';
 
 describe('TradeDriver', () => {
     let tradeDriver: TradeDriver;
     const contractAddress: string = Wallet.createRandom().address;
 
-    const tradeId: number = 1;
-    const supplier: string = Wallet.createRandom().address;
-    const customer: string = Wallet.createRandom().address;
-    const commissioner: string = Wallet.createRandom().address;
-    const externalUrl: string = 'externalUrl';
-    const line: TradeContract.LineStructOutput = {
-        id: BigNumber.from(0),
-        materialsId: [BigNumber.from(1), BigNumber.from(2)],
-        productCategory: 'category1',
-        exists: true,
-    } as TradeContract.LineStructOutput;
-    const lineIds: BigNumber[] = [BigNumber.from(line.id)];
+    const lineIds: BigNumber[] = [BigNumber.from(0)];
     const newAdmin: string = Wallet.createRandom().address;
 
     let mockedSigner: Signer;
@@ -32,9 +19,6 @@ describe('TradeDriver', () => {
     const mockedWait = jest.fn();
 
     const mockedWriteFunction = jest.fn();
-    const mockedGetTrade = jest.fn();
-    const mockedGetLines = jest.fn();
-    const mockedGetLine = jest.fn();
     const mockedGetTradeType = jest.fn();
     const mockedGetLineExists = jest.fn();
     const mockedGetTradeStatus = jest.fn();
@@ -42,23 +26,13 @@ describe('TradeDriver', () => {
     mockedWriteFunction.mockResolvedValue({
         wait: mockedWait,
     });
-    mockedGetTrade.mockResolvedValue(
-        [BigNumber.from(tradeId), supplier, customer, commissioner, externalUrl, lineIds],
-    );
-    mockedGetLines.mockResolvedValue([line]);
-    mockedGetLine.mockResolvedValue(line);
     mockedGetTradeType.mockResolvedValue(TradeType.BASIC);
     mockedGetLineExists.mockResolvedValue(true);
     mockedGetTradeStatus.mockResolvedValue(TradeStatus.SHIPPED);
 
     const mockedContract = createMock<TradeContract>({
-        getTrade: mockedGetTrade,
         getTradeType: mockedGetTradeType,
-        getLines: mockedGetLines,
-        getLine: mockedGetLine,
         getLineExists: mockedGetLineExists,
-        addLine: mockedWriteFunction,
-        updateLine: mockedWriteFunction,
         getTradeStatus: mockedGetTradeStatus,
         addDocument: mockedWriteFunction,
         addAdmin: mockedWriteFunction,
@@ -81,30 +55,6 @@ describe('TradeDriver', () => {
         jest.restoreAllMocks();
     });
 
-    it('should correctly retrieve trade', async () => {
-        const response = await tradeDriver.getTrade();
-
-        expect(response.tradeId)
-            .toEqual(tradeId);
-        expect(response.supplier)
-            .toEqual(supplier);
-        expect(response.customer)
-            .toEqual(customer);
-        expect(response.commissioner)
-            .toEqual(commissioner);
-        expect(response.externalUrl)
-            .toEqual(externalUrl);
-        expect(response.lineIds)
-            .toEqual(lineIds.map((value) => value.toNumber()));
-
-        expect(mockedContract.getTrade)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.getTrade)
-            .toHaveBeenNthCalledWith(1);
-        expect(mockedGetTrade)
-            .toHaveBeenCalledTimes(1);
-    });
-
     it('should correctly retrieve trade type - BASIC', async () => {
         expect(await tradeDriver.getTradeType())
             .toEqual(TradeType.BASIC);
@@ -124,34 +74,6 @@ describe('TradeDriver', () => {
             .toThrow(new Error('TradeDriver: an invalid value "42" for "TradeType" was returned by the contract'));
     });
 
-    it('should correctly retrieve lines', async () => {
-        const response: Line[] = await tradeDriver.getLines();
-
-        expect(response)
-            .toEqual([EntityBuilder.buildTradeLine(line)]);
-
-        expect(mockedContract.getLines)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.getLines)
-            .toHaveBeenNthCalledWith(1);
-        expect(mockedGetLines)
-            .toHaveBeenCalledTimes(1);
-    });
-
-    it('should correctly retrieve line', async () => {
-        const response: Line = await tradeDriver.getLine(lineIds[0].toNumber());
-
-        expect(response)
-            .toEqual(EntityBuilder.buildTradeLine(line));
-
-        expect(mockedContract.getLine)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.getLine)
-            .toHaveBeenNthCalledWith(1, lineIds[0].toNumber());
-        expect(mockedGetLine)
-            .toHaveBeenCalledTimes(1);
-    });
-
     it('should correctly retrieve line exists', async () => {
         const response = await tradeDriver.getLineExists(lineIds[0].toNumber());
 
@@ -163,28 +85,6 @@ describe('TradeDriver', () => {
         expect(mockedContract.getLineExists)
             .toHaveBeenNthCalledWith(1, lineIds[0].toNumber());
         expect(mockedGetLineExists)
-            .toHaveBeenCalledTimes(1);
-    });
-
-    it('should correctly add a line', async () => {
-        await tradeDriver.addLine([0, 1], 'test category');
-
-        expect(mockedContract.addLine)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.addLine)
-            .toHaveBeenNthCalledWith(1, [0, 1], 'test category');
-        expect(mockedWait)
-            .toHaveBeenCalledTimes(1);
-    });
-
-    it('should correctly update a line', async () => {
-        await tradeDriver.updateLine(1, [0, 1], 'test category');
-
-        expect(mockedContract.updateLine)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.updateLine)
-            .toHaveBeenNthCalledWith(1, 1, [0, 1], 'test category');
-        expect(mockedWait)
             .toHaveBeenCalledTimes(1);
     });
 

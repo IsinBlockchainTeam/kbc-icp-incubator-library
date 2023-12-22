@@ -1,9 +1,7 @@
-import { BigNumber, Signer } from 'ethers';
+import { Signer } from 'ethers';
 import { Trade as TradeContract, Trade__factory } from '../smart-contracts';
 import { TradeStatus } from '../types/TradeStatus';
 import { DocumentType } from '../entities/DocumentInfo';
-import { Line } from '../entities/Trade';
-import { EntityBuilder } from '../utils/EntityBuilder';
 import { TradeType } from '../types/TradeType';
 import { getTradeTypeByIndex } from '../utils/utils';
 
@@ -16,51 +14,12 @@ export class TradeDriver {
             .connect(signer);
     }
 
-    async getTrade(): Promise<{
-        tradeId: number,
-        supplier: string,
-        customer: string,
-        commissioner: string,
-        externalUrl: string,
-        lineIds: number[]
-    }> {
-        const result = await this._contract.getTrade();
-
-        return {
-            tradeId: result[0].toNumber(),
-            supplier: result[1],
-            customer: result[2],
-            commissioner: result[3],
-            externalUrl: result[4],
-            lineIds: result[5].map((value: BigNumber) => value.toNumber()),
-        };
-    }
-
-    async getLines(): Promise<Line[]> {
-        const result = await this._contract.getLines();
-        return result.map(EntityBuilder.buildTradeLine);
-    }
-
-    async getLine(id: number): Promise<Line> {
-        return EntityBuilder.buildTradeLine(await this._contract.getLine(id));
-    }
-
     async getTradeType(): Promise<TradeType> {
         return getTradeTypeByIndex(await this._contract.getTradeType());
     }
 
     async getLineExists(id: number): Promise<boolean> {
         return this._contract.getLineExists(id);
-    }
-
-    async addLine(materialIds: [number, number], productCategory: string): Promise<void> {
-        const tx = await this._contract.addLine(materialIds, productCategory);
-        await tx.wait();
-    }
-
-    async updateLine(id: number, materialIds: [number, number], productCategory: string): Promise<void> {
-        const tx = await this._contract.updateLine(id, materialIds, productCategory);
-        await tx.wait();
     }
 
     async getTradeStatus(): Promise<TradeStatus> {

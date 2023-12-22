@@ -1,13 +1,19 @@
-import { BigNumber, Signer } from 'ethers';
+import { BigNumber, Signer, Event } from 'ethers';
 import { TradeDriver } from './TradeDriver';
 // eslint-disable-next-line camelcase
 import {
-    OrderTrade,
+    OrderTrade as OrderTradeContract,
     OrderTrade__factory,
 } from '../smart-contracts';
 import { NegotiationStatus } from '../types/NegotiationStatus';
-import { OrderLine, OrderLinePrice } from '../entities/OrderTrade';
+import {
+    OrderLine,
+    OrderLinePrice,
+    OrderLineRequest,
+    OrderTrade,
+} from '../entities/OrderTrade';
 import { EntityBuilder } from '../utils/EntityBuilder';
+import { IConcreteTradeDriver } from './IConcreteTradeDriver';
 
 export enum OrderTradeEvents {
     TradeLineAdded,
@@ -18,8 +24,8 @@ export enum OrderTradeEvents {
     OrderConfirmed
 }
 
-export class OrderTradeDriver extends TradeDriver {
-    private _actual: OrderTrade;
+export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDriver {
+    private _actual: OrderTradeContract;
 
     constructor(signer: Signer, orderTradeAddress: string) {
         super(signer, orderTradeAddress);
@@ -29,51 +35,59 @@ export class OrderTradeDriver extends TradeDriver {
             .connect(signer);
     }
 
+    async getTrade(): Promise<OrderTrade> {
+        const result = await this._actual.getTrade();
+        const lines: OrderLine[] = await this.getLines();
+        const linesMap: Map<number, OrderLine> = new Map<number, OrderLine>();
+        lines?.forEach((line: OrderLine) => {
+            linesMap.set(line.id, line);
+        });
+
+        return new OrderTrade(
+            result[0].toNumber(),
+            result[1],
+            result[2],
+            result[3],
+            result[4],
+            linesMap,
+            result[6],
+            result[7],
+            result[8].toNumber(),
+            result[9].toNumber(),
+            result[10],
+            result[11].toNumber(),
+            result[12].toNumber(),
+            result[13],
+        );
+    }
+
     async getLines(): Promise<OrderLine[]> {
-        const result = await this._contract.getLines();
-        const orderLines = await this._actual.getOrderLines();
-        return result.map((line, index) => EntityBuilder.buildOrderLine(line, orderLines[index]));
+        const result = await this._actual.getLines();
+        const lines: OrderLine[] = [];
+        for (let i: number = 0; i < result[0].length; i++) {
+            lines.push(EntityBuilder.buildOrderLine(result[0][i], result[1][i]));
+        }
+        return lines;
     }
 
     async getLine(id: number, blockNumber?: number): Promise<OrderLine> {
-        const line = await this._contract.getLine(id, { blockTag: blockNumber });
-        const orderLine = await this._actual.getOrderLine(id, { blockTag: blockNumber });
-        return EntityBuilder.buildOrderLine(line, orderLine);
+        const line = await this._actual.getLine(id, { blockTag: blockNumber });
+        return EntityBuilder.buildOrderLine(line[0], line[1]);
     }
 
-    async getOrderTrade(blockNumber?: number): Promise<{ tradeId: number, supplier: string, customer: string, commissioner: string, externalUrl: string, lineIds: number[], hasSupplierSigned: boolean, hasCommissionerSigned: boolean, paymentDeadline: number, documentDeliveryDeadline: number, arbiter: string, shippingDeadline: number, deliveryDeadline: number, escrow: string}> {
-        const result = await this._actual.getOrderTrade({ blockTag: blockNumber });
-
-        return {
-            tradeId: result[0].toNumber(),
-            supplier: result[1],
-            customer: result[2],
-            commissioner: result[3],
-            externalUrl: result[4],
-            lineIds: result[5].map((value: BigNumber) => value.toNumber()),
-            hasSupplierSigned: result[6],
-            hasCommissionerSigned: result[7],
-            paymentDeadline: result[8].toNumber(),
-            documentDeliveryDeadline: result[9].toNumber(),
-            arbiter: result[10],
-            shippingDeadline: result[11].toNumber(),
-            deliveryDeadline: result[12].toNumber(),
-            escrow: result[13],
-        };
+    async addLine(line: OrderLineRequest): Promise<OrderLine> {
+        const _price = this._convertPriceClassInStruct(line.price);
+        const tx: any = await this._actual.addLine(line.materialsId, line.productCategory, line.quantity, _price);
+        const receipt = await tx.wait();
+        const id = receipt.events.find((event: Event) => event.event === 'OrderLineAdded').args[0];
+        return this.getLine(id);
     }
 
-    async addOrderLine(materialIds: [number, number], productCategory: string, quantity: number, price: OrderLinePrice): Promise<void> {
-        const _price = this._convertPriceClassInStruct(price);
-        const tx = await this._actual.addOrderLine(materialIds, productCategory, quantity, _price);
+    async updateLine(line: OrderLine): Promise<OrderLine> {
+        const _price = this._convertPriceClassInStruct(line.price);
+        const tx = await this._actual.updateLine(line.id, line.materialsId, line.productCategory, line.quantity, _price);
         await tx.wait();
-    }
-
-    async updateOrderLine(id: number, materialIds: [number, number], productCategory: string, quantity: number, price: OrderLinePrice): Promise<void> {
-        const _price = this._convertPriceClassInStruct(price);
-        let tx = await this._contract.updateLine(id, materialIds, productCategory);
-        await tx.wait();
-        tx = await this._actual.updateOrderLine(id, quantity, _price);
-        await tx.wait();
+        return this.getLine(line.id);
     }
 
     async getNegotiationStatus(): Promise<NegotiationStatus> {
@@ -138,7 +152,7 @@ export class OrderTradeDriver extends TradeDriver {
         }, new Map<OrderTradeEvents, number[]>());
     }
 
-    private _convertPriceClassInStruct(price: OrderLinePrice): OrderTrade.OrderLinePriceStructOutput {
+    private _convertPriceClassInStruct(price: OrderLinePrice): OrderTradeContract.OrderLinePriceStructOutput {
         const _amount: number = Math.floor(price.amount);
         const str = (price.amount - _amount).toString().split('.')[1] || '0';
         const _decimals: number = parseInt(str, 10);
@@ -147,6 +161,6 @@ export class OrderTradeDriver extends TradeDriver {
             amount: BigNumber.from(_amount),
             decimals: BigNumber.from(_decimals),
             fiat: price.fiat,
-        } as OrderTrade.OrderLinePriceStructOutput;
+        } as OrderTradeContract.OrderLinePriceStructOutput;
     }
 }

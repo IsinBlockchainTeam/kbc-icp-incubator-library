@@ -1,3 +1,30 @@
+export class LineRequest {
+    protected _materialsId: [number, number];
+
+    protected _productCategory: string;
+
+    constructor(materialsId: [number, number], productCategory: string) {
+        this._materialsId = materialsId;
+        this._productCategory = productCategory;
+    }
+
+    get materialsId(): [number, number] {
+        return this._materialsId;
+    }
+
+    set materialsId(value: [number, number]) {
+        this._materialsId = value;
+    }
+
+    get productCategory(): string {
+        return this._productCategory;
+    }
+
+    set productCategory(value: string) {
+        this._productCategory = value;
+    }
+}
+
 export class Line {
     protected _id: number;
 
@@ -49,16 +76,13 @@ export abstract class Trade {
 
     protected _lines: Map<number, Line>;
 
-    protected _lineIds: number[];
-
-    protected constructor(tradeId: number, supplier: string, customer: string, commissioner: string, externalUrl: string, lines: Map<number, Line>, lineIds: number[]) {
+    protected constructor(tradeId: number, supplier: string, customer: string, commissioner: string, externalUrl: string, lines: Map<number, Line>) {
         this._tradeId = tradeId;
         this._supplier = supplier;
         this._customer = customer;
         this._commissioner = commissioner;
         this._externalUrl = externalUrl;
         this._lines = lines;
-        this._lineIds = lineIds;
     }
 
     get tradeId(): number {
@@ -107,13 +131,5 @@ export abstract class Trade {
 
     set lines(value: Map<number, Line>) {
         this._lines = value;
-    }
-
-    get lineIds(): number[] {
-        return this._lineIds;
-    }
-
-    set lineIds(value: number[]) {
-        this._lineIds = value;
     }
 }
