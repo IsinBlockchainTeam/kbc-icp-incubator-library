@@ -94,7 +94,7 @@ describe('TradeManager.sol', () => {
             const basicTradeAddress = await tradeManagerContract.getTrade(id);
             const basicTradeContract = await ethers.getContractAt('BasicTrade', basicTradeAddress);
 
-            const [_tradeId, _supplier, _customer, _commissioner, _externalUrl, _linesId, _name] = await basicTradeContract.getBasicTrade();
+            const [_tradeId, _supplier, _customer, _commissioner, _externalUrl, _linesId, _name] = await basicTradeContract.getTrade();
             expect(_tradeId)
                 .to
                 .equal(id);
@@ -163,7 +163,7 @@ describe('TradeManager.sol', () => {
             const orderTradeAddress = await tradeManagerContract.getTrade(id);
             const orderTradeContract = await ethers.getContractAt(ContractName.ORDER_TRADE, orderTradeAddress);
 
-            const [_tradeId, _supplier, _customer, _commissioner, _externalUrl, _linesId, _hasSupplierSigned, _hasCommissionerSigned, _paymentDeadline, _documentDeliveryDeadline, _arbiter, _shippingDeadline, _deliveryDeadline, _escrow] = await orderTradeContract.getOrderTrade();
+            const [_tradeId, _supplier, _customer, _commissioner, _externalUrl, _linesId, _hasSupplierSigned, _hasCommissionerSigned, _paymentDeadline, _documentDeliveryDeadline, _arbiter, _shippingDeadline, _deliveryDeadline, _escrow] = await orderTradeContract.getTrade();
             expect(_tradeId)
                 .to
                 .equal(id);

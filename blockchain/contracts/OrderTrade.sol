@@ -8,7 +8,7 @@ import "hardhat/console.sol";
 contract OrderTrade is Trade {
     using Counters for Counters.Counter;
 
-    enum NegotiationStatus { INITIALIZED, PENDING, COMPLETED }
+    enum NegotiationStatus {INITIALIZED, PENDING, COMPLETED}
 
     event OrderLineAdded(uint256 orderLineId);
     event OrderLineUpdated(uint256 orderLineId);
@@ -29,7 +29,6 @@ contract OrderTrade is Trade {
     struct OrderLine {
         uint256 quantity;
         OrderLinePrice price;
-        bool exists;
     }
 
     // TODO: OldTradeManager -> pensare ad un map (supplier -> sign) per le firme (permetterebbe la gestione di firme da parte di più entità)
@@ -65,51 +64,45 @@ contract OrderTrade is Trade {
         _hasCommissionerSigned = false;
     }
 
-    function getTradeType() public override view returns (TradeType) {
+    function getTrade() public view returns (uint256, address, address, address, string memory, uint256[] memory, bool, bool, uint256, uint256, address, uint256, uint256, Escrow) {
+        (uint256 tradeId, address supplier, address customer, address commissioner, string memory externalUrl, uint256[] memory lineIds) = _getTrade();
+        return (tradeId, supplier, customer, commissioner, externalUrl, lineIds, _hasSupplierSigned, _hasCommissionerSigned, _paymentDeadline, _documentDeliveryDeadline, _arbiter, _shippingDeadline, _deliveryDeadline, _escrow);
+    }
+
+    function getTradeType() public override pure returns (TradeType) {
         return TradeType.ORDER;
     }
 
-    function getOrderTrade() public view returns (uint256, address, address, address, string memory, uint256[] memory, bool, bool, uint256, uint256, address, uint256, uint256, Escrow) {
-        return (_tradeId, _supplier, _customer, _commissioner, _externalUrl, _lineIds, _hasSupplierSigned, _hasCommissionerSigned, _paymentDeadline, _documentDeliveryDeadline, _arbiter, _shippingDeadline, _deliveryDeadline, _escrow);
-    }
-
-    function getOrderLines() public view returns (OrderLine[] memory) {
+    function getLines() public view returns (Line[] memory, OrderLine[] memory) {
+        Line[] memory lines = _getLines();
         OrderLine[] memory orderLines = new OrderLine[](_lineIds.length);
         for (uint256 i = 0; i < _lineIds.length; i++) {
             orderLines[i] = _orderLines[_lineIds[i]];
         }
-        return orderLines;
+        return (lines, orderLines);
     }
 
-    function getOrderLine(uint256 id) public view returns (OrderLine memory) {
-        require(getOrderLineExists(id), "OrderTrade: Order line does not exist");
-        return _orderLines[id];
+    function getLine(uint256 id) public view returns (Line memory, OrderLine memory) {
+        Line memory line = _getLine(id);
+        return (line, _orderLines[id]);
     }
 
-    function getOrderLineExists(uint256 id) public view returns (bool) {
-        return _orderLines[id].exists;
-    }
-
-    // TODO: override addLine and make it empty
-
-    function addOrderLine(uint256[2] memory materialIds, string memory productCategory, uint256 quantity, OrderLinePrice memory price) public onlyAdminOrContractPart onlyOrdersInNegotiation {
+    function addLine(uint256[2] memory materialIds, string memory productCategory, uint256 quantity, OrderLinePrice memory price) public onlyAdminOrContractPart onlyOrdersInNegotiation returns(uint256) {
         require(_fiatManager.contains(price.fiat), "OrderTrade: Fiat has not been registered");
 
-        uint256 tradeLineId = _linesCounter.current();
-        addLine(materialIds, productCategory);
-        _orderLines[tradeLineId] = OrderLine(quantity, price, true);
+        uint256 tradeLineId = _addLine(materialIds, productCategory);
+        _orderLines[tradeLineId] = OrderLine(quantity, price);
 
         emit OrderLineAdded(tradeLineId);
         _updateSignatures(_msgSender());
+        return tradeLineId;
     }
 
-    // TODO: add update line logic here
-    function updateOrderLine(uint256 id, uint256 quantity, OrderLinePrice memory price) public onlyAdminOrContractPart onlyOrdersInNegotiation {
-        require(getOrderLineExists(id), "OrderTrade: Order line does not exist");
-        require(getNegotiationStatus() != NegotiationStatus.COMPLETED, "OrderTrade: The order has been confirmed, it cannot be changed");
+    function updateLine(uint256 id, uint256[2] memory materialIds, string memory productCategory, uint256 quantity, OrderLinePrice memory price) public onlyAdminOrContractPart onlyOrdersInNegotiation {
         require(_fiatManager.contains(price.fiat), "OrderTrade: Fiat has not been registered");
 
-        _orderLines[id] = OrderLine(quantity, price, true);
+        _updateLine(id, materialIds, productCategory);
+        _orderLines[id] = OrderLine(quantity, price);
 
         emit OrderLineUpdated(id);
         _updateSignatures(_msgSender());
@@ -150,16 +143,15 @@ contract OrderTrade is Trade {
         _updateSignatures(_msgSender());
     }
 
-    function confirmOrder() public onlyAdminOrContractPart {
-        require(getNegotiationStatus() != NegotiationStatus.COMPLETED, "OrderTrade: The order has already been confirmed");
-        if(_msgSender() == _supplier) {
+    function confirmOrder() public onlyContractPart onlyOrdersInNegotiation {
+        if (_msgSender() == _supplier) {
             _hasSupplierSigned = true;
-        } else if(_msgSender() == _commissioner) {
+        } else {
             _hasCommissionerSigned = true;
         }
         emit OrderSignatureAffixed(_msgSender());
 
-        if(_hasSupplierSigned && _hasCommissionerSigned) {
+        if (_hasSupplierSigned && _hasCommissionerSigned) {
             // TODO: should escrow be created here?
             emit OrderConfirmed();
         }
