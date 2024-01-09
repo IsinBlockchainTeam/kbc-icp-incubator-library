@@ -1,3 +1,5 @@
+/* eslint-disable camelcase */
+
 import { Signer, utils } from 'ethers';
 import { OfferManager, OfferManager__factory } from '../smart-contracts';
 import { Offer } from '../entities/Offer';
@@ -26,8 +28,8 @@ export class OfferDriver {
         }
     }
 
-    async getOffersCounter(): Promise<number> {
-        const counter = await this._contract.getOffersCounter();
+    async getLastId(): Promise<number> {
+        const counter = await this._contract.getLastId();
         return counter.toNumber();
     }
 
@@ -38,9 +40,9 @@ export class OfferDriver {
         return ids.map((id) => id.toNumber());
     }
 
-    async getOffer(offerId: number): Promise<Offer> {
+    async getOffer(offerId: number, blockNumber?: number): Promise<Offer> {
         try {
-            const rawOffer = await this._contract.getOffer(offerId);
+            const rawOffer = await this._contract.getOffer(offerId, { blockTag: blockNumber });
             return EntityBuilder.buildOffer(rawOffer);
         } catch (e: any) {
             throw new Error(e.message);
@@ -59,6 +61,28 @@ export class OfferDriver {
     async deleteOffer(offerId: number): Promise<void> {
         try {
             const tx = await this._contract.deleteOffer(offerId);
+            await tx.wait();
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
+    }
+
+    async addAdmin(address: string): Promise<void> {
+        if (!utils.isAddress(address)) throw new Error('Not an address');
+
+        try {
+            const tx = await this._contract.addAdmin(address);
+            await tx.wait();
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
+    }
+
+    async removeAdmin(address: string): Promise<void> {
+        if (!utils.isAddress(address)) throw new Error('Not an address');
+
+        try {
+            const tx = await this._contract.removeAdmin(address);
             await tx.wait();
         } catch (e: any) {
             throw new Error(e.message);

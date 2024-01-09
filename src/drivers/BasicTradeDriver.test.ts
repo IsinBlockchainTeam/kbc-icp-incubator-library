@@ -127,7 +127,7 @@ describe('BasicTradeDriver', () => {
         expect(mockedContract.getLine)
             .toHaveBeenCalledTimes(1);
         expect(mockedContract.getLine)
-            .toHaveBeenNthCalledWith(1, line.id.toNumber());
+            .toHaveBeenNthCalledWith(1, line.id.toNumber(), { blockTag: undefined });
         expect(mockedGetLine)
             .toHaveBeenCalledTimes(1);
     });
@@ -152,7 +152,7 @@ describe('BasicTradeDriver', () => {
         expect(mockedContract.getLine)
             .toHaveBeenCalledTimes(1);
         expect(mockedContract.getLine)
-            .toHaveBeenNthCalledWith(1, line.id);
+            .toHaveBeenNthCalledWith(1, line.id, { blockTag: undefined });
         expect(mockedGetLine)
             .toHaveBeenCalledTimes(1);
     });
@@ -177,7 +177,7 @@ describe('BasicTradeDriver', () => {
         expect(mockedContract.getLine)
             .toHaveBeenCalledTimes(1);
         expect(mockedContract.getLine)
-            .toHaveBeenNthCalledWith(1, line.id.toNumber());
+            .toHaveBeenNthCalledWith(1, line.id.toNumber(), { blockTag: undefined });
         expect(mockedGetLine)
             .toHaveBeenCalledTimes(1);
     });

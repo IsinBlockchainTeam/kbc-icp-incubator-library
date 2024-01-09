@@ -1,7 +1,15 @@
 import { BigNumber } from 'ethers';
-import { OrderTrade as OrderTradeContract, Trade } from '../smart-contracts';
-import { OrderLine, OrderLinePrice, OrderTrade } from './OrderTrade';
+import { OrderTrade as OrderTradeContract } from '../smart-contracts';
+import {
+    OrderLine,
+    OrderLinePrice,
+    OrderLineRequest,
+    OrderTrade,
+} from './OrderTrade';
 import { EntityBuilder } from '../utils/EntityBuilder';
+import {
+    Trade as TradeContract,
+} from '../smart-contracts/contracts/OrderTrade';
 
 describe('OrderLinePrice', () => {
     let price: OrderLinePrice;
@@ -63,12 +71,43 @@ describe('OrderLine', () => {
     });
 });
 
+describe('OrderLineRequest', () => {
+    let line: OrderLineRequest;
+
+    beforeAll(() => {
+        line = new OrderLineRequest([1, 2], 'test', 10, new OrderLinePrice(10.2, 'CHF'));
+    });
+
+    it('should correctly initialize an OrderLineRequest', () => {
+        expect(line.materialsId)
+            .toEqual([1, 2]);
+        expect(line.productCategory)
+            .toEqual('test');
+        expect(line.quantity)
+            .toEqual(10);
+        expect(line.price)
+            .toEqual(new OrderLinePrice(10.2, 'CHF'));
+    });
+
+    it('should correctly set the quantity', () => {
+        line.quantity = 20;
+        expect(line.quantity)
+            .toEqual(20);
+    });
+
+    it('should correctly set the price', () => {
+        line.price = new OrderLinePrice(5, 'EUR');
+        expect(line.price)
+            .toEqual(new OrderLinePrice(5, 'EUR'));
+    });
+});
+
 describe('OrderTrade', () => {
     let orderTrade: OrderTrade;
 
     beforeAll(() => {
         orderTrade = new OrderTrade(0, 'supplier', 'customer', 'commissioner', 'https://test.com',
-            new Map<number, OrderLine>(), [], false, false, 100, 200, 'arbitrer', 300, 400, 'escrow');
+            new Map<number, OrderLine>(), false, false, 100, 200, 'arbitrer', 300, 400, 'escrow');
     });
 
     it('should correctly initialize an OrderTrade', () => {
@@ -134,26 +173,25 @@ describe('OrderTrade', () => {
             .toEqual(0);
     });
 
-    it('should correctly set the orderLines', () => {
+    it('should correctly set the lines', () => {
         const newOrderLines = new Map<number, OrderLine>();
-        const materialsId: [BigNumber, BigNumber] = [BigNumber.from(0), BigNumber.from(1)];
-        const line: Trade.LineStructOutput = {
-            id: BigNumber.from(0),
-            materialsId,
-            productCategory: 'test',
+        const newLine: TradeContract.LineStructOutput = {
+            id: BigNumber.from(1),
+            materialsId: [BigNumber.from(3), BigNumber.from(4)],
+            productCategory: 'category2',
             exists: true,
-        } as Trade.LineStructOutput;
-        const newOrderLinePrice: OrderTradeContract.OrderLinePriceStructOutput = {
+        } as TradeContract.LineStructOutput;
+        const price: OrderTradeContract.OrderLinePriceStructOutput = {
             amount: BigNumber.from(10),
             decimals: BigNumber.from(0),
-            fiat: 'Panda 1000 i.e. cat. 4X4',
+            fiat: 'fiat',
         } as OrderTradeContract.OrderLinePriceStructOutput;
         const newOrderLine: OrderTradeContract.OrderLineStructOutput = {
-            quantity: BigNumber.from(2),
-            price: newOrderLinePrice,
-            exists: true,
+            quantity: BigNumber.from(4),
+            price,
         } as OrderTradeContract.OrderLineStructOutput;
-        newOrderLines.set(1, EntityBuilder.buildOrderLine(line, newOrderLine));
+
+        newOrderLines.set(1, EntityBuilder.buildOrderLine(newLine, newOrderLine));
         orderTrade.lines = newOrderLines;
         expect(orderTrade.lines)
             .toEqual(newOrderLines);

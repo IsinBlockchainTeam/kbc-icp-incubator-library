@@ -1,16 +1,21 @@
 import { createMock } from 'ts-auto-mock';
 import { OrderTradeDriver } from '../drivers/OrderTradeDriver';
 import { OrderTradeService } from './OrderTradeService';
-import { OrderLinePrice } from '../entities/OrderTrade';
+import {
+    OrderLine,
+    OrderLinePrice,
+    OrderLineRequest,
+} from '../entities/OrderTrade';
 
 describe('OrderTradeService', () => {
     const price: OrderLinePrice = new OrderLinePrice(10.2, 'Panda 1000 i.e. cat. 4X4');
 
     const mockedOrderTradeDriver: OrderTradeDriver = createMock<OrderTradeDriver>({
+        getTrade: jest.fn(),
         getLines: jest.fn(),
-        getOrderTrade: jest.fn(),
-        addOrderLine: jest.fn(),
-        updateOrderLine: jest.fn(),
+        getLine: jest.fn(),
+        addLine: jest.fn(),
+        updateLine: jest.fn(),
         getNegotiationStatus: jest.fn(),
         updatePaymentDeadline: jest.fn(),
         updateDocumentDeliveryDeadline: jest.fn(),
@@ -18,6 +23,7 @@ describe('OrderTradeService', () => {
         updateShippingDeadline: jest.fn(),
         updateDeliveryDeadline: jest.fn(),
         confirmOrder: jest.fn(),
+        getEmittedEvents: jest.fn(),
     });
 
     const orderTradeService = new OrderTradeService(
@@ -29,6 +35,12 @@ describe('OrderTradeService', () => {
     });
 
     it.each([
+        {
+            serviceFunctionName: 'getTrade',
+            serviceFunction: () => orderTradeService.getTrade(),
+            expectedMockedFunction: mockedOrderTradeDriver.getTrade,
+            expectedMockedFunctionArgs: [],
+        },
         {
             serviceFunctionName: 'getLines',
             serviceFunction: () => orderTradeService.getLines(),
@@ -42,22 +54,16 @@ describe('OrderTradeService', () => {
             expectedMockedFunctionArgs: [1, undefined],
         },
         {
-            serviceFunctionName: 'getOrderTrade',
-            serviceFunction: () => orderTradeService.getOrderTrade(),
-            expectedMockedFunction: mockedOrderTradeDriver.getOrderTrade,
-            expectedMockedFunctionArgs: [undefined],
+            serviceFunctionName: 'addLine',
+            serviceFunction: () => orderTradeService.addLine(new OrderLineRequest([1, 2], 'category', 10, new OrderLinePrice(10.2, 'CHF'))),
+            expectedMockedFunction: mockedOrderTradeDriver.addLine,
+            expectedMockedFunctionArgs: [new OrderLineRequest([1, 2], 'category', 10, new OrderLinePrice(10.2, 'CHF'))],
         },
         {
-            serviceFunctionName: 'addOrderLine',
-            serviceFunction: () => orderTradeService.addOrderLine([1, 2], 'category1', 1, price),
-            expectedMockedFunction: mockedOrderTradeDriver.addOrderLine,
-            expectedMockedFunctionArgs: [[1, 2], 'category1', 1, price],
-        },
-        {
-            serviceFunctionName: 'updateOrderLine',
-            serviceFunction: () => orderTradeService.updateOrderLine(1, [2, 3], 'catrogry2', 10, price),
-            expectedMockedFunction: mockedOrderTradeDriver.updateOrderLine,
-            expectedMockedFunctionArgs: [1, [2, 3], 'catrogry2', 10, price],
+            serviceFunctionName: 'updateLine',
+            serviceFunction: () => orderTradeService.updateLine(new OrderLine(1, [1, 2], 'category', 10, new OrderLinePrice(10.2, 'CHF'))),
+            expectedMockedFunction: mockedOrderTradeDriver.updateLine,
+            expectedMockedFunctionArgs: [new OrderLine(1, [1, 2], 'category', 10, new OrderLinePrice(10.2, 'CHF'))],
         },
         {
             serviceFunctionName: 'getNegotiationStatus',

@@ -85,26 +85,34 @@ contract TradeManager is AccessControl {
         return id;
     }
 
-    function getTrades() public view returns (Trade[] memory) {
-        Trade[] memory trades = new Trade[](_counter.current());
-        for (uint256 i = 0; i < _counter.current(); i++) {
-            trades[i] = _trades[i];
-        }
-        return trades;
+    function getTradeCounter() public view returns (uint256) {
+        return _counter.current();
     }
 
-    function getTradesAndTypes() public view returns (Trade[] memory, Trade.TradeType[] memory) {
-        Trade[] memory trades = new Trade[](_counter.current());
-        Trade.TradeType[] memory tradeTypes = new Trade.TradeType[](_counter.current());
-        for (uint256 i = 0; i < _counter.current(); i++) {
-            trades[i] = _trades[i];
-            tradeTypes[i] = _trades[i].getTradeType();
-        }
-        return (trades, tradeTypes);
-    }
+//    function getTrades() public view returns (Trade[] memory) {
+//        Trade[] memory trades = new Trade[](_counter.current());
+//        for (uint256 i = 0; i < _counter.current(); i++) {
+//            trades[i] = _trades[i];
+//        }
+//        return trades;
+//    }
+//
+//    function getTradesAndTypes() public view returns (Trade[] memory, Trade.TradeType[] memory) {
+//        Trade[] memory trades = new Trade[](_counter.current());
+//        Trade.TradeType[] memory tradeTypes = new Trade.TradeType[](_counter.current());
+//        for (uint256 i = 0; i < _counter.current(); i++) {
+//            trades[i] = _trades[i];
+//            tradeTypes[i] = _trades[i].getTradeType();
+//        }
+//        return (trades, tradeTypes);
+//    }
 
     function getTrade(uint256 id) public view returns (Trade) {
         return _trades[id];
+    }
+
+    function getTradeType(uint256 id) public view returns (Trade.TradeType) {
+        return _trades[id].getTradeType();
     }
 
     function getTradeIdsOfSupplier(address supplier) public view returns (uint256[] memory) {

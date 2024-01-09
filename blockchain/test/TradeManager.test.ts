@@ -3,6 +3,7 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
 import { ContractName } from '../utils/constants';
+import { Trade } from '../typechain-types';
 
 describe('TradeManager.sol', () => {
     let tradeManagerContract: Contract;
@@ -23,6 +24,19 @@ describe('TradeManager.sol', () => {
     const tokenAddress: string = Wallet.createRandom().address;
 
     let escrowManagerContract: Contract;
+
+    const _getTradeContract = async (id: number): Promise<Trade> => {
+        const tradeAddress = await tradeManagerContract.getTrade(id);
+        const tradeType = await tradeManagerContract.getTradeType(id);
+        switch (tradeType) {
+        case 0:
+            return await ethers.getContractAt(ContractName.BASIC_TRADE, tradeAddress);
+        case 1:
+            return await ethers.getContractAt(ContractName.ORDER_TRADE, tradeAddress);
+        default:
+            throw new Error(`TradeManagerTest: an invalid value "${tradeType}" for "TradeType" was returned by the contract`);
+        }
+    };
 
     before(async () => {
         [admin, supplier, customer, commissioner, arbiter] = await ethers.getSigners();
@@ -248,24 +262,16 @@ describe('TradeManager.sol', () => {
             await tradeManagerContract.registerOrderTrade(Wallet.createRandom().address, customer.address, commissioner.address, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter.address, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);
             await tradeManagerContract.registerOrderTrade(supplier.address, customer.address, admin.address, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter.address, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);
 
-            const firstAddress = await tradeManagerContract.getTrade(0);
-            const secondAddress = await tradeManagerContract.getTrade(1);
-            const thirdAddress = await tradeManagerContract.getTrade(2);
+            expect(await tradeManagerContract.getTradeCounter()).to.equal(3);
 
-            const trades = await tradeManagerContract.getTrades();
+            const firstTrade = await _getTradeContract(0);
+            expect(firstTrade.address).to.equal(await tradeManagerContract.getTrade(0));
 
-            expect(trades.length)
-                .to
-                .equal(3);
-            expect(trades[0])
-                .to
-                .equal(firstAddress);
-            expect(trades[1])
-                .to
-                .equal(secondAddress);
-            expect(trades[2])
-                .to
-                .equal(thirdAddress);
+            const secondTrade = await _getTradeContract(1);
+            expect(secondTrade.address).to.equal(await tradeManagerContract.getTrade(1));
+
+            const thirdTrade = await _getTradeContract(2);
+            expect(thirdTrade.address).to.equal(await tradeManagerContract.getTrade(2));
         });
 
         it('should get all trades and types', async () => {
@@ -273,34 +279,16 @@ describe('TradeManager.sol', () => {
             await tradeManagerContract.registerBasicTrade(Wallet.createRandom().address, customer.address, commissioner.address, externalUrl, 'test');
             await tradeManagerContract.registerOrderTrade(supplier.address, customer.address, admin.address, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter.address, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);
 
-            const firstAddress = await tradeManagerContract.getTrade(0);
-            const secondAddress = await tradeManagerContract.getTrade(1);
-            const thirdAddress = await tradeManagerContract.getTrade(2);
+            expect(await tradeManagerContract.getTradeCounter()).to.equal(3);
 
-            const tradesAndTypes = await tradeManagerContract.getTradesAndTypes();
+            const firstTrade = await _getTradeContract(0);
+            expect(await firstTrade.getTradeType()).to.equal(await tradeManagerContract.getTradeType(0));
 
-            expect(tradesAndTypes[0].length)
-                .to
-                .deep
-                .equal(3);
-            expect(tradesAndTypes[0][0])
-                .to
-                .equal(firstAddress);
-            expect(tradesAndTypes[1][0])
-                .to
-                .equal(1);
-            expect(tradesAndTypes[0][1])
-                .to
-                .equal(secondAddress);
-            expect(tradesAndTypes[1][1])
-                .to
-                .equal(0);
-            expect(tradesAndTypes[0][2])
-                .to
-                .equal(thirdAddress);
-            expect(tradesAndTypes[1][2])
-                .to
-                .equal(1);
+            const secondTrade = await _getTradeContract(1);
+            expect(await secondTrade.getTradeType()).to.equal(await tradeManagerContract.getTradeType(1));
+
+            const thirdTrade = await _getTradeContract(2);
+            expect(await thirdTrade.getTradeType()).to.equal(await tradeManagerContract.getTradeType(2));
         });
 
         it('should get trade IDs of supplier', async () => {

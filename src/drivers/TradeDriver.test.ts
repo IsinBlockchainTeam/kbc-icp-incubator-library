@@ -67,11 +67,11 @@ describe('TradeDriver', () => {
             .toEqual(TradeType.ORDER);
     });
 
-    it('should correctly retrieve trade type - FAIL(TradeDriver: an invalid value "..." for "TradeType" was returned by the contract)', async () => {
+    it('should correctly retrieve trade type - FAIL(Utils: an invalid value "..." for "TradeType" was returned by the contract)', async () => {
         mockedGetTradeType.mockResolvedValueOnce(42);
         await expect(tradeDriver.getTradeType())
             .rejects
-            .toThrow(new Error('TradeDriver: an invalid value "42" for "TradeType" was returned by the contract'));
+            .toThrow(new Error('Utils: an invalid value "42" for "TradeType" was returned by the contract'));
     });
 
     it('should correctly retrieve line exists', async () => {

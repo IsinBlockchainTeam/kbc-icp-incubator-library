@@ -5,12 +5,8 @@ import { DocumentType } from '../entities/DocumentInfo';
 
 describe('TradeService', () => {
     const mockedTradeDriver: TradeDriver = createMock<TradeDriver>({
-        getTrade: jest.fn(),
-        getLines: jest.fn(),
-        getLine: jest.fn(),
+        getTradeType: jest.fn(),
         getLineExists: jest.fn(),
-        addLine: jest.fn(),
-        updateLine: jest.fn(),
         getTradeStatus: jest.fn(),
         addDocument: jest.fn(),
         addAdmin: jest.fn(),
@@ -27,40 +23,16 @@ describe('TradeService', () => {
 
     it.each([
         {
-            serviceFunctionName: 'getTrade',
-            serviceFunction: () => tradeService.getTrade(),
-            expectedMockedFunction: mockedTradeDriver.getTrade,
+            serviceFunctionName: 'getTradeType',
+            serviceFunction: () => tradeService.getTradeType(),
+            expectedMockedFunction: mockedTradeDriver.getTradeType,
             expectedMockedFunctionArgs: [],
-        },
-        {
-            serviceFunctionName: 'getLines',
-            serviceFunction: () => tradeService.getLines(),
-            expectedMockedFunction: mockedTradeDriver.getLines,
-            expectedMockedFunctionArgs: [],
-        },
-        {
-            serviceFunctionName: 'getLine',
-            serviceFunction: () => tradeService.getLine(1),
-            expectedMockedFunction: mockedTradeDriver.getLine,
-            expectedMockedFunctionArgs: [1],
         },
         {
             serviceFunctionName: 'getLineExists',
             serviceFunction: () => tradeService.getLineExists(1),
             expectedMockedFunction: mockedTradeDriver.getLineExists,
             expectedMockedFunctionArgs: [1],
-        },
-        {
-            serviceFunctionName: 'addLine',
-            serviceFunction: () => tradeService.addLine([1, 2], 'category1'),
-            expectedMockedFunction: mockedTradeDriver.addLine,
-            expectedMockedFunctionArgs: [[1, 2], 'category1'],
-        },
-        {
-            serviceFunctionName: 'updateLine',
-            serviceFunction: () => tradeService.updateLine(1, [1, 2], 'category1'),
-            expectedMockedFunction: mockedTradeDriver.updateLine,
-            expectedMockedFunctionArgs: [1, [1, 2], 'category1'],
         },
         {
             serviceFunctionName: 'getTradeStatus',

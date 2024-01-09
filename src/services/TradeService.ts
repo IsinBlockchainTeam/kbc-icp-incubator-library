@@ -1,7 +1,7 @@
 import { TradeDriver } from '../drivers/TradeDriver';
 import { TradeStatus } from '../types/TradeStatus';
 import { DocumentType } from '../entities/DocumentInfo';
-import { Line } from '../entities/Trade';
+import { TradeType } from '../types/TradeType';
 
 export class TradeService {
     protected _tradeDriver: TradeDriver;
@@ -10,28 +10,12 @@ export class TradeService {
         this._tradeDriver = supplyChainDriver;
     }
 
-    async getTrade(): Promise<{ tradeId: number, supplier: string, customer: string, commissioner: string, externalUrl: string, lineIds: number[] }> {
-        return this._tradeDriver.getTrade();
-    }
-
-    async getLines(): Promise<Line[]> {
-        return this._tradeDriver.getLines();
-    }
-
-    async getLine(id: number): Promise<Line> {
-        return this._tradeDriver.getLine(id);
+    async getTradeType(): Promise<TradeType> {
+        return this._tradeDriver.getTradeType();
     }
 
     async getLineExists(id: number): Promise<boolean> {
         return this._tradeDriver.getLineExists(id);
-    }
-
-    async addLine(materialIds: [number, number], productCategory: string): Promise<void> {
-        return this._tradeDriver.addLine(materialIds, productCategory);
-    }
-
-    async updateLine(id: number, materialIds: [number, number], productCategory: string): Promise<void> {
-        return this._tradeDriver.updateLine(id, materialIds, productCategory);
     }
 
     async getTradeStatus(): Promise<TradeStatus> {

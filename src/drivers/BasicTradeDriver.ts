@@ -41,8 +41,8 @@ export class BasicTradeDriver extends TradeDriver implements IConcreteTradeDrive
         return result ? result.map((line: Trade.LineStructOutput) => EntityBuilder.buildTradeLine(line)) : [];
     }
 
-    async getLine(id: number): Promise<Line> {
-        const result: Trade.LineStructOutput = await this._actual.getLine(id);
+    async getLine(id: number, blockNumber?: number): Promise<Line> {
+        const result: Trade.LineStructOutput = await this._actual.getLine(id, { blockTag: blockNumber });
         return EntityBuilder.buildTradeLine(result);
     }
 

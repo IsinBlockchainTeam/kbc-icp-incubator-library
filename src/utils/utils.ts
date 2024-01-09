@@ -15,6 +15,6 @@ export const getTradeTypeByIndex = (index: number): TradeType => {
     case 1:
         return TradeType.ORDER;
     default:
-        throw new Error(`TradeDriver: an invalid value "${index}" for "TradeType" was returned by the contract`);
+        throw new Error(`Utils: an invalid value "${index}" for "TradeType" was returned by the contract`);
     }
 };
