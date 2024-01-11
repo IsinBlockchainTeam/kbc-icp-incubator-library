@@ -1,4 +1,4 @@
-import { Line, Trade } from './Trade';
+import { Line, LineRequest, Trade } from './Trade';
 
 export class OrderLinePrice {
     private _amount: number;
@@ -24,6 +24,34 @@ export class OrderLinePrice {
 
     set fiat(value: string) {
         this._fiat = value;
+    }
+}
+
+export class OrderLineRequest extends LineRequest {
+    private _quantity: number;
+
+    private _price: OrderLinePrice;
+
+    constructor(materialsId: [number, number], productCategory: string, quantity: number, price: OrderLinePrice) {
+        super(materialsId, productCategory);
+        this._quantity = quantity;
+        this._price = price;
+    }
+
+    get quantity(): number {
+        return this._quantity;
+    }
+
+    set quantity(value: number) {
+        this._quantity = value;
+    }
+
+    get price(): OrderLinePrice {
+        return this._price;
+    }
+
+    set price(value: OrderLinePrice) {
+        this._price = value;
     }
 }
 
@@ -73,7 +101,7 @@ export class OrderTrade extends Trade {
     private _escrow: string;
 
     constructor(
-        tradeId: number, supplier: string, customer: string, commissioner: string, externalUrl: string, lines: Map<number, OrderLine>, lineIds: number[],
+        tradeId: number, supplier: string, customer: string, commissioner: string, externalUrl: string, lines: Map<number, OrderLine>,
         hasSupplierSigned: boolean,
         hasCommissionerSigned: boolean,
         paymentDeadline: number,
@@ -83,7 +111,7 @@ export class OrderTrade extends Trade {
         deliveryDeadline: number,
         escrow: string,
     ) {
-        super(tradeId, supplier, customer, commissioner, externalUrl, lines, lineIds);
+        super(tradeId, supplier, customer, commissioner, externalUrl, lines);
         this._hasSupplierSigned = hasSupplierSigned;
         this._hasCommissionerSigned = hasCommissionerSigned;
         this._paymentDeadline = paymentDeadline;

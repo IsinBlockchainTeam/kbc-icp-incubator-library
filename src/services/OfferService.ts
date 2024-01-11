@@ -26,7 +26,7 @@ export class OfferService {
     }
 
     async getAllOffers(): Promise<Offer[]> {
-        const counter = await this._offerDriver.getOffersCounter();
+        const counter = await this._offerDriver.getLastId();
         const offers = [];
         for (let i = 1; i <= counter; i++) {
             try {
@@ -44,5 +44,13 @@ export class OfferService {
 
     async deleteOffer(offerId: number): Promise<void> {
         await this._offerDriver.deleteOffer(offerId);
+    }
+
+    async addAdmin(address: string): Promise<void> {
+        await this._offerDriver.addAdmin(address);
+    }
+
+    async removeAdmin(address: string): Promise<void> {
+        await this._offerDriver.removeAdmin(address);
     }
 }

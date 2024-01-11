@@ -1,9 +1,10 @@
 import { Material } from '../entities/Material';
 import { Transformation } from '../entities/Transformation';
+import { Trade } from '../smart-contracts/contracts/BasicTrade';
 import {
     DocumentManager,
     MaterialManager, OfferManager, OrderTrade,
-    RelationshipManager, Trade,
+    RelationshipManager,
     TransformationManager,
 } from '../smart-contracts';
 import { Relationship } from '../entities/Relationship';

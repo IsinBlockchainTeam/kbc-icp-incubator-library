@@ -4,10 +4,17 @@ import {
     OrderTradeEvents,
 } from '../drivers/OrderTradeDriver';
 import { NegotiationStatus } from '../types/NegotiationStatus';
-import { OrderLine, OrderLinePrice } from '../entities/OrderTrade';
+import { OrderLine,
+    OrderLineRequest,
+    OrderTrade } from '../entities/OrderTrade';
+import { IConcreteTradeService } from './IConcreteTradeService';
 
 // TODO: Add logic for storing metadata on Solid
-export class OrderTradeService extends TradeService {
+export class OrderTradeService extends TradeService implements IConcreteTradeService {
+    async getTrade(blockNumber?: number): Promise<OrderTrade> {
+        return this._tradeDriverImplementation.getTrade(blockNumber);
+    }
+
     async getLines(): Promise<OrderLine[]> {
         return this._tradeDriverImplementation.getLines();
     }
@@ -16,16 +23,12 @@ export class OrderTradeService extends TradeService {
         return this._tradeDriverImplementation.getLine(id, blockNumber);
     }
 
-    async getOrderTrade(blockNumber?: number): Promise<{ tradeId: number, supplier: string, customer: string, commissioner: string, externalUrl: string, lineIds: number[], hasSupplierSigned: boolean, hasCommissionerSigned: boolean, paymentDeadline: number, documentDeliveryDeadline: number, arbiter: string, shippingDeadline: number, deliveryDeadline: number, escrow: string}> {
-        return this._tradeDriverImplementation.getOrderTrade(blockNumber);
+    async addLine(line: OrderLineRequest): Promise<OrderLine> {
+        return this._tradeDriverImplementation.addLine(line);
     }
 
-    async addOrderLine(materialIds: [number, number], productCategory: string, quantity: number, price: OrderLinePrice): Promise<void> {
-        return this._tradeDriverImplementation.addOrderLine(materialIds, productCategory, quantity, price);
-    }
-
-    async updateOrderLine(id: number, materialIds: [number, number], productCategory: string, quantity: number, price: OrderLinePrice): Promise<void> {
-        return this._tradeDriverImplementation.updateOrderLine(id, materialIds, productCategory, quantity, price);
+    async updateLine(line: OrderLine): Promise<OrderLine> {
+        return this._tradeDriverImplementation.updateLine(line);
     }
 
     async getNegotiationStatus(): Promise<NegotiationStatus> {

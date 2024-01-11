@@ -1,10 +1,15 @@
 import { createMock } from 'ts-auto-mock';
 import { BasicTradeDriver } from '../drivers/BasicTradeDriver';
 import { BasicTradeService } from './BasicTradeService';
+import { Line, LineRequest } from '../entities/Trade';
 
 describe('BasicTradeService', () => {
     const mockedBasicTradeDriver: BasicTradeDriver = createMock<BasicTradeDriver>({
-        getBasicTrade: jest.fn(),
+        getTrade: jest.fn(),
+        getLines: jest.fn(),
+        getLine: jest.fn(),
+        addLine: jest.fn(),
+        updateLine: jest.fn(),
         setName: jest.fn(),
     });
 
@@ -18,10 +23,34 @@ describe('BasicTradeService', () => {
 
     it.each([
         {
-            serviceFunctionName: 'getBasicTrade',
-            serviceFunction: () => basicTradeService.getBasicTrade(),
-            expectedMockedFunction: mockedBasicTradeDriver.getBasicTrade,
+            serviceFunctionName: 'getTrade',
+            serviceFunction: () => basicTradeService.getTrade(),
+            expectedMockedFunction: mockedBasicTradeDriver.getTrade,
+            expectedMockedFunctionArgs: [undefined],
+        },
+        {
+            serviceFunctionName: 'getLines',
+            serviceFunction: () => basicTradeService.getLines(),
+            expectedMockedFunction: mockedBasicTradeDriver.getLines,
             expectedMockedFunctionArgs: [],
+        },
+        {
+            serviceFunctionName: 'getLine',
+            serviceFunction: () => basicTradeService.getLine(1),
+            expectedMockedFunction: mockedBasicTradeDriver.getLine,
+            expectedMockedFunctionArgs: [1, undefined],
+        },
+        {
+            serviceFunctionName: 'addLine',
+            serviceFunction: () => basicTradeService.addLine(new LineRequest([1, 2], 'category')),
+            expectedMockedFunction: mockedBasicTradeDriver.addLine,
+            expectedMockedFunctionArgs: [new LineRequest([1, 2], 'category')],
+        },
+        {
+            serviceFunctionName: 'updateLine',
+            serviceFunction: () => basicTradeService.updateLine(new Line(1, [1, 2], 'category')),
+            expectedMockedFunction: mockedBasicTradeDriver.updateLine,
+            expectedMockedFunctionArgs: [new Line(1, [1, 2], 'category')],
         },
         {
             serviceFunctionName: 'setName',

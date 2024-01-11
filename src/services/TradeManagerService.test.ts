@@ -20,8 +20,8 @@ describe('TradeManagerService', () => {
         getTradeIdsOfCommissioner: jest.fn(),
     };
 
-    const basicTrade: BasicTrade = new BasicTrade(1, 'supplier', 'customer', 'commissioner', 'externalUrl', new Map<number, Line>(), [], 'name');
-    const orderTrade: OrderTrade = new OrderTrade(1, 'supplier', 'customer', 'commissioner', 'externalUrl', new Map<number, OrderLine>(), [], true, false, 1000, 2000, 'arbiter', 3000, 4000, 'tokenAddress');
+    const basicTrade: BasicTrade = new BasicTrade(1, 'supplier', 'customer', 'commissioner', 'externalUrl', new Map<number, Line>(), 'name');
+    const orderTrade: OrderTrade = new OrderTrade(1, 'supplier', 'customer', 'commissioner', 'externalUrl', new Map<number, OrderLine>(), true, false, 1000, 2000, 'arbiter', 3000, 4000, 'tokenAddress');
     const agreedAmount: number = 1000;
     const tokenAddress: string = 'tokenAddress';
 

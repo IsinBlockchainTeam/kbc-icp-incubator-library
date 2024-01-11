@@ -27,13 +27,13 @@ contract OfferManager is AccessControl {
         bool exists;
     }
 
-    Counters.Counter private offersCounter;
+    Counters.Counter private offersIdCounter;
     // supplier => offer ids
     mapping(address => uint256[]) private offerIds;
     // offer id => offer
     mapping(uint256 => Offer) private offers;
 
-    EnumerableType productCategoryManager;
+    EnumerableType private productCategoryManager;
 
     constructor(address[] memory admins, address productCategoryAddress) {
         _setupRole(ADMIN_ROLE, msg.sender);
@@ -49,8 +49,8 @@ contract OfferManager is AccessControl {
     function registerOffer(address owner, string memory productCategory) public {
         require(productCategoryManager.contains(productCategory), "The product category specified isn't registered");
 
-        uint256 offerId = offersCounter.current() + 1;
-        offersCounter.increment();
+        uint256 offerId = offersIdCounter.current() + 1;
+        offersIdCounter.increment();
 
         Offer storage offer = offers[offerId];
         offer.id = offerId;
@@ -63,8 +63,8 @@ contract OfferManager is AccessControl {
         emit OfferRegistered(offerId, owner);
     }
 
-    function getOffersCounter() public view returns (uint256) {
-        return offersCounter.current();
+    function getLastId() public view returns (uint256) {
+        return offersIdCounter.current();
     }
 
     function getOfferIdsByCompany(address owner) public view returns (uint256[] memory) {
@@ -105,5 +105,14 @@ contract OfferManager is AccessControl {
         delete offers[offerId];
 
         emit OfferDeleted(offerId, offer.owner);
+    }
+
+    // ROLES
+    function addAdmin(address admin) public onlyAdmin {
+        grantRole(ADMIN_ROLE, admin);
+    }
+
+    function removeAdmin(address admin) public onlyAdmin {
+        revokeRole(ADMIN_ROLE, admin);
     }
 }

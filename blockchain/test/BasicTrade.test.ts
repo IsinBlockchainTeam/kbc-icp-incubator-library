@@ -10,7 +10,6 @@ describe('BasicTrade.sol', () => {
     let enumerableProductCategoryManagerContractFake: FakeContract;
     const categories = ['Arabic 85', 'Excelsa 88'];
     let documentManagerContractFake: FakeContract;
-    const documentTypes = [1];
 
     let basicTradeContract: Contract;
     let admin: SignerWithAddress, supplier: SignerWithAddress,
@@ -32,9 +31,9 @@ describe('BasicTrade.sol', () => {
         await basicTradeContract.deployed();
     });
 
-    describe('Trade', () => {
-        it('should get Trade information', async () => {
-            const [_tradeId, _supplier, _customer, _commissioner, _externalUrl, _linesId] = await basicTradeContract.getTrade();
+    describe('Getters', () => {
+        it('should get basic trade information', async () => {
+            const [_tradeId, _supplier, _customer, _commissioner, _externalUrl, _linesId, _name] = await basicTradeContract.getTrade();
             expect(_tradeId)
                 .to
                 .equal(0);
@@ -54,8 +53,19 @@ describe('BasicTrade.sol', () => {
                 .to
                 .deep
                 .equal([]);
+            expect(_name)
+                .to
+                .equal(name);
         });
 
+        it('should get trade type', async () => {
+            expect(await basicTradeContract.getTradeType())
+                .to
+                .equal(0);
+        });
+    });
+
+    describe('Lines', () => {
         it('should add a line, retrieve it and update it', async () => {
             const tx = await basicTradeContract.addLine([1, 2], categories[0]);
             const receipt = await tx.wait();
@@ -153,92 +163,13 @@ describe('BasicTrade.sol', () => {
                 .be
                 .revertedWith('Trade: Product category does not exist');
         });
+    })
 
-        it('should compute the trade status', async () => {
-            documentManagerContractFake.getDocumentsCounterByTransactionIdAndType.returns(2);
-            documentManagerContractFake.getDocumentsByDocumentType.returns([{
-                id: 1,
-                transactionId: 2,
-                name: 'document',
-                documentType: documentTypes[0],
-                externalUrl: 'url',
-            }]);
-
-            expect(await basicTradeContract.connect(supplier)
-                .getTradeStatus())
-                .to
-                .equal(1);
-            expect(documentManagerContractFake.getDocumentsByDocumentType)
-                .to
-                .have
-                .callCount(1);
-            expect(documentManagerContractFake.getDocumentsByDocumentType)
-                .to
-                .have
-                .calledWith(0, 'trade', documentTypes[0]);
-        });
-
-        // it('should compute the trade status - FAIL (Trade: There are no documents related to this trade)', async () => {
-        //     documentManagerContractFake.getDocumentsCounterByTransactionIdAndType.returns(0);
-        //     await expect(basicTradeContract.connect(supplier).getTradeStatus()).to.be.revertedWith('Trade: There are no documents related to this trade');
-        // });
-
-        it('should compute the trade status - CONTRACTING', async () => {
-            documentManagerContractFake.getDocumentsCounterByTransactionIdAndType.returns(0);
-            expect(await basicTradeContract.connect(supplier)
-                .getTradeStatus())
-                .to
-                .equal(2);
-        });
-
-        it('should compute the trade status - FAIL (Trade: There are no documents with correct document type)', async () => {
-            documentManagerContractFake.getDocumentsCounterByTransactionIdAndType.returns(2);
-            documentManagerContractFake.getDocumentsByDocumentType.returns([]);
-            await expect(basicTradeContract.connect(customer)
-                .getTradeStatus())
-                .to
-                .be
-                .revertedWith('Trade: There are no documents with correct document type');
-        });
-    });
-
-    describe('BasicTrade', () => {
-        it('should get trade type', async () => {
-            expect(await basicTradeContract.getTradeType())
-                .to
-                .equal(0);
-        });
-
-        it('should get Basic Trade information', async () => {
-            const [_tradeId, _supplier, _customer, _commissioner, _externalUrl, _linesId, _name] = await basicTradeContract.getBasicTrade();
-            expect(_tradeId)
-                .to
-                .equal(0);
-            expect(_supplier)
-                .to
-                .equal(supplier.address);
-            expect(_customer)
-                .to
-                .equal(customer.address);
-            expect(_commissioner)
-                .to
-                .equal(commissioner.address);
-            expect(_externalUrl)
-                .to
-                .equal(externalUrl);
-            expect(_linesId)
-                .to
-                .deep
-                .equal([]);
-            expect(_name)
-                .to
-                .equal(name);
-        });
-
+    describe('Updates', () => {
         it('should update the name', async () => {
             const newName: string = 'New Test Trade';
             await basicTradeContract.setName(newName);
-            const [, , , , , , _name] = await basicTradeContract.getBasicTrade();
+            const [, , , , , , _name] = await basicTradeContract.getTrade();
             expect(_name)
                 .to
                 .equal(newName);

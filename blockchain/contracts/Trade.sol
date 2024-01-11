@@ -18,17 +18,17 @@ abstract contract Trade is AccessControl {
     event TradeLineUpdated(uint256 tradeLineId);
 
     modifier onlyAdmin() {
-        require(hasRole(ADMIN_ROLE, _msgSender()), "Trade: Caller is not the admin");
+        require(hasRole(ADMIN_ROLE, _msgSender()), "Trade: Caller is not an admin");
         _;
     }
 
-    modifier onlyContractParty() {
-        require(_msgSender() == _supplier || _msgSender() == _commissioner, "Trade: Caller is not a contract party");
+    modifier onlyContractPart() {
+        require(_isContractPart(_msgSender()), "Trade: Caller is not a contract party");
         _;
     }
 
     modifier onlyAdminOrContractPart() {
-        require(_msgSender() == _supplier || _msgSender() == _commissioner || hasRole(ADMIN_ROLE, _msgSender()), "Trade: Caller is not a contract party or admin");
+        require(_isContractPart(_msgSender()) || hasRole(ADMIN_ROLE, _msgSender()), "Trade: Caller is not a contract party or admin");
         _;
     }
 
@@ -59,7 +59,7 @@ abstract contract Trade is AccessControl {
 
     constructor(uint256 tradeId, address productCategoryAddress, address documentManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl) {
         _setupRole(ADMIN_ROLE, _msgSender());
-        _setupRole(ADMIN_ROLE, _msgSender());
+        _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
 
         _tradeId = tradeId;
         productCategoryManager = EnumerableType(productCategoryAddress);
@@ -70,13 +70,13 @@ abstract contract Trade is AccessControl {
         _externalUrl = externalUrl;
     }
 
-    function getTrade() public view returns (uint256, address, address, address, string memory, uint256[] memory) {
+    function _getTrade() internal view returns (uint256, address, address, address, string memory, uint256[] memory) {
         return (_tradeId, _supplier, _customer, _commissioner, _externalUrl, _lineIds);
     }
 
-    function getTradeType() virtual public view returns (TradeType);
+    function getTradeType() virtual public pure returns (TradeType);
 
-    function getLines() public view returns (Line[] memory) {
+    function _getLines() internal view returns (Line[] memory) {
         Line[] memory lines = new Line[](_lineIds.length);
         for (uint256 i = 0; i < _lineIds.length; i++) {
             lines[i] = _lines[_lineIds[i]];
@@ -84,7 +84,7 @@ abstract contract Trade is AccessControl {
         return lines;
     }
 
-    function getLine(uint256 id) public view returns (Line memory) {
+    function _getLine(uint256 id) internal view returns (Line memory) {
         require(getLineExists(id), "Trade: Line does not exist");
         return _lines[id];
     }
@@ -93,7 +93,7 @@ abstract contract Trade is AccessControl {
         return _lines[id].exists;
     }
 
-    function addLine(uint256[2] memory materialIds, string memory productCategory) public onlyAdminOrContractPart {
+    function _addLine(uint256[2] memory materialIds, string memory productCategory) internal returns (uint256) {
         require(productCategoryManager.contains(productCategory), "Trade: Product category does not exist");
 
         uint256 tradeLineId = _linesCounter.current();
@@ -102,17 +102,15 @@ abstract contract Trade is AccessControl {
         _lines[tradeLineId] = Line(tradeLineId, materialIds, productCategory, true);
         _lineIds.push(tradeLineId);
 
-        emit TradeLineAdded(tradeLineId);
+        return tradeLineId;
     }
 
-    function updateLine(uint256 id, uint256[2] memory materialIds, string memory productCategory) public onlyAdminOrContractPart {
+    function _updateLine(uint256 id, uint256[2] memory materialIds, string memory productCategory) internal {
         require(_lines[id].exists, "Trade: Line does not exist");
         require(productCategoryManager.contains(productCategory), "Trade: Product category does not exist");
 
         _lines[id].materialsId = materialIds;
         _lines[id].productCategory = productCategory;
-
-        emit TradeLineUpdated(id);
     }
 
     function getTradeStatus() public view returns (TradeStatus) {
@@ -125,6 +123,7 @@ abstract contract Trade is AccessControl {
         revert("Trade: There are no documents with correct document type");
     }
 
+    // TODO: check why 'externalUrl' is passed in this function and is logically separated from Trade.externalUrl
     function addDocument(string memory name, DocumentManager.DocumentType documentType, string memory externalUrl) public onlyAdminOrContractPart {
         documentManager.registerDocument(_tradeId, "trade", name, documentType, externalUrl);
     }
@@ -135,5 +134,9 @@ abstract contract Trade is AccessControl {
 
     function removeAdmin(address account) public onlyAdmin {
         revokeRole(ADMIN_ROLE, account);
+    }
+
+    function _isContractPart(address account) internal view returns (bool) {
+        return account == _supplier || account == _commissioner;
     }
 }

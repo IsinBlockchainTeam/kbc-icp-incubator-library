@@ -1,11 +1,19 @@
 import { BigNumber } from 'ethers';
 import { Material } from '../entities/Material';
 import { EntityBuilder } from './EntityBuilder';
-import { DocumentManager, RelationshipManager, TransformationManager, MaterialManager, Trade } from '../smart-contracts';
+import {
+    DocumentManager,
+    RelationshipManager,
+    TransformationManager,
+    MaterialManager,
+    OfferManager,
+} from '../smart-contracts';
+import { Trade as TradeContract } from '../smart-contracts/contracts/OrderTrade';
 import { Relationship } from '../entities/Relationship';
 import { DocumentInfo, DocumentType } from '../entities/DocumentInfo';
 import { Transformation } from '../entities/Transformation';
 import { Line } from '../entities/Trade';
+import { Offer } from '../entities/Offer';
 
 describe('EntityBuilder', () => {
     describe('buildMaterial', () => {
@@ -75,6 +83,19 @@ describe('EntityBuilder', () => {
         });
     });
 
+    describe('buildOffer', () => {
+        it('should correctly build an offer', () => {
+            const bcOffer: OfferManager.OfferStructOutput = [BigNumber.from(0), 'owner', 'test product', true] as OfferManager.OfferStructOutput;
+            bcOffer.id = BigNumber.from(0);
+            bcOffer.owner = 'owner';
+            bcOffer.productCategory = 'test product';
+            bcOffer.exists = true;
+            const offer: Offer = new Offer(0, 'owner', 'test product');
+
+            expect(EntityBuilder.buildOffer(bcOffer)).toStrictEqual(offer);
+        });
+    });
+
     describe('buildTradeLine', () => {
         it('should correctly build a trade line', () => {
             const id: number = 0;
@@ -82,13 +103,13 @@ describe('EntityBuilder', () => {
             const productCategory: string = 'test product';
             const exists: boolean = true;
 
-            const bcLine: Trade.LineStructOutput = {
+            const bcLine: TradeContract.LineStructOutput = {
                 id: BigNumber.from(id),
                 materialsId:
                     [BigNumber.from(materialsId[0]), BigNumber.from(materialsId[1])],
                 productCategory,
                 exists,
-            } as Trade.LineStructOutput;
+            } as TradeContract.LineStructOutput;
             const line: Line = new Line(id, materialsId, productCategory);
             expect(EntityBuilder.buildTradeLine(bcLine)).toStrictEqual(line);
         });

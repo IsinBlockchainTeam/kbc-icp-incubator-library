@@ -1,11 +1,13 @@
 import { BigNumber } from 'ethers';
-import { Line, Trade } from './Trade';
-import { Trade as TradeContract } from '../smart-contracts';
+import { Line, LineRequest, Trade } from './Trade';
+import {
+    Trade as TradeContract,
+} from '../smart-contracts/contracts/OrderTrade';
 import { EntityBuilder } from '../utils/EntityBuilder';
 
 class TestTrade extends Trade {
     constructor(tradeId: number, supplier: string, customer: string, commissioner: string, externalUrl: string, lines: Map<number, Line>, lineIds: number[]) {
-        super(tradeId, supplier, customer, commissioner, externalUrl, lines, lineIds);
+        super(tradeId, supplier, customer, commissioner, externalUrl, lines);
     }
 }
 
@@ -44,6 +46,33 @@ describe('Line', () => {
     });
 });
 
+describe('LineRequest', () => {
+    let line: LineRequest;
+
+    beforeAll(() => {
+        line = new LineRequest([1, 2], 'test');
+    });
+
+    it('should correctly initialize a LineRequest', () => {
+        expect(line.materialsId)
+            .toEqual([1, 2]);
+        expect(line.productCategory)
+            .toEqual('test');
+    });
+
+    it('should correctly set the materialsId', () => {
+        line.materialsId = [3, 4];
+        expect(line.materialsId)
+            .toEqual([3, 4]);
+    });
+
+    it('should correctly set the product category', () => {
+        line.productCategory = 'new';
+        expect(line.productCategory)
+            .toEqual('new');
+    });
+});
+
 describe('Trade', () => {
     let trade: TestTrade;
 
@@ -64,8 +93,6 @@ describe('Trade', () => {
             .toEqual('https://test.com');
         expect(trade.lines)
             .toEqual(new Map<number, TradeContract.LineStructOutput>());
-        expect(trade.lineIds)
-            .toEqual([]);
     });
 
     it('should correctly set the tradeId', () => {
@@ -110,12 +137,5 @@ describe('Trade', () => {
         trade.lines = newLines;
         expect(trade.lines)
             .toEqual(newLines);
-    });
-
-    it('should correctly set the lineIds', () => {
-        const newLineIds = [1, 2, 3];
-        trade.lineIds = newLineIds;
-        expect(trade.lineIds)
-            .toEqual(newLineIds);
     });
 });

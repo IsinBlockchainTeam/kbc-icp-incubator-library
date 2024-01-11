@@ -5,7 +5,7 @@ describe('BasicTrade', () => {
     let basicTrade: BasicTrade;
 
     beforeAll(() => {
-        basicTrade = new BasicTrade(0, 'supplier', 'customer', 'commissioner', 'https://test.com', new Map<number, Line>(), [], 'test trade');
+        basicTrade = new BasicTrade(0, 'supplier', 'customer', 'commissioner', 'https://test.com', new Map<number, Line>(), 'test trade');
     });
 
     it('should correctly initialize a BasicTrade', () => {
@@ -21,8 +21,6 @@ describe('BasicTrade', () => {
             .toEqual('https://test.com');
         expect(basicTrade.lines)
             .toEqual(new Map<number, Line>());
-        expect(basicTrade.lineIds)
-            .toEqual([]);
         expect(basicTrade.name)
             .toEqual('test trade');
     });
