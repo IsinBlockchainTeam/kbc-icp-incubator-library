@@ -21,6 +21,7 @@ import { TradeManagerDriver } from '../drivers/TradeManagerDriver';
 import { OrderTradeService } from '../services/OrderTradeService';
 import { OrderTradeDriver } from '../drivers/OrderTradeDriver';
 import { TradeStatus } from '../types/TradeStatus';
+import { OrderTrade } from '../entities/OrderTrade';
 
 dotenv.config();
 
@@ -82,12 +83,11 @@ describe('Document lifecycle', () => {
     };
 
     const createOrderAndConfirm = async (): Promise<{orderId: number, orderTradeService: OrderTradeService}> => {
-        const orderId: number = await tradeManagerService.registerOrderTrade(SUPPLIER_ADDRESS, OTHER_ADDRESS, CUSTOMER_ADDRESS, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, MY_TOKEN_CONTRACT_ADDRESS);
-        const orderAddress: string = await tradeManagerService.getTrade(orderId);
+        const order: OrderTrade = await tradeManagerService.registerOrderTrade(SUPPLIER_ADDRESS, OTHER_ADDRESS, CUSTOMER_ADDRESS, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, MY_TOKEN_CONTRACT_ADDRESS);
         _defineOrderSender(CUSTOMER_PRIVATE_KEY);
-        const orderTradeService = new OrderTradeService(new OrderTradeDriver(signer, orderAddress));
+        const orderTradeService = new OrderTradeService(new OrderTradeDriver(signer, await tradeManagerService.getTrade(order.tradeId)));
         await orderTradeService.confirmOrder();
-        return { orderId, orderTradeService };
+        return { orderId: order.tradeId, orderTradeService };
     };
 
     beforeAll(async () => {

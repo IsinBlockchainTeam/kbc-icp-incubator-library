@@ -17,8 +17,8 @@ export class BasicTradeDriver extends TradeDriver implements IConcreteTradeDrive
             .connect(signer);
     }
 
-    async getTrade(): Promise<BasicTrade> {
-        const result = await this._actual.getTrade();
+    async getTrade(blockNumber?: number): Promise<BasicTrade> {
+        const result = await this._actual.getTrade({ blockTag: blockNumber });
         const lines: Line[] | undefined = await this.getLines();
         const linesMap: Map<number, Line> = new Map<number, Line>();
         lines?.forEach((line: Line) => {

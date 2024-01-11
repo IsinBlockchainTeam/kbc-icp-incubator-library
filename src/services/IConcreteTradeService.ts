@@ -1,7 +1,7 @@
 import { Line, LineRequest, Trade } from '../entities/Trade';
 
 export interface IConcreteTradeService {
-    getTrade(): Promise<Trade>;
+    getTrade(blockNumber?: number): Promise<Trade>;
     getLines(): Promise<Line[]>;
     getLine(id: number, blockNumber?: number): Promise<Line>;
     addLine(line: LineRequest): Promise<Line>;

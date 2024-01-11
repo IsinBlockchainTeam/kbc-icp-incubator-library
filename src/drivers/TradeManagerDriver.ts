@@ -2,6 +2,12 @@ import { BigNumber, Event, Signer, utils } from 'ethers';
 import { TradeManager, TradeManager__factory } from '../smart-contracts';
 import { TradeType } from '../types/TradeType';
 import { getTradeTypeByIndex } from '../utils/utils';
+import { BasicTradeService } from '../services/BasicTradeService';
+import { BasicTradeDriver } from './BasicTradeDriver';
+import { BasicTrade } from '../entities/BasicTrade';
+import { OrderTrade } from '../entities/OrderTrade';
+import { OrderTradeService } from '../services/OrderTradeService';
+import { OrderTradeDriver } from './OrderTradeDriver';
 
 export class TradeManagerDriver {
     private _contract: TradeManager;
@@ -12,7 +18,7 @@ export class TradeManagerDriver {
             .connect(signer);
     }
 
-    async registerBasicTrade(supplier: string, customer: string, commissioner: string, externalUrl: string, name: string): Promise<number> {
+    async registerBasicTrade(supplier: string, customer: string, commissioner: string, externalUrl: string, name: string): Promise<BasicTrade> {
         if (!utils.isAddress(supplier) || !utils.isAddress(customer) || !utils.isAddress(commissioner)) {
             throw new Error('Not an address');
         }
@@ -22,10 +28,12 @@ export class TradeManagerDriver {
         if (!events) {
             throw new Error('Error during basic trade registration, no events found');
         }
-        return events.find((event: Event) => event.event === 'BasicTradeRegistered').args.id.toNumber();
+        const id: number = events.find((event: Event) => event.event === 'BasicTradeRegistered').args.id.toNumber();
+        const tradeService: BasicTradeService = new BasicTradeService(new BasicTradeDriver(this._contract.signer, await this._contract.getTrade(id)));
+        return tradeService.getTrade();
     }
 
-    async registerOrderTrade(supplier: string, customer: string, commissioner: string, externalUrl: string, paymentDeadline: number, documentDeliveryDeadline: number, arbiter: string, shippingDeadline: number, deliveryDeadline: number, agreedAmount: number, tokenAddress: string): Promise<number> {
+    async registerOrderTrade(supplier: string, customer: string, commissioner: string, externalUrl: string, paymentDeadline: number, documentDeliveryDeadline: number, arbiter: string, shippingDeadline: number, deliveryDeadline: number, agreedAmount: number, tokenAddress: string): Promise<OrderTrade> {
         if (!utils.isAddress(supplier) || !utils.isAddress(customer) || !utils.isAddress(commissioner) || !utils.isAddress(tokenAddress)) {
             throw new Error('Not an address');
         }
@@ -35,7 +43,9 @@ export class TradeManagerDriver {
         if (!events) {
             throw new Error('Error during order registration, no events found');
         }
-        return events.find((event: Event) => event.event === 'OrderTradeRegistered').args.id.toNumber();
+        const id: number = events.find((event: Event) => event.event === 'OrderTradeRegistered').args.id.toNumber();
+        const tradeService: OrderTradeService = new OrderTradeService(new OrderTradeDriver(this._contract.signer, await this._contract.getTrade(id)));
+        return tradeService.getTrade();
     }
 
     async getTrades(): Promise<string[]> {

@@ -1,10 +1,20 @@
 import { BigNumber, Signer, Wallet } from 'ethers';
 import { createMock } from 'ts-auto-mock';
 import { TradeManagerDriver } from './TradeManagerDriver';
-import { TradeManager, TradeManager__factory } from '../smart-contracts';
+import {
+    BasicTrade as BasicTradeContract,
+    OrderTrade as OrderTradeContract,
+    BasicTrade__factory,
+    Trade__factory,
+    TradeManager,
+    TradeManager__factory, OrderTrade__factory,
+} from '../smart-contracts';
 import { TradeType } from '../types/TradeType';
 
 import * as utilsModule from '../utils/utils';
+import { BasicTrade } from '../entities/BasicTrade';
+import { OrderLine, OrderTrade } from '../entities/OrderTrade';
+import { Line } from '../entities/Trade';
 
 describe('TradeManagerDriver', () => {
     let tradeManagerDriver: TradeManagerDriver;
@@ -34,6 +44,9 @@ describe('TradeManagerDriver', () => {
     const mockedGetTradeType = jest.fn();
     const mockedGetTradeIdsOfEntity = jest.fn();
 
+    const mockedGetBasicTrade = jest.fn();
+    const mockedGetOrderTrade = jest.fn();
+
     const getTradeTypeByIndexSpy = jest.spyOn(utilsModule, 'getTradeTypeByIndex');
     getTradeTypeByIndexSpy.mockReturnValue(TradeType.BASIC);
 
@@ -58,6 +71,9 @@ describe('TradeManagerDriver', () => {
     mockedGetTrade.mockResolvedValue(mockedContractAddress);
     mockedGetTradeIdsOfEntity.mockResolvedValue([BigNumber.from(0)]);
 
+    mockedGetBasicTrade.mockReturnValue([BigNumber.from(0), supplier, customer, commissioner, externalUrl, undefined, name]);
+    mockedGetOrderTrade.mockReturnValue([BigNumber.from(1), supplier, customer, commissioner, externalUrl, undefined, false, false, BigNumber.from(paymentDeadline), BigNumber.from(documentDeliveryDeadline), arbiter, BigNumber.from(shippingDeadline), BigNumber.from(deliveryDeadline), tokenAddress]);
+
     const mockedContract = createMock<TradeManager>({
         registerBasicTrade: mockedWriteFunction,
         registerOrderTrade: mockedWriteFunction,
@@ -73,8 +89,25 @@ describe('TradeManagerDriver', () => {
         const mockedTradeManager = createMock<TradeManager>({
             connect: mockedTradeManagerConnect,
         });
+        const mockedBasicTradeContract = createMock<BasicTradeContract>({
+            connect: jest.fn().mockReturnValue(createMock<BasicTradeContract>({
+                getTrade: mockedGetBasicTrade,
+            })),
+        });
+        const mockedOrderTradeContract = createMock<OrderTradeContract>({
+            connect: jest.fn().mockReturnValue(createMock<OrderTradeContract>({
+                getTrade: mockedGetOrderTrade,
+            })),
+        });
+
         jest.spyOn(TradeManager__factory, 'connect')
             .mockReturnValue(mockedTradeManager);
+        jest.spyOn(Trade__factory, 'connect')
+            .mockReturnValue(mockedBasicTradeContract);
+        jest.spyOn(BasicTrade__factory, 'connect')
+            .mockReturnValue(mockedBasicTradeContract);
+        jest.spyOn(OrderTrade__factory, 'connect')
+            .mockReturnValue(mockedOrderTradeContract);
 
         mockedSigner = createMock<Signer>();
         tradeManagerDriver = new TradeManagerDriver(mockedSigner, contractAddress);
@@ -83,10 +116,10 @@ describe('TradeManagerDriver', () => {
     afterEach(() => jest.clearAllMocks());
 
     it('should correctly register a basic trade', async () => {
-        const tradeId: number = await tradeManagerDriver.registerBasicTrade(supplier, customer, commissioner, externalUrl, name);
+        const trade: BasicTrade = await tradeManagerDriver.registerBasicTrade(supplier, customer, commissioner, externalUrl, name);
 
-        expect(tradeId)
-            .toEqual(0);
+        expect(trade)
+            .toEqual(new BasicTrade(0, supplier, customer, commissioner, externalUrl, new Map<number, Line>(), name));
 
         expect(mockedContract.registerBasicTrade)
             .toHaveBeenCalledTimes(1);
@@ -94,6 +127,10 @@ describe('TradeManagerDriver', () => {
             .toHaveBeenNthCalledWith(1, supplier, customer, commissioner, externalUrl, name);
         expect(mockedWait)
             .toHaveBeenCalled();
+        expect(mockedGetBasicTrade)
+            .toHaveBeenCalledTimes(1);
+        expect(mockedGetBasicTrade)
+            .toHaveBeenNthCalledWith(1, { blockTag: undefined });
     });
 
     it('should register a basic trade - FAIL(Error during basic trade registration, no events found)', async () => {
@@ -118,6 +155,24 @@ describe('TradeManagerDriver', () => {
             .toHaveBeenCalled();
     });
 
+    it('should correctly register an order trade', async () => {
+        const trade: OrderTrade = await tradeManagerDriver.registerOrderTrade(supplier, customer, commissioner, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);
+
+        expect(trade)
+            .toEqual(new OrderTrade(1, supplier, customer, commissioner, externalUrl, new Map<number, OrderLine>(), false, false, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, tokenAddress));
+
+        expect(mockedContract.registerOrderTrade)
+            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.registerOrderTrade)
+            .toHaveBeenNthCalledWith(1, supplier, customer, commissioner, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);
+        expect(mockedWait)
+            .toHaveBeenCalled();
+        expect(mockedGetOrderTrade)
+            .toHaveBeenCalledTimes(1);
+        expect(mockedGetOrderTrade)
+            .toHaveBeenNthCalledWith(1, { blockTag: undefined });
+    });
+
     it('should register an order trade - FAIL(Error during order trade registration, no events found)', async () => {
         mockedWait.mockResolvedValueOnce({
             events: undefined,
@@ -126,20 +181,6 @@ describe('TradeManagerDriver', () => {
         await expect(tradeManagerDriver.registerOrderTrade(supplier, customer, commissioner, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress))
             .rejects
             .toThrow('Error during order registration, no events found');
-    });
-
-    it('should correctly register an order trade', async () => {
-        const tradeId: number = await tradeManagerDriver.registerOrderTrade(supplier, customer, commissioner, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);
-
-        expect(tradeId)
-            .toEqual(1);
-
-        expect(mockedContract.registerOrderTrade)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.registerOrderTrade)
-            .toHaveBeenNthCalledWith(1, supplier, customer, commissioner, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);
-        expect(mockedWait)
-            .toHaveBeenCalled();
     });
 
     it('should correctly register an order trade - FAIL(Not an address)', async () => {

@@ -5,8 +5,8 @@ import { BasicTrade } from '../entities/BasicTrade';
 import { Line, LineRequest } from '../entities/Trade';
 
 export class BasicTradeService extends TradeService implements IConcreteTradeService {
-    async getTrade(): Promise<BasicTrade> {
-        return this._tradeDriverImplementation.getTrade();
+    async getTrade(blockNumber?: number): Promise<BasicTrade> {
+        return this._tradeDriverImplementation.getTrade(blockNumber);
     }
 
     async getLines(): Promise<Line[]> {

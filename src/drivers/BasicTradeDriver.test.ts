@@ -96,7 +96,7 @@ describe('BasicTradeDriver', () => {
         expect(mockedContract.getTrade)
             .toHaveBeenCalledTimes(1);
         expect(mockedContract.getTrade)
-            .toHaveBeenNthCalledWith(1);
+            .toHaveBeenNthCalledWith(1, { blockTag: undefined });
         expect(mockedGetTrade)
             .toHaveBeenCalledTimes(1);
         expect(mockedContract.getLines)

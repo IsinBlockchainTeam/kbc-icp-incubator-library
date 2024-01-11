@@ -11,8 +11,8 @@ import { IConcreteTradeService } from './IConcreteTradeService';
 
 // TODO: Add logic for storing metadata on Solid
 export class OrderTradeService extends TradeService implements IConcreteTradeService {
-    async getTrade(): Promise<OrderTrade> {
-        return this._tradeDriverImplementation.getTrade();
+    async getTrade(blockNumber?: number): Promise<OrderTrade> {
+        return this._tradeDriverImplementation.getTrade(blockNumber);
     }
 
     async getLines(): Promise<OrderLine[]> {

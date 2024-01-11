@@ -35,8 +35,8 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
             .connect(signer);
     }
 
-    async getTrade(): Promise<OrderTrade> {
-        const result = await this._actual.getTrade();
+    async getTrade(blockNumber?: number): Promise<OrderTrade> {
+        const result = await this._actual.getTrade({ blockTag: blockNumber });
         const lines: OrderLine[] = await this.getLines();
         const linesMap: Map<number, OrderLine> = new Map<number, OrderLine>();
         lines?.forEach((line: OrderLine) => {

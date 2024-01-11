@@ -1,5 +1,7 @@
 import { TradeManagerDriver } from '../drivers/TradeManagerDriver';
 import { TradeType } from '../types/TradeType';
+import { BasicTrade } from '../entities/BasicTrade';
+import { OrderTrade } from '../entities/OrderTrade';
 
 export class TradeManagerService {
     private _tradeManagerDriver: TradeManagerDriver;
@@ -8,11 +10,11 @@ export class TradeManagerService {
         this._tradeManagerDriver = tradeManagerDriver;
     }
 
-    async registerBasicTrade(supplier: string, customer: string, commissioner: string, externalUrl: string, name: string): Promise<number> {
+    async registerBasicTrade(supplier: string, customer: string, commissioner: string, externalUrl: string, name: string): Promise<BasicTrade> {
         return this._tradeManagerDriver.registerBasicTrade(supplier, customer, commissioner, externalUrl, name);
     }
 
-    async registerOrderTrade(supplier: string, customer: string, commissioner: string, externalUrl: string, paymentDeadline: number, documentDeliveryDeadline: number, arbiter: string, shippingDeadline: number, deliveryDeadline: number, agreedAmount: number, tokenAddress: string): Promise<number> {
+    async registerOrderTrade(supplier: string, customer: string, commissioner: string, externalUrl: string, paymentDeadline: number, documentDeliveryDeadline: number, arbiter: string, shippingDeadline: number, deliveryDeadline: number, agreedAmount: number, tokenAddress: string): Promise<OrderTrade> {
         return this._tradeManagerDriver.registerOrderTrade(supplier, customer, commissioner, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);
     }
 

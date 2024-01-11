@@ -26,7 +26,7 @@ describe('BasicTradeService', () => {
             serviceFunctionName: 'getTrade',
             serviceFunction: () => basicTradeService.getTrade(),
             expectedMockedFunction: mockedBasicTradeDriver.getTrade,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: [undefined],
         },
         {
             serviceFunctionName: 'getLines',

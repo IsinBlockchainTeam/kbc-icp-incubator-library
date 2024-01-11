@@ -8,8 +8,6 @@ import {
 } from '../entities/OrderTrade';
 
 describe('OrderTradeService', () => {
-    const price: OrderLinePrice = new OrderLinePrice(10.2, 'Panda 1000 i.e. cat. 4X4');
-
     const mockedOrderTradeDriver: OrderTradeDriver = createMock<OrderTradeDriver>({
         getTrade: jest.fn(),
         getLines: jest.fn(),
@@ -39,7 +37,7 @@ describe('OrderTradeService', () => {
             serviceFunctionName: 'getTrade',
             serviceFunction: () => orderTradeService.getTrade(),
             expectedMockedFunction: mockedOrderTradeDriver.getTrade,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: [undefined],
         },
         {
             serviceFunctionName: 'getLines',
