@@ -75,8 +75,6 @@ describe('BasicTradeDriver', () => {
 
     it('should correctly retrieve the basic trade', async () => {
         const result = await basicTradeDriver.getTrade();
-        const expectedMap: Map<number, Line> = new Map<number, Line>();
-        expectedMap.set(line.id.toNumber(), EntityBuilder.buildTradeLine(line));
 
         expect(result.tradeId)
             .toEqual(tradeId);
@@ -89,7 +87,7 @@ describe('BasicTradeDriver', () => {
         expect(result.externalUrl)
             .toEqual(externalUrl);
         expect(result.lines)
-            .toEqual(expectedMap);
+            .toEqual([EntityBuilder.buildTradeLine(line)]);
         expect(result.name)
             .toEqual(name);
 

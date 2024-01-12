@@ -127,8 +127,6 @@ describe('OrderTradeDriver', () => {
 
     it('should correctly retrieve the order trade', async () => {
         const result = await orderTradeDriver.getTrade();
-        const expectedMap: Map<number, OrderLine> = new Map<number, OrderLine>();
-        expectedMap.set(line.id.toNumber(), EntityBuilder.buildOrderLine(line, orderLine));
 
         expect(result.tradeId)
             .toEqual(tradeId);
@@ -141,7 +139,7 @@ describe('OrderTradeDriver', () => {
         expect(result.externalUrl)
             .toEqual(externalUrl);
         expect(result.lines)
-            .toEqual(expectedMap);
+            .toEqual([EntityBuilder.buildOrderLine(line, orderLine)]);
         expect(result.hasSupplierSigned)
             .toEqual(hasSupplierSigned);
         expect(result.hasCommissionerSigned)

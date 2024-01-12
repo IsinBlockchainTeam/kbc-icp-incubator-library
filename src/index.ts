@@ -17,6 +17,7 @@ export { BasicTradeDriver } from './drivers/BasicTradeDriver';
 export { BasicTradeService } from './services/BasicTradeService';
 export { OrderTradeDriver } from './drivers/OrderTradeDriver';
 export { OrderTradeService } from './services/OrderTradeService';
+export { IConcreteTradeService } from './services/IConcreteTradeService';
 
 export { TransformationDriver } from './drivers/TransformationDriver';
 export { TransformationService } from './services/TransformationService';
@@ -36,6 +37,8 @@ export { Escrow } from './entities/Escrow';
 export { Material } from './entities/Material';
 export { Trade } from './entities/Trade';
 export { Line } from './entities/Trade';
+export { LineRequest } from './entities/Trade';
+export { OrderLineRequest } from './entities/OrderTrade';
 export { BasicTrade } from './entities/BasicTrade';
 export { OrderTrade } from './entities/OrderTrade';
 export { OrderLine } from './entities/OrderTrade';

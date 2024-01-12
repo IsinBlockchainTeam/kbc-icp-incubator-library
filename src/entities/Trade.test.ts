@@ -6,7 +6,7 @@ import {
 import { EntityBuilder } from '../utils/EntityBuilder';
 
 class TestTrade extends Trade {
-    constructor(tradeId: number, supplier: string, customer: string, commissioner: string, externalUrl: string, lines: Map<number, Line>, lineIds: number[]) {
+    constructor(tradeId: number, supplier: string, customer: string, commissioner: string, externalUrl: string, lines: Line[]) {
         super(tradeId, supplier, customer, commissioner, externalUrl, lines);
     }
 }
@@ -77,7 +77,7 @@ describe('Trade', () => {
     let trade: TestTrade;
 
     beforeAll(() => {
-        trade = new TestTrade(0, 'supplier', 'customer', 'commissioner', 'https://test.com', new Map<number, Line>(), []);
+        trade = new TestTrade(0, 'supplier', 'customer', 'commissioner', 'https://test.com', []);
     });
 
     it('should correctly initialize a Trade', () => {
@@ -92,7 +92,7 @@ describe('Trade', () => {
         expect(trade.externalUrl)
             .toEqual('https://test.com');
         expect(trade.lines)
-            .toEqual(new Map<number, TradeContract.LineStructOutput>());
+            .toEqual([]);
     });
 
     it('should correctly set the tradeId', () => {
@@ -126,16 +126,14 @@ describe('Trade', () => {
     });
 
     it('should correctly set the lines', () => {
-        const newLines = new Map<number, Line>();
         const newLine: TradeContract.LineStructOutput = {
             id: BigNumber.from(0),
             materialsId: [BigNumber.from(0), BigNumber.from(1)],
             productCategory: 'test category',
             exists: true,
         } as TradeContract.LineStructOutput;
-        newLines.set(1, EntityBuilder.buildTradeLine(newLine));
-        trade.lines = newLines;
+        trade.lines = [EntityBuilder.buildTradeLine(newLine)];
         expect(trade.lines)
-            .toEqual(newLines);
+            .toEqual([EntityBuilder.buildTradeLine(newLine)]);
     });
 });

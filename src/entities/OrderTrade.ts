@@ -101,7 +101,7 @@ export class OrderTrade extends Trade {
     private _escrow: string;
 
     constructor(
-        tradeId: number, supplier: string, customer: string, commissioner: string, externalUrl: string, lines: Map<number, OrderLine>,
+        tradeId: number, supplier: string, customer: string, commissioner: string, externalUrl: string, lines: OrderLine[],
         hasSupplierSigned: boolean,
         hasCommissionerSigned: boolean,
         paymentDeadline: number,

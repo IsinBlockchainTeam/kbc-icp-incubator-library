@@ -1,9 +1,8 @@
 import { Signer } from 'ethers';
-import { Trade } from '../entities/Trade';
+import { Line, Trade } from '../entities/Trade';
 import { Transformation } from '../entities/Transformation';
 import { TradeManagerService } from './TradeManagerService';
 import { TransformationService } from './TransformationService';
-import { Trade as TradeContract } from '../smart-contracts';
 
 export type Node = {
     resourceId: string,
@@ -58,11 +57,9 @@ export class GraphService {
     }
     */
 
-    // TODO: this function is currently under development. It returns a map of <trade_id, line> for each trade whose lines contain the wanted materialId as output
     // !!! Warning: If a trade has multiple lines with the same materialId as output, only the first one will be returned !!!
-
-    public async findTradesByMaterialOutput(supplierAddress: string, materialId: number): Promise<Map<number, TradeContract.LineStructOutput>> {
-        const trades: Map<number, TradeContract.LineStructOutput> = new Map<number, TradeContract.LineStructOutput>();
+    public async findTradesByMaterialOutput(supplierAddress: string, materialId: number): Promise<Map<number, Line>> {
+        const trades: Map<number, Line> = new Map<number, Line>();
         /*
         const tradeIds = await this._tradeManagerService.getTradeIdsOfSupplier(supplierAddress);
         for (const tradeId of tradeIds) {

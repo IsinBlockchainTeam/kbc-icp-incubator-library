@@ -74,9 +74,9 @@ export abstract class Trade {
 
     protected _externalUrl: string;
 
-    protected _lines: Map<number, Line>;
+    protected _lines: Line[];
 
-    protected constructor(tradeId: number, supplier: string, customer: string, commissioner: string, externalUrl: string, lines: Map<number, Line>) {
+    protected constructor(tradeId: number, supplier: string, customer: string, commissioner: string, externalUrl: string, lines: Line[]) {
         this._tradeId = tradeId;
         this._supplier = supplier;
         this._customer = customer;
@@ -125,11 +125,11 @@ export abstract class Trade {
         this._externalUrl = value;
     }
 
-    get lines(): Map<number, Line> {
+    get lines(): Line[] {
         return this._lines;
     }
 
-    set lines(value: Map<number, Line>) {
+    set lines(value: Line[]) {
         this._lines = value;
     }
 }

@@ -38,10 +38,6 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
     async getTrade(blockNumber?: number): Promise<OrderTrade> {
         const result = await this._actual.getTrade({ blockTag: blockNumber });
         const lines: OrderLine[] = await this.getLines();
-        const linesMap: Map<number, OrderLine> = new Map<number, OrderLine>();
-        lines?.forEach((line: OrderLine) => {
-            linesMap.set(line.id, line);
-        });
 
         return new OrderTrade(
             result[0].toNumber(),
@@ -49,7 +45,7 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
             result[2],
             result[3],
             result[4],
-            linesMap,
+            lines,
             result[6],
             result[7],
             result[8].toNumber(),

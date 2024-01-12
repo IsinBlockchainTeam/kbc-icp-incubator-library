@@ -67,14 +67,14 @@ describe('Trade lifecycle', () => {
     };
 
     const _registerOrder = async (): Promise<{
-        orderId: number,
+        order: OrderTrade,
         orderTradeService: OrderTradeService
     }> => {
         const trade: OrderTrade = await tradeManagerService.registerOrderTrade(SUPPLIER_ADDRESS, CUSTOMER_ADDRESS, OTHER_ADDRESS, 'https://www.test.com', deadline, deadline, arbiter, deadline, deadline, 1000, MY_TOKEN_CONTRACT_ADDRESS);
         existingOrder = trade.tradeId;
         existingOrderService = new OrderTradeService(new OrderTradeDriver(signer, await tradeManagerService.getTrade(trade.tradeId)));
         return {
-            orderId: trade.tradeId,
+            order: trade,
             orderTradeService: existingOrderService,
         };
     };
@@ -120,7 +120,7 @@ describe('Trade lifecycle', () => {
     describe('Order scenario', () => {
         it('Should correctly register and retrieve an order with a line', async () => {
             const {
-                orderId,
+                order,
                 orderTradeService,
             } = await _registerOrder();
 
@@ -133,14 +133,13 @@ describe('Trade lifecycle', () => {
             };
 
             const line: OrderLine = await orderTradeService.addLine(new OrderLineRequest(orderLine.materialsId, orderLine.productCategory, orderLine.quantity, orderLine.price));
-            const lines: Map<number, OrderLine> = new Map<number, OrderLine>();
-            lines.set(line.id, line);
+            order.lines.push(line);
 
             const orderData = await orderTradeService.getTrade();
             expect(orderData)
                 .toBeDefined();
             expect(orderData.tradeId)
-                .toEqual(orderId);
+                .toEqual(order.tradeId);
             expect(orderData.supplier)
                 .toEqual(SUPPLIER_ADDRESS);
             expect(orderData.customer)
@@ -160,7 +159,7 @@ describe('Trade lifecycle', () => {
             expect(orderData.deliveryDeadline)
                 .toEqual(deadline);
             expect(orderData.lines)
-                .toEqual(lines);
+                .toEqual([line]);
         }, 30000);
 
         it('should check that the order status is INITIALIZED (no signatures)', async () => {
@@ -273,8 +272,8 @@ describe('Trade lifecycle', () => {
             const trade: BasicTrade = await tradeManagerService.registerBasicTrade(SUPPLIER_ADDRESS, CUSTOMER_ADDRESS, OTHER_ADDRESS, 'https://www.test.com', 'Test trade');
             basicTradeService = new BasicTradeService(new BasicTradeDriver(signer, await tradeManagerService.getTrade(trade.tradeId)));
 
-            await basicTradeService.addLine(new LineRequest(tradeLine.materialsId, tradeLine.productCategory));
-            trade.lines.set(tradeLine.id, tradeLine);
+            const line: Line = await basicTradeService.addLine(new LineRequest(tradeLine.materialsId, tradeLine.productCategory));
+            trade.lines.push(line);
             const savedBasicTrade = await basicTradeService.getTrade();
             const savedLine: Line = (await basicTradeService.getLines())[0];
 

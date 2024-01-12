@@ -107,7 +107,7 @@ describe('OrderTrade', () => {
 
     beforeAll(() => {
         orderTrade = new OrderTrade(0, 'supplier', 'customer', 'commissioner', 'https://test.com',
-            new Map<number, OrderLine>(), false, false, 100, 200, 'arbitrer', 300, 400, 'escrow');
+            [], false, false, 100, 200, 'arbitrer', 300, 400, 'escrow');
     });
 
     it('should correctly initialize an OrderTrade', () => {
@@ -126,7 +126,7 @@ describe('OrderTrade', () => {
         expect(orderTrade.deliveryDeadline)
             .toEqual(400);
         expect(orderTrade.lines)
-            .toEqual(new Map<number, OrderLinePrice>());
+            .toEqual([]);
         expect(orderTrade.escrow)
             .toEqual('escrow');
     });
@@ -174,7 +174,6 @@ describe('OrderTrade', () => {
     });
 
     it('should correctly set the lines', () => {
-        const newOrderLines = new Map<number, OrderLine>();
         const newLine: TradeContract.LineStructOutput = {
             id: BigNumber.from(1),
             materialsId: [BigNumber.from(3), BigNumber.from(4)],
@@ -191,10 +190,11 @@ describe('OrderTrade', () => {
             price,
         } as OrderTradeContract.OrderLineStructOutput;
 
-        newOrderLines.set(1, EntityBuilder.buildOrderLine(newLine, newOrderLine));
-        orderTrade.lines = newOrderLines;
+        orderTrade.lines = [
+            EntityBuilder.buildOrderLine(newLine, newOrderLine),
+        ];
         expect(orderTrade.lines)
-            .toEqual(newOrderLines);
+            .toEqual([EntityBuilder.buildOrderLine(newLine, newOrderLine)]);
     });
 
     it('should correctly set the escrow', () => {
