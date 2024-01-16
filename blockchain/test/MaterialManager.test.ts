@@ -38,6 +38,9 @@ describe('MaterialManager', () => {
             expect(registeredMaterial[2]).to.be.equal(true);
             expect(await materialManagerContract.getMaterialExists(1)).to.be.equal(true);
             await expect(tx).to.emit(materialManagerContract, 'MaterialRegistered').withArgs(registeredMaterial[0], registeredMaterial[1]);
+
+            expect(await materialManagerContract.getMaterialIdsOfCreator(admin.address)).deep.equal([BigNumber.from(1)]);
+            expect(await materialManagerContract.getMaterialIdsOfCreator(other.address)).deep.equal([]);
         });
 
         it('should register a Material - FAIL(MaterialManager: Product category does not exist)', async () => {

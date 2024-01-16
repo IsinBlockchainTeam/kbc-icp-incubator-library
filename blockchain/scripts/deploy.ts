@@ -1,4 +1,4 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
+/* eslint-disable import/no-extraneous-dependencies */
 import hre, { ethers } from 'hardhat';
 import * as dotenv from 'dotenv';
 import { Contract } from 'ethers';
@@ -87,7 +87,7 @@ serial([
         [process.env.SUPPLIER_ADMIN || ''],
     ]),
     () => deploy(
-        ContractName.TRANSFORMATION_MANAGER, [
+        ContractName.ASSET_OPERATION_MANAGER, [
             [process.env.SUPPLIER_ADMIN || ''],
             contractMap.get(ContractName.MATERIAL_MANAGER)?.address,
         ],

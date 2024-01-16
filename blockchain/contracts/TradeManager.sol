@@ -48,6 +48,26 @@ contract TradeManager is AccessControl {
         _escrowManager = EscrowManager(escrowManagerAddress);
     }
 
+    function getTradeCounter() public view returns (uint256) {
+        return _counter.current();
+    }
+
+    function getTrade(uint256 id) public view returns (Trade) {
+        return _trades[id];
+    }
+
+    function getTradeType(uint256 id) public view returns (Trade.TradeType) {
+        return _trades[id].getTradeType();
+    }
+
+    function getTradeIdsOfSupplier(address supplier) public view returns (uint256[] memory) {
+        return _tradeIdsOfSupplier[supplier];
+    }
+
+    function getTradeIdsOfCommissioner(address commissioner) public view returns (uint256[] memory) {
+        return _tradeIdsOfCommissioner[commissioner];
+    }
+
     function registerBasicTrade(address supplier, address customer, address commissioner, string memory externalUrl, string memory name) public returns(uint256) {
         require(supplier != address(0), "TradeManager: supplier is the zero address");
         require(customer != address(0), "TradeManager: customer is the zero address");
@@ -83,25 +103,5 @@ contract TradeManager is AccessControl {
 
         emit OrderTradeRegistered(id, supplier, customer, commissioner);
         return id;
-    }
-
-    function getTradeCounter() public view returns (uint256) {
-        return _counter.current();
-    }
-
-    function getTrade(uint256 id) public view returns (Trade) {
-        return _trades[id];
-    }
-
-    function getTradeType(uint256 id) public view returns (Trade.TradeType) {
-        return _trades[id].getTradeType();
-    }
-
-    function getTradeIdsOfSupplier(address supplier) public view returns (uint256[] memory) {
-        return _tradeIdsOfSupplier[supplier];
-    }
-
-    function getTradeIdsOfCommissioner(address commissioner) public view returns (uint256[] memory) {
-        return _tradeIdsOfCommissioner[commissioner];
     }
 }
