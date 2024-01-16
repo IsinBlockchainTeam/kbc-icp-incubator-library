@@ -3,6 +3,7 @@ pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "./ProductCategoryManager.sol";
 
 contract MaterialManager is AccessControl{
     using Counters for Counters.Counter;
@@ -10,61 +11,52 @@ contract MaterialManager is AccessControl{
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
     modifier onlyAdmin() {
-        require(hasRole(ADMIN_ROLE, _msgSender()), "Caller is not the admin");
+        require(hasRole(ADMIN_ROLE, _msgSender()), "MaterialManager: Caller is not the admin");
         _;
     }
 
-    event MaterialRegistered(uint256 indexed id, address owner);
-    event MaterialUpdated(uint256 indexed id);
+    event MaterialRegistered(uint256 indexed id, uint256 productCategoryId);
 
     struct Material {
         uint256 id;
-        string name;
-        address owner;
+        uint256 productCategoryId;
         bool exists;
     }
 
-    Counters.Counter private materialsCounter;
-    // company => resource ids
-    mapping(address => uint256[]) private materialIds;
-    // resource id  => resource
+    Counters.Counter private _counter;
     mapping(uint256 => Material) private materials;
 
-    constructor(address[] memory admins) {
+    ProductCategoryManager private _productCategoryManager;
+
+    constructor(address productCategoryManagerAddress) {
         _setupRole(ADMIN_ROLE, msg.sender);
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
+        grantRole(ADMIN_ROLE, _msgSender());
 
-        for (uint256 i = 0; i < admins.length; ++i) {
-            grantRole(ADMIN_ROLE, admins[i]);
-        }
-    }
 
-    function registerMaterial(address company, string memory name) public {
-        uint256 materialId = materialsCounter.current() + 1;
-        materialsCounter.increment();
-        materials[materialId] = Material(materialId, name, company, true);
-
-        materialIds[company].push(materialId);
-        emit MaterialRegistered(materialId, company);
-    }
-
-    function updateMaterial(uint256 id, string memory name) public {
-        materials[id].name = name;
-        emit MaterialUpdated(id);
+        _productCategoryManager = ProductCategoryManager(productCategoryManagerAddress);
     }
 
     function getMaterialsCounter() public view returns (uint256) {
-        return materialsCounter.current();
+        return _counter.current();
     }
 
-    function getMaterialIds(address owner) public view returns (uint256[] memory) {
-        return materialIds[owner];
+    function getMaterialExists(uint256 id) public view returns (bool) {
+        return materials[id].exists;
     }
 
     function getMaterial(uint256 id) public view returns (Material memory) {
         return materials[id];
     }
 
+    function registerMaterial(uint256 productCategoryId) public {
+        require(_productCategoryManager.getProductCategoryExists(productCategoryId), "MaterialManager: Product category does not exist");
+
+        uint256 materialId = _counter.current() + 1;
+        _counter.increment();
+        materials[materialId] = Material(materialId, productCategoryId, true);
+        emit MaterialRegistered(materialId, productCategoryId);
+    }
 
     // ROLES
     function addAdmin(address admin) public onlyAdmin {

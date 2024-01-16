@@ -20,6 +20,7 @@ contract ProductCategoryManager is AccessControl {
         uint256 id;
         string name;
         uint8 quality;
+        string description;
         bool exists;
     }
 
@@ -36,14 +37,18 @@ contract ProductCategoryManager is AccessControl {
         return _counter.current();
     }
 
+    function getProductCategoryExists(uint256 id) public view returns (bool) {
+        return productCategories[id].exists;
+    }
+
     function getProductCategory(uint256 id) public view returns (ProductCategory memory) {
         return productCategories[id];
     }
 
-    function registerProductCategory(string memory name, uint8 quality) public {
+    function registerProductCategory(string memory name, uint8 quality, string memory description) public {
         uint256 productCategoryId = _counter.current() + 1;
         _counter.increment();
-        productCategories[productCategoryId] = ProductCategory(productCategoryId, name, quality, true);
+        productCategories[productCategoryId] = ProductCategory(productCategoryId, name, quality, description, true);
         emit ProductCategoryRegistered(productCategoryId, name, quality);
     }
 
