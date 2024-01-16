@@ -1,3 +1,4 @@
+/* eslint-disable import/no-extraneous-dependencies */
 import chai, { expect } from 'chai';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { Contract } from 'ethers';
@@ -7,8 +8,8 @@ import { ContractName } from '../utils/constants';
 
 describe('Trade.sol', () => {
     chai.use(smock.matchers);
-    let enumerableProductCategoryManagerContractFake: FakeContract;
-    const categories = ['Arabic 85', 'Excelsa 88'];
+    let productCategoryManagerContractFake: FakeContract;
+    let materialManagerContractFake: FakeContract;
     let documentManagerContractFake: FakeContract;
     const documentTypes = [1];
 
@@ -20,14 +21,16 @@ describe('Trade.sol', () => {
 
     before(async () => {
         [admin, supplier, customer, commissioner] = await ethers.getSigners();
-        enumerableProductCategoryManagerContractFake = await smock.fake(ContractName.ENUMERABLE_TYPE_MANAGER);
-        enumerableProductCategoryManagerContractFake.contains.returns((value: string) => categories.includes(value[0]));
+        productCategoryManagerContractFake = await smock.fake(ContractName.PRODUCT_CATEGORY_MANAGER);
+        productCategoryManagerContractFake.getProductCategoryExists.returns((value: number) => value <= 10);
+        materialManagerContractFake = await smock.fake(ContractName.MATERIAL_MANAGER);
+        materialManagerContractFake.getMaterialExists.returns((value: number) => value <= 10);
         documentManagerContractFake = await smock.fake(ContractName.DOCUMENT_MANAGER);
     });
 
     beforeEach(async () => {
         const BasicTrade = await ethers.getContractFactory('BasicTrade');
-        basicTradeContract = await BasicTrade.deploy(0, enumerableProductCategoryManagerContractFake.address,
+        basicTradeContract = await BasicTrade.deploy(0, productCategoryManagerContractFake.address, materialManagerContractFake.address,
             documentManagerContractFake.address, supplier.address, customer.address, commissioner.address, externalUrl, name);
         await basicTradeContract.deployed();
     });
@@ -83,7 +86,9 @@ describe('Trade.sol', () => {
 
     describe('Documents', () => {
         it('should add a document', async () => {
-            await basicTradeContract.addDocument('test document', documentTypes[0], 'https://www.test.com');
+            await basicTradeContract.addLine(1);
+            await basicTradeContract.assignMaterial(0, 2);
+            await basicTradeContract.addDocument(0, 'test document', documentTypes[0], 'https://www.test.com');
             expect(documentManagerContractFake.registerDocument)
                 .to
                 .have

@@ -5,6 +5,8 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@blockchain-lib/blockchain-common/contracts/EnumerableType.sol";
 import "./DocumentManager.sol";
+import "./ProductCategoryManager.sol";
+import "./MaterialManager.sol";
 
 abstract contract Trade is AccessControl {
     using Counters for Counters.Counter;
@@ -16,6 +18,7 @@ abstract contract Trade is AccessControl {
 
     event TradeLineAdded(uint256 tradeLineId);
     event TradeLineUpdated(uint256 tradeLineId);
+    event MaterialAssigned(uint256 tradeLineId);
 
     modifier onlyAdmin() {
         require(hasRole(ADMIN_ROLE, _msgSender()), "Trade: Caller is not an admin");
@@ -34,8 +37,8 @@ abstract contract Trade is AccessControl {
 
     struct Line {
         uint256 id;
-        uint256[2] materialsId;
-        string productCategory;
+        uint256 productCategoryId;
+        uint256 materialId;
         bool exists;
     }
 
@@ -54,16 +57,18 @@ abstract contract Trade is AccessControl {
     uint256[] internal _lineIds;
     Counters.Counter internal _linesCounter;
 
-    EnumerableType internal productCategoryManager;
-    DocumentManager internal documentManager;
+    ProductCategoryManager internal _productCategoryManager;
+    MaterialManager internal _materialManager;
+    DocumentManager internal _documentManager;
 
-    constructor(uint256 tradeId, address productCategoryAddress, address documentManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl) {
+    constructor(uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl) {
         _setupRole(ADMIN_ROLE, _msgSender());
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
 
         _tradeId = tradeId;
-        productCategoryManager = EnumerableType(productCategoryAddress);
-        documentManager = DocumentManager(documentManagerAddress);
+        _productCategoryManager = ProductCategoryManager(productCategoryAddress);
+        _materialManager = MaterialManager(materialManagerAddress);
+        _documentManager = DocumentManager(documentManagerAddress);
         _supplier = supplier;
         _customer = customer;
         _commissioner = commissioner;
@@ -93,39 +98,46 @@ abstract contract Trade is AccessControl {
         return _lines[id].exists;
     }
 
-    function _addLine(uint256[2] memory materialIds, string memory productCategory) internal returns (uint256) {
-        require(productCategoryManager.contains(productCategory), "Trade: Product category does not exist");
+    function _addLine(uint256 productCategoryId) internal returns (uint256) {
+        require(_productCategoryManager.getProductCategoryExists(productCategoryId), "Trade: Product category does not exist");
 
         uint256 tradeLineId = _linesCounter.current();
         _linesCounter.increment();
 
-        _lines[tradeLineId] = Line(tradeLineId, materialIds, productCategory, true);
+        _lines[tradeLineId] = Line(tradeLineId, productCategoryId, 0, true);
         _lineIds.push(tradeLineId);
 
         return tradeLineId;
     }
 
-    function _updateLine(uint256 id, uint256[2] memory materialIds, string memory productCategory) internal {
+    function _updateLine(uint256 id, uint256 productCategoryId) internal {
         require(_lines[id].exists, "Trade: Line does not exist");
-        require(productCategoryManager.contains(productCategory), "Trade: Product category does not exist");
+        require(_productCategoryManager.getProductCategoryExists(productCategoryId), "Trade: Product category does not exist");
 
-        _lines[id].materialsId = materialIds;
-        _lines[id].productCategory = productCategory;
+        if(_lines[id].productCategoryId != productCategoryId)
+            _lines[id].productCategoryId = productCategoryId;
+    }
+
+    function _assignMaterial(uint256 lineId, uint256 materialId) internal {
+        require(_lines[lineId].exists, "Trade: Line does not exist");
+        require(_materialManager.getMaterialExists(materialId), "Trade: Material does not exist");
+
+        _lines[lineId].materialId = materialId;
     }
 
     function getTradeStatus() public view returns (TradeStatus) {
-        uint256 documentsCounter = documentManager.getDocumentsCounterByTransactionIdAndType(_tradeId, "trade");
+        uint256 documentsCounter = _documentManager.getDocumentsCounterByTransactionIdAndType(_tradeId, "trade");
         //require(documentsCounter > 0, "Trade: There are no documents related to this trade");
         if (documentsCounter == 0) return TradeStatus.CONTRACTING;
 
-        if ((documentManager.getDocumentsByDocumentType(_tradeId, "trade", DocumentManager.DocumentType.BILL_OF_LADING)).length > 0) return TradeStatus.ON_BOARD;
-        if ((documentManager.getDocumentsByDocumentType(_tradeId, "trade", DocumentManager.DocumentType.DELIVERY_NOTE)).length > 0) return TradeStatus.SHIPPED;
+        if ((_documentManager.getDocumentsByDocumentType(_tradeId, "trade", DocumentManager.DocumentType.BILL_OF_LADING)).length > 0) return TradeStatus.ON_BOARD;
+        if ((_documentManager.getDocumentsByDocumentType(_tradeId, "trade", DocumentManager.DocumentType.DELIVERY_NOTE)).length > 0) return TradeStatus.SHIPPED;
         revert("Trade: There are no documents with correct document type");
     }
 
-    // TODO: check why 'externalUrl' is passed in this function and is logically separated from Trade.externalUrl
-    function addDocument(string memory name, DocumentManager.DocumentType documentType, string memory externalUrl) public onlyAdminOrContractPart {
-        documentManager.registerDocument(_tradeId, "trade", name, documentType, externalUrl);
+    function addDocument(uint256 lineId, string memory name, DocumentManager.DocumentType documentType, string memory externalUrl) public onlyAdminOrContractPart {
+        require(_lines[lineId].materialId != 0, "Trade: A material must be assigned before adding a document for a line");
+        _documentManager.registerDocument(_tradeId, "trade", name, documentType, externalUrl);
     }
 
     function addAdmin(address account) public onlyAdmin {

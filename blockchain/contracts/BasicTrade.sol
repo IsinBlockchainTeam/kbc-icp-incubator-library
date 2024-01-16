@@ -6,7 +6,7 @@ import "./Trade.sol";
 contract BasicTrade is Trade {
     string private _name;
 
-    constructor(uint256 tradeId, address productCategoryAddress, address documentManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl, string memory name) Trade(tradeId, productCategoryAddress, documentManagerAddress, supplier, customer, commissioner, externalUrl) {
+    constructor(uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl, string memory name) Trade(tradeId, productCategoryAddress, materialManagerAddress, documentManagerAddress, supplier, customer, commissioner, externalUrl) {
         _name = name;
     }
 
@@ -27,15 +27,20 @@ contract BasicTrade is Trade {
         return _getLine(id);
     }
 
-    function addLine(uint256[2] memory materialIds, string memory productCategory) public onlyAdminOrContractPart returns (uint256) {
-        uint256 tradeLineId =  _addLine(materialIds, productCategory);
+    function addLine(uint256 productCategoryId) public onlyAdminOrContractPart returns (uint256) {
+        uint256 tradeLineId =  _addLine(productCategoryId);
         emit TradeLineAdded(tradeLineId);
         return tradeLineId;
     }
 
-    function updateLine(uint256 id, uint256[2] memory materialIds, string memory productCategory) public onlyAdminOrContractPart {
-        _updateLine(id, materialIds, productCategory);
+    function updateLine(uint256 id, uint256 productCategoryId) public onlyAdminOrContractPart {
+        _updateLine(id, productCategoryId);
         emit TradeLineUpdated(id);
+    }
+
+    function assignMaterial(uint256 lineId, uint256 materialId) public onlyAdminOrContractPart {
+        _assignMaterial(lineId, materialId);
+        emit MaterialAssigned(lineId);
     }
 
     function setName(string memory name) public onlyAdminOrContractPart {

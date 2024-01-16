@@ -1,3 +1,4 @@
+/* eslint-disable import/no-extraneous-dependencies */
 import { Contract, Wallet, Event } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
@@ -10,7 +11,8 @@ describe('TradeManager.sol', () => {
     let admin: SignerWithAddress, supplier: SignerWithAddress,
         customer: SignerWithAddress, commissioner: SignerWithAddress,
         arbiter: SignerWithAddress;
-    const productCategoryManagerAddress: string = Wallet.createRandom().address;
+    const productCategoryManagerContractAddress: string = Wallet.createRandom().address;
+    const materialManagerContractAddress: string = Wallet.createRandom().address;
     const documentManagerAddress: string = Wallet.createRandom().address;
     const fiatManagerAddress: string = Wallet.createRandom().address;
 
@@ -30,9 +32,9 @@ describe('TradeManager.sol', () => {
         const tradeType = await tradeManagerContract.getTradeType(id);
         switch (tradeType) {
         case 0:
-            return await ethers.getContractAt(ContractName.BASIC_TRADE, tradeAddress);
+            return ethers.getContractAt(ContractName.BASIC_TRADE, tradeAddress);
         case 1:
-            return await ethers.getContractAt(ContractName.ORDER_TRADE, tradeAddress);
+            return ethers.getContractAt(ContractName.ORDER_TRADE, tradeAddress);
         default:
             throw new Error(`TradeManagerTest: an invalid value "${tradeType}" for "TradeType" was returned by the contract`);
         }
@@ -47,22 +49,30 @@ describe('TradeManager.sol', () => {
 
     beforeEach(async () => {
         const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER);
-        tradeManagerContract = await TradeManager.deploy(productCategoryManagerAddress, documentManagerAddress, fiatManagerAddress, escrowManagerContract.address);
+        tradeManagerContract = await TradeManager.deploy(productCategoryManagerContractAddress, materialManagerContractAddress, documentManagerAddress, fiatManagerAddress, escrowManagerContract.address);
         await tradeManagerContract.deployed();
     });
 
     describe('TradeManager creation', () => {
         it('should create a TradeManager - FAIL(TradeManager: product category manager address is the zero address)', async () => {
             const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER);
-            await expect(TradeManager.deploy(ethers.constants.AddressZero, documentManagerAddress, fiatManagerAddress, escrowManagerContract.address))
+            await expect(TradeManager.deploy(ethers.constants.AddressZero, materialManagerContractAddress, documentManagerAddress, fiatManagerAddress, escrowManagerContract.address))
                 .to
                 .be
                 .revertedWith('TradeManager: product category manager address is the zero address');
         });
 
+        it('should create a TradeManager - FAIL(TradeManager: material manager address is the zero address)', async () => {
+            const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER);
+            await expect(TradeManager.deploy(productCategoryManagerContractAddress, ethers.constants.AddressZero, documentManagerAddress, fiatManagerAddress, escrowManagerContract.address))
+                .to
+                .be
+                .revertedWith('TradeManager: material manager address is the zero address');
+        });
+
         it('should create a TradeManager - FAIL(TradeManager: document category manager address is the zero address)', async () => {
             const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER);
-            await expect(TradeManager.deploy(productCategoryManagerAddress, ethers.constants.AddressZero, fiatManagerAddress, escrowManagerContract.address))
+            await expect(TradeManager.deploy(productCategoryManagerContractAddress, materialManagerContractAddress, ethers.constants.AddressZero, fiatManagerAddress, escrowManagerContract.address))
                 .to
                 .be
                 .revertedWith('TradeManager: document category manager address is the zero address');
@@ -70,7 +80,7 @@ describe('TradeManager.sol', () => {
 
         it('should create a TradeManager - FAIL(TradeManager: fiat manager address is the zero address)', async () => {
             const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER);
-            await expect(TradeManager.deploy(productCategoryManagerAddress, documentManagerAddress, ethers.constants.AddressZero, escrowManagerContract.address))
+            await expect(TradeManager.deploy(productCategoryManagerContractAddress, materialManagerContractAddress, documentManagerAddress, ethers.constants.AddressZero, escrowManagerContract.address))
                 .to
                 .be
                 .revertedWith('TradeManager: fiat manager address is the zero address');
@@ -78,7 +88,7 @@ describe('TradeManager.sol', () => {
 
         it('should create a TradeManager - FAIL(TradeManager: escrow manager address is the zero address)', async () => {
             const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER);
-            await expect(TradeManager.deploy(productCategoryManagerAddress, documentManagerAddress, fiatManagerAddress, ethers.constants.AddressZero))
+            await expect(TradeManager.deploy(productCategoryManagerContractAddress, materialManagerContractAddress, documentManagerAddress, fiatManagerAddress, ethers.constants.AddressZero))
                 .to
                 .be
                 .revertedWith('TradeManager: escrow manager address is the zero address');
@@ -196,8 +206,8 @@ describe('TradeManager.sol', () => {
             expect(_linesId.length)
                 .to
                 .equal(0);
-            expect(_hasSupplierSigned).to.false;
-            expect(_hasCommissionerSigned).to.false;
+            expect(_hasSupplierSigned).to.equal(false);
+            expect(_hasCommissionerSigned).to.equal(false);
             expect(_paymentDeadline)
                 .to
                 .equal(paymentDeadline);
