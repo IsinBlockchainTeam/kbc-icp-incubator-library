@@ -1,16 +1,16 @@
 import { Material } from './Material';
+import { ProductCategory } from './ProductCategory';
 
 describe('Material', () => {
     let material: Material;
 
     beforeAll(() => {
-        material = new Material(0, 'material', 'owner');
+        material = new Material(0, new ProductCategory(0, 'name', 80, 'description'));
     });
 
     it('should correctly initialize a new Material', () => {
         expect(material.id).toEqual(0);
-        expect(material.name).toEqual('material');
-        expect(material.owner).toEqual('owner');
+        expect(material.productCategory).toEqual(new ProductCategory(0, 'name', 80, 'description'));
     });
 
     it('should correctly set the id', () => {
@@ -18,13 +18,8 @@ describe('Material', () => {
         expect(material.id).toEqual(1);
     });
 
-    it('should correctly set the name', () => {
-        material.name = 'material2';
-        expect(material.name).toEqual('material2');
-    });
-
-    it('should correctly set the owner', () => {
-        material.owner = 'owner2';
-        expect(material.owner).toEqual('owner2');
+    it('should correctly set the productCategory', () => {
+        material.productCategory = new ProductCategory(1, 'name2', 90, 'description2');
+        expect(material.productCategory).toEqual(new ProductCategory(1, 'name2', 90, 'description2'));
     });
 });

@@ -1,5 +1,5 @@
 import { Material } from '../entities/Material';
-import { Transformation } from '../entities/Transformation';
+import { AssetOperation } from '../entities/AssetOperation.test';
 import { Trade } from '../smart-contracts/contracts/BasicTrade';
 import {
     DocumentManager,
@@ -18,8 +18,8 @@ export class EntityBuilder {
         return new Material(bcMaterial.id.toNumber(), bcMaterial.name, bcMaterial.owner);
     }
 
-    static buildTransformation(bcTransformation: TransformationManager.TransformationStructOutput): Transformation {
-        return new Transformation(bcTransformation.id.toNumber(), bcTransformation.name, bcTransformation.inputMaterials.map((m) => this.buildMaterial(m)), bcTransformation.outputMaterialId.toNumber(), bcTransformation.owner);
+    static buildTransformation(bcTransformation: TransformationManager.TransformationStructOutput): AssetOperation {
+        return new AssetOperation(bcTransformation.id.toNumber(), bcTransformation.name, bcTransformation.inputMaterials.map((m) => this.buildMaterial(m)), bcTransformation.outputMaterialId.toNumber(), bcTransformation.owner);
     }
 
     static buildRelationship(bcRelationship: RelationshipManager.RelationshipStructOutput): Relationship {

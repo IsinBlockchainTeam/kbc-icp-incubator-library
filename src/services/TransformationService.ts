@@ -1,4 +1,4 @@
-import { Transformation } from '../entities/Transformation';
+import { AssetOperation } from '../entities/AssetOperation.test';
 import { TransformationDriver } from '../drivers/TransformationDriver';
 
 export class TransformationService {
@@ -20,12 +20,12 @@ export class TransformationService {
         return this._transformationDriver.getTransformationsCounter();
     }
 
-    async getTransformation(id: number): Promise<Transformation> {
+    async getTransformation(id: number): Promise<AssetOperation> {
         return this._transformationDriver.getTransformation(id);
     }
 
-    async getTransformations(owner: string): Promise<Transformation[]> {
-        const transformations: Transformation[] = [];
+    async getTransformations(owner: string): Promise<AssetOperation[]> {
+        const transformations: AssetOperation[] = [];
         const transformationIds = await this._transformationDriver.getTransformationIds(owner);
         for (let i = 0; i < transformationIds.length; i++) {
             transformations.push(await this.getTransformation(transformationIds[i]));

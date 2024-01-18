@@ -4,7 +4,7 @@ import {
     TransformationManager__factory,
 } from '../smart-contracts';
 import { EntityBuilder } from '../utils/EntityBuilder';
-import { Transformation } from '../entities/Transformation';
+import { AssetOperation } from '../entities/AssetOperation.test';
 
 export class TransformationDriver {
     private _contract: TransformationManager;
@@ -36,7 +36,7 @@ export class TransformationDriver {
         return counter.toNumber();
     }
 
-    async getTransformation(id: number): Promise<Transformation> {
+    async getTransformation(id: number): Promise<AssetOperation> {
         const transformation = await this._contract.getTransformation(id);
         return EntityBuilder.buildTransformation(transformation);
     }

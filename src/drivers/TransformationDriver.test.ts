@@ -5,7 +5,7 @@ import {
     TransformationManager,
     TransformationManager__factory,
 } from '../smart-contracts';
-import { Transformation } from '../entities/Transformation';
+import { AssetOperation } from '../entities/AssetOperation.test';
 import { TransformationDriver } from './TransformationDriver';
 
 describe('TransformationDriver', () => {
@@ -24,7 +24,7 @@ describe('TransformationDriver', () => {
     const mockedGetTransformation = jest.fn();
 
     const mockedTransformationStructOutput = createMock<TransformationManager.TransformationStructOutput>();
-    const mockedTransformation = createMock<Transformation>();
+    const mockedTransformation = createMock<AssetOperation>();
 
     mockedWriteFunction.mockResolvedValue({
         wait: mockedWait,
@@ -61,7 +61,7 @@ describe('TransformationDriver', () => {
         jest.restoreAllMocks();
     });
 
-    it('should correctly register a new Transformation', async () => {
+    it('should correctly register a new AssetOperation', async () => {
         await transformationDriver.registerTransformation(companyAddress, 'transformation', [1, 2], 3);
 
         expect(mockedContract.registerTransformation).toHaveBeenCalledTimes(1);
@@ -70,7 +70,7 @@ describe('TransformationDriver', () => {
         expect(mockedWait).toHaveBeenCalledTimes(1);
     });
 
-    it('should correctly register a new Transformation - FAIL(Not an address)', async () => {
+    it('should correctly register a new AssetOperation - FAIL(Not an address)', async () => {
         await expect(transformationDriver.registerTransformation('notAnAddress', 'transformation', [1, 2], 3))
             .rejects.toThrow(new Error('Not an address'));
 
@@ -78,7 +78,7 @@ describe('TransformationDriver', () => {
         expect(mockedWait).toHaveBeenCalledTimes(0);
     });
 
-    it('should correctly update a Transformation', async () => {
+    it('should correctly update a AssetOperation', async () => {
         await transformationDriver.updateTransformation(0, 'transformation', [1, 2], 3);
 
         expect(mockedContract.updateTransformation).toHaveBeenCalledTimes(1);
@@ -87,7 +87,7 @@ describe('TransformationDriver', () => {
         expect(mockedWait).toHaveBeenCalledTimes(1);
     });
 
-    it('should correctly retrieve Transformation counter', async () => {
+    it('should correctly retrieve AssetOperation counter', async () => {
         const response = await transformationDriver.getTransformationsCounter();
 
         expect(response).toEqual(1);
@@ -97,7 +97,7 @@ describe('TransformationDriver', () => {
         expect(mockedToNumber).toHaveBeenCalledTimes(1);
     });
 
-    it('should correctly retrieve Transformation ids', async () => {
+    it('should correctly retrieve AssetOperation ids', async () => {
         mockedContract.getTransformationIds = jest.fn().mockResolvedValue([BigNumber.from(1), BigNumber.from(2)]);
         const response = await transformationDriver.getTransformationIds(companyAddress);
 
@@ -107,7 +107,7 @@ describe('TransformationDriver', () => {
         expect(mockedContract.getTransformationIds).toHaveBeenNthCalledWith(1, companyAddress);
     });
 
-    it('should correctly retrieve a Transformation', async () => {
+    it('should correctly retrieve a AssetOperation', async () => {
         const response = await transformationDriver.getTransformation(1);
 
         expect(response).toEqual(mockedTransformation);

@@ -11,7 +11,7 @@ import {
 import { Trade as TradeContract } from '../smart-contracts/contracts/OrderTrade';
 import { Relationship } from '../entities/Relationship';
 import { DocumentInfo, DocumentType } from '../entities/DocumentInfo';
-import { Transformation } from '../entities/Transformation';
+import { AssetOperation } from '../entities/AssetOperation.test';
 import { Line } from '../entities/Trade';
 import { Offer } from '../entities/Offer';
 
@@ -48,7 +48,7 @@ describe('EntityBuilder', () => {
             bcTransformation.outputMaterialId = BigNumber.from(3);
             bcTransformation.owner = 'owner';
 
-            expect(EntityBuilder.buildTransformation(bcTransformation)).toEqual(new Transformation(0, 'transformation', [EntityBuilder.buildMaterial(bcMaterial1), EntityBuilder.buildMaterial(bcMaterial2)], 3, 'owner'));
+            expect(EntityBuilder.buildTransformation(bcTransformation)).toEqual(new AssetOperation(0, 'transformation', [EntityBuilder.buildMaterial(bcMaterial1), EntityBuilder.buildMaterial(bcMaterial2)], 3, 'owner'));
         });
     });
 

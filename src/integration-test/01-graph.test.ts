@@ -95,10 +95,10 @@ describe('GraphService lifecycle', () => {
         await serial(registerMaterialsFn);
 
         const transformations = [
-            new Transformation(0, 'coffee beans processing', [materials[0], materials[1]], 3, company1.address),
-            new Transformation(0, 'coffee grinding', [materials[3]], 5, company2.address),
-            new Transformation(0, 'final coffee production', [materials[5], materials[6]], 8, company3.address),
-            new Transformation(0, 'water purification', [materials[9]], 11, company1.address),
+            new AssetOperation(0, 'coffee beans processing', [materials[0], materials[1]], 3, company1.address),
+            new AssetOperation(0, 'coffee grinding', [materials[3]], 5, company2.address),
+            new AssetOperation(0, 'final coffee production', [materials[5], materials[6]], 8, company3.address),
+            new AssetOperation(0, 'water purification', [materials[9]], 11, company1.address),
         ];
         const registerTransformationsFn = transformations.map((t) => async () => transformationService.registerTransformation(t.owner, t.name, t.inputMaterials.map((m) => m.id), t.outputMaterialId));
         await serial(registerTransformationsFn);

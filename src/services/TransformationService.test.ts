@@ -1,5 +1,5 @@
 import { createMock } from 'ts-auto-mock';
-import { Transformation } from '../entities/Transformation';
+import { AssetOperation } from '../entities/AssetOperation.test';
 import { Material } from '../entities/Material';
 import { TransformationDriver } from '../drivers/TransformationDriver';
 import { TransformationService } from './TransformationService';
@@ -25,8 +25,8 @@ describe('TransformationService', () => {
     ];
 
     const transformations = [
-        new Transformation(1, 'Transformation 1', [materials[0], materials[1]], 3, 'Owner'),
-        new Transformation(2, 'Transformation 2', [materials[2], materials[3]], 5, 'Owner'),
+        new AssetOperation(1, 'AssetOperation 1', [materials[0], materials[1]], 3, 'Owner'),
+        new AssetOperation(2, 'AssetOperation 2', [materials[2], materials[3]], 5, 'Owner'),
     ];
     const companyAddress = '0xaddress';
 

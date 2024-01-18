@@ -45,7 +45,7 @@ export { OrderLine } from './entities/OrderTrade';
 export { TradeType } from './types/TradeType';
 export { OrderLinePrice } from './entities/OrderTrade';
 export { TradeStatus } from './types/TradeStatus';
-export { Transformation } from './entities/Transformation';
+export { AssetOperation } from './entities/AssetOperation.test';
 export { DocumentInfo, DocumentType } from './entities/DocumentInfo';
 export { Document, TransactionLine } from './entities/Document';
 

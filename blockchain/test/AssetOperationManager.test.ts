@@ -23,7 +23,7 @@ describe('AssetOperationManager', () => {
     });
 
     describe('Register', () => {
-        it('should register a Transformation', async () => {
+        it('should register a AssetOperation', async () => {
             const previousAssetOperationCounter = await assertOperationManagerContract.getAssetOperationsCounter();
             expect(previousAssetOperationCounter).to.be.equal(0);
             const tx = await assertOperationManagerContract.registerAssetOperation('testTransformation', [[1], [2]], 3);

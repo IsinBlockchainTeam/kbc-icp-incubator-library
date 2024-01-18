@@ -78,7 +78,7 @@ describe('OfferManager', () => {
                 .withArgs(1, company1.address);
         });
 
-        it('should update a Transformation - FAIL(The product category specified isn\'t registered)', async () => {
+        it('should update a AssetOperation - FAIL(The product category specified isn\'t registered)', async () => {
             await expect(offerManagerContract.updateOffer(1, 'customCategory'))
                 .to.be.revertedWith('The product category specified isn\'t registered');
         });
@@ -108,7 +108,7 @@ describe('OfferManager', () => {
                 .withArgs(1, company1.address);
         });
 
-        it('should update a Transformation - FAIL(The product category specified isn\'t registered)', async () => {
+        it('should update a AssetOperation - FAIL(The product category specified isn\'t registered)', async () => {
             await expect(offerManagerContract.updateOffer(1, 'customCategory'))
                 .to.be.revertedWith('The product category specified isn\'t registered');
         });

@@ -4,7 +4,7 @@ it('always pass', () => {
 /*
 import { createMock } from 'ts-auto-mock';
 import { GraphService } from './GraphService';
-import { Transformation } from '../entities/Transformation';
+import { AssetOperation } from '../entities/AssetOperation';
 import { Trade, TradeType } from '../entities/Trade';
 import TradeService from './TradeService';
 import { TradeLine } from '../entities/TradeLine';
@@ -30,8 +30,8 @@ describe('GraphService', () => {
         new TradeLine(4, [8, 7], 'categoryC'),
     ];
     const transformations = [
-        new Transformation(1, 'transformation', [materials[0]], 2, 'transformationOwner'),
-        new Transformation(2, 'transformation', [materials[2]], 4, 'transformationOwner'),
+        new AssetOperation(1, 'transformation', [materials[0]], 2, 'transformationOwner'),
+        new AssetOperation(2, 'transformation', [materials[2]], 4, 'transformationOwner'),
     ];
 
     const supplier = '0xsupplier_address';

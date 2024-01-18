@@ -1,22 +1,19 @@
 import { Material } from './Material';
 
-export class Transformation {
+export class AssetOperation {
     private _id: number;
 
     private _name: string;
 
     private _inputMaterials: Material[];
 
-    private _outputMaterialId: number;
+    private _outputMaterial: Material;
 
-    private _owner: string;
-
-    constructor(id: number, name: string, inputMaterials: Material[], outputMaterialId: number, owner: string) {
+    constructor(id: number, name: string, inputMaterials: Material[], outputMaterial: Material) {
         this._id = id;
         this._name = name;
         this._inputMaterials = inputMaterials;
-        this._outputMaterialId = outputMaterialId;
-        this._owner = owner;
+        this._outputMaterial = outputMaterial;
     }
 
     get id(): number {
@@ -43,19 +40,11 @@ export class Transformation {
         this._inputMaterials = value;
     }
 
-    get outputMaterialId(): number {
-        return this._outputMaterialId;
+    get outputMaterial(): Material {
+        return this._outputMaterial;
     }
 
-    set outputMaterialId(value: number) {
-        this._outputMaterialId = value;
-    }
-
-    get owner(): string {
-        return this._owner;
-    }
-
-    set owner(value: string) {
-        this._owner = value;
+    set outputMaterial(value: Material) {
+        this._outputMaterial = value;
     }
 }

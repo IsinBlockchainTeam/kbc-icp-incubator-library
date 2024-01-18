@@ -1,14 +1,13 @@
+import { ProductCategory } from './ProductCategory';
+
 export class Material {
     private _id: number;
 
-    private _name: string;
+    private _productCategory: ProductCategory;
 
-    private _owner: string;
-
-    constructor(id: number, name: string, owner: string) {
+    constructor(id: number, productCategory: ProductCategory) {
         this._id = id;
-        this._name = name;
-        this._owner = owner;
+        this._productCategory = productCategory;
     }
 
     get id(): number {
@@ -19,19 +18,11 @@ export class Material {
         this._id = value;
     }
 
-    get name(): string {
-        return this._name;
+    get productCategory(): ProductCategory {
+        return this._productCategory;
     }
 
-    set name(value: string) {
-        this._name = value;
-    }
-
-    get owner(): string {
-        return this._owner;
-    }
-
-    set owner(value: string) {
-        this._owner = value;
+    set productCategory(value: ProductCategory) {
+        this._productCategory = value;
     }
 }

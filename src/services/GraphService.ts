@@ -1,6 +1,6 @@
 import { Signer } from 'ethers';
 import { Line, Trade } from '../entities/Trade';
-import { Transformation } from '../entities/Transformation';
+import { AssetOperation } from '../entities/AssetOperation.test';
 import { TradeManagerService } from './TradeManagerService';
 import { TransformationService } from './TransformationService';
 
@@ -32,7 +32,7 @@ export class GraphService {
         this._signer = signer;
     }
 
-    public async findTransformationsByMaterialOutput(supplierAddress: string, materialId: number): Promise<Transformation[]> {
+    public async findTransformationsByMaterialOutput(supplierAddress: string, materialId: number): Promise<AssetOperation[]> {
         const transformations = await this._transformationService.getTransformations(supplierAddress);
         return transformations.filter((t) => t.outputMaterialId === materialId);
     }
@@ -155,7 +155,7 @@ export class GraphService {
     }
 
     // @ts-ignore
-    private getGraphEntityId(t: Transformation | Trade): string {
+    private getGraphEntityId(t: AssetOperation | Trade): string {
         // return t.owner ? t.name : `${t.supplier}_trade_${t.id}`;
     }
 }
