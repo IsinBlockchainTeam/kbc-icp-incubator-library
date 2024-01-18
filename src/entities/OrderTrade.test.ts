@@ -10,6 +10,8 @@ import { EntityBuilder } from '../utils/EntityBuilder';
 import {
     Trade as TradeContract,
 } from '../smart-contracts/contracts/OrderTrade';
+import { ProductCategory } from './ProductCategory';
+import { Material } from './Material';
 
 describe('OrderLinePrice', () => {
     let price: OrderLinePrice;
@@ -42,16 +44,17 @@ describe('OrderLine', () => {
     let line: OrderLine;
 
     beforeAll(() => {
-        line = new OrderLine(0, [1, 2], 'test', 10, new OrderLinePrice(10.2, 'CHF'));
+        const productCategory = new ProductCategory(1, 'test', 1, 'test');
+        line = new OrderLine(0, new Material(1, productCategory), productCategory, 10, new OrderLinePrice(10.2, 'CHF'));
     });
 
     it('should correctly initialize an OrderLine', () => {
         expect(line.id)
             .toEqual(0);
-        expect(line.materialsId)
-            .toEqual([1, 2]);
+        expect(line.material)
+            .toEqual(new Material(1, new ProductCategory(1, 'test', 1, 'test')));
         expect(line.productCategory)
-            .toEqual('test');
+            .toEqual(new ProductCategory(1, 'test', 1, 'test'));
         expect(line.quantity)
             .toEqual(10);
         expect(line.price)
@@ -75,14 +78,15 @@ describe('OrderLineRequest', () => {
     let line: OrderLineRequest;
 
     beforeAll(() => {
-        line = new OrderLineRequest([1, 2], 'test', 10, new OrderLinePrice(10.2, 'CHF'));
+        const productCategory = new ProductCategory(1, 'test', 1, 'test');
+        line = new OrderLineRequest(new Material(1, productCategory), productCategory, 10, new OrderLinePrice(10.2, 'CHF'));
     });
 
     it('should correctly initialize an OrderLineRequest', () => {
-        expect(line.materialsId)
-            .toEqual([1, 2]);
+        expect(line.material)
+            .toEqual(new Material(1, new ProductCategory(1, 'test', 1, 'test')));
         expect(line.productCategory)
-            .toEqual('test');
+            .toEqual(new ProductCategory(1, 'test', 1, 'test'));
         expect(line.quantity)
             .toEqual(10);
         expect(line.price)
@@ -176,8 +180,8 @@ describe('OrderTrade', () => {
     it('should correctly set the lines', () => {
         const newLine: TradeContract.LineStructOutput = {
             id: BigNumber.from(1),
-            materialsId: [BigNumber.from(3), BigNumber.from(4)],
-            productCategory: 'category2',
+            materialId: BigNumber.from(2),
+            productCategoryId: BigNumber.from(3),
             exists: true,
         } as TradeContract.LineStructOutput;
         const price: OrderTradeContract.OrderLinePriceStructOutput = {
@@ -191,10 +195,10 @@ describe('OrderTrade', () => {
         } as OrderTradeContract.OrderLineStructOutput;
 
         orderTrade.lines = [
-            EntityBuilder.buildOrderLine(newLine, newOrderLine),
+            EntityBuilder.buildOrderLine(newLine, newOrderLine, new Material(2, new ProductCategory(3, 'test', 1, 'test')), new ProductCategory(3, 'test', 1, 'test')),
         ];
         expect(orderTrade.lines)
-            .toEqual([EntityBuilder.buildOrderLine(newLine, newOrderLine)]);
+            .toEqual([EntityBuilder.buildOrderLine(newLine, newOrderLine, new Material(2, new ProductCategory(3, 'test', 1, 'test')), new ProductCategory(3, 'test', 1, 'test'))]);
     });
 
     it('should correctly set the escrow', () => {

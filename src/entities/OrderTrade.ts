@@ -1,4 +1,6 @@
 import { Line, LineRequest, Trade } from './Trade';
+import { Material } from './Material';
+import { ProductCategory } from './ProductCategory';
 
 export class OrderLinePrice {
     private _amount: number;
@@ -32,8 +34,8 @@ export class OrderLineRequest extends LineRequest {
 
     private _price: OrderLinePrice;
 
-    constructor(materialsId: [number, number], productCategory: string, quantity: number, price: OrderLinePrice) {
-        super(materialsId, productCategory);
+    constructor(material: Material, productCategory: ProductCategory, quantity: number, price: OrderLinePrice) {
+        super(material, productCategory);
         this._quantity = quantity;
         this._price = price;
     }
@@ -60,8 +62,8 @@ export class OrderLine extends Line {
 
     private _price: OrderLinePrice;
 
-    constructor(id: number, materialsId: [number, number], productCategory: string, quantity: number, price: OrderLinePrice) {
-        super(id, materialsId, productCategory);
+    constructor(id: number, material: Material | undefined, productCategory: ProductCategory, quantity: number, price: OrderLinePrice) {
+        super(id, material, productCategory);
         this._quantity = quantity;
         this._price = price;
     }

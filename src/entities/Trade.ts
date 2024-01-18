@@ -1,40 +1,43 @@
+import { Material } from './Material';
+import { ProductCategory } from './ProductCategory';
+
 export class LineRequest {
-    protected _materialsId: [number, number];
+    private _material?: Material;
 
-    protected _productCategory: string;
+    private _productCategory: ProductCategory;
 
-    constructor(materialsId: [number, number], productCategory: string) {
-        this._materialsId = materialsId;
+    constructor(material: Material, productCategory: ProductCategory) {
+        this._material = material;
         this._productCategory = productCategory;
     }
 
-    get materialsId(): [number, number] {
-        return this._materialsId;
+    get material(): Material | undefined {
+        return this._material;
     }
 
-    set materialsId(value: [number, number]) {
-        this._materialsId = value;
+    set material(value: Material | undefined) {
+        this._material = value;
     }
 
-    get productCategory(): string {
+    get productCategory(): ProductCategory {
         return this._productCategory;
     }
 
-    set productCategory(value: string) {
+    set productCategory(value: ProductCategory) {
         this._productCategory = value;
     }
 }
 
 export class Line {
-    protected _id: number;
+    private _id: number;
 
-    protected _materialsId: [number, number];
+    private _material?: Material;
 
-    protected _productCategory: string;
+    private _productCategory: ProductCategory;
 
-    constructor(id: number, materialsId: [number, number], productCategory: string) {
+    constructor(id: number, material: Material | undefined, productCategory: ProductCategory) {
         this._id = id;
-        this._materialsId = materialsId;
+        this._material = material;
         this._productCategory = productCategory;
     }
 
@@ -46,19 +49,19 @@ export class Line {
         this._id = value;
     }
 
-    get materialsId(): [number, number] {
-        return this._materialsId;
+    get material(): Material | undefined {
+        return this._material;
     }
 
-    set materialsId(value: [number, number]) {
-        this._materialsId = value;
+    set material(value: Material | undefined) {
+        this._material = value;
     }
 
-    get productCategory(): string {
+    get productCategory(): ProductCategory {
         return this._productCategory;
     }
 
-    set productCategory(value: string) {
+    set productCategory(value: ProductCategory) {
         this._productCategory = value;
     }
 }

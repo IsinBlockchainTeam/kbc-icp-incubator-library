@@ -4,8 +4,11 @@ import {
     Trade as TradeContract,
 } from '../smart-contracts/contracts/OrderTrade';
 import { EntityBuilder } from '../utils/EntityBuilder';
+import { Material } from './Material';
+import { ProductCategory } from './ProductCategory';
 
 class TestTrade extends Trade {
+    // eslint-disable-next-line no-useless-constructor
     constructor(tradeId: number, supplier: string, customer: string, commissioner: string, externalUrl: string, lines: Line[]) {
         super(tradeId, supplier, customer, commissioner, externalUrl, lines);
     }
@@ -15,16 +18,17 @@ describe('Line', () => {
     let line: Line;
 
     beforeAll(() => {
-        line = new Line(0, [1, 2], 'test');
+        const productCategory = new ProductCategory(1, 'test', 1, 'test');
+        line = new Line(0, new Material(1, productCategory), productCategory);
     });
 
     it('should correctly initialize a Line', () => {
         expect(line.id)
             .toEqual(0);
-        expect(line.materialsId)
-            .toEqual([1, 2]);
+        expect(line.material)
+            .toEqual(new Material(1, new ProductCategory(1, 'test', 1, 'test')));
         expect(line.productCategory)
-            .toEqual('test');
+            .toEqual(new ProductCategory(1, 'test', 1, 'test'));
     });
 
     it('should correctly set the id', () => {
@@ -33,16 +37,16 @@ describe('Line', () => {
             .toEqual(42);
     });
 
-    it('should correctly set the materialsId', () => {
-        line.materialsId = [3, 4];
-        expect(line.materialsId)
-            .toEqual([3, 4]);
+    it('should correctly set the material', () => {
+        line.material = new Material(2, new ProductCategory(2, 'test2', 2, 'test2'));
+        expect(line.material)
+            .toEqual(new Material(2, new ProductCategory(2, 'test2', 2, 'test2')));
     });
 
     it('should correctly set the product category', () => {
-        line.productCategory = 'new';
+        line.productCategory = new ProductCategory(2, 'test2', 2, 'test2');
         expect(line.productCategory)
-            .toEqual('new');
+            .toEqual(new ProductCategory(2, 'test2', 2, 'test2'));
     });
 });
 
@@ -50,26 +54,27 @@ describe('LineRequest', () => {
     let line: LineRequest;
 
     beforeAll(() => {
-        line = new LineRequest([1, 2], 'test');
+        const productCategory = new ProductCategory(1, 'test', 1, 'test');
+        line = new LineRequest(new Material(1, productCategory), productCategory);
     });
 
     it('should correctly initialize a LineRequest', () => {
-        expect(line.materialsId)
-            .toEqual([1, 2]);
+        expect(line.material)
+            .toEqual(new Material(1, new ProductCategory(1, 'test', 1, 'test')));
         expect(line.productCategory)
-            .toEqual('test');
+            .toEqual(new ProductCategory(1, 'test', 1, 'test'));
     });
 
-    it('should correctly set the materialsId', () => {
-        line.materialsId = [3, 4];
-        expect(line.materialsId)
-            .toEqual([3, 4]);
+    it('should correctly set the material', () => {
+        line.material = new Material(2, new ProductCategory(2, 'test2', 2, 'test2'));
+        expect(line.material)
+            .toEqual(new Material(2, new ProductCategory(2, 'test2', 2, 'test2')));
     });
 
     it('should correctly set the product category', () => {
-        line.productCategory = 'new';
+        line.productCategory = new ProductCategory(2, 'test2', 2, 'test2');
         expect(line.productCategory)
-            .toEqual('new');
+            .toEqual(new ProductCategory(2, 'test2', 2, 'test2'));
     });
 });
 
@@ -126,14 +131,15 @@ describe('Trade', () => {
     });
 
     it('should correctly set the lines', () => {
+        const productCategory = new ProductCategory(3, 'test', 1, 'test');
         const newLine: TradeContract.LineStructOutput = {
-            id: BigNumber.from(0),
-            materialsId: [BigNumber.from(0), BigNumber.from(1)],
-            productCategory: 'test category',
+            id: BigNumber.from(1),
+            materialId: BigNumber.from(2),
+            productCategoryId: BigNumber.from(3),
             exists: true,
         } as TradeContract.LineStructOutput;
-        trade.lines = [EntityBuilder.buildTradeLine(newLine)];
+        trade.lines = [EntityBuilder.buildTradeLine(newLine, new Material(2, productCategory), productCategory)];
         expect(trade.lines)
-            .toEqual([EntityBuilder.buildTradeLine(newLine)]);
+            .toEqual([EntityBuilder.buildTradeLine(newLine, new Material(2, productCategory), productCategory)]);
     });
 });
