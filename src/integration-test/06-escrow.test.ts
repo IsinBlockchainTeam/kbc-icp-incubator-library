@@ -9,7 +9,7 @@ import {
     CUSTOMER_ADDRESS,
     CUSTOMER_PRIVATE_KEY,
     ESCROW_MANAGER_CONTRACT_ADDRESS,
-    MY_TOKEN_CONTRACT_ADDRESS, OTHER_PRIVATE_KEY, SUPPLIER_ADDRESS,
+    MY_TOKEN_CONTRACT_ADDRESS, NETWORK, OTHER_PRIVATE_KEY, SUPPLIER_ADDRESS,
     SUPPLIER_PRIVATE_KEY,
 } from './config';
 import { MyToken__factory } from '../smart-contracts';
@@ -43,7 +43,7 @@ describe('Escrow Manager', () => {
     let tokenContract: Contract;
 
     beforeAll(async () => {
-        provider = new JsonRpcProvider();
+        provider = new ethers.providers.JsonRpcProvider(NETWORK);
         signer = new ethers.Wallet(ADMIN_PRIVATE_KEY, provider);
 
         escrowManagerDriver = new EscrowManagerDriver(

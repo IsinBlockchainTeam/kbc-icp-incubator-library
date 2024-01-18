@@ -4,7 +4,7 @@
   "scripts": {
     "clear": "rm -rf ./cache ./artifacts ./typechain-types ../src/smart-contracts",
     "test": "NODE_ENV=test npx hardhat test",
-    "coverage": "NODE_ENV=test npx hardhat coverage",
+    "coverage": "NODE_ENV=test NODE_OPTIONS=--max_old_space_size=32000 npx hardhat coverage",
     "gasReport": "REPORT_GAS=true npx hardhat test",
     "compileOnly": "npx hardhat compile",
     "compile": "npx hardhat compile && rm -rf ../src/smart-contracts && cp -R ./typechain-types ../src/smart-contracts",
@@ -20,8 +20,7 @@
     "@typescript-eslint/eslint-plugin": "^6.3.0",
     "@typescript-eslint/parser": "^6.3.0",
     "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-plugin-mocha": "^10.1.0",
-    "ethers": "5.7.2"
+    "eslint-plugin-mocha": "^10.1.0"
   },
   "dependencies": {
     "@blockchain-lib/blockchain-common": "1.0.1",
@@ -30,6 +29,7 @@
     "@openzeppelin/hardhat-upgrades": "1.22.1",
     "dotenv": "^16.0.3",
     "hardhat": "2.13.0",
-    "hardhat-ethernal": "3.1.0"
+    "hardhat-ethernal": "3.1.0",
+    "ethers": "5.7.2"
   }
 }

@@ -5,6 +5,7 @@ import { PRODUCT_CATEGORY } from '../utils/constants';
 
 describe('OfferService', () => {
     const owner = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8';
+    const companyNames = ['Company 1', 'Company 2'];
 
     const mockedOfferDriver = createMock<OfferDriver>({
         registerOffer: jest.fn(),
@@ -26,6 +27,12 @@ describe('OfferService', () => {
 
     it.each([
         {
+            serviceFunctionName: 'registerSupplier',
+            serviceFunction: () => offerService.registerSupplier(owner, companyNames[0]),
+            expectedMockedFunction: mockedOfferDriver.registerSupplier,
+            expectedMockedFunctionArgs: [owner, companyNames[0]],
+        },
+        {
             serviceFunctionName: 'registerOffer',
             serviceFunction: () => offerService.registerOffer(owner, PRODUCT_CATEGORY.EXCELSA_88),
             expectedMockedFunction: mockedOfferDriver.registerOffer,
@@ -38,16 +45,34 @@ describe('OfferService', () => {
             expectedMockedFunctionArgs: [owner],
         },
         {
+            serviceFunctionName: 'getSupplierName',
+            serviceFunction: () => offerService.getSupplierName(owner),
+            expectedMockedFunction: mockedOfferDriver.getSupplierName,
+            expectedMockedFunctionArgs: [owner],
+        },
+        {
             serviceFunctionName: 'getOffer',
             serviceFunction: () => offerService.getOffer(2),
             expectedMockedFunction: mockedOfferDriver.getOffer,
             expectedMockedFunctionArgs: [2],
         },
         {
+            serviceFunctionName: 'updateSupplier',
+            serviceFunction: () => offerService.updateSupplier(owner, companyNames[0]),
+            expectedMockedFunction: mockedOfferDriver.updateSupplier,
+            expectedMockedFunctionArgs: [owner, companyNames[0]],
+        },
+        {
             serviceFunctionName: 'updateOffer',
             serviceFunction: () => offerService.updateOffer(2, PRODUCT_CATEGORY.ARABIC_85),
             expectedMockedFunction: mockedOfferDriver.updateOffer,
             expectedMockedFunctionArgs: [2, PRODUCT_CATEGORY.ARABIC_85],
+        },
+        {
+            serviceFunctionName: 'deleteSupplier',
+            serviceFunction: () => offerService.deleteSupplier(owner),
+            expectedMockedFunction: mockedOfferDriver.deleteSupplier,
+            expectedMockedFunctionArgs: [owner],
         },
         {
             serviceFunctionName: 'deleteOffer',

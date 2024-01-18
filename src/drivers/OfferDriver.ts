@@ -17,6 +17,17 @@ export class OfferDriver {
             .connect(signer);
     }
 
+    async registerSupplier(companyAddress: string, name: string): Promise<void> {
+        if (!utils.isAddress(companyAddress)) throw new Error('Not an address');
+
+        try {
+            const tx = await this._contract.registerSupplier(companyAddress, name);
+            await tx.wait();
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
+    }
+
     async registerOffer(companyAddress: string, productCategory: string): Promise<void> {
         if (!utils.isAddress(companyAddress)) throw new Error('Not an address');
 
@@ -40,6 +51,16 @@ export class OfferDriver {
         return ids.map((id) => id.toNumber());
     }
 
+    async getSupplierName(companyAddress: string, blockNumber?: number): Promise<string> {
+        if (!utils.isAddress(companyAddress)) throw new Error('Not an address');
+
+        try {
+            return await this._contract.getSupplierName(companyAddress, { blockTag: blockNumber });
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
+    }
+
     async getOffer(offerId: number, blockNumber?: number): Promise<Offer> {
         try {
             const rawOffer = await this._contract.getOffer(offerId, { blockTag: blockNumber });
@@ -49,9 +70,29 @@ export class OfferDriver {
         }
     }
 
+    async updateSupplier(companyAddress: string, newName: string): Promise<void> {
+        if (!utils.isAddress(companyAddress)) throw new Error('Not an address');
+
+        try {
+            const tx = await this._contract.updateSupplier(companyAddress, newName);
+            await tx.wait();
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
+    }
+
     async updateOffer(offerId: number, productCategory: string): Promise<void> {
         try {
             const tx = await this._contract.updateOffer(offerId, productCategory);
+            await tx.wait();
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
+    }
+
+    async deleteSupplier(companyAddress: string): Promise<void> {
+        try {
+            const tx = await this._contract.deleteSupplier(companyAddress);
             await tx.wait();
         } catch (e: any) {
             throw new Error(e.message);

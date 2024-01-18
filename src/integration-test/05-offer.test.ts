@@ -14,6 +14,8 @@ describe('Offer lifecycle', () => {
     let offerDriver: OfferDriver;
     let offerService: OfferService;
 
+    const companyName = 'Company 1';
+
     const productCategories = ['Arabic 85', 'Excelsa 88', 'Arabic 85 Superior'];
 
     beforeAll(async () => {
@@ -28,6 +30,7 @@ describe('Offer lifecycle', () => {
     });
 
     it('Should register some offers', async () => {
+        await offerService.registerSupplier(SUPPLIER_ADDRESS, companyName);
         await offerService.registerOffer(SUPPLIER_ADDRESS, productCategories[0]);
         await offerService.registerOffer(SUPPLIER_ADDRESS, productCategories[1]);
 
@@ -74,5 +77,24 @@ describe('Offer lifecycle', () => {
 
         offerIds = await offerService.getOfferIdsByCompany(SUPPLIER_ADDRESS);
         expect(offerIds.length).toEqual(1);
+    });
+    it('Should update the supplier name', async () => {
+        const supplierName = await offerService.getSupplierName(SUPPLIER_ADDRESS);
+        expect(supplierName).toEqual(companyName);
+
+        await offerService.updateSupplier(SUPPLIER_ADDRESS, 'New Company Name');
+
+        const updatedSupplierName = await offerService.getSupplierName(SUPPLIER_ADDRESS);
+        expect(updatedSupplierName).toEqual('New Company Name');
+    });
+    it('Should delete a supplier', async () => {
+        await expect(() => offerService.deleteSupplier(SUPPLIER_ADDRESS))
+            .rejects.toThrowError(/A supplier cannot be deleted if it still has active offers/);
+
+        let offerIds = await offerService.getOfferIdsByCompany(SUPPLIER_ADDRESS);
+        await offerService.deleteOffer(offerIds[0]);
+
+        offerIds = await offerService.getOfferIdsByCompany(SUPPLIER_ADDRESS);
+        expect(offerIds.length).toEqual(0);
     });
 });
