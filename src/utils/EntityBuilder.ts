@@ -19,8 +19,8 @@ export class EntityBuilder {
         return new ProductCategory(bcProductCategory.id.toNumber(), bcProductCategory.name, bcProductCategory.quality, bcProductCategory.description);
     }
 
-    static buildMaterial(bcMaterial: MaterialManager.MaterialStructOutput, productCategory: ProductCategory): Material {
-        return new Material(bcMaterial.id.toNumber(), productCategory);
+    static buildMaterial(bcMaterial: MaterialManager.MaterialStructOutput, productCategory: ProductCategoryManager.ProductCategoryStructOutput): Material {
+        return new Material(bcMaterial.id.toNumber(), this.buildProductCategory(productCategory));
     }
 
     static buildTransformation(bcTransformation: AssetOperationManager.AssetOperationStructOutput, inputMaterials: Material[], outputMaterial: Material): AssetOperation {
