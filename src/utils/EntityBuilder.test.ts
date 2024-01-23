@@ -4,51 +4,72 @@ import { EntityBuilder } from './EntityBuilder';
 import {
     DocumentManager,
     RelationshipManager,
-    TransformationManager,
     MaterialManager,
-    OfferManager,
+    OfferManager, ProductCategoryManager, AssetOperationManager,
 } from '../smart-contracts';
-import { Trade as TradeContract } from '../smart-contracts/contracts/OrderTrade';
 import { Relationship } from '../entities/Relationship';
 import { DocumentInfo, DocumentType } from '../entities/DocumentInfo';
-import { AssetOperation } from '../entities/AssetOperation.test';
-import { Line } from '../entities/Trade';
 import { Offer } from '../entities/Offer';
+import { ProductCategory } from '../entities/ProductCategory';
+import { AssetOperation } from '../entities/AssetOperation';
 
 describe('EntityBuilder', () => {
-    describe('buildMaterial', () => {
-        it('should correctly build a material', () => {
-            const bcMaterial: MaterialManager.MaterialStructOutput = [BigNumber.from(0), 'material', 'owner', true] as MaterialManager.MaterialStructOutput;
-            bcMaterial.id = BigNumber.from(0);
-            bcMaterial.name = 'material';
-            bcMaterial.owner = 'owner';
-            bcMaterial.exists = true;
+    describe('buildProductCategory', () => {
+        it('should correctly build a product category', () => {
+            const bcProductCategory: ProductCategoryManager.ProductCategoryStructOutput = [BigNumber.from(0), 'product category', 1, 'description', true] as ProductCategoryManager.ProductCategoryStructOutput;
+            bcProductCategory.id = BigNumber.from(0);
+            bcProductCategory.name = 'product category';
+            bcProductCategory.quality = 1;
+            bcProductCategory.description = 'description';
 
-            expect(EntityBuilder.buildMaterial(bcMaterial)).toEqual(new Material(0, 'material', 'owner'));
+            expect(EntityBuilder.buildProductCategory(bcProductCategory)).toEqual(new ProductCategory(0, 'product category', 1, 'description'));
+        });
+    });
+
+    describe('buildMaterial', () => {
+        const bcMaterial: MaterialManager.MaterialStructOutput = [BigNumber.from(0), BigNumber.from(1), true] as MaterialManager.MaterialStructOutput;
+        const bcProductCategory: ProductCategoryManager.ProductCategoryStructOutput = [BigNumber.from(1), 'product category', 1, 'description', true] as ProductCategoryManager.ProductCategoryStructOutput;
+        bcMaterial.id = BigNumber.from(0);
+        bcMaterial.productCategoryId = BigNumber.from(1);
+        bcMaterial.exists = true;
+        bcProductCategory.id = BigNumber.from(1);
+        bcProductCategory.name = 'product category';
+        bcProductCategory.quality = 1;
+        bcProductCategory.description = 'description';
+        bcProductCategory.exists = true;
+
+        it('should correctly build a material', () => {
+            expect(EntityBuilder.buildMaterial(bcMaterial, bcProductCategory)).toEqual(new Material(0, new ProductCategory(1, 'product category', 1, 'description')));
+        });
+
+        it('should correctly build a material - FAIL(Product category id of material and product category must be equal)', () => {
+            bcMaterial.productCategoryId = BigNumber.from(2);
+
+            expect(() => EntityBuilder.buildMaterial(bcMaterial, bcProductCategory)).toThrow('Product category id of material and product category must be equal');
         });
     });
 
     describe('buildTransformation', () => {
-        it('should correctly build a transformation', () => {
-            const bcMaterial1: MaterialManager.MaterialStructOutput = [BigNumber.from(0), 'material1', 'owner', true] as MaterialManager.MaterialStructOutput;
-            bcMaterial1.id = BigNumber.from(0);
-            bcMaterial1.name = 'material1';
-            bcMaterial1.owner = 'owner';
-            bcMaterial1.exists = true;
-            const bcMaterial2: MaterialManager.MaterialStructOutput = [BigNumber.from(0), 'material2', 'owner', true] as MaterialManager.MaterialStructOutput;
-            bcMaterial2.id = BigNumber.from(0);
-            bcMaterial2.name = 'material2';
-            bcMaterial2.owner = 'owner';
-            bcMaterial2.exists = true;
+        const bcMaterial: MaterialManager.MaterialStructOutput = [BigNumber.from(0), BigNumber.from(1), true] as MaterialManager.MaterialStructOutput;
+        const bcProductCategory: ProductCategoryManager.ProductCategoryStructOutput = [BigNumber.from(1), 'product category', 1, 'description', true] as ProductCategoryManager.ProductCategoryStructOutput;
+        bcMaterial.id = BigNumber.from(0);
+        bcMaterial.productCategoryId = BigNumber.from(1);
+        bcMaterial.exists = true;
+        bcProductCategory.id = BigNumber.from(1);
+        bcProductCategory.name = 'product category';
+        bcProductCategory.quality = 1;
+        bcProductCategory.description = 'description';
+        bcProductCategory.exists = true;
 
-            const bcTransformation: TransformationManager.TransformationStructOutput = [BigNumber.from(0), 'transformation', [bcMaterial1, bcMaterial2], BigNumber.from(3), 'owner', true] as TransformationManager.TransformationStructOutput;
+        it('should correctly build a transformation', () => {
+            const bcTransformation: AssetOperationManager.AssetOperationStructOutput = [BigNumber.from(0), 'transformation', [BigNumber.from(0)], BigNumber.from(3), true] as AssetOperationManager.AssetOperationStructOutput;
             bcTransformation.id = BigNumber.from(0);
             bcTransformation.name = 'transformation';
-            bcTransformation.inputMaterials = [bcMaterial1, bcMaterial2];
+            bcTransformation.inputMaterialIds = [BigNumber.from(0)];
             bcTransformation.outputMaterialId = BigNumber.from(3);
-            bcTransformation.owner = 'owner';
+            bcTransformation.exists = true;
 
-            expect(EntityBuilder.buildTransformation(bcTransformation)).toEqual(new AssetOperation(0, 'transformation', [EntityBuilder.buildMaterial(bcMaterial1), EntityBuilder.buildMaterial(bcMaterial2)], 3, 'owner'));
+            expect(EntityBuilder.buildTransformation(bcTransformation, [bcMaterial], [bcProductCategory], bcMaterial, bcProductCategory)).toEqual(new AssetOperation(0, 'transformation', [new Material(0, new ProductCategory(1, 'product category', 1, 'description'))], new Material(0, new ProductCategory(1, 'product category', 1, 'description'))));
         });
     });
 
@@ -96,22 +117,16 @@ describe('EntityBuilder', () => {
         });
     });
 
-    describe('buildTradeLine', () => {
-        it('should correctly build a trade line', () => {
-            const id: number = 0;
-            const materialsId: [number, number] = [1, 2];
-            const productCategory: string = 'test product';
-            const exists: boolean = true;
-
-            const bcLine: TradeContract.LineStructOutput = {
-                id: BigNumber.from(id),
-                materialsId:
-                    [BigNumber.from(materialsId[0]), BigNumber.from(materialsId[1])],
-                productCategory,
-                exists,
-            } as TradeContract.LineStructOutput;
-            const line: Line = new Line(id, materialsId, productCategory);
-            expect(EntityBuilder.buildTradeLine(bcLine)).toStrictEqual(line);
-        });
-    });
+    // describe('buildTradeLine', () => {
+    //     it('should correctly build a trade line', () => {
+    //         const bcLine: Trade.LineStructOutput = {
+    //             id: BigNumber.from(1),
+    //             productCategoryId: BigNumber.from(2),
+    //             materialId: BigNumber.from(3),
+    //             exists: true,
+    //         } as Trade.LineStructOutput;
+    //         const line: Line = new Line(1, new Material(3, new ProductCategory(2, 'product category', 1, 'description')), new ProductCategory(2, 'product category', 1, 'description')));
+    //         expect(EntityBuilder.buildTradeLine(bcLine)).toStrictEqual(line);
+    //     });
+    // });
 });

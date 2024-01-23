@@ -20,11 +20,22 @@ export class EntityBuilder {
     }
 
     static buildMaterial(bcMaterial: MaterialManager.MaterialStructOutput, productCategory: ProductCategoryManager.ProductCategoryStructOutput): Material {
+        if (bcMaterial.productCategoryId.toNumber() !== productCategory.id.toNumber())
+            throw new Error('Product category id of material and product category must be equal');
+
         return new Material(bcMaterial.id.toNumber(), this.buildProductCategory(productCategory));
     }
 
-    static buildTransformation(bcTransformation: AssetOperationManager.AssetOperationStructOutput, inputMaterials: Material[], outputMaterial: Material): AssetOperation {
-        return new AssetOperation(bcTransformation.id.toNumber(), bcTransformation.name, inputMaterials, outputMaterial);
+    static buildTransformation(bcTransformation: AssetOperationManager.AssetOperationStructOutput, inputMaterials: MaterialManager.MaterialStructOutput[], inputProductCategories: ProductCategoryManager.ProductCategoryStructOutput[], outputMaterial: MaterialManager.MaterialStructOutput, outputProductCategories: ProductCategoryManager.ProductCategoryStructOutput): AssetOperation {
+        if (inputMaterials.length !== inputProductCategories.length)
+            throw new Error('Input materials and input product categories must have the same length');
+
+        const builtInputMaterials: Material[] = [];
+        for (let i = 0; i < inputMaterials.length; i++) {
+            builtInputMaterials.push(this.buildMaterial(inputMaterials[i], inputProductCategories[i]));
+        }
+
+        return new AssetOperation(bcTransformation.id.toNumber(), bcTransformation.name, builtInputMaterials, this.buildMaterial(outputMaterial, outputProductCategories));
     }
 
     static buildRelationship(bcRelationship: RelationshipManager.RelationshipStructOutput): Relationship {
@@ -39,8 +50,8 @@ export class EntityBuilder {
         return new Offer(bcOffer.id.toNumber(), bcOffer.owner, bcOffer.productCategory);
     }
 
-    static buildTradeLine(bcLine: Trade.LineStructOutput, material: Material, productCategory: ProductCategory): Line {
-        return new Line(bcLine.id.toNumber(), material, productCategory);
+    static buildTradeLine(bcLine: Trade.LineStructOutput, bcMaterial: MaterialManager.MaterialStructOutput, bcProductCategory: ProductCategoryManager.ProductCategoryStructOutput): Line {
+        return new Line(bcLine.id.toNumber(), this.buildMaterial(bcMaterial, bcProductCategory), this.buildProductCategory(bcProductCategory));
     }
 
     static buildOrderLinePrice(bcOrderLinePrice: OrderTrade.OrderLinePriceStructOutput): OrderLinePrice {
@@ -48,8 +59,8 @@ export class EntityBuilder {
         return new OrderLinePrice(amount, bcOrderLinePrice.fiat);
     }
 
-    static buildOrderLine(bcLine: Trade.LineStructOutput, bcOrderLine: OrderTrade.OrderLineStructOutput, material: Material, productCategory: ProductCategory): OrderLine {
-        const line: Line = this.buildTradeLine(bcLine, material, productCategory);
+    static buildOrderLine(bcLine: Trade.LineStructOutput, bcOrderLine: OrderTrade.OrderLineStructOutput, bcMaterial: MaterialManager.MaterialStructOutput, bcProductCategory: ProductCategoryManager.ProductCategoryStructOutput): OrderLine {
+        const line: Line = this.buildTradeLine(bcLine, bcMaterial, bcProductCategory);
         const price: OrderLinePrice = this.buildOrderLinePrice(bcOrderLine.price);
         return new OrderLine(line.id, line.material, line.productCategory, bcOrderLine.quantity.toNumber(), price);
     }
