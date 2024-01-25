@@ -1,5 +1,5 @@
 {
-  "name": "decentralized-coffe-trading",
+  "name": "coffee-trading-management-lib-contracts",
   "version": "1.0.0",
   "scripts": {
     "clear": "rm -rf ./cache ./artifacts ./typechain-types ../src/smart-contracts",
