@@ -16,6 +16,7 @@ contract MaterialManager is AccessControl{
     }
 
     event MaterialRegistered(uint256 indexed id, uint256 productCategoryId);
+    event MaterialUpdated(uint256 indexed id);
 
     struct Material {
         uint256 id;
@@ -64,6 +65,14 @@ contract MaterialManager is AccessControl{
         _createdMaterialIds[_msgSender()].push(materialId);
 
         emit MaterialRegistered(materialId, productCategoryId);
+    }
+
+    function updateMaterial(uint256 id, uint256 productCategoryId) public {
+        require(_materials[id].exists, "MaterialManager: Material does not exist");
+        require(_productCategoryManager.getProductCategoryExists(productCategoryId), "MaterialManager: Product category does not exist");
+
+        _materials[id].productCategoryId = productCategoryId;
+        emit MaterialUpdated(id);
     }
 
     // ROLES

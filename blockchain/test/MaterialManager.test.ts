@@ -48,6 +48,20 @@ describe('MaterialManager', () => {
         });
     });
 
+    describe('Update', () => {
+        it('should update a material', async () => {
+            await materialManagerContract.registerMaterial(1);
+            const tx = await materialManagerContract.updateMaterial(1, 2);
+            await tx.wait();
+
+            const registeredMaterial = await materialManagerContract.getMaterial(1);
+            expect(registeredMaterial[0]).to.be.equal(BigNumber.from(1));
+            expect(registeredMaterial[1]).to.be.equal(BigNumber.from(2));
+            expect(registeredMaterial[2]).to.be.equal(true);
+            await expect(tx).to.emit(materialManagerContract, 'MaterialUpdated').withArgs(registeredMaterial[0]);
+        });
+    });
+
     describe('roles', () => {
         it('should add and remove admin roles', async () => {
             await materialManagerContract.connect(admin).addAdmin(other.address);

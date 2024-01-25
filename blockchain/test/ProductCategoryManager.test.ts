@@ -45,6 +45,22 @@ describe('ProductCategoryManager', () => {
         });
     });
 
+    describe('Update', () => {
+        it('should update a material', async () => {
+            await productCategoryManagerContract.registerProductCategory('testProductCategory', 85, 'firstProductCategory');
+            const tx = await productCategoryManagerContract.updateProductCategory(1, 'testProductCategory2', 90, 'secondProductCategory');
+            await tx.wait();
+
+            const registeredProductCategory = await productCategoryManagerContract.getProductCategory(1);
+            expect(registeredProductCategory[0]).to.be.equal(BigNumber.from(1));
+            expect(registeredProductCategory[1]).to.be.equal('testProductCategory2');
+            expect(registeredProductCategory[2]).to.be.equal(BigNumber.from(90));
+            expect(registeredProductCategory[3]).to.be.equal('secondProductCategory');
+            expect(registeredProductCategory[4]).to.be.equal(true);
+            expect(tx).to.emit(productCategoryManagerContract, 'ProductCategoryUpdated').withArgs(registeredProductCategory.id);
+        });
+    });
+
     describe('Roles', () => {
         it('should add and remove admin roles', async () => {
             await productCategoryManagerContract.connect(admin).addAdmin(other.address);

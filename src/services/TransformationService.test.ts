@@ -1,13 +1,13 @@
 import { createMock } from 'ts-auto-mock';
 import { AssetOperation } from '../entities/AssetOperation.test';
 import { Material } from '../entities/Material';
-import { TransformationDriver } from '../drivers/TransformationDriver';
+import { AssetOperationDriver } from '../drivers/AssetOperationDriver';
 import { TransformationService } from './TransformationService';
 
 describe('TransformationService', () => {
     let transformationService: TransformationService;
 
-    let mockedTransformationDriver: TransformationDriver;
+    let mockedTransformationDriver: AssetOperationDriver;
     const mockedInstance = {
         registerTransformation: jest.fn(),
         updateTransformation: jest.fn(),
@@ -31,7 +31,7 @@ describe('TransformationService', () => {
     const companyAddress = '0xaddress';
 
     beforeAll(() => {
-        mockedTransformationDriver = createMock<TransformationDriver>(mockedInstance);
+        mockedTransformationDriver = createMock<AssetOperationDriver>(mockedInstance);
 
         transformationService = new TransformationService(mockedTransformationDriver);
     });

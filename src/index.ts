@@ -19,7 +19,7 @@ export { OrderTradeDriver } from './drivers/OrderTradeDriver';
 export { OrderTradeService } from './services/OrderTradeService';
 export { IConcreteTradeService } from './services/IConcreteTradeService';
 
-export { TransformationDriver } from './drivers/TransformationDriver';
+export { AssetOperationDriver } from './drivers/AssetOperationDriver';
 export { TransformationService } from './services/TransformationService';
 
 export { DocumentDriver } from './drivers/DocumentDriver';

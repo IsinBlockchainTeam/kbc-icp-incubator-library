@@ -78,19 +78,19 @@ contract AssetOperationManager is AccessControl {
         emit AssetOperationRegistered(assetOperationId, name, outputMaterialId);
     }
 
-    // TODO: is this method still relevant?
-//    function updateTransformation(uint256 id, string memory name, uint256[] memory inputMaterialsIds, uint256 outputMaterialId) public {
-//        _transformations[id].name = name;
-//        // erase the old element inside the inputMaterials array of a transformation
-//        _transformations[id].inputMaterialIds = new MaterialManager.Material[](inputMaterialsIds.length);
-//        for (uint256 i = 0; i < inputMaterialsIds.length; i++) {
-//            MaterialManager.Material memory m = _materialManager.getMaterial(inputMaterialsIds[i]);
-//            require(m.exists, "Material does not exist");
-//            _transformations[id].inputMaterialIds[i] = m;
-//        }
-//        _transformations[id].outputMaterialId = outputMaterialId;
-//        emit TransformationUpdated(id);
-//    }
+    function updateAssetOperation(uint256 id, string memory name, uint256[] memory inputMaterialsIds, uint256 outputMaterialId) public {
+        require(_assetOperations[id].exists, "AssetOperationManager: Asset operation does not exist");
+        require(_materialManager.getMaterialExists(outputMaterialId), "AssetOperationManager: Output material does not exist");
+        require(inputMaterialsIds.length > 0, "AssetOperationManager: inputMaterialsIds array must specify at least one material");
+        for(uint256 i = 0; i < inputMaterialsIds.length; i++) {
+            require(_materialManager.getMaterialExists(inputMaterialsIds[i]), "AssetOperationManager: Input material does not exist");
+        }
+
+        _assetOperations[id].name = name;
+        _assetOperations[id].inputMaterialIds = inputMaterialsIds;
+        _assetOperations[id].outputMaterialId = outputMaterialId;
+        emit AssetOperationUpdated(id);
+    }
 
     // ROLES
     function addAdmin(address admin) public onlyAdmin {

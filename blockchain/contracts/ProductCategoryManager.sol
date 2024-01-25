@@ -15,6 +15,7 @@ contract ProductCategoryManager is AccessControl {
     }
 
     event ProductCategoryRegistered(uint256 indexed id, string name, uint8 quality);
+    event ProductCategoryUpdated(uint256 indexed id);
 
     struct ProductCategory {
         uint256 id;
@@ -50,6 +51,15 @@ contract ProductCategoryManager is AccessControl {
         _counter.increment();
         productCategories[productCategoryId] = ProductCategory(productCategoryId, name, quality, description, true);
         emit ProductCategoryRegistered(productCategoryId, name, quality);
+    }
+
+    function updateProductCategory(uint256 id, string memory name, uint8 quality, string memory description) public {
+        require(productCategories[id].exists, "ProductCategoryManager: Product category does not exist");
+        productCategories[id].name = name;
+        productCategories[id].quality = quality;
+        productCategories[id].description = description;
+
+        emit ProductCategoryUpdated(id);
     }
 
     // ROLES

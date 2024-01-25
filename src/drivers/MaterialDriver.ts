@@ -69,4 +69,10 @@ export class MaterialDriver {
         const id: number = events.find((event: Event) => event.event === 'MaterialRegistered').args.id.toNumber();
         return this.getMaterial(id);
     }
+
+    async updateMaterial(id: number, productCategoryId: number): Promise<Material> {
+        const tx: any = await this._materialContract.updateMaterial(id, productCategoryId);
+        await tx.wait();
+        return this.getMaterial(id);
+    }
 }

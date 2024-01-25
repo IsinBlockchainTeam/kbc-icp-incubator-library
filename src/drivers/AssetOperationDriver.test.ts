@@ -6,10 +6,10 @@ import {
     TransformationManager__factory,
 } from '../smart-contracts';
 import { AssetOperation } from '../entities/AssetOperation.test';
-import { TransformationDriver } from './TransformationDriver';
+import { AssetOperationDriver } from './AssetOperationDriver';
 
 describe('TransformationDriver', () => {
-    let transformationDriver: TransformationDriver;
+    let transformationDriver: AssetOperationDriver;
     const companyAddress: string = Wallet.createRandom().address;
     const contractAddress: string = Wallet.createRandom().address;
 
@@ -50,11 +50,11 @@ describe('TransformationDriver', () => {
             connect: mockedTransformationManagerConnect,
         });
         jest.spyOn(TransformationManager__factory, 'connect').mockReturnValue(mockedTransformationManager);
-        const buildTransformationSpy = jest.spyOn(EntityBuilder, 'buildTransformation');
+        const buildTransformationSpy = jest.spyOn(EntityBuilder, 'buildAssetOperation');
         buildTransformationSpy.mockReturnValue(mockedTransformation);
 
         mockedSigner = createMock<Signer>();
-        transformationDriver = new TransformationDriver(mockedSigner, contractAddress);
+        transformationDriver = new AssetOperationDriver(mockedSigner, contractAddress);
     });
 
     afterAll(() => {

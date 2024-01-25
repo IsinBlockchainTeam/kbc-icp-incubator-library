@@ -26,7 +26,7 @@ export class EntityBuilder {
         return new Material(bcMaterial.id.toNumber(), this.buildProductCategory(productCategory));
     }
 
-    static buildTransformation(bcTransformation: AssetOperationManager.AssetOperationStructOutput, inputMaterials: MaterialManager.MaterialStructOutput[], inputProductCategories: ProductCategoryManager.ProductCategoryStructOutput[], outputMaterial: MaterialManager.MaterialStructOutput, outputProductCategories: ProductCategoryManager.ProductCategoryStructOutput): AssetOperation {
+    static buildAssetOperation(bcAssetOperation: AssetOperationManager.AssetOperationStructOutput, inputMaterials: MaterialManager.MaterialStructOutput[], inputProductCategories: ProductCategoryManager.ProductCategoryStructOutput[], outputMaterial: MaterialManager.MaterialStructOutput, outputProductCategories: ProductCategoryManager.ProductCategoryStructOutput): AssetOperation {
         if (inputMaterials.length !== inputProductCategories.length)
             throw new Error('Input materials and input product categories must have the same length');
 
@@ -35,7 +35,7 @@ export class EntityBuilder {
             builtInputMaterials.push(this.buildMaterial(inputMaterials[i], inputProductCategories[i]));
         }
 
-        return new AssetOperation(bcTransformation.id.toNumber(), bcTransformation.name, builtInputMaterials, this.buildMaterial(outputMaterial, outputProductCategories));
+        return new AssetOperation(bcAssetOperation.id.toNumber(), bcAssetOperation.name, builtInputMaterials, this.buildMaterial(outputMaterial, outputProductCategories));
     }
 
     static buildRelationship(bcRelationship: RelationshipManager.RelationshipStructOutput): Relationship {

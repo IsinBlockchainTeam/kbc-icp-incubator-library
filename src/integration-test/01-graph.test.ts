@@ -15,7 +15,7 @@ describe('GraphService lifecycle', () => {
     let tradeService: TradeService;
     let tradeDriver: TradeDriver;
 
-    let transformationDriver: TransformationDriver;
+    let transformationDriver: AssetOperationDriver;
     let transformationService: TransformationService;
 
     let materialService: MaterialService;
@@ -49,7 +49,7 @@ describe('GraphService lifecycle', () => {
         );
         tradeService = new TradeService(tradeDriver, ipfsService);
 
-        transformationDriver = new TransformationDriver(
+        transformationDriver = new AssetOperationDriver(
             signer,
             TRANSFORMATION_MANAGER_CONTRACT_ADDRESS,
         );

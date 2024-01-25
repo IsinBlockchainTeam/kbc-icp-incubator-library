@@ -53,4 +53,10 @@ export class ProductCategoryDriver {
         const id: number = events.find((event: Event) => event.event === 'ProductCategoryRegistered').args.id.toNumber();
         return this.getProductCategory(id);
     }
+
+    async updateProductCategory(id: number, name: string, quality: number, description: string): Promise<ProductCategory> {
+        const tx: any = await this._contract.updateProductCategory(id, name, quality, description);
+        await tx.wait();
+        return this.getProductCategory(id);
+    }
 }

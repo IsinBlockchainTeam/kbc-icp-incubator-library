@@ -69,7 +69,7 @@ describe('EntityBuilder', () => {
             bcTransformation.outputMaterialId = BigNumber.from(3);
             bcTransformation.exists = true;
 
-            expect(EntityBuilder.buildTransformation(bcTransformation, [bcMaterial], [bcProductCategory], bcMaterial, bcProductCategory)).toEqual(new AssetOperation(0, 'transformation', [new Material(0, new ProductCategory(1, 'product category', 1, 'description'))], new Material(0, new ProductCategory(1, 'product category', 1, 'description'))));
+            expect(EntityBuilder.buildAssetOperation(bcTransformation, [bcMaterial], [bcProductCategory], bcMaterial, bcProductCategory)).toEqual(new AssetOperation(0, 'transformation', [new Material(0, new ProductCategory(1, 'product category', 1, 'description'))], new Material(0, new ProductCategory(1, 'product category', 1, 'description'))));
         });
     });
 

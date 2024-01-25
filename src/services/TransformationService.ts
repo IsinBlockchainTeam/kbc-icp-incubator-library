@@ -1,10 +1,10 @@
 import { AssetOperation } from '../entities/AssetOperation.test';
-import { TransformationDriver } from '../drivers/TransformationDriver';
+import { AssetOperationDriver } from '../drivers/AssetOperationDriver';
 
 export class TransformationService {
-    private _transformationDriver: TransformationDriver;
+    private _transformationDriver: AssetOperationDriver;
 
-    constructor(transformationDriver: TransformationDriver) {
+    constructor(transformationDriver: AssetOperationDriver) {
         this._transformationDriver = transformationDriver;
     }
 

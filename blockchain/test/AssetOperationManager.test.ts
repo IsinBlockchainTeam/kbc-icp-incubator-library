@@ -23,7 +23,7 @@ describe('AssetOperationManager', () => {
     });
 
     describe('Register', () => {
-        it('should register a AssetOperation', async () => {
+        it('should register an AssetOperation', async () => {
             const previousAssetOperationCounter = await assertOperationManagerContract.getAssetOperationsCounter();
             expect(previousAssetOperationCounter).to.be.equal(0);
             const tx = await assertOperationManagerContract.registerAssetOperation('testTransformation', [[1], [2]], 3);
@@ -71,6 +71,22 @@ describe('AssetOperationManager', () => {
 
         it('should get AssetOperation type - FAIL(AssetOperationManager: Asset operation does not exist)', async () => {
             await expect(assertOperationManagerContract.getAssetOperationType(1)).to.be.revertedWith('AssetOperationManager: Asset operation does not exist');
+        });
+    });
+
+    describe('Update', () => {
+        it('should update an AssetOperation', async () => {
+            await assertOperationManagerContract.registerAssetOperation('testTransformation', [[1], [2]], 3);
+            const tx = await assertOperationManagerContract.updateAssetOperation(1, 'testTransformationUpdated', [[4], [5]], 6);
+            await tx.wait();
+
+            const updatedTransformation = await assertOperationManagerContract.getAssetOperation(1);
+            expect(updatedTransformation[0]).to.be.equal(BigNumber.from(1));
+            expect(updatedTransformation[1]).to.be.equal('testTransformationUpdated');
+            expect(updatedTransformation[2]).deep.equal([BigNumber.from(4), BigNumber.from(5)]);
+            expect(updatedTransformation[3]).to.be.equal(BigNumber.from(6));
+            expect(updatedTransformation[4]).to.be.equal(true);
+            expect(tx).to.emit(assertOperationManagerContract, 'AssetOperationUpdated').withArgs(updatedTransformation[0]);
         });
     });
 
