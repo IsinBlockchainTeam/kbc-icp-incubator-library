@@ -46,8 +46,8 @@ export class EntityBuilder {
         return new DocumentInfo(bcDocument.id.toNumber(), bcDocument.transactionId.toNumber(), bcDocument.name, bcDocument.documentType, bcDocument.externalUrl);
     }
 
-    static buildOffer(bcOffer: OfferManager.OfferStructOutput): Offer {
-        return new Offer(bcOffer.id.toNumber(), bcOffer.owner, bcOffer.productCategory);
+    static buildOffer(bcOffer: OfferManager.OfferStructOutput, bcProductCategory: ProductCategoryManager.ProductCategoryStructOutput): Offer {
+        return new Offer(bcOffer.id.toNumber(), bcOffer.owner, this.buildProductCategory(bcProductCategory));
     }
 
     static buildTradeLine(bcLine: Trade.LineStructOutput, bcProductCategory: ProductCategoryManager.ProductCategoryStructOutput, bcMaterial?: MaterialManager.MaterialStructOutput): Line {

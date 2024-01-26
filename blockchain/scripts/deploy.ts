@@ -39,15 +39,6 @@ serial([
             await tx.wait();
         }
     },
-    () => deploy(ContractName.ENUMERABLE_TYPE_MANAGER, [[]], 'EnumerableProductCategoryManager'),
-    async () => {
-        const enums: string[] = ['Arabic 85', 'Excelsa 88', 'Arabic 85 Superior', 'Liberica 85', 'Robusta 87'];
-        for (let i = 0; i < enums.length; i++) {
-            const tx = await contractMap.get('EnumerableProductCategoryManager')
-                ?.add(enums[i]);
-            await tx.wait();
-        }
-    },
     () => deploy(ContractName.ENUMERABLE_TYPE_MANAGER, [[]], 'EnumerableTransactionTypeManager'),
     async () => {
         const enums: string[] = ['trade', 'transformation', 'certification'];
@@ -57,10 +48,19 @@ serial([
             await tx.wait();
         }
     },
-    () => deploy(ContractName.DOCUMENT_MANAGER, [
-        [process.env.SUPPLIER_ADMIN || ''],
-        contractMap.get('EnumerableTransactionTypeManager')?.address,
-    ],
+    () => deploy(
+        ContractName.PRODUCT_CATEGORY_MANAGER, []
+    ),
+    () => deploy(
+        ContractName.MATERIAL_MANAGER, [
+            contractMap.get(ContractName.PRODUCT_CATEGORY_MANAGER)!.address,
+        ],
+    ),
+    () => deploy(
+        ContractName.DOCUMENT_MANAGER, [
+            [process.env.SUPPLIER_ADMIN || ''],
+            contractMap.get('EnumerableTransactionTypeManager')?.address,
+        ],
     ),
     () => deploy(
         ContractName.ESCROW_MANAGER, [
@@ -72,15 +72,11 @@ serial([
     ),
     () => deploy(
         ContractName.TRADE_MANAGER, [
-            contractMap.get('EnumerableProductCategoryManager')?.address,
-            contractMap.get(ContractName.DOCUMENT_MANAGER)?.address,
-            contractMap.get('EnumerableFiatManager')?.address,
-            contractMap.get(ContractName.ESCROW_MANAGER)?.address,
-        ],
-    ),
-    () => deploy(
-        ContractName.MATERIAL_MANAGER, [
-            [process.env.SUPPLIER_ADMIN || ''],
+            contractMap.get(ContractName.PRODUCT_CATEGORY_MANAGER)!.address,
+            contractMap.get(ContractName.MATERIAL_MANAGER)!.address,
+            contractMap.get(ContractName.DOCUMENT_MANAGER)!.address,
+            contractMap.get('EnumerableFiatManager')!.address,
+            contractMap.get(ContractName.ESCROW_MANAGER)!.address,
         ],
     ),
     () => deploy(ContractName.RELATIONSHIP_MANAGER, [
@@ -88,14 +84,13 @@ serial([
     ]),
     () => deploy(
         ContractName.ASSET_OPERATION_MANAGER, [
-            [process.env.SUPPLIER_ADMIN || ''],
-            contractMap.get(ContractName.MATERIAL_MANAGER)?.address,
+            contractMap.get(ContractName.MATERIAL_MANAGER)!.address,
         ],
     ),
     () => deploy(
         ContractName.OFFER_MANAGER, [
             [process.env.SUPPLIER_ADMIN || ''],
-            contractMap.get('EnumerableProductCategoryManager')?.address,
+            contractMap.get(ContractName.PRODUCT_CATEGORY_MANAGER)!.address,
         ],
     ),
     () => deploy(

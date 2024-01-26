@@ -4,6 +4,7 @@ pragma solidity ^0.8.17;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@blockchain-lib/blockchain-common/contracts/EnumerableType.sol";
+import "./ProductCategoryManager.sol";
 
 contract OfferManager is AccessControl {
     using Counters for Counters.Counter;
@@ -22,7 +23,7 @@ contract OfferManager is AccessControl {
     struct Offer {
         uint256 id;
         address owner;
-        string productCategory;
+        uint256 productCategoryId;
 
         bool exists;
     }
@@ -33,7 +34,7 @@ contract OfferManager is AccessControl {
     // offer id => offer
     mapping(uint256 => Offer) private offers;
 
-    EnumerableType private productCategoryManager;
+    ProductCategoryManager private productCategoryManager;
 
     constructor(address[] memory admins, address productCategoryAddress) {
         _setupRole(ADMIN_ROLE, msg.sender);
@@ -43,11 +44,11 @@ contract OfferManager is AccessControl {
             grantRole(ADMIN_ROLE, admins[i]);
         }
 
-        productCategoryManager = EnumerableType(productCategoryAddress);
+        productCategoryManager = ProductCategoryManager(productCategoryAddress);
     }
 
-    function registerOffer(address owner, string memory productCategory) public {
-        require(productCategoryManager.contains(productCategory), "The product category specified isn't registered");
+    function registerOffer(address owner, uint256 productCategoryId) public {
+        require(productCategoryManager.getProductCategoryExists(productCategoryId), "OfferManager: Product category does not exist");
 
         uint256 offerId = offersIdCounter.current() + 1;
         offersIdCounter.increment();
@@ -55,7 +56,7 @@ contract OfferManager is AccessControl {
         Offer storage offer = offers[offerId];
         offer.id = offerId;
         offer.owner = owner;
-        offer.productCategory = productCategory;
+        offer.productCategoryId = productCategoryId;
         offer.exists = true;
 
         offerIds[owner].push(offerId);
@@ -78,12 +79,12 @@ contract OfferManager is AccessControl {
         return offer;
     }
 
-    function updateOffer(uint256 offerId, string memory productCategory) public {
+    function updateOffer(uint256 offerId, uint256 productCategoryId) public {
+        require(productCategoryManager.getProductCategoryExists(productCategoryId), "OfferManager: Product category does not exist");
         Offer storage offer = offers[offerId];
-        require(productCategoryManager.contains(productCategory), "The product category specified isn't registered");
         require(offer.exists, "Offer does not exist");
 
-        offer.productCategory = productCategory;
+        offer.productCategoryId = productCategoryId;
 
         emit OfferUpdated(offerId, offer.owner);
     }

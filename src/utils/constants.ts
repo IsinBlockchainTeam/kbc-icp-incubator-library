@@ -11,13 +11,6 @@ export enum FIAT {
     CHF = 'CHF',
 }
 
-export enum PRODUCT_CATEGORY {
-    ARABIC_85 = 'Arabic 85',
-    ARABIC_85_SUPERIOR = 'Arabic 85 Superior',
-    EXCELSA_88 = 'Excelsa 88',
-    LIBERICA_85 = 'Liberica 85',
-    ROBUSTA_87 = 'Robusta 87'
-}
 
 export enum TRANSACTION_TYPE {
     TRADE = 'trade',

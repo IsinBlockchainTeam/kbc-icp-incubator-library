@@ -1,10 +1,12 @@
 import { Offer } from './Offer';
+import {ProductCategory} from "./ProductCategory";
 
 describe('Offer', () => {
     let offer: Offer;
+    const productCategory: ProductCategory = new ProductCategory(1, 'test', 85, 'description');
 
     beforeAll(() => {
-        offer = new Offer(0, 'owner', 'category');
+        offer = new Offer(0, 'owner', productCategory);
     });
 
     it('should correctly initialize an Offer', () => {
@@ -13,7 +15,7 @@ describe('Offer', () => {
         expect(offer.owner)
             .toEqual('owner');
         expect(offer.productCategory)
-            .toEqual('category');
+            .toEqual(productCategory);
     });
 
     it('should correctly set the id', () => {
@@ -29,8 +31,8 @@ describe('Offer', () => {
     });
 
     it('should correctly set the productCategory', () => {
-        offer.productCategory = 'newCategory';
+        offer.productCategory = new ProductCategory(2, 'newCategory', 90, 'updated');
         expect(offer.productCategory)
-            .toEqual('newCategory');
+            .toEqual(new ProductCategory(2, 'newCategory', 90, 'updated'));
     });
 });

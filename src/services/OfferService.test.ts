@@ -1,7 +1,6 @@
 import { createMock } from 'ts-auto-mock';
 import { OfferDriver } from '../drivers/OfferDriver';
 import { OfferService } from './OfferService';
-import { PRODUCT_CATEGORY } from '../utils/constants';
 
 describe('OfferService', () => {
     const owner = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8';
@@ -27,9 +26,9 @@ describe('OfferService', () => {
     it.each([
         {
             serviceFunctionName: 'registerOffer',
-            serviceFunction: () => offerService.registerOffer(owner, PRODUCT_CATEGORY.EXCELSA_88),
+            serviceFunction: () => offerService.registerOffer(owner, 1),
             expectedMockedFunction: mockedOfferDriver.registerOffer,
-            expectedMockedFunctionArgs: [owner, PRODUCT_CATEGORY.EXCELSA_88],
+            expectedMockedFunctionArgs: [owner, 1],
         },
         {
             serviceFunctionName: 'getOfferIdsByCompany',
@@ -45,9 +44,9 @@ describe('OfferService', () => {
         },
         {
             serviceFunctionName: 'updateOffer',
-            serviceFunction: () => offerService.updateOffer(2, PRODUCT_CATEGORY.ARABIC_85),
+            serviceFunction: () => offerService.updateOffer(2, 2),
             expectedMockedFunction: mockedOfferDriver.updateOffer,
-            expectedMockedFunctionArgs: [2, PRODUCT_CATEGORY.ARABIC_85],
+            expectedMockedFunctionArgs: [2, 2],
         },
         {
             serviceFunctionName: 'deleteOffer',

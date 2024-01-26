@@ -1,24 +1,36 @@
 /* eslint-disable camelcase */
 
-import { BigNumber, ethers, Signer } from 'ethers';
+import {BigNumber, ethers, Signer, Wallet} from 'ethers';
 import { createMock } from 'ts-auto-mock';
 import { OfferDriver } from './OfferDriver';
-import { OfferManager, OfferManager__factory } from '../smart-contracts';
+import {
+    OfferManager,
+    OfferManager__factory,
+    ProductCategoryManager,
+    ProductCategoryManager__factory
+} from '../smart-contracts';
 import { EntityBuilder } from '../utils/EntityBuilder';
 import { Offer } from '../entities/Offer';
-import { PRODUCT_CATEGORY } from '../utils/constants';
 
 describe('OfferDriver', () => {
     let offerDriver: OfferDriver;
 
     const testAddress = '0x6C9E9ADB5F57952434A4148b401502d9c6C70318';
     const errorMessage = 'testError';
-    const categories = [PRODUCT_CATEGORY.ARABIC_85, PRODUCT_CATEGORY.EXCELSA_88];
+
+    const productCategoryStruct: ProductCategoryManager.ProductCategoryStructOutput = {
+        id: BigNumber.from(2),
+        name: 'category1',
+        quality: 85,
+        description: 'description',
+        exists: true,
+    } as ProductCategoryManager.ProductCategoryStructOutput;
 
     let mockedSigner: Signer;
     let mockedContract: OfferManager;
 
     const mockedOfferConnect = jest.fn();
+    const mockedProductCategoryManagerConnect = jest.fn();
     const mockedWait = jest.fn();
     const mockedRegisterOffer = jest.fn();
 
@@ -30,12 +42,13 @@ describe('OfferDriver', () => {
     const mockedOfferRegisteredEventFilter = jest.fn();
     const mockedOfferUpdatedEventFilter = jest.fn();
     const mockedOfferDeletedEventFilter = jest.fn();
+    const mockedGetProductCategory = jest.fn();
 
     const companyOwner = ethers.Wallet.createRandom();
-    const offerName = 'offer 1';
 
     const buildOfferSpy = jest.spyOn(EntityBuilder, 'buildOffer');
 
+    mockedGetProductCategory.mockReturnValue(productCategoryStruct);
     const mockedOffer = createMock<Offer>();
 
     beforeAll(() => {
@@ -69,11 +82,22 @@ describe('OfferDriver', () => {
             },
         });
 
+        const mockedProductCategoryContract = createMock<ProductCategoryManager>({
+            getProductCategory: mockedGetProductCategory
+        });
+
         mockedOfferConnect.mockReturnValue(mockedContract);
         const mockedOfferManager = createMock<OfferManager>({
             connect: mockedOfferConnect,
         });
-        jest.spyOn(OfferManager__factory, 'connect').mockReturnValue(mockedOfferManager);
+        mockedProductCategoryManagerConnect.mockReturnValue(mockedProductCategoryContract);
+        const mockedProductCategoryManagerContract = createMock<ProductCategoryManager>({
+            connect: mockedProductCategoryManagerConnect,
+        });
+        jest.spyOn(OfferManager__factory, 'connect')
+            .mockReturnValue(mockedOfferManager);
+        jest.spyOn(ProductCategoryManager__factory, 'connect')
+            .mockReturnValue(mockedProductCategoryManagerContract);
 
         buildOfferSpy.mockReturnValue(mockedOffer);
 
@@ -81,6 +105,7 @@ describe('OfferDriver', () => {
         offerDriver = new OfferDriver(
             mockedSigner,
             testAddress,
+            Wallet.createRandom().address,
         );
     });
 
@@ -90,25 +115,25 @@ describe('OfferDriver', () => {
 
     describe('registerOffer', () => {
         it('should call and wait for register an offer', async () => {
-            await offerDriver.registerOffer(companyOwner.address, categories[0]);
+            await offerDriver.registerOffer(companyOwner.address, 1);
 
             expect(mockedRegisterOffer).toHaveBeenCalledTimes(1);
-            expect(mockedRegisterOffer).toHaveBeenNthCalledWith(1, companyOwner.address, categories[0]);
+            expect(mockedRegisterOffer).toHaveBeenNthCalledWith(1, companyOwner.address, 1);
             expect(mockedWait).toHaveBeenCalledTimes(1);
 
             expect(mockedContract.registerOffer).toHaveBeenCalledTimes(1);
-            expect(mockedContract.registerOffer).toHaveBeenNthCalledWith(1, companyOwner.address, categories[0]);
+            expect(mockedContract.registerOffer).toHaveBeenNthCalledWith(1, companyOwner.address, 1);
         });
 
         it('should call and wait for register an offer - transaction fails', async () => {
             mockedRegisterOffer.mockRejectedValueOnce(new Error(errorMessage));
 
-            const fn = async () => offerDriver.registerOffer(companyOwner.address, categories[0]);
+            const fn = async () => offerDriver.registerOffer(companyOwner.address, 1);
             await expect(fn).rejects.toThrowError(new Error(errorMessage));
         });
 
         it('should call and wait for register an offer - fails for companyOwner address', async () => {
-            const fn = async () => offerDriver.registerOffer('0xaddress', categories[0]);
+            const fn = async () => offerDriver.registerOffer('0xaddress', 1);
             await expect(fn).rejects.toThrowError(new Error('Not an address'));
         });
     });
@@ -155,7 +180,7 @@ describe('OfferDriver', () => {
             const resp = await offerDriver.getOffer(1);
 
             expect(buildOfferSpy).toHaveBeenCalledTimes(1);
-            expect(buildOfferSpy).toHaveBeenNthCalledWith(1, 'rawOffer');
+            expect(buildOfferSpy).toHaveBeenNthCalledWith(1, 'rawOffer', productCategoryStruct);
             expect(resp).toEqual(mockedOffer);
 
             expect(mockedContract.getOffer).toHaveBeenCalledTimes(1);
@@ -179,17 +204,17 @@ describe('OfferDriver', () => {
 
     describe('updateOffer', () => {
         it('should update an offer', async () => {
-            await offerDriver.updateOffer(1, categories[1]);
+            await offerDriver.updateOffer(1, 2);
 
             expect(mockedContract.updateOffer).toHaveBeenCalledTimes(1);
-            expect(mockedContract.updateOffer).toHaveBeenNthCalledWith(1, 1, categories[1]);
+            expect(mockedContract.updateOffer).toHaveBeenNthCalledWith(1, 1, 2);
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 
         it('should update an offer - transaction fails', async () => {
             mockedContract.updateOffer = jest.fn().mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => offerDriver.updateOffer(1, categories[1]);
+            const fn = async () => offerDriver.updateOffer(1, 2);
             await expect(fn).rejects.toThrowError(new Error(errorMessage));
         });
     });

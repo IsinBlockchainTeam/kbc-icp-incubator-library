@@ -8,8 +8,8 @@ export class OfferService {
         this._offerDriver = offerDriver;
     }
 
-    async registerOffer(companyAddress: string, productCategory: string): Promise<void> {
-        await this._offerDriver.registerOffer(companyAddress, productCategory);
+    async registerOffer(companyAddress: string, productCategoryId: number): Promise<void> {
+        await this._offerDriver.registerOffer(companyAddress, productCategoryId);
     }
 
     async getOfferIdsByCompany(companyAddress: string): Promise<number[]> {
@@ -38,8 +38,8 @@ export class OfferService {
         return offers;
     }
 
-    async updateOffer(offerId: number, productCategory: string): Promise<void> {
-        await this._offerDriver.updateOffer(offerId, productCategory);
+    async updateOffer(offerId: number, productCategoryId: number): Promise<void> {
+        await this._offerDriver.updateOffer(offerId, productCategoryId);
     }
 
     async deleteOffer(offerId: number): Promise<void> {

@@ -1,11 +1,13 @@
+import {ProductCategory} from "./ProductCategory";
+
 export class Offer {
     private _id: number;
 
     private _owner: string;
 
-    private _productCategory: string;
+    private _productCategory: ProductCategory;
 
-    constructor(id: number, owner: string, productCategory: string) {
+    constructor(id: number, owner: string, productCategory: ProductCategory) {
         this._id = id;
         this._owner = owner;
         this._productCategory = productCategory;
@@ -27,11 +29,11 @@ export class Offer {
         this._owner = value;
     }
 
-    get productCategory(): string {
+    get productCategory(): ProductCategory {
         return this._productCategory;
     }
 
-    set productCategory(value: string) {
+    set productCategory(value: ProductCategory) {
         this._productCategory = value;
     }
 }

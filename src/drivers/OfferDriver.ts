@@ -1,27 +1,38 @@
 /* eslint-disable camelcase */
 
 import { Signer, utils } from 'ethers';
-import { OfferManager, OfferManager__factory } from '../smart-contracts';
+import {
+    OfferManager,
+    OfferManager__factory,
+    ProductCategoryManager,
+    ProductCategoryManager__factory
+} from '../smart-contracts';
 import { Offer } from '../entities/Offer';
 import { EntityBuilder } from '../utils/EntityBuilder';
 
 export class OfferDriver {
-    private _contract: OfferManager;
+    private _offerManagerContract: OfferManager;
+
+    private _productCategoryManagerContract: ProductCategoryManager;
 
     constructor(
         signer: Signer,
         offerManagerAddress: string,
+        productCategoryManagerAddress: string,
     ) {
-        this._contract = OfferManager__factory
+        this._offerManagerContract = OfferManager__factory
             .connect(offerManagerAddress, signer.provider!)
+            .connect(signer);
+        this._productCategoryManagerContract = ProductCategoryManager__factory
+            .connect(productCategoryManagerAddress, signer.provider!)
             .connect(signer);
     }
 
-    async registerOffer(companyAddress: string, productCategory: string): Promise<void> {
+    async registerOffer(companyAddress: string, productCategoryId: number): Promise<void> {
         if (!utils.isAddress(companyAddress)) throw new Error('Not an address');
 
         try {
-            const tx = await this._contract.registerOffer(companyAddress, productCategory);
+            const tx = await this._offerManagerContract.registerOffer(companyAddress, productCategoryId);
             await tx.wait();
         } catch (e: any) {
             throw new Error(e.message);
@@ -29,29 +40,30 @@ export class OfferDriver {
     }
 
     async getLastId(): Promise<number> {
-        const counter = await this._contract.getLastId();
+        const counter = await this._offerManagerContract.getLastId();
         return counter.toNumber();
     }
 
     async getOfferIdsByCompany(companyAddress: string): Promise<number[]> {
         if (!utils.isAddress(companyAddress)) throw new Error('Not an address');
 
-        const ids = await this._contract.getOfferIdsByCompany(companyAddress);
+        const ids = await this._offerManagerContract.getOfferIdsByCompany(companyAddress);
         return ids.map((id) => id.toNumber());
     }
 
     async getOffer(offerId: number, blockNumber?: number): Promise<Offer> {
         try {
-            const rawOffer = await this._contract.getOffer(offerId, { blockTag: blockNumber });
-            return EntityBuilder.buildOffer(rawOffer);
+            const rawOffer = await this._offerManagerContract.getOffer(offerId, { blockTag: blockNumber });
+            const rawProductCategory = await this._productCategoryManagerContract.getProductCategory(rawOffer.productCategoryId);
+            return EntityBuilder.buildOffer(rawOffer, rawProductCategory);
         } catch (e: any) {
             throw new Error(e.message);
         }
     }
 
-    async updateOffer(offerId: number, productCategory: string): Promise<void> {
+    async updateOffer(offerId: number, productCategoryId: number): Promise<void> {
         try {
-            const tx = await this._contract.updateOffer(offerId, productCategory);
+            const tx = await this._offerManagerContract.updateOffer(offerId, productCategoryId);
             await tx.wait();
         } catch (e: any) {
             throw new Error(e.message);
@@ -60,7 +72,7 @@ export class OfferDriver {
 
     async deleteOffer(offerId: number): Promise<void> {
         try {
-            const tx = await this._contract.deleteOffer(offerId);
+            const tx = await this._offerManagerContract.deleteOffer(offerId);
             await tx.wait();
         } catch (e: any) {
             throw new Error(e.message);
@@ -71,7 +83,7 @@ export class OfferDriver {
         if (!utils.isAddress(address)) throw new Error('Not an address');
 
         try {
-            const tx = await this._contract.addAdmin(address);
+            const tx = await this._offerManagerContract.addAdmin(address);
             await tx.wait();
         } catch (e: any) {
             throw new Error(e.message);
@@ -82,7 +94,7 @@ export class OfferDriver {
         if (!utils.isAddress(address)) throw new Error('Not an address');
 
         try {
-            const tx = await this._contract.removeAdmin(address);
+            const tx = await this._offerManagerContract.removeAdmin(address);
             await tx.wait();
         } catch (e: any) {
             throw new Error(e.message);

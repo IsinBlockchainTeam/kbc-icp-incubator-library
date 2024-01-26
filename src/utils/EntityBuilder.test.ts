@@ -106,14 +106,21 @@ describe('EntityBuilder', () => {
 
     describe('buildOffer', () => {
         it('should correctly build an offer', () => {
-            const bcOffer: OfferManager.OfferStructOutput = [BigNumber.from(0), 'owner', 'test product', true] as OfferManager.OfferStructOutput;
+            const bcOffer: OfferManager.OfferStructOutput = [BigNumber.from(0), 'owner', BigNumber.from(1), true] as OfferManager.OfferStructOutput;
             bcOffer.id = BigNumber.from(0);
             bcOffer.owner = 'owner';
-            bcOffer.productCategory = 'test product';
+            bcOffer.productCategoryId = BigNumber.from(1);
             bcOffer.exists = true;
-            const offer: Offer = new Offer(0, 'owner', 'test product');
+            const bcProductCategory: ProductCategoryManager.ProductCategoryStructOutput = {
+                id: BigNumber.from(0),
+                name: 'test product',
+                quality: 1,
+                description: 'description',
+                exists: true,
+            } as ProductCategoryManager.ProductCategoryStructOutput;
+            const offer: Offer = new Offer(0, 'owner', EntityBuilder.buildProductCategory(bcProductCategory));
 
-            expect(EntityBuilder.buildOffer(bcOffer)).toStrictEqual(offer);
+            expect(EntityBuilder.buildOffer(bcOffer, bcProductCategory)).toStrictEqual(offer);
         });
     });
 
