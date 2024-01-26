@@ -1,34 +1,21 @@
 import { createMock } from 'ts-auto-mock';
 import { MaterialService } from './MaterialService';
 import { MaterialDriver } from '../drivers/MaterialDriver';
-import { Material } from '../entities/Material';
 
 describe('MaterialService', () => {
-    let materialService: MaterialService;
-
-    let mockedMaterialDriver: MaterialDriver;
-    const mockedInstance = {
+    const mockedMaterialDriver: MaterialDriver = createMock<MaterialDriver>({
+        getMaterialsCounter: jest.fn(),
+        getMaterialExists: jest.fn(),
+        getMaterial: jest.fn(),
+        getMaterials: jest.fn(),
+        getMaterialsOfCreator: jest.fn(),
         registerMaterial: jest.fn(),
         updateMaterial: jest.fn(),
-        getMaterialsCounter: jest.fn(),
-        getMaterialIds: jest.fn(),
-        getMaterial: jest.fn(),
-    };
-
-    const materials = [
-        new Material(1, 'material1', 'owner'),
-        new Material(2, 'material2', 'owner'),
-        new Material(3, 'material3', 'owner'),
-        new Material(4, 'material4', 'owner'),
-        new Material(5, 'material5', 'owner'),
-    ];
-    const companyAddress = '0xaddress';
-
-    beforeAll(() => {
-        mockedMaterialDriver = createMock<MaterialDriver>(mockedInstance);
-
-        materialService = new MaterialService(mockedMaterialDriver);
     });
+
+    const materialService = new MaterialService(
+        mockedMaterialDriver,
+    );
 
     afterAll(() => {
         jest.restoreAllMocks();
@@ -36,50 +23,51 @@ describe('MaterialService', () => {
 
     it.each([
         {
-            serviceFunctionName: 'registerMaterial',
-            serviceFunction: () => materialService.registerMaterial(materials[0].owner, materials[0].name),
-            expectedMockedFunction: mockedInstance.registerMaterial,
-            expectedMockedFunctionArgs: [materials[0].owner, materials[0].name],
-        },
-        {
-            serviceFunctionName: 'updateMaterial',
-            serviceFunction: () => materialService.updateMaterial(materials[1].id, materials[1].name),
-            expectedMockedFunction: mockedInstance.updateMaterial,
-            expectedMockedFunctionArgs: [materials[1].id, materials[1].name],
-        },
-        {
             serviceFunctionName: 'getMaterialsCounter',
             serviceFunction: () => materialService.getMaterialsCounter(),
-            expectedMockedFunction: mockedInstance.getMaterialsCounter,
+            expectedMockedFunction: mockedMaterialDriver.getMaterialsCounter,
             expectedMockedFunctionArgs: [],
         },
         {
-            serviceFunctionName: 'getMaterial',
-            serviceFunction: () => materialService.getMaterial(materials[0].id),
-            expectedMockedFunction: mockedInstance.getMaterial,
-            expectedMockedFunctionArgs: [materials[0].id],
+            serviceFunctionName: 'getMaterialExists',
+            serviceFunction: () => materialService.getMaterialExists(1),
+            expectedMockedFunction: mockedMaterialDriver.getMaterialExists,
+            expectedMockedFunctionArgs: [1],
         },
+        {
+            serviceFunctionName: 'getMaterial',
+            serviceFunction: () => materialService.getMaterial(1),
+            expectedMockedFunction: mockedMaterialDriver.getMaterial,
+            expectedMockedFunctionArgs: [1],
+        },
+        {
+            serviceFunctionName: 'getMaterials',
+            serviceFunction: () => materialService.getMaterials(),
+            expectedMockedFunction: mockedMaterialDriver.getMaterials,
+            expectedMockedFunctionArgs: [],
+        },
+        {
+            serviceFunctionName: 'getMaterialsOfCreator',
+            serviceFunction: () => materialService.getMaterialsOfCreator('creator'),
+            expectedMockedFunction: mockedMaterialDriver.getMaterialsOfCreator,
+            expectedMockedFunctionArgs: ['creator'],
+        },
+        {
+            serviceFunctionName: 'registerMaterial',
+            serviceFunction: () => materialService.registerMaterial(1),
+            expectedMockedFunction: mockedMaterialDriver.registerMaterial,
+            expectedMockedFunctionArgs: [1],
+        },
+        {
+            serviceFunctionName: 'updateMaterial',
+            serviceFunction: () => materialService.updateMaterial(1, 2),
+            expectedMockedFunction: mockedMaterialDriver.updateMaterial,
+            expectedMockedFunctionArgs: [1, 2],
+        }
     ])('service should call driver $serviceFunctionName', async ({ serviceFunction, expectedMockedFunction, expectedMockedFunctionArgs }) => {
         await serviceFunction();
 
         expect(expectedMockedFunction).toHaveBeenCalledTimes(1);
         expect(expectedMockedFunction).toHaveBeenNthCalledWith(1, ...expectedMockedFunctionArgs);
-    });
-
-    it('should retrieve all the materials', async () => {
-        mockedInstance.getMaterialIds.mockReturnValue([materials[0].id, materials[1].id]);
-        mockedInstance.getMaterial.mockResolvedValueOnce(materials[0]);
-        mockedInstance.getMaterial.mockResolvedValueOnce(materials[1]);
-
-        const response = await materialService.getMaterials(companyAddress);
-
-        expect(response).toHaveLength(2);
-        expect(response[0]).toEqual(materials[0]);
-        expect(response[1]).toEqual(materials[1]);
-
-        expect(mockedInstance.getMaterialIds).toHaveBeenCalledTimes(1);
-        expect(mockedInstance.getMaterial).toHaveBeenCalledTimes(2);
-        expect(mockedInstance.getMaterial).toHaveBeenNthCalledWith(1, materials[0].id);
-        expect(mockedInstance.getMaterial).toHaveBeenNthCalledWith(2, materials[1].id);
     });
 });

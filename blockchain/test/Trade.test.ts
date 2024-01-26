@@ -1,10 +1,11 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import chai, { expect } from 'chai';
 import { FakeContract, smock } from '@defi-wonderland/smock';
-import { Contract } from 'ethers';
+import {BigNumber, Contract} from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { ethers } from 'hardhat';
 import { ContractName } from '../utils/constants';
+import {MaterialManager} from "../typechain-types";
 
 describe('Trade.sol', () => {
     chai.use(smock.matchers);
@@ -19,12 +20,18 @@ describe('Trade.sol', () => {
     const externalUrl: string = 'https://www.test.com';
     const name: string = 'Test Trade';
 
+    const materialStruct: MaterialManager.MaterialStructOutput = {
+        id: BigNumber.from(1),
+        productCategoryId: BigNumber.from(1),
+    } as MaterialManager.MaterialStructOutput;
+
     before(async () => {
         [admin, supplier, customer, commissioner] = await ethers.getSigners();
         productCategoryManagerContractFake = await smock.fake(ContractName.PRODUCT_CATEGORY_MANAGER);
         productCategoryManagerContractFake.getProductCategoryExists.returns((value: number) => value <= 10);
         materialManagerContractFake = await smock.fake(ContractName.MATERIAL_MANAGER);
         materialManagerContractFake.getMaterialExists.returns((value: number) => value <= 10);
+        materialManagerContractFake.getMaterial.returns(materialStruct)
         documentManagerContractFake = await smock.fake(ContractName.DOCUMENT_MANAGER);
     });
 

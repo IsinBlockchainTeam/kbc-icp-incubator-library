@@ -51,7 +51,7 @@ export class MaterialDriver {
         return Promise.all(promises);
     }
 
-    async getMaterialOfCreator(creator: string): Promise<Material[]> {
+    async getMaterialsOfCreator(creator: string): Promise<Material[]> {
         const ids: number[] = (await this._materialContract.getMaterialIdsOfCreator(creator)).map((id: BigNumber) => id.toNumber());
 
         const promises = ids.map((id: number) => this.getMaterial(id));

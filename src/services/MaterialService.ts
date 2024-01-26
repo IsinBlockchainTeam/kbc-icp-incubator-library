@@ -8,28 +8,31 @@ export class MaterialService {
         this._materialDriver = supplyChainDriver;
     }
 
-    async registerMaterial(companyAddress: string, name: string): Promise<void> {
-        await this._materialDriver.registerMaterial(companyAddress, name);
-    }
-
-    async updateMaterial(id: number, name: string): Promise<void> {
-        await this._materialDriver.updateMaterial(id, name);
-    }
-
     async getMaterialsCounter(): Promise<number> {
         return this._materialDriver.getMaterialsCounter();
+    }
+
+    async getMaterialExists(id: number): Promise<boolean> {
+        return this._materialDriver.getMaterialExists(id);
     }
 
     async getMaterial(id: number): Promise<Material> {
         return this._materialDriver.getMaterial(id);
     }
 
-    async getMaterials(owner: string): Promise<Material[]> {
-        const materials: Material[] = [];
-        const materialIds = await this._materialDriver.getMaterialIds(owner);
-        for (let i = 0; i < materialIds.length; i++) {
-            materials.push(await this.getMaterial(materialIds[i]));
-        }
-        return materials;
+    async getMaterials(): Promise<Material[]> {
+        return this._materialDriver.getMaterials();
+    }
+
+    async getMaterialsOfCreator(creator: string): Promise<Material[]> {
+        return this._materialDriver.getMaterialsOfCreator(creator);
+    }
+
+    async registerMaterial(productCategoryId: number): Promise<Material> {
+        return this._materialDriver.registerMaterial(productCategoryId);
+    }
+
+    async updateMaterial(id: number, productCategoryId: number): Promise<Material> {
+        return this._materialDriver.updateMaterial(id, productCategoryId);
     }
 }

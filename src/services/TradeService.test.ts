@@ -5,6 +5,7 @@ import { DocumentType } from '../entities/DocumentInfo';
 
 describe('TradeService', () => {
     const mockedTradeDriver: TradeDriver = createMock<TradeDriver>({
+        getLineCounter: jest.fn(),
         getTradeType: jest.fn(),
         getLineExists: jest.fn(),
         getTradeStatus: jest.fn(),
@@ -22,6 +23,12 @@ describe('TradeService', () => {
     });
 
     it.each([
+        {
+            serviceFunctionName: 'getLineCounter',
+            serviceFunction: () => tradeService.getLineCounter(),
+            expectedMockedFunction: mockedTradeDriver.getLineCounter,
+            expectedMockedFunctionArgs: [],
+        },
         {
             serviceFunctionName: 'getTradeType',
             serviceFunction: () => tradeService.getTradeType(),
@@ -42,9 +49,9 @@ describe('TradeService', () => {
         },
         {
             serviceFunctionName: 'addDocument',
-            serviceFunction: () => tradeService.addDocument('doc name', DocumentType.DELIVERY_NOTE, 'externalUrl'),
+            serviceFunction: () => tradeService.addDocument(1, 'doc name', DocumentType.DELIVERY_NOTE, 'externalUrl'),
             expectedMockedFunction: mockedTradeDriver.addDocument,
-            expectedMockedFunctionArgs: ['doc name', DocumentType.DELIVERY_NOTE, 'externalUrl'],
+            expectedMockedFunctionArgs: [1, 'doc name', DocumentType.DELIVERY_NOTE, 'externalUrl'],
         },
         {
             serviceFunctionName: 'addAdmin',

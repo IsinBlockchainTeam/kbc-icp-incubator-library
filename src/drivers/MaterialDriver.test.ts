@@ -135,7 +135,7 @@ describe('MaterialDriver', () => {
     });
 
     it('should correctly retrieve Material ids of creator', async () => {
-        const response: Material[] = await materialDriver.getMaterialOfCreator(companyAddress);
+        const response: Material[] = await materialDriver.getMaterialsOfCreator(companyAddress);
 
         expect(response).toEqual([EntityBuilder.buildMaterial(mockedMaterialStructOutput, productCategoryStruct)]);
 

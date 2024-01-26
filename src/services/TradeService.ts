@@ -10,6 +10,10 @@ export class TradeService {
         this._tradeDriver = supplyChainDriver;
     }
 
+    async getLineCounter(): Promise<number> {
+        return this._tradeDriver.getLineCounter();
+    }
+
     async getTradeType(): Promise<TradeType> {
         return this._tradeDriver.getTradeType();
     }
@@ -22,8 +26,8 @@ export class TradeService {
         return this._tradeDriver.getTradeStatus();
     }
 
-    async addDocument(name: string, documentType: DocumentType, externalUrl: string): Promise<void> {
-        return this._tradeDriver.addDocument(name, documentType, externalUrl);
+    async addDocument(lineId: number, name: string, documentType: DocumentType, externalUrl: string): Promise<void> {
+        return this._tradeDriver.addDocument(lineId, name, documentType, externalUrl);
     }
 
     async addAdmin(account: string): Promise<void> {

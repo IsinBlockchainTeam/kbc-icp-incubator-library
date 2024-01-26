@@ -9,7 +9,7 @@ import { Trade, TradeType } from '../entities/Trade';
 import TradeService from './TradeService';
 import { TradeLine } from '../entities/TradeLine';
 import { Material } from '../entities/Material';
-import { TransformationService } from './TransformationService';
+import { AssetOperationService } from './AssetOperationService';
 
 describe('GraphService', () => {
     let graphService: GraphService;
@@ -43,7 +43,7 @@ describe('GraphService', () => {
         getGeneralTrades: jest.fn().mockResolvedValue(trades),
         getTradeLines: jest.fn().mockResolvedValue(tradeLines),
     });
-    const mockedTransformationService = createMock<TransformationService>({
+    const mockedTransformationService = createMock<AssetOperationService>({
         getTransformations: jest.fn().mockResolvedValue(transformations),
     });
 

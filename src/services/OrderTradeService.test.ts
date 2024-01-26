@@ -6,6 +6,8 @@ import {
     OrderLinePrice,
     OrderLineRequest,
 } from '../entities/OrderTrade';
+import {Material} from "../entities/Material";
+import {ProductCategory} from "../entities/ProductCategory";
 
 describe('OrderTradeService', () => {
     const mockedOrderTradeDriver: OrderTradeDriver = createMock<OrderTradeDriver>({
@@ -53,15 +55,15 @@ describe('OrderTradeService', () => {
         },
         {
             serviceFunctionName: 'addLine',
-            serviceFunction: () => orderTradeService.addLine(new OrderLineRequest([1, 2], 'category', 10, new OrderLinePrice(10.2, 'CHF'))),
+            serviceFunction: () => orderTradeService.addLine(new OrderLineRequest(1, 10, new OrderLinePrice(10.2, 'CHF'))),
             expectedMockedFunction: mockedOrderTradeDriver.addLine,
-            expectedMockedFunctionArgs: [new OrderLineRequest([1, 2], 'category', 10, new OrderLinePrice(10.2, 'CHF'))],
+            expectedMockedFunctionArgs: [new OrderLineRequest(1, 10, new OrderLinePrice(10.2, 'CHF'))],
         },
         {
             serviceFunctionName: 'updateLine',
-            serviceFunction: () => orderTradeService.updateLine(new OrderLine(1, [1, 2], 'category', 10, new OrderLinePrice(10.2, 'CHF'))),
+            serviceFunction: () => orderTradeService.updateLine(new OrderLine(1, new Material(1, new ProductCategory(2, 'test', 10, 'description')), new ProductCategory(2, 'test', 10, 'description'), 10, new OrderLinePrice(10.2, 'CHF'))),
             expectedMockedFunction: mockedOrderTradeDriver.updateLine,
-            expectedMockedFunctionArgs: [new OrderLine(1, [1, 2], 'category', 10, new OrderLinePrice(10.2, 'CHF'))],
+            expectedMockedFunctionArgs: [new OrderLine(1, new Material(1, new ProductCategory(2, 'test', 10, 'description')), new ProductCategory(2, 'test', 10, 'description'), 10, new OrderLinePrice(10.2, 'CHF'))],
         },
         {
             serviceFunctionName: 'getNegotiationStatus',

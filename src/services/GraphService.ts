@@ -1,8 +1,8 @@
 import { Signer } from 'ethers';
 import { Line, Trade } from '../entities/Trade';
-import { AssetOperation } from '../entities/AssetOperation.test';
+import { AssetOperation } from '../entities/AssetOperation';
 import { TradeManagerService } from './TradeManagerService';
-import { TransformationService } from './TransformationService';
+import { AssetOperationService } from './AssetOperationService';
 
 export type Node = {
     resourceId: string,
@@ -22,19 +22,19 @@ export type GraphData = {
 export class GraphService {
     private _tradeManagerService: TradeManagerService;
 
-    private _transformationService: TransformationService;
+    private _assetOperationService: AssetOperationService;
 
     private _signer: Signer;
 
-    constructor(tradeManagerService: TradeManagerService, transformationService: TransformationService, signer: Signer) {
+    constructor(tradeManagerService: TradeManagerService, transformationService: AssetOperationService, signer: Signer) {
         this._tradeManagerService = tradeManagerService;
-        this._transformationService = transformationService;
+        this._assetOperationService = transformationService;
         this._signer = signer;
     }
 
     public async findTransformationsByMaterialOutput(supplierAddress: string, materialId: number): Promise<AssetOperation[]> {
-        const transformations = await this._transformationService.getTransformations(supplierAddress);
-        return transformations.filter((t) => t.outputMaterialId === materialId);
+        const transformations = await this._assetOperationService.getAssetOperationsOfCreator(supplierAddress);
+        return transformations.filter((t) => t.outputMaterial.id === materialId);
     }
 
     /*
