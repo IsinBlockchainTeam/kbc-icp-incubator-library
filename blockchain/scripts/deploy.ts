@@ -19,17 +19,11 @@ async function deploy(contractName: string, contractArgs?: any[], contractAliasN
     contractMap.set(contractAliasName || contractName, contract);
 
     console.log(`New ${contractAliasName || contractName} contract deployed, address ${contract.address}`);
-
-    await hre.ethernal.push({
-        name: contractName,
-        address: contract.address,
-    });
 }
 
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
 serial([
-    () => hre.ethernal.resetWorkspace(process.env.ETHERNAL_WORKSPACE || ''),
     () => deploy(ContractName.ENUMERABLE_TYPE_MANAGER, [[]], 'EnumerableFiatManager'),
     async () => {
         const enums: string[] = ['USD', 'EUR', 'CHF'];

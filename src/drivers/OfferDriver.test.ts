@@ -15,6 +15,7 @@ import { Offer } from '../entities/Offer';
 describe('OfferDriver', () => {
     let offerDriver: OfferDriver;
 
+    const companyNames = ['Company 1', 'Company 2'];
     const testAddress = '0x6C9E9ADB5F57952434A4148b401502d9c6C70318';
     const errorMessage = 'testError';
 
@@ -33,6 +34,7 @@ describe('OfferDriver', () => {
     const mockedProductCategoryManagerConnect = jest.fn();
     const mockedWait = jest.fn();
     const mockedRegisterOffer = jest.fn();
+    const mockedRegisterSupplier = jest.fn();
 
     const mockedWriteFunction = jest.fn();
     const mockedReadFunction = jest.fn();
@@ -42,6 +44,9 @@ describe('OfferDriver', () => {
     const mockedOfferRegisteredEventFilter = jest.fn();
     const mockedOfferUpdatedEventFilter = jest.fn();
     const mockedOfferDeletedEventFilter = jest.fn();
+    const mockedOfferSupplierRegisteredEventFilter = jest.fn();
+    const mockedOfferSupplierUpdatedEventFilter = jest.fn();
+    const mockedOfferSupplierDeletedEventFilter = jest.fn();
     const mockedGetProductCategory = jest.fn();
 
     const companyOwner = ethers.Wallet.createRandom();
@@ -59,19 +64,25 @@ describe('OfferDriver', () => {
             toNumber: jest.fn(),
         });
         mockedReadStringFunction.mockResolvedValue('test');
+        mockedRegisterSupplier.mockReturnValue(Promise.resolve({
+            wait: mockedWait.mockReturnValue({ events: [{ event: 'OfferSupplierRegistered' }] }),
+        }));
         mockedRegisterOffer.mockReturnValue(Promise.resolve({
             wait: mockedWait.mockReturnValue({ events: [{ event: 'OfferRegistered' }] }),
         }));
         mockedDecodeEventLog.mockReturnValue({ id: BigNumber.from(0) });
 
         mockedContract = createMock<OfferManager>({
+            registerSupplier: mockedRegisterSupplier,
             registerOffer: mockedRegisterOffer,
             getLastId: mockedReadFunction,
             getOfferIdsByCompany: mockedReadFunction,
+            getSupplierName: mockedReadFunction,
             getOffer: mockedReadFunction,
+            updateSupplier: mockedWriteFunction,
             updateOffer: mockedWriteFunction,
+            deleteSupplier: mockedWriteFunction,
             deleteOffer: mockedWriteFunction,
-
             addAdmin: mockedWriteFunction,
             removeAdmin: mockedWriteFunction,
             interface: { decodeEventLog: mockedDecodeEventLog },
@@ -79,6 +90,9 @@ describe('OfferDriver', () => {
                 OfferRegistered: mockedOfferRegisteredEventFilter,
                 OfferUpdated: mockedOfferUpdatedEventFilter,
                 OfferDeleted: mockedOfferDeletedEventFilter,
+                OfferSupplierRegistered: mockedOfferSupplierRegisteredEventFilter,
+                OfferSupplierUpdated: mockedOfferSupplierUpdatedEventFilter,
+                OfferSupplierDeleted: mockedOfferSupplierDeletedEventFilter,
             },
         });
 
@@ -111,6 +125,31 @@ describe('OfferDriver', () => {
 
     afterAll(() => {
         jest.restoreAllMocks();
+    });
+
+    describe('registerSupplier', () => {
+        it('should call and wait for register a supplier', async () => {
+            await offerDriver.registerSupplier(companyOwner.address, companyNames[0]);
+
+            expect(mockedRegisterSupplier).toHaveBeenCalledTimes(1);
+            expect(mockedRegisterSupplier).toHaveBeenNthCalledWith(1, companyOwner.address, companyNames[0]);
+            expect(mockedWait).toHaveBeenCalledTimes(1);
+
+            expect(mockedContract.registerSupplier).toHaveBeenCalledTimes(1);
+            expect(mockedContract.registerSupplier).toHaveBeenNthCalledWith(1, companyOwner.address, companyNames[0]);
+        });
+
+        it('should call and wait for register a supplier - transaction fails', async () => {
+            mockedRegisterSupplier.mockRejectedValueOnce(new Error(errorMessage));
+
+            const fn = async () => offerDriver.registerSupplier(companyOwner.address, companyNames[0]);
+            await expect(fn).rejects.toThrowError(new Error(errorMessage));
+        });
+
+        it('should call and wait for register a supplier - fails for companyOwner address', async () => {
+            const fn = async () => offerDriver.registerSupplier('0xaddress', companyNames[0]);
+            await expect(fn).rejects.toThrowError(new Error('Not an address'));
+        });
     });
 
     describe('registerOffer', () => {
@@ -173,6 +212,28 @@ describe('OfferDriver', () => {
         });
     });
 
+    describe('getSupplierName', () => {
+        it('should get the supplier name', async () => {
+            mockedContract.getSupplierName = jest.fn().mockResolvedValue(companyNames[0]);
+            const resp = await offerDriver.getSupplierName(companyOwner.address);
+
+            expect(resp).toEqual(companyNames[0]);
+            expect(mockedContract.getSupplierName).toHaveBeenCalledTimes(1);
+            expect(mockedContract.getSupplierName).toHaveBeenNthCalledWith(1, companyOwner.address, { blockTag: undefined });
+        });
+
+        it('should get the supplier name - transaction fails', async () => {
+            mockedContract.getSupplierName = jest.fn().mockRejectedValue(new Error(errorMessage));
+
+            const fn = async () => offerDriver.getSupplierName(companyOwner.address);
+            await expect(fn).rejects.toThrowError(new Error(errorMessage));
+        });
+
+        it('should get the supplier name - FAIL(Not an address)', async () => {
+            await expect(offerDriver.getSupplierName('0xaddress')).rejects.toThrowError(new Error('Not an address'));
+        });
+    });
+
     describe('getOffer', () => {
         it('should retrieve an offer', async () => {
             mockedContract.getOffer = jest.fn().mockResolvedValue('rawOffer');
@@ -202,6 +263,28 @@ describe('OfferDriver', () => {
         });
     });
 
+    describe('updateSupplier', () => {
+        it('should update a supplier', async () => {
+            await offerDriver.updateSupplier(companyOwner.address, companyNames[1]);
+
+            expect(mockedContract.updateSupplier).toHaveBeenCalledTimes(1);
+            expect(mockedContract.updateSupplier).toHaveBeenNthCalledWith(1, companyOwner.address, companyNames[1]);
+            expect(mockedWait).toHaveBeenCalledTimes(1);
+        });
+
+        it('should update a supplier - transaction fails', async () => {
+            mockedContract.updateSupplier = jest.fn().mockRejectedValue(new Error(errorMessage));
+
+            const fn = async () => offerDriver.updateSupplier(companyOwner.address, companyNames[1]);
+            await expect(fn).rejects.toThrowError(new Error(errorMessage));
+        });
+
+        it('should update a supplier - fails for companyOwner address', async () => {
+            const fn = async () => offerDriver.updateSupplier('0xaddress', companyNames[1]);
+            await expect(fn).rejects.toThrowError(new Error('Not an address'));
+        });
+    });
+
     describe('updateOffer', () => {
         it('should update an offer', async () => {
             await offerDriver.updateOffer(1, 2);
@@ -215,6 +298,23 @@ describe('OfferDriver', () => {
             mockedContract.updateOffer = jest.fn().mockRejectedValue(new Error(errorMessage));
 
             const fn = async () => offerDriver.updateOffer(1, 2);
+            await expect(fn).rejects.toThrowError(new Error(errorMessage));
+        });
+    });
+
+    describe('deleteSupplier', () => {
+        it('should delete a supplier', async () => {
+            await offerDriver.deleteSupplier(companyOwner.address);
+
+            expect(mockedContract.deleteSupplier).toHaveBeenCalledTimes(1);
+            expect(mockedContract.deleteSupplier).toHaveBeenNthCalledWith(1, companyOwner.address);
+            expect(mockedWait).toHaveBeenCalledTimes(1);
+        });
+
+        it('should delete a supplier - transaction fails', async () => {
+            mockedContract.deleteSupplier = jest.fn().mockRejectedValue(new Error(errorMessage));
+
+            const fn = async () => offerDriver.deleteSupplier(companyOwner.address);
             await expect(fn).rejects.toThrowError(new Error(errorMessage));
         });
     });

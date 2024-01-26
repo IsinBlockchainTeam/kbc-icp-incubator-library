@@ -8,12 +8,22 @@ export class OfferService {
         this._offerDriver = offerDriver;
     }
 
+    async registerSupplier(companyAddress: string, name: string): Promise<void> {
+        await this._offerDriver.registerSupplier(companyAddress, name);
+    }
+
+    async registerOffer(companyAddress: string, productCategory: string): Promise<void> {
+        await this._offerDriver.registerOffer(companyAddress, productCategory);
     async registerOffer(companyAddress: string, productCategoryId: number): Promise<void> {
         await this._offerDriver.registerOffer(companyAddress, productCategoryId);
     }
 
     async getOfferIdsByCompany(companyAddress: string): Promise<number[]> {
         return this._offerDriver.getOfferIdsByCompany(companyAddress);
+    }
+
+    async getSupplierName(companyAddress: string): Promise<string> {
+        return this._offerDriver.getSupplierName(companyAddress);
     }
 
     async getOffer(offerId: number): Promise<Offer> {
@@ -38,8 +48,18 @@ export class OfferService {
         return offers;
     }
 
+    async updateSupplier(companyAddress: string, name: string): Promise<void> {
+        await this._offerDriver.updateSupplier(companyAddress, name);
+    }
+
+    async updateOffer(offerId: number, productCategory: string): Promise<void> {
+        await this._offerDriver.updateOffer(offerId, productCategory);
     async updateOffer(offerId: number, productCategoryId: number): Promise<void> {
         await this._offerDriver.updateOffer(offerId, productCategoryId);
+    }
+
+    async deleteSupplier(companyAddress: string): Promise<void> {
+        await this._offerDriver.deleteSupplier(companyAddress);
     }
 
     async deleteOffer(offerId: number): Promise<void> {

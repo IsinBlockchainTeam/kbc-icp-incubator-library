@@ -23,6 +23,7 @@ describe('Offer lifecycle', () => {
     let offerDriver: OfferDriver;
     let offerService: OfferService;
 
+    const companyName = 'Company 1';
     let productCategoryService: ProductCategoryService;
 
     beforeAll(async () => {
@@ -41,6 +42,7 @@ describe('Offer lifecycle', () => {
     it('Should register some offers', async () => {
         await productCategoryService.registerProductCategory('Coffee Arabica', 85, 'very good coffee');
         await productCategoryService.registerProductCategory('Coffee Nordic', 90, 'even better coffee');
+        await offerService.registerSupplier(SUPPLIER_ADDRESS, companyName);
         await offerService.registerOffer(SUPPLIER_ADDRESS, 1);
         await offerService.registerOffer(SUPPLIER_ADDRESS, 2);
 
@@ -55,11 +57,11 @@ describe('Offer lifecycle', () => {
 
         const offer1 = await offerService.getOffer(offerIds[0]);
         expect(offer1.owner).toEqual(SUPPLIER_ADDRESS);
-        expect(offer1.productCategory).toEqual(new ProductCategory(1, 'Coffee Arabica', 85, 'very good coffee'));
+        expect(offer1.productCategory).toEqual(productCategories[0]);
 
         const offer2 = await offerService.getOffer(offerIds[1]);
         expect(offer2.owner).toEqual(SUPPLIER_ADDRESS);
-        expect(offer2.productCategory).toEqual(new ProductCategory(2, 'Coffee Nordic', 90, 'even better coffee'));
+        expect(offer2.productCategory).toEqual(productCategories[1]);
     });
 
     it('Should update an offer', async () => {
@@ -67,11 +69,11 @@ describe('Offer lifecycle', () => {
         expect(offerIds.length).toBeGreaterThan(0);
 
         const offer = await offerService.getOffer(offerIds[0]);
-        expect(offer.productCategory).toEqual(new ProductCategory(1, 'Coffee Arabica', 85, 'very good coffee'));
+        expect(offer.productCategory).toEqual(productCategories[0]);
 
-        await offerService.updateOffer(offerIds[0], 2);
+        await offerService.updateOffer(offerIds[0], productCategories[2]);
         const updatedOffer = await offerService.getOffer(offerIds[0]);
-        expect(updatedOffer.productCategory).toEqual(new ProductCategory(2, 'Coffee Nordic', 90, 'even better coffee'));
+        expect(updatedOffer.productCategory).toEqual(productCategories[2]);
     });
 
     it('Should delete the first offer', async () => {
@@ -87,5 +89,26 @@ describe('Offer lifecycle', () => {
 
         offerIds = await offerService.getOfferIdsByCompany(SUPPLIER_ADDRESS);
         expect(offerIds.length).toEqual(1);
+    });
+
+    it('Should update the supplier name', async () => {
+        const supplierName = await offerService.getSupplierName(SUPPLIER_ADDRESS);
+        expect(supplierName).toEqual(companyName);
+
+        await offerService.updateSupplier(SUPPLIER_ADDRESS, 'New Company Name');
+
+        const updatedSupplierName = await offerService.getSupplierName(SUPPLIER_ADDRESS);
+        expect(updatedSupplierName).toEqual('New Company Name');
+    });
+
+    it('Should delete a supplier', async () => {
+        await expect(() => offerService.deleteSupplier(SUPPLIER_ADDRESS))
+            .rejects.toThrowError(/A supplier cannot be deleted if it still has active offers/);
+
+        let offerIds = await offerService.getOfferIdsByCompany(SUPPLIER_ADDRESS);
+        await offerService.deleteOffer(offerIds[0]);
+
+        offerIds = await offerService.getOfferIdsByCompany(SUPPLIER_ADDRESS);
+        expect(offerIds.length).toEqual(0);
     });
 });

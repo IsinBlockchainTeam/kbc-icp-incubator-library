@@ -14,6 +14,9 @@ contract OfferManager is AccessControl {
     event OfferRegistered(uint256 indexed id, address owner);
     event OfferUpdated(uint256 indexed id, address owner);
     event OfferDeleted(uint256 indexed id, address owner);
+    event OfferSupplierRegistered(address indexed addr, string name);
+    event OfferSupplierUpdated(address indexed addr, string name);
+    event OfferSupplierDeleted(address indexed addr);
 
     modifier onlyAdmin() {
         require(hasRole(ADMIN_ROLE, _msgSender()), "Caller is not the admin");
@@ -33,6 +36,8 @@ contract OfferManager is AccessControl {
     mapping(address => uint256[]) private offerIds;
     // offer id => offer
     mapping(uint256 => Offer) private offers;
+    // supplier => name
+    mapping(address=> string) private suppliersNames;
 
     ProductCategoryManager private productCategoryManager;
 
@@ -47,6 +52,17 @@ contract OfferManager is AccessControl {
         productCategoryManager = ProductCategoryManager(productCategoryAddress);
     }
 
+    function registerSupplier(address addr, string memory name) public {
+        require(bytes(suppliersNames[addr]).length == 0, "Offer's supplier already registered");
+
+        suppliersNames[addr] = name;
+
+        emit OfferSupplierRegistered(addr, name);
+    }
+
+    function registerOffer(address owner, string memory productCategory) public {
+        require(productCategoryManager.contains(productCategory), "The product category specified isn't registered");
+        require(bytes(suppliersNames[owner]).length != 0, "Offer's supplier not registered");
     function registerOffer(address owner, uint256 productCategoryId) public {
         require(productCategoryManager.getProductCategoryExists(productCategoryId), "OfferManager: Product category does not exist");
 
@@ -72,6 +88,10 @@ contract OfferManager is AccessControl {
         return offerIds[owner];
     }
 
+    function getSupplierName(address addr) public view returns (string memory) {
+        return suppliersNames[addr];
+    }
+
     function getOffer(uint256 offerId) public view returns (Offer memory) {
         Offer storage offer = offers[offerId];
         require(offer.exists, "Offer does not exist");
@@ -79,6 +99,15 @@ contract OfferManager is AccessControl {
         return offer;
     }
 
+    function updateSupplier(address addr, string memory newName) public {
+        require(bytes(suppliersNames[addr]).length != 0, "Offer's supplier not registered");
+
+        suppliersNames[addr] = newName;
+
+        emit OfferSupplierUpdated(addr, newName);
+    }
+
+    function updateOffer(uint256 offerId, string memory productCategory) public {
     function updateOffer(uint256 offerId, uint256 productCategoryId) public {
         require(productCategoryManager.getProductCategoryExists(productCategoryId), "OfferManager: Product category does not exist");
         Offer storage offer = offers[offerId];
@@ -87,6 +116,15 @@ contract OfferManager is AccessControl {
         offer.productCategoryId = productCategoryId;
 
         emit OfferUpdated(offerId, offer.owner);
+    }
+
+    function deleteSupplier(address addr) public {
+        require(bytes(suppliersNames[addr]).length != 0, "Offer's supplier not registered");
+        require(offerIds[addr].length == 0, "A supplier cannot be deleted if it still has active offers");
+
+        delete suppliersNames[addr];
+
+        emit OfferSupplierDeleted(addr);
     }
 
     function deleteOffer(uint256 offerId) public {
