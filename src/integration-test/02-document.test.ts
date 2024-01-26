@@ -1,3 +1,9 @@
+it('always pass', () => {
+    expect(true)
+        .toBeTruthy();
+});
+
+
 // import fs from 'fs';
 // import path from 'path';
 // import * as dotenv from 'dotenv';

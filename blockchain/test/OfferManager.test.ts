@@ -72,27 +72,23 @@ describe('OfferManager', () => {
         });
 
         it('should emit OfferRegistered event', async () => {
-            await expect(offerManagerContract.registerOffer(company1.address, 1))
             await (await offerManagerContract.registerSupplier(company1.address, 'Company 1')).wait();
 
-            await expect(offerManagerContract.registerOffer(company1.address, categories[0]))
+            await expect(offerManagerContract.registerOffer(company1.address, 1))
                 .to.emit(offerManagerContract, 'OfferRegistered')
                 .withArgs(1, company1.address);
         });
 
         it('should register an Offer - FAIL(OfferManager: Product category does not exist)', async () => {
-            await expect(offerManagerContract.registerOffer(company1.address, 20))
-                .to.be.revertedWith('OfferManager: Product category does not exist');
-        it('should register an Offer - FAIL(The product category specified isn\'t registered)', async () => {
             await (await offerManagerContract.registerSupplier(company1.address, 'Company 1')).wait();
 
-            await expect(offerManagerContract.registerOffer(company1.address, 'customCategory'))
-                .to.be.revertedWith('The product category specified isn\'t registered');
+            await expect(offerManagerContract.registerOffer(company1.address, 20))
+                .to.be.revertedWith('OfferManager: Product category does not exist');
         });
 
         it('should register an Offer - FAIL(Offer\'s supplier not registered)', async () => {
-            await expect(offerManagerContract.registerOffer(company1.address, categories[0]))
-                .to.be.revertedWith('Offer\'s supplier not registered');
+            await expect(offerManagerContract.registerOffer(company1.address, 1))
+                .to.be.revertedWith('OfferManager: Offer\'s supplier not registered');
         });
     });
 
@@ -125,11 +121,9 @@ describe('OfferManager', () => {
 
     describe('updateOffer', () => {
         it('should update an Offer', async () => {
-            await (await offerManagerContract.registerOffer(company1.address, 1)).wait();
             await (await offerManagerContract.registerSupplier(company1.address, 'Company 1')).wait();
 
-            await (await offerManagerContract.registerOffer(company1.address, categories[0])).wait();
-
+            await (await offerManagerContract.registerOffer(company1.address, 1)).wait();
             await (await offerManagerContract.updateOffer(1, 2)).wait();
 
             const currentOfferCounter = await offerManagerContract.getLastId();
@@ -142,19 +136,13 @@ describe('OfferManager', () => {
         });
 
         it('should emit OfferUpdated event', async () => {
+            await (await offerManagerContract.registerSupplier(company1.address, 'Company 1')).wait();
             await (await offerManagerContract.registerOffer(company1.address, 1)).wait();
             await expect(offerManagerContract.updateOffer(1, 2))
-            await (await offerManagerContract.registerSupplier(company1.address, 'Company 1')).wait();
-            await (await offerManagerContract.registerOffer(company1.address, categories[0])).wait();
-            await expect(offerManagerContract.updateOffer(1, categories[1]))
                 .to.emit(offerManagerContract, 'OfferUpdated')
                 .withArgs(1, company1.address);
         });
 
-        it('should update a Transformation - FAIL(The product category specified isn\'t registered)', async () => {
-            await (await offerManagerContract.registerSupplier(company1.address, 'Company 1')).wait();
-            await expect(offerManagerContract.updateOffer(1, 'customCategory'))
-                .to.be.revertedWith('The product category specified isn\'t registered');
         it('should update a AssetOperation - FAIL(OfferManager: Product category does not exist)', async () => {
             await expect(offerManagerContract.updateOffer(1, 20))
                 .to.be.revertedWith('OfferManager: Product category does not exist');
@@ -186,7 +174,7 @@ describe('OfferManager', () => {
 
         it('should delete a supplier - FAIL(A supplier cannot be deleted if it still has active offers)', async () => {
             await (await offerManagerContract.registerSupplier(company1.address, 'Company 1')).wait();
-            await (await offerManagerContract.registerOffer(company1.address, categories[0])).wait();
+            await (await offerManagerContract.registerOffer(company1.address, 1)).wait();
 
             await expect(offerManagerContract.deleteSupplier(company1.address))
                 .to.be.revertedWith('A supplier cannot be deleted if it still has active offers');
@@ -195,6 +183,7 @@ describe('OfferManager', () => {
 
     describe('deleteOffer', () => {
         it('should delete an Offer', async () => {
+            await (await offerManagerContract.registerSupplier(company1.address, 'Company 1')).wait();
             await (await offerManagerContract.registerOffer(company1.address, 1)).wait();
 
             let currentOfferCounter = await offerManagerContract.getLastId();
@@ -211,15 +200,16 @@ describe('OfferManager', () => {
         });
 
         it('should emit OfferDeleted event', async () => {
-            await (await offerManagerContract.registerOffer(company1.address, categories[0])).wait();
+            await (await offerManagerContract.registerSupplier(company1.address, 'Company 1')).wait();
+            await (await offerManagerContract.registerOffer(company1.address, 1)).wait();
             await expect(offerManagerContract.deleteOffer(1))
                 .to.emit(offerManagerContract, 'OfferDeleted')
                 .withArgs(1, company1.address);
         });
 
-        it('should update a Transformation - FAIL(The product category specified isn\'t registered)', async () => {
-            await expect(offerManagerContract.updateOffer(1, 'customCategory'))
-                .to.be.revertedWith('The product category specified isn\'t registered');
+        it('should update a Transformation - FAIL(Offer does not exist)', async () => {
+            await expect(offerManagerContract.updateOffer(1, 1))
+                .to.be.revertedWith('Offer does not exist');
         });
     });
 

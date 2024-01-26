@@ -12,8 +12,6 @@ export class OfferService {
         await this._offerDriver.registerSupplier(companyAddress, name);
     }
 
-    async registerOffer(companyAddress: string, productCategory: string): Promise<void> {
-        await this._offerDriver.registerOffer(companyAddress, productCategory);
     async registerOffer(companyAddress: string, productCategoryId: number): Promise<void> {
         await this._offerDriver.registerOffer(companyAddress, productCategoryId);
     }
@@ -52,8 +50,6 @@ export class OfferService {
         await this._offerDriver.updateSupplier(companyAddress, name);
     }
 
-    async updateOffer(offerId: number, productCategory: string): Promise<void> {
-        await this._offerDriver.updateOffer(offerId, productCategory);
     async updateOffer(offerId: number, productCategoryId: number): Promise<void> {
         await this._offerDriver.updateOffer(offerId, productCategoryId);
     }

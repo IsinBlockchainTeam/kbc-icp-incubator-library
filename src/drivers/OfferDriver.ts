@@ -28,19 +28,18 @@ export class OfferDriver {
             .connect(signer);
     }
 
-    async registerOffer(companyAddress: string, productCategoryId: number): Promise<void> {
     async registerSupplier(companyAddress: string, name: string): Promise<void> {
         if (!utils.isAddress(companyAddress)) throw new Error('Not an address');
 
         try {
-            const tx = await this._contract.registerSupplier(companyAddress, name);
+            const tx = await this._offerManagerContract.registerSupplier(companyAddress, name);
             await tx.wait();
         } catch (e: any) {
             throw new Error(e.message);
         }
     }
 
-    async registerOffer(companyAddress: string, productCategory: string): Promise<void> {
+    async registerOffer(companyAddress: string, productCategoryId: number): Promise<void> {
         if (!utils.isAddress(companyAddress)) throw new Error('Not an address');
 
         try {
@@ -67,7 +66,7 @@ export class OfferDriver {
         if (!utils.isAddress(companyAddress)) throw new Error('Not an address');
 
         try {
-            return await this._contract.getSupplierName(companyAddress, { blockTag: blockNumber });
+            return await this._offerManagerContract.getSupplierName(companyAddress, { blockTag: blockNumber });
         } catch (e: any) {
             throw new Error(e.message);
         }
@@ -83,19 +82,18 @@ export class OfferDriver {
         }
     }
 
-    async updateOffer(offerId: number, productCategoryId: number): Promise<void> {
     async updateSupplier(companyAddress: string, newName: string): Promise<void> {
         if (!utils.isAddress(companyAddress)) throw new Error('Not an address');
 
         try {
-            const tx = await this._contract.updateSupplier(companyAddress, newName);
+            const tx = await this._offerManagerContract.updateSupplier(companyAddress, newName);
             await tx.wait();
         } catch (e: any) {
             throw new Error(e.message);
         }
     }
 
-    async updateOffer(offerId: number, productCategory: string): Promise<void> {
+    async updateOffer(offerId: number, productCategoryId: number): Promise<void> {
         try {
             const tx = await this._offerManagerContract.updateOffer(offerId, productCategoryId);
             await tx.wait();
@@ -106,7 +104,7 @@ export class OfferDriver {
 
     async deleteSupplier(companyAddress: string): Promise<void> {
         try {
-            const tx = await this._contract.deleteSupplier(companyAddress);
+            const tx = await this._offerManagerContract.deleteSupplier(companyAddress);
             await tx.wait();
         } catch (e: any) {
             throw new Error(e.message);

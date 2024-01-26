@@ -60,12 +60,9 @@ contract OfferManager is AccessControl {
         emit OfferSupplierRegistered(addr, name);
     }
 
-    function registerOffer(address owner, string memory productCategory) public {
-        require(productCategoryManager.contains(productCategory), "The product category specified isn't registered");
-        require(bytes(suppliersNames[owner]).length != 0, "Offer's supplier not registered");
     function registerOffer(address owner, uint256 productCategoryId) public {
         require(productCategoryManager.getProductCategoryExists(productCategoryId), "OfferManager: Product category does not exist");
-
+        require(bytes(suppliersNames[owner]).length != 0, "OfferManager: Offer's supplier not registered");
         uint256 offerId = offersIdCounter.current() + 1;
         offersIdCounter.increment();
 
@@ -107,7 +104,6 @@ contract OfferManager is AccessControl {
         emit OfferSupplierUpdated(addr, newName);
     }
 
-    function updateOffer(uint256 offerId, string memory productCategory) public {
     function updateOffer(uint256 offerId, uint256 productCategoryId) public {
         require(productCategoryManager.getProductCategoryExists(productCategoryId), "OfferManager: Product category does not exist");
         Offer storage offer = offers[offerId];

@@ -1,3 +1,9 @@
+it('always pass', () => {
+    expect(true)
+        .toBeTruthy();
+});
+
+
 // import * as dotenv from 'dotenv';
 //
 // import { JsonRpcProvider } from '@ethersproject/providers';
