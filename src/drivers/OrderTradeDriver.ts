@@ -2,8 +2,10 @@ import { BigNumber, Signer, Event } from 'ethers';
 import { TradeDriver } from './TradeDriver';
 // eslint-disable-next-line camelcase
 import {
+    MaterialManager,
+    MaterialManager__factory,
     OrderTrade as OrderTradeContract,
-    OrderTrade__factory,
+    OrderTrade__factory, ProductCategoryManager, ProductCategoryManager__factory,
 } from '../smart-contracts';
 import { NegotiationStatus } from '../types/NegotiationStatus';
 import {
@@ -27,11 +29,23 @@ export enum OrderTradeEvents {
 export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDriver {
     private _actual: OrderTradeContract;
 
-    constructor(signer: Signer, orderTradeAddress: string) {
+    private _materialContract: MaterialManager;
+
+    private _productCategoryContract: ProductCategoryManager;
+
+    constructor(signer: Signer, orderTradeAddress: string, materialManagerAddress: string, productCategoryManagerAddress: string) {
         super(signer, orderTradeAddress);
         // eslint-disable-next-line camelcase
         this._actual = OrderTrade__factory
             .connect(orderTradeAddress, signer.provider!)
+            .connect(signer);
+
+        this._materialContract = MaterialManager__factory
+            .connect(materialManagerAddress, signer.provider!)
+            .connect(signer);
+
+        this._productCategoryContract = ProductCategoryManager__factory
+            .connect(productCategoryManagerAddress, signer.provider!)
             .connect(signer);
     }
 
@@ -58,22 +72,29 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
     }
 
     async getLines(): Promise<OrderLine[]> {
-        const result = await this._actual.getLines();
-        const lines: OrderLine[] = [];
-        for (let i: number = 0; i < result[0].length; i++) {
-            lines.push(EntityBuilder.buildOrderLine(result[0][i], result[1][i]));
+        const counter: number = await this.getLineCounter();
+
+        const promises = [];
+        for (let i = 0; i < counter; i++) {
+            promises.push(this.getLine(i));
         }
-        return lines;
+
+        return Promise.all(promises);
     }
 
     async getLine(id: number, blockNumber?: number): Promise<OrderLine> {
         const line = await this._actual.getLine(id, { blockTag: blockNumber });
-        return EntityBuilder.buildOrderLine(line[0], line[1]);
+
+        let materialStruct: MaterialManager.MaterialStructOutput | undefined = undefined;
+        if(line[0].materialId.toNumber() !== 0)
+            materialStruct = await this._materialContract.getMaterial(line[0].materialId);
+
+        return EntityBuilder.buildOrderLine(line[0], line[1], await this._productCategoryContract.getProductCategory(line[0].productCategoryId), materialStruct);
     }
 
     async addLine(line: OrderLineRequest): Promise<OrderLine> {
         const _price = this._convertPriceClassInStruct(line.price);
-        const tx: any = await this._actual.addLine(line.materialsId, line.productCategory, line.quantity, _price);
+        const tx: any = await this._actual.addLine(line.productCategoryId, line.quantity, _price);
         const receipt = await tx.wait();
         const id = receipt.events.find((event: Event) => event.event === 'OrderLineAdded').args[0];
         return this.getLine(id);
@@ -81,9 +102,17 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
 
     async updateLine(line: OrderLine): Promise<OrderLine> {
         const _price = this._convertPriceClassInStruct(line.price);
-        const tx = await this._actual.updateLine(line.id, line.materialsId, line.productCategory, line.quantity, _price);
+        const tx = await this._actual.updateLine(line.id, line.productCategory.id, line.quantity, _price);
         await tx.wait();
+        if(line.material)
+            await this.assignMaterial(line.id, line.material.id);
+
         return this.getLine(line.id);
+    }
+
+    async assignMaterial(lineId: number, materialId: number): Promise<void> {
+        const tx = await this._actual.assignMaterial(lineId, materialId);
+        await tx.wait();
     }
 
     async getNegotiationStatus(): Promise<NegotiationStatus> {

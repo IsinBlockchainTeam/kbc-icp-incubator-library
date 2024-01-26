@@ -73,15 +73,6 @@ contract OrderTrade is Trade {
         return TradeType.ORDER;
     }
 
-    function getLines() public view returns (Line[] memory, OrderLine[] memory) {
-        Line[] memory lines = _getLines();
-        OrderLine[] memory orderLines = new OrderLine[](_lineIds.length);
-        for (uint256 i = 0; i < _lineIds.length; i++) {
-            orderLines[i] = _orderLines[_lineIds[i]];
-        }
-        return (lines, orderLines);
-    }
-
     function getLine(uint256 id) public view returns (Line memory, OrderLine memory) {
         Line memory line = _getLine(id);
         return (line, _orderLines[id]);

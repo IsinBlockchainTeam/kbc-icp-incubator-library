@@ -55,7 +55,7 @@ abstract contract Trade is AccessControl {
 
     mapping(uint256 => Line) internal _lines;
     uint256[] internal _lineIds;
-    Counters.Counter internal _linesCounter;
+    Counters.Counter internal _lineCounter;
 
     ProductCategoryManager internal _productCategoryManager;
     MaterialManager internal _materialManager;
@@ -75,19 +75,15 @@ abstract contract Trade is AccessControl {
         _externalUrl = externalUrl;
     }
 
+    function getLineCounter() public view returns (uint256) {
+        return _lineCounter.current();
+    }
+
     function _getTrade() internal view returns (uint256, address, address, address, string memory, uint256[] memory) {
         return (_tradeId, _supplier, _customer, _commissioner, _externalUrl, _lineIds);
     }
 
     function getTradeType() virtual public pure returns (TradeType);
-
-    function _getLines() internal view returns (Line[] memory) {
-        Line[] memory lines = new Line[](_lineIds.length);
-        for (uint256 i = 0; i < _lineIds.length; i++) {
-            lines[i] = _lines[_lineIds[i]];
-        }
-        return lines;
-    }
 
     function _getLine(uint256 id) internal view returns (Line memory) {
         require(getLineExists(id), "Trade: Line does not exist");
@@ -101,8 +97,8 @@ abstract contract Trade is AccessControl {
     function _addLine(uint256 productCategoryId) internal returns (uint256) {
         require(_productCategoryManager.getProductCategoryExists(productCategoryId), "Trade: Product category does not exist");
 
-        uint256 tradeLineId = _linesCounter.current();
-        _linesCounter.increment();
+        uint256 tradeLineId = _lineCounter.current();
+        _lineCounter.increment();
 
         _lines[tradeLineId] = Line(tradeLineId, productCategoryId, 0, true);
         _lineIds.push(tradeLineId);
@@ -121,6 +117,7 @@ abstract contract Trade is AccessControl {
     function _assignMaterial(uint256 lineId, uint256 materialId) internal {
         require(_lines[lineId].exists, "Trade: Line does not exist");
         require(_materialManager.getMaterialExists(materialId), "Trade: Material does not exist");
+        require(_lines[lineId].productCategoryId == _materialManager.getMaterial(materialId).productCategoryId, "Trade: Product category of material must match already specified product category of line");
 
         _lines[lineId].materialId = materialId;
     }

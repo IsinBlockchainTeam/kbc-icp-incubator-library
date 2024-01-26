@@ -50,8 +50,10 @@ export class EntityBuilder {
         return new Offer(bcOffer.id.toNumber(), bcOffer.owner, bcOffer.productCategory);
     }
 
-    static buildTradeLine(bcLine: Trade.LineStructOutput, bcMaterial: MaterialManager.MaterialStructOutput, bcProductCategory: ProductCategoryManager.ProductCategoryStructOutput): Line {
-        return new Line(bcLine.id.toNumber(), this.buildMaterial(bcMaterial, bcProductCategory), this.buildProductCategory(bcProductCategory));
+    static buildTradeLine(bcLine: Trade.LineStructOutput, bcProductCategory: ProductCategoryManager.ProductCategoryStructOutput, bcMaterial?: MaterialManager.MaterialStructOutput): Line {
+        if(bcMaterial)
+            return new Line(bcLine.id.toNumber(), this.buildMaterial(bcMaterial, bcProductCategory), this.buildProductCategory(bcProductCategory));
+        return new Line(bcLine.id.toNumber(), undefined, this.buildProductCategory(bcProductCategory));
     }
 
     static buildOrderLinePrice(bcOrderLinePrice: OrderTrade.OrderLinePriceStructOutput): OrderLinePrice {
@@ -59,8 +61,8 @@ export class EntityBuilder {
         return new OrderLinePrice(amount, bcOrderLinePrice.fiat);
     }
 
-    static buildOrderLine(bcLine: Trade.LineStructOutput, bcOrderLine: OrderTrade.OrderLineStructOutput, bcMaterial: MaterialManager.MaterialStructOutput, bcProductCategory: ProductCategoryManager.ProductCategoryStructOutput): OrderLine {
-        const line: Line = this.buildTradeLine(bcLine, bcMaterial, bcProductCategory);
+    static buildOrderLine(bcLine: Trade.LineStructOutput, bcOrderLine: OrderTrade.OrderLineStructOutput, bcProductCategory: ProductCategoryManager.ProductCategoryStructOutput, bcMaterial?: MaterialManager.MaterialStructOutput): OrderLine {
+        const line: Line = this.buildTradeLine(bcLine, bcProductCategory, bcMaterial);
         const price: OrderLinePrice = this.buildOrderLinePrice(bcOrderLine.price);
         return new OrderLine(line.id, line.material, line.productCategory, bcOrderLine.quantity.toNumber(), price);
     }

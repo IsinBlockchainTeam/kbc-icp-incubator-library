@@ -7,7 +7,11 @@ import {
     BasicTrade__factory,
     Trade__factory,
     TradeManager,
-    TradeManager__factory, OrderTrade__factory,
+    TradeManager__factory,
+    OrderTrade__factory,
+    MaterialManager__factory,
+    ProductCategoryManager__factory,
+    MaterialManager, ProductCategoryManager,
 } from '../smart-contracts';
 import { TradeType } from '../types/TradeType';
 
@@ -107,9 +111,17 @@ describe('TradeManagerDriver', () => {
             .mockReturnValue(mockedBasicTradeContract);
         jest.spyOn(OrderTrade__factory, 'connect')
             .mockReturnValue(mockedOrderTradeContract);
+        jest.spyOn(MaterialManager__factory, 'connect')
+            .mockReturnValue(createMock<MaterialManager>({
+                connect: jest.fn(),
+            }));
+        jest.spyOn(ProductCategoryManager__factory, 'connect')
+            .mockReturnValue(createMock<ProductCategoryManager>({
+                connect: jest.fn(),
+            }));
 
         mockedSigner = createMock<Signer>();
-        tradeManagerDriver = new TradeManagerDriver(mockedSigner, contractAddress);
+        tradeManagerDriver = new TradeManagerDriver(mockedSigner, contractAddress, Wallet.createRandom().address, Wallet.createRandom().address);
     });
 
     afterEach(() => jest.clearAllMocks());

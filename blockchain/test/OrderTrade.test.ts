@@ -1,10 +1,11 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { FakeContract, smock } from '@defi-wonderland/smock';
-import { Contract, Event, Wallet } from 'ethers';
+import {BigNumber, Contract, Event, Wallet} from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import chai, { expect } from 'chai';
 import { ethers } from 'hardhat';
 import { ContractName } from '../utils/constants';
+import {MaterialManager} from "../typechain-types";
 
 describe('OrderTrade.sol', () => {
     chai.use(smock.matchers);
@@ -25,12 +26,18 @@ describe('OrderTrade.sol', () => {
     const shippingDeadline: number = 300;
     const deliveryDeadline: number = 400;
 
+    const materialStruct: MaterialManager.MaterialStructOutput = {
+        id: BigNumber.from(1),
+        productCategoryId: BigNumber.from(1),
+    } as MaterialManager.MaterialStructOutput;
+
     before(async () => {
         [admin, supplier, customer, commissioner, arbiter] = await ethers.getSigners();
         productCategoryManagerContractFake = await smock.fake(ContractName.PRODUCT_CATEGORY_MANAGER);
         productCategoryManagerContractFake.getProductCategoryExists.returns((value: number) => value <= 10);
         materialManagerContractFake = await smock.fake(ContractName.MATERIAL_MANAGER);
         materialManagerContractFake.getMaterialExists.returns((value: number) => value <= 10);
+        materialManagerContractFake.getMaterial.returns(materialStruct);
         enumerableFiatManagerContractFake = await smock.fake(ContractName.ENUMERABLE_TYPE_MANAGER);
         enumerableFiatManagerContractFake.contains.returns((value: string) => fiats.includes(value[0]));
         documentManagerContractFake = await smock.fake(ContractName.DOCUMENT_MANAGER);
@@ -201,20 +208,13 @@ describe('OrderTrade.sol', () => {
             expect(newResult[0]).to.deep.equal([lineId, 2, 0, true]);
             expect(newResult[1]).to.deep.equal([200, [20, 0, fiats[1]]]);
 
-            const secondTx = await orderTradeContract.connect(supplier)
+            await orderTradeContract.connect(supplier)
                 .addLine(3, 30, [20, 2, fiats[0]]);
-            const secondReceipt = await secondTx.wait();
-            const secondLineId = secondReceipt.events.find((event: Event) => event.event === 'OrderLineAdded').args[0];
 
-            const lines = await orderTradeContract.getLines();
-            expect(lines[0].length)
+            const lineCounter = await orderTradeContract.getLineCounter();
+            expect(lineCounter)
                 .to
                 .equal(2);
-
-            expect(lines[0][0]).to.deep.equal([lineId, 2, 0, true]);
-            expect(lines[0][1]).to.deep.equal([secondLineId, 3, 0, true]);
-            expect(lines[1][0]).to.deep.equal([200, [20, 0, fiats[1]]]);
-            expect(lines[1][1]).to.deep.equal([30, [20, 2, fiats[0]]]);
         });
 
         it('should assign a material to an order line', async () => {

@@ -1,5 +1,5 @@
 import { BigNumber } from 'ethers';
-import { OrderTrade as OrderTradeContract } from '../smart-contracts';
+import {MaterialManager, OrderTrade as OrderTradeContract, ProductCategoryManager} from '../smart-contracts';
 import {
     OrderLine,
     OrderLinePrice,
@@ -78,15 +78,12 @@ describe('OrderLineRequest', () => {
     let line: OrderLineRequest;
 
     beforeAll(() => {
-        const productCategory = new ProductCategory(1, 'test', 1, 'test');
-        line = new OrderLineRequest(new Material(1, productCategory), productCategory, 10, new OrderLinePrice(10.2, 'CHF'));
+        line = new OrderLineRequest(1, 10, new OrderLinePrice(10.2, 'CHF'));
     });
 
     it('should correctly initialize an OrderLineRequest', () => {
-        expect(line.material)
-            .toEqual(new Material(1, new ProductCategory(1, 'test', 1, 'test')));
-        expect(line.productCategory)
-            .toEqual(new ProductCategory(1, 'test', 1, 'test'));
+        expect(line.productCategoryId)
+            .toEqual(1);
         expect(line.quantity)
             .toEqual(10);
         expect(line.price)
@@ -193,12 +190,24 @@ describe('OrderTrade', () => {
             quantity: BigNumber.from(4),
             price,
         } as OrderTradeContract.OrderLineStructOutput;
+        const materialStruct: MaterialManager.MaterialStructOutput = {
+            id: BigNumber.from(2),
+            productCategoryId: BigNumber.from(3),
+            exists: true,
+        } as MaterialManager.MaterialStructOutput;
+        const productCategoryStruct: ProductCategoryManager.ProductCategoryStructOutput = {
+            id: BigNumber.from(3),
+            name: 'test',
+            quality: 1,
+            description: 'test',
+            exists: true,
+        } as ProductCategoryManager.ProductCategoryStructOutput;
 
         orderTrade.lines = [
-            EntityBuilder.buildOrderLine(newLine, newOrderLine, new Material(2, new ProductCategory(3, 'test', 1, 'test')), new ProductCategory(3, 'test', 1, 'test')),
+            EntityBuilder.buildOrderLine(newLine, newOrderLine, productCategoryStruct, materialStruct),
         ];
         expect(orderTrade.lines)
-            .toEqual([EntityBuilder.buildOrderLine(newLine, newOrderLine, new Material(2, new ProductCategory(3, 'test', 1, 'test')), new ProductCategory(3, 'test', 1, 'test'))]);
+            .toEqual([EntityBuilder.buildOrderLine(newLine, newOrderLine, productCategoryStruct, materialStruct)]);
     });
 
     it('should correctly set the escrow', () => {

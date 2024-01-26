@@ -51,6 +51,7 @@ describe('ProductCategoryDriver', () => {
         getProductCategoryExists: mockedGetProductCategoryExists,
         getProductCategory: mockedGetProductCategory,
         registerProductCategory: mockedWriteFunction,
+        updateProductCategory: mockedWriteFunction
     });
 
     beforeAll(() => {
@@ -75,6 +76,22 @@ describe('ProductCategoryDriver', () => {
 
         expect(mockedContract.registerProductCategory).toHaveBeenCalledTimes(1);
         expect(mockedContract.registerProductCategory).toHaveBeenNthCalledWith(1, name, quality, description);
+
+        expect(mockedWait).toHaveBeenCalledTimes(1);
+    });
+
+    it('should correctly register a product category - FAIL(Error during product category registration, no events found)', async () => {
+        mockedWait.mockResolvedValueOnce({
+            events: undefined,
+        });
+        await expect(productCategoryDriver.registerProductCategory(name, quality, description)).rejects.toThrowError('Error during product category registration, no events found');
+    });
+
+    it('should correctly update a product category', async () => {
+        await productCategoryDriver.updateProductCategory(1, 'new', 20, 'updated');
+
+        expect(mockedWriteFunction).toHaveBeenCalledTimes(1);
+        expect(mockedWriteFunction).toHaveBeenNthCalledWith(1, 1, 'new', 20, 'updated');
 
         expect(mockedWait).toHaveBeenCalledTimes(1);
     });

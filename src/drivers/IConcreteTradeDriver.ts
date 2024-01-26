@@ -6,4 +6,5 @@ export interface IConcreteTradeDriver {
     getLine(id: number, blockNumber?: number): Promise<Line>;
     addLine(line: LineRequest): Promise<Line>;
     updateLine(line: Line): Promise<Line>;
+    assignMaterial(lineId: number, materialId: number): Promise<void>;
 }

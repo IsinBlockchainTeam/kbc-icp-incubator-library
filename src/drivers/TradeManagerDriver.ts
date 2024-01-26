@@ -2,20 +2,24 @@ import { BigNumber, Event, Signer, utils } from 'ethers';
 import { TradeManager, TradeManager__factory } from '../smart-contracts';
 import { TradeType } from '../types/TradeType';
 import { getTradeTypeByIndex } from '../utils/utils';
-import { BasicTradeService } from '../services/BasicTradeService';
 import { BasicTradeDriver } from './BasicTradeDriver';
 import { BasicTrade } from '../entities/BasicTrade';
 import { OrderTrade } from '../entities/OrderTrade';
-import { OrderTradeService } from '../services/OrderTradeService';
 import { OrderTradeDriver } from './OrderTradeDriver';
 
 export class TradeManagerDriver {
     private _contract: TradeManager;
 
-    constructor(signer: Signer, tradeManagerAddress: string) {
+    private _materialManagerAddress: string;
+
+    private _productCategoryManagerAddress: string;
+
+    constructor(signer: Signer, tradeManagerAddress: string, materialManagerAddress: string, productCategoryManagerAddress: string) {
         this._contract = TradeManager__factory
             .connect(tradeManagerAddress, signer.provider!)
             .connect(signer);
+        this._materialManagerAddress = materialManagerAddress;
+        this._productCategoryManagerAddress = productCategoryManagerAddress;
     }
 
     async registerBasicTrade(supplier: string, customer: string, commissioner: string, externalUrl: string, name: string): Promise<BasicTrade> {
@@ -29,8 +33,8 @@ export class TradeManagerDriver {
             throw new Error('Error during basic trade registration, no events found');
         }
         const id: number = events.find((event: Event) => event.event === 'BasicTradeRegistered').args.id.toNumber();
-        const tradeService: BasicTradeService = new BasicTradeService(new BasicTradeDriver(this._contract.signer, await this._contract.getTrade(id)));
-        return tradeService.getTrade();
+        const tradeDriver: BasicTradeDriver = new BasicTradeDriver(this._contract.signer, await this._contract.getTrade(id), this._materialManagerAddress, this._productCategoryManagerAddress);
+        return tradeDriver.getTrade();
     }
 
     async registerOrderTrade(supplier: string, customer: string, commissioner: string, externalUrl: string, paymentDeadline: number, documentDeliveryDeadline: number, arbiter: string, shippingDeadline: number, deliveryDeadline: number, agreedAmount: number, tokenAddress: string): Promise<OrderTrade> {
@@ -44,8 +48,8 @@ export class TradeManagerDriver {
             throw new Error('Error during order registration, no events found');
         }
         const id: number = events.find((event: Event) => event.event === 'OrderTradeRegistered').args.id.toNumber();
-        const tradeService: OrderTradeService = new OrderTradeService(new OrderTradeDriver(this._contract.signer, await this._contract.getTrade(id)));
-        return tradeService.getTrade();
+        const tradeDriver: OrderTradeDriver = new OrderTradeDriver(this._contract.signer, await this._contract.getTrade(id), this._materialManagerAddress, this._productCategoryManagerAddress);
+        return tradeDriver.getTrade();
     }
 
     async getTrades(): Promise<string[]> {

@@ -14,6 +14,11 @@ export class TradeDriver {
             .connect(signer);
     }
 
+    async getLineCounter(): Promise<number> {
+        const counter = await this._contract.getLineCounter();
+        return counter.toNumber();
+    }
+
     async getTradeType(): Promise<TradeType> {
         return getTradeTypeByIndex(await this._contract.getTradeType());
     }
@@ -36,8 +41,8 @@ export class TradeDriver {
         }
     }
 
-    async addDocument(name: string, documentType: DocumentType, externalUrl: string): Promise<void> {
-        const tx = await this._contract.addDocument(name, documentType, externalUrl);
+    async addDocument(lineId: number, name: string, documentType: DocumentType, externalUrl: string): Promise<void> {
+        const tx = await this._contract.addDocument(lineId, name, documentType, externalUrl);
         await tx.wait();
     }
 

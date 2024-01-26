@@ -2,29 +2,18 @@ import { Material } from './Material';
 import { ProductCategory } from './ProductCategory';
 
 export class LineRequest {
-    private _material?: Material;
+    private _productCategoryId: number;
 
-    private _productCategory: ProductCategory;
-
-    constructor(material: Material, productCategory: ProductCategory) {
-        this._material = material;
-        this._productCategory = productCategory;
+    constructor(productCategory: number) {
+        this._productCategoryId = productCategory;
     }
 
-    get material(): Material | undefined {
-        return this._material;
+    get productCategoryId(): number {
+        return this._productCategoryId;
     }
 
-    set material(value: Material | undefined) {
-        this._material = value;
-    }
-
-    get productCategory(): ProductCategory {
-        return this._productCategory;
-    }
-
-    set productCategory(value: ProductCategory) {
-        this._productCategory = value;
+    set productCategoryId(value: number) {
+        this._productCategoryId = value;
     }
 }
 

@@ -10,7 +10,7 @@ describe('TradeDriver', () => {
     let tradeDriver: TradeDriver;
     const contractAddress: string = Wallet.createRandom().address;
 
-    const lineIds: BigNumber[] = [BigNumber.from(0)];
+    const lineIds: BigNumber[] = [BigNumber.from(1)];
     const newAdmin: string = Wallet.createRandom().address;
 
     let mockedSigner: Signer;
@@ -19,6 +19,7 @@ describe('TradeDriver', () => {
     const mockedWait = jest.fn();
 
     const mockedWriteFunction = jest.fn();
+    const mockedGetLineCounter = jest.fn();
     const mockedGetTradeType = jest.fn();
     const mockedGetLineExists = jest.fn();
     const mockedGetTradeStatus = jest.fn();
@@ -26,11 +27,13 @@ describe('TradeDriver', () => {
     mockedWriteFunction.mockResolvedValue({
         wait: mockedWait,
     });
+    mockedGetLineCounter.mockReturnValue(BigNumber.from(lineIds.length));
     mockedGetTradeType.mockResolvedValue(TradeType.BASIC);
     mockedGetLineExists.mockResolvedValue(true);
     mockedGetTradeStatus.mockResolvedValue(TradeStatus.SHIPPED);
 
     const mockedContract = createMock<TradeContract>({
+        getLineCounter: mockedGetLineCounter,
         getTradeType: mockedGetTradeType,
         getLineExists: mockedGetLineExists,
         getTradeStatus: mockedGetTradeStatus,
@@ -53,6 +56,16 @@ describe('TradeDriver', () => {
 
     afterAll(() => {
         jest.restoreAllMocks();
+    });
+
+    it('should correctly retrieve trade counter', async () => {
+        expect(await tradeDriver.getLineCounter())
+            .toEqual(1);
+
+        expect(mockedContract.getLineCounter)
+            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.getLineCounter)
+            .toHaveBeenNthCalledWith(1);
     });
 
     it('should correctly retrieve trade type - BASIC', async () => {
@@ -147,12 +160,12 @@ describe('TradeDriver', () => {
     });
 
     it('should correctly add a document', async () => {
-        await tradeDriver.addDocument('Test document', DocumentType.BILL_OF_LADING, 'https://test.com');
+        await tradeDriver.addDocument(1, 'Test document', DocumentType.BILL_OF_LADING, 'https://test.com');
 
         expect(mockedContract.addDocument)
             .toHaveBeenCalledTimes(1);
         expect(mockedContract.addDocument)
-            .toHaveBeenNthCalledWith(1, 'Test document', DocumentType.BILL_OF_LADING, 'https://test.com');
+            .toHaveBeenNthCalledWith(1, 1, 'Test document', DocumentType.BILL_OF_LADING, 'https://test.com');
         expect(mockedWait)
             .toHaveBeenCalledTimes(1);
     });

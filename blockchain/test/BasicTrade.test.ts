@@ -5,6 +5,7 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import chai, { expect } from 'chai';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { ContractName } from '../utils/constants';
+import {MaterialManager} from "../typechain-types";
 
 describe('BasicTrade.sol', () => {
     chai.use(smock.matchers);
@@ -18,12 +19,18 @@ describe('BasicTrade.sol', () => {
     const externalUrl: string = 'https://www.test.com';
     const name: string = 'Test Trade';
 
+    const materialStruct: MaterialManager.MaterialStructOutput = {
+        id: BigNumber.from(1),
+        productCategoryId: BigNumber.from(1),
+    } as MaterialManager.MaterialStructOutput;
+
     before(async () => {
         [admin, supplier, customer, commissioner] = await ethers.getSigners();
         productCategoryManagerContractFake = await smock.fake(ContractName.PRODUCT_CATEGORY_MANAGER);
         productCategoryManagerContractFake.getProductCategoryExists.returns((value: number) => value <= 10);
         materialManagerContractFake = await smock.fake(ContractName.MATERIAL_MANAGER);
         materialManagerContractFake.getMaterialExists.returns((value: number) => value <= 10);
+        materialManagerContractFake.getMaterial.returns(materialStruct);
         documentManagerContractFake = await smock.fake(ContractName.DOCUMENT_MANAGER);
     });
 
@@ -119,18 +126,10 @@ describe('BasicTrade.sol', () => {
                 .to
                 .equal(1);
 
-            const lines = await basicTradeContract.getLines();
-            expect(lines.length)
+            const lineCounter = await basicTradeContract.getLineCounter();
+            expect(lineCounter)
                 .to
                 .equal(2);
-            expect(lines[0])
-                .to
-                .deep
-                .equal([lineId, BigNumber.from(2), BigNumber.from(0), true]);
-            expect(lines[1])
-                .to
-                .deep
-                .equal([secondLineId, BigNumber.from(3), BigNumber.from(0), true]);
         });
 
         it('should assign a material to a line', async () => {

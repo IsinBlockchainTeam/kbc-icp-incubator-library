@@ -19,10 +19,6 @@ contract BasicTrade is Trade {
         return TradeType.BASIC;
     }
 
-    function getLines() public view returns (Line[] memory) {
-        return _getLines();
-    }
-
     function getLine(uint256 id) public view returns (Line memory) {
         return _getLine(id);
     }

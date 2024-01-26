@@ -1,12 +1,13 @@
-import { BigNumber, Signer, utils } from 'ethers';
+import {BigNumber, Event, Signer} from 'ethers';
 import {
     AssetOperationManager,
     AssetOperationManager__factory, MaterialManager, MaterialManager__factory,
     ProductCategoryManager,
     ProductCategoryManager__factory,
 } from '../smart-contracts';
-import { EntityBuilder } from '../utils/EntityBuilder';
-import { AssetOperation } from '../entities/AssetOperation';
+import {EntityBuilder} from '../utils/EntityBuilder';
+import {AssetOperation} from '../entities/AssetOperation';
+import {AssetOperationType} from "../types/AssetOperationType";
 
 export class AssetOperationDriver {
     private _assetOperationContract: AssetOperationManager;
@@ -17,12 +18,12 @@ export class AssetOperationDriver {
 
     constructor(
         signer: Signer,
-        transformationManagerAddress: string,
+        assetOperationManagerAddress: string,
         productCategoryManagerAddress: string,
         materialManagerAddress: string,
     ) {
         this._assetOperationContract = AssetOperationManager__factory
-            .connect(transformationManagerAddress, signer.provider!)
+            .connect(assetOperationManagerAddress, signer.provider!)
             .connect(signer);
         this._productCategoryContract = ProductCategoryManager__factory
             .connect(productCategoryManagerAddress, signer.provider!)
@@ -62,21 +63,40 @@ export class AssetOperationDriver {
         return Promise.all(promises);
     }
 
-    async getAssetOperationIds(owner: string): Promise<number[]> {
-        const ids = await this._assetOperationContract.getTransformationIds(owner);
-        return ids.map((id) => id.toNumber());
-    }
-
-    async registerAssetOperation(companyAddress: string, name: string, inputMaterialsIds: number[], outputMaterialId: number): Promise<void> {
-        if (!utils.isAddress(companyAddress)) {
-            throw new Error('Not an address');
+    async getAssetOperationType(id: number): Promise<AssetOperationType> {
+        const result: number = await this._assetOperationContract.getAssetOperationType(id);
+        switch (result) {
+            case 0:
+                return AssetOperationType.CONSOLIDATION;
+            case 1:
+                return AssetOperationType.TRANSFORMATION;
+            default:
+                throw new Error(`AssetOperationDriver: an invalid value "${result}" for "AssetOperationType" was returned by the contract`);
         }
-        const tx = await this._assetOperationContract.registerTransformation(companyAddress, name, inputMaterialsIds, outputMaterialId);
-        await tx.wait();
     }
 
-    async updateAssetOperation(id: number, name: string, inputMaterialsIds: number[], outputMaterialId: number): Promise<void> {
-        const tx = await this._assetOperationContract.updateTransformation(id, name, inputMaterialsIds, outputMaterialId);
+    async getAssetOperationsOfCreator(creator: string): Promise<AssetOperation[]> {
+        const ids: number[] = (await this._assetOperationContract.getAssetOperationIdsOfCreator(creator)).map((id: BigNumber) => id.toNumber());
+
+        const promises = ids.map((id: number) => this.getAssetOperation(id));
+
+        return Promise.all(promises);
+    }
+
+    async registerAssetOperation(name: string, inputMaterialsIds: number[], outputMaterialId: number): Promise<AssetOperation> {
+        const tx: any = await this._assetOperationContract.registerAssetOperation(name, inputMaterialsIds, outputMaterialId);
+        const {events} = await tx.wait();
+
+        if (!events) {
+            throw new Error('Error during asset operation registration, no events found');
+        }
+        const id: number = events.find((event: Event) => event.event === 'AssetOperationRegistered').args.id.toNumber();
+        return this.getAssetOperation(id);
+    }
+
+    async updateAssetOperation(id: number, name: string, inputMaterialsIds: number[], outputMaterialId: number): Promise<AssetOperation> {
+        const tx = await this._assetOperationContract.updateAssetOperation(id, name, inputMaterialsIds, outputMaterialId);
         await tx.wait();
+        return this.getAssetOperation(id);
     }
 }

@@ -34,8 +34,8 @@ export class OrderLineRequest extends LineRequest {
 
     private _price: OrderLinePrice;
 
-    constructor(material: Material, productCategory: ProductCategory, quantity: number, price: OrderLinePrice) {
-        super(material, productCategory);
+    constructor(productCategoryId: number, quantity: number, price: OrderLinePrice) {
+        super(productCategoryId);
         this._quantity = quantity;
         this._price = price;
     }
