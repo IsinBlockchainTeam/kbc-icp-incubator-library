@@ -221,7 +221,7 @@ describe('TradeManagerDriver', () => {
         expect(mockedContract.getTrade)
             .toHaveBeenCalledTimes(1);
         expect(mockedContract.getTrade)
-            .toHaveBeenNthCalledWith(1, 0);
+            .toHaveBeenNthCalledWith(1, 1);
         expect(mockedGetTrade)
             .toHaveBeenCalledTimes(1);
     });
@@ -243,7 +243,7 @@ describe('TradeManagerDriver', () => {
         expect(mockedContract.getTradeType)
             .toHaveBeenCalledTimes(1);
         expect(mockedContract.getTradeType)
-            .toHaveBeenNthCalledWith(1, 0);
+            .toHaveBeenNthCalledWith(1, 1);
         expect(mockedGetTradeType)
             .toHaveBeenCalledTimes(1);
         expect(getTradeTypeByIndexSpy)
@@ -262,6 +262,19 @@ describe('TradeManagerDriver', () => {
             .toHaveBeenNthCalledWith(1, 0);
         expect(mockedGetTrade)
             .toHaveBeenCalledTimes(1);
+    });
+
+    it('should correctly get a trade type', async () => {
+        const response = await tradeManagerDriver.getTradeType(1);
+
+        expect(response)
+            .toEqual(TradeType.BASIC);
+
+        expect(mockedContract.getTradeType)
+            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.getTradeType)
+            .toHaveBeenNthCalledWith(1, 1);
+        expect(mockedGetTradeType)
     });
 
     it('should correctly get trade ids of supplier', async () => {

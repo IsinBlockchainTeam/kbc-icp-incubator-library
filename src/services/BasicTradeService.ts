@@ -25,6 +25,10 @@ export class BasicTradeService extends TradeService implements IConcreteTradeSer
         return this._tradeDriverImplementation.updateLine(line);
     }
 
+    async assignMaterial(lineId: number, materialId: number): Promise<void> {
+        return this._tradeDriverImplementation.assignMaterial(lineId, materialId);
+    }
+
     async setName(name: string): Promise<void> {
         return this._tradeDriverImplementation.setName(name);
     }

@@ -46,7 +46,7 @@ describe('OrderTrade.sol', () => {
 
     beforeEach(async () => {
         const OrderTrade = await ethers.getContractFactory('OrderTrade');
-        orderTradeContract = await OrderTrade.deploy(0, productCategoryManagerContractFake.address, materialManagerContractFake.address,
+        orderTradeContract = await OrderTrade.deploy(1, productCategoryManagerContractFake.address, materialManagerContractFake.address,
             documentManagerContractFake.address, supplier.address, customer.address, commissioner.address, externalUrl,
             paymentDeadline, documentDeliveryDeadline, arbiter.address, shippingDeadline, deliveryDeadline, escrowContractFake.address,
             enumerableFiatManagerContractFake.address,
@@ -60,7 +60,7 @@ describe('OrderTrade.sol', () => {
                 = await orderTradeContract.getTrade();
             expect(_tradeId)
                 .to
-                .equal(0);
+                .equal(1);
             expect(_supplier)
                 .to
                 .equal(supplier.address);
@@ -191,7 +191,7 @@ describe('OrderTrade.sol', () => {
             const lineId = receipt.events.find((event: Event) => event.event === 'OrderLineAdded').args[0];
             expect(lineId)
                 .to
-                .equal(0);
+                .equal(1);
 
             const result = await orderTradeContract.getLine(lineId);
             expect(result[0]).to.deep.equal([lineId, 1, 0, true]);
@@ -221,17 +221,17 @@ describe('OrderTrade.sol', () => {
             const tx = await orderTradeContract.connect(supplier).addLine(1, 100, [10, 0, fiats[0]]);
             await tx.wait();
 
-            const assignTx = await orderTradeContract.connect(supplier).assignMaterial(0, 1);
+            const assignTx = await orderTradeContract.connect(supplier).assignMaterial(1, 1);
             const assignReceipt = await assignTx.wait();
 
-            const line = await orderTradeContract.getLine(0);
-            expect(line[0]).to.deep.equal([0, 1, 1, true]);
+            const line = await orderTradeContract.getLine(1);
+            expect(line[0]).to.deep.equal([1, 1, 1, true]);
             expect(line[1]).to.deep.equal([100, [10, 0, fiats[0]]]);
-            expect(assignReceipt.events.find((event: Event) => event.event === 'MaterialAssigned').args[0]).to.equal(0);
+            expect(assignReceipt.events.find((event: Event) => event.event === 'MaterialAssigned').args[0]).to.equal(1);
         });
 
         it('should get an order line - FAIL(Trade: Line does not exist)', async () => {
-            await expect(orderTradeContract.getLine(1))
+            await expect(orderTradeContract.getLine(100))
                 .to
                 .be
                 .revertedWith('Trade: Line does not exist');

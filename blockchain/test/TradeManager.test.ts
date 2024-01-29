@@ -104,7 +104,7 @@ describe('TradeManager.sol', () => {
 
             expect(id)
                 .to
-                .equal(0);
+                .equal(1);
             expect(eventArgs[1])
                 .to
                 .equal(supplier.address);
@@ -173,7 +173,7 @@ describe('TradeManager.sol', () => {
 
             expect(id)
                 .to
-                .equal(0);
+                .equal(1);
             expect(eventArgs[1])
                 .to
                 .equal(supplier.address);
@@ -274,14 +274,14 @@ describe('TradeManager.sol', () => {
 
             expect(await tradeManagerContract.getTradeCounter()).to.equal(3);
 
-            const firstTrade = await _getTradeContract(0);
-            expect(firstTrade.address).to.equal(await tradeManagerContract.getTrade(0));
+            const firstTrade = await _getTradeContract(1);
+            expect(firstTrade.address).to.equal(await tradeManagerContract.getTrade(1));
 
-            const secondTrade = await _getTradeContract(1);
-            expect(secondTrade.address).to.equal(await tradeManagerContract.getTrade(1));
+            const secondTrade = await _getTradeContract(2);
+            expect(secondTrade.address).to.equal(await tradeManagerContract.getTrade(2));
 
-            const thirdTrade = await _getTradeContract(2);
-            expect(thirdTrade.address).to.equal(await tradeManagerContract.getTrade(2));
+            const thirdTrade = await _getTradeContract(3);
+            expect(thirdTrade.address).to.equal(await tradeManagerContract.getTrade(3));
         });
 
         it('should get all trades and types', async () => {
@@ -291,14 +291,14 @@ describe('TradeManager.sol', () => {
 
             expect(await tradeManagerContract.getTradeCounter()).to.equal(3);
 
-            const firstTrade = await _getTradeContract(0);
-            expect(await firstTrade.getTradeType()).to.equal(await tradeManagerContract.getTradeType(0));
+            const firstTrade = await _getTradeContract(1);
+            expect(await firstTrade.getTradeType()).to.equal(await tradeManagerContract.getTradeType(1));
 
-            const secondTrade = await _getTradeContract(1);
-            expect(await secondTrade.getTradeType()).to.equal(await tradeManagerContract.getTradeType(1));
+            const secondTrade = await _getTradeContract(2);
+            expect(await secondTrade.getTradeType()).to.equal(await tradeManagerContract.getTradeType(2));
 
-            const thirdTrade = await _getTradeContract(2);
-            expect(await thirdTrade.getTradeType()).to.equal(await tradeManagerContract.getTradeType(2));
+            const thirdTrade = await _getTradeContract(3);
+            expect(await thirdTrade.getTradeType()).to.equal(await tradeManagerContract.getTradeType(3));
         });
 
         it('should get trade IDs of supplier', async () => {
@@ -314,10 +314,10 @@ describe('TradeManager.sol', () => {
                 .equal(2);
             expect(supplierIds[0])
                 .to
-                .equal(0);
+                .equal(1);
             expect(supplierIds[1])
                 .to
-                .equal(2);
+                .equal(3);
             expect(adminIds.length)
                 .to
                 .equal(0);
@@ -337,16 +337,16 @@ describe('TradeManager.sol', () => {
                 .equal(2);
             expect(commissionerIds[0])
                 .to
-                .equal(0);
+                .equal(1);
             expect(commissionerIds[1])
                 .to
-                .equal(1);
+                .equal(2);
             expect(adminIds.length)
                 .to
                 .equal(1);
             expect(adminIds[0])
                 .to
-                .equal(2);
+                .equal(3);
             expect(customerIds.length)
                 .to
                 .equal(0);

@@ -31,6 +31,10 @@ export class OrderTradeService extends TradeService implements IConcreteTradeSer
         return this._tradeDriverImplementation.updateLine(line);
     }
 
+    async assignMaterial(lineId: number, materialId: number): Promise<void> {
+        return this._tradeDriverImplementation.assignMaterial(lineId, materialId);
+    }
+
     async getNegotiationStatus(): Promise<NegotiationStatus> {
         return this._tradeDriverImplementation.getNegotiationStatus();
     }

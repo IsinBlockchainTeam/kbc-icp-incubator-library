@@ -97,7 +97,7 @@ abstract contract Trade is AccessControl {
     function _addLine(uint256 productCategoryId) internal returns (uint256) {
         require(_productCategoryManager.getProductCategoryExists(productCategoryId), "Trade: Product category does not exist");
 
-        uint256 tradeLineId = _lineCounter.current();
+        uint256 tradeLineId = _lineCounter.current() + 1;
         _lineCounter.increment();
 
         _lines[tradeLineId] = Line(tradeLineId, productCategoryId, 0, true);
@@ -133,6 +133,7 @@ abstract contract Trade is AccessControl {
     }
 
     function addDocument(uint256 lineId, string memory name, DocumentManager.DocumentType documentType, string memory externalUrl) public onlyAdminOrContractPart {
+        require(_lines[lineId].exists, "Trade: Line does not exist");
         require(_lines[lineId].materialId != 0, "Trade: A material must be assigned before adding a document for a line");
         _documentManager.registerDocument(_tradeId, "trade", name, documentType, externalUrl);
     }

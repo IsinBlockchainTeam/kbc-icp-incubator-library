@@ -187,7 +187,7 @@ describe('AssetOperationDriver', () => {
         expect(mockedGetAssetOperationCounter).toHaveBeenNthCalledWith(1);
 
         expect(mockedGetAssetOperation).toHaveBeenCalledTimes(1);
-        expect(mockedGetAssetOperation).toHaveBeenNthCalledWith(1, 0);
+        expect(mockedGetAssetOperation).toHaveBeenNthCalledWith(1, 1);
     });
 
     it('should check if an AssetOperation exists', async () => {

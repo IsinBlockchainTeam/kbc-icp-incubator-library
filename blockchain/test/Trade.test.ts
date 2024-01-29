@@ -37,7 +37,7 @@ describe('Trade.sol', () => {
 
     beforeEach(async () => {
         const BasicTrade = await ethers.getContractFactory('BasicTrade');
-        basicTradeContract = await BasicTrade.deploy(0, productCategoryManagerContractFake.address, materialManagerContractFake.address,
+        basicTradeContract = await BasicTrade.deploy(1, productCategoryManagerContractFake.address, materialManagerContractFake.address,
             documentManagerContractFake.address, supplier.address, customer.address, commissioner.address, externalUrl, name);
         await basicTradeContract.deployed();
     });
@@ -64,7 +64,7 @@ describe('Trade.sol', () => {
             expect(documentManagerContractFake.getDocumentsByDocumentType)
                 .to
                 .have
-                .calledWith(0, 'trade', documentTypes[0]);
+                .calledWith(1, 'trade', documentTypes[0]);
         });
 
         // it('should compute the trade status - FAIL (Trade: There are no documents related to this trade)', async () => {
@@ -94,8 +94,8 @@ describe('Trade.sol', () => {
     describe('Documents', () => {
         it('should add a document', async () => {
             await basicTradeContract.addLine(1);
-            await basicTradeContract.assignMaterial(0, 2);
-            await basicTradeContract.addDocument(0, 'test document', documentTypes[0], 'https://www.test.com');
+            await basicTradeContract.assignMaterial(1, 2);
+            await basicTradeContract.addDocument(1, 'test document', documentTypes[0], 'https://www.test.com');
             expect(documentManagerContractFake.registerDocument)
                 .to
                 .have
@@ -103,7 +103,7 @@ describe('Trade.sol', () => {
             expect(documentManagerContractFake.registerDocument)
                 .to
                 .have
-                .calledWith(0, 'trade', 'test document', documentTypes[0], 'https://www.test.com');
+                .calledWith(1, 'trade', 'test document', documentTypes[0], 'https://www.test.com');
         });
     });
 

@@ -33,11 +33,11 @@ export class AssetOperationService {
         return this._assetOperationDriver.getAssetOperationsOfCreator(creator);
     }
 
-    async registerAssetOperation(name: string, inputMaterialsIds: number[], outputMaterialId: number): Promise<void> {
-        await this._assetOperationDriver.registerAssetOperation(name, inputMaterialsIds, outputMaterialId);
+    async registerAssetOperation(name: string, inputMaterialsIds: number[], outputMaterialId: number): Promise<AssetOperation> {
+        return this._assetOperationDriver.registerAssetOperation(name, inputMaterialsIds, outputMaterialId);
     }
 
-    async updateAssetOperation(id: number, name: string, inputMaterialsIds: number[], outputMaterialId: number): Promise<void> {
-        await this._assetOperationDriver.updateAssetOperation(id, name, inputMaterialsIds, outputMaterialId);
+    async updateAssetOperation(id: number, name: string, inputMaterialsIds: number[], outputMaterialId: number): Promise<AssetOperation> {
+        return this._assetOperationDriver.updateAssetOperation(id, name, inputMaterialsIds, outputMaterialId);
     }
 }

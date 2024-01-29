@@ -76,7 +76,7 @@ contract TradeManager is AccessControl {
         require(customer != address(0), "TradeManager: customer is the zero address");
         require(commissioner != address(0), "TradeManager: commissioner is the zero address");
 
-        uint256 id = _counter.current();
+        uint256 id = _counter.current() + 1;
         _counter.increment();
 
         BasicTrade newTrade = new BasicTrade(id, _productCategoryManagerAddress, _materialManagerAddress, _documentManagerAddress, supplier, customer, commissioner, externalUrl, name);
@@ -95,7 +95,7 @@ contract TradeManager is AccessControl {
         require(arbiter != address(0), "TradeManager: arbiter is the zero address");
         require(paymentDeadline > block.timestamp, "TradeManager: payment deadline must be in the future");
 
-        uint256 id = _counter.current();
+        uint256 id = _counter.current() + 1;
         _counter.increment();
 
         Escrow escrow = _escrowManager.registerEscrow(supplier, commissioner, agreedAmount, paymentDeadline - block.timestamp, tokenAddress);

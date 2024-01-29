@@ -19,17 +19,17 @@ export class AssetOperationDriver {
     constructor(
         signer: Signer,
         assetOperationManagerAddress: string,
-        productCategoryManagerAddress: string,
         materialManagerAddress: string,
+        productCategoryManagerAddress: string,
     ) {
         this._assetOperationContract = AssetOperationManager__factory
             .connect(assetOperationManagerAddress, signer.provider!)
             .connect(signer);
-        this._productCategoryContract = ProductCategoryManager__factory
-            .connect(productCategoryManagerAddress, signer.provider!)
-            .connect(signer);
         this._materialContract = MaterialManager__factory
             .connect(materialManagerAddress, signer.provider!)
+            .connect(signer);
+        this._productCategoryContract = ProductCategoryManager__factory
+            .connect(productCategoryManagerAddress, signer.provider!)
             .connect(signer);
     }
 
@@ -56,7 +56,7 @@ export class AssetOperationDriver {
         const counter: number = await this.getAssetOperationsCounter();
 
         const promises = [];
-        for (let i = 0; i < counter; i++) {
+        for (let i = 1; i <= counter; i++) {
             promises.push(this.getAssetOperation(i));
         }
 

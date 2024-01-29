@@ -36,7 +36,7 @@ export class ProductCategoryDriver {
         const counter: number = await this.getProductCategoryCounter();
 
         const promises = [];
-        for (let i = 0; i < counter; i++) {
+        for (let i = 1; i <= counter; i++) {
             promises.push(this.getProductCategory(i));
         }
 

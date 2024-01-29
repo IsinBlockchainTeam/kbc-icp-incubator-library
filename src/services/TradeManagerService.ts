@@ -22,6 +22,10 @@ export class TradeManagerService {
         return this._tradeManagerDriver.getTrades();
     }
 
+    async getTradeType(id: number): Promise<TradeType> {
+        return this._tradeManagerDriver.getTradeType(id);
+    }
+
     async getTradesAndTypes(): Promise<Map<string, TradeType>> {
         return this._tradeManagerDriver.getTradesAndTypes();
     }

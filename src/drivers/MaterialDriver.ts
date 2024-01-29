@@ -44,7 +44,7 @@ export class MaterialDriver {
         const counter: number = await this.getMaterialsCounter();
 
         const promises = [];
-        for (let i = 0; i < counter; i++) {
+        for (let i = 1; i <= counter; i++) {
             promises.push(this.getMaterial(i));
         }
 

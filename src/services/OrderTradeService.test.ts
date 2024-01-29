@@ -16,6 +16,7 @@ describe('OrderTradeService', () => {
         getLine: jest.fn(),
         addLine: jest.fn(),
         updateLine: jest.fn(),
+        assignMaterial: jest.fn(),
         getNegotiationStatus: jest.fn(),
         updatePaymentDeadline: jest.fn(),
         updateDocumentDeliveryDeadline: jest.fn(),
@@ -64,6 +65,12 @@ describe('OrderTradeService', () => {
             serviceFunction: () => orderTradeService.updateLine(new OrderLine(1, new Material(1, new ProductCategory(2, 'test', 10, 'description')), new ProductCategory(2, 'test', 10, 'description'), 10, new OrderLinePrice(10.2, 'CHF'))),
             expectedMockedFunction: mockedOrderTradeDriver.updateLine,
             expectedMockedFunctionArgs: [new OrderLine(1, new Material(1, new ProductCategory(2, 'test', 10, 'description')), new ProductCategory(2, 'test', 10, 'description'), 10, new OrderLinePrice(10.2, 'CHF'))],
+        },
+        {
+            serviceFunctionName: 'assignMaterial',
+            serviceFunction: () => orderTradeService.assignMaterial(1, 1),
+            expectedMockedFunction: mockedOrderTradeDriver.assignMaterial,
+            expectedMockedFunctionArgs: [1, 1],
         },
         {
             serviceFunctionName: 'getNegotiationStatus',

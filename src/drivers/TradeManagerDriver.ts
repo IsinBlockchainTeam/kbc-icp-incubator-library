@@ -56,19 +56,24 @@ export class TradeManagerDriver {
         const trades: string[] = [];
         const tradeCounter: number = (await this._contract.getTradeCounter()).toNumber();
 
-        for (let i: number = 0; i < tradeCounter; i++) {
+        for (let i: number = 1; i <= tradeCounter; i++) {
             trades.push(await this._contract.getTrade(i));
         }
         return trades;
+    }
+
+    async getTradeType(id: number): Promise<TradeType> {
+        const result = await this._contract.getTradeType(id);
+        return getTradeTypeByIndex(result);
     }
 
     async getTradesAndTypes(): Promise<Map<string, TradeType>> {
         const result: Map<string, TradeType> = new Map<string, TradeType>();
         const tradeCounter: number = (await this._contract.getTradeCounter()).toNumber();
 
-        for (let i: number = 0; i < tradeCounter; i++) {
+        for (let i: number = 1; i <= tradeCounter; i++) {
             const tradeAddress: string = await this._contract.getTrade(i);
-            const tradeType: TradeType = getTradeTypeByIndex(await this._contract.getTradeType(i));
+            const tradeType: TradeType = await this.getTradeType(i);
             result.set(tradeAddress, tradeType);
         }
         return result;
