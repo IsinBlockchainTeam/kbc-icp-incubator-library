@@ -18,6 +18,10 @@ export class TradeManagerService {
         return this._tradeManagerDriver.registerOrderTrade(supplier, customer, commissioner, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);
     }
 
+    async getTradeCounter(): Promise<number> {
+        return this._tradeManagerDriver.getTradeCounter();
+    }
+
     async getTrades(): Promise<string[]> {
         return this._tradeManagerDriver.getTrades();
     }

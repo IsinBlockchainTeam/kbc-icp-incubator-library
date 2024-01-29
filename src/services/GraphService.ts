@@ -26,10 +26,10 @@ export class GraphService {
 
     private _signer: Signer;
 
-    constructor(tradeManagerService: TradeManagerService, transformationService: AssetOperationService, signer: Signer) {
+    constructor(signer: Signer, tradeManagerService: TradeManagerService, transformationService: AssetOperationService) {
+        this._signer = signer;
         this._tradeManagerService = tradeManagerService;
         this._assetOperationService = transformationService;
-        this._signer = signer;
     }
 
     public async findTransformationsByMaterialOutput(supplierAddress: string, materialId: number): Promise<AssetOperation[]> {
