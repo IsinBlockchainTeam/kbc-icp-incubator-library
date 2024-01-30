@@ -52,7 +52,7 @@ export class AssetOperation {
     get type(): AssetOperationType {
         if(this.inputMaterials.length === 0 || !this.outputMaterial)
             throw new Error("Invalid asset operation");
-        return (this.inputMaterials.length === 1 && this.inputMaterials[0] === this.outputMaterial) ?
+        return (this.inputMaterials.length === 1 && (this.inputMaterials[0].id === this.outputMaterial.id)) ?
             AssetOperationType.CONSOLIDATION :
             AssetOperationType.TRANSFORMATION;
     }

@@ -60,31 +60,34 @@ export class GraphService {
             return partialGraphData;
         }
 
-        let transformation: AssetOperation = assetOperations[0];
-        let consolidations: AssetOperation[];
+        let transformation: AssetOperation | undefined = assetOperations.filter((ao) => ao.type === AssetOperationType.TRANSFORMATION)[0];
+        let consolidations: AssetOperation[] = [];
+
         if(assetOperations.some((ao) => ao.type === AssetOperationType.CONSOLIDATION)) {
             // There is always maximum one transformation for each material!
             const consolidationsOnly = assetOperations.filter((ao) => ao.type === AssetOperationType.CONSOLIDATION);
             const transformationsOnly = assetOperations.filter((ao) => ao.type === AssetOperationType.TRANSFORMATION);
 
-            // transformation = transformationsOnly.length > 0 ? transformationsOnly[0] : undefined;
+            transformation = transformationsOnly.length > 0 ? transformationsOnly[0] : undefined;
 
             // Sort descending
             consolidations = consolidationsOnly.sort((a, b) => b.id - a.id);
 
-            throw new Error(`${consolidations.length}`);
-
-            // consolidations.forEach((consolidation) => {
-            //     partialGraphData.nodes.push({
-            //         id: consolidation.id,
-            //         type: AssetOperationType.CONSOLIDATION,
-            //         resourceId: consolidation.name
-            //     });
-            // });
+            consolidations.forEach((consolidation) => {
+                partialGraphData.nodes.push({
+                    id: consolidation.id,
+                    type: AssetOperationType.CONSOLIDATION,
+                    resourceId: consolidation.name
+                });
+            });
         }
 
-        if(!transformation)
+        // If the material is referenced in one or more consolidations but not in a transformation, the material is an input material. Return.
+        if(consolidations.length > 0 && !transformation)
             return partialGraphData;
+
+        if(!transformation)
+            throw new Error("GraphState: Invalid state.");
 
         partialGraphData.nodes.push({
             id: transformation.id,
