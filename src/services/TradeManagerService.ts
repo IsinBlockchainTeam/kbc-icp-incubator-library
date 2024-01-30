@@ -2,6 +2,7 @@ import { TradeManagerDriver } from '../drivers/TradeManagerDriver';
 import { TradeType } from '../types/TradeType';
 import { BasicTrade } from '../entities/BasicTrade';
 import { OrderTrade } from '../entities/OrderTrade';
+import {Trade} from "../entities/Trade";
 
 export class TradeManagerService {
     private _tradeManagerDriver: TradeManagerDriver;
@@ -36,6 +37,10 @@ export class TradeManagerService {
 
     async getTrade(id: number): Promise<string> {
         return this._tradeManagerDriver.getTrade(id);
+    }
+
+    async getTradesByMaterial(materialId: number): Promise<Trade[]> {
+        return this._tradeManagerDriver.getTradesByMaterial(materialId);
     }
 
     async getTradeIdsOfSupplier(supplier: string): Promise<number[]> {

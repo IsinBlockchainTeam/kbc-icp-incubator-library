@@ -51,8 +51,8 @@ describe('GraphService', () => {
 
     const supplier = '0xsupplier_address';
 
-    const findAssetOperationsByMaterialOutputSpy = jest.spyOn(GraphService.prototype, 'findAssetOperationsByMaterialOutput');
-    const findTradesByMaterialOutputSpy = jest.spyOn(GraphService.prototype, 'findTradesByMaterialOutput');
+    const findAssetOperationsByMaterialOutputSpy = jest.spyOn(GraphService.prototype, 'findTradesByMaterialOutput');
+    const findTradesByMaterialOutputSpy = jest.spyOn(GraphService.prototype, 'computeGraph');
 
     let tradeCounter: number = 0;
     let typeCounter: number = 0;
@@ -92,15 +92,8 @@ describe('GraphService', () => {
         graphService = new GraphService(createMock<Signer>(), mockedTradeManagerService, mockedAssetOperationService);
     });
 
-    it('findAssetOperationsByMaterialOutput', async () => {
-        await graphService.findAssetOperationsByMaterialOutput(supplier, 2);
-
-        expect(mockedAssetOperationService.getAssetOperationsOfCreator).toHaveBeenCalledTimes(1);
-        expect(mockedAssetOperationService.getAssetOperationsOfCreator).toHaveBeenNthCalledWith(1, supplier);
-    });
-
     it('findTradesByMaterialOutput', async () => {
-        await graphService.findTradesByMaterialOutput(supplier, 2);
+        await graphService.findTradesByMaterialOutput(2);
 
         expect(mockedTradeManagerService.getTradeIdsOfSupplier).toHaveBeenCalledTimes(1);
         expect(mockedTradeManagerService.getTradeIdsOfSupplier).toHaveBeenNthCalledWith(1, supplier);

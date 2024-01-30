@@ -3,16 +3,12 @@ import {Line, Trade} from '../entities/Trade';
 import {AssetOperation} from '../entities/AssetOperation';
 import {TradeManagerService} from './TradeManagerService';
 import {AssetOperationService} from './AssetOperationService';
-import {TradeType} from "../types/TradeType";
-import {BasicTradeService} from "./BasicTradeService";
-import {BasicTradeDriver} from "../drivers/BasicTradeDriver";
-import {MATERIAL_MANAGER_CONTRACT_ADDRESS, PRODUCT_CATEGORY_CONTRACT_ADDRESS} from "../integration-test/config";
-import {OrderTradeService} from "./OrderTradeService";
-import {OrderTradeDriver} from "../drivers/OrderTradeDriver";
-import {IConcreteTradeService} from "./IConcreteTradeService";
 import {Material} from "../entities/Material";
+import {AssetOperationType} from "../types/AssetOperationType";
 
 export type Node = {
+    id: number,
+    type: AssetOperationType,
     resourceId: string,
 };
 
@@ -40,28 +36,22 @@ export class GraphService {
         this._assetOperationService = transformationService;
     }
 
-    public async findTradesByMaterialOutput(supplierAddress: string, materialId: number): Promise<Map<Trade, Line[]>> {
+    public async findTradesByMaterialOutput(materialId: number): Promise<Map<Trade, Line[]>> {
         const result: Map<Trade, Line[]> = new Map<Trade, Line[]>();
-        const trades: number[] = await this._tradeManagerService.getTradeIdsOfSupplier(supplierAddress);
+        const trades: Trade[] = await this._tradeManagerService.getTradesByMaterial(materialId);
 
-        for (const tradeId of trades) {
-            const tradeAddress: string = await this._tradeManagerService.getTrade(tradeId);
-            const tradeType: TradeType = await this._tradeManagerService.getTradeType(tradeId);
-            const tradeService: IConcreteTradeService = tradeType === TradeType.BASIC ?
-                new BasicTradeService(new BasicTradeDriver(this._signer, tradeAddress, MATERIAL_MANAGER_CONTRACT_ADDRESS, PRODUCT_CATEGORY_CONTRACT_ADDRESS)) :
-                new OrderTradeService(new OrderTradeDriver(this._signer, tradeAddress, MATERIAL_MANAGER_CONTRACT_ADDRESS, PRODUCT_CATEGORY_CONTRACT_ADDRESS));
-
-            const lines: Line[] = await tradeService.getLines();
-            const filteredLines: Line[] = lines.filter((l) => l.material?.id === materialId);
-            if (filteredLines.length > 0) {
-                result.set(await tradeService.getTrade(), filteredLines);
+        for(const trade of trades) {
+            const filteredLines: Line[] = trade.lines.filter((l) => l.material?.id === materialId);
+            if(filteredLines.length > 0) {
+                result.set(trade, filteredLines);
             }
         }
 
         return result;
     }
 
-    public async computeGraph(supplierAddress: string, materialId: number, partialGraphData: GraphData = {
+    // 1. materialId = 5
+    public async computeGraph(materialId: number, partialGraphData: GraphData = {
         nodes: [],
         edges: []
     }): Promise<GraphData> {
@@ -70,12 +60,40 @@ export class GraphService {
             return partialGraphData;
         }
 
+        let transformation: AssetOperation = assetOperations[0];
+        let consolidations: AssetOperation[];
+        if(assetOperations.some((ao) => ao.type === AssetOperationType.CONSOLIDATION)) {
+            // There is always maximum one transformation for each material!
+            const consolidationsOnly = assetOperations.filter((ao) => ao.type === AssetOperationType.CONSOLIDATION);
+            const transformationsOnly = assetOperations.filter((ao) => ao.type === AssetOperationType.TRANSFORMATION);
+
+            // transformation = transformationsOnly.length > 0 ? transformationsOnly[0] : undefined;
+
+            // Sort descending
+            consolidations = consolidationsOnly.sort((a, b) => b.id - a.id);
+
+            throw new Error(`${consolidations.length}`);
+
+            // consolidations.forEach((consolidation) => {
+            //     partialGraphData.nodes.push({
+            //         id: consolidation.id,
+            //         type: AssetOperationType.CONSOLIDATION,
+            //         resourceId: consolidation.name
+            //     });
+            // });
+        }
+
+        if(!transformation)
+            return partialGraphData;
+
         partialGraphData.nodes.push({
-            resourceId: assetOperations[0].name
+            id: transformation.id,
+            type: AssetOperationType.TRANSFORMATION,
+            resourceId: transformation.name
         });
 
-        await Promise.all(assetOperations[0].inputMaterials.map(async (assetOperationInputMaterial: Material) => {
-            const filteredTradesMap: Map<Trade, Line[]> = await this.findTradesByMaterialOutput(supplierAddress, assetOperationInputMaterial.id);
+        await Promise.all(transformation.inputMaterials.map(async (assetOperationInputMaterial: Material) => {
+            const filteredTradesMap: Map<Trade, Line[]> = await this.findTradesByMaterialOutput(assetOperationInputMaterial.id);
             if(filteredTradesMap.size === 0) {
                 return partialGraphData;
             }
@@ -94,10 +112,10 @@ export class GraphService {
                                 .filter((tl) => tl.material!.id === involvedMaterialInputId).length > 0)
                             .map(([trade, _]) => `${trade.supplier}_trade_${trade.tradeId}`),
                         from: inputAssetOperations[0].name,
-                        to: assetOperations[0].name
+                        to: transformation!.name
                     });
 
-                    await this.computeGraph(trade.supplier, involvedMaterialInputId, partialGraphData);
+                    await this.computeGraph(involvedMaterialInputId, partialGraphData);
                 }));
             }));
         }));
