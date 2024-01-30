@@ -83,6 +83,11 @@ export class AssetOperationDriver {
         return Promise.all(promises);
     }
 
+    async getAssetOperationsByOutputMaterial(materialId: number): Promise<AssetOperation[]> {
+        const assetOperations: AssetOperation[] = await this.getAssetOperations();
+        return assetOperations.filter((assetOperation: AssetOperation) => assetOperation.outputMaterial.id === materialId);
+    }
+
     async registerAssetOperation(name: string, inputMaterialsIds: number[], outputMaterialId: number): Promise<AssetOperation> {
         const tx: any = await this._assetOperationContract.registerAssetOperation(name, inputMaterialsIds, outputMaterialId);
         const {events} = await tx.wait();

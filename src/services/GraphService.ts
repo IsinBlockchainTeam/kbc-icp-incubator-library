@@ -1,8 +1,16 @@
-import { Signer } from 'ethers';
-import { Line, Trade } from '../entities/Trade';
-import { AssetOperation } from '../entities/AssetOperation';
-import { TradeManagerService } from './TradeManagerService';
-import { AssetOperationService } from './AssetOperationService';
+import {Signer} from 'ethers';
+import {Line, Trade} from '../entities/Trade';
+import {AssetOperation} from '../entities/AssetOperation';
+import {TradeManagerService} from './TradeManagerService';
+import {AssetOperationService} from './AssetOperationService';
+import {TradeType} from "../types/TradeType";
+import {BasicTradeService} from "./BasicTradeService";
+import {BasicTradeDriver} from "../drivers/BasicTradeDriver";
+import {MATERIAL_MANAGER_CONTRACT_ADDRESS, PRODUCT_CATEGORY_CONTRACT_ADDRESS} from "../integration-test/config";
+import {OrderTradeService} from "./OrderTradeService";
+import {OrderTradeDriver} from "../drivers/OrderTradeDriver";
+import {IConcreteTradeService} from "./IConcreteTradeService";
+import {Material} from "../entities/Material";
 
 export type Node = {
     resourceId: string,
@@ -20,11 +28,11 @@ export type GraphData = {
 }
 
 export class GraphService {
+    private _signer: Signer;
+
     private _tradeManagerService: TradeManagerService;
 
     private _assetOperationService: AssetOperationService;
-
-    private _signer: Signer;
 
     constructor(signer: Signer, tradeManagerService: TradeManagerService, transformationService: AssetOperationService) {
         this._signer = signer;
@@ -32,127 +40,146 @@ export class GraphService {
         this._assetOperationService = transformationService;
     }
 
-    public async findTransformationsByMaterialOutput(supplierAddress: string, materialId: number): Promise<AssetOperation[]> {
-        const transformations = await this._assetOperationService.getAssetOperationsOfCreator(supplierAddress);
-        return transformations.filter((t) => t.outputMaterial.id === materialId);
-    }
+    public async findTradesByMaterialOutput(supplierAddress: string, materialId: number): Promise<Map<Trade, Line[]>> {
+        const result: Map<Trade, Line[]> = new Map<Trade, Line[]>();
+        const trades: number[] = await this._tradeManagerService.getTradeIdsOfSupplier(supplierAddress);
 
-    /*
-    public async findTradesByMaterialOutput(supplierAddress: string, materialId: number): Promise<Map<Trade, (TradeLine | OrderLine)[]>> {
-        const trades = await this._tradeManagerService.getGeneralTrades(supplierAddress);
-        const tradesWithLines = await trades.reduce(async (accPromise, curr: Trade) => {
-            const acc = await accPromise;
-            if (curr.type === undefined) return acc;
-            // @ts-ignore
-            const lines = curr.type === TradeType.TRADE
-                ? await this._tradeManagerService.getTradeLines(curr.id)
-                : curr.type === TradeType.ORDER
-                    ? await this._tradeManagerService.getOrderLines(curr.id)
-                    : [];
-            acc.set(curr, lines);
-            return acc;
-        }, Promise.resolve(new Map<Trade, TradeLine[]>()));
-        // get only trades in which in the relative lines, as consignee material (materialIds[1]), there is one with 'materialId' value
-        return new Map(Array.from(tradesWithLines).filter(([_, lines]) => lines.flatMap((l) => l.materialIds[1]).includes(materialId)));
-    }
-    */
-
-    // !!! Warning: If a trade has multiple lines with the same materialId as output, only the first one will be returned !!!
-    public async findTradesByMaterialOutput(supplierAddress: string, materialId: number): Promise<Map<number, Line>> {
-        const trades: Map<number, Line> = new Map<number, Line>();
-        /*
-        const tradeIds = await this._tradeManagerService.getTradeIdsOfSupplier(supplierAddress);
-        for (const tradeId of tradeIds) {
+        for (const tradeId of trades) {
             const tradeAddress: string = await this._tradeManagerService.getTrade(tradeId);
-            const tradeDriver: TradeDriver = new TradeDriver(this._signer, tradeAddress);
-            const { lineIds } = await tradeDriver.getTrade();
-            for (const lineId of lineIds) {
-                const line = await tradeDriver.getLine(lineId);
-                if (line.materialsId[1].toNumber() === materialId) {
-                    trades.set(tradeId, line);
-                    break;
-                }
+            const tradeType: TradeType = await this._tradeManagerService.getTradeType(tradeId);
+            const tradeService: IConcreteTradeService = tradeType === TradeType.BASIC ?
+                new BasicTradeService(new BasicTradeDriver(this._signer, tradeAddress, MATERIAL_MANAGER_CONTRACT_ADDRESS, PRODUCT_CATEGORY_CONTRACT_ADDRESS)) :
+                new OrderTradeService(new OrderTradeDriver(this._signer, tradeAddress, MATERIAL_MANAGER_CONTRACT_ADDRESS, PRODUCT_CATEGORY_CONTRACT_ADDRESS));
+
+            const lines: Line[] = await tradeService.getLines();
+            const filteredLines: Line[] = lines.filter((l) => l.material?.id === materialId);
+            if (filteredLines.length > 0) {
+                result.set(await tradeService.getTrade(), filteredLines);
             }
         }
-         */
-        return trades;
+
+        return result;
     }
 
     public async computeGraph(supplierAddress: string, materialId: number, partialGraphData: GraphData = {
         nodes: [],
-        edges: [],
+        edges: []
     }): Promise<GraphData> {
-        /*
-        // TODO: quando arriva un trade in ingresso per cui c'è un materiale, non posso vedere la sua chain dal momento che l'utente loggato non sarà l'owner della relativa trasformazione
-        const transformations = await this.findTransformationsByMaterialOutput(supplierAddress, materialId);
-        if (transformations.length === 0) { return partialGraphData; }
-        if (transformations.length > 1) {
-            throw new Error(`Multiple transformations found for material id ${materialId}`);
+        const assetOperations = await this._assetOperationService.getAssetOperationsByOutputMaterial(materialId);
+        if(assetOperations.length === 0) {
+            return partialGraphData;
         }
 
         partialGraphData.nodes.push({
-            resourceId: this.getGraphEntityId(transformations[0]),
+            resourceId: assetOperations[0].name
         });
 
-        await Promise.all(transformations[0].inputMaterials.map(async (transformationInputMaterial) => {
-            const tradesWithLines = await this.findTradesByMaterialOutput(supplierAddress, transformationInputMaterial.id);
-            if (tradesWithLines.size === 0) { return partialGraphData; }
+        await Promise.all(assetOperations[0].inputMaterials.map(async (assetOperationInputMaterial: Material) => {
+            const filteredTradesMap: Map<Trade, Line[]> = await this.findTradesByMaterialOutput(supplierAddress, assetOperationInputMaterial.id);
+            if(filteredTradesMap.size === 0) {
+                return partialGraphData;
+            }
 
-            const idsAlreadyPresent: number[] = [];
-            const involvedTradeMaterialInputIds = Array.from(tradesWithLines)
-                .filter(([_, lines]) => lines.flatMap((l) => l.materialIds[1]).includes(transformationInputMaterial.id))
-                .reduce((acc, curr) => {
-                    const materialIds = curr[1].map((tl) => tl.materialIds[0]).filter((id) => !idsAlreadyPresent.includes(id));
-                    if (materialIds.length) {
-                        acc.set(curr[0], materialIds);
-                        idsAlreadyPresent.push(...materialIds);
-                    }
-                    return acc;
-                }, new Map<Trade, number[]>());
-            // const involvedMaterialInputIds = [...new Set(Array.from(tradesWithLines.values())
-            //     .flat()
-            //     .map((tl) => tl.materialIds)
-            //     .filter((x) => x[1] === transformationInputMaterial)
-            //     .map((x) => x[0]),
-            // )];
+            const tradeWithMaterialIdMap: Map<Trade, number[]> = new Map(
+                Array.from(filteredTradesMap).map(([trade, lines]) => [trade, lines.map((l) => l.material!.id)])
+            );
 
-            await Promise.all(Array.from(involvedTradeMaterialInputIds).map(async ([trade, materialInputIds]) => {
-                await Promise.all(materialInputIds.map(async (involvedMaterialInputId) => {
-                    const inputTransformations = await this.findTransformationsByMaterialOutput(trade.supplier, involvedMaterialInputId);
-                    if (inputTransformations.length !== 1)
-                        throw new Error(`${inputTransformations.length > 1 ? 'Multiple' : 'No'} transformations found for material id ${involvedMaterialInputId}`);
+            await Promise.all(Array.from(tradeWithMaterialIdMap).map(async ([trade, materialInputIds]) => {
+                await Promise.all(materialInputIds.map(async (involvedMaterialInputId: number) => {
+                    const inputAssetOperations: AssetOperation[] = await this._assetOperationService.getAssetOperationsByOutputMaterial(involvedMaterialInputId);
 
                     partialGraphData.edges.push({
-                        resourcesIds: Array.from(tradesWithLines.entries())
+                        resourcesIds: Array.from(filteredTradesMap.entries())
                             .filter(([_, lines]) => lines
-                                .filter((tl) => tl.materialIds.some((x) => x === involvedMaterialInputId)).length > 0)
-                            .map(([trade, _]) => this.getGraphEntityId(trade)),
-                        from: this.getGraphEntityId(inputTransformations[0]),
-                        to: this.getGraphEntityId(transformations[0]),
+                                .filter((tl) => tl.material!.id === involvedMaterialInputId).length > 0)
+                            .map(([trade, _]) => `${trade.supplier}_trade_${trade.tradeId}`),
+                        from: inputAssetOperations[0].name,
+                        to: assetOperations[0].name
                     });
 
                     await this.computeGraph(trade.supplier, involvedMaterialInputId, partialGraphData);
                 }));
             }));
-            // await Promise.all(involvedMaterialInputIds.map(async (involvedMaterialInputId) => {
-            //     const inputTransformations = await this.findTransformationsByMaterialOutput(supplierAddress, involvedMaterialInputId);
-            //     if (inputTransformations.length !== 1)
-            //         throw new Error(`${inputTransformations.length > 1 ? 'Multiple' : 'No'} transformations found for material id ${involvedMaterialInputId}`);
-            //
-            //     partialGraphData.edges.push({
-            //         resourcesIds: Array.from(tradesWithLines.entries())
-            //             .filter(([_, lines]) => lines
-            //                 .filter((tl) => tl.materialIds.some((x) => x === involvedMaterialInputId)).length > 0)
-            //             .map(([trade, _]) => this.getGraphEntityId(trade)),
-            //         from: this.getGraphEntityId(inputTransformations[0]),
-            //         to: this.getGraphEntityId(transformations[0]),
-            //     });
-            //
-            //     await this.computeGraph(supplierAddress, involvedMaterialInputId, partialGraphData);
-            // }));
-        })); */
+        }));
+
         return partialGraphData;
     }
+
+    // public async computeGraph(supplierAddress: string, materialId: number, partialGraphData: GraphData = {
+    //     nodes: [],
+    //     edges: [],
+    // }): Promise<GraphData> {
+    //     /*
+    //     // TODO: quando arriva un trade in ingresso per cui c'è un materiale, non posso vedere la sua chain dal momento che l'utente loggato non sarà l'owner della relativa trasformazione
+    //     const transformations = await this.findTransformationsByMaterialOutput(supplierAddress, materialId);
+    //     if (transformations.length === 0) { return partialGraphData; }
+    //     if (transformations.length > 1) {
+    //         throw new Error(`Multiple transformations found for material id ${materialId}`);
+    //     }
+    //
+    //     partialGraphData.nodes.push({
+    //         resourceId: this.getGraphEntityId(transformations[0]),
+    //     });
+    //
+    //     await Promise.all(transformations[0].inputMaterials.map(async (transformationInputMaterial) => {
+    //         const tradesWithLines = await this.findTradesByMaterialOutput(supplierAddress, transformationInputMaterial.id);
+    //         if (tradesWithLines.size === 0) { return partialGraphData; }
+    //
+    //         const idsAlreadyPresent: number[] = [];
+    //         const involvedTradeMaterialInputIds = Array.from(tradesWithLines)
+    //             .filter(([_, lines]) => lines.flatMap((l) => l.materialIds[1]).includes(transformationInputMaterial.id))
+    //             .reduce((acc, curr) => {
+    //                 const materialIds = curr[1].map((tl) => tl.materialIds[0]).filter((id) => !idsAlreadyPresent.includes(id));
+    //                 if (materialIds.length) {
+    //                     acc.set(curr[0], materialIds);
+    //                     idsAlreadyPresent.push(...materialIds);
+    //                 }
+    //                 return acc;
+    //             }, new Map<Trade, number[]>());
+    //         // const involvedMaterialInputIds = [...new Set(Array.from(tradesWithLines.values())
+    //         //     .flat()
+    //         //     .map((tl) => tl.materialIds)
+    //         //     .filter((x) => x[1] === transformationInputMaterial)
+    //         //     .map((x) => x[0]),
+    //         // )];
+    //
+    //         await Promise.all(Array.from(involvedTradeMaterialInputIds).map(async ([trade, materialInputIds]) => {
+    //             await Promise.all(materialInputIds.map(async (involvedMaterialInputId) => {
+    //                 const inputTransformations = await this.findTransformationsByMaterialOutput(trade.supplier, involvedMaterialInputId);
+    //                 if (inputTransformations.length !== 1)
+    //                     throw new Error(`${inputTransformations.length > 1 ? 'Multiple' : 'No'} transformations found for material id ${involvedMaterialInputId}`);
+    //
+    //                 partialGraphData.edges.push({
+    //                     resourcesIds: Array.from(tradesWithLines.entries())
+    //                         .filter(([_, lines]) => lines
+    //                             .filter((tl) => tl.materialIds.some((x) => x === involvedMaterialInputId)).length > 0)
+    //                         .map(([trade, _]) => this.getGraphEntityId(trade)),
+    //                     from: this.getGraphEntityId(inputTransformations[0]),
+    //                     to: this.getGraphEntityId(transformations[0]),
+    //                 });
+    //
+    //                 await this.computeGraph(trade.supplier, involvedMaterialInputId, partialGraphData);
+    //             }));
+    //         }));
+    //         // await Promise.all(involvedMaterialInputIds.map(async (involvedMaterialInputId) => {
+    //         //     const inputTransformations = await this.findTransformationsByMaterialOutput(supplierAddress, involvedMaterialInputId);
+    //         //     if (inputTransformations.length !== 1)
+    //         //         throw new Error(`${inputTransformations.length > 1 ? 'Multiple' : 'No'} transformations found for material id ${involvedMaterialInputId}`);
+    //         //
+    //         //     partialGraphData.edges.push({
+    //         //         resourcesIds: Array.from(tradesWithLines.entries())
+    //         //             .filter(([_, lines]) => lines
+    //         //                 .filter((tl) => tl.materialIds.some((x) => x === involvedMaterialInputId)).length > 0)
+    //         //             .map(([trade, _]) => this.getGraphEntityId(trade)),
+    //         //         from: this.getGraphEntityId(inputTransformations[0]),
+    //         //         to: this.getGraphEntityId(transformations[0]),
+    //         //     });
+    //         //
+    //         //     await this.computeGraph(supplierAddress, involvedMaterialInputId, partialGraphData);
+    //         // }));
+    //     })); */
+    //     return partialGraphData;
+    // }
 
     // @ts-ignore
     private getGraphEntityId(t: AssetOperation | Trade): string {

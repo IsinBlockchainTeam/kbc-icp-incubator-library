@@ -1,17 +1,15 @@
-import * as dotenv from 'dotenv';
 import {JsonRpcProvider} from "@ethersproject/providers";
 import {ethers, Signer, Wallet} from "ethers";
 import {TradeManagerService} from "../services/TradeManagerService";
-import {TradeDriver} from "../drivers/TradeDriver";
 import {AssetOperationDriver} from "../drivers/AssetOperationDriver";
 import {AssetOperationService} from "../services/AssetOperationService";
 import {MaterialService} from "../services/MaterialService";
 import {MaterialDriver} from "../drivers/MaterialDriver";
 import {GraphService} from "../services/GraphService";
-import {IPFSService} from "@blockchain-lib/common";
 import {
     ASSET_OPERATION_MANAGER_CONTRACT_ADDRESS,
-    MATERIAL_MANAGER_CONTRACT_ADDRESS, NETWORK,
+    MATERIAL_MANAGER_CONTRACT_ADDRESS,
+    NETWORK,
     PRODUCT_CATEGORY_CONTRACT_ADDRESS,
     TRADE_MANAGER_CONTRACT_ADDRESS
 } from "./config";
@@ -75,7 +73,13 @@ describe('GraphService lifecycle', () => {
 
     let graphService: GraphService;
 
-    const _defineSender = (privateKey: string, ipfsService?: IPFSService) => {
+    let productCategories: ProductCategory[];
+    let materials: Material[];
+    let assetOperations: AssetOperation[];
+    let trades: Trade[];
+    let tradeLines: Line[];
+
+    const _defineSender = (privateKey: string) => {
         signer = new ethers.Wallet(privateKey, provider);
 
         tradeManagerService = new TradeManagerService(
@@ -134,9 +138,9 @@ describe('GraphService lifecycle', () => {
         graphService = new GraphService(signer, tradeManagerService, assetOperationService);
     });
 
-    const _addLineToTrade = async (privateKey: string, tradeId: number, line: LineRequest) => {
+    const _addLineAndAssignMaterialToTrade = async (privateKey: string, tradeType: TradeType, tradeId: number, line: Line) => {
         _defineSender(privateKey);
-        let tradeService: IConcreteTradeService = await tradeManagerService.getTradeType(tradeId) === TradeType.BASIC ?
+        let tradeService: IConcreteTradeService = tradeType === TradeType.BASIC ?
             new BasicTradeService(
                 new BasicTradeDriver(
                     signer,
@@ -153,7 +157,12 @@ describe('GraphService lifecycle', () => {
                     PRODUCT_CATEGORY_CONTRACT_ADDRESS
                 ),
             );
-        tradeService.addLine(line);
+
+        const lineRequest: LineRequest = tradeType === TradeType.BASIC ?
+            new LineRequest(line.productCategory.id) :
+            new OrderLineRequest(line.productCategory.id, (line as OrderLine).quantity, (line as OrderLine).price);
+        const newLine: Line = await tradeService.addLine(lineRequest);
+        await tradeService.assignMaterial(newLine.id, line.material!.id);
     }
 
     it('should handle an empty graph', async () => {
@@ -162,64 +171,58 @@ describe('GraphService lifecycle', () => {
     });
 
     it('should add data that is then used to compute the graph', async () => {
-        const productCategories: ProductCategory[] = [
+        productCategories = [
             new ProductCategory(1, 'raw coffee beans', 85, "first category"),
             new ProductCategory(2, 'green coffee beans', 90, "second category"),
             new ProductCategory(3, 'processed coffee beans', 82, "third category"),
             new ProductCategory(4, 'ground roasted coffee', 80, "fourth category"),
-            new ProductCategory(5, 'water', 20, "fifth category"),
-            new ProductCategory(6, 'final coffee', 50, "sixth category"),
-            new ProductCategory(7, 'sea water', 87, "seventh category"),
-            new ProductCategory(8, 'purified water', 90, "eighth category"),
+            new ProductCategory(5, 'sea water', 20, "fifth category"),
+            new ProductCategory(6, 'purified water', 50, "sixth category"),
+            new ProductCategory(7, 'final coffee', 90, "eighth category"),
         ];
         const registerProductCategoriesFn = productCategories.map((p) => async () => {
             await productCategoryService.registerProductCategory(p.name, p.quality, p.description);
         });
         await serial(registerProductCategoriesFn);
 
-        const materials = [
+        materials = [
             new Material(1, productCategories[0]),
             new Material(2, productCategories[1]),
             new Material(3, productCategories[2]),
-            new Material(4, productCategories[2]),
-            new Material(5, productCategories[3]),
-            new Material(6, productCategories[3]),
-            new Material(7, productCategories[4]),
-            new Material(8, productCategories[5]),
-            new Material(9, productCategories[6]),
-            new Material(10, productCategories[7]),
+            new Material(4, productCategories[3]),
+            new Material(5, productCategories[4]),
+            new Material(6, productCategories[5]),
+            new Material(7, productCategories[6]),
         ];
         const registerMaterialFn = materials.map((m) => async () => {
             await materialService.registerMaterial(m.productCategory.id);
         });
         await serial(registerMaterialFn);
 
-        const assetOperations = [
-            new AssetOperation(1, 'coffee beans processing', [materials[0], materials[1]], materials[3]),
-            new AssetOperation(2, 'coffee grinding', [materials[3]], materials[4]),
-            new AssetOperation(3, 'final coffee production', [materials[5], materials[6]], materials[7]),
-            new AssetOperation(4, 'water purification', [materials[8]], materials[9]),
-            new AssetOperation(5, 'final coffee cosolidation', [materials[7]], materials[7]),
+        assetOperations = [
+            new AssetOperation(1, 'TRANSFORMATION: coffee beans processing', [materials[0], materials[1]], materials[2]),
+            new AssetOperation(2, 'TRANSFORMATION: coffee grinding', [materials[2]], materials[3]),
+            new AssetOperation(3, 'TRANSFORMATION: water purification', [materials[4]], materials[5]),
+            new AssetOperation(4, 'TRANSFORMATION: final coffee production', [materials[3], materials[5]], materials[6]),
         ];
-        const registerAssetOperationFn = assetOperations.map((a) => async () => assetOperationService.registerAssetOperation(a.name, a.inputMaterials.map((m) => m.id), a.outputMaterial.id));
+        const registerAssetOperationFn = assetOperations.map((a) =>
+            async () => assetOperationService.registerAssetOperation(a.name, a.inputMaterials.map((m) => m.id), a.outputMaterial.id)
+        );
         await serial(registerAssetOperationFn);
 
         const tradeIds: number[] = [];
-        const trades = [
-            new BasicTrade(1, company1.address, customer, company2.address, externalUrl, [], 'shipping 1'),
+        trades = [
+            new BasicTrade(1, company1.address, customer, company2.address, externalUrl, [], 'shipping processed coffee'),
             new OrderTrade(2, company2.address, customer, company3.address, externalUrl, [], false, false, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, escrow),
-            new BasicTrade(3, company1.address, customer, company3.address, externalUrl, [], 'shipping water'),
+            new BasicTrade(3, company1.address, customer, company3.address, externalUrl, [], 'shipping purified water'),
             new OrderTrade(4, company3.address, customer, company4.address, externalUrl, [], false, false, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, escrow),
         ];
-        const tradeLines = [
-            new LineRequest(productCategories[2].id),
-            new LineRequest(productCategories[1].id),
+        tradeLines = [
+            new Line(1, materials[2], productCategories[2]),
+            new OrderLine(2, materials[3], productCategories[3], 100, new OrderLinePrice(50, 'CHF')),
+            new Line(3, materials[5], productCategories[5]),
+            new OrderLine(4, materials[6], productCategories[6], 200, new OrderLinePrice(10, 'EUR')),
         ];
-        const orderLines = [
-            new OrderLineRequest(productCategories[1].id, 100, new OrderLinePrice(50, 'CHF')),
-            new OrderLineRequest(productCategories[5].id, 200, new OrderLinePrice(10, 'EUR')),
-        ];
-        // add trades and orders
         const registerTradesFn = trades.map((t) => async () => {
             _defineSender(_getPrivateKey(t.supplier));
             if (t instanceof BasicTrade) {
@@ -231,11 +234,10 @@ describe('GraphService lifecycle', () => {
         });
         await serial(registerTradesFn);
 
-        // add lines to relative trades and orders
-        await _addLineToTrade(company1.privateKey, tradeIds[0], tradeLines[0]);
-        await _addLineToTrade(company2.privateKey, tradeIds[1], orderLines[0]);
-        await _addLineToTrade(company1.privateKey, tradeIds[2], tradeLines[1]);
-        await _addLineToTrade(company3.privateKey, tradeIds[3], orderLines[1]);
+        await _addLineAndAssignMaterialToTrade(company1.privateKey, TradeType.BASIC, tradeIds[0], tradeLines[0]);
+        await _addLineAndAssignMaterialToTrade(company2.privateKey, TradeType.ORDER, tradeIds[1], tradeLines[1]);
+        await _addLineAndAssignMaterialToTrade(company1.privateKey, TradeType.BASIC, tradeIds[2], tradeLines[2]);
+        await _addLineAndAssignMaterialToTrade(company3.privateKey, TradeType.ORDER, tradeIds[3], tradeLines[3]);
     }, 30000);
 
     // it('should compute a graph', async () => {
