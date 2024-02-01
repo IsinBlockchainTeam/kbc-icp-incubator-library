@@ -74,13 +74,6 @@ describe('GraphService lifecycle', () => {
 
     let graphService: GraphService;
 
-    let productCategories: ProductCategory[];
-    let materials: Material[];
-    let assetOperations: AssetOperation[];
-    let trades: Trade[];
-    let tradeLines: Line[];
-    let tradeIds: number[];
-
     const _defineSender = (privateKey: string) => {
         signer = new ethers.Wallet(privateKey, provider);
 
@@ -133,22 +126,66 @@ describe('GraphService lifecycle', () => {
         }
     }
 
-    const _registerProductCategories = async (productCategories: ProductCategory[]) => {
+    const _registerProductCategories = async (productCategories: ProductCategory[]): Promise<ProductCategory[]> => {
+        const result: ProductCategory[] = [];
         await serial(productCategories.map((category) => async () => {
-            await productCategoryService.registerProductCategory(category.name, category.quality, category.description);
+            result.push(await productCategoryService.registerProductCategory(category.name, category.quality, category.description));
         }));
+        return result;
     }
 
-    const _registerMaterials = async (materials: Material[]) => {
+    const _registerMaterials = async (materials: Material[]): Promise<Material[]> => {
+        const result: Material[] = [];
         await serial(materials.map((material) => async () => {
-            await materialService.registerMaterial(material.productCategory.id);
+            result.push(await materialService.registerMaterial(material.productCategory.id));
         }));
+        return result;
     }
 
-    const _registerAssetOperations = async (assetOperations: AssetOperation[]) => {
+    const _registerAssetOperations = async (assetOperations: AssetOperation[]): Promise<AssetOperation[]> => {
+        const result: AssetOperation[] = [];
         await serial(assetOperations.map((assetOperation) => async () => {
-            await assetOperationService.registerAssetOperation(assetOperation.name, assetOperation.inputMaterials.map((m) => m.id), assetOperation.outputMaterial.id);
+            result.push(await assetOperationService.registerAssetOperation(assetOperation.name, assetOperation.inputMaterials.map((m) => m.id), assetOperation.outputMaterial.id));
         }));
+        return result;
+    }
+
+    const _registerTrade = async (trade: Trade, lines: Line[], tradeType: TradeType): Promise<Trade> => {
+        _defineSender(_getPrivateKey(trade.supplier));
+        let tradeService: IConcreteTradeService;
+
+        if (tradeType === TradeType.BASIC) {
+            trade = await tradeManagerService.registerBasicTrade(trade.supplier, customer, trade.commissioner, (trade as BasicTrade).name, trade.externalUrl);
+            tradeService = new BasicTradeService(
+                new BasicTradeDriver(
+                    signer,
+                    await tradeManagerService.getTrade(trade.tradeId),
+                    MATERIAL_MANAGER_CONTRACT_ADDRESS,
+                    PRODUCT_CATEGORY_CONTRACT_ADDRESS
+                ),
+            );
+        } else {
+            trade = await tradeManagerService.registerOrderTrade(trade.supplier, customer, trade.commissioner, trade.externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);
+            tradeService = new OrderTradeService(
+                new OrderTradeDriver(
+                    signer,
+                    await tradeManagerService.getTrade(trade.tradeId),
+                    MATERIAL_MANAGER_CONTRACT_ADDRESS,
+                    PRODUCT_CATEGORY_CONTRACT_ADDRESS
+                ),
+            );
+        }
+
+        await serial(lines.map((line) => async () => {
+            const lineRequest: LineRequest = tradeType === TradeType.BASIC ?
+                new LineRequest(line.productCategory.id) :
+                new OrderLineRequest(line.productCategory.id, (line as OrderLine).quantity, (line as OrderLine).price);
+            const newLine: Line = await tradeService.addLine(lineRequest);
+            newLine.material = line.material;
+            await tradeService.assignMaterial(newLine.id, newLine.material!.id);
+            trade.lines.push(newLine)
+        }));
+        return trade;
     }
 
     beforeAll(() => {
@@ -158,296 +195,388 @@ describe('GraphService lifecycle', () => {
         graphService = new GraphService(signer, tradeManagerService, assetOperationService);
     });
 
-    const _addLineAndAssignMaterialToTrade = async (privateKey: string, tradeType: TradeType, tradeId: number, line: Line) => {
-        _defineSender(privateKey);
-        let tradeService: IConcreteTradeService = tradeType === TradeType.BASIC ?
-            new BasicTradeService(
-                new BasicTradeDriver(
-                    signer,
-                    await tradeManagerService.getTrade(tradeId),
-                    MATERIAL_MANAGER_CONTRACT_ADDRESS,
-                    PRODUCT_CATEGORY_CONTRACT_ADDRESS
-                ),
-            ) :
-            new OrderTradeService(
-                new OrderTradeDriver(
-                    signer,
-                    await tradeManagerService.getTrade(tradeId),
-                    MATERIAL_MANAGER_CONTRACT_ADDRESS,
-                    PRODUCT_CATEGORY_CONTRACT_ADDRESS
-                ),
-            );
-
-        const lineRequest: LineRequest = tradeType === TradeType.BASIC ?
-            new LineRequest(line.productCategory.id) :
-            new OrderLineRequest(line.productCategory.id, (line as OrderLine).quantity, (line as OrderLine).price);
-        const newLine: Line = await tradeService.addLine(lineRequest);
-        await tradeService.assignMaterial(newLine.id, line.material!.id);
-    }
-
     it('should handle an empty graph', async () => {
         const result = await graphService.computeGraph(42);
-        expect(result).toEqual({ nodes: [], edges: [] });
+        expect(result).toEqual({nodes: [], edges: []});
     });
 
-    it('should add data that is then used to compute the graph', async () => {
-        productCategories = [
-            new ProductCategory(1, 'raw coffee beans', 85, "first category"),
-            new ProductCategory(2, 'green coffee beans', 90, "second category"),
-            new ProductCategory(3, 'processed coffee beans', 82, "third category"),
-            new ProductCategory(4, 'ground roasted coffee', 80, "fourth category"),
-            new ProductCategory(5, 'sea water', 20, "fifth category"),
-            new ProductCategory(6, 'purified water', 50, "sixth category"),
-            new ProductCategory(7, 'final coffee', 90, "eighth category"),
-        ];
-        await _registerProductCategories(productCategories);
+    describe('Transformations only scenario', () => {
+        let productCategories: ProductCategory[] = [];
+        let materials: Material[] = [];
+        let assetOperations: AssetOperation[] = [];
+        let trades: Trade[] = [];
 
-        materials = [
-            new Material(1, productCategories[0]),
-            new Material(2, productCategories[1]),
-            new Material(3, productCategories[2]),
-            new Material(4, productCategories[3]),
-            new Material(5, productCategories[4]),
-            new Material(6, productCategories[5]),
-            new Material(7, productCategories[6]),
-        ];
-        await _registerMaterials(materials);
+        it('should add data that is then used to compute the graph', async () => {
+            productCategories = await _registerProductCategories([
+                new ProductCategory(0, 'Raw coffee beans', 85, "first category"),
+                new ProductCategory(0, 'Green coffee beans', 90, "second category"),
+                new ProductCategory(0, 'Processed coffee beans', 82, "third category"),
+                new ProductCategory(0, 'Ground roasted coffee', 80, "fourth category"),
+                new ProductCategory(0, 'Sea water', 20, "fifth category"),
+                new ProductCategory(0, 'Purified water', 50, "sixth category"),
+                new ProductCategory(0, 'Final coffee', 90, "eighth category"),
+                new ProductCategory(0, "Small coffee bag", 90, "Final coffee packed in a small bag"),
+                new ProductCategory(0, "Medium coffee bag", 90, "Final coffee packed in a medium bag"),
+                new ProductCategory(0, "Batch of coffee bags", 90, "Batch of a small and a medium coffee bag")
+            ]);
 
-        assetOperations = [
-            new AssetOperation(1, 'TRANSFORMATION: coffee beans processing', [materials[0], materials[1]], materials[2]),
-            new AssetOperation(2, 'TRANSFORMATION: coffee grinding', [materials[2]], materials[3]),
-            new AssetOperation(3, 'TRANSFORMATION: water purification', [materials[4]], materials[5]),
-            new AssetOperation(4, 'TRANSFORMATION: final coffee production', [materials[3], materials[5]], materials[6]),
-        ];
-        await _registerAssetOperations(assetOperations);
+            materials = await _registerMaterials([
+                new Material(0, productCategories[0]),
+                new Material(0, productCategories[1]),
+                new Material(0, productCategories[2]),
+                new Material(0, productCategories[3]),
+                new Material(0, productCategories[4]),
+                new Material(0, productCategories[5]),
+                new Material(0, productCategories[6]),
+                new Material(0, productCategories[7]),
+                new Material(0, productCategories[8]),
+                new Material(0, productCategories[9])
+            ]);
 
-        tradeIds = [];
-        trades = [
-            new BasicTrade(1, company1.address, customer, company2.address, externalUrl, [], 'shipping processed coffee'),
-            new OrderTrade(2, company2.address, customer, company3.address, externalUrl, [], false, false, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, escrow),
-            new BasicTrade(3, company1.address, customer, company3.address, externalUrl, [], 'shipping purified water'),
-            new OrderTrade(4, company3.address, customer, company4.address, externalUrl, [], false, false, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, escrow),
-        ];
-        tradeLines = [
-            new Line(1, materials[2], productCategories[2]),
-            new OrderLine(2, materials[3], productCategories[3], 100, new OrderLinePrice(50, 'CHF')),
-            new Line(3, materials[5], productCategories[5]),
-            new OrderLine(4, materials[6], productCategories[6], 200, new OrderLinePrice(10, 'EUR')),
-        ];
-        const registerTradesFn = trades.map((t) => async () => {
-            _defineSender(_getPrivateKey(t.supplier));
-            if (t instanceof BasicTrade) {
-                await tradeManagerService.registerBasicTrade(t.supplier, customer, t.commissioner, t.name, t.externalUrl);
-            } else {
-                await tradeManagerService.registerOrderTrade(t.supplier, customer, t.commissioner, t.externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);
+            assetOperations = await _registerAssetOperations([
+                new AssetOperation(0, 'TRANSFORMATION: coffee beans processing', [materials[0], materials[1]], materials[2]),
+                new AssetOperation(0, 'TRANSFORMATION: coffee grinding', [materials[2]], materials[3]),
+                new AssetOperation(0, 'TRANSFORMATION: water purification', [materials[4]], materials[5]),
+                new AssetOperation(0, 'TRANSFORMATION: final coffee production', [materials[3], materials[5]], materials[6]),
+                new AssetOperation(0, "TRANSFORMATION: small coffee packaging", [materials[6]], materials[7]),
+                new AssetOperation(0, "TRANSFORMATION: medium coffee packaging", [materials[6]], materials[8]),
+                new AssetOperation(0, "TRANSFORMATION: coffee bags packaging", [materials[7], materials[8]], materials[9])
+            ]);
+
+            const newTrades: Trade[] = [
+                new BasicTrade(0, company1.address, customer, company2.address, externalUrl, [], 'shipping processed coffee'),
+                new OrderTrade(0, company2.address, customer, company3.address, externalUrl, [], false, false, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, escrow),
+                new BasicTrade(0, company1.address, customer, company3.address, externalUrl, [], 'shipping purified water'),
+                new OrderTrade(0, company3.address, customer, company4.address, externalUrl, [], false, false, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, escrow),
+                new BasicTrade(0, company3.address, customer, company4.address, externalUrl, [], 'Small packaging'),
+                new BasicTrade(0, company3.address, customer, company4.address, externalUrl, [], 'Medium packaging'),
+                new BasicTrade(0, company4.address, customer, company1.address, externalUrl, [], 'shipping coffee batch'),
+            ];
+            const newTradeLines: Line[] = [
+                new Line(0, materials[2], productCategories[2]),
+                new OrderLine(0, materials[3], productCategories[3], 100, new OrderLinePrice(50, 'CHF')),
+                new Line(0, materials[5], productCategories[5]),
+                new OrderLine(0, materials[6], productCategories[6], 200, new OrderLinePrice(10, 'EUR')),
+                new Line(0, materials[7], productCategories[7]),
+                new Line(0, materials[8], productCategories[8]),
+                new Line(0, materials[9], productCategories[9])
+            ];
+
+            trades.push(await _registerTrade(newTrades[0], [newTradeLines[0]], TradeType.BASIC));
+            trades.push(await _registerTrade(newTrades[1], [newTradeLines[1]], TradeType.ORDER));
+            trades.push(await _registerTrade(newTrades[2], [newTradeLines[2]], TradeType.BASIC));
+            trades.push(await _registerTrade(newTrades[3], [newTradeLines[3]], TradeType.ORDER));
+            trades.push(await _registerTrade(newTrades[4], [newTradeLines[4]], TradeType.BASIC));
+            trades.push(await _registerTrade(newTrades[5], [newTradeLines[5]], TradeType.BASIC));
+            trades.push(await _registerTrade(newTrades[6], [newTradeLines[6]], TradeType.BASIC));
+        }, 30000);
+
+        it('should get a map of trades with lines containing a specific material', async () => {
+            const result = await graphService.findTradesByMaterial(materials[6].id);
+
+            expect(result.size).toEqual(1);
+            const trade: Trade = result.keys().next().value;
+            const line: Line = result.get(trade)![0];
+
+            expect(trade.tradeId).toEqual(trades[3].tradeId);
+            expect(trade.supplier).toEqual(trades[3].supplier);
+            expect(trade.commissioner).toEqual(trades[3].commissioner);
+            expect(trade.lines.length).toEqual(1);
+
+            expect([line]).toEqual(trades[3].lines);
+        });
+
+        it('should compute a graph', async () => {
+            const result = await graphService.computeGraph(materials[6].id);
+
+            expect(result.nodes).toEqual(expect.arrayContaining([
+                {
+                    id: assetOperations[3].id,
+                    resourceId: assetOperations[3].name,
+                    type: AssetOperationType.TRANSFORMATION
+                },
+                {
+                    id: assetOperations[1].id,
+                    resourceId: assetOperations[1].name,
+                    type: AssetOperationType.TRANSFORMATION
+                },
+                {
+                    id: assetOperations[2].id,
+                    resourceId: assetOperations[2].name,
+                    type: AssetOperationType.TRANSFORMATION
+                },
+                {
+                    id: assetOperations[0].id,
+                    resourceId: assetOperations[0].name,
+                    type: AssetOperationType.TRANSFORMATION
+                },
+            ]));
+
+            expect(result.edges).toEqual(expect.arrayContaining([
+                {
+                    resourcesIds: [`${trades[1].supplier}_trade_${trades[1].tradeId}`],
+                    from: assetOperations[1].name,
+                    to: assetOperations[3].name
+                },
+                {
+                    resourcesIds: [`${trades[2].supplier}_trade_${trades[2].tradeId}`],
+                    from: assetOperations[2].name,
+                    to: assetOperations[3].name
+                },
+                {
+                    resourcesIds: [`${trades[0].supplier}_trade_${trades[0].tradeId}`],
+                    from: assetOperations[0].name,
+                    to: assetOperations[1].name
+                },
+            ]));
+        }, 30000);
+
+        it('should compute a subgraph of the previous graph', async () => {
+            const result = await graphService.computeGraph(materials[2].id);
+
+            expect(result.nodes).toEqual(expect.arrayContaining([
+                {
+                    id: assetOperations[0].id,
+                    resourceId: assetOperations[0].name,
+                    type: AssetOperationType.TRANSFORMATION
+                },
+            ]));
+
+            expect(result.edges).toEqual([]);
+        });
+
+        it('should compute a graph where a material was used as input in two different asset operations. Only one branch of the newly created materials should be shown', async () => {
+            const result = await graphService.computeGraph(materials[7].id);
+
+            expect(result.nodes).toEqual(expect.arrayContaining([
+                {
+                    id: assetOperations[4].id,
+                    resourceId: assetOperations[4].name,
+                    type: AssetOperationType.TRANSFORMATION
+                },
+                {
+                    id: assetOperations[3].id,
+                    resourceId: assetOperations[3].name,
+                    type: AssetOperationType.TRANSFORMATION
+                },
+                {
+                    id: assetOperations[1].id,
+                    resourceId: assetOperations[1].name,
+                    type: AssetOperationType.TRANSFORMATION
+                },
+                {
+                    id: assetOperations[2].id,
+                    resourceId: assetOperations[2].name,
+                    type: AssetOperationType.TRANSFORMATION
+                },
+                {
+                    id: assetOperations[0].id,
+                    resourceId: assetOperations[0].name,
+                    type: AssetOperationType.TRANSFORMATION
+                },
+            ]));
+
+            expect(result.edges).toEqual(expect.arrayContaining([
+                {
+                    resourcesIds: [`${trades[3].supplier}_trade_${trades[3].tradeId}`],
+                    from: assetOperations[3].name,
+                    to: assetOperations[4].name
+                },
+                {
+                    resourcesIds: [`${trades[1].supplier}_trade_${trades[1].tradeId}`],
+                    from: assetOperations[1].name,
+                    to: assetOperations[3].name
+                },
+                {
+                    resourcesIds: [`${trades[2].supplier}_trade_${trades[2].tradeId}`],
+                    from: assetOperations[2].name,
+                    to: assetOperations[3].name
+                },
+                {
+                    resourcesIds: [`${trades[0].supplier}_trade_${trades[0].tradeId}`],
+                    from: assetOperations[0].name,
+                    to: assetOperations[1].name
+                },
+            ]));
+        }, 30000);
+
+        it('should compute a graph where the material is the join of two forked branches', async () => {
+            const result = await graphService.computeGraph(materials[9].id);
+
+            expect(result.nodes).toEqual(expect.arrayContaining([
+                {
+                    id: assetOperations[6].id,
+                    resourceId: assetOperations[6].name,
+                    type: AssetOperationType.TRANSFORMATION
+                },
+                {
+                    id: assetOperations[5].id,
+                    resourceId: assetOperations[5].name,
+                    type: AssetOperationType.TRANSFORMATION
+                },
+                {
+                    id: assetOperations[4].id,
+                    resourceId: assetOperations[4].name,
+                    type: AssetOperationType.TRANSFORMATION
+                },
+                {
+                    id: assetOperations[3].id,
+                    resourceId: assetOperations[3].name,
+                    type: AssetOperationType.TRANSFORMATION
+                },
+                {
+                    id: assetOperations[2].id,
+                    resourceId: assetOperations[2].name,
+                    type: AssetOperationType.TRANSFORMATION
+                },
+                {
+                    id: assetOperations[1].id,
+                    resourceId: assetOperations[1].name,
+                    type: AssetOperationType.TRANSFORMATION
+                },
+                {
+                    id: assetOperations[0].id,
+                    resourceId: assetOperations[0].name,
+                    type: AssetOperationType.TRANSFORMATION
+                },
+            ]));
+
+            expect(result.edges).toEqual(expect.arrayContaining([
+                {
+                    resourcesIds: [`${trades[5].supplier}_trade_${trades[5].tradeId}`],
+                    from: assetOperations[5].name,
+                    to: assetOperations[6].name
+                },
+                {
+                    resourcesIds: [`${trades[4].supplier}_trade_${trades[4].tradeId}`],
+                    from: assetOperations[4].name,
+                    to: assetOperations[6].name
+                },
+                {
+                    resourcesIds: [`${trades[3].supplier}_trade_${trades[3].tradeId}`],
+                    from: assetOperations[3].name,
+                    to: assetOperations[4].name
+                },
+                {
+                    resourcesIds: [`${trades[1].supplier}_trade_${trades[1].tradeId}`],
+                    from: assetOperations[1].name,
+                    to: assetOperations[3].name
+                },
+                {
+                    resourcesIds: [`${trades[2].supplier}_trade_${trades[2].tradeId}`],
+                    from: assetOperations[2].name,
+                    to: assetOperations[3].name
+                },
+                {
+                    resourcesIds: [`${trades[0].supplier}_trade_${trades[0].tradeId}`],
+                    from: assetOperations[0].name,
+                    to: assetOperations[1].name
+                },
+            ]))
+        }, 30000);
+    });
+
+    describe('Consolidations scenario', () => {
+        let productCategories: ProductCategory[] = [];
+        let materials: Material[] = [];
+        let assetOperations: AssetOperation[] = [];
+        let trades: Trade[] = [];
+
+        it('should add data that is then used to compute the graph', async () => {
+            productCategories = await _registerProductCategories([
+                new ProductCategory(0, "Arabica beans", 90, "Beans of Arabica coffee"),
+                new ProductCategory(0, "Roasted Arabica beans", 85, "Roasted beans of Arabica coffee"),
+            ]);
+
+            materials = await _registerMaterials([
+                new Material(0, productCategories[0]),
+                new Material(0, productCategories[1]),
+            ]);
+
+            assetOperations = await _registerAssetOperations([
+                new AssetOperation(0, "CONSOLIDATION: arabica beans transfer", [materials[0]], materials[0]),
+                new AssetOperation(0, "TRANSFORMATION: arabica beans roasting", [materials[0]], materials[1]),
+                new AssetOperation(0, "CONSOLIDATION: roasted arabica beans transfer", [materials[1]], materials[1]),
+                new AssetOperation(0, "CONSOLIDATION: another roasted arabica beans transfer", [materials[1]], materials[1]),
+            ]);
+
+            const newTrades = [
+                new BasicTrade(0, company1.address, customer, company2.address, externalUrl, [], 'Arabica beans purchase'),
+                new BasicTrade(0, company2.address, customer, company3.address, externalUrl, [], 'Roasted arabica beans purchase'),
+                new BasicTrade(0, company3.address, customer, company4.address, externalUrl, [], 'Another roasted arabica beans purchase'),
+            ];
+            const newTradeLines = [
+                new Line(0, materials[0], productCategories[0]),
+                new Line(0, materials[1], productCategories[1]),
+                new Line(0, materials[1], productCategories[1])
+            ]
+
+            for (let i = 0; i < newTrades.length; i++) {
+                trades.push(await _registerTrade(newTrades[i], [newTradeLines[i]], TradeType.BASIC));
             }
-            tradeIds.push(await tradeManagerService.getTradeCounter());
         });
-        await serial(registerTradesFn);
 
-        await _addLineAndAssignMaterialToTrade(company1.privateKey, TradeType.BASIC, tradeIds[0], tradeLines[0]);
-        await _addLineAndAssignMaterialToTrade(company2.privateKey, TradeType.ORDER, tradeIds[1], tradeLines[1]);
-        await _addLineAndAssignMaterialToTrade(company1.privateKey, TradeType.BASIC, tradeIds[2], tradeLines[2]);
-        await _addLineAndAssignMaterialToTrade(company3.privateKey, TradeType.ORDER, tradeIds[3], tradeLines[3]);
-    }, 30000);
+        it('should generate a graph containing a consolidation', async () => {
+            const result = await graphService.computeGraph(materials[0].id);
 
-    it('should get a map of trades with lines containing a specific material', async () => {
-        const result = await graphService.findTradesByMaterialOutput(materials[6].id);
+            expect(result).toEqual({
+                nodes: [
+                    {
+                        id: assetOperations[0].id,
+                        type: AssetOperationType.CONSOLIDATION,
+                        resourceId: assetOperations[0].name
+                    },
+                ],
+                edges: [],
+            });
+        }, 30000);
 
-        expect(result.size).toEqual(1);
-        const trade: Trade = result.keys().next().value;
-        const line: Line = result.get(trade)![0];
+        it('should generate a graph containing a consolidation followed by a transformation and two consolidations', async () => {
+            const result = await graphService.computeGraph(materials[1].id);
 
-        expect(trade.tradeId).toEqual(tradeIds[3]);
-        expect(trade.supplier).toEqual(company3.address);
-        expect(trade.commissioner).toEqual(company4.address);
-        expect(trade.lines.length).toEqual(1);
-
-        expect(line.material!.id).toEqual(tradeLines[3].material!.id);
-        expect(line.productCategory.id).toEqual(tradeLines[3].productCategory.id);
-    });
-
-    it('should compute a graph', async () => {
-        const result = await graphService.computeGraph(7);
-        result.nodes.sort(({ resourceId: a }, { resourceId: b }) => a.charAt(a.length - 1).localeCompare(b.charAt(b.length - 1)));
-        result.edges.sort(({ from: a }, { from: b }) => a.charAt(a.length - 1).localeCompare(b.charAt(b.length - 1)));
-
-        expect(result).toEqual({
-            nodes: [
-                {
-                    id: 2,
-                    resourceId: 'TRANSFORMATION: coffee grinding',
-                    type: AssetOperationType.TRANSFORMATION,
-                },
-                {
-                    id: 1,
-                    resourceId: 'TRANSFORMATION: coffee beans processing' ,
-                    type: AssetOperationType.TRANSFORMATION
-                },
-                {
-                    id: 4,
-                    resourceId: 'TRANSFORMATION: final coffee production',
-                    type: AssetOperationType.TRANSFORMATION
-                },
-                {
-                    id: 3,
-                    resourceId: 'TRANSFORMATION: water purification',
-                    type: AssetOperationType.TRANSFORMATION
-                },
-            ],
-            edges: [
-                { resourcesIds: [`${company2.address}_trade_2`], from: 'TRANSFORMATION: coffee grinding', to: 'TRANSFORMATION: final coffee production' },
-                { resourcesIds: [`${company1.address}_trade_1`], from: 'TRANSFORMATION: coffee beans processing', to: 'TRANSFORMATION: coffee grinding' },
-                { resourcesIds: [`${company1.address}_trade_3`], from: 'TRANSFORMATION: water purification', to: 'TRANSFORMATION: final coffee production' },
-            ],
-        });
-    }, 30000);
-
-    it('should compute a subgraph of the previous graph', async () => {
-        const result = await graphService.computeGraph(3);
-
-        expect(result).toEqual({
-            nodes: [
-                {
-                    id: 1,
-                    resourceId: 'TRANSFORMATION: coffee beans processing' ,
-                    type: AssetOperationType.TRANSFORMATION
-                },
-            ],
-            edges: [],
+            expect(result).toEqual({
+                nodes: [
+                    {
+                        id: assetOperations[3].id,
+                        type: AssetOperationType.CONSOLIDATION,
+                        resourceId: assetOperations[3].name
+                    },
+                    {
+                        id: assetOperations[2].id,
+                        type: AssetOperationType.CONSOLIDATION,
+                        resourceId: assetOperations[2].name
+                    },
+                    {
+                        id: assetOperations[1].id,
+                        type: AssetOperationType.TRANSFORMATION,
+                        resourceId: assetOperations[1].name
+                    },
+                    {
+                        id: assetOperations[0].id,
+                        type: AssetOperationType.CONSOLIDATION,
+                        resourceId: assetOperations[0].name
+                    },
+                ],
+                edges: [
+                    {
+                        resourcesIds: [`${company3.address}_trade_${trades[2].tradeId}`],
+                        from: assetOperations[2].name,
+                        to: assetOperations[3].name
+                    },
+                    {
+                        resourcesIds: [`${company2.address}_trade_${trades[1].tradeId}`],
+                        from: assetOperations[1].name,
+                        to: assetOperations[2].name
+                    },
+                    {
+                        resourcesIds: [`${company1.address}_trade_${trades[0].tradeId}`],
+                        from: assetOperations[0].name,
+                        to: assetOperations[1].name
+                    },
+                ]
+            });
         });
     });
-
-    it('should compute a graph where a material was used as input in two different asset operations. Only one branch of the newly created materials should be shown', async () => {
-        const newProductCategories: ProductCategory[] = [
-            new ProductCategory(8, "Small coffee bag", 90, "Final coffee packed in a small bag"),
-            new ProductCategory(9, "Medium coffee bag", 90, "Final coffee packed in a medium bag"),
-        ];
-        await _registerProductCategories(newProductCategories);
-
-        const newMaterials: Material[] = [
-            new Material(8, newProductCategories[0]),
-            new Material(9, newProductCategories[1]),
-        ];
-        await _registerMaterials(newMaterials);
-
-        const assetOperations: AssetOperation[] = [
-            new AssetOperation(6, "TRANSFORMATION: small coffee packaging", [materials[6]], newMaterials[0]),
-            new AssetOperation(7, "TRANSFORMATION: medium coffee packaging", [materials[6]], newMaterials[1])
-        ]
-        await _registerAssetOperations(assetOperations);
-
-        const newTrade: BasicTrade = await tradeManagerService.registerBasicTrade(company3.address, customer, company4.address, externalUrl, 'Packaging');
-        await _addLineAndAssignMaterialToTrade(company3.privateKey, TradeType.BASIC, newTrade.tradeId, new Line(1, newMaterials[0], newProductCategories[0]));
-
-        const result = await graphService.computeGraph(newMaterials[0].id);
-        result.nodes.sort(({ resourceId: a }, { resourceId: b }) => a.charAt(a.length - 1).localeCompare(b.charAt(b.length - 1)));
-        result.edges.sort(({ from: a }, { from: b }) => a.charAt(a.length - 1).localeCompare(b.charAt(b.length - 1)));
-
-        expect(result).toEqual({
-            nodes: [
-                {
-                    id: 5,
-                    resourceId: 'TRANSFORMATION: small coffee packaging',
-                    type: AssetOperationType.TRANSFORMATION,
-                },
-                {
-                    id: 2,
-                    resourceId: 'TRANSFORMATION: coffee grinding',
-                    type: AssetOperationType.TRANSFORMATION,
-                },
-                {
-                    id: 1,
-                    resourceId: 'TRANSFORMATION: coffee beans processing' ,
-                    type: AssetOperationType.TRANSFORMATION
-                },
-                {
-                    id: 4,
-                    resourceId: 'TRANSFORMATION: final coffee production',
-                    type: AssetOperationType.TRANSFORMATION
-                },
-                {
-                    id: 3,
-                    resourceId: 'TRANSFORMATION: water purification',
-                    type: AssetOperationType.TRANSFORMATION
-                },
-            ],
-            edges: [
-                { resourcesIds: [`${company2.address}_trade_2`], from: 'TRANSFORMATION: coffee grinding', to: 'TRANSFORMATION: final coffee production' },
-                { resourcesIds: [`${company1.address}_trade_1`], from: 'TRANSFORMATION: coffee beans processing', to: 'TRANSFORMATION: coffee grinding' },
-                { resourcesIds: [`${company3.address}_trade_4`], from: 'TRANSFORMATION: final coffee production', to: 'TRANSFORMATION: small coffee packaging' },
-                { resourcesIds: [`${company1.address}_trade_3`], from: 'TRANSFORMATION: water purification', to: 'TRANSFORMATION: final coffee production' },
-            ],
-        });
-    }, 30000);
-
-    it('should generate a graph containing a consolidation', async () => {
-        const newAssetOperation: AssetOperation = new AssetOperation(8, 'CONSOLIDATION: sea water transfer', [materials[4]], materials[4]);
-        await _registerAssetOperations([newAssetOperation]);
-
-        const newTrade: BasicTrade = await tradeManagerService.registerBasicTrade(company2.address, customer, company1.address, externalUrl, 'Sea water purchase');
-        await _addLineAndAssignMaterialToTrade(company2.privateKey, TradeType.BASIC, newTrade.tradeId, new Line(1, materials[4], productCategories[4]));
-
-        const result = await graphService.computeGraph(materials[4].id);
-        result.nodes.sort(({ resourceId: a }, { resourceId: b }) => a.charAt(a.length - 1).localeCompare(b.charAt(b.length - 1)));
-        result.edges.sort(({ from: a }, { from: b }) => a.charAt(a.length - 1).localeCompare(b.charAt(b.length - 1)));
-
-        expect(result).toEqual({
-            nodes: [
-                {
-                    id: expect.any(Number),
-                    type: AssetOperationType.CONSOLIDATION,
-                    resourceId: 'CONSOLIDATION: sea water transfer'
-                },
-            ],
-            edges: [],
-        });
-    }, 30000);
-    //
-    // it('should compute a graph containing a transformation followed by two consolidations', async () => {
-    //     const newProductCategory: ProductCategory = new ProductCategory(10, "River water", 20, "Water from a river");
-    //     await _registerProductCategories([newProductCategory]);
-    //     const newMaterial: Material = new Material(10, newProductCategory);
-    //     await _registerMaterials([newMaterial]);
-    //
-    //     const newAssetOperations: AssetOperation[] = [
-    //         new AssetOperation(9, "TRANSFORMATION: river water flow", [newMaterial], materials[4]),
-    //         new AssetOperation(10, "CONSOLIDATION: sea water transfer", [materials[4]], materials[4]),
-    //     ];
-    //     await _registerAssetOperations(newAssetOperations);
-    //
-    //     const newTrade: BasicTrade = await tradeManagerService.registerBasicTrade(company2.address, customer, company1.address, externalUrl, 'River water purchase');
-    //     await _addLineAndAssignMaterialToTrade(company2.privateKey, TradeType.BASIC, newTrade.tradeId, new Line(1, newMaterial, newProductCategory));
-    //
-    //     const result = await graphService.computeGraph(materials[4].id);
-    //     result.nodes.sort(({ resourceId: a }, { resourceId: b }) => a.charAt(a.length - 1).localeCompare(b.charAt(b.length - 1)));
-    //     result.edges.sort(({ from: a }, { from: b }) => a.charAt(a.length - 1).localeCompare(b.charAt(b.length - 1)));
-    //
-    //     expect(result).toEqual({
-    //         nodes: [
-    //             {
-    //                 id: 8,
-    //                 type: AssetOperationType.CONSOLIDATION,
-    //                 resourceId: 'CONSOLIDATION: sea water transfer'
-    //             },
-    //             {
-    //                 id: newAssetOperations[1].id,
-    //                 type: AssetOperationType.CONSOLIDATION,
-    //                 resourceId: 'CONSOLIDATION: sea water transfer'
-    //             },
-    //             {
-    //                 id: newAssetOperations[0].id,
-    //                 type: AssetOperationType.TRANSFORMATION,
-    //                 resourceId: 'TRANSFORMATION: river water flow'
-    //             },
-    //         ],
-    //         edges: [
-    //             { resourcesIds: [`${company2.address}_trade_2`], from: 'TRANSFORMATION: coffee grinding', to: 'TRANSFORMATION: final coffee production' },
-    //             { resourcesIds: [`${company1.address}_trade_1`], from: 'TRANSFORMATION: coffee beans processing', to: 'TRANSFORMATION: coffee grinding' },
-    //             { resourcesIds: [`${company3.address}_trade_4`], from: 'TRANSFORMATION: final coffee production', to: 'TRANSFORMATION: small coffee packaging' },
-    //         ],
-    //     });
-    // });
 
     // it('should throw an error if it finds no transformation with specific output material', async () => {
     //     await tradeManagerService.addTradeLine(1, [100, 10], 'Arabic 85');

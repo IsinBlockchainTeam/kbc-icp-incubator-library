@@ -36,7 +36,42 @@ export class GraphService {
         this._assetOperationService = transformationService;
     }
 
-    public async findTradesByMaterialOutput(materialId: number): Promise<Map<Trade, Line[]>> {
+    private async _handleConsolidations(assetOperations: AssetOperation[], materialId: number, partialGraphData: GraphData = {
+        nodes: [],
+        edges: []
+    }): Promise<{transformation: AssetOperation | undefined, partialGraphData: GraphData}> {
+        const transformation: AssetOperation = assetOperations.filter((ao) => ao.type === AssetOperationType.TRANSFORMATION)[0];
+        if(assetOperations.some((ao: AssetOperation) => ao.type === AssetOperationType.CONSOLIDATION)) {
+            // Sort descending
+            const consolidations: AssetOperation[] = assetOperations
+                .filter((ao) => ao.type === AssetOperationType.CONSOLIDATION)
+                .sort((a, b) => b.id - a.id);
+            const trades: Trade[] = (await this._tradeManagerService.getTradesByMaterial(materialId))
+                .sort((a, b) => b.tradeId - a.tradeId);
+
+            for(let i: number = 0; i < consolidations.length; i ++) {
+                partialGraphData.nodes.push({
+                    id: consolidations[i].id,
+                    type: AssetOperationType.CONSOLIDATION,
+                    resourceId: consolidations[i].name
+                });
+
+                if(!transformation)
+                    // The consolidation's input material is a "pure" material, not a transformation's output material.
+                    break;
+
+                partialGraphData.edges.push({
+                    resourcesIds: [`${trades[i].supplier}_trade_${trades[i].tradeId}`],
+                    from: i === consolidations.length - 1 ? transformation.name : consolidations[i + 1].name,
+                    to: consolidations[i].name
+                });
+            }
+        }
+
+        return { transformation, partialGraphData }
+    }
+
+    public async findTradesByMaterial(materialId: number): Promise<Map<Trade, Line[]>> {
         const result: Map<Trade, Line[]> = new Map<Trade, Line[]>();
         const trades: Trade[] = await this._tradeManagerService.getTradesByMaterial(materialId);
 
@@ -50,7 +85,6 @@ export class GraphService {
         return result;
     }
 
-    // 1. materialId = 5
     public async computeGraph(materialId: number, partialGraphData: GraphData = {
         nodes: [],
         edges: []
@@ -60,34 +94,12 @@ export class GraphService {
             return partialGraphData;
         }
 
-        let transformation: AssetOperation | undefined = assetOperations.filter((ao) => ao.type === AssetOperationType.TRANSFORMATION)[0];
-        let consolidations: AssetOperation[] = [];
-
-        if(assetOperations.some((ao) => ao.type === AssetOperationType.CONSOLIDATION)) {
-            // There is always maximum one transformation for each material!
-            const consolidationsOnly = assetOperations.filter((ao) => ao.type === AssetOperationType.CONSOLIDATION);
-            const transformationsOnly = assetOperations.filter((ao) => ao.type === AssetOperationType.TRANSFORMATION);
-
-            transformation = transformationsOnly.length > 0 ? transformationsOnly[0] : undefined;
-
-            // Sort descending
-            consolidations = consolidationsOnly.sort((a, b) => b.id - a.id);
-
-            consolidations.forEach((consolidation) => {
-                partialGraphData.nodes.push({
-                    id: consolidation.id,
-                    type: AssetOperationType.CONSOLIDATION,
-                    resourceId: consolidation.name
-                });
-            });
-        }
-
-        // If the material is referenced in one or more consolidations but not in a transformation, the material is an input material. Return.
-        if(consolidations.length > 0 && !transformation)
-            return partialGraphData;
+        const result = await this._handleConsolidations(assetOperations, materialId, partialGraphData);
+        const { transformation } = result;
+        partialGraphData = result.partialGraphData;
 
         if(!transformation)
-            throw new Error("GraphState: Invalid state.");
+            return partialGraphData;
 
         partialGraphData.nodes.push({
             id: transformation.id,
@@ -96,7 +108,7 @@ export class GraphService {
         });
 
         await Promise.all(transformation.inputMaterials.map(async (assetOperationInputMaterial: Material) => {
-            const filteredTradesMap: Map<Trade, Line[]> = await this.findTradesByMaterialOutput(assetOperationInputMaterial.id);
+            const filteredTradesMap: Map<Trade, Line[]> = await this.findTradesByMaterial(assetOperationInputMaterial.id);
             if(filteredTradesMap.size === 0) {
                 return partialGraphData;
             }

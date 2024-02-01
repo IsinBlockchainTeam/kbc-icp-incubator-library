@@ -51,7 +51,7 @@ describe('GraphService', () => {
 
     const supplier = '0xsupplier_address';
 
-    const findAssetOperationsByMaterialOutputSpy = jest.spyOn(GraphService.prototype, 'findTradesByMaterialOutput');
+    const findAssetOperationsByMaterialOutputSpy = jest.spyOn(GraphService.prototype, 'findTradesByMaterial');
     const findTradesByMaterialOutputSpy = jest.spyOn(GraphService.prototype, 'computeGraph');
 
     let tradeCounter: number = 0;
@@ -93,7 +93,7 @@ describe('GraphService', () => {
     });
 
     it('findTradesByMaterialOutput', async () => {
-        await graphService.findTradesByMaterialOutput(2);
+        await graphService.findTradesByMaterial(2);
 
         expect(mockedTradeManagerService.getTradeIdsOfSupplier).toHaveBeenCalledTimes(1);
         expect(mockedTradeManagerService.getTradeIdsOfSupplier).toHaveBeenNthCalledWith(1, supplier);
