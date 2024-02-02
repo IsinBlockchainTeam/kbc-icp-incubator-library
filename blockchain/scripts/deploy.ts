@@ -1,5 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import hre, { ethers } from 'hardhat';
+import { ethers } from 'hardhat';
 import * as dotenv from 'dotenv';
 import { Contract } from 'ethers';
 import { ContractName } from '../utils/constants';
@@ -61,7 +61,7 @@ serial([
             [process.env.SUPPLIER_ADMIN || ''],
             process.env.COMMISSIONER_ADMIN || '',
             process.env.ESCROW_BASE_FEE || 20,
-            process.env.ESCROW_PERCENTAGE_FEE || 1,
+            process.env.ESCROW_COMMISSIONER_FEE || 1,
         ],
     ),
     () => deploy(
