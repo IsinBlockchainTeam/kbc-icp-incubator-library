@@ -1,4 +1,4 @@
-# Decentralized Coffee Trading
+# Coffee Trading Management Lib
 
 This project defines the logic responsible for managing the on-chain operations of the KBC Coffee Trading Project.
 
