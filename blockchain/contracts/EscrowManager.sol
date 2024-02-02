@@ -46,6 +46,10 @@ contract EscrowManager is AccessControl {
         _percentageFee = percentageFee;
     }
 
+    function getEscrowCounter() public view returns (uint256) {
+        return _counter.current();
+    }
+
     function registerEscrow(address payee, address purchaser, uint256 agreedAmount, uint256 duration, address tokenAddress) public returns(Escrow)  {
         require(payee != address(0), "EscrowManager: payee is the zero address");
         require(purchaser != address(0), "EscrowManager: purchaser is the zero address");

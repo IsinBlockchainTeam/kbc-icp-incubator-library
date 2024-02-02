@@ -17,6 +17,7 @@ describe('EscrowManagerService', () => {
         getPercentageFee: jest.fn(),
         updatePercentageFee: jest.fn(),
         getEscrow: jest.fn(),
+        getEscrowCounter: jest.fn(),
         getEscrowIdsOfPurchaser: jest.fn(),
     };
 
@@ -78,6 +79,12 @@ describe('EscrowManagerService', () => {
             serviceFunction: () => escrowManagerService.getEscrow(1),
             expectedMockedFunction: mockedInstance.getEscrow,
             expectedMockedFunctionArgs: [1],
+        },
+        {
+            serviceFunctionName: 'getEscrowCounter',
+            serviceFunction: () => escrowManagerService.getEscrowCounter(),
+            expectedMockedFunction: mockedInstance.getEscrowCounter,
+            expectedMockedFunctionArgs: [],
         },
         {
             serviceFunctionName: 'getEscrowIdsOfPurchaser',

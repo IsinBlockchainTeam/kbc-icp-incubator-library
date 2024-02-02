@@ -49,4 +49,9 @@ describe('Transformation', () => {
         assetOperation.inputMaterials.push(new Material(2, new ProductCategory(2, 'category2', 2, 'description2')));
         expect(assetOperation.type).toEqual(AssetOperationType.TRANSFORMATION);
     });
+
+    it('should throw an error when getting invalid type', () => {
+        assetOperation.inputMaterials = [];
+        expect(() => assetOperation.type).toThrow(new Error("Invalid asset operation"));
+    });
 });

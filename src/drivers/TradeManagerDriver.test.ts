@@ -264,6 +264,13 @@ describe('TradeManagerDriver', () => {
             .toHaveBeenCalledTimes(1);
     });
 
+    it('should get trades by material', async () => {
+        const response = await tradeManagerDriver.getTradesByMaterial(42);
+
+        expect(response)
+            .toEqual([]);
+    });
+
     it('should correctly get a trade type', async () => {
         const response = await tradeManagerDriver.getTradeType(1);
 

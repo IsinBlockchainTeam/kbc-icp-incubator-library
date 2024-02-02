@@ -7,6 +7,10 @@ export class EscrowManagerService {
         this._escrowManagerDriver = supplyChainDriver;
     }
 
+    async getEscrowCounter(): Promise<number> {
+        return this._escrowManagerDriver.getEscrowCounter();
+    }
+
     async registerEscrow(payee: string, purchaser: string, agreedAmount: number, duration: number, tokenAddress: string): Promise<void> {
         await this._escrowManagerDriver.registerEscrow(payee, purchaser, agreedAmount, duration, tokenAddress);
     }

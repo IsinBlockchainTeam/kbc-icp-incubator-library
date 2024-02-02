@@ -29,8 +29,6 @@ import {BasicTradeService} from "../services/BasicTradeService";
 import {BasicTradeDriver} from "../drivers/BasicTradeDriver";
 import {OrderTradeService} from "../services/OrderTradeService";
 import {OrderTradeDriver} from "../drivers/OrderTradeDriver";
-import {AssetOperationType} from "../types/AssetOperationType";
-
 
 describe('GraphService lifecycle', () => {
     let provider: JsonRpcProvider;
@@ -183,7 +181,9 @@ describe('GraphService lifecycle', () => {
             const newLine: Line = await tradeService.addLine(lineRequest);
             newLine.material = line.material;
             await tradeService.assignMaterial(newLine.id, newLine.material!.id);
-            trade.lines.push(newLine)
+            trade.lines.push(newLine);
+            if(tradeType === TradeType.ORDER)
+                (trade as OrderTrade).hasSupplierSigned = true;
         }));
         return trade;
     }
@@ -290,41 +290,22 @@ describe('GraphService lifecycle', () => {
             const result = await graphService.computeGraph(materials[6].id);
 
             expect(result.nodes).toEqual(expect.arrayContaining([
-                {
-                    id: assetOperations[3].id,
-                    resourceId: assetOperations[3].name,
-                    type: AssetOperationType.TRANSFORMATION
-                },
-                {
-                    id: assetOperations[1].id,
-                    resourceId: assetOperations[1].name,
-                    type: AssetOperationType.TRANSFORMATION
-                },
-                {
-                    id: assetOperations[2].id,
-                    resourceId: assetOperations[2].name,
-                    type: AssetOperationType.TRANSFORMATION
-                },
-                {
-                    id: assetOperations[0].id,
-                    resourceId: assetOperations[0].name,
-                    type: AssetOperationType.TRANSFORMATION
-                },
+                assetOperations[3], assetOperations[1], assetOperations[2], assetOperations[0]
             ]));
 
             expect(result.edges).toEqual(expect.arrayContaining([
                 {
-                    resourcesIds: [`${trades[1].supplier}_trade_${trades[1].tradeId}`],
+                    trade: trades[1],
                     from: assetOperations[1].name,
                     to: assetOperations[3].name
                 },
                 {
-                    resourcesIds: [`${trades[2].supplier}_trade_${trades[2].tradeId}`],
+                    trade: trades[2],
                     from: assetOperations[2].name,
                     to: assetOperations[3].name
                 },
                 {
-                    resourcesIds: [`${trades[0].supplier}_trade_${trades[0].tradeId}`],
+                    trade: trades[0],
                     from: assetOperations[0].name,
                     to: assetOperations[1].name
                 },
@@ -335,11 +316,7 @@ describe('GraphService lifecycle', () => {
             const result = await graphService.computeGraph(materials[2].id);
 
             expect(result.nodes).toEqual(expect.arrayContaining([
-                {
-                    id: assetOperations[0].id,
-                    resourceId: assetOperations[0].name,
-                    type: AssetOperationType.TRANSFORMATION
-                },
+                assetOperations[0]
             ]));
 
             expect(result.edges).toEqual([]);
@@ -349,51 +326,27 @@ describe('GraphService lifecycle', () => {
             const result = await graphService.computeGraph(materials[7].id);
 
             expect(result.nodes).toEqual(expect.arrayContaining([
-                {
-                    id: assetOperations[4].id,
-                    resourceId: assetOperations[4].name,
-                    type: AssetOperationType.TRANSFORMATION
-                },
-                {
-                    id: assetOperations[3].id,
-                    resourceId: assetOperations[3].name,
-                    type: AssetOperationType.TRANSFORMATION
-                },
-                {
-                    id: assetOperations[1].id,
-                    resourceId: assetOperations[1].name,
-                    type: AssetOperationType.TRANSFORMATION
-                },
-                {
-                    id: assetOperations[2].id,
-                    resourceId: assetOperations[2].name,
-                    type: AssetOperationType.TRANSFORMATION
-                },
-                {
-                    id: assetOperations[0].id,
-                    resourceId: assetOperations[0].name,
-                    type: AssetOperationType.TRANSFORMATION
-                },
+                assetOperations[4], assetOperations[3], assetOperations[1], assetOperations[2], assetOperations[0]
             ]));
 
             expect(result.edges).toEqual(expect.arrayContaining([
                 {
-                    resourcesIds: [`${trades[3].supplier}_trade_${trades[3].tradeId}`],
+                    trade: trades[3],
                     from: assetOperations[3].name,
                     to: assetOperations[4].name
                 },
                 {
-                    resourcesIds: [`${trades[1].supplier}_trade_${trades[1].tradeId}`],
+                    trade: trades[1],
                     from: assetOperations[1].name,
                     to: assetOperations[3].name
                 },
                 {
-                    resourcesIds: [`${trades[2].supplier}_trade_${trades[2].tradeId}`],
+                    trade: trades[2],
                     from: assetOperations[2].name,
                     to: assetOperations[3].name
                 },
                 {
-                    resourcesIds: [`${trades[0].supplier}_trade_${trades[0].tradeId}`],
+                    trade: trades[0],
                     from: assetOperations[0].name,
                     to: assetOperations[1].name
                 },
@@ -404,71 +357,37 @@ describe('GraphService lifecycle', () => {
             const result = await graphService.computeGraph(materials[9].id);
 
             expect(result.nodes).toEqual(expect.arrayContaining([
-                {
-                    id: assetOperations[6].id,
-                    resourceId: assetOperations[6].name,
-                    type: AssetOperationType.TRANSFORMATION
-                },
-                {
-                    id: assetOperations[5].id,
-                    resourceId: assetOperations[5].name,
-                    type: AssetOperationType.TRANSFORMATION
-                },
-                {
-                    id: assetOperations[4].id,
-                    resourceId: assetOperations[4].name,
-                    type: AssetOperationType.TRANSFORMATION
-                },
-                {
-                    id: assetOperations[3].id,
-                    resourceId: assetOperations[3].name,
-                    type: AssetOperationType.TRANSFORMATION
-                },
-                {
-                    id: assetOperations[2].id,
-                    resourceId: assetOperations[2].name,
-                    type: AssetOperationType.TRANSFORMATION
-                },
-                {
-                    id: assetOperations[1].id,
-                    resourceId: assetOperations[1].name,
-                    type: AssetOperationType.TRANSFORMATION
-                },
-                {
-                    id: assetOperations[0].id,
-                    resourceId: assetOperations[0].name,
-                    type: AssetOperationType.TRANSFORMATION
-                },
+                assetOperations[6], assetOperations[5], assetOperations[4], assetOperations[3], assetOperations[2], assetOperations[1], assetOperations[0]
             ]));
 
             expect(result.edges).toEqual(expect.arrayContaining([
                 {
-                    resourcesIds: [`${trades[5].supplier}_trade_${trades[5].tradeId}`],
+                    trade: trades[5],
                     from: assetOperations[5].name,
                     to: assetOperations[6].name
                 },
                 {
-                    resourcesIds: [`${trades[4].supplier}_trade_${trades[4].tradeId}`],
+                    trade: trades[4],
                     from: assetOperations[4].name,
                     to: assetOperations[6].name
                 },
                 {
-                    resourcesIds: [`${trades[3].supplier}_trade_${trades[3].tradeId}`],
+                    trade: trades[3],
                     from: assetOperations[3].name,
                     to: assetOperations[4].name
                 },
                 {
-                    resourcesIds: [`${trades[1].supplier}_trade_${trades[1].tradeId}`],
+                    trade: trades[1],
                     from: assetOperations[1].name,
                     to: assetOperations[3].name
                 },
                 {
-                    resourcesIds: [`${trades[2].supplier}_trade_${trades[2].tradeId}`],
+                    trade: trades[2],
                     from: assetOperations[2].name,
                     to: assetOperations[3].name
                 },
                 {
-                    resourcesIds: [`${trades[0].supplier}_trade_${trades[0].tradeId}`],
+                    trade: trades[0],
                     from: assetOperations[0].name,
                     to: assetOperations[1].name
                 },
@@ -520,13 +439,7 @@ describe('GraphService lifecycle', () => {
             const result = await graphService.computeGraph(materials[0].id);
 
             expect(result).toEqual({
-                nodes: [
-                    {
-                        id: assetOperations[0].id,
-                        type: AssetOperationType.CONSOLIDATION,
-                        resourceId: assetOperations[0].name
-                    },
-                ],
+                nodes: [assetOperations[0]],
                 edges: [],
             });
         }, 30000);
@@ -536,40 +449,21 @@ describe('GraphService lifecycle', () => {
 
             expect(result).toEqual({
                 nodes: [
-                    {
-                        id: assetOperations[3].id,
-                        type: AssetOperationType.CONSOLIDATION,
-                        resourceId: assetOperations[3].name
-                    },
-                    {
-                        id: assetOperations[2].id,
-                        type: AssetOperationType.CONSOLIDATION,
-                        resourceId: assetOperations[2].name
-                    },
-                    {
-                        id: assetOperations[1].id,
-                        type: AssetOperationType.TRANSFORMATION,
-                        resourceId: assetOperations[1].name
-                    },
-                    {
-                        id: assetOperations[0].id,
-                        type: AssetOperationType.CONSOLIDATION,
-                        resourceId: assetOperations[0].name
-                    },
+                    assetOperations[3], assetOperations[2], assetOperations[1], assetOperations[0]
                 ],
                 edges: [
                     {
-                        resourcesIds: [`${company3.address}_trade_${trades[2].tradeId}`],
+                        trade: trades[2],
                         from: assetOperations[2].name,
                         to: assetOperations[3].name
                     },
                     {
-                        resourcesIds: [`${company2.address}_trade_${trades[1].tradeId}`],
+                        trade: trades[1],
                         from: assetOperations[1].name,
                         to: assetOperations[2].name
                     },
                     {
-                        resourcesIds: [`${company1.address}_trade_${trades[0].tradeId}`],
+                        trade: trades[0],
                         from: assetOperations[0].name,
                         to: assetOperations[1].name
                     },

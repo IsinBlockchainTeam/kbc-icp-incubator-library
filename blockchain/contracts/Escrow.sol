@@ -11,9 +11,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract Escrow is AccessControl {
     using Address for address;
-    using Counters for Counters.Counter;
     using SafeERC20 for IERC20;
-    Counters.Counter private _counter;
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 

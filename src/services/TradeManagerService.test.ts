@@ -12,9 +12,11 @@ describe('TradeManagerService', () => {
     const mockedInstance = {
         registerBasicTrade: jest.fn(),
         registerOrderTrade: jest.fn(),
+        getTradeCounter: jest.fn(),
         getTrades: jest.fn(),
         getTradesAndTypes: jest.fn(),
         getTrade: jest.fn(),
+        getTradesByMaterial: jest.fn(),
         getTradeType: jest.fn(),
         getTradeIdsOfSupplier: jest.fn(),
         getTradeIdsOfCommissioner: jest.fn(),
@@ -47,6 +49,12 @@ describe('TradeManagerService', () => {
             expectedMockedFunctionArgs: [orderTrade.supplier, orderTrade.customer, orderTrade.commissioner, orderTrade.externalUrl, orderTrade.paymentDeadline, orderTrade.documentDeliveryDeadline, orderTrade.arbiter, orderTrade.shippingDeadline, orderTrade.deliveryDeadline, agreedAmount, tokenAddress],
         },
         {
+            serviceFunctionName: 'getTradeCounter',
+            serviceFunction: () => tradeManagerService.getTradeCounter(),
+            expectedMockedFunction: mockedInstance.getTradeCounter,
+            expectedMockedFunctionArgs: [],
+        },
+        {
             serviceFunctionName: 'getTrades',
             serviceFunction: () => tradeManagerService.getTrades(),
             expectedMockedFunction: mockedInstance.getTrades,
@@ -68,6 +76,12 @@ describe('TradeManagerService', () => {
             serviceFunctionName: 'getTradeType',
             serviceFunction: () => tradeManagerService.getTradeType(basicTrade.tradeId),
             expectedMockedFunction: mockedInstance.getTradeType,
+            expectedMockedFunctionArgs: [basicTrade.tradeId],
+        },
+        {
+            serviceFunctionName: 'getTradesByMaterial',
+            serviceFunction: () => tradeManagerService.getTradesByMaterial(basicTrade.tradeId),
+            expectedMockedFunction: mockedInstance.getTradesByMaterial,
             expectedMockedFunctionArgs: [basicTrade.tradeId],
         },
         {
