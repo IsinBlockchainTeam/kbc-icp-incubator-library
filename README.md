@@ -12,5 +12,5 @@ Both packages make use of a common library that contains logic shared between si
 
 ## Getting Started
 
-- Navigate to the `blockchain` and follow the instructions in the `README.md` file
-- Navigate to the `src` folder and follow the instructions in the `README.md` file
+- First, navigate to the `blockchain` and follow the instructions in the `README.md` file
+- Then, Navigate to the `src` folder and follow the instructions in the `README.md` file
