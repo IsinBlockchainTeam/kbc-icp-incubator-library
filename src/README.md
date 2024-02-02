@@ -40,7 +40,7 @@ Create a test configuration with Jest with:
 - jest options: --runInBand
 - environment variables: NODE_ENV=test
 
-Now, you have two options for running the integration tests:
+Now, you have two options for running the integration tests with the IDE test configuration:
 
 **Option 1:**
 - move inside the `src` folder
