@@ -11,10 +11,10 @@ It uses an _Entity-Driver-Service_ model for creating a scalable and maintainabl
 - Rename the `.env.template` file to `.env` and fill in the missing information
 
 ### `npmrc` Configuration
-| Variable                      | Description                                                                                                                                                                                                       |
-|-------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `@coffe-trading-lib:registry` | Needed only for **contributing** to this repo. It's an access token with write access to this package's private npm registry                                                                                      |
-| `@blockchain-lib:registry`    | Needed for **installing** dependencies. It's an access token with read access to the ['common' private npm registry](https://gitlab-core.supsi.ch/dti-isin/giuliano.gremlich/blockchain/one_lib_to_rule_them_all) |
+| Registry name              | Description                                                                                                                                                                                                     |
+|----------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `@kbc-lib:registry`        | Needed only for **contributing** to this repo. It's an access token with write access to this package's private npm registry                                                                                    |
+| `@blockchain-lib:registry` | Needed for **installing** dependencies. It's an access token with read access to the [common](https://gitlab-core.supsi.ch/dti-isin/giuliano.gremlich/blockchain/one_lib_to_rule_them_all) private npm registry |
 
 ## Local development
 If you want to develop locally, you can build this package so you can reuse it in the dependent projects. You can do this by running command `npm run build`.

@@ -7,10 +7,14 @@ Both packages make use of a common library that contains logic shared between si
 
 ## Prerequisites
 
+- [Git](https://git-scm.com/)
 - [Nodejs](https://nodejs.org/en) (v.18.x recommended)
 - An access token for the ['common' private npm registry](https://gitlab-core.supsi.ch/dti-isin/giuliano.gremlich/blockchain/one_lib_to_rule_them_all)
 
 ## Getting Started
 
-- First, navigate to the `blockchain` and follow the instructions in the `README.md` file
-- Then, Navigate to the `src` folder and follow the instructions in the `README.md` file
+- Clone this repository using command `git clone https://gitlab-core.supsi.ch/dti-isin/giuliano.gremlich/blockchain/one-lib-to-rule-them-all/coffee-trading-management-lib.git`
+- Enter the newly created folder using `cd blockchain-sync-layer`
+- Change branch to `dev` using command `git checkout dev`
+- Navigate to the `blockchain` and follow the instructions in the [`README.md`](https://gitlab-core.supsi.ch/dti-isin/giuliano.gremlich/blockchain/one-lib-to-rule-them-all/coffee-trading-management-lib/-/blob/dev/blockchain/README.md) file
+- Navigate to the `src` folder and follow the instructions in the [`README.md`](https://gitlab-core.supsi.ch/dti-isin/giuliano.gremlich/blockchain/one-lib-to-rule-them-all/coffee-trading-management-lib/-/blob/dev/src/README.md) file

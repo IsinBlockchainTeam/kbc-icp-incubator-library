@@ -13,13 +13,13 @@ It uses the [Hardhat](https://hardhat.org/) framework as a development environme
 - Deploy the smart contracts with `npm run deploy`
 
 ### `npmrc` Configuration
-| Variable                      | Description                                                                                                                                                                                                       |
-|-------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `@coffe-trading-lib:registry` | Needed only for **contributing** to this repo. It's an access token with write access to this package's private npm registry                                                                                      |
-| `@blockchain-lib:registry`    | Needed for **installing** dependencies. It's an access token with read access to the ['common' private npm registry](https://gitlab-core.supsi.ch/dti-isin/giuliano.gremlich/blockchain/one_lib_to_rule_them_all) |
+| Registry name              | Description                                                                                                                                                                                                       |
+|----------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `@kbc-lib:registry`        | Needed only for **contributing** to this repo. It's an access token with write access to this package's private npm registry                                                                                      |
+| `@blockchain-lib:registry` | Needed for **installing** dependencies. It's an access token with read access to the ['common' private npm registry](https://gitlab-core.supsi.ch/dti-isin/giuliano.gremlich/blockchain/one_lib_to_rule_them_all) |
 
 
-### Environment Variable Configuration
+### Environment Variables Configuration
 | Variable                  | Description                                                                                                                                        |
 |---------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
 | `SUPPLIER_ADMIN`          | An ethereum address that will be used to reference the supplier inside smart contracts                                                             |
