@@ -23,6 +23,7 @@ It uses the [Hardhat](https://hardhat.org/) framework as a development environme
 | Variable                  | Description                                                                                                                                        |
 |---------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
 | `SUPPLIER_ADMIN`          | An ethereum address that will be used to reference the supplier inside smart contracts                                                             |
+| `COMMISSIONER_ADMIN`      | An ethereum address to which escrow fees will be sent                                                                                              |
 | `ESCROW_BASE_FEE`         | A natural number representing the fee that will be paid everytime tokens are withdrawn from `escrow.sol` smart contract                            |
 | `ESCROW_COMMISSIONER_FEE` | A natural number between 0 and 100 representing a percentage fee that will be paid everytime tokens are withdrawn from `escrow.sol` smart contract |
 
