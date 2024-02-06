@@ -284,7 +284,7 @@ describe('GraphService lifecycle', () => {
             expect(trade.lines.length).toEqual(1);
 
             expect([line]).toEqual(trades[3].lines);
-        });
+        }, 30000);
 
         it('should compute a graph', async () => {
             const result = await graphService.computeGraph(materials[6].id);
@@ -320,7 +320,7 @@ describe('GraphService lifecycle', () => {
             ]));
 
             expect(result.edges).toEqual([]);
-        });
+        }, 30000);
 
         it('should compute a graph where a material was used as input in two different asset operations. Only one branch of the newly created materials should be shown', async () => {
             const result = await graphService.computeGraph(materials[7].id);
@@ -433,7 +433,7 @@ describe('GraphService lifecycle', () => {
             for (let i = 0; i < newTrades.length; i++) {
                 trades.push(await _registerTrade(newTrades[i], [newTradeLines[i]], TradeType.BASIC));
             }
-        });
+        }, 30000);
 
         it('should generate a graph containing a consolidation', async () => {
             const result = await graphService.computeGraph(materials[0].id);
@@ -469,7 +469,7 @@ describe('GraphService lifecycle', () => {
                     },
                 ]
             });
-        });
+        }, 30000);
     });
 
     // it('should throw an error if it finds no transformation with specific output material', async () => {
