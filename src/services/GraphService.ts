@@ -26,9 +26,9 @@ export class GraphService {
 
     private _signer: Signer;
 
-    constructor(tradeManagerService: TradeManagerService, transformationService: AssetOperationService, signer: Signer) {
+    constructor(tradeManagerService: TradeManagerService, assetOperationService: AssetOperationService, signer: Signer) {
         this._tradeManagerService = tradeManagerService;
-        this._assetOperationService = transformationService;
+        this._assetOperationService = assetOperationService;
         this._signer = signer;
     }
 

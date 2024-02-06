@@ -15,6 +15,7 @@ export { ProductCategoryDriver } from './drivers/ProductCategoryDriver';
 export { ProductCategoryService } from './services/ProductCategoryService';
 
 export { AssetOperation } from './entities/AssetOperation';
+export { AssetOperationType } from './types/AssetOperationType';
 export { AssetOperationDriver } from './drivers/AssetOperationDriver';
 export { AssetOperationService } from './services/AssetOperationService';
 
@@ -53,4 +54,4 @@ export { EscrowManagerService } from './services/EscrowManagerService';
 export { EscrowDriver } from './drivers/EscrowDriver';
 export { EscrowService } from './services/EscrowService';
 
-export { GraphService } from './services/GraphService';
+export { GraphService, GraphData } from './services/GraphService';
