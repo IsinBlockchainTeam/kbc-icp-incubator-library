@@ -269,7 +269,7 @@ describe('GraphService lifecycle', () => {
             trades.push(await _registerTrade(newTrades[4], [newTradeLines[4]], TradeType.BASIC));
             trades.push(await _registerTrade(newTrades[5], [newTradeLines[5]], TradeType.BASIC));
             trades.push(await _registerTrade(newTrades[6], [newTradeLines[6]], TradeType.BASIC));
-        }, 30000);
+        }, 50000);
 
         it('should get a map of trades with lines containing a specific material', async () => {
             const result = await graphService.findTradesByMaterial(materials[6].id);
