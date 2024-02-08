@@ -87,7 +87,7 @@ serial([
         ],
     ),
     () => deploy(
-        ContractName.MY_TOKEN, [1000],
+        ContractName.MY_TOKEN, [10000],
     ),
 ])
     .catch((error: any) => {

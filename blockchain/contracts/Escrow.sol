@@ -17,6 +17,7 @@ contract Escrow is AccessControl {
 
     enum State {
         Active,
+        Locked,
         Refunding,
         Closed
     }
@@ -188,7 +189,7 @@ contract Escrow is AccessControl {
     }
 
     function refundAllowed() public view returns (bool) {
-        return _state == State.Refunding || hasExpired();
+        return _state == State.Active || _state == State.Refunding || hasExpired();
     }
 
     function addDelegate(address delegateAddress) public onlyPurchaser {
@@ -217,21 +218,26 @@ contract Escrow is AccessControl {
     function deposit(uint256 amount) public onlyPayers() {
         require(_state == State.Active, "Escrow: can only deposit while active");
         require(amount > 0, "Escrow: can only deposit positive amount");
-        _token.safeTransferFrom(_msgSender(), address(this), amount);
 
+        _token.safeTransferFrom(_msgSender(), address(this), amount);
         _payers[_msgSender()].depositedAmount += amount;
 
         emit EscrowDeposited(_msgSender(), amount);
     }
 
+    function lock() public onlyAdmin {
+        require(_state == State.Active, "Escrow: can only lock while active");
+        _state = State.Locked;
+    }
+
     function close() public onlyAdmin {
-        require(_state == State.Active, "Escrow: can only close while active");
+        require(_state == State.Active || _state == State.Locked, "Escrow: can only close while active or locked");
         _state = State.Closed;
         emit EscrowClosed();
     }
 
     function _enableRefund() private {
-        require(_state == State.Active, "Escrow: can only enable refunds while active");
+        require(_state == State.Active || _state == State.Locked, "Escrow: can only enable refunds while active or locked");
         _state = State.Refunding;
         emit EscrowRefundEnabled();
     }
@@ -259,7 +265,9 @@ contract Escrow is AccessControl {
         require(_state == State.Closed, "Escrow: can only withdraw while closed");
         uint256 payment = getDepositAmount();
 
+
         payment -= _payFees(payment);
+
         _token.approve(address(this), payment);
         _token.safeTransferFrom(address(this), _payee, payment);
 
@@ -270,8 +278,9 @@ contract Escrow is AccessControl {
         require(refundAllowed(), "Escrow: can only refund when allowed");
 
         uint256 payment = _payers[_msgSender()].depositedAmount;
+        if(_state == State.Refunding)
+            payment -= _payFees(payment);
 
-        payment -= _payFees(payment);
         _token.approve(address(this), payment);
         _token.safeTransferFrom(address(this), _msgSender(), payment);
         emit EscrowRefunded(_msgSender(), payment);

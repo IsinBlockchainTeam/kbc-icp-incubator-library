@@ -7,7 +7,7 @@ import { EscrowService } from '../services/EscrowService';
 import {
     ADMIN_PRIVATE_KEY,
     CUSTOMER_ADDRESS,
-    CUSTOMER_PRIVATE_KEY,
+    CUSTOMER_PRIVATE_KEY, DELEGATE_ADDRESS, DELEGATE_PRIVATE_KEY,
     ESCROW_MANAGER_CONTRACT_ADDRESS,
     MY_TOKEN_CONTRACT_ADDRESS, NETWORK, OTHER_PRIVATE_KEY, SUPPLIER_ADDRESS,
     SUPPLIER_PRIVATE_KEY,
@@ -24,23 +24,23 @@ describe('Escrow Manager', () => {
 
     let escrowInitialIndex: number;
     let initialPurchaserBalance: number;
+    let initialDelegateBalance: number;
 
     const payee: string = SUPPLIER_ADDRESS;
     const purchaser: string = CUSTOMER_ADDRESS;
+    const delegate: string = DELEGATE_ADDRESS;
     const agreedAmount: number = 1000;
     const duration: number = 100;
     let escrowAddress: string;
 
     let escrowService: EscrowService;
-    let escrowDriver: EscrowDriver;
     let adminEscrowService: EscrowService;
-    let adminEscrowDriver: EscrowDriver;
-    let exporterEscrowDriver: EscrowDriver;
     let exporterEscrowService: EscrowService;
-    let importerEscrowDriver: EscrowDriver;
     let importerEscrowService: EscrowService;
+    let delegateEscrowService: EscrowService;
 
     let purchaserSigner: Signer;
+    let delegateSigner: Signer;
 
     const tokenAddress: string = MY_TOKEN_CONTRACT_ADDRESS;
     let tokenContract: Contract;
@@ -59,8 +59,10 @@ describe('Escrow Manager', () => {
         tokenContract = MyToken__factory.connect(tokenAddress, signer);
         await tokenContract.deployed();
         await tokenContract.transfer(purchaser, 500);
+        await tokenContract.transfer(delegate, 10);
         escrowInitialIndex = await escrowManagerService.getEscrowCounter();
         initialPurchaserBalance = await tokenContract.balanceOf(purchaser);
+        initialDelegateBalance = await tokenContract.balanceOf(delegate);
     });
 
     const _defineServices = () => {
@@ -68,36 +70,35 @@ describe('Escrow Manager', () => {
             .toBeTruthy();
 
         signer = new ethers.Wallet(ADMIN_PRIVATE_KEY, provider);
-        adminEscrowDriver = new EscrowDriver(
+        adminEscrowService = new EscrowService(new EscrowDriver(
             signer,
             escrowAddress,
-        );
-        adminEscrowService = new EscrowService(adminEscrowDriver);
+        ));
 
-        signer = new ethers.Wallet(SUPPLIER_PRIVATE_KEY, provider);
-        exporterEscrowDriver = new EscrowDriver(
-            signer,
+        exporterEscrowService = new EscrowService(new EscrowDriver(
+            new ethers.Wallet(SUPPLIER_PRIVATE_KEY, provider),
             escrowAddress,
-        );
-        exporterEscrowService = new EscrowService(exporterEscrowDriver);
+        ));
 
         purchaserSigner = new ethers.Wallet(CUSTOMER_PRIVATE_KEY, provider);
-        importerEscrowDriver = new EscrowDriver(
+        importerEscrowService = new EscrowService(new EscrowDriver(
             purchaserSigner,
             escrowAddress,
-        );
-        importerEscrowService = new EscrowService(importerEscrowDriver);
+        ));
 
-        signer = new ethers.Wallet(OTHER_PRIVATE_KEY, provider);
-        escrowDriver = new EscrowDriver(
-            purchaserSigner,
+        delegateSigner = new ethers.Wallet(DELEGATE_PRIVATE_KEY, provider);
+        delegateEscrowService = new EscrowService(new EscrowDriver(
+            delegateSigner,
             escrowAddress,
-        );
-        escrowService = new EscrowService(escrowDriver);
+        ));
+
+        escrowService = new EscrowService(new EscrowDriver(
+            new ethers.Wallet(OTHER_PRIVATE_KEY, provider),
+            escrowAddress,
+        ));
     };
 
     describe('Withdraw scenario', () => {
-
         it('should create an escrow', async () => {
             await escrowManagerService.registerEscrow(payee, purchaser, agreedAmount, duration, tokenAddress);
             const idsOfPurchaser: number[] = await escrowManagerService.getEscrowIdsOfPurchaser(purchaser);
@@ -111,7 +112,7 @@ describe('Escrow Manager', () => {
 
         it('should retrieve data correctly', async () => {
             expect(await escrowService.getOwner())
-                .toEqual(purchaser);
+                .toEqual(payee);
             expect(await escrowService.getPayee())
                 .toEqual(payee);
             expect(await escrowService.getPurchaser())
@@ -136,6 +137,30 @@ describe('Escrow Manager', () => {
                 .toEqual(120);
             expect(await tokenContract.balanceOf(purchaser))
                 .toEqual(BigNumber.from(initialPurchaserBalance - 120));
+        });
+
+        it('should allow a delegate to deposit some funds', async () => {
+            await importerEscrowService.addDelegate(delegate);
+            await tokenContract.connect(delegateSigner).approve(escrowAddress, 10);
+            await delegateEscrowService.deposit(10);
+            expect(await tokenContract.balanceOf(delegate)).toEqual(BigNumber.from(initialDelegateBalance - 10));
+        });
+
+        it('should allow delegate to withdraw funds while state is \'Active\' without paying fees', async () => {
+            await delegateEscrowService.refund();
+            expect(await tokenContract.balanceOf(delegate)).toEqual(initialDelegateBalance);
+        });
+
+        it('should lock the escrow', async () => {
+            await adminEscrowService.lock();
+            expect(await adminEscrowService.getState()).toEqual(EscrowStatus.LOCKED);
+        });
+
+        it('should not allow depositing or refunding while locked', async () => {
+            await tokenContract.connect(purchaserSigner).approve(escrowAddress, 10);
+            await expect(importerEscrowService.deposit(10)).rejects.toThrow('Escrow: can only deposit while active');
+
+            await expect(importerEscrowService.refund()).rejects.toThrow('Escrow: can only refund when allowed');
         });
 
         it('should close escrow', async () => {

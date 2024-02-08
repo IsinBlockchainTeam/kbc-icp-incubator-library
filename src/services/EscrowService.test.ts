@@ -31,6 +31,7 @@ describe('EscrowService', () => {
         addDelegate: jest.fn(),
         removeDelegate: jest.fn(),
         deposit: jest.fn(),
+        lock: jest.fn(),
         close: jest.fn(),
         enableRefund: jest.fn(),
         enableRefundForExpiredEscrow: jest.fn(),
@@ -192,6 +193,12 @@ describe('EscrowService', () => {
             serviceFunction: () => escrowService.deposit(depositAmount),
             expectedMockedFunction: mockedInstance.deposit,
             expectedMockedFunctionArgs: [depositAmount],
+        },
+        {
+            serviceFunctionName: 'lock',
+            serviceFunction: () => escrowService.lock(),
+            expectedMockedFunction: mockedInstance.lock,
+            expectedMockedFunctionArgs: [],
         },
         {
             serviceFunctionName: 'close',

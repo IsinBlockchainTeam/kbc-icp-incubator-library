@@ -145,7 +145,7 @@ describe('Escrow.sol', () => {
                 .emit(escrowContract, 'EscrowClosed');
             expect(await escrowContract.getState())
                 .to
-                .equal(2);
+                .equal(3);
         });
 
         it('should fail closing escrow if caller is not admin', async () => {
@@ -156,14 +156,14 @@ describe('Escrow.sol', () => {
                 .revertedWith('Escrow: caller is not the admin');
         });
 
-        it('should fail closing escrow if it is not in \'Active\' state', async () => {
+        it('should fail closing escrow if it is not in \'Active\' or \'Locked\' state', async () => {
             await escrowContract.connect(admin)
                 .close();
             await expect(escrowContract.connect(admin)
                 .close())
                 .to
                 .be
-                .revertedWith('Escrow: can only close while active');
+                .revertedWith('Escrow: can only close while active or locked');
         });
     });
 
@@ -184,6 +184,30 @@ describe('Escrow.sol', () => {
             expect(await tokenContract.balanceOf(escrowContract.address))
                 .to
                 .equal(depositAmount);
+        });
+
+        it('should deposit and withdraw funds freely when escrow is in \'Active\' state without paying fees', async () => {
+            const initialBalance: number = await tokenContract.balanceOf(purchaser.address);
+            await tokenContract.connect(purchaser)
+                .approve(escrowContract.address, depositAmount);
+            await escrowContract.connect(purchaser)
+                .deposit(depositAmount);
+            expect(await escrowContract.getDepositAmount())
+                .to
+                .equal(depositAmount);
+            expect(await tokenContract.balanceOf(escrowContract.address))
+                .to
+                .equal(initialBalance - depositAmount);
+
+
+            await escrowContract.connect(purchaser)
+                .refund();
+            expect(await escrowContract.getDepositAmount())
+                .to
+                .equal(0);
+            expect(await tokenContract.balanceOf(purchaser.address))
+                .to
+                .equal(initialBalance);
         });
 
         it('should fail deposit if purchaser has not approved token transfer', async () => {
@@ -308,14 +332,14 @@ describe('Escrow.sol', () => {
                 .revertedWith('Escrow: caller is not the admin');
         });
 
-        it('should fail enabling refunds if escrow is not in \'Active\' state', async () => {
+        it('should fail enabling refunds if escrow is not in \'Active\' or \'Locked\' state', async () => {
             await escrowContract.connect(admin)
                 .close();
             await expect(escrowContract.connect(admin)
                 .enableRefund())
                 .to
                 .be
-                .revertedWith('Escrow: can only enable refunds while active');
+                .revertedWith('Escrow: can only enable refunds while active or locked');
         });
 
         it('should return false when calling hasExpired if contract has not expired yet', async () => {
@@ -358,7 +382,7 @@ describe('Escrow.sol', () => {
                 .refund();
             await tx.wait();
             expect(tx)
-                .emit(escrowContract, 'Refunded')
+                .emit(escrowContract, 'EscrowRefunded')
                 .withArgs(purchaser.address, depositAmount);
 
             expect(await tokenContract.balanceOf(purchaser.address))
@@ -383,7 +407,7 @@ describe('Escrow.sol', () => {
                 .refund();
             await tx.wait();
             expect(tx)
-                .emit(escrowContract, 'Refunded')
+                .emit(escrowContract, 'EscrowRefunded')
                 .withArgs(delegate.address, depositAmount);
 
             expect(await tokenContract.balanceOf(delegate.address))
@@ -414,7 +438,7 @@ describe('Escrow.sol', () => {
                 .refund();
             await tx.wait();
             expect(tx)
-                .emit(escrowContract, 'Refunded')
+                .emit(escrowContract, 'EscrowRefunded')
                 .withArgs(purchaser.address, depositAmount / 2);
 
             tx = await escrowContract.connect(delegate)
@@ -435,7 +459,7 @@ describe('Escrow.sol', () => {
             expect(await escrowContract.hasExpired()).to.false;
             expect(await escrowContract.getState())
                 .to
-                .equal(1);
+                .equal(2);
             expect(await escrowContract.refundAllowed()).to.true;
         });
     });

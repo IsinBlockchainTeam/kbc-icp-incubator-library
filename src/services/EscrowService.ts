@@ -105,6 +105,10 @@ export class EscrowService {
         await this._escrowDriver.deposit(amount);
     }
 
+    async lock(): Promise<void> {
+        await this._escrowDriver.lock();
+    }
+
     async close(): Promise<void> {
         await this._escrowDriver.close();
     }

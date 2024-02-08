@@ -74,6 +74,7 @@ describe('EscrowDriver', () => {
         refundAllowed: mockedGetBoolean,
         addDelegate: mockedWriteFunction,
         removeDelegate: mockedWriteFunction,
+        lock: mockedWriteFunction,
         deposit: mockedWriteFunction,
         close: mockedWriteFunction,
         enableRefund: mockedWriteFunction,
@@ -227,8 +228,23 @@ describe('EscrowDriver', () => {
             .toHaveBeenCalledTimes(1);
     });
 
+    it('should correctly retrieve state - LOCKED', async () => {
+        mockedGetState.mockReturnValueOnce(EscrowStatus.LOCKED);
+        const response = await escrowDriver.getState();
+
+        expect(response)
+            .toEqual(EscrowStatus.LOCKED);
+
+        expect(mockedContract.getState)
+            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.getState)
+            .toHaveBeenNthCalledWith(1);
+        expect(mockedGetState)
+            .toHaveBeenCalledTimes(1);
+    });
+
     it('should correctly retrieve state - REFUNDING', async () => {
-        mockedGetState.mockReturnValue(Promise.resolve(EscrowStatus.REFUNDING));
+        mockedGetState.mockReturnValueOnce(EscrowStatus.REFUNDING);
         const response = await escrowDriver.getState();
 
         expect(response)
@@ -243,7 +259,7 @@ describe('EscrowDriver', () => {
     });
 
     it('should correctly retrieve state - CLOSED', async () => {
-        mockedGetState.mockReturnValue(Promise.resolve(EscrowStatus.CLOSED));
+        mockedGetState.mockReturnValueOnce(EscrowStatus.CLOSED);
         const response = await escrowDriver.getState();
 
         expect(response)
@@ -485,6 +501,17 @@ describe('EscrowDriver', () => {
         expect(mockedContract.deposit)
             .toHaveBeenNthCalledWith(1, amount);
 
+        expect(mockedWait)
+            .toHaveBeenCalledTimes(1);
+    });
+
+    it('should correctly lock', async () => {
+        await escrowDriver.lock();
+
+        expect(mockedContract.lock)
+            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.lock)
+            .toHaveBeenNthCalledWith(1);
         expect(mockedWait)
             .toHaveBeenCalledTimes(1);
     });

@@ -48,8 +48,10 @@ export class EscrowDriver {
             case 0:
                 return EscrowStatus.ACTIVE;
             case 1:
-                return EscrowStatus.REFUNDING;
+                return EscrowStatus.LOCKED;
             case 2:
+                return EscrowStatus.REFUNDING;
+            case 3:
                 return EscrowStatus.CLOSED;
             default:
                 throw new Error('Invalid state');
@@ -131,6 +133,11 @@ export class EscrowDriver {
 
     async deposit(amount: number): Promise<void> {
         const tx = await this._contract.deposit(amount);
+        await tx.wait();
+    }
+
+    async lock(): Promise<void> {
+        const tx = await this._contract.lock();
         await tx.wait();
     }
 

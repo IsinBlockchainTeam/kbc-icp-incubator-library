@@ -1,3 +1,3 @@
 export enum EscrowStatus {
-    ACTIVE, REFUNDING, CLOSED
+    ACTIVE, LOCKED, REFUNDING, CLOSED
 }
