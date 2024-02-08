@@ -19,7 +19,7 @@ describe('EscrowManager.sol', () => {
         [admin, payee, purchaser, other, commissioner] = await ethers.getSigners();
 
         const EscrowManager = await ethers.getContractFactory('EscrowManager');
-        escrowManagerContract = await EscrowManager.deploy([admin.address], commissioner.address, baseFee, percentageFee);
+        escrowManagerContract = await EscrowManager.deploy(commissioner.address, baseFee, percentageFee);
         await escrowManagerContract.deployed();
 
         const Token = await ethers.getContractFactory('MyToken');
@@ -52,7 +52,7 @@ describe('EscrowManager.sol', () => {
     describe('EscrowManager', () => {
         it('should fail creating an escrow manager if commissioner is the zero address', async () => {
             const EscrowManager = await ethers.getContractFactory('EscrowManager');
-            await expect(EscrowManager.deploy([admin.address], ethers.constants.AddressZero, baseFee, percentageFee))
+            await expect(EscrowManager.deploy(ethers.constants.AddressZero, baseFee, percentageFee))
                 .to
                 .be
                 .revertedWith('EscrowManager: commissioner is the zero address');
@@ -60,13 +60,13 @@ describe('EscrowManager.sol', () => {
 
         it('should fail creating an escrow manager if commissioner is percentageFee is greater than 100', async () => {
             const EscrowManager = await ethers.getContractFactory('EscrowManager');
-            await expect(EscrowManager.deploy([admin.address], commissioner.address, baseFee, 101))
+            await expect(EscrowManager.deploy(commissioner.address, baseFee, 101))
                 .to
                 .be
                 .revertedWith('EscrowManager: percentage fee cannot be greater than 100');
         });
 
-        it('should update commission address', async () => {
+        it('should update commissioner address', async () => {
             const id = registerNewEscrow(payee, purchaser, agreedAmount, duration);
 
             const tx = await escrowManagerContract.updateCommissioner(other.address);

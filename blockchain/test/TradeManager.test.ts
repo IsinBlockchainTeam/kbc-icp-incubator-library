@@ -43,7 +43,7 @@ describe('TradeManager.sol', () => {
     before(async () => {
         [admin, supplier, customer, commissioner, arbiter] = await ethers.getSigners();
         const EscrowManager = await ethers.getContractFactory(ContractName.ESCROW_MANAGER);
-        escrowManagerContract = await EscrowManager.deploy([admin.address], Wallet.createRandom().address, 10, 1);
+        escrowManagerContract = await EscrowManager.deploy(Wallet.createRandom().address, 10, 1);
         await escrowManagerContract.deployed();
     });
 

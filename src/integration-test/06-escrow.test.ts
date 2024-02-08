@@ -67,14 +67,14 @@ describe('Escrow Manager', () => {
         expect(utils.isAddress(escrowAddress))
             .toBeTruthy();
 
-        signer = new ethers.Wallet(SUPPLIER_PRIVATE_KEY, provider);
+        signer = new ethers.Wallet(ADMIN_PRIVATE_KEY, provider);
         adminEscrowDriver = new EscrowDriver(
             signer,
             escrowAddress,
         );
         adminEscrowService = new EscrowService(adminEscrowDriver);
 
-        signer = new ethers.Wallet(ADMIN_PRIVATE_KEY, provider);
+        signer = new ethers.Wallet(SUPPLIER_PRIVATE_KEY, provider);
         exporterEscrowDriver = new EscrowDriver(
             signer,
             escrowAddress,
@@ -110,17 +110,19 @@ describe('Escrow Manager', () => {
         });
 
         it('should retrieve data correctly', async () => {
-            expect(await escrowDriver.getPayee())
-                .toEqual(payee);
-            expect(await escrowDriver.getPurchaser())
+            expect(await escrowService.getOwner())
                 .toEqual(purchaser);
-            expect(await escrowDriver.getAgreedAmount())
+            expect(await escrowService.getPayee())
+                .toEqual(payee);
+            expect(await escrowService.getPurchaser())
+                .toEqual(purchaser);
+            expect(await escrowService.getAgreedAmount())
                 .toEqual(agreedAmount);
-            expect(await escrowDriver.getTokenAddress())
+            expect(await escrowService.getTokenAddress())
                 .toEqual(tokenAddress);
-            expect(await escrowDriver.getState())
+            expect(await escrowService.getState())
                 .toEqual(EscrowStatus.ACTIVE);
-            expect(await escrowDriver.getDepositAmount())
+            expect(await escrowService.getDepositAmount())
                 .toEqual(0);
         });
 
