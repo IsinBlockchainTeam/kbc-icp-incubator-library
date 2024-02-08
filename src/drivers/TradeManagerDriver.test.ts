@@ -18,6 +18,7 @@ import { TradeType } from '../types/TradeType';
 import * as utilsModule from '../utils/utils';
 import { BasicTrade } from '../entities/BasicTrade';
 import { OrderTrade } from '../entities/OrderTrade';
+import {Trade} from "../entities/Trade";
 
 describe('TradeManagerDriver', () => {
     let tradeManagerDriver: TradeManagerDriver;
@@ -207,10 +208,10 @@ describe('TradeManagerDriver', () => {
     });
 
     it('should correctly get trades', async () => {
-        const response: string[] = await tradeManagerDriver.getTrades();
+        const response: Trade[] = await tradeManagerDriver.getTrades();
 
         expect(response)
-            .toEqual([mockedContractAddress]);
+            .toEqual([new BasicTrade(0, supplier, customer, commissioner, externalUrl, [], name)]);
 
         expect(mockedContract.getTradeCounter)
             .toHaveBeenCalledTimes(1);
