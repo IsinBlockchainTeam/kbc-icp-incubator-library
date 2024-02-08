@@ -23,6 +23,7 @@ describe('Escrow Manager', () => {
     let escrowManagerService: EscrowManagerService;
 
     let escrowInitialIndex: number;
+    let initialExporterBalance: number;
     let initialPurchaserBalance: number;
     let initialDelegateBalance: number;
 
@@ -61,8 +62,9 @@ describe('Escrow Manager', () => {
         await tokenContract.transfer(purchaser, 500);
         await tokenContract.transfer(delegate, 10);
         escrowInitialIndex = await escrowManagerService.getEscrowCounter();
-        initialPurchaserBalance = await tokenContract.balanceOf(purchaser);
-        initialDelegateBalance = await tokenContract.balanceOf(delegate);
+        initialExporterBalance = (await tokenContract.balanceOf(payee)).toNumber();
+        initialPurchaserBalance = (await tokenContract.balanceOf(purchaser)).toNumber();
+        initialDelegateBalance = (await tokenContract.balanceOf(delegate)).toNumber();
     });
 
     const _defineServices = () => {
@@ -148,7 +150,7 @@ describe('Escrow Manager', () => {
 
         it('should allow delegate to withdraw funds while state is \'Active\' without paying fees', async () => {
             await delegateEscrowService.refund();
-            expect(await tokenContract.balanceOf(delegate)).toEqual(initialDelegateBalance);
+            expect(await tokenContract.balanceOf(delegate)).toEqual(BigNumber.from(initialDelegateBalance));
         });
 
         it('should lock the escrow', async () => {
@@ -187,9 +189,10 @@ describe('Escrow Manager', () => {
                 .toEqual(1);
             expect(await escrowService.getDepositAmount())
                 .toEqual(120);
-            // TODO: fix this test
-            // await exporterEscrowService.withdraw();
-            // expect(await tokenContract.balanceOf(purchaser)).toEqual(BigNumber.from(200));
+
+            await exporterEscrowService.withdraw();
+            expect(await tokenContract.balanceOf(payee)).toEqual(BigNumber.from( initialExporterBalance + 120 - 20 - 1));
+            expect(await tokenContract.balanceOf(purchaser)).toEqual(BigNumber.from(initialPurchaserBalance - 120));
         });
     });
 
