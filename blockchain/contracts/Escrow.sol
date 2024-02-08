@@ -17,17 +17,18 @@ contract Escrow is AccessControl {
 
     enum State {
         Active,
+        Locked,
         Refunding,
         Closed
     }
 
-    event DelegateRegistered(address delegateAddress);
-    event DelegateRemoved(address delegateAddress);
-    event Deposited(address depositorAddress, uint256 amount);
-    event Closed();
-    event RefundEnabled();
-    event Withdrawn(uint256 amount);
-    event Refunded(address refundedAddress, uint256 amount);
+    event EscrowDelegateRegistered(address delegateAddress);
+    event EscrowDelegateRemoved(address delegateAddress);
+    event EscrowDeposited(address depositorAddress, uint256 amount);
+    event EscrowClosed();
+    event EscrowRefundEnabled();
+    event EscrowWithdrawn(uint256 amount);
+    event EscrowRefunded(address refundedAddress, uint256 amount);
 
 
     modifier onlyAdmin() {
@@ -55,10 +56,12 @@ contract Escrow is AccessControl {
         bool isPresent;
     }
 
+    address private _owner;
+
     address private _payee;
     address private _purchaser;
     mapping(address => Payer) private _payers;
-    address[] private _payersList;
+    address[] private _payerList;
     uint256 private _agreedAmount;
     uint256 private _deployedAt;
     uint256 private _duration;
@@ -68,23 +71,22 @@ contract Escrow is AccessControl {
     uint256 private _baseFee;
     uint256 private _percentageFee;
 
-    constructor(address[] memory admins, address payee, address purchaser, uint256 agreedAmount, uint256 duration, address tokenAddress, address commissioner, uint256 baseFee, uint256 percentageFee) {
+    constructor(address admin, address payee, address purchaser, uint256 agreedAmount, uint256 duration, address tokenAddress, address commissioner, uint256 baseFee, uint256 percentageFee) {
         require(payee != address(0), "Escrow: payee is the zero address");
         require(purchaser != address(0), "Escrow: purchaser is the zero address");
         require(tokenAddress != address(0), "Escrow: token address is the zero address");
         require(commissioner != address(0), "Escrow: commissioner is the zero address");
         require(percentageFee <= 100, "Escrow: percentage fee cannot be greater than 100");
 
-        _setupRole(ADMIN_ROLE, _msgSender());
+        _setupRole(ADMIN_ROLE, admin);
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
-        for (uint256 i = 0; i < admins.length; ++i) {
-            grantRole(ADMIN_ROLE, admins[i]);
-        }
+
+        _owner = payee;
 
         _payee = payee;
         _purchaser = purchaser;
         _payers[purchaser] = Payer(0, true);
-        _payersList.push(purchaser);
+        _payerList.push(purchaser);
         _agreedAmount = agreedAmount;
         _deployedAt = block.timestamp;
         _duration = duration;
@@ -94,6 +96,10 @@ contract Escrow is AccessControl {
         _percentageFee = percentageFee;
 
         _token = IERC20(tokenAddress);
+    }
+
+    function getOwner() public view returns (address) {
+        return _owner;
     }
 
     function _isPayer(address payerAddress) private view returns (bool) {
@@ -109,7 +115,7 @@ contract Escrow is AccessControl {
     }
 
     function getPayers() public view returns (address[] memory) {
-        return _payersList;
+        return _payerList;
     }
 
     function getPayer(address payer) public view returns (Payer memory) {
@@ -183,14 +189,14 @@ contract Escrow is AccessControl {
     }
 
     function refundAllowed() public view returns (bool) {
-        return _state == State.Refunding || hasExpired();
+        return _state == State.Active || _state == State.Refunding || hasExpired();
     }
 
     function addDelegate(address delegateAddress) public onlyPurchaser {
         require(delegateAddress != address(0), "Escrow: delegate is the zero address");
         _payers[delegateAddress] = Payer(0, true);
-        _payersList.push(delegateAddress);
-        emit DelegateRegistered(delegateAddress);
+        _payerList.push(delegateAddress);
+        emit EscrowDelegateRegistered(delegateAddress);
     }
 
     function removeDelegate(address delegateAddress) public onlyPurchaser {
@@ -200,10 +206,10 @@ contract Escrow is AccessControl {
         _payers[delegateAddress].depositedAmount = 0;
         _payers[delegateAddress].isPresent = false;
 
-        for (uint256 i = 1; i < _payersList.length; i++) {
-            if (_payersList[i] == delegateAddress) {
-                _payersList[i] = _payersList[_payersList.length - 1];
-                _payersList.pop();
+        for (uint256 i = 1; i < _payerList.length; i++) {
+            if (_payerList[i] == delegateAddress) {
+                _payerList[i] = _payerList[_payerList.length - 1];
+                _payerList.pop();
                 break;
             }
         }
@@ -212,23 +218,28 @@ contract Escrow is AccessControl {
     function deposit(uint256 amount) public onlyPayers() {
         require(_state == State.Active, "Escrow: can only deposit while active");
         require(amount > 0, "Escrow: can only deposit positive amount");
-        _token.safeTransferFrom(_msgSender(), address(this), amount);
 
+        _token.safeTransferFrom(_msgSender(), address(this), amount);
         _payers[_msgSender()].depositedAmount += amount;
 
-        emit Deposited(_msgSender(), amount);
+        emit EscrowDeposited(_msgSender(), amount);
+    }
+
+    function lock() public onlyAdmin {
+        require(_state == State.Active, "Escrow: can only lock while active");
+        _state = State.Locked;
     }
 
     function close() public onlyAdmin {
-        require(_state == State.Active, "Escrow: can only close while active");
+        require(_state == State.Active || _state == State.Locked, "Escrow: can only close while active or locked");
         _state = State.Closed;
-        emit Closed();
+        emit EscrowClosed();
     }
 
     function _enableRefund() private {
-        require(_state == State.Active, "Escrow: can only enable refunds while active");
+        require(_state == State.Active || _state == State.Locked, "Escrow: can only enable refunds while active or locked");
         _state = State.Refunding;
-        emit RefundEnabled();
+        emit EscrowRefundEnabled();
     }
 
     function enableRefund() public onlyAdmin {
@@ -254,21 +265,33 @@ contract Escrow is AccessControl {
         require(_state == State.Closed, "Escrow: can only withdraw while closed");
         uint256 payment = getDepositAmount();
 
+
         payment -= _payFees(payment);
+
         _token.approve(address(this), payment);
         _token.safeTransferFrom(address(this), _payee, payment);
 
-        emit Withdrawn(payment);
+        emit EscrowWithdrawn(payment);
     }
 
     function refund() public onlyPayers() {
         require(refundAllowed(), "Escrow: can only refund when allowed");
 
         uint256 payment = _payers[_msgSender()].depositedAmount;
+        if(_state == State.Refunding)
+            payment -= _payFees(payment);
 
-        payment -= _payFees(payment);
         _token.approve(address(this), payment);
         _token.safeTransferFrom(address(this), _msgSender(), payment);
-        emit Refunded(_msgSender(), payment);
+        emit EscrowRefunded(_msgSender(), payment);
+    }
+
+    // ROLES
+    function addAdmin(address admin) public onlyAdmin {
+        grantRole(ADMIN_ROLE, admin);
+    }
+
+    function removeAdmin(address admin) public onlyAdmin {
+        revokeRole(ADMIN_ROLE, admin);
     }
 }

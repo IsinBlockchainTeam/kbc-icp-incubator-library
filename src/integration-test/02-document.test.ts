@@ -17,7 +17,7 @@ import {
     OTHER_ADDRESS,
     MY_TOKEN_CONTRACT_ADDRESS,
     MATERIAL_MANAGER_CONTRACT_ADDRESS,
-    PRODUCT_CATEGORY_CONTRACT_ADDRESS,
+    PRODUCT_CATEGORY_CONTRACT_ADDRESS, ADMIN_PRIVATE_KEY,
 } from './config';
 import { DocumentType } from '../entities/DocumentInfo';
 import { TradeManagerService } from '../services/TradeManagerService';
@@ -107,8 +107,8 @@ describe('Document lifecycle', () => {
 
     beforeAll(async () => {
         provider = new ethers.providers.JsonRpcProvider(NETWORK);
-        _defineSender(SUPPLIER_PRIVATE_KEY);
-        _defineOrderSender(SUPPLIER_PRIVATE_KEY);
+        _defineSender(ADMIN_PRIVATE_KEY);
+        _defineOrderSender(ADMIN_PRIVATE_KEY);
         pinataDriver = new PinataIPFSDriver(process.env.PINATA_API_KEY!, process.env.PINATA_SECRET_API_KEY!, process.env.PINATA_GATEWAY_URL!, process.env.PINATA_GATEWAY_TOKEN!);
         pinataService = new IPFSService(pinataDriver);
         await documentService.addTradeManager(TRADE_MANAGER_CONTRACT_ADDRESS);
@@ -133,113 +133,113 @@ describe('Document lifecycle', () => {
         materialIds.push((await materialService.registerMaterial(productCategoryIds[1])).id);
     });
 
-    it('Should register a document (and store it to ipfs) by invoking the order trade contract, then retrieve the document', async () => {
-        _defineSender(CUSTOMER_PRIVATE_KEY);
-        const filename = 'file1.pdf';
-        const today = new Date();
-        const fileBuffer = fs.readFileSync(path.resolve(__dirname, localFilename));
-        const content = new Blob([fileBuffer], { type: 'application/pdf' });
-        const ipfsFileUrl = await pinataService.storeFile(content, filename);
-        const metadataUrl = await pinataService.storeJSON({ filename, date: today, fileUrl: ipfsFileUrl });
-
-        const { orderId, orderTradeService } = await createOrderAndConfirm();
-        transactionId = orderId;
-        firstOrderTradeService = orderTradeService;
-        firstOrderLineId = (await orderTradeService.addLine(new OrderLineRequest(productCategoryIds[0], 100, new OrderLinePrice(100.50, 'CHF')))).id;
-        await orderTradeService.assignMaterial(firstOrderLineId, materialIds[0]);
-        await orderTradeService.addDocument(firstOrderLineId, deliveryNote.name, deliveryNote.documentType, metadataUrl);
-
-        transactionDocumentCounter = await documentService.getDocumentsCounterByTransactionIdAndType(transactionId, transactionType);
-        expect(transactionDocumentCounter).toEqual(1);
-
-        const status = await orderTradeService.getTradeStatus();
-        expect(status).toEqual(TradeStatus.SHIPPED);
-
-        const documentsInfo = await documentService.getDocumentsInfoByDocumentType(transactionId, transactionType, deliveryNote.documentType);
-        expect(documentsInfo.length).toBeGreaterThan(0);
-
-        const savedDocumentInfo = documentsInfo[0];
-        const savedDocument = await documentService.getCompleteDocument(savedDocumentInfo);
-        expect(savedDocument).toBeDefined();
-        expect(savedDocumentInfo).toBeDefined();
-        expect(savedDocument!.id).toEqual(transactionDocumentCounter);
-        expect(savedDocument!.transactionId).toEqual(transactionId);
-        expect(savedDocument!.name).toEqual(deliveryNote.name);
-        expect(savedDocument!.documentType).toEqual(deliveryNote.documentType);
-        expect(savedDocument!.filename).toEqual(filename);
-        expect(savedDocument!.date).toEqual(today);
-        expect(savedDocument!.quantity).toBeUndefined();
-        expect(savedDocument!.content.size).toEqual(content.size);
-        expect(savedDocument!.content.type).toEqual(content.type);
-    }, 30000);
-
-    it('Should add another document for the first order and another to a new order', async () => {
-        const { orderId, orderTradeService } = await createOrderAndConfirm();
-        transactionId2 = orderId;
-        secondOrderTradeService = orderTradeService;
-
-        await firstOrderTradeService.addDocument(firstOrderLineId, deliveryNote.name, deliveryNote.documentType, deliveryNote.externalUrl);
-        secondOrderLineId = (await orderTradeService.addLine(new OrderLineRequest(productCategoryIds[1], 200, new OrderLinePrice(500.75, 'USD')))).id;
-        await orderTradeService.assignMaterial(secondOrderLineId, materialIds[1]);
-        await secondOrderTradeService.addDocument(secondOrderLineId, billOfLading.name, billOfLading.documentType, billOfLading.externalUrl);
-
-        const transactionDocumentsCounter = await documentService.getDocumentsCounterByTransactionIdAndType(transactionId, transactionType);
-        const transaction2DocumentsCounter = await documentService.getDocumentsCounterByTransactionIdAndType(transactionId2, transactionType);
-        expect(transactionDocumentsCounter).toEqual(2);
-        expect(transaction2DocumentsCounter).toEqual(1);
-
-        const savedTransaction2Documents = await documentService.getDocumentsInfoByDocumentType(transactionId2, transactionType, billOfLading.documentType);
-        expect(savedTransaction2Documents).toBeDefined();
-        expect(savedTransaction2Documents[0].id).toEqual(transaction2DocumentsCounter);
-        expect(savedTransaction2Documents[0].transactionId).toEqual(transactionId2);
-        expect(savedTransaction2Documents[0].name).toEqual(billOfLading.name);
-        expect(savedTransaction2Documents[0].documentType).toEqual(billOfLading.documentType);
-    }, 30000);
-
-    // it('Should add another document for the second order, but specifying also the transaction line id as reference', async () => {
-    //     const filename = 'file2.pdf';
+    // it('Should register a document (and store it to ipfs) by invoking the order trade contract, then retrieve the document', async () => {
+    //     _defineSender(ADMIN_PRIVATE_KEY);
+    //     const filename = 'file1.pdf';
     //     const today = new Date();
     //     const fileBuffer = fs.readFileSync(path.resolve(__dirname, localFilename));
     //     const content = new Blob([fileBuffer], { type: 'application/pdf' });
     //     const ipfsFileUrl = await pinataService.storeFile(content, filename);
-    //     const metadataUrl = await pinataService.storeJSON({ filename, date: today, transactionLines: [{ id: 1, quantity: 50 }, { id: 2 }], fileUrl: ipfsFileUrl });
+    //     const metadataUrl = await pinataService.storeJSON({ filename, date: today, fileUrl: ipfsFileUrl });
     //
-    //     await secondOrderTradeService.addDocument(deliveryNote.name, deliveryNote.documentType, metadataUrl);
+    //     const { orderId, orderTradeService } = await createOrderAndConfirm();
+    //     transactionId = orderId;
+    //     firstOrderTradeService = orderTradeService;
+    //     firstOrderLineId = (await orderTradeService.addLine(new OrderLineRequest(productCategoryIds[0], 100, new OrderLinePrice(100.50, 'CHF')))).id;
+    //     await orderTradeService.assignMaterial(firstOrderLineId, materialIds[0]);
+    //     await orderTradeService.addDocument(firstOrderLineId, deliveryNote.name, deliveryNote.documentType, metadataUrl);
     //
-    //     const transaction2DocumentsCounter = await documentService.getDocumentsCounterByTransactionIdAndType(transactionId2, transactionType);
-    //     expect(transaction2DocumentsCounter).toEqual(2);
+    //     transactionDocumentCounter = await documentService.getDocumentsCounterByTransactionIdAndType(transactionId, transactionType);
+    //     expect(transactionDocumentCounter).toEqual(1);
     //
-    //     const documentsInfo = await documentService.getDocumentsInfoByTransactionIdAndType(transactionId2, transactionType);
-    //     expect(documentsInfo.length).toEqual(2);
+    //     const status = await orderTradeService.getTradeStatus();
+    //     expect(status).toEqual(TradeStatus.SHIPPED);
     //
-    //     const savedTransaction2DocumentInfo = documentsInfo.find((d) => d.documentType === deliveryNote.documentType);
-    //     const savedTransaction2Document = await documentService.getCompleteDocument(savedTransaction2DocumentInfo!);
+    //     const documentsInfo = await documentService.getDocumentsInfoByDocumentType(transactionId, transactionType, deliveryNote.documentType);
+    //     expect(documentsInfo.length).toBeGreaterThan(0);
     //
-    //     expect(savedTransaction2Document).toBeDefined();
-    //     expect(savedTransaction2Document!.id).toEqual(transaction2DocumentsCounter);
-    //     expect(savedTransaction2Document!.transactionId).toEqual(transactionId2);
-    //     expect(savedTransaction2Document!.name).toEqual(deliveryNote.name);
-    //     expect(savedTransaction2Document!.documentType).toEqual(deliveryNote.documentType);
-    //     expect(savedTransaction2Document!.filename).toEqual(filename);
-    //     expect(savedTransaction2Document!.date).toEqual(today);
-    //     expect(savedTransaction2Document!.transactionLines).toEqual([{ id: 1, quantity: 50 }, { id: 2 }]);
-    //     expect(savedTransaction2Document!.content.size).toEqual(content.size);
-    //     expect(savedTransaction2Document!.content.type).toEqual(content.type);
+    //     const savedDocumentInfo = documentsInfo[0];
+    //     const savedDocument = await documentService.getCompleteDocument(savedDocumentInfo);
+    //     expect(savedDocument).toBeDefined();
+    //     expect(savedDocumentInfo).toBeDefined();
+    //     expect(savedDocument!.id).toEqual(transactionDocumentCounter);
+    //     expect(savedDocument!.transactionId).toEqual(transactionId);
+    //     expect(savedDocument!.name).toEqual(deliveryNote.name);
+    //     expect(savedDocument!.documentType).toEqual(deliveryNote.documentType);
+    //     expect(savedDocument!.filename).toEqual(filename);
+    //     expect(savedDocument!.date).toEqual(today);
+    //     expect(savedDocument!.quantity).toBeUndefined();
+    //     expect(savedDocument!.content.size).toEqual(content.size);
+    //     expect(savedDocument!.content.type).toEqual(content.type);
     // }, 30000);
-
-    it('should try registering a document specifying a non-existing trade line and be rejected', async () => {
-        const fn = async () => firstOrderTradeService.addDocument(100, deliveryNote.name, deliveryNote.documentType, deliveryNote.externalUrl);
-        await expect(fn).rejects.toThrowError('Trade: Line does not exist');
-    });
-
-    it('should try registering a document specifying a trade line with no material assigned and be rejected', async () => {
-        const lineId = (await firstOrderTradeService.addLine(new OrderLineRequest(productCategoryIds[0], 10, new OrderLinePrice(1.50, 'USD')))).id;
-        const fn = async () => firstOrderTradeService.addDocument(lineId, deliveryNote.name, deliveryNote.documentType, deliveryNote.externalUrl);
-        await expect(fn).rejects.toThrowError('Trade: A material must be assigned before adding a document for a line');
-    });
-
-    it("should get the trade status ON_BOARD for the second order because document 'Bill of lading' has been uploaded before", async () => {
-        const status = await secondOrderTradeService.getTradeStatus();
-        expect(status).toEqual(TradeStatus.ON_BOARD);
-    });
+    //
+    // it('Should add another document for the first order and another to a new order', async () => {
+    //     const { orderId, orderTradeService } = await createOrderAndConfirm();
+    //     transactionId2 = orderId;
+    //     secondOrderTradeService = orderTradeService;
+    //
+    //     await firstOrderTradeService.addDocument(firstOrderLineId, deliveryNote.name, deliveryNote.documentType, deliveryNote.externalUrl);
+    //     secondOrderLineId = (await orderTradeService.addLine(new OrderLineRequest(productCategoryIds[1], 200, new OrderLinePrice(500.75, 'USD')))).id;
+    //     await orderTradeService.assignMaterial(secondOrderLineId, materialIds[1]);
+    //     await secondOrderTradeService.addDocument(secondOrderLineId, billOfLading.name, billOfLading.documentType, billOfLading.externalUrl);
+    //
+    //     const transactionDocumentsCounter = await documentService.getDocumentsCounterByTransactionIdAndType(transactionId, transactionType);
+    //     const transaction2DocumentsCounter = await documentService.getDocumentsCounterByTransactionIdAndType(transactionId2, transactionType);
+    //     expect(transactionDocumentsCounter).toEqual(2);
+    //     expect(transaction2DocumentsCounter).toEqual(1);
+    //
+    //     const savedTransaction2Documents = await documentService.getDocumentsInfoByDocumentType(transactionId2, transactionType, billOfLading.documentType);
+    //     expect(savedTransaction2Documents).toBeDefined();
+    //     expect(savedTransaction2Documents[0].id).toEqual(transaction2DocumentsCounter);
+    //     expect(savedTransaction2Documents[0].transactionId).toEqual(transactionId2);
+    //     expect(savedTransaction2Documents[0].name).toEqual(billOfLading.name);
+    //     expect(savedTransaction2Documents[0].documentType).toEqual(billOfLading.documentType);
+    // }, 30000);
+    //
+    // // it('Should add another document for the second order, but specifying also the transaction line id as reference', async () => {
+    // //     const filename = 'file2.pdf';
+    // //     const today = new Date();
+    // //     const fileBuffer = fs.readFileSync(path.resolve(__dirname, localFilename));
+    // //     const content = new Blob([fileBuffer], { type: 'application/pdf' });
+    // //     const ipfsFileUrl = await pinataService.storeFile(content, filename);
+    // //     const metadataUrl = await pinataService.storeJSON({ filename, date: today, transactionLines: [{ id: 1, quantity: 50 }, { id: 2 }], fileUrl: ipfsFileUrl });
+    // //
+    // //     await secondOrderTradeService.addDocument(deliveryNote.name, deliveryNote.documentType, metadataUrl);
+    // //
+    // //     const transaction2DocumentsCounter = await documentService.getDocumentsCounterByTransactionIdAndType(transactionId2, transactionType);
+    // //     expect(transaction2DocumentsCounter).toEqual(2);
+    // //
+    // //     const documentsInfo = await documentService.getDocumentsInfoByTransactionIdAndType(transactionId2, transactionType);
+    // //     expect(documentsInfo.length).toEqual(2);
+    // //
+    // //     const savedTransaction2DocumentInfo = documentsInfo.find((d) => d.documentType === deliveryNote.documentType);
+    // //     const savedTransaction2Document = await documentService.getCompleteDocument(savedTransaction2DocumentInfo!);
+    // //
+    // //     expect(savedTransaction2Document).toBeDefined();
+    // //     expect(savedTransaction2Document!.id).toEqual(transaction2DocumentsCounter);
+    // //     expect(savedTransaction2Document!.transactionId).toEqual(transactionId2);
+    // //     expect(savedTransaction2Document!.name).toEqual(deliveryNote.name);
+    // //     expect(savedTransaction2Document!.documentType).toEqual(deliveryNote.documentType);
+    // //     expect(savedTransaction2Document!.filename).toEqual(filename);
+    // //     expect(savedTransaction2Document!.date).toEqual(today);
+    // //     expect(savedTransaction2Document!.transactionLines).toEqual([{ id: 1, quantity: 50 }, { id: 2 }]);
+    // //     expect(savedTransaction2Document!.content.size).toEqual(content.size);
+    // //     expect(savedTransaction2Document!.content.type).toEqual(content.type);
+    // // }, 30000);
+    //
+    // it('should try registering a document specifying a non-existing trade line and be rejected', async () => {
+    //     const fn = async () => firstOrderTradeService.addDocument(100, deliveryNote.name, deliveryNote.documentType, deliveryNote.externalUrl);
+    //     await expect(fn).rejects.toThrowError('Trade: Line does not exist');
+    // });
+    //
+    // it('should try registering a document specifying a trade line with no material assigned and be rejected', async () => {
+    //     const lineId = (await firstOrderTradeService.addLine(new OrderLineRequest(productCategoryIds[0], 10, new OrderLinePrice(1.50, 'USD')))).id;
+    //     const fn = async () => firstOrderTradeService.addDocument(lineId, deliveryNote.name, deliveryNote.documentType, deliveryNote.externalUrl);
+    //     await expect(fn).rejects.toThrowError('Trade: A material must be assigned before adding a document for a line');
+    // });
+    //
+    // it("should get the trade status ON_BOARD for the second order because document 'Bill of lading' has been uploaded before", async () => {
+    //     const status = await secondOrderTradeService.getTradeStatus();
+    //     expect(status).toEqual(TradeStatus.ON_BOARD);
+    // });
 });

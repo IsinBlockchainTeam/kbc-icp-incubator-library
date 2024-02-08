@@ -21,6 +21,7 @@ describe('EscrowDriver', () => {
 
     const mockedWriteFunction = jest.fn();
     const mockedReadFunction = jest.fn();
+    const mockedGetOwner = jest.fn();
     const mockedGetPayee = jest.fn();
     const mockedGetPurchaser = jest.fn();
     const mockedGetPayers = jest.fn();
@@ -36,19 +37,21 @@ describe('EscrowDriver', () => {
     mockedReadFunction.mockResolvedValue({
         toNumber: mockedToNumber,
     });
-    mockedGetPayee.mockReturnValue(Promise.resolve(payee));
-    mockedGetPurchaser.mockReturnValue(Promise.resolve(purchaser));
-    mockedGetPayers.mockReturnValue(Promise.resolve([delegate]));
-    mockedGetPayer.mockReturnValue(Promise.resolve({
+    mockedGetOwner.mockReturnValue(payee);
+    mockedGetPayee.mockReturnValue(payee);
+    mockedGetPurchaser.mockReturnValue(purchaser);
+    mockedGetPayers.mockReturnValue([delegate]);
+    mockedGetPayer.mockReturnValue({
         depositedAmount: BigNumber.from(0),
         isPresent: true,
-    } as EscrowContract.PayerStructOutput));
-    mockedGetState.mockReturnValue(Promise.resolve(EscrowStatus.ACTIVE));
-    mockedGetTokenAddress.mockReturnValue(Promise.resolve(contractAddress));
-    mockedGetCommissioner.mockReturnValue(Promise.resolve(commissioner));
-    mockedGetBoolean.mockReturnValue(Promise.resolve(boolean));
+    } as EscrowContract.PayerStructOutput);
+    mockedGetState.mockReturnValue(EscrowStatus.ACTIVE);
+    mockedGetTokenAddress.mockReturnValue(contractAddress);
+    mockedGetCommissioner.mockReturnValue(commissioner);
+    mockedGetBoolean.mockReturnValue(boolean);
 
     const mockedContract = createMock<EscrowContract>({
+        getOwner: mockedGetOwner,
         getPayee: mockedGetPayee,
         getPurchaser: mockedGetPurchaser,
         getPayers: mockedGetPayers,
@@ -71,6 +74,7 @@ describe('EscrowDriver', () => {
         refundAllowed: mockedGetBoolean,
         addDelegate: mockedWriteFunction,
         removeDelegate: mockedWriteFunction,
+        lock: mockedWriteFunction,
         deposit: mockedWriteFunction,
         close: mockedWriteFunction,
         enableRefund: mockedWriteFunction,
@@ -93,7 +97,21 @@ describe('EscrowDriver', () => {
         escrowDriver = new EscrowDriver(mockedSigner, contractAddress);
     });
 
-    afterAll(() => jest.clearAllMocks());
+    afterEach(() => jest.clearAllMocks());
+
+    it('should correctly retrieve owner', async () => {
+        const response = await escrowDriver.getOwner();
+
+        expect(response)
+            .toEqual(payee);
+
+        expect(mockedContract.getOwner)
+            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.getOwner)
+            .toHaveBeenNthCalledWith(1);
+        expect(mockedGetOwner)
+            .toHaveBeenCalledTimes(1);
+    });
 
     it('should correctly retrieve payee', async () => {
         const response = await escrowDriver.getPayee();
@@ -210,8 +228,23 @@ describe('EscrowDriver', () => {
             .toHaveBeenCalledTimes(1);
     });
 
+    it('should correctly retrieve state - LOCKED', async () => {
+        mockedGetState.mockReturnValueOnce(EscrowStatus.LOCKED);
+        const response = await escrowDriver.getState();
+
+        expect(response)
+            .toEqual(EscrowStatus.LOCKED);
+
+        expect(mockedContract.getState)
+            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.getState)
+            .toHaveBeenNthCalledWith(1);
+        expect(mockedGetState)
+            .toHaveBeenCalledTimes(1);
+    });
+
     it('should correctly retrieve state - REFUNDING', async () => {
-        mockedGetState.mockReturnValue(Promise.resolve(EscrowStatus.REFUNDING));
+        mockedGetState.mockReturnValueOnce(EscrowStatus.REFUNDING);
         const response = await escrowDriver.getState();
 
         expect(response)
@@ -226,7 +259,7 @@ describe('EscrowDriver', () => {
     });
 
     it('should correctly retrieve state - CLOSED', async () => {
-        mockedGetState.mockReturnValue(Promise.resolve(EscrowStatus.CLOSED));
+        mockedGetState.mockReturnValueOnce(EscrowStatus.CLOSED);
         const response = await escrowDriver.getState();
 
         expect(response)
@@ -468,6 +501,17 @@ describe('EscrowDriver', () => {
         expect(mockedContract.deposit)
             .toHaveBeenNthCalledWith(1, amount);
 
+        expect(mockedWait)
+            .toHaveBeenCalledTimes(1);
+    });
+
+    it('should correctly lock', async () => {
+        await escrowDriver.lock();
+
+        expect(mockedContract.lock)
+            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.lock)
+            .toHaveBeenNthCalledWith(1);
         expect(mockedWait)
             .toHaveBeenCalledTimes(1);
     });
