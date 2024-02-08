@@ -11,6 +11,10 @@ export class EscrowDriver {
             .connect(signer);
     }
 
+    async getOwner(): Promise<string> {
+        return await this._contract.getOwner();
+    }
+
     async getPayee(): Promise<string> {
         return await this._contract.getPayee();
     }

@@ -21,6 +21,7 @@ describe('EscrowDriver', () => {
 
     const mockedWriteFunction = jest.fn();
     const mockedReadFunction = jest.fn();
+    const mockedGetOwner = jest.fn();
     const mockedGetPayee = jest.fn();
     const mockedGetPurchaser = jest.fn();
     const mockedGetPayers = jest.fn();
@@ -36,19 +37,21 @@ describe('EscrowDriver', () => {
     mockedReadFunction.mockResolvedValue({
         toNumber: mockedToNumber,
     });
-    mockedGetPayee.mockReturnValue(Promise.resolve(payee));
-    mockedGetPurchaser.mockReturnValue(Promise.resolve(purchaser));
-    mockedGetPayers.mockReturnValue(Promise.resolve([delegate]));
-    mockedGetPayer.mockReturnValue(Promise.resolve({
+    mockedGetOwner.mockReturnValue(payee);
+    mockedGetPayee.mockReturnValue(payee);
+    mockedGetPurchaser.mockReturnValue(purchaser);
+    mockedGetPayers.mockReturnValue([delegate]);
+    mockedGetPayer.mockReturnValue({
         depositedAmount: BigNumber.from(0),
         isPresent: true,
-    } as EscrowContract.PayerStructOutput));
-    mockedGetState.mockReturnValue(Promise.resolve(EscrowStatus.ACTIVE));
-    mockedGetTokenAddress.mockReturnValue(Promise.resolve(contractAddress));
-    mockedGetCommissioner.mockReturnValue(Promise.resolve(commissioner));
-    mockedGetBoolean.mockReturnValue(Promise.resolve(boolean));
+    } as EscrowContract.PayerStructOutput);
+    mockedGetState.mockReturnValue(EscrowStatus.ACTIVE);
+    mockedGetTokenAddress.mockReturnValue(contractAddress);
+    mockedGetCommissioner.mockReturnValue(commissioner);
+    mockedGetBoolean.mockReturnValue(boolean);
 
     const mockedContract = createMock<EscrowContract>({
+        getOwner: mockedGetOwner,
         getPayee: mockedGetPayee,
         getPurchaser: mockedGetPurchaser,
         getPayers: mockedGetPayers,
@@ -93,7 +96,21 @@ describe('EscrowDriver', () => {
         escrowDriver = new EscrowDriver(mockedSigner, contractAddress);
     });
 
-    afterAll(() => jest.clearAllMocks());
+    afterEach(() => jest.clearAllMocks());
+
+    it('should correctly retrieve owner', async () => {
+        const response = await escrowDriver.getOwner();
+
+        expect(response)
+            .toEqual(payee);
+
+        expect(mockedContract.getOwner)
+            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.getOwner)
+            .toHaveBeenNthCalledWith(1);
+        expect(mockedGetOwner)
+            .toHaveBeenCalledTimes(1);
+    });
 
     it('should correctly retrieve payee', async () => {
         const response = await escrowDriver.getPayee();

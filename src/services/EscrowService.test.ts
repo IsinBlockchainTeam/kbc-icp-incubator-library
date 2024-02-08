@@ -7,6 +7,7 @@ describe('EscrowService', () => {
 
     let mockedEscrowDriver: EscrowDriver;
     const mockedInstance = {
+        getOwner: jest.fn(),
         getPayee: jest.fn(),
         getPurchaser: jest.fn(),
         getPayers: jest.fn(),
@@ -48,6 +49,12 @@ describe('EscrowService', () => {
     afterAll(() => jest.clearAllMocks());
 
     it.each([
+        {
+            serviceFunctionName: 'getOwner',
+            serviceFunction: () => escrowService.getOwner(),
+            expectedMockedFunction: mockedInstance.getOwner,
+            expectedMockedFunctionArgs: [],
+        },
         {
             serviceFunctionName: 'getPayee',
             serviceFunction: () => escrowService.getPayee(),

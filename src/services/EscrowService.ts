@@ -9,6 +9,10 @@ export class EscrowService {
         this._escrowDriver = supplyChainDriver;
     }
 
+    async getOwner(): Promise<string> {
+        return this._escrowDriver.getOwner();
+    }
+
     async getPayee(): Promise<string> {
         return this._escrowDriver.getPayee();
     }
