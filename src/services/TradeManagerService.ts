@@ -23,7 +23,7 @@ export class TradeManagerService {
         return this._tradeManagerDriver.getTradeCounter();
     }
 
-    async getTrades(): Promise<string[]> {
+    async getTrades(): Promise<Trade[]> {
         return this._tradeManagerDriver.getTrades();
     }
 
