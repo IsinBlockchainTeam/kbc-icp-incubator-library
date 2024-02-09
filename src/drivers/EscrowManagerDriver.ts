@@ -10,6 +10,10 @@ export class EscrowManagerDriver {
             .connect(signer);
     }
 
+    async getEscrowCounter(): Promise<number> {
+        return (await this._contract.getEscrowCounter()).toNumber();
+    }
+
     async registerEscrow(payee: string, purchaser: string, agreedAmount: number, duration: number, tokenAddress: string): Promise<void> {
         if (!utils.isAddress(payee) || !utils.isAddress(purchaser) || !utils.isAddress(tokenAddress)) {
             throw new Error('Not an address');

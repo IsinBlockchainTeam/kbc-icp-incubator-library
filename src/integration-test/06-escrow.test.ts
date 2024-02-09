@@ -7,7 +7,7 @@ import { EscrowService } from '../services/EscrowService';
 import {
     ADMIN_PRIVATE_KEY,
     CUSTOMER_ADDRESS,
-    CUSTOMER_PRIVATE_KEY,
+    CUSTOMER_PRIVATE_KEY, DELEGATE_ADDRESS, DELEGATE_PRIVATE_KEY,
     ESCROW_MANAGER_CONTRACT_ADDRESS,
     MY_TOKEN_CONTRACT_ADDRESS, NETWORK, OTHER_PRIVATE_KEY, SUPPLIER_ADDRESS,
     SUPPLIER_PRIVATE_KEY,
@@ -22,22 +22,26 @@ describe('Escrow Manager', () => {
     let escrowManagerDriver: EscrowManagerDriver;
     let escrowManagerService: EscrowManagerService;
 
+    let escrowInitialIndex: number;
+    let initialExporterBalance: number;
+    let initialPurchaserBalance: number;
+    let initialDelegateBalance: number;
+
     const payee: string = SUPPLIER_ADDRESS;
     const purchaser: string = CUSTOMER_ADDRESS;
+    const delegate: string = DELEGATE_ADDRESS;
     const agreedAmount: number = 1000;
     const duration: number = 100;
     let escrowAddress: string;
 
     let escrowService: EscrowService;
-    let escrowDriver: EscrowDriver;
     let adminEscrowService: EscrowService;
-    let adminEscrowDriver: EscrowDriver;
-    let payeeEscrowDriver: EscrowDriver;
-    let payeeEscrowService: EscrowService;
-    let purchaserEscrowDriver: EscrowDriver;
-    let purchaserEscrowService: EscrowService;
+    let exporterEscrowService: EscrowService;
+    let importerEscrowService: EscrowService;
+    let delegateEscrowService: EscrowService;
 
     let purchaserSigner: Signer;
+    let delegateSigner: Signer;
 
     const tokenAddress: string = MY_TOKEN_CONTRACT_ADDRESS;
     let tokenContract: Contract;
@@ -56,81 +60,113 @@ describe('Escrow Manager', () => {
         tokenContract = MyToken__factory.connect(tokenAddress, signer);
         await tokenContract.deployed();
         await tokenContract.transfer(purchaser, 500);
+        await tokenContract.transfer(delegate, 10);
+        escrowInitialIndex = await escrowManagerService.getEscrowCounter();
+        initialExporterBalance = (await tokenContract.balanceOf(payee)).toNumber();
+        initialPurchaserBalance = (await tokenContract.balanceOf(purchaser)).toNumber();
+        initialDelegateBalance = (await tokenContract.balanceOf(delegate)).toNumber();
     });
 
     const _defineServices = () => {
         expect(utils.isAddress(escrowAddress))
             .toBeTruthy();
 
-        signer = new ethers.Wallet(SUPPLIER_PRIVATE_KEY, provider);
-        adminEscrowDriver = new EscrowDriver(
-            signer,
-            escrowAddress,
-        );
-        adminEscrowService = new EscrowService(adminEscrowDriver);
-
         signer = new ethers.Wallet(ADMIN_PRIVATE_KEY, provider);
-        payeeEscrowDriver = new EscrowDriver(
+        adminEscrowService = new EscrowService(new EscrowDriver(
             signer,
             escrowAddress,
-        );
-        payeeEscrowService = new EscrowService(payeeEscrowDriver);
+        ));
+
+        exporterEscrowService = new EscrowService(new EscrowDriver(
+            new ethers.Wallet(SUPPLIER_PRIVATE_KEY, provider),
+            escrowAddress,
+        ));
 
         purchaserSigner = new ethers.Wallet(CUSTOMER_PRIVATE_KEY, provider);
-        purchaserEscrowDriver = new EscrowDriver(
+        importerEscrowService = new EscrowService(new EscrowDriver(
             purchaserSigner,
             escrowAddress,
-        );
-        purchaserEscrowService = new EscrowService(purchaserEscrowDriver);
+        ));
 
-        signer = new ethers.Wallet(OTHER_PRIVATE_KEY, provider);
-        escrowDriver = new EscrowDriver(
-            purchaserSigner,
+        delegateSigner = new ethers.Wallet(DELEGATE_PRIVATE_KEY, provider);
+        delegateEscrowService = new EscrowService(new EscrowDriver(
+            delegateSigner,
             escrowAddress,
-        );
-        escrowService = new EscrowService(escrowDriver);
+        ));
+
+        escrowService = new EscrowService(new EscrowDriver(
+            new ethers.Wallet(OTHER_PRIVATE_KEY, provider),
+            escrowAddress,
+        ));
     };
 
     describe('Withdraw scenario', () => {
         it('should create an escrow', async () => {
             await escrowManagerService.registerEscrow(payee, purchaser, agreedAmount, duration, tokenAddress);
-            const id: number = (await escrowManagerService.getEscrowIdsOfPurchaser(purchaser))[0];
+            const idsOfPurchaser: number[] = await escrowManagerService.getEscrowIdsOfPurchaser(purchaser);
+            const id: number = idsOfPurchaser[idsOfPurchaser.length - 1]
             expect(id)
-                .toEqual(0);
+                .toEqual(escrowInitialIndex);
 
             escrowAddress = await escrowManagerService.getEscrow(id);
             _defineServices();
         });
 
         it('should retrieve data correctly', async () => {
-            expect(await escrowDriver.getPayee())
+            expect(await escrowService.getOwner())
                 .toEqual(payee);
-            expect(await escrowDriver.getPurchaser())
+            expect(await escrowService.getPayee())
+                .toEqual(payee);
+            expect(await escrowService.getPurchaser())
                 .toEqual(purchaser);
-            expect(await escrowDriver.getAgreedAmount())
+            expect(await escrowService.getAgreedAmount())
                 .toEqual(agreedAmount);
-            expect(await escrowDriver.getTokenAddress())
+            expect(await escrowService.getTokenAddress())
                 .toEqual(tokenAddress);
-            expect(await escrowDriver.getState())
+            expect(await escrowService.getState())
                 .toEqual(EscrowStatus.ACTIVE);
-            expect(await escrowDriver.getDepositAmount())
+            expect(await escrowService.getDepositAmount())
                 .toEqual(0);
         });
 
         it('should deposit funds', async () => {
             expect(await tokenContract.balanceOf(purchaser))
-                .toEqual(BigNumber.from(500));
+                .toEqual(BigNumber.from(initialPurchaserBalance));
             await tokenContract.connect(purchaserSigner)
                 .approve(escrowAddress, 120);
-            await purchaserEscrowService.deposit(120);
+            await importerEscrowService.deposit(120);
             expect(await escrowService.getDepositAmount())
                 .toEqual(120);
             expect(await tokenContract.balanceOf(purchaser))
-                .toEqual(BigNumber.from(500 - 120));
+                .toEqual(BigNumber.from(initialPurchaserBalance - 120));
+        });
+
+        it('should allow a delegate to deposit some funds', async () => {
+            await importerEscrowService.addDelegate(delegate);
+            await tokenContract.connect(delegateSigner).approve(escrowAddress, 10);
+            await delegateEscrowService.deposit(10);
+            expect(await tokenContract.balanceOf(delegate)).toEqual(BigNumber.from(initialDelegateBalance - 10));
+        });
+
+        it('should allow delegate to withdraw funds while state is \'Active\' without paying fees', async () => {
+            await delegateEscrowService.refund();
+            expect(await tokenContract.balanceOf(delegate)).toEqual(BigNumber.from(initialDelegateBalance));
+        });
+
+        it('should lock the escrow', async () => {
+            await adminEscrowService.lock();
+            expect(await adminEscrowService.getState()).toEqual(EscrowStatus.LOCKED);
+        });
+
+        it('should not allow depositing or refunding while locked', async () => {
+            await tokenContract.connect(purchaserSigner).approve(escrowAddress, 10);
+            await expect(importerEscrowService.deposit(10)).rejects.toThrow('Escrow: can only deposit while active');
+
+            await expect(importerEscrowService.refund()).rejects.toThrow('Escrow: can only refund when allowed');
         });
 
         it('should close escrow', async () => {
-            await expect(purchaserEscrowService.close())
+            await expect(importerEscrowService.close())
                 .rejects
                 .toThrow('Escrow: caller is not the admin');
 
@@ -139,13 +175,13 @@ describe('Escrow Manager', () => {
                 .toEqual(EscrowStatus.CLOSED);
             await tokenContract.connect(purchaserSigner)
                 .approve(escrowAddress, 100);
-            await expect(purchaserEscrowService.deposit(100))
+            await expect(importerEscrowService.deposit(100))
                 .rejects
                 .toThrow('Escrow: can only deposit while active');
         });
 
         it('should withdraw funds', async () => {
-            // await expect(purchaserEscrowService.withdraw()).rejects.toThrow("Escrow: caller is not the admin");
+            // await expect(importerEscrowService.withdraw()).rejects.toThrow("Escrow: caller is not the admin");
             // await expect(adminEscrowService.withdraw()).rejects.toThrow("Escrow: can only refund while refunding");
             expect(await escrowService.getBaseFee())
                 .toEqual(20);
@@ -153,18 +189,20 @@ describe('Escrow Manager', () => {
                 .toEqual(1);
             expect(await escrowService.getDepositAmount())
                 .toEqual(120);
-            // TODO: fix this test
-            // await payeeEscrowService.withdraw();
-            // expect(await tokenContract.balanceOf(purchaser)).toEqual(BigNumber.from(200));
+
+            await exporterEscrowService.withdraw();
+            expect(await tokenContract.balanceOf(payee)).toEqual(BigNumber.from( initialExporterBalance + 120 - 20 - 1));
+            expect(await tokenContract.balanceOf(purchaser)).toEqual(BigNumber.from(initialPurchaserBalance - 120));
         });
     });
 
     describe('Refund scenario', () => {
         it('should create an escrow', async () => {
             await escrowManagerService.registerEscrow(payee, purchaser, agreedAmount, duration, tokenAddress);
-            const id: number = (await escrowManagerService.getEscrowIdsOfPurchaser(purchaser))[1];
+            const idsOdPurchaser: number[] = await escrowManagerService.getEscrowIdsOfPurchaser(purchaser);
+            const id: number = idsOdPurchaser[idsOdPurchaser.length - 1];
             expect(id)
-                .toEqual(1);
+                .toEqual(escrowInitialIndex + 1);
 
             escrowAddress = await escrowManagerService.getEscrow(id);
             _defineServices();
@@ -172,18 +210,18 @@ describe('Escrow Manager', () => {
 
         it('should deposit funds', async () => {
             expect(await tokenContract.balanceOf(purchaser))
-                .toEqual(BigNumber.from(500 - 120));
+                .toEqual(BigNumber.from(initialPurchaserBalance - 120));
             await tokenContract.connect(purchaserSigner)
                 .approve(escrowAddress, 120);
-            await purchaserEscrowService.deposit(120);
+            await importerEscrowService.deposit(120);
             expect(await escrowService.getDepositAmount())
                 .toEqual(120);
             expect(await tokenContract.balanceOf(purchaser))
-                .toEqual(BigNumber.from(500 - 240));
+                .toEqual(BigNumber.from(initialPurchaserBalance - 240));
         });
 
         it('should enable refund', async () => {
-            await expect(purchaserEscrowService.enableRefund())
+            await expect(importerEscrowService.enableRefund())
                 .rejects
                 .toThrow('Escrow: caller is not the admin');
 
@@ -192,15 +230,15 @@ describe('Escrow Manager', () => {
                 .toEqual(EscrowStatus.REFUNDING);
             await tokenContract.connect(purchaserSigner)
                 .approve(escrowAddress, 100);
-            await expect(purchaserEscrowService.deposit(100))
+            await expect(importerEscrowService.deposit(100))
                 .rejects
                 .toThrow('Escrow: can only deposit while active');
         });
 
         it('should refund funds', async () => {
-            await purchaserEscrowService.refund();
+            await importerEscrowService.refund();
             expect(await tokenContract.balanceOf(purchaser))
-                .toEqual(BigNumber.from(500 - 120 - 21));
+                .toEqual(BigNumber.from(initialPurchaserBalance - 120 - 21));
         });
     });
 });

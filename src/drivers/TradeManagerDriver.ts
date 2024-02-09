@@ -6,6 +6,8 @@ import { BasicTradeDriver } from './BasicTradeDriver';
 import { BasicTrade } from '../entities/BasicTrade';
 import { OrderTrade } from '../entities/OrderTrade';
 import { OrderTradeDriver } from './OrderTradeDriver';
+import {Line, Trade} from "../entities/Trade";
+import {IConcreteTradeDriver} from "./IConcreteTradeDriver";
 
 export class TradeManagerDriver {
     private _contract: TradeManager;
@@ -52,9 +54,13 @@ export class TradeManagerDriver {
         return tradeDriver.getTrade();
     }
 
+    async getTradeCounter(): Promise<number> {
+        return (await this._contract.getTradeCounter()).toNumber();
+    }
+
     async getTrades(): Promise<string[]> {
         const trades: string[] = [];
-        const tradeCounter: number = (await this._contract.getTradeCounter()).toNumber();
+        const tradeCounter: number = await this.getTradeCounter();
 
         for (let i: number = 1; i <= tradeCounter; i++) {
             trades.push(await this._contract.getTrade(i));
@@ -69,7 +75,7 @@ export class TradeManagerDriver {
 
     async getTradesAndTypes(): Promise<Map<string, TradeType>> {
         const result: Map<string, TradeType> = new Map<string, TradeType>();
-        const tradeCounter: number = (await this._contract.getTradeCounter()).toNumber();
+        const tradeCounter: number = await this.getTradeCounter();
 
         for (let i: number = 1; i <= tradeCounter; i++) {
             const tradeAddress: string = await this._contract.getTrade(i);
@@ -81,6 +87,22 @@ export class TradeManagerDriver {
 
     async getTrade(id: number): Promise<string> {
         return this._contract.getTrade(id);
+    }
+
+    async getTradesByMaterial(materialId: number): Promise<Trade[]> {
+        const trades: Trade[] = [];
+        const tradesMap: Map<string, TradeType> = await this.getTradesAndTypes();
+        for(const [tradeAddress, tradeType] of tradesMap) {
+            const tradeDriver: IConcreteTradeDriver = tradeType === TradeType.BASIC ?
+                new BasicTradeDriver(this._contract.signer, tradeAddress, this._materialManagerAddress, this._productCategoryManagerAddress) :
+                new OrderTradeDriver(this._contract.signer, tradeAddress, this._materialManagerAddress, this._productCategoryManagerAddress);
+            const lines: Line[] = await tradeDriver.getLines();
+            if(lines.some((l) => l.material?.id === materialId)) {
+                trades.push(await tradeDriver.getTrade());
+            }
+        }
+
+        return trades;
     }
 
     async getTradeIdsOfSupplier(commissioner: string): Promise<number[]> {

@@ -1,25 +1,35 @@
-# Blockchain Smart Contracts 
+# _Blockchain_ package
+This package defines, tests and deploys the _Solidity_ Smart Contracts of the KBC Coffee Trading Project.
 
-This project contains the logic of the Smart Contracts and it enables them to be deployed and tested.
+It uses the [Hardhat](https://hardhat.org/) framework as a development environment and testing network.
 
-## Install dependencies
-In order to install the required dependencies:
-- create/edit the `.npmrc` file with the missing information specified in `.npmrc.template`
-- `npm i --force`
+## Getting Started
+- Move inside the `blockchain` with `cd blockchain`
+- Rename the `.npmrc.template` file to `.npmrc` and fill in the missing information
+- Run `npm i --force` to install the required dependencies
+- Rename the `.env.template` file to `.env` and fill in the missing information
+- Compile smart contracts with `npm run compile`
+- In a new terminal, run `npm run node` for starting the local Hardhat blockchain
+- Deploy the smart contracts with `npm run deploy`
 
-## Deploy Smart Contracts
-First you need to create/edit the `.env` file with the missing information specified in `.env.template`.\
-You can now deploy new instances of smart contracts, by using: 
-- `npm run compile`
-- `npm run deploy`
-
-## Ethernal
-You can use [Ethernal](https://app.tryethernal.com/transactions), to verify the deployed smart contracts.
-To reset the Ethernal cache, you can use: `npm run ethernal:reset`
+### `npmrc` Configuration
+| Registry name              | Description                                                                                                                                                                                                       |
+|----------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `@kbc-lib:registry`        | Needed only for **contributing** to this repo. It's an access token with write access to this package's private npm registry                                                                                      |
+| `@blockchain-lib:registry` | Needed for **installing** dependencies. It's an access token with read access to the ['common' private npm registry](https://gitlab-core.supsi.ch/dti-isin/giuliano.gremlich/blockchain/one_lib_to_rule_them_all) |
 
 
-## Test
-You can run tests, by using: \
-- `npm run test`: run tests
-- `npm run coverage`: run tests with coverage
-- `npm run gasReport`: run test with a view of the gas consumption
+### Environment Variables Configuration
+| Variable                  | Description                                                                                                                                        |
+|---------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| `SUPPLIER_ADMIN`          | An ethereum address that will be used to reference the supplier inside smart contracts                                                             |
+| `COMMISSIONER_ADMIN`      | An ethereum address to which escrow fees will be sent                                                                                              |
+| `ESCROW_BASE_FEE`         | A natural number representing the fee that will be paid everytime tokens are withdrawn from `escrow.sol` smart contract                            |
+| `ESCROW_COMMISSIONER_FEE` | A natural number between 0 and 100 representing a percentage fee that will be paid everytime tokens are withdrawn from `escrow.sol` smart contract |
+
+
+## Testing
+Tests are performed using [Hardhat](https://hardhat.org/) local network and [Chai](https://www.chaijs.com/) and consist of unit tests. You can run test on this package using the following commands:
+- `npm run test`: run tests on all smart contracts
+- `npm run coverage`: run tests on all smart contracts detecting the coverage
+- `npm run gasReport`: run tests on all smart contracts detecting the gas consumption

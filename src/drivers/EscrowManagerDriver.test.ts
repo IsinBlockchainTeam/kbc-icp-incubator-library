@@ -23,6 +23,7 @@ describe('EscrowManagerDriver', () => {
     const mockedGetBaseFee = jest.fn();
     const mockedGetPercentageFee = jest.fn();
     const mockedGetEscrow = jest.fn();
+    const mockedGetEscrowCounter = jest.fn();
     const mockedGetEscrowIdsOfPurchaser = jest.fn();
 
     mockedWriteFunction.mockResolvedValue({
@@ -32,6 +33,7 @@ describe('EscrowManagerDriver', () => {
     mockedGetBaseFee.mockReturnValue(Promise.resolve(BigNumber.from(baseFee)));
     mockedGetPercentageFee.mockReturnValue(Promise.resolve(BigNumber.from(percentageFee)));
     mockedGetEscrow.mockReturnValue(Promise.resolve(escrowAddress));
+    mockedGetEscrowCounter.mockReturnValue(BigNumber.from(1));
     mockedGetEscrowIdsOfPurchaser.mockReturnValue(Promise.resolve([BigNumber.from(0)]));
 
     const mockedContract = createMock<EscrowManager>({
@@ -43,6 +45,7 @@ describe('EscrowManagerDriver', () => {
         getPercentageFee: mockedGetPercentageFee,
         updatePercentageFee: mockedWriteFunction,
         getEscrow: mockedGetEscrow,
+        getEscrowCounter: mockedGetEscrowCounter,
         getEscrowIdsOfPurchaser: mockedGetEscrowIdsOfPurchaser,
     });
 
@@ -81,6 +84,18 @@ describe('EscrowManagerDriver', () => {
             .toHaveBeenCalledTimes(0);
         expect(mockedWait)
             .toHaveBeenCalledTimes(0);
+    });
+
+    it('should correctly retrieve escrow counter', async () => {
+        const response = await escrowManagerDriver.getEscrowCounter();
+
+        expect(response)
+            .toEqual(1);
+
+        expect(mockedContract.getEscrowCounter)
+            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.getEscrowCounter)
+            .toHaveBeenNthCalledWith(1)
     });
 
     it('should correctly retrieve commissioner', async () => {

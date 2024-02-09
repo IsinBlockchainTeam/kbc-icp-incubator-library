@@ -1,4 +1,5 @@
 import { Material } from './Material';
+import { AssetOperationType} from "../types/AssetOperationType";
 
 export class AssetOperation {
     private _id: number;
@@ -46,5 +47,13 @@ export class AssetOperation {
 
     set outputMaterial(value: Material) {
         this._outputMaterial = value;
+    }
+
+    get type(): AssetOperationType {
+        if(this.inputMaterials.length === 0 || !this.outputMaterial)
+            throw new Error("Invalid asset operation");
+        return (this.inputMaterials.length === 1 && (this.inputMaterials[0].id === this.outputMaterial.id)) ?
+            AssetOperationType.CONSOLIDATION :
+            AssetOperationType.TRANSFORMATION;
     }
 }

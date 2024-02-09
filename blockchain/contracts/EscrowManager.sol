@@ -23,7 +23,7 @@ contract EscrowManager is AccessControl {
         _;
     }
 
-    address[] private _admins;
+    address private _admin;
     address private _commissioner;
     uint256 private _baseFee;
     uint256 private _percentageFee;
@@ -31,19 +31,21 @@ contract EscrowManager is AccessControl {
     // mapping(payer => Escrow_id[])
     mapping(address => uint256[]) private _escrowsOfPurchaser;
 
-    constructor(address[] memory admins, address commissioner, uint256 baseFee, uint256 percentageFee) {
+    constructor(address commissioner, uint256 baseFee, uint256 percentageFee) {
         require(commissioner != address(0), "EscrowManager: commissioner is the zero address");
         require(percentageFee <= 100, "EscrowManager: percentage fee cannot be greater than 100");
 
         _setupRole(ADMIN_ROLE, _msgSender());
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
-        for (uint256 i = 0; i < admins.length; ++i) {
-            grantRole(ADMIN_ROLE, admins[i]);
-        }
-        _admins = admins;
+        _admin = _msgSender();
+
         _commissioner = commissioner;
         _baseFee = baseFee;
         _percentageFee = percentageFee;
+    }
+
+    function getEscrowCounter() public view returns (uint256) {
+        return _counter.current();
     }
 
     function registerEscrow(address payee, address purchaser, uint256 agreedAmount, uint256 duration, address tokenAddress) public returns(Escrow)  {
@@ -54,15 +56,10 @@ contract EscrowManager is AccessControl {
         uint256 id = _counter.current();
         _counter.increment();
 
-        address[] memory adminArray = new address[](_admins.length + 1);
-        for (uint256 i = 0; i < _admins.length; ++i) {
-            adminArray[i] = _admins[i];
-        }
-        adminArray[_admins.length] = address(this);
-
-        Escrow newEscrow = new Escrow(adminArray, payee, purchaser, agreedAmount, duration, tokenAddress, _commissioner, _baseFee, _percentageFee);
+        Escrow newEscrow = new Escrow(address(this), payee, purchaser, agreedAmount, duration, tokenAddress, _commissioner, _baseFee, _percentageFee);
         _escrows[id] = newEscrow;
         _escrowsOfPurchaser[purchaser].push(id);
+        newEscrow.addAdmin(_admin);
 
         emit EscrowRegistered(id, payee, purchaser, agreedAmount, tokenAddress, _commissioner);
         return newEscrow;
@@ -121,5 +118,14 @@ contract EscrowManager is AccessControl {
 
     function getEscrowIdsOfPurchaser(address purchaser) public view returns (uint256[] memory) {
         return _escrowsOfPurchaser[purchaser];
+    }
+
+    // ROLES
+    function addAdmin(address admin) public onlyAdmin {
+        grantRole(ADMIN_ROLE, admin);
+    }
+
+    function removeAdmin(address admin) public onlyAdmin {
+        revokeRole(ADMIN_ROLE, admin);
     }
 }

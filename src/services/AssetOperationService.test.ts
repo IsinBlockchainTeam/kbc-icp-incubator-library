@@ -10,6 +10,7 @@ describe('AssetOperationService', () => {
         getAssetOperations: jest.fn(),
         getAssetOperationType: jest.fn(),
         getAssetOperationsOfCreator: jest.fn(),
+        getAssetOperationsByOutputMaterial: jest.fn(),
         registerAssetOperation: jest.fn(),
         updateAssetOperation: jest.fn(),
     });
@@ -58,6 +59,12 @@ describe('AssetOperationService', () => {
             serviceFunction: () => assetOperationService.getAssetOperationsOfCreator('creator'),
             expectedMockedFunction: mockedAssetOperationDriver.getAssetOperationsOfCreator,
             expectedMockedFunctionArgs: ['creator'],
+        },
+        {
+            serviceFunctionName: 'getAssetOperationsByOutputMaterial',
+            serviceFunction: () => assetOperationService.getAssetOperationsByOutputMaterial(1),
+            expectedMockedFunction: mockedAssetOperationDriver.getAssetOperationsByOutputMaterial,
+            expectedMockedFunctionArgs: [1],
         },
         {
             serviceFunctionName: 'registerAssetOperation',

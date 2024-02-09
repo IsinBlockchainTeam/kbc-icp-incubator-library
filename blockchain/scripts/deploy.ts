@@ -1,5 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import hre, { ethers } from 'hardhat';
+import { ethers } from 'hardhat';
 import * as dotenv from 'dotenv';
 import { Contract } from 'ethers';
 import { ContractName } from '../utils/constants';
@@ -58,10 +58,9 @@ serial([
     ),
     () => deploy(
         ContractName.ESCROW_MANAGER, [
-            [process.env.SUPPLIER_ADMIN || ''],
             process.env.COMMISSIONER_ADMIN || '',
             process.env.ESCROW_BASE_FEE || 20,
-            process.env.ESCROW_PERCENTAGE_FEE || 1,
+            process.env.ESCROW_COMMISSIONER_FEE || 1,
         ],
     ),
     () => deploy(
@@ -88,7 +87,7 @@ serial([
         ],
     ),
     () => deploy(
-        ContractName.MY_TOKEN, [1000],
+        ContractName.MY_TOKEN, [10000],
     ),
 ])
     .catch((error: any) => {

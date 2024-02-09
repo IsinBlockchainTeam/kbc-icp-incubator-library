@@ -7,6 +7,7 @@ describe('EscrowService', () => {
 
     let mockedEscrowDriver: EscrowDriver;
     const mockedInstance = {
+        getOwner: jest.fn(),
         getPayee: jest.fn(),
         getPurchaser: jest.fn(),
         getPayers: jest.fn(),
@@ -30,6 +31,7 @@ describe('EscrowService', () => {
         addDelegate: jest.fn(),
         removeDelegate: jest.fn(),
         deposit: jest.fn(),
+        lock: jest.fn(),
         close: jest.fn(),
         enableRefund: jest.fn(),
         enableRefundForExpiredEscrow: jest.fn(),
@@ -48,6 +50,12 @@ describe('EscrowService', () => {
     afterAll(() => jest.clearAllMocks());
 
     it.each([
+        {
+            serviceFunctionName: 'getOwner',
+            serviceFunction: () => escrowService.getOwner(),
+            expectedMockedFunction: mockedInstance.getOwner,
+            expectedMockedFunctionArgs: [],
+        },
         {
             serviceFunctionName: 'getPayee',
             serviceFunction: () => escrowService.getPayee(),
@@ -185,6 +193,12 @@ describe('EscrowService', () => {
             serviceFunction: () => escrowService.deposit(depositAmount),
             expectedMockedFunction: mockedInstance.deposit,
             expectedMockedFunctionArgs: [depositAmount],
+        },
+        {
+            serviceFunctionName: 'lock',
+            serviceFunction: () => escrowService.lock(),
+            expectedMockedFunction: mockedInstance.lock,
+            expectedMockedFunctionArgs: [],
         },
         {
             serviceFunctionName: 'close',

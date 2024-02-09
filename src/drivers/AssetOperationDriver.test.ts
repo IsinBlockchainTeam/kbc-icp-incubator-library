@@ -12,6 +12,8 @@ import {
 import { AssetOperation } from '../entities/AssetOperation';
 import { AssetOperationDriver } from './AssetOperationDriver';
 import {AssetOperationType} from "../types/AssetOperationType";
+import {ProductCategory} from "../entities/ProductCategory";
+import {Material} from "../entities/Material";
 
 describe('AssetOperationDriver', () => {
     let assetOperationDriver: AssetOperationDriver;
@@ -30,6 +32,12 @@ describe('AssetOperationDriver', () => {
         description: 'description',
         exists: true,
     } as ProductCategoryManager.ProductCategoryStructOutput;
+    const assetOperationStruct: AssetOperationManager.AssetOperationStructOutput = {
+        id: BigNumber.from(1),
+        inputMaterialIds: [BigNumber.from(1), BigNumber.from(2)],
+        outputMaterialId: BigNumber.from(3),
+        exists: true,
+    } as AssetOperationManager.AssetOperationStructOutput;
 
     let mockedSigner: Signer;
 
@@ -46,8 +54,7 @@ describe('AssetOperationDriver', () => {
     const mockedGetAssetOperation = jest.fn();
     const mockedGetAssetOperationType = jest.fn();
 
-    const mockedAssetOperationStructOutput = createMock<AssetOperationManager.AssetOperationStructOutput>();
-    const mockedAssetOperation = createMock<AssetOperation>();
+    const mockedAssetOperation = new AssetOperation(1, 'asset operation', [new Material(1, new ProductCategory(1, 'category1', 85, 'description')), new Material(2, new ProductCategory(2, 'category1', 85, 'description'))], new Material(3, new ProductCategory(3, 'category1', 85, 'description')));
 
     const mockedGetMaterial = jest.fn();
     const mockedGetProductCategory = jest.fn();
@@ -60,7 +67,7 @@ describe('AssetOperationDriver', () => {
     });
     mockedGetAssetOperationExists.mockReturnValue(true);
     mockedGetAssetOperationIdsOfCreator.mockResolvedValue([BigNumber.from(1)]);
-    mockedGetAssetOperation.mockReturnValue(Promise.resolve(mockedAssetOperationStructOutput));
+    mockedGetAssetOperation.mockReturnValue(assetOperationStruct);
     mockedGetAssetOperationType.mockReturnValue(0);
 
     mockedGetMaterial.mockReturnValue(materialStruct);
@@ -188,6 +195,22 @@ describe('AssetOperationDriver', () => {
 
         expect(mockedGetAssetOperation).toHaveBeenCalledTimes(1);
         expect(mockedGetAssetOperation).toHaveBeenNthCalledWith(1, 1);
+    });
+
+    it('should correctly retrieve all AssetOperations by output material', async () => {
+        const firstResponse: AssetOperation[] = await assetOperationDriver.getAssetOperationsByOutputMaterial(3);
+        const secondResponse: AssetOperation[] = await assetOperationDriver.getAssetOperationsByOutputMaterial(42);
+
+        expect(firstResponse).toEqual([mockedAssetOperation]);
+        expect(secondResponse).toEqual([]);
+
+        expect(mockedGetAssetOperationCounter).toHaveBeenCalledTimes(2);
+        expect(mockedGetAssetOperationCounter).toHaveBeenNthCalledWith(1);
+        expect(mockedGetAssetOperationCounter).toHaveBeenNthCalledWith(2);
+
+        expect(mockedGetAssetOperation).toHaveBeenCalledTimes(2);
+        expect(mockedGetAssetOperation).toHaveBeenNthCalledWith(1, 1);
+        expect(mockedGetAssetOperation).toHaveBeenNthCalledWith(2, 1);
     });
 
     it('should check if an AssetOperation exists', async () => {
