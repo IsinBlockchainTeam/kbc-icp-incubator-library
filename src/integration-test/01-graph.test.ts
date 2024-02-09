@@ -253,6 +253,7 @@ describe('GraphService lifecycle', () => {
                 new OrderTrade(0, company2.address, customer, company3.address, externalUrl, [], false, false, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, escrow),
                 new BasicTrade(0, company3.address, customer, company4.address, externalUrl, [], 'shipping sea water'),
                 new BasicTrade(0, company3.address, customer, company4.address, externalUrl, [], 'shipping sea water again'),
+                new BasicTrade(0, company3.address, customer, company4.address, externalUrl, [], 'shipping sea water again again'),
                 new BasicTrade(0, company1.address, customer, company3.address, externalUrl, [], 'shipping purified water'),
                 new OrderTrade(0, company3.address, customer, company4.address, externalUrl, [], false, false, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, escrow),
                 new BasicTrade(0, company3.address, customer, company4.address, externalUrl, [], 'Small packaging'),
@@ -262,6 +263,7 @@ describe('GraphService lifecycle', () => {
             const newTradeLines: Line[] = [
                 new Line(0, materials[2], productCategories[2]),
                 new OrderLine(0, materials[3], productCategories[3], 100, new OrderLinePrice(50, 'CHF')),
+                new Line(0, materials[4], productCategories[4]),
                 new Line(0, materials[4], productCategories[4]),
                 new Line(0, materials[4], productCategories[4]),
                 new Line(0, materials[5], productCategories[5]),
@@ -276,10 +278,11 @@ describe('GraphService lifecycle', () => {
             trades.push(await _registerTrade(newTrades[2], [newTradeLines[2]], TradeType.BASIC));
             trades.push(await _registerTrade(newTrades[3], [newTradeLines[3]], TradeType.BASIC));
             trades.push(await _registerTrade(newTrades[4], [newTradeLines[4]], TradeType.BASIC));
-            trades.push(await _registerTrade(newTrades[5], [newTradeLines[5]], TradeType.ORDER));
-            trades.push(await _registerTrade(newTrades[6], [newTradeLines[6]], TradeType.BASIC));
+            trades.push(await _registerTrade(newTrades[5], [newTradeLines[5]], TradeType.BASIC));
+            trades.push(await _registerTrade(newTrades[6], [newTradeLines[6]], TradeType.ORDER));
             trades.push(await _registerTrade(newTrades[7], [newTradeLines[7]], TradeType.BASIC));
             trades.push(await _registerTrade(newTrades[8], [newTradeLines[8]], TradeType.BASIC));
+            trades.push(await _registerTrade(newTrades[9], [newTradeLines[9]], TradeType.BASIC));
         }, 50000);
 
         it('should compute a graph', async () => {
@@ -293,18 +296,33 @@ describe('GraphService lifecycle', () => {
                 {
                     trade: trades[1],
                     from: assetOperations[1].name,
-                    to: assetOperations[3].name
-                },
-                {
-                    trade: trades[2],
-                    from: assetOperations[2].name,
-                    to: assetOperations[3].name
+                    to: assetOperations[6].name
                 },
                 {
                     trade: trades[0],
                     from: assetOperations[0].name,
                     to: assetOperations[1].name
                 },
+                {
+                    trade: trades[5],
+                    from: assetOperations[5].name,
+                    to: assetOperations[6].name
+                },
+                {
+                    trade: trades[4],
+                    from: assetOperations[4].name,
+                    to: assetOperations[5].name
+                },
+                {
+                    trade: trades[3],
+                    from: assetOperations[3].name,
+                    to: assetOperations[4].name
+                },
+                {
+                    trade: trades[2],
+                    from: assetOperations[2].name,
+                    to: assetOperations[3].name
+                }
             ]));
         }, 30000);
 
@@ -322,41 +340,25 @@ describe('GraphService lifecycle', () => {
             const result = await graphService.computeGraph(materials[7].id, false);
 
             expect(result.nodes).toEqual(expect.arrayContaining([
-                assetOperations[4], assetOperations[3], assetOperations[1], assetOperations[2], assetOperations[0]
+                assetOperations[7], assetOperations[6], assetOperations[5], assetOperations[4], assetOperations[3], assetOperations[1], assetOperations[2], assetOperations[0]
             ]));
 
             expect(result.edges).toEqual(expect.arrayContaining([
                 {
-                    trade: trades[3],
-                    from: assetOperations[3].name,
-                    to: assetOperations[4].name
+                    trade: trades[6],
+                    from: assetOperations[6].name,
+                    to: assetOperations[7].name
                 },
                 {
                     trade: trades[1],
                     from: assetOperations[1].name,
-                    to: assetOperations[3].name
-                },
-                {
-                    trade: trades[2],
-                    from: assetOperations[2].name,
-                    to: assetOperations[3].name
+                    to: assetOperations[6].name
                 },
                 {
                     trade: trades[0],
                     from: assetOperations[0].name,
                     to: assetOperations[1].name
                 },
-            ]));
-        }, 30000);
-
-        it('should compute a graph where the material is the join of two forked branches', async () => {
-            const result = await graphService.computeGraph(materials[9].id, false);
-
-            expect(result.nodes).toEqual(expect.arrayContaining([
-                assetOperations[6], assetOperations[5], assetOperations[4], assetOperations[3], assetOperations[2], assetOperations[1], assetOperations[0]
-            ]));
-
-            expect(result.edges).toEqual(expect.arrayContaining([
                 {
                     trade: trades[5],
                     from: assetOperations[5].name,
@@ -365,7 +367,7 @@ describe('GraphService lifecycle', () => {
                 {
                     trade: trades[4],
                     from: assetOperations[4].name,
-                    to: assetOperations[6].name
+                    to: assetOperations[5].name
                 },
                 {
                     trade: trades[3],
@@ -373,9 +375,55 @@ describe('GraphService lifecycle', () => {
                     to: assetOperations[4].name
                 },
                 {
+                    trade: trades[2],
+                    from: assetOperations[2].name,
+                    to: assetOperations[3].name
+                }
+            ]));
+        }, 30000);
+
+        it('should compute a graph where the material is the join of two forked branches', async () => {
+            const result = await graphService.computeGraph(materials[9].id, false);
+
+            expect(result.nodes).toEqual(expect.arrayContaining([
+                assetOperations[9], assetOperations[8], assetOperations[7], assetOperations[6], assetOperations[5], assetOperations[4], assetOperations[3], assetOperations[1], assetOperations[2], assetOperations[0]
+            ]));
+
+            expect(result.edges).toEqual(expect.arrayContaining([
+                {
+                    trade: trades[7],
+                    from: assetOperations[7].name,
+                    to: assetOperations[9].name
+                },
+                {
+                    trade: trades[6],
+                    from: assetOperations[6].name,
+                    to: assetOperations[7].name
+                },
+                {
                     trade: trades[1],
                     from: assetOperations[1].name,
-                    to: assetOperations[3].name
+                    to: assetOperations[6].name
+                },
+                {
+                    trade: trades[0],
+                    from: assetOperations[0].name,
+                    to: assetOperations[1].name
+                },
+                {
+                    trade: trades[5],
+                    from: assetOperations[5].name,
+                    to: assetOperations[6].name
+                },
+                {
+                    trade: trades[4],
+                    from: assetOperations[4].name,
+                    to: assetOperations[5].name
+                },
+                {
+                    trade: trades[3],
+                    from: assetOperations[3].name,
+                    to: assetOperations[4].name
                 },
                 {
                     trade: trades[2],
@@ -383,11 +431,16 @@ describe('GraphService lifecycle', () => {
                     to: assetOperations[3].name
                 },
                 {
-                    trade: trades[0],
-                    from: assetOperations[0].name,
-                    to: assetOperations[1].name
+                    trade: trades[8],
+                    from: assetOperations[8].name,
+                    to: assetOperations[9].name
                 },
-            ]))
+                {
+                    trade: trades[6],
+                    from: assetOperations[6].name,
+                    to: assetOperations[8].name
+                },
+            ]));
         }, 30000);
     });
 

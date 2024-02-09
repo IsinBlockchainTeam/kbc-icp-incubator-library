@@ -26,8 +26,8 @@ export class GraphService {
     private _assetOperationService: AssetOperationService;
 
     private _assetOperationMap: Map<number, AssetOperation[]> = new Map<number, AssetOperation[]>();
-    // private _assetOperations: AssetOperation[] = [];
     private _trades: Trade[] = [];
+    private _flag: boolean = false;
 
     constructor(signer: Signer, tradeManagerService: TradeManagerService, transformationService: AssetOperationService) {
         this._signer = signer;
@@ -53,12 +53,14 @@ export class GraphService {
                     break;
 
                 partialGraphData.edges.push({
-                    trade: trades[i],
+                    trade: this._flag ? trades[i + 1] : trades[i],
                     from: i === consolidations.length - 1 ? transformation.name : consolidations[i + 1].name,
                     to: consolidations[i].name
                 });
             }
         }
+
+        this._flag = false;
 
         return { transformation, partialGraphData }
     }
@@ -101,7 +103,10 @@ export class GraphService {
                     const inputAssetOperation: AssetOperation | undefined = list ? list[0] : undefined;
 
                     if(!inputAssetOperation)
-                        throw new Error("Found an trade whose material id is not associated with any asset operation");
+                        throw new Error("Found a trade whose material id is not associated with any asset operation");
+
+                    if(inputAssetOperation.type === AssetOperationType.CONSOLIDATION && partialGraphData.nodes.some((ao: AssetOperation) => ao.id === inputAssetOperation.id))
+                        return partialGraphData;
 
                     const newEdge: Edge = {
                         trade: trade,
@@ -114,6 +119,7 @@ export class GraphService {
                         return partialGraphData;
 
                     partialGraphData.edges.push(newEdge);
+                    this._flag = true;
 
                     this._computeGraph(involvedMaterialInputId, partialGraphData);
                 }
