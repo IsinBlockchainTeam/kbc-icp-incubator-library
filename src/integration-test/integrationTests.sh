@@ -36,7 +36,7 @@ killLocalNetwork () {
     echo "------------------------------------"
     #pkill -TERM -P $local_network_pid
     # kill -9 -$(ps -o pgid=$local_network_pid | grep -o '[0-9]*')
-    kill -9 $(lsof -t -i:8545) > /dev/null
+    kill -9 $(lsof -t -i:8545) 2> /dev/null
 #    if [[ "$OSTYPE" == "darwin"* ]]; then
 #      # MAC OSx
 #      kill -9 $(lsof -t -i:8545)
