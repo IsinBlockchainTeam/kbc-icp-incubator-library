@@ -3,7 +3,7 @@ version: '3.8'
 services:
   blockchain_node:
     container_name: blockchain_node
-    image: gitlab-core.supsi.ch:5050/dti-isin/giuliano.gremlich/blockchain/one-lib-to-rule-them-all/coffe-trading-management/blockchain-node
+    image: gitlab-core.supsi.ch:5050/dti-isin/giuliano.gremlich/blockchain/one-lib-to-rule-them-all/coffee-trading-management-lib/blockchain-node
     ports:
       - "8545:8545"
     healthcheck:
@@ -19,7 +19,7 @@ services:
     depends_on:
       blockchain_node:
         condition: service_healthy
-    image: gitlab-core.supsi.ch:5050/dti-isin/giuliano.gremlich/blockchain/one-lib-to-rule-them-all/coffe-trading-management/blockchain-node
+    image: gitlab-core.supsi.ch:5050/dti-isin/giuliano.gremlich/blockchain/one-lib-to-rule-them-all/coffee-trading-management-lib/blockchain-node
     entrypoint: sh -c "NODE_ENV=test npx hardhat run scripts/deploy.ts --network testnet"
     environment:
       SUPPLIER_ADMIN: ${SUPPLIER_ADMIN}
