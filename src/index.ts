@@ -18,7 +18,6 @@ export { AssetOperation } from './entities/AssetOperation';
 export { AssetOperationType } from './types/AssetOperationType';
 export { AssetOperationDriver } from './drivers/AssetOperationDriver';
 export { AssetOperationService } from './services/AssetOperationService';
-export { AssetOperationType } from './types/AssetOperationType';
 
 export { Trade } from './entities/Trade';
 export { Line } from './entities/Trade';
