@@ -36,16 +36,15 @@ killLocalNetwork () {
     echo "------------------------------------"
     #pkill -TERM -P $local_network_pid
     # kill -9 -$(ps -o pgid=$local_network_pid | grep -o '[0-9]*')
-    kill -9 $(lsof -t -i:8545)
-#    if [[ "$OSTYPE" == "darwin"* ]]; then
-#      # MAC OSx
-#      kill -9 $(lsof -t -i:8545)
-#    else
-#      PID=$(netstat -nlp | awk -v port=8545 '$4 ~ port {print $7}' | awk -F"/" '{print $1}')
-#      if [ -n "$PID" ]; then
-#        kill -9 "$PID"
-#      fi
-#    fi
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+      # MAC OSx
+      kill -9 $(lsof -t -i:8545)
+    else
+      PID=$(netstat -nlp | awk -v port=8545 '$4 ~ port {print $7}' | awk -F"/" '{print $1}')
+      if [ -n "$PID" ]; then
+        kill -9 "$PID"
+      fi
+    fi
 }
 
 killLocalNetwork
