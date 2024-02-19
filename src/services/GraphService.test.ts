@@ -61,8 +61,8 @@ describe('GraphService', () => {
         new BasicTrade(4, 'company3', 'customer', 'company1', 'externalUrl', [new Line(1, materials[6], productCategories[6])], 'shipping final coffee'),
     ];
 
-    const mockGetTrades = jest.fn().mockReturnValue(trades);
-    const mockGetAssetOperations = jest.fn().mockReturnValue(assetOperations);
+    const mockGetTrades = jest.fn().mockReturnValue(Array.from(trades));
+    const mockGetAssetOperations = jest.fn().mockReturnValue(Array.from(assetOperations));
 
     const mockedTradeManagerService: TradeManagerService = createMock<TradeManagerService>({
         getTrades: mockGetTrades,
@@ -101,13 +101,13 @@ describe('GraphService', () => {
     afterEach(() => jest.clearAllMocks())
 
     it('should compute a graph with transformations', async () => {
-        const result = await graphService.computeGraph(7, true);
+        const result = await graphService.computeGraph(4, true);
 
-        expect(result.nodes).toEqual(expect.arrayContaining([assetOperations[3]]));
+        expect(result.nodes).toEqual(expect.arrayContaining([assetOperations[1], assetOperations[0]]));
         expect(result.edges).toEqual(expect.arrayContaining([{
-            trade: trades[2],
-            from: assetOperations[2].name,
-            to: assetOperations[3].name
+            trade: trades[0],
+            from: assetOperations[0].name,
+            to: assetOperations[1].name
         }]));
 
         expect(mockedTradeManagerService.getTrades).toHaveBeenCalledTimes(1);
@@ -120,7 +120,7 @@ describe('GraphService', () => {
     it('should compute a graph with transformations and consolidations', async () => {
         const result = await graphService.computeGraph(assetOperations[4].outputMaterial.id, true);
 
-        expect(result.nodes).toEqual(expect.arrayContaining([assetOperations[3], assetOperations[4]]));
+        expect(result.nodes).toEqual(expect.arrayContaining([assetOperations[4], assetOperations[3], assetOperations[2], assetOperations[1], assetOperations[0]]));
         expect(result.edges).toEqual(expect.arrayContaining([
             {
                 trade: trades[3],

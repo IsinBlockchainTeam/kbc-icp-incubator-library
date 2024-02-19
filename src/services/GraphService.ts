@@ -132,6 +132,7 @@ export class GraphService {
     private async _loadData() {
         const assetOperations = (await this._assetOperationService.getAssetOperations())
             .sort((a, b) => b.id - a.id);
+        this._assetOperationMap = new Map<number, AssetOperation[]>();
         for(const assetOperation of assetOperations) {
             this._assetOperationMap.get(assetOperation.outputMaterial.id)?.push(assetOperation) || this._assetOperationMap.set(assetOperation.outputMaterial.id, [assetOperation]);
         }
