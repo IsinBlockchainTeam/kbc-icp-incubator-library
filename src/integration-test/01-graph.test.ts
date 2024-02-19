@@ -521,16 +521,64 @@ describe('GraphService lifecycle', () => {
         }, 30000);
     });
 
-    // it('should throw an error if it finds no transformation with specific output material', async () => {
-    //     await tradeManagerService.addTradeLine(1, [100, 10], 'Arabic 85');
-    //     const fn = async () => graphService.computeGraph(company3.address, 8);
-    //     await expect(fn).rejects.toThrowError('No transformations found for material id 100');
-    // });
+    // TODO: this scenario is not handle correctly and it fails!
+    // describe('Third scenario', () => {
+    //     let productCategories: ProductCategory[] = [];
+    //     let materials: Material[] = [];
+    //     let assetOperations: AssetOperation[] = [];
+    //     let trades: Trade[] = [];
     //
-    // it('should throw an error if it finds multiple transformation with the same output material', async () => {
-    //     await assetOperationService.registerTransformation(company3.address, 'transformation', [4], 8);
-    //     const fn = async () => graphService.computeGraph(company3.address, 8);
-    //     await expect(fn).rejects.toThrowError('Multiple transformations found for material id 8');
+    //     it('should add data that is then used to compute the graph', async () => {
+    //         productCategories = await _registerProductCategories([
+    //             new ProductCategory(0, "Pure material", 90, "Starting material"),
+    //         ]);
+    //
+    //         materials = await _registerMaterials([
+    //             new Material(0, productCategories[0]),
+    //         ]);
+    //
+    //         assetOperations = await _registerAssetOperations([
+    //             new AssetOperation(0, "CONSOLIDATION: A", [materials[0]], materials[0]),
+    //             new AssetOperation(0, "CONSOLIDATION: B", [materials[0]], materials[0]),
+    //             new AssetOperation(0, "CONSOLIDATION: C", [materials[0]], materials[0]),
+    //         ]);
+    //
+    //         const newTrades = [
+    //             new BasicTrade(0, company1.address, customer, company2.address, externalUrl, [], 'Trade A -> B'),
+    //             new BasicTrade(0, company1.address, customer, company3.address, externalUrl, [], 'Trade A -> C'),
+    //         ];
+    //         const newTradeLines = [
+    //             new Line(0, materials[0], productCategories[0]),
+    //             new Line(0, materials[0], productCategories[0]),
+    //             new Line(0, materials[0], productCategories[0]),
+    //         ]
+    //
+    //         for (let i = 0; i < newTrades.length; i++) {
+    //             trades.push(await _registerTrade(newTrades[i], [newTradeLines[i]], TradeType.BASIC));
+    //         }
+    //     }, 30000);
+    //
+    //     it('should generate a graph containing a consolidation forked into two consolidations', async () => {
+    //         const result = await graphService.computeGraph(materials[0].id, true);
+    //
+    //         expect(result).toEqual({
+    //             nodes: [
+    //                 assetOperations[2], assetOperations[1], assetOperations[0]
+    //             ],
+    //             edges: [
+    //                 {
+    //                     trade: trades[0],
+    //                     from: assetOperations[0].name,
+    //                     to: assetOperations[1].name
+    //                 },
+    //                 {
+    //                     trade: trades[1],
+    //                     from: assetOperations[0].name,
+    //                     to: assetOperations[2].name
+    //                 },
+    //             ]
+    //         });
+    //     }, 30000);
     // });
 });
 
