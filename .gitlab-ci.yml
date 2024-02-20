@@ -9,7 +9,6 @@ blockchain-test:
     - docker:dind
   stage: test
   only:
-    - feature/#130
     - dev
     - main
   script:
@@ -22,7 +21,6 @@ blockchain-node:
     - docker:dind
   stage: build
   only:
-    - feature/#130
     - dev
     - main
   script:
@@ -36,7 +34,6 @@ blockchain-node-deploy:
     - docker:dind
   stage: deploy
   only:
-    - feature/#130
     - dev
     - main
   when: manual
@@ -54,7 +51,6 @@ blockchain-lib-test:
     - docker:dind
   stage: test
   only:
-    - feature/#130
     - dev
     - main
   script:
@@ -66,7 +62,6 @@ blockchain-lib-build:
   image: node:20-alpine3.17
   stage: build
   only:
-    - feature/#130
     - dev
     - main
   script:
