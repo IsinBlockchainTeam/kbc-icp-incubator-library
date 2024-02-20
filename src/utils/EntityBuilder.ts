@@ -35,7 +35,7 @@ export class EntityBuilder {
             builtInputMaterials.push(this.buildMaterial(inputMaterials[i], inputProductCategories[i]));
         }
 
-        return new AssetOperation(bcAssetOperation.id.toNumber(), bcAssetOperation.name, builtInputMaterials, this.buildMaterial(outputMaterial, outputProductCategories));
+        return new AssetOperation(bcAssetOperation.id.toNumber(), bcAssetOperation.name, builtInputMaterials, this.buildMaterial(outputMaterial, outputProductCategories), bcAssetOperation.latitude, bcAssetOperation.longitude);
     }
 
     static buildRelationship(bcRelationship: RelationshipManager.RelationshipStructOutput): Relationship {
@@ -51,7 +51,7 @@ export class EntityBuilder {
     }
 
     static buildTradeLine(bcLine: Trade.LineStructOutput, bcProductCategory: ProductCategoryManager.ProductCategoryStructOutput, bcMaterial?: MaterialManager.MaterialStructOutput): Line {
-        if(bcMaterial)
+        if (bcMaterial)
             return new Line(bcLine.id.toNumber(), this.buildMaterial(bcMaterial, bcProductCategory), this.buildProductCategory(bcProductCategory));
         return new Line(bcLine.id.toNumber(), undefined, this.buildProductCategory(bcProductCategory));
     }

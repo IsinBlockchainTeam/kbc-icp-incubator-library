@@ -1,5 +1,5 @@
 import { Material } from './Material';
-import { AssetOperationType} from "../types/AssetOperationType";
+import { AssetOperationType } from '../types/AssetOperationType';
 
 export class AssetOperation {
     private _id: number;
@@ -10,11 +10,17 @@ export class AssetOperation {
 
     private _outputMaterial: Material;
 
-    constructor(id: number, name: string, inputMaterials: Material[], outputMaterial: Material) {
+    private _latitude: string;
+
+    private _longitude: string;
+
+    constructor(id: number, name: string, inputMaterials: Material[], outputMaterial: Material, latitude: string, longitude: string) {
         this._id = id;
         this._name = name;
         this._inputMaterials = inputMaterials;
         this._outputMaterial = outputMaterial;
+        this._latitude = latitude;
+        this._longitude = longitude;
     }
 
     get id(): number {
@@ -50,10 +56,26 @@ export class AssetOperation {
     }
 
     get type(): AssetOperationType {
-        if(this.inputMaterials.length === 0 || !this.outputMaterial)
-            throw new Error("Invalid asset operation");
+        if (this.inputMaterials.length === 0 || !this.outputMaterial)
+            throw new Error('Invalid asset operation');
         return (this.inputMaterials.length === 1 && (this.inputMaterials[0].id === this.outputMaterial.id)) ?
             AssetOperationType.CONSOLIDATION :
             AssetOperationType.TRANSFORMATION;
+    }
+
+    get latitude(): string {
+        return this._latitude;
+    }
+
+    set latitude(value: string) {
+        this._latitude = value;
+    }
+
+    get longitude(): string {
+        return this._longitude;
+    }
+
+    set longitude(value: string) {
+        this._longitude = value;
     }
 }

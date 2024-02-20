@@ -11,9 +11,9 @@ import {
 } from '../smart-contracts';
 import { AssetOperation } from '../entities/AssetOperation';
 import { AssetOperationDriver } from './AssetOperationDriver';
-import {AssetOperationType} from "../types/AssetOperationType";
-import {ProductCategory} from "../entities/ProductCategory";
-import {Material} from "../entities/Material";
+import { AssetOperationType } from '../types/AssetOperationType';
+import { ProductCategory } from '../entities/ProductCategory';
+import { Material } from '../entities/Material';
 
 describe('AssetOperationDriver', () => {
     let assetOperationDriver: AssetOperationDriver;
@@ -34,8 +34,11 @@ describe('AssetOperationDriver', () => {
     } as ProductCategoryManager.ProductCategoryStructOutput;
     const assetOperationStruct: AssetOperationManager.AssetOperationStructOutput = {
         id: BigNumber.from(1),
+        name: 'asset operation',
         inputMaterialIds: [BigNumber.from(1), BigNumber.from(2)],
         outputMaterialId: BigNumber.from(3),
+        latitude: '46.003677',
+        longitude: '8.953062',
         exists: true,
     } as AssetOperationManager.AssetOperationStructOutput;
 
@@ -54,7 +57,17 @@ describe('AssetOperationDriver', () => {
     const mockedGetAssetOperation = jest.fn();
     const mockedGetAssetOperationType = jest.fn();
 
-    const mockedAssetOperation = new AssetOperation(1, 'asset operation', [new Material(1, new ProductCategory(1, 'category1', 85, 'description')), new Material(2, new ProductCategory(2, 'category1', 85, 'description'))], new Material(3, new ProductCategory(3, 'category1', 85, 'description')));
+    const mockedAssetOperation = new AssetOperation(
+        1,
+        'asset operation',
+        [
+            new Material(1, new ProductCategory(1, 'category1', 85, 'description')),
+            new Material(2, new ProductCategory(2, 'category1', 85, 'description')),
+        ],
+        new Material(3, new ProductCategory(3, 'category1', 85, 'description')),
+        '46.003677',
+        '8.953062',
+    );
 
     const mockedGetMaterial = jest.fn();
     const mockedGetProductCategory = jest.fn();
@@ -84,10 +97,10 @@ describe('AssetOperationDriver', () => {
     });
 
     const mockedMaterialContract = createMock<MaterialManager>({
-        getMaterial: mockedGetMaterial
+        getMaterial: mockedGetMaterial,
     });
     const mockedProductCategoryContract = createMock<ProductCategoryManager>({
-        getProductCategory: mockedGetProductCategory
+        getProductCategory: mockedGetProductCategory,
     });
 
     beforeAll(() => {
@@ -129,14 +142,14 @@ describe('AssetOperationDriver', () => {
             events: [{
                 event: 'AssetOperationRegistered',
                 args: {
-                    id: BigNumber.from(1)
+                    id: BigNumber.from(1),
                 },
             }],
         });
-        await assetOperationDriver.registerAssetOperation('test', [1, 2], 3);
+        await assetOperationDriver.registerAssetOperation('test', [1, 2], 3, '38.8951', '-77.0364');
 
         expect(mockedContract.registerAssetOperation).toHaveBeenCalledTimes(1);
-        expect(mockedContract.registerAssetOperation).toHaveBeenNthCalledWith(1,'test', [1, 2], 3);
+        expect(mockedContract.registerAssetOperation).toHaveBeenNthCalledWith(1, 'test', [1, 2], 3, '38.8951', '-77.0364');
 
         expect(mockedWait).toHaveBeenCalledTimes(1);
     });
@@ -145,14 +158,14 @@ describe('AssetOperationDriver', () => {
         mockedWait.mockResolvedValueOnce({
             events: undefined,
         });
-        await expect(assetOperationDriver.registerAssetOperation('test', [1, 2], 3)).rejects.toThrowError('Error during asset operation registration, no events found');
+        await expect(assetOperationDriver.registerAssetOperation('test', [1, 2], 3, '38.8951', '-77.0364')).rejects.toThrowError('Error during asset operation registration, no events found');
     });
 
     it('should correctly update an AssetOperation', async () => {
-        await assetOperationDriver.updateAssetOperation(1, 'update', [1, 2], 3);
+        await assetOperationDriver.updateAssetOperation(1, 'update', [1, 2], 3, '38.8951', '-77.0364');
 
         expect(mockedContract.updateAssetOperation).toHaveBeenCalledTimes(1);
-        expect(mockedContract.updateAssetOperation).toHaveBeenNthCalledWith(1, 1, 'update', [1, 2], 3);
+        expect(mockedContract.updateAssetOperation).toHaveBeenNthCalledWith(1, 1, 'update', [1, 2], 3, '38.8951', '-77.0364');
 
         expect(mockedWait).toHaveBeenCalledTimes(1);
     });

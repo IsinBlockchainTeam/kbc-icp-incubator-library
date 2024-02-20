@@ -1,13 +1,13 @@
-import {BigNumber, Event, Signer} from 'ethers';
+import { BigNumber, Event, Signer } from 'ethers';
 import {
     AssetOperationManager,
     AssetOperationManager__factory, MaterialManager, MaterialManager__factory,
     ProductCategoryManager,
     ProductCategoryManager__factory,
 } from '../smart-contracts';
-import {EntityBuilder} from '../utils/EntityBuilder';
-import {AssetOperation} from '../entities/AssetOperation';
-import {AssetOperationType} from "../types/AssetOperationType";
+import { EntityBuilder } from '../utils/EntityBuilder';
+import { AssetOperation } from '../entities/AssetOperation';
+import { AssetOperationType } from '../types/AssetOperationType';
 
 export class AssetOperationDriver {
     private _assetOperationContract: AssetOperationManager;
@@ -66,12 +66,12 @@ export class AssetOperationDriver {
     async getAssetOperationType(id: number): Promise<AssetOperationType> {
         const result: number = await this._assetOperationContract.getAssetOperationType(id);
         switch (result) {
-            case 0:
-                return AssetOperationType.CONSOLIDATION;
-            case 1:
-                return AssetOperationType.TRANSFORMATION;
-            default:
-                throw new Error(`AssetOperationDriver: an invalid value "${result}" for "AssetOperationType" was returned by the contract`);
+        case 0:
+            return AssetOperationType.CONSOLIDATION;
+        case 1:
+            return AssetOperationType.TRANSFORMATION;
+        default:
+            throw new Error(`AssetOperationDriver: an invalid value "${result}" for "AssetOperationType" was returned by the contract`);
         }
     }
 
@@ -88,9 +88,9 @@ export class AssetOperationDriver {
         return assetOperations.filter((assetOperation: AssetOperation) => assetOperation.outputMaterial.id === materialId);
     }
 
-    async registerAssetOperation(name: string, inputMaterialsIds: number[], outputMaterialId: number): Promise<AssetOperation> {
-        const tx: any = await this._assetOperationContract.registerAssetOperation(name, inputMaterialsIds, outputMaterialId);
-        const {events} = await tx.wait();
+    async registerAssetOperation(name: string, inputMaterialsIds: number[], outputMaterialId: number, latitude: string, longitude: string): Promise<AssetOperation> {
+        const tx: any = await this._assetOperationContract.registerAssetOperation(name, inputMaterialsIds, outputMaterialId, latitude, longitude);
+        const { events } = await tx.wait();
 
         if (!events) {
             throw new Error('Error during asset operation registration, no events found');
@@ -99,8 +99,8 @@ export class AssetOperationDriver {
         return this.getAssetOperation(id);
     }
 
-    async updateAssetOperation(id: number, name: string, inputMaterialsIds: number[], outputMaterialId: number): Promise<AssetOperation> {
-        const tx = await this._assetOperationContract.updateAssetOperation(id, name, inputMaterialsIds, outputMaterialId);
+    async updateAssetOperation(id: number, name: string, inputMaterialsIds: number[], outputMaterialId: number, latitude: string, longitude: string): Promise<AssetOperation> {
+        const tx = await this._assetOperationContract.updateAssetOperation(id, name, inputMaterialsIds, outputMaterialId, latitude, longitude);
         await tx.wait();
         return this.getAssetOperation(id);
     }

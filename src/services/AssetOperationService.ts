@@ -1,6 +1,6 @@
 import { AssetOperation } from '../entities/AssetOperation';
 import { AssetOperationDriver } from '../drivers/AssetOperationDriver';
-import {AssetOperationType} from "../types/AssetOperationType";
+import { AssetOperationType } from '../types/AssetOperationType';
 
 export class AssetOperationService {
     private _assetOperationDriver: AssetOperationDriver;
@@ -37,11 +37,11 @@ export class AssetOperationService {
         return this._assetOperationDriver.getAssetOperationsByOutputMaterial(materialId);
     }
 
-    async registerAssetOperation(name: string, inputMaterialsIds: number[], outputMaterialId: number): Promise<AssetOperation> {
-        return this._assetOperationDriver.registerAssetOperation(name, inputMaterialsIds, outputMaterialId);
+    async registerAssetOperation(name: string, inputMaterialsIds: number[], outputMaterialId: number, latitude: string, longitude: string): Promise<AssetOperation> {
+        return this._assetOperationDriver.registerAssetOperation(name, inputMaterialsIds, outputMaterialId, latitude, longitude);
     }
 
-    async updateAssetOperation(id: number, name: string, inputMaterialsIds: number[], outputMaterialId: number): Promise<AssetOperation> {
-        return this._assetOperationDriver.updateAssetOperation(id, name, inputMaterialsIds, outputMaterialId);
+    async updateAssetOperation(id: number, name: string, inputMaterialsIds: number[], outputMaterialId: number, latitude: string, longitude: string): Promise<AssetOperation> {
+        return this._assetOperationDriver.updateAssetOperation(id, name, inputMaterialsIds, outputMaterialId, latitude, longitude);
     }
 }

@@ -1,17 +1,17 @@
-import {createMock} from 'ts-auto-mock';
-import {GraphService} from './GraphService';
-import {AssetOperation} from '../entities/AssetOperation';
-import {Line, Trade} from '../entities/Trade';
-import {TradeManagerService} from "./TradeManagerService";
-import {Material} from '../entities/Material';
-import {AssetOperationService} from './AssetOperationService';
-import {ProductCategory} from "../entities/ProductCategory";
-import {TradeType} from "../types/TradeType";
-import {BasicTrade} from "../entities/BasicTrade";
-import {OrderLine, OrderLinePrice, OrderTrade} from "../entities/OrderTrade";
-import {Signer} from "ethers";
-import {BasicTradeService} from "./BasicTradeService";
-import {OrderTradeService} from "./OrderTradeService";
+import { createMock } from 'ts-auto-mock';
+import { Signer } from 'ethers';
+import { GraphService } from './GraphService';
+import { AssetOperation } from '../entities/AssetOperation';
+import { Line, Trade } from '../entities/Trade';
+import { TradeManagerService } from './TradeManagerService';
+import { Material } from '../entities/Material';
+import { AssetOperationService } from './AssetOperationService';
+import { ProductCategory } from '../entities/ProductCategory';
+import { TradeType } from '../types/TradeType';
+import { BasicTrade } from '../entities/BasicTrade';
+import { OrderLine, OrderLinePrice, OrderTrade } from '../entities/OrderTrade';
+import { BasicTradeService } from './BasicTradeService';
+import { OrderTradeService } from './OrderTradeService';
 
 jest.mock('./TradeManagerService');
 jest.mock('./AssetOperationService');
@@ -24,13 +24,13 @@ describe('GraphService', () => {
     let graphService: GraphService;
 
     const productCategories: ProductCategory[] = [
-        new ProductCategory(1, 'Raw coffee beans', 85, "first category"),
-        new ProductCategory(2, 'Green coffee beans', 90, "second category"),
-        new ProductCategory(3, 'Processed coffee beans', 82, "third category"),
-        new ProductCategory(4, 'Ground roasted coffee', 80, "fourth category"),
-        new ProductCategory(5, 'Sea water', 20, "fifth category"),
-        new ProductCategory(6, 'Purified water', 50, "sixth category"),
-        new ProductCategory(7, 'Final coffee', 90, "eighth category"),
+        new ProductCategory(1, 'Raw coffee beans', 85, 'first category'),
+        new ProductCategory(2, 'Green coffee beans', 90, 'second category'),
+        new ProductCategory(3, 'Processed coffee beans', 82, 'third category'),
+        new ProductCategory(4, 'Ground roasted coffee', 80, 'fourth category'),
+        new ProductCategory(5, 'Sea water', 20, 'fifth category'),
+        new ProductCategory(6, 'Purified water', 50, 'sixth category'),
+        new ProductCategory(7, 'Final coffee', 90, 'eighth category'),
     ];
     const materials: Material[] = [
         new Material(1, productCategories[0]),
@@ -42,12 +42,12 @@ describe('GraphService', () => {
         new Material(7, productCategories[6]),
     ];
     const assetOperations: AssetOperation[] = [
-        new AssetOperation(1, 'Coffee beans processing', [materials[0], materials[1]], materials[2]),
-        new AssetOperation(2, 'Coffee grinding', [materials[2]], materials[3]),
-        new AssetOperation(3, 'Water purification', [materials[4]], materials[5]),
-        new AssetOperation(4, 'Final coffee production', [materials[3], materials[5]], materials[6]),
-        new AssetOperation(5, 'Final coffee consolidation', [materials[6]], materials[6]),
-        new AssetOperation(4, 'Doubled material', [materials[5], materials[5]], materials[6]),
+        new AssetOperation(1, 'Coffee beans processing', [materials[0], materials[1]], materials[2], '-73.9828170', '-28.6505430'),
+        new AssetOperation(2, 'Coffee grinding', [materials[2]], materials[3], '-73.9828170', '-28.6505430'),
+        new AssetOperation(3, 'Water purification', [materials[4]], materials[5], '-73.9548170', '-28.6387'),
+        new AssetOperation(4, 'Final coffee production', [materials[3], materials[5]], materials[6], '-72.982870', '-26.6505430'),
+        new AssetOperation(5, 'Final coffee consolidation', [materials[6]], materials[6], '-72.9828170', '-27.6505430'),
+        new AssetOperation(4, 'Doubled material', [materials[5], materials[5]], materials[6], '-74.9828170', '-28.7148'),
     ];
 
     const tradeTypes: TradeType[] = [TradeType.BASIC, TradeType.ORDER, TradeType.BASIC, TradeType.BASIC, TradeType.BASIC];
@@ -64,12 +64,8 @@ describe('GraphService', () => {
 
     const mockedTradeManagerService: TradeManagerService = createMock<TradeManagerService>({
         getTradesByMaterial: mockGetTradesByMaterial.mockReturnValue([trades[2]]),
-        getTrade: jest.fn().mockImplementation((id: number) => {
-            return Promise.resolve(trades[id]);
-        }),
-        getTradeType: jest.fn().mockImplementation((id: number) => {
-            return Promise.resolve(tradeTypes[id]);
-        }),
+        getTrade: jest.fn().mockImplementation((id: number) => Promise.resolve(trades[id])),
+        getTradeType: jest.fn().mockImplementation((id: number) => Promise.resolve(tradeTypes[id])),
     });
     const mockedAssetOperationService: AssetOperationService = createMock<AssetOperationService>({
         getAssetOperationsByOutputMaterial: mockGetAssetOperationsByOutputMaterial,
@@ -77,34 +73,29 @@ describe('GraphService', () => {
 
     const mockedBasicGetTrade = jest.fn().mockResolvedValue(trades[0]);
     const mockedBasicGetLines = jest.fn().mockResolvedValue([trades[0].lines]);
-    (BasicTradeService as jest.Mock).mockImplementation(() => {
-        return createMock<BasicTradeService>({
-            getTrade: mockedBasicGetTrade,
-            getLines: mockedBasicGetLines,
-        });
-    });
+    (BasicTradeService as jest.Mock).mockImplementation(() => createMock<BasicTradeService>({
+        getTrade: mockedBasicGetTrade,
+        getLines: mockedBasicGetLines,
+    }));
     const mockedOrderGetTrade = jest.fn().mockResolvedValue(trades[1]);
     const mockedOrderGetLines = jest.fn().mockResolvedValue(trades[1].lines);
-    (OrderTradeService as jest.Mock).mockImplementation(() => {
-        return createMock<OrderTradeService>({
-            getTrade: mockedOrderGetTrade,
-            getLines: mockedOrderGetLines,
-        })
-    });
+    (OrderTradeService as jest.Mock).mockImplementation(() => createMock<OrderTradeService>({
+        getTrade: mockedOrderGetTrade,
+        getLines: mockedOrderGetLines,
+    }));
 
     beforeAll(() => {
         graphService = new GraphService(createMock<Signer>(), mockedTradeManagerService, mockedAssetOperationService);
     });
 
-    afterEach(() => jest.clearAllMocks())
+    afterEach(() => jest.clearAllMocks());
 
     it('should call findTradesByMaterial', async () => {
         const result = await graphService.findTradesByMaterial(6);
 
         expect(result).toEqual(new Map<Trade, Line[]>([
-            [trades[2], [trades[2].lines[0]]]
+            [trades[2], [trades[2].lines[0]]],
         ]));
-
 
         expect(mockedTradeManagerService.getTradesByMaterial).toHaveBeenCalledTimes(1);
         expect(mockedTradeManagerService.getTradesByMaterial).toHaveBeenNthCalledWith(1, 6);
@@ -121,7 +112,7 @@ describe('GraphService', () => {
         expect(result.edges).toEqual(expect.arrayContaining([{
             trade: trades[2],
             from: assetOperations[2].name,
-            to: assetOperations[3].name
+            to: assetOperations[3].name,
         }]));
 
         expect(mockedTradeManagerService.getTradesByMaterial).toHaveBeenCalledTimes(2);
@@ -149,12 +140,12 @@ describe('GraphService', () => {
             {
                 trade: trades[3],
                 from: assetOperations[3].name,
-                to: assetOperations[4].name
+                to: assetOperations[4].name,
             },
             {
                 trade: trades[2],
                 from: assetOperations[2].name,
-                to: assetOperations[3].name
+                to: assetOperations[3].name,
             }]));
 
         expect(mockedTradeManagerService.getTradesByMaterial).toHaveBeenCalledTimes(3);
@@ -175,9 +166,9 @@ describe('GraphService', () => {
 
         expect(result).toEqual({
             nodes: [
-                assetOperations[4]
+                assetOperations[4],
             ],
-            edges: []
+            edges: [],
         });
     });
 
@@ -192,7 +183,7 @@ describe('GraphService', () => {
         expect(result.edges).toEqual(expect.arrayContaining([{
             trade: trades[2],
             from: assetOperations[2].name,
-            to: assetOperations[3].name
+            to: assetOperations[3].name,
         }]));
     });
 
@@ -207,8 +198,7 @@ describe('GraphService', () => {
             {
                 trade: trades[3],
                 from: assetOperations[4].name,
-                to: assetOperations[4].name
-            },]));
-
+                to: assetOperations[4].name,
+            }]));
     });
 });

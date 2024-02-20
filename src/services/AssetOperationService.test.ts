@@ -1,6 +1,6 @@
-import {createMock} from 'ts-auto-mock';
-import {AssetOperationDriver} from '../drivers/AssetOperationDriver';
-import {AssetOperationService} from './AssetOperationService';
+import { createMock } from 'ts-auto-mock';
+import { AssetOperationDriver } from '../drivers/AssetOperationDriver';
+import { AssetOperationService } from './AssetOperationService';
 
 describe('AssetOperationService', () => {
     const mockedAssetOperationDriver: AssetOperationDriver = createMock<AssetOperationDriver>({
@@ -68,21 +68,21 @@ describe('AssetOperationService', () => {
         },
         {
             serviceFunctionName: 'registerAssetOperation',
-            serviceFunction: () => assetOperationService.registerAssetOperation('name', [1, 2], 3),
+            serviceFunction: () => assetOperationService.registerAssetOperation('name', [1, 2], 3, '38.8951', '-77.0364'),
             expectedMockedFunction: mockedAssetOperationDriver.registerAssetOperation,
-            expectedMockedFunctionArgs: ['name', [1, 2], 3],
+            expectedMockedFunctionArgs: ['name', [1, 2], 3, '38.8951', '-77.0364'],
         },
         {
             serviceFunctionName: 'updateAssetOperation',
-            serviceFunction: () => assetOperationService.updateAssetOperation(1, 'name', [1, 2], 3),
+            serviceFunction: () => assetOperationService.updateAssetOperation(1, 'name', [1, 2], 3, '38.8951', '-77.0364'),
             expectedMockedFunction: mockedAssetOperationDriver.updateAssetOperation,
-            expectedMockedFunctionArgs: [1, 'name', [1, 2], 3],
+            expectedMockedFunctionArgs: [1, 'name', [1, 2], 3, '38.8951', '-77.0364'],
         },
     ])('service should call driver $serviceFunctionName', async ({
-                                                                              serviceFunction,
-                                                                              expectedMockedFunction,
-                                                                              expectedMockedFunctionArgs
-                                                                          }) => {
+        serviceFunction,
+        expectedMockedFunction,
+        expectedMockedFunctionArgs,
+    }) => {
         await serviceFunction();
 
         expect(expectedMockedFunction).toHaveBeenCalledTimes(1);

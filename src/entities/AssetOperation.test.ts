@@ -1,16 +1,17 @@
 import { AssetOperation } from './AssetOperation';
 import { Material } from './Material';
 import { ProductCategory } from './ProductCategory';
-import {AssetOperationType} from "../types/AssetOperationType";
+import { AssetOperationType } from '../types/AssetOperationType';
 
 describe('Transformation', () => {
     let assetOperation: AssetOperation;
-    const material: Material = new Material(1, new ProductCategory(1, 'category', 1, 'description'))
+    const material: Material = new Material(1, new ProductCategory(1, 'category', 1, 'description'));
 
     beforeEach(() => {
         assetOperation = new AssetOperation(1, 'operation',
             [new Material(1, new ProductCategory(1, 'category', 1, 'description'))],
-            new Material(1, new ProductCategory(1, 'category', 1, 'description')));
+            new Material(1, new ProductCategory(1, 'category', 1, 'description')),
+            '46.6576', '8.953062');
     });
 
     it('should correctly initialize a new AssetOperation', () => {
@@ -41,7 +42,7 @@ describe('Transformation', () => {
     });
 
     it('should get type CONSOLIDATION', () => {
-        assetOperation = new AssetOperation(1, 'operation', [material], material);
+        assetOperation = new AssetOperation(1, 'operation', [material], material, '46.6576', '8.953062');
         expect(assetOperation.type).toEqual(AssetOperationType.CONSOLIDATION);
     });
 
@@ -52,6 +53,6 @@ describe('Transformation', () => {
 
     it('should throw an error when getting invalid type', () => {
         assetOperation.inputMaterials = [];
-        expect(() => assetOperation.type).toThrow(new Error("Invalid asset operation"));
+        expect(() => assetOperation.type).toThrow(new Error('Invalid asset operation'));
     });
 });

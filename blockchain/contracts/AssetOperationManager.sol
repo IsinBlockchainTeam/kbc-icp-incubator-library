@@ -25,6 +25,8 @@ contract AssetOperationManager is AccessControl {
         string name;
         uint256[] inputMaterialIds;
         uint256 outputMaterialId;
+        string latitude;
+        string longitude;
         bool exists;
     }
 
@@ -63,7 +65,7 @@ contract AssetOperationManager is AccessControl {
         return _assetOperations[id].inputMaterialIds.length == 1 ? AssetOperationType.CONSOLIDATION : AssetOperationType.TRANSFORMATION;
     }
 
-    function registerAssetOperation(string memory name, uint256[] memory inputMaterialsIds, uint256 outputMaterialId) public {
+    function registerAssetOperation(string memory name, uint256[] memory inputMaterialsIds, uint256 outputMaterialId, string memory latitude, string memory longitude) public {
         require(_materialManager.getMaterialExists(outputMaterialId), "AssetOperationManager: Output material does not exist");
         require(inputMaterialsIds.length > 0, "AssetOperationManager: inputMaterialsIds array must specify at least one material");
         for(uint256 i = 0; i < inputMaterialsIds.length; i++) {
@@ -72,13 +74,13 @@ contract AssetOperationManager is AccessControl {
 
         uint256 assetOperationId = _counter.current() + 1;
         _counter.increment();
-        AssetOperation memory newAssetOperation = AssetOperation(assetOperationId, name, inputMaterialsIds, outputMaterialId, true);
+        AssetOperation memory newAssetOperation = AssetOperation(assetOperationId, name, inputMaterialsIds, outputMaterialId, latitude, longitude, true);
         _assetOperations[assetOperationId] = newAssetOperation;
         _assetOperationIdsOfOwner[_msgSender()].push(assetOperationId);
         emit AssetOperationRegistered(assetOperationId, name, outputMaterialId);
     }
 
-    function updateAssetOperation(uint256 id, string memory name, uint256[] memory inputMaterialsIds, uint256 outputMaterialId) public {
+    function updateAssetOperation(uint256 id, string memory name, uint256[] memory inputMaterialsIds, uint256 outputMaterialId, string memory latitude, string memory longitude) public {
         require(_assetOperations[id].exists, "AssetOperationManager: Asset operation does not exist");
         require(_materialManager.getMaterialExists(outputMaterialId), "AssetOperationManager: Output material does not exist");
         require(inputMaterialsIds.length > 0, "AssetOperationManager: inputMaterialsIds array must specify at least one material");
@@ -89,6 +91,8 @@ contract AssetOperationManager is AccessControl {
         _assetOperations[id].name = name;
         _assetOperations[id].inputMaterialIds = inputMaterialsIds;
         _assetOperations[id].outputMaterialId = outputMaterialId;
+        _assetOperations[id].latitude = latitude;
+        _assetOperations[id].longitude = longitude;
         emit AssetOperationUpdated(id);
     }
 

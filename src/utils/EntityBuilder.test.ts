@@ -62,14 +62,18 @@ describe('EntityBuilder', () => {
         bcProductCategory.exists = true;
 
         it('should correctly build a transformation', () => {
-            const bcTransformation: AssetOperationManager.AssetOperationStructOutput = [BigNumber.from(0), 'transformation', [BigNumber.from(0)], BigNumber.from(3), true] as AssetOperationManager.AssetOperationStructOutput;
+            const bcTransformation: AssetOperationManager.AssetOperationStructOutput = [BigNumber.from(0), 'transformation', [BigNumber.from(0)], BigNumber.from(3), '46.003677', '8.953062', true] as AssetOperationManager.AssetOperationStructOutput;
             bcTransformation.id = BigNumber.from(0);
             bcTransformation.name = 'transformation';
             bcTransformation.inputMaterialIds = [BigNumber.from(0)];
             bcTransformation.outputMaterialId = BigNumber.from(3);
+            bcTransformation.latitude = '46.003677';
+            bcTransformation.longitude = '8.953062';
             bcTransformation.exists = true;
 
-            expect(EntityBuilder.buildAssetOperation(bcTransformation, [bcMaterial], [bcProductCategory], bcMaterial, bcProductCategory)).toEqual(new AssetOperation(0, 'transformation', [new Material(0, new ProductCategory(1, 'product category', 1, 'description'))], new Material(0, new ProductCategory(1, 'product category', 1, 'description'))));
+            expect(EntityBuilder.buildAssetOperation(bcTransformation, [bcMaterial], [bcProductCategory], bcMaterial, bcProductCategory))
+                .toEqual(new AssetOperation(0, 'transformation', [new Material(0, new ProductCategory(1, 'product category', 1, 'description'))],
+                    new Material(0, new ProductCategory(1, 'product category', 1, 'description')), '46.003677', '8.953062'));
         });
     });
 
