@@ -1,10 +1,9 @@
-import { Signer } from 'ethers';
-import { Line, Trade } from '../entities/Trade';
-import { AssetOperation } from '../entities/AssetOperation';
-import { TradeManagerService } from './TradeManagerService';
-import { AssetOperationService } from './AssetOperationService';
-import { Material } from '../entities/Material';
-import { AssetOperationType } from '../types/AssetOperationType';
+import {Signer} from 'ethers';
+import {Line, Trade} from '../entities/Trade';
+import {AssetOperation} from '../entities/AssetOperation';
+import {TradeManagerService} from './TradeManagerService';
+import {AssetOperationService} from './AssetOperationService';
+import {AssetOperationType} from "../types/AssetOperationType";
 
 export type Node = AssetOperation;
 
@@ -26,115 +25,124 @@ export class GraphService {
 
     private _assetOperationService: AssetOperationService;
 
-    constructor(signer: Signer, tradeManagerService: TradeManagerService, assetOperationService: AssetOperationService) {
+    private _assetOperationMap: Map<number, AssetOperation[]> = new Map<number, AssetOperation[]>();
+    private _trades: Trade[] = [];
+    private _flag: boolean = false;
+
+    constructor(signer: Signer, tradeManagerService: TradeManagerService, transformationService: AssetOperationService) {
         this._signer = signer;
         this._tradeManagerService = tradeManagerService;
-        this._assetOperationService = assetOperationService;
+        this._assetOperationService = transformationService;
     }
 
-    private async _handleConsolidations(assetOperations: AssetOperation[], materialId: number, partialGraphData: GraphData = {
+    private _handleConsolidations(assetOperations: AssetOperation[], materialId: number, partialGraphData: GraphData = {
         nodes: [],
-        edges: [],
-    }): Promise<{transformation: AssetOperation | undefined, partialGraphData: GraphData}> {
-        const transformation: AssetOperation = assetOperations.filter((ao) => ao.type === AssetOperationType.TRANSFORMATION)[0];
-        if (assetOperations.some((ao: AssetOperation) => ao.type === AssetOperationType.CONSOLIDATION)) {
-            // Sort descending
+        edges: []
+    }): { transformation: AssetOperation | undefined, partialGraphData: GraphData } {
+        const transformation: AssetOperation = assetOperations.filter((ao: AssetOperation) => ao.type === AssetOperationType.TRANSFORMATION)[0];
+        if(assetOperations.some((ao: AssetOperation) => ao.type === AssetOperationType.CONSOLIDATION)) {
             const consolidations: AssetOperation[] = assetOperations
-                .filter((ao) => ao.type === AssetOperationType.CONSOLIDATION)
-                .sort((a, b) => b.id - a.id);
-            const trades: Trade[] = (await this._tradeManagerService.getTradesByMaterial(materialId))
-                .sort((a, b) => b.tradeId - a.tradeId);
+                .filter((ao) => ao.type === AssetOperationType.CONSOLIDATION);
+            const trades: Trade[] = this._trades.filter((t: Trade) => t.lines.some((l: Line) => l.material?.id === materialId));
 
-            for (let i: number = 0; i < consolidations.length; i++) {
+            for(let i: number = 0; i < consolidations.length; i ++) {
                 partialGraphData.nodes.push(consolidations[i]);
 
-                if (!transformation)
+                if(i === consolidations.length - 1 && !transformation)
                     // The consolidation's input material is a "pure" material, not a transformation's output material.
                     break;
 
                 partialGraphData.edges.push({
-                    trade: trades[i],
+                    trade: this._flag ? trades[i + 1] : trades[i],
                     from: i === consolidations.length - 1 ? transformation.name : consolidations[i + 1].name,
-                    to: consolidations[i].name,
+                    to: consolidations[i].name
                 });
             }
         }
 
-        return { transformation, partialGraphData };
+        this._flag = false;
+
+        return { transformation, partialGraphData }
     }
 
-    public async findTradesByMaterial(materialId: number): Promise<Map<Trade, Line[]>> {
-        const result: Map<Trade, Line[]> = new Map<Trade, Line[]>();
-        const trades: Trade[] = await this._tradeManagerService.getTradesByMaterial(materialId);
-
-        for (const trade of trades) {
-            const filteredLines: Line[] = trade.lines.filter((l) => l.material?.id === materialId);
-            if (filteredLines.length > 0) {
-                result.set(trade, filteredLines);
-            }
-        }
-
-        return result;
-    }
-
-    public async computeGraph(materialId: number, partialGraphData: GraphData = {
+    private _computeGraph(materialId: number, partialGraphData: GraphData = {
         nodes: [],
-        edges: [],
-    }): Promise<GraphData> {
-        const assetOperations = await this._assetOperationService.getAssetOperationsByOutputMaterial(materialId);
-        if (assetOperations.length === 0) {
+        edges: []
+    }): GraphData {
+        const assetOperations = this._assetOperationMap.get(materialId) || [];
+        if(assetOperations.length === 0) {
             return partialGraphData;
         }
 
-        const result = await this._handleConsolidations(assetOperations, materialId, partialGraphData);
+        const result = this._handleConsolidations(assetOperations, materialId, partialGraphData);
         const { transformation } = result;
         partialGraphData = result.partialGraphData;
 
-        if (!transformation)
+        if(!transformation)
             // The material is a "pure" material, not a transformation's output material, return.
             return partialGraphData;
 
-        if (partialGraphData.nodes.some((n) => n.id === transformation.id))
+        if(partialGraphData.nodes.some((n) => n.id === transformation.id))
             // This branch has already been explored, return.
             return partialGraphData;
 
         partialGraphData.nodes.push(transformation);
 
-        await Promise.all(transformation.inputMaterials.map(async (assetOperationInputMaterial: Material) => {
-            const filteredTradesMap: Map<Trade, Line[]> = await this.findTradesByMaterial(assetOperationInputMaterial.id);
-            if (filteredTradesMap.size === 0) {
-                return partialGraphData;
-            }
+        for(const assetOperationInputMaterial of transformation.inputMaterials) {
+            const filteredTradesMap: Map<Trade, number[]> = this._trades
+                .filter((t: Trade) => t.lines.some((l: Line) => l.material?.id === assetOperationInputMaterial.id))
+                .reduce((acc: Map<Trade, number[]>, trade: Trade) => {
+                    acc.set(trade, trade.lines.filter((l: Line) => l.material?.id === assetOperationInputMaterial.id)
+                        .map((l: Line) => l.material!.id));
+                    return acc;
+                }, new Map<Trade, number[]>());
 
-            const tradeWithMaterialIdMap: Map<Trade, number[]> = new Map(
-                Array.from(filteredTradesMap).map(([trade, lines]) => [trade, lines.map((l: Line) => l.material!.id)]),
-            );
+            for(const [trade, materialInputIds] of filteredTradesMap) {
+                for(const involvedMaterialInputId of materialInputIds) {
+                    const list = this._assetOperationMap.get(involvedMaterialInputId);
+                    const inputAssetOperation: AssetOperation | undefined = list ? list[0] : undefined;
 
-            await Promise.all(Array.from(tradeWithMaterialIdMap).map(async ([trade, materialInputIds]) => {
-                await Promise.all(materialInputIds.map(async (involvedMaterialInputId: number) => {
-                    const inputAssetOperations: AssetOperation[] = await this._assetOperationService.getAssetOperationsByOutputMaterial(involvedMaterialInputId);
+                    if(!inputAssetOperation)
+                        throw new Error("Found a trade whose material id is not associated with any asset operation");
+
+                    if(inputAssetOperation.type === AssetOperationType.CONSOLIDATION && partialGraphData.nodes.some((ao: AssetOperation) => ao.id === inputAssetOperation.id))
+                        return partialGraphData;
 
                     const newEdge: Edge = {
-                        // resourcesIds: Array.from(filteredTradesMap.entries())
-                        //     .filter(([_, lines]) => lines
-                        //         .filter((tl) => tl.material!.id === involvedMaterialInputId).length > 0)
-                        //     .map(([trade, _]) => `${trade.supplier}_trade_${trade.tradeId}`),
-                        trade,
-                        from: inputAssetOperations[0].name,
-                        to: transformation!.name,
+                        trade: trade,
+                        from: inputAssetOperation.name,
+                        to: transformation!.name
                     };
 
-                    if (partialGraphData.edges.some((e) => e.trade === newEdge.trade && e.from === newEdge.from && e.to === newEdge.to))
+                    if(partialGraphData.edges.some((e) => e.trade === newEdge.trade && e.from === newEdge.from && e.to === newEdge.to))
                         // This branch has already been explored, return.
                         return partialGraphData;
 
                     partialGraphData.edges.push(newEdge);
+                    this._flag = true;
 
-                    await this.computeGraph(involvedMaterialInputId, partialGraphData);
-                }));
-            }));
-        }));
+                    this._computeGraph(involvedMaterialInputId, partialGraphData);
+                }
+            }
+        }
 
         return partialGraphData;
+    }
+
+    private async _loadData() {
+        const assetOperations = (await this._assetOperationService.getAssetOperations())
+            .sort((a, b) => b.id - a.id);
+        this._assetOperationMap = new Map<number, AssetOperation[]>();
+        for(const assetOperation of assetOperations) {
+            this._assetOperationMap.get(assetOperation.outputMaterial.id)?.push(assetOperation) || this._assetOperationMap.set(assetOperation.outputMaterial.id, [assetOperation]);
+        }
+        // this._assetOperations = await this._assetOperationService.getAssetOperations();
+        this._trades = (await this._tradeManagerService.getTrades())
+            .sort((a, b) => b.tradeId - a.tradeId);
+    }
+
+    public async computeGraph(materialId: number, refreshData: boolean): Promise<GraphData> {
+        refreshData && await this._loadData();
+        return this._computeGraph(materialId);
     }
 }

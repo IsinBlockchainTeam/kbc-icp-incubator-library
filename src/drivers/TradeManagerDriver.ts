@@ -58,12 +58,16 @@ export class TradeManagerDriver {
         return (await this._contract.getTradeCounter()).toNumber();
     }
 
-    async getTrades(): Promise<string[]> {
-        const trades: string[] = [];
+    async getTrades(): Promise<Trade[]> {
+        const trades: Trade[] = [];
         const tradeCounter: number = await this.getTradeCounter();
 
         for (let i: number = 1; i <= tradeCounter; i++) {
-            trades.push(await this._contract.getTrade(i));
+            const tradeType: TradeType = await this.getTradeType(i);
+            const tradeDriver: IConcreteTradeDriver = tradeType === TradeType.BASIC ?
+                new BasicTradeDriver(this._contract.signer, await this._contract.getTrade(i), this._materialManagerAddress, this._productCategoryManagerAddress) :
+                new OrderTradeDriver(this._contract.signer, await this._contract.getTrade(i), this._materialManagerAddress, this._productCategoryManagerAddress);
+            trades.push(await tradeDriver.getTrade());
         }
         return trades;
     }
@@ -90,19 +94,8 @@ export class TradeManagerDriver {
     }
 
     async getTradesByMaterial(materialId: number): Promise<Trade[]> {
-        const trades: Trade[] = [];
-        const tradesMap: Map<string, TradeType> = await this.getTradesAndTypes();
-        for(const [tradeAddress, tradeType] of tradesMap) {
-            const tradeDriver: IConcreteTradeDriver = tradeType === TradeType.BASIC ?
-                new BasicTradeDriver(this._contract.signer, tradeAddress, this._materialManagerAddress, this._productCategoryManagerAddress) :
-                new OrderTradeDriver(this._contract.signer, tradeAddress, this._materialManagerAddress, this._productCategoryManagerAddress);
-            const lines: Line[] = await tradeDriver.getLines();
-            if(lines.some((l) => l.material?.id === materialId)) {
-                trades.push(await tradeDriver.getTrade());
-            }
-        }
-
-        return trades;
+        const trades: Trade[] = await this.getTrades();
+        return trades.filter((trade: Trade) => trade.lines.some((line: Line) => line.material!.id === materialId));
     }
 
     async getTradeIdsOfSupplier(commissioner: string): Promise<number[]> {
