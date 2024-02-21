@@ -204,21 +204,21 @@ describe('GraphService lifecycle', () => {
         let productCategories: ProductCategory[] = [];
         let materials: Material[] = [];
         let assetOperations: AssetOperation[] = [];
-        let trades: Trade[] = [];
+        const trades: Trade[] = [];
 
         it('should add data that is then used to compute the graph', async () => {
             productCategories = await _registerProductCategories([
-                new ProductCategory(0, 'Raw coffee beans', 85, "first category"),
-                new ProductCategory(0, 'Green coffee beans', 90, "second category"),
-                new ProductCategory(0, 'Processed coffee beans', 82, "third category"),
-                new ProductCategory(0, 'Ground roasted coffee', 80, "fourth category"),
-                new ProductCategory(0, 'Sea water', 20, "fifth category"),
-                new ProductCategory(0, 'Purified water', 50, "sixth category"),
-                new ProductCategory(0, 'Final coffee', 90, "eighth category"),
-                new ProductCategory(0, "Small coffee bag", 90, "Final coffee packed in a small bag"),
-                new ProductCategory(0, "Medium coffee bag", 90, "Final coffee packed in a medium bag"),
-                new ProductCategory(0, "Batch of coffee bags", 90, "Batch of a small and a medium coffee bag"),
-                new ProductCategory(0, "Rain water", 60, "Water collected from rain")
+                new ProductCategory(0, 'Raw coffee beans', 85, 'first category'),
+                new ProductCategory(0, 'Green coffee beans', 90, 'second category'),
+                new ProductCategory(0, 'Processed coffee beans', 82, 'third category'),
+                new ProductCategory(0, 'Ground roasted coffee', 80, 'fourth category'),
+                new ProductCategory(0, 'Sea water', 20, 'fifth category'),
+                new ProductCategory(0, 'Purified water', 50, 'sixth category'),
+                new ProductCategory(0, 'Final coffee', 90, 'eighth category'),
+                new ProductCategory(0, 'Small coffee bag', 90, 'Final coffee packed in a small bag'),
+                new ProductCategory(0, 'Medium coffee bag', 90, 'Final coffee packed in a medium bag'),
+                new ProductCategory(0, 'Batch of coffee bags', 90, 'Batch of a small and a medium coffee bag'),
+                new ProductCategory(0, 'Rain water', 60, 'Water collected from rain'),
             ]);
 
             materials = await _registerMaterials([
@@ -232,20 +232,20 @@ describe('GraphService lifecycle', () => {
                 new Material(0, productCategories[7]),
                 new Material(0, productCategories[8]),
                 new Material(0, productCategories[9]),
-                new Material(0, productCategories[10])
+                new Material(0, productCategories[10]),
             ]);
 
             assetOperations = await _registerAssetOperations([
-                new AssetOperation(0, 'TRANSFORMATION: coffee beans processing', [materials[0], materials[1]], materials[2]),
-                new AssetOperation(0, 'TRANSFORMATION: coffee grinding', [materials[2]], materials[3]),
-                new AssetOperation(0, 'TRANSFORMATION: water gathering', [materials[10]], materials[4]),
-                new AssetOperation(0, 'CONSOLIDATION: sea water transfer', [materials[4]], materials[4]),
-                new AssetOperation(0, 'CONSOLIDATION: another sea water transfer', [materials[4]], materials[4]),
-                new AssetOperation(0, 'TRANSFORMATION: water purification', [materials[4]], materials[5]),
-                new AssetOperation(0, 'TRANSFORMATION: final coffee production', [materials[3], materials[5]], materials[6]),
-                new AssetOperation(0, "TRANSFORMATION: small coffee packaging", [materials[6]], materials[7]),
-                new AssetOperation(0, "TRANSFORMATION: medium coffee packaging", [materials[6]], materials[8]),
-                new AssetOperation(0, "TRANSFORMATION: coffee bags packaging", [materials[7], materials[8]], materials[9])
+                new AssetOperation(0, 'TRANSFORMATION: coffee beans processing', [materials[0], materials[1]], materials[2], '-73.9828170', '-28.6505430'),
+                new AssetOperation(0, 'TRANSFORMATION: coffee grinding', [materials[2]], materials[3], '-74.9828170', '-28.6505430'),
+                new AssetOperation(0, 'TRANSFORMATION: water gathering', [materials[10]], materials[4], '-73.4667', '-23.5505'),
+                new AssetOperation(0, 'CONSOLIDATION: sea water transfer', [materials[4]], materials[4], '-73.9265', '-23.4733'),
+                new AssetOperation(0, 'CONSOLIDATION: another sea water transfer', [materials[4]], materials[4], '-73.3468', '-23.5505'),
+                new AssetOperation(0, 'TRANSFORMATION: water purification', [materials[4]], materials[5], '-72.65497', '-23.5505'),
+                new AssetOperation(0, 'TRANSFORMATION: final coffee production', [materials[3], materials[5]], materials[6], '34.6836', '135.52'),
+                new AssetOperation(0, 'TRANSFORMATION: small coffee packaging', [materials[6]], materials[7], '-73.64826', '-23.5505'),
+                new AssetOperation(0, 'TRANSFORMATION: medium coffee packaging', [materials[6]], materials[8], '-34.7567', '135.52'),
+                new AssetOperation(0, 'TRANSFORMATION: coffee bags packaging', [materials[7], materials[8]], materials[9], '-73.1643', '-23.5505'),
             ]);
 
             const newTrades: Trade[] = [
@@ -289,14 +289,14 @@ describe('GraphService lifecycle', () => {
             const result = await graphService.computeGraph(materials[6].id, true);
 
             expect(result.nodes).toEqual(expect.arrayContaining([
-                assetOperations[6], assetOperations[5], assetOperations[4], assetOperations[3], assetOperations[1], assetOperations[2], assetOperations[0]
+                assetOperations[6], assetOperations[5], assetOperations[4], assetOperations[3], assetOperations[1], assetOperations[2], assetOperations[0],
             ]));
 
             expect(result.edges).toEqual(expect.arrayContaining([
                 {
                     trade: trades[1],
                     from: assetOperations[1].name,
-                    to: assetOperations[6].name
+                    to: assetOperations[6].name,
                 },
                 {
                     trade: trades[0],
@@ -306,23 +306,23 @@ describe('GraphService lifecycle', () => {
                 {
                     trade: trades[5],
                     from: assetOperations[5].name,
-                    to: assetOperations[6].name
+                    to: assetOperations[6].name,
                 },
                 {
                     trade: trades[4],
                     from: assetOperations[4].name,
-                    to: assetOperations[5].name
+                    to: assetOperations[5].name,
                 },
                 {
                     trade: trades[3],
                     from: assetOperations[3].name,
-                    to: assetOperations[4].name
+                    to: assetOperations[4].name,
                 },
                 {
                     trade: trades[2],
                     from: assetOperations[2].name,
-                    to: assetOperations[3].name
-                }
+                    to: assetOperations[3].name,
+                },
             ]));
         }, 30000);
 
@@ -340,75 +340,24 @@ describe('GraphService lifecycle', () => {
             const result = await graphService.computeGraph(materials[7].id, false);
 
             expect(result.nodes).toEqual(expect.arrayContaining([
-                assetOperations[7], assetOperations[6], assetOperations[5], assetOperations[4], assetOperations[3], assetOperations[1], assetOperations[2], assetOperations[0]
+                assetOperations[7], assetOperations[6], assetOperations[5], assetOperations[4], assetOperations[3], assetOperations[1], assetOperations[2], assetOperations[0],
             ]));
 
             expect(result.edges).toEqual(expect.arrayContaining([
                 {
                     trade: trades[6],
                     from: assetOperations[6].name,
-                    to: assetOperations[7].name
+                    to: assetOperations[7].name,
                 },
                 {
                     trade: trades[1],
                     from: assetOperations[1].name,
-                    to: assetOperations[6].name
+                    to: assetOperations[6].name,
                 },
                 {
                     trade: trades[0],
                     from: assetOperations[0].name,
-                    to: assetOperations[1].name
-                },
-                {
-                    trade: trades[5],
-                    from: assetOperations[5].name,
-                    to: assetOperations[6].name
-                },
-                {
-                    trade: trades[4],
-                    from: assetOperations[4].name,
-                    to: assetOperations[5].name
-                },
-                {
-                    trade: trades[3],
-                    from: assetOperations[3].name,
-                    to: assetOperations[4].name,
-                },
-                {
-                    trade: trades[2],
-                    from: assetOperations[2].name,
-                    to: assetOperations[3].name
-                }
-            ]));
-        }, 30000);
-
-        it('should compute a graph where the material is the join of two forked branches', async () => {
-            const result = await graphService.computeGraph(materials[9].id, false);
-
-            expect(result.nodes).toEqual(expect.arrayContaining([
-                assetOperations[9], assetOperations[8], assetOperations[7], assetOperations[6], assetOperations[5], assetOperations[4], assetOperations[3], assetOperations[1], assetOperations[2], assetOperations[0]
-            ]));
-
-            expect(result.edges).toEqual(expect.arrayContaining([
-                {
-                    trade: trades[7],
-                    from: assetOperations[7].name,
-                    to: assetOperations[9].name
-                },
-                {
-                    trade: trades[6],
-                    from: assetOperations[6].name,
-                    to: assetOperations[7].name
-                },
-                {
-                    trade: trades[1],
-                    from: assetOperations[1].name,
-                    to: assetOperations[6].name
-                },
-                {
-                    trade: trades[0],
-                    from: assetOperations[0].name,
-                    to: assetOperations[1].name
+                    to: assetOperations[1].name,
                 },
                 {
                     trade: trades[5],
@@ -418,7 +367,58 @@ describe('GraphService lifecycle', () => {
                 {
                     trade: trades[4],
                     from: assetOperations[4].name,
-                    to: assetOperations[5].name
+                    to: assetOperations[5].name,
+                },
+                {
+                    trade: trades[3],
+                    from: assetOperations[3].name,
+                    to: assetOperations[4].name,
+                },
+                {
+                    trade: trades[2],
+                    from: assetOperations[2].name,
+                    to: assetOperations[3].name,
+                },
+            ]));
+        }, 30000);
+
+        it('should compute a graph where the material is the join of two forked branches', async () => {
+            const result = await graphService.computeGraph(materials[9].id, false);
+
+            expect(result.nodes).toEqual(expect.arrayContaining([
+                assetOperations[9], assetOperations[8], assetOperations[7], assetOperations[6], assetOperations[5], assetOperations[4], assetOperations[3], assetOperations[1], assetOperations[2], assetOperations[0],
+            ]));
+
+            expect(result.edges).toEqual(expect.arrayContaining([
+                {
+                    trade: trades[7],
+                    from: assetOperations[7].name,
+                    to: assetOperations[9].name,
+                },
+                {
+                    trade: trades[6],
+                    from: assetOperations[6].name,
+                    to: assetOperations[7].name,
+                },
+                {
+                    trade: trades[1],
+                    from: assetOperations[1].name,
+                    to: assetOperations[6].name,
+                },
+                {
+                    trade: trades[0],
+                    from: assetOperations[0].name,
+                    to: assetOperations[1].name,
+                },
+                {
+                    trade: trades[5],
+                    from: assetOperations[5].name,
+                    to: assetOperations[6].name,
+                },
+                {
+                    trade: trades[4],
+                    from: assetOperations[4].name,
+                    to: assetOperations[5].name,
                 },
                 {
                     trade: trades[3],
@@ -433,12 +433,12 @@ describe('GraphService lifecycle', () => {
                 {
                     trade: trades[8],
                     from: assetOperations[8].name,
-                    to: assetOperations[9].name
+                    to: assetOperations[9].name,
                 },
                 {
                     trade: trades[6],
                     from: assetOperations[6].name,
-                    to: assetOperations[8].name
+                    to: assetOperations[8].name,
                 },
             ]));
         }, 30000);

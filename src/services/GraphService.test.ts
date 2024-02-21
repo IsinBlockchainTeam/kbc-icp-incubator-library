@@ -24,14 +24,14 @@ describe('GraphService', () => {
     let graphService: GraphService;
 
     const productCategories: ProductCategory[] = [
-        new ProductCategory(1, 'Raw coffee beans', 85, "first category"),
-        new ProductCategory(2, 'Green coffee beans', 90, "second category"),
-        new ProductCategory(3, 'Processed coffee beans', 82, "third category"),
-        new ProductCategory(4, 'Ground roasted coffee', 80, "fourth category"),
-        new ProductCategory(5, 'Sea water', 20, "fifth category"),
-        new ProductCategory(6, 'Purified water', 50, "sixth category"),
-        new ProductCategory(7, 'Final coffee', 90, "eighth category"),
-        new ProductCategory(8, 'Pure water', 100, "ninth category")
+        new ProductCategory(1, 'Raw coffee beans', 85, 'first category'),
+        new ProductCategory(2, 'Green coffee beans', 90, 'second category'),
+        new ProductCategory(3, 'Processed coffee beans', 82, 'third category'),
+        new ProductCategory(4, 'Ground roasted coffee', 80, 'fourth category'),
+        new ProductCategory(5, 'Sea water', 20, 'fifth category'),
+        new ProductCategory(6, 'Purified water', 50, 'sixth category'),
+        new ProductCategory(7, 'Final coffee', 90, 'eighth category'),
+        new ProductCategory(8, 'Pure water', 100, 'ninth category'),
     ];
     const materials: Material[] = [
         new Material(1, productCategories[0]),
@@ -41,15 +41,15 @@ describe('GraphService', () => {
         new Material(5, productCategories[4]),
         new Material(6, productCategories[5]),
         new Material(7, productCategories[6]),
-        new Material(8, productCategories[7])
+        new Material(8, productCategories[7]),
     ];
     const assetOperations: AssetOperation[] = [
-        new AssetOperation(1, 'Coffee beans processing', [materials[0], materials[1]], materials[2]),
-        new AssetOperation(2, 'Coffee grinding', [materials[2]], materials[3]),
-        new AssetOperation(3, 'Water purification', [materials[4]], materials[5]),
-        new AssetOperation(4, 'Final coffee production', [materials[3], materials[5]], materials[6]),
-        new AssetOperation(5, 'Final coffee consolidation', [materials[6]], materials[6]),
-        new AssetOperation(6, 'Pure consolidation', [materials[7]], materials[7]),
+        new AssetOperation(1, 'Coffee beans processing', [materials[0], materials[1]], materials[2], '-73.9828170', '-28.6505430'),
+        new AssetOperation(2, 'Coffee grinding', [materials[2]], materials[3], '-73.9265', '-23.4733'),
+        new AssetOperation(3, 'Water purification', [materials[4]], materials[5], '-73.4667', '-23.5505'),
+        new AssetOperation(4, 'Final coffee production', [materials[3], materials[5]], materials[6], '-73.64826', '-23.5505'),
+        new AssetOperation(5, 'Final coffee consolidation', [materials[6]], materials[6], '-34.7567', '135.52'),
+        new AssetOperation(6, 'Pure consolidation', [materials[7]], materials[7], '-73.1643', '-23.5505'),
         // new AssetOperation(4, 'Doubled material', [materials[5], materials[5]], materials[6]),
     ];
 
@@ -66,12 +66,8 @@ describe('GraphService', () => {
 
     const mockedTradeManagerService: TradeManagerService = createMock<TradeManagerService>({
         getTrades: mockGetTrades,
-        getTrade: jest.fn().mockImplementation((id: number) => {
-            return Promise.resolve(trades[id]);
-        }),
-        getTradeType: jest.fn().mockImplementation((id: number) => {
-            return Promise.resolve(tradeTypes[id]);
-        }),
+        getTrade: jest.fn().mockImplementation((id: number) => Promise.resolve(trades[id])),
+        getTradeType: jest.fn().mockImplementation((id: number) => Promise.resolve(tradeTypes[id])),
     });
     const mockedAssetOperationService: AssetOperationService = createMock<AssetOperationService>({
         getAssetOperations: mockGetAssetOperations,
@@ -103,7 +99,7 @@ describe('GraphService', () => {
         expect(result.edges).toEqual(expect.arrayContaining([{
             trade: trades[0],
             from: assetOperations[0].name,
-            to: assetOperations[1].name
+            to: assetOperations[1].name,
         }]));
 
         expect(mockedTradeManagerService.getTrades).toHaveBeenCalledTimes(1);
@@ -141,7 +137,7 @@ describe('GraphService', () => {
 
         expect(result).toEqual({
             nodes: [
-                assetOperations[5]
+                assetOperations[5],
             ],
             edges: [],
         });
@@ -163,7 +159,7 @@ describe('GraphService', () => {
 
         expect(result).toEqual({
             nodes: [],
-            edges: []
+            edges: [],
         });
     });
 
