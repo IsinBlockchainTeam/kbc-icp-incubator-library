@@ -1,6 +1,6 @@
 import { Line, LineRequest, Trade } from '../entities/Trade';
 
-export interface IConcreteTradeDriver {
+export interface IConcreteTradeDriverInterface {
     getTrade(blockNumber?: number): Promise<Trade>;
     getLines(): Promise<Line[]>;
     getLine(id: number, blockNumber?: number): Promise<Line>;

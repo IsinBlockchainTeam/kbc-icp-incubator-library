@@ -2,20 +2,32 @@ import { TradeManagerDriver } from '../drivers/TradeManagerDriver';
 import { TradeType } from '../types/TradeType';
 import { BasicTrade } from '../entities/BasicTrade';
 import { OrderTrade } from '../entities/OrderTrade';
-import {Trade} from "../entities/Trade";
+import { Trade } from '../entities/Trade';
+import { MetadataStorage, MetadataType, IStorageMetadataDriver } from '../drivers/IStorageMetadataDriver';
 
 export class TradeManagerService {
     private _tradeManagerDriver: TradeManagerDriver;
 
-    constructor(tradeManagerDriver: TradeManagerDriver) {
+    private _storageMetadataDriver: IStorageMetadataDriver;
+
+    constructor(tradeManagerDriver: TradeManagerDriver, storageMetadataDriver: IStorageMetadataDriver) {
         this._tradeManagerDriver = tradeManagerDriver;
+        this._storageMetadataDriver = storageMetadataDriver;
     }
 
-    async registerBasicTrade(supplier: string, customer: string, commissioner: string, externalUrl: string, name: string): Promise<BasicTrade> {
+    async registerBasicTrade(supplier: string, customer: string, commissioner: string, name: string, metadataStorage?: MetadataStorage): Promise<BasicTrade> {
+        const externalUrl = metadataStorage ? await this._storageMetadataDriver.create(
+            MetadataType.TRANSACTION,
+            { metadata: metadataStorage.metadata, resourceId: metadataStorage.resourceId },
+        ) : '';
         return this._tradeManagerDriver.registerBasicTrade(supplier, customer, commissioner, externalUrl, name);
     }
 
-    async registerOrderTrade(supplier: string, customer: string, commissioner: string, externalUrl: string, paymentDeadline: number, documentDeliveryDeadline: number, arbiter: string, shippingDeadline: number, deliveryDeadline: number, agreedAmount: number, tokenAddress: string): Promise<OrderTrade> {
+    async registerOrderTrade(supplier: string, customer: string, commissioner: string, paymentDeadline: number, documentDeliveryDeadline: number, arbiter: string, shippingDeadline: number, deliveryDeadline: number, agreedAmount: number, tokenAddress: string, metadataStorage?: MetadataStorage): Promise<OrderTrade> {
+        const externalUrl = metadataStorage ? await this._storageMetadataDriver.create(
+            MetadataType.TRANSACTION,
+            { metadata: metadataStorage.metadata, resourceId: metadataStorage.resourceId },
+        ) : '';
         return this._tradeManagerDriver.registerOrderTrade(supplier, customer, commissioner, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);
     }
 

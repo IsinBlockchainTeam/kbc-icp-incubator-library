@@ -3,22 +3,22 @@ import {
     BasicTrade as BasicTradeContract,
     BasicTrade__factory,
     MaterialManager, MaterialManager__factory,
-    ProductCategoryManager, ProductCategoryManager__factory
+    ProductCategoryManager, ProductCategoryManager__factory,
 } from '../smart-contracts';
 import { TradeDriver } from './TradeDriver';
-import { IConcreteTradeDriver } from './IConcreteTradeDriver';
+import { IConcreteTradeDriverInterface } from './IConcreteTradeDriver.interface';
 import { BasicTrade } from '../entities/BasicTrade';
 import { Line, LineRequest } from '../entities/Trade';
 import { Trade } from '../smart-contracts/contracts/BasicTrade';
 import { EntityBuilder } from '../utils/EntityBuilder';
 
-export class BasicTradeDriver extends TradeDriver implements IConcreteTradeDriver {
+export class BasicTradeDriver extends TradeDriver implements IConcreteTradeDriverInterface {
     private _basicTradeContract: BasicTradeContract;
 
     private _materialContract: MaterialManager;
 
     private _productCategoryContract: ProductCategoryManager;
-    
+
     constructor(signer: Signer, basicTradeAddress: string, materialManagerAddress: string, productCategoryManagerAddress: string) {
         super(signer, basicTradeAddress);
         this._basicTradeContract = BasicTrade__factory
@@ -63,8 +63,8 @@ export class BasicTradeDriver extends TradeDriver implements IConcreteTradeDrive
     async getLine(id: number, blockNumber?: number): Promise<Line> {
         const line: Trade.LineStructOutput = await this._basicTradeContract.getLine(id, { blockTag: blockNumber });
 
-        let materialStruct: MaterialManager.MaterialStructOutput | undefined = undefined;
-        if(line.materialId.toNumber() !== 0)
+        let materialStruct: MaterialManager.MaterialStructOutput | undefined;
+        if (line.materialId.toNumber() !== 0)
             materialStruct = await this._materialContract.getMaterial(line.materialId);
 
         return EntityBuilder.buildTradeLine(line, await this._productCategoryContract.getProductCategory(line.productCategoryId), materialStruct);
@@ -80,7 +80,7 @@ export class BasicTradeDriver extends TradeDriver implements IConcreteTradeDrive
     async updateLine(line: Line): Promise<Line> {
         const tx = await this._basicTradeContract.updateLine(line.id, line.productCategory.id);
         await tx.wait();
-        if(line.material)
+        if (line.material)
             await this.assignMaterial(line.id, line.material.id);
 
         return this.getLine(line.id);

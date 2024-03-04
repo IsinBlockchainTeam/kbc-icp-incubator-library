@@ -2,8 +2,10 @@ import { createMock } from 'ts-auto-mock';
 import { BasicTradeDriver } from '../drivers/BasicTradeDriver';
 import { BasicTradeService } from './BasicTradeService';
 import { Line, LineRequest } from '../entities/Trade';
-import {Material} from "../entities/Material";
-import {ProductCategory} from "../entities/ProductCategory";
+import { Material } from '../entities/Material';
+import { ProductCategory } from '../entities/ProductCategory';
+import { IStorageMetadataDriver } from '../drivers/IStorageMetadataDriver';
+import { IStorageDocumentDriver } from '../drivers/IStorageDocumentDriver';
 
 describe('BasicTradeService', () => {
     const mockedBasicTradeDriver: BasicTradeDriver = createMock<BasicTradeDriver>({
@@ -16,8 +18,17 @@ describe('BasicTradeService', () => {
         setName: jest.fn(),
     });
 
+    const mockedStorageMetadataDriver = createMock<IStorageMetadataDriver>({
+        create: jest.fn(),
+    });
+    const mockedStorageDocumentDriver = createMock<IStorageDocumentDriver>({
+        create: jest.fn(),
+    });
+
     const basicTradeService = new BasicTradeService(
         mockedBasicTradeDriver,
+        mockedStorageMetadataDriver,
+        mockedStorageDocumentDriver,
     );
 
     afterAll(() => {

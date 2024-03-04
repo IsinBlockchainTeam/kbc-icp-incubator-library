@@ -6,8 +6,10 @@ import {
     OrderLinePrice,
     OrderLineRequest,
 } from '../entities/OrderTrade';
-import {Material} from "../entities/Material";
-import {ProductCategory} from "../entities/ProductCategory";
+import { Material } from '../entities/Material';
+import { ProductCategory } from '../entities/ProductCategory';
+import { IStorageMetadataDriver } from '../drivers/IStorageMetadataDriver';
+import { IStorageDocumentDriver } from '../drivers/IStorageDocumentDriver';
 
 describe('OrderTradeService', () => {
     const mockedOrderTradeDriver: OrderTradeDriver = createMock<OrderTradeDriver>({
@@ -26,9 +28,17 @@ describe('OrderTradeService', () => {
         confirmOrder: jest.fn(),
         getEmittedEvents: jest.fn(),
     });
+    const mockedStorageMetadataDriver = createMock<IStorageMetadataDriver>({
+        create: jest.fn(),
+    });
+    const mockedStorageDocumentDriver = createMock<IStorageDocumentDriver>({
+        create: jest.fn(),
+    });
 
     const orderTradeService = new OrderTradeService(
         mockedOrderTradeDriver,
+        mockedStorageMetadataDriver,
+        mockedStorageDocumentDriver,
     );
 
     afterAll(() => {

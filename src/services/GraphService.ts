@@ -1,9 +1,9 @@
-import {Signer} from 'ethers';
-import {Line, Trade} from '../entities/Trade';
-import {AssetOperation} from '../entities/AssetOperation';
-import {TradeManagerService} from './TradeManagerService';
-import {AssetOperationService} from './AssetOperationService';
-import {AssetOperationType} from "../types/AssetOperationType";
+import { Signer } from 'ethers';
+import { Line, Trade } from '../entities/Trade';
+import { AssetOperation } from '../entities/AssetOperation';
+import { TradeManagerService } from './TradeManagerService';
+import { AssetOperationService } from './AssetOperationService';
+import { AssetOperationType } from '../types/AssetOperationType';
 
 export type Node = AssetOperation;
 
@@ -26,7 +26,9 @@ export class GraphService {
     private _assetOperationService: AssetOperationService;
 
     private _assetOperationMap: Map<number, AssetOperation[]> = new Map<number, AssetOperation[]>();
+
     private _trades: Trade[] = [];
+
     private _flag: boolean = false;
 
     constructor(signer: Signer, tradeManagerService: TradeManagerService, transformationService: AssetOperationService) {
@@ -37,40 +39,40 @@ export class GraphService {
 
     private _handleConsolidations(assetOperations: AssetOperation[], materialId: number, partialGraphData: GraphData = {
         nodes: [],
-        edges: []
+        edges: [],
     }): { transformation: AssetOperation | undefined, partialGraphData: GraphData } {
         const transformation: AssetOperation = assetOperations.filter((ao: AssetOperation) => ao.type === AssetOperationType.TRANSFORMATION)[0];
-        if(assetOperations.some((ao: AssetOperation) => ao.type === AssetOperationType.CONSOLIDATION)) {
+        if (assetOperations.some((ao: AssetOperation) => ao.type === AssetOperationType.CONSOLIDATION)) {
             const consolidations: AssetOperation[] = assetOperations
                 .filter((ao) => ao.type === AssetOperationType.CONSOLIDATION);
             const trades: Trade[] = this._trades.filter((t: Trade) => t.lines.some((l: Line) => l.material?.id === materialId));
 
-            for(let i: number = 0; i < consolidations.length; i ++) {
+            for (let i: number = 0; i < consolidations.length; i++) {
                 partialGraphData.nodes.push(consolidations[i]);
 
-                if(i === consolidations.length - 1 && !transformation)
+                if (i === consolidations.length - 1 && !transformation)
                     // The consolidation's input material is a "pure" material, not a transformation's output material.
                     break;
 
                 partialGraphData.edges.push({
                     trade: this._flag ? trades[i + 1] : trades[i],
                     from: i === consolidations.length - 1 ? transformation.name : consolidations[i + 1].name,
-                    to: consolidations[i].name
+                    to: consolidations[i].name,
                 });
             }
         }
 
         this._flag = false;
 
-        return { transformation, partialGraphData }
+        return { transformation, partialGraphData };
     }
 
     private _computeGraph(materialId: number, partialGraphData: GraphData = {
         nodes: [],
-        edges: []
+        edges: [],
     }): GraphData {
         const assetOperations = this._assetOperationMap.get(materialId) || [];
-        if(assetOperations.length === 0) {
+        if (assetOperations.length === 0) {
             return partialGraphData;
         }
 
@@ -78,17 +80,17 @@ export class GraphService {
         const { transformation } = result;
         partialGraphData = result.partialGraphData;
 
-        if(!transformation)
+        if (!transformation)
             // The material is a "pure" material, not a transformation's output material, return.
             return partialGraphData;
 
-        if(partialGraphData.nodes.some((n) => n.id === transformation.id))
+        if (partialGraphData.nodes.some((n) => n.id === transformation.id))
             // This branch has already been explored, return.
             return partialGraphData;
 
         partialGraphData.nodes.push(transformation);
 
-        for(const assetOperationInputMaterial of transformation.inputMaterials) {
+        for (const assetOperationInputMaterial of transformation.inputMaterials) {
             const filteredTradesMap: Map<Trade, number[]> = this._trades
                 .filter((t: Trade) => t.lines.some((l: Line) => l.material?.id === assetOperationInputMaterial.id))
                 .reduce((acc: Map<Trade, number[]>, trade: Trade) => {
@@ -97,24 +99,24 @@ export class GraphService {
                     return acc;
                 }, new Map<Trade, number[]>());
 
-            for(const [trade, materialInputIds] of filteredTradesMap) {
-                for(const involvedMaterialInputId of materialInputIds) {
+            for (const [trade, materialInputIds] of filteredTradesMap) {
+                for (const involvedMaterialInputId of materialInputIds) {
                     const list = this._assetOperationMap.get(involvedMaterialInputId);
                     const inputAssetOperation: AssetOperation | undefined = list ? list[0] : undefined;
 
-                    if(!inputAssetOperation)
-                        throw new Error("Found a trade whose material id is not associated with any asset operation");
+                    if (!inputAssetOperation)
+                        throw new Error('Found a trade whose material id is not associated with any asset operation');
 
-                    if(inputAssetOperation.type === AssetOperationType.CONSOLIDATION && partialGraphData.nodes.some((ao: AssetOperation) => ao.id === inputAssetOperation.id))
+                    if (inputAssetOperation.type === AssetOperationType.CONSOLIDATION && partialGraphData.nodes.some((ao: AssetOperation) => ao.id === inputAssetOperation.id))
                         return partialGraphData;
 
                     const newEdge: Edge = {
-                        trade: trade,
+                        trade,
                         from: inputAssetOperation.name,
-                        to: transformation!.name
+                        to: transformation!.name,
                     };
 
-                    if(partialGraphData.edges.some((e) => e.trade === newEdge.trade && e.from === newEdge.from && e.to === newEdge.to))
+                    if (partialGraphData.edges.some((e) => e.trade === newEdge.trade && e.from === newEdge.from && e.to === newEdge.to))
                         // This branch has already been explored, return.
                         return partialGraphData;
 
@@ -133,7 +135,7 @@ export class GraphService {
         const assetOperations = (await this._assetOperationService.getAssetOperations())
             .sort((a, b) => b.id - a.id);
         this._assetOperationMap = new Map<number, AssetOperation[]>();
-        for(const assetOperation of assetOperations) {
+        for (const assetOperation of assetOperations) {
             this._assetOperationMap.get(assetOperation.outputMaterial.id)?.push(assetOperation) || this._assetOperationMap.set(assetOperation.outputMaterial.id, [assetOperation]);
         }
         // this._assetOperations = await this._assetOperationService.getAssetOperations();

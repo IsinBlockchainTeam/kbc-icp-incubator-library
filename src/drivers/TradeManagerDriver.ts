@@ -6,8 +6,8 @@ import { BasicTradeDriver } from './BasicTradeDriver';
 import { BasicTrade } from '../entities/BasicTrade';
 import { OrderTrade } from '../entities/OrderTrade';
 import { OrderTradeDriver } from './OrderTradeDriver';
-import {Line, Trade} from "../entities/Trade";
-import {IConcreteTradeDriver} from "./IConcreteTradeDriver";
+import { Line, Trade } from '../entities/Trade';
+import { IConcreteTradeDriverInterface } from './IConcreteTradeDriver.interface';
 
 export class TradeManagerDriver {
     private _contract: TradeManager;
@@ -64,7 +64,7 @@ export class TradeManagerDriver {
 
         for (let i: number = 1; i <= tradeCounter; i++) {
             const tradeType: TradeType = await this.getTradeType(i);
-            const tradeDriver: IConcreteTradeDriver = tradeType === TradeType.BASIC ?
+            const tradeDriver: IConcreteTradeDriverInterface = tradeType === TradeType.BASIC ?
                 new BasicTradeDriver(this._contract.signer, await this._contract.getTrade(i), this._materialManagerAddress, this._productCategoryManagerAddress) :
                 new OrderTradeDriver(this._contract.signer, await this._contract.getTrade(i), this._materialManagerAddress, this._productCategoryManagerAddress);
             trades.push(await tradeDriver.getTrade());

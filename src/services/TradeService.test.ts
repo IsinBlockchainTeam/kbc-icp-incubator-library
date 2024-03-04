@@ -2,6 +2,8 @@ import { createMock } from 'ts-auto-mock';
 import { TradeDriver } from '../drivers/TradeDriver';
 import { TradeService } from './TradeService';
 import { DocumentType } from '../entities/DocumentInfo';
+import { IStorageMetadataDriver } from '../drivers/IStorageMetadataDriver';
+import { IStorageDocumentDriver } from '../drivers/IStorageDocumentDriver';
 
 describe('TradeService', () => {
     const mockedTradeDriver: TradeDriver = createMock<TradeDriver>({
@@ -13,9 +15,17 @@ describe('TradeService', () => {
         addAdmin: jest.fn(),
         removeAdmin: jest.fn(),
     });
+    const mockedStorageMetadataDriver = createMock<IStorageMetadataDriver>({
+        create: jest.fn(),
+    });
+    const mockedStorageDocumentDriver = createMock<IStorageDocumentDriver>({
+        create: jest.fn(),
+    });
 
     const tradeService = new TradeService(
         mockedTradeDriver,
+        mockedStorageMetadataDriver,
+        mockedStorageDocumentDriver,
     );
 
     afterAll(() => {
@@ -49,7 +59,7 @@ describe('TradeService', () => {
         },
         {
             serviceFunctionName: 'addDocument',
-            serviceFunction: () => tradeService.addDocument(1, 'doc name', DocumentType.DELIVERY_NOTE, 'externalUrl'),
+            serviceFunction: () => tradeService.addDocument(1, 'doc name', DocumentType.DELIVERY_NOTE),
             expectedMockedFunction: mockedTradeDriver.addDocument,
             expectedMockedFunctionArgs: [1, 'doc name', DocumentType.DELIVERY_NOTE, 'externalUrl'],
         },

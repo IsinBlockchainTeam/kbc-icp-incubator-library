@@ -15,7 +15,7 @@ import {
     OrderTrade,
 } from '../entities/OrderTrade';
 import { EntityBuilder } from '../utils/EntityBuilder';
-import { IConcreteTradeDriver } from './IConcreteTradeDriver';
+import { IConcreteTradeDriverInterface } from './IConcreteTradeDriver.interface';
 
 export enum OrderTradeEvents {
     TradeLineAdded,
@@ -26,7 +26,7 @@ export enum OrderTradeEvents {
     OrderConfirmed
 }
 
-export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDriver {
+export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDriverInterface {
     private _actual: OrderTradeContract;
 
     private _materialContract: MaterialManager;
@@ -85,8 +85,8 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
     async getLine(id: number, blockNumber?: number): Promise<OrderLine> {
         const line = await this._actual.getLine(id, { blockTag: blockNumber });
 
-        let materialStruct: MaterialManager.MaterialStructOutput | undefined = undefined;
-        if(line[0].materialId.toNumber() !== 0)
+        let materialStruct: MaterialManager.MaterialStructOutput | undefined;
+        if (line[0].materialId.toNumber() !== 0)
             materialStruct = await this._materialContract.getMaterial(line[0].materialId);
 
         return EntityBuilder.buildOrderLine(line[0], line[1], await this._productCategoryContract.getProductCategory(line[0].productCategoryId), materialStruct);
@@ -104,7 +104,7 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
         const _price = this._convertPriceClassInStruct(line.price);
         const tx = await this._actual.updateLine(line.id, line.productCategory.id, line.quantity, _price);
         await tx.wait();
-        if(line.material)
+        if (line.material)
             await this.assignMaterial(line.id, line.material.id);
 
         return this.getLine(line.id);

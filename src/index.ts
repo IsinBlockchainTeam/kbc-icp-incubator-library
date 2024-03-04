@@ -54,4 +54,9 @@ export { EscrowManagerService } from './services/EscrowManagerService';
 export { EscrowDriver } from './drivers/EscrowDriver';
 export { EscrowService } from './services/EscrowService';
 
-export { GraphService, GraphData } from './services/GraphService';
+export { IStorageMetadataDriver } from './drivers/IStorageMetadataDriver';
+export { IStorageDocumentDriver } from './drivers/IStorageDocumentDriver';
+export { SolidMetadataDriver } from './drivers/SolidMetadataDriver';
+export { SolidDocumentDriver } from './drivers/SolidDocumentDriver';
+
+// export { GraphService, GraphData } from './services/GraphService';
