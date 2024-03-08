@@ -31,6 +31,17 @@ describe('OrderTrade.sol', () => {
         productCategoryId: BigNumber.from(1),
     } as MaterialManager.MaterialStructOutput;
 
+    const _createOrderTrade = async (deadline?: number): Promise<void> => {
+        const OrderTrade = await ethers.getContractFactory('OrderTrade');
+        orderTradeContract = await OrderTrade.deploy(1, productCategoryManagerContractFake.address, materialManagerContractFake.address,
+            documentManagerContractFake.address, supplier.address, customer.address, commissioner.address, externalUrl,
+            deadline? deadline : paymentDeadline, deadline? deadline :  deadline? deadline : documentDeliveryDeadline,
+            arbiter.address, deadline? deadline : shippingDeadline, deadline? deadline : deliveryDeadline, escrowContractFake.address,
+            enumerableFiatManagerContractFake.address,
+        );
+        await orderTradeContract.deployed();
+    }
+
     before(async () => {
         [admin, supplier, customer, commissioner, arbiter] = await ethers.getSigners();
         productCategoryManagerContractFake = await smock.fake(ContractName.PRODUCT_CATEGORY_MANAGER);
@@ -45,13 +56,7 @@ describe('OrderTrade.sol', () => {
     });
 
     beforeEach(async () => {
-        const OrderTrade = await ethers.getContractFactory('OrderTrade');
-        orderTradeContract = await OrderTrade.deploy(1, productCategoryManagerContractFake.address, materialManagerContractFake.address,
-            documentManagerContractFake.address, supplier.address, customer.address, commissioner.address, externalUrl,
-            paymentDeadline, documentDeliveryDeadline, arbiter.address, shippingDeadline, deliveryDeadline, escrowContractFake.address,
-            enumerableFiatManagerContractFake.address,
-        );
-        await orderTradeContract.deployed();
+        await _createOrderTrade();
     });
 
     describe('Getters', () => {
@@ -336,6 +341,46 @@ describe('OrderTrade.sol', () => {
         });
     });
 
+    describe('Order expiration', () => {
+        it('should return whether a deadline has passed', async () => {
+            await _createOrderTrade(Date.now() + 1000000)
+            expect(await orderTradeContract.connect(supplier).haveDeadlinesExpired())
+                .to
+                .equal(false);
+
+            await orderTradeContract.connect(supplier).updateDocumentDeliveryDeadline(100);
+            expect(await orderTradeContract.connect(supplier).haveDeadlinesExpired())
+                .to
+                .equal(true);
+        });
+
+        it('should change escrow status when enforcing deadlines on an order with expired deadlines', async () => {
+            await orderTradeContract.connect(supplier).confirmOrder();
+            await orderTradeContract.connect(commissioner).confirmOrder();
+            await orderTradeContract.enforceDeadlines();
+            expect(await orderTradeContract.getNegotiationStatus())
+                .to
+                .equal(3);
+        });
+
+        it('should not change escrow status when enforcing deadlines on an order with unexpired deadlines', async () => {
+            await _createOrderTrade(Date.now() + 1000000);
+            await orderTradeContract.connect(supplier).confirmOrder();
+            await orderTradeContract.connect(commissioner).confirmOrder();
+            await orderTradeContract.enforceDeadlines();
+            expect(await orderTradeContract.getNegotiationStatus())
+                .to
+                .equal(2);
+        });
+
+        it('should not change escrow status when enforcing deadlines on non-confirmed escrow', async () => {
+            await orderTradeContract.enforceDeadlines();
+            expect(await orderTradeContract.getNegotiationStatus())
+                .to
+                .equal(0);
+        });
+    });
+
     describe('Negotiation status', () => {
         it('should get status INITIALIZED when no one has confirmed', async () => {
             expect(await orderTradeContract.getNegotiationStatus())
@@ -367,6 +412,19 @@ describe('OrderTrade.sol', () => {
             expect(await orderTradeContract.getNegotiationStatus())
                 .to
                 .equal(2);
+        });
+
+        it('should get status EXPIRED when a deadline has passed', async () => {
+            await orderTradeContract.connect(supplier)
+                .updatePaymentDeadline(1);
+            await orderTradeContract.connect(commissioner)
+                .confirmOrder();
+            await orderTradeContract.connect(commissioner)
+                .enforceDeadlines();
+
+            expect(await orderTradeContract.getNegotiationStatus())
+                .to
+                .equal(3);
         });
     });
 });

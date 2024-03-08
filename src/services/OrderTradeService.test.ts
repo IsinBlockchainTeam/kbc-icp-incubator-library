@@ -23,6 +23,8 @@ describe('OrderTradeService', () => {
         updateArbiter: jest.fn(),
         updateShippingDeadline: jest.fn(),
         updateDeliveryDeadline: jest.fn(),
+        haveDeadlinesExpired: jest.fn(),
+        enforceDeadlines: jest.fn(),
         confirmOrder: jest.fn(),
         getEmittedEvents: jest.fn(),
     });
@@ -107,6 +109,18 @@ describe('OrderTradeService', () => {
             serviceFunction: () => orderTradeService.updateDeliveryDeadline(1),
             expectedMockedFunction: mockedOrderTradeDriver.updateDeliveryDeadline,
             expectedMockedFunctionArgs: [1],
+        },
+        {
+            serviceFunctionName: 'haveDeadlinesExpired',
+            serviceFunction: () => orderTradeService.haveDeadlinesExpired(),
+            expectedMockedFunction: mockedOrderTradeDriver.haveDeadlinesExpired,
+            expectedMockedFunctionArgs: [],
+        },
+        {
+            serviceFunctionName: 'enforceDeadlines',
+            serviceFunction: () => orderTradeService.enforceDeadlines(),
+            expectedMockedFunction: mockedOrderTradeDriver.enforceDeadlines,
+            expectedMockedFunctionArgs: [],
         },
         {
             serviceFunctionName: 'confirmOrder',

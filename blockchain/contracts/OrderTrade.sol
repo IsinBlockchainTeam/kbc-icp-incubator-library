@@ -8,12 +8,13 @@ import "hardhat/console.sol";
 contract OrderTrade is Trade {
     using Counters for Counters.Counter;
 
-    enum NegotiationStatus {INITIALIZED, PENDING, COMPLETED}
+    enum NegotiationStatus {INITIALIZED, PENDING, COMPLETED, EXPIRED}
 
     event OrderLineAdded(uint256 orderLineId);
     event OrderLineUpdated(uint256 orderLineId);
     event OrderSignatureAffixed(address signer);
     event OrderConfirmed();
+    event OrderExpired();
 
     modifier onlyOrdersInNegotiation() {
         require(getNegotiationStatus() != NegotiationStatus.COMPLETED, "OrderTrade: The order has already been confirmed, therefore it cannot be changed");
@@ -36,6 +37,7 @@ contract OrderTrade is Trade {
 
     bool private _hasSupplierSigned;
     bool private _hasCommissionerSigned;
+    bool private _hasOrderExpired;
 
     uint256 private _paymentDeadline;
     uint256 private _documentDeliveryDeadline;
@@ -62,6 +64,7 @@ contract OrderTrade is Trade {
 
         _hasSupplierSigned = false;
         _hasCommissionerSigned = false;
+        _hasOrderExpired = false;
     }
 
     function getTrade() public view returns (uint256, address, address, address, string memory, uint256[] memory, bool, bool, uint256, uint256, address, uint256, uint256, Escrow) {
@@ -105,7 +108,9 @@ contract OrderTrade is Trade {
     }
 
     function getNegotiationStatus() public view returns (NegotiationStatus) {
-        if (!_hasCommissionerSigned && !_hasSupplierSigned) {
+        if(_hasOrderExpired) {
+            return NegotiationStatus.EXPIRED;
+        } else if (!_hasCommissionerSigned && !_hasSupplierSigned) {
             return NegotiationStatus.INITIALIZED;
         } else if (_hasCommissionerSigned && _hasSupplierSigned) {
             return NegotiationStatus.COMPLETED;
@@ -137,6 +142,17 @@ contract OrderTrade is Trade {
     function updateDeliveryDeadline(uint256 deliveryDeadline) public onlyAdminOrContractPart onlyOrdersInNegotiation {
         _deliveryDeadline = deliveryDeadline;
         _updateSignatures(_msgSender());
+    }
+
+    function haveDeadlinesExpired() public view returns (bool) {
+        return block.timestamp > _paymentDeadline || block.timestamp > _documentDeliveryDeadline || block.timestamp > _shippingDeadline || block.timestamp > _deliveryDeadline;
+    }
+
+    function enforceDeadlines() public {
+        if(getNegotiationStatus() == NegotiationStatus.COMPLETED && haveDeadlinesExpired()) {
+            _hasOrderExpired = true;
+            emit OrderExpired();
+        }
     }
 
     function confirmOrder() public onlyContractPart onlyOrdersInNegotiation {
