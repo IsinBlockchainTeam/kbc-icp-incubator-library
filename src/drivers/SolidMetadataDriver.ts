@@ -13,8 +13,16 @@ export class SolidMetadataDriver implements IStorageMetadataDriver {
     }
 
     async create(type: MetadataType, metadataStorage: MetadataStorage): Promise<string> {
+        console.log('spec: ', { relativeUrlPath: SolidUtilsService.defineRelativeResourcePath(type, metadataStorage.bcResourceId), type: SolidResourceType.METADATA });
+        console.log('metadata: ', { metadata: metadataStorage.metadata });
+        console.log('sessionCredential: ', this._sessionCredential);
+        if (!this._sessionCredential?.podName) throw new Error('Invalid or missing session credential, podName is required.');
         return this._solidDriver.create(
-            { relativeUrlPath: SolidUtilsService.defineRelativeResourcePath(type, metadataStorage.resourceId), type: SolidResourceType.METADATA },
+            {
+                podName: this._sessionCredential.podName,
+                relativeUrlPath: `${SolidUtilsService.defineRelativeResourcePath(type, metadataStorage.bcResourceId)}${metadataStorage.resourceName || ''}`,
+                type: SolidResourceType.METADATA,
+            },
             { metadata: metadataStorage.metadata },
             this._sessionCredential,
         );

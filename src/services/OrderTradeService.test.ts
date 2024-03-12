@@ -35,11 +35,9 @@ describe('OrderTradeService', () => {
         create: jest.fn(),
     });
 
-    const orderTradeService = new OrderTradeService(
-        mockedOrderTradeDriver,
-        mockedStorageMetadataDriver,
-        mockedStorageDocumentDriver,
-    );
+    const orderTradeService = new OrderTradeService({
+        tradeDriver: mockedOrderTradeDriver,
+    });
 
     afterAll(() => {
         jest.restoreAllMocks();

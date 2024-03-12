@@ -25,11 +25,9 @@ describe('BasicTradeService', () => {
         create: jest.fn(),
     });
 
-    const basicTradeService = new BasicTradeService(
-        mockedBasicTradeDriver,
-        mockedStorageMetadataDriver,
-        mockedStorageDocumentDriver,
-    );
+    const basicTradeService = new BasicTradeService({
+        tradeDriver: mockedBasicTradeDriver,
+    });
 
     afterAll(() => {
         jest.restoreAllMocks();
