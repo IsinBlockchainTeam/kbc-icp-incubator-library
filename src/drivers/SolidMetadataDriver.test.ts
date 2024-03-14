@@ -1,8 +1,8 @@
 import { SolidDriver, SolidResourceType, SolidSessionCredential } from '@blockchain-lib/common';
 import { createMock } from 'ts-auto-mock';
-import { MetadataStorage, MetadataType } from './IStorageMetadataDriver';
+import { OperationType } from './IStorageMetadataDriver';
 import { SolidUtilsService } from '../services/SolidUtilsService';
-import { SolidMetadataDriver } from './SolidMetadataDriver';
+import { SolidMetadataDriver, SolidMetadataSpec } from './SolidMetadataDriver';
 
 jest.mock('@blockchain-lib/common', () => ({
     ...jest.requireActual('@blockchain-lib/common'),
@@ -28,12 +28,12 @@ describe('SolidDocumentDriver', () => {
     });
 
     it('create', async () => {
-        const metadataStorage: MetadataStorage = {
-            metadata: { metadata: 'metadata content' },
+        const metadata = { metadata: 'metadata content' };
+        const metadataStorage: SolidMetadataSpec = {
             resourceName: 'resourceName',
             bcResourceId: 'bcResourceId',
         };
-        await solidMetadataDriver.create(MetadataType.TRANSACTION, metadataStorage);
+        await solidMetadataDriver.create(OperationType.TRANSACTION, metadata, metadataStorage);
 
         expect(solidDriverMock.create).toHaveBeenCalled();
         expect(solidDriverMock.create).toHaveBeenNthCalledWith(1, {
@@ -41,7 +41,7 @@ describe('SolidDocumentDriver', () => {
             relativeUrlPath: `${relativeUrlPath}${metadataStorage.resourceName}`,
             type: SolidResourceType.METADATA,
         }, {
-            metadata: metadataStorage.metadata,
+            metadata,
         }, sessionCredential);
     });
 });

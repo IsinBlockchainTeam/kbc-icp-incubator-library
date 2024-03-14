@@ -22,11 +22,11 @@ export { AssetOperationService } from './services/AssetOperationService';
 export { Trade } from './entities/Trade';
 export { Line } from './entities/Trade';
 export { LineRequest } from './entities/Trade';
-export { OrderLineRequest } from './entities/OrderTrade';
+export { OrderLineRequest } from './entities/OrderTradeInfo';
 export { BasicTrade } from './entities/BasicTrade';
-export { OrderTrade } from './entities/OrderTrade';
-export { OrderLine } from './entities/OrderTrade';
-export { OrderLinePrice } from './entities/OrderTrade';
+export { OrderTradeInfo } from './entities/OrderTradeInfo';
+export { OrderLine } from './entities/OrderTradeInfo';
+export { OrderLinePrice } from './entities/OrderTradeInfo';
 export { TradeStatus } from './types/TradeStatus';
 export { TradeType } from './types/TradeType';
 export { TradeManagerDriver } from './drivers/TradeManagerDriver';
@@ -56,7 +56,7 @@ export { EscrowService } from './services/EscrowService';
 
 export { IStorageMetadataDriver } from './drivers/IStorageMetadataDriver';
 export { IStorageDocumentDriver } from './drivers/IStorageDocumentDriver';
-export { SolidMetadataDriver } from './drivers/SolidMetadataDriver';
-export { SolidDocumentDriver } from './drivers/SolidDocumentDriver';
+export { SolidMetadataDriver, SolidMetadataSpec } from './drivers/SolidMetadataDriver';
+export { SolidDocumentDriver, SolidDocumentSpec } from './drivers/SolidDocumentDriver';
 
-// export { GraphService, GraphData } from './services/GraphService';
+export { GraphService, GraphData } from './services/GraphService';

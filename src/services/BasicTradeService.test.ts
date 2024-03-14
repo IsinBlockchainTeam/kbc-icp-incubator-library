@@ -6,6 +6,8 @@ import { Material } from '../entities/Material';
 import { ProductCategory } from '../entities/ProductCategory';
 import { IStorageMetadataDriver } from '../drivers/IStorageMetadataDriver';
 import { IStorageDocumentDriver } from '../drivers/IStorageDocumentDriver';
+import { SolidMetadataSpec } from '../drivers/SolidMetadataDriver';
+import { SolidDocumentSpec } from '../drivers/SolidDocumentDriver';
 
 describe('BasicTradeService', () => {
     const mockedBasicTradeDriver: BasicTradeDriver = createMock<BasicTradeDriver>({
@@ -18,10 +20,10 @@ describe('BasicTradeService', () => {
         setName: jest.fn(),
     });
 
-    const mockedStorageMetadataDriver = createMock<IStorageMetadataDriver>({
+    const mockedStorageMetadataDriver = createMock<IStorageMetadataDriver<SolidMetadataSpec>>({
         create: jest.fn(),
     });
-    const mockedStorageDocumentDriver = createMock<IStorageDocumentDriver>({
+    const mockedStorageDocumentDriver = createMock<IStorageDocumentDriver<SolidDocumentSpec>>({
         create: jest.fn(),
     });
 

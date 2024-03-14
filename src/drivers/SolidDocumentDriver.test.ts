@@ -1,8 +1,7 @@
 import { SolidDriver, SolidResourceType, SolidSessionCredential } from '@blockchain-lib/common';
 import { createMock } from 'ts-auto-mock';
-import { SolidDocumentDriver } from './SolidDocumentDriver';
-import { DocumentStorage } from './IStorageDocumentDriver';
-import { MetadataType } from './IStorageMetadataDriver';
+import { SolidDocumentDriver, SolidDocumentSpec } from './SolidDocumentDriver';
+import { OperationType } from './IStorageMetadataDriver';
 import { SolidUtilsService } from '../services/SolidUtilsService';
 
 jest.mock('@blockchain-lib/common', () => ({
@@ -29,19 +28,19 @@ describe('SolidDocumentDriver', () => {
     });
 
     it('create', async () => {
-        const documentStorage: DocumentStorage = {
+        const documentBuffer = Buffer.from('file content');
+        const documentSpec: SolidDocumentSpec = {
             filename: 'file.pdf',
-            fileBuffer: Buffer.from('file content'),
         };
-        await solidDocumentDriver.create(MetadataType.TRANSACTION, documentStorage);
+        await solidDocumentDriver.create(OperationType.TRANSACTION, documentBuffer, documentSpec);
 
         expect(solidDriverMock.create).toHaveBeenCalled();
         expect(solidDriverMock.create).toHaveBeenNthCalledWith(1, {
             podName: sessionCredential.podName,
-            relativeUrlPath: `${relativeUrlPath}${documentStorage.filename}`,
+            relativeUrlPath: `${relativeUrlPath}${documentSpec.filename}`,
             type: SolidResourceType.FILE,
         }, {
-            value: documentStorage.fileBuffer,
+            value: documentBuffer,
         }, sessionCredential);
     });
 });

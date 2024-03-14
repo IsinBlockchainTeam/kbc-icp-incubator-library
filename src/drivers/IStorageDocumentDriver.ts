@@ -1,10 +1,7 @@
-import { MetadataType } from './IStorageMetadataDriver';
+import { OperationType } from './IStorageMetadataDriver';
 
-export type DocumentStorage = {
-    filename: string,
-    fileBuffer: Buffer,
-    bcResourceId?: string
-}
-export interface IStorageDocumentDriver {
-    create(type: MetadataType, documentStorage: DocumentStorage): Promise<string>;
+export type DocumentSpec = {}
+export interface IStorageDocumentDriver<S extends DocumentSpec> {
+    create(type: OperationType, value: Buffer, documentSpec: S): Promise<string>;
+    read(type: OperationType, documentSpec: S): Promise<Buffer | null>;
 }

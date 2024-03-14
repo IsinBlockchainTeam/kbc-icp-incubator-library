@@ -2,8 +2,10 @@ import { createMock } from 'ts-auto-mock';
 import { TradeDriver } from '../drivers/TradeDriver';
 import { TradeService } from './TradeService';
 import { DocumentType } from '../entities/DocumentInfo';
-import { IStorageMetadataDriver, MetadataStorage, MetadataType } from '../drivers/IStorageMetadataDriver';
-import { DocumentStorage, IStorageDocumentDriver } from '../drivers/IStorageDocumentDriver';
+import { IStorageMetadataDriver, OperationType } from '../drivers/IStorageMetadataDriver';
+import { IStorageDocumentDriver } from '../drivers/IStorageDocumentDriver';
+import { SolidDocumentSpec } from '../drivers/SolidDocumentDriver';
+import { SolidMetadataSpec } from '../drivers/SolidMetadataDriver';
 
 describe('TradeService', () => {
     const mockedTradeDriver: TradeDriver = createMock<TradeDriver>({
@@ -16,25 +18,25 @@ describe('TradeService', () => {
         removeAdmin: jest.fn(),
     });
     const documentExternalUrl = 'doc_externalUrl';
-    const mockedStorageMetadataDriver = createMock<IStorageMetadataDriver>({
+    const mockedStorageMetadataDriver = createMock<IStorageMetadataDriver<SolidMetadataSpec>>({
         create: jest.fn(),
     });
-    const mockedStorageDocumentDriver = createMock<IStorageDocumentDriver>({
+    const mockedStorageDocumentDriver = createMock<IStorageDocumentDriver<SolidDocumentSpec>>({
         create: jest.fn().mockResolvedValue(documentExternalUrl),
     });
 
-    const documentStorage: DocumentStorage = {
+    const documentBuffer = Buffer.from('file content');
+    const documentSpec: SolidDocumentSpec = {
         filename: 'filename',
-        fileBuffer: Buffer.from('file content'),
         bcResourceId: 'bcResourceId',
     };
-    const metadataStorage: MetadataStorage = {
-        metadata: { metadata: 'metadata content' },
+    const metadata = { metadata: 'metadata content' };
+    const metadataSpec: SolidMetadataSpec = {
         resourceName: 'resourceName',
         bcResourceId: 'bcResourceId',
     };
 
-    let tradeService: TradeService;
+    let tradeService: TradeService<SolidDocumentSpec, SolidMetadataSpec>;
 
     afterAll(() => {
         jest.restoreAllMocks();
@@ -68,7 +70,7 @@ describe('TradeService', () => {
         {
             storageDrivers: { metadata: true, document: true },
             serviceFunctionName: 'addDocument with metadata and storage drivers',
-            serviceFunction: () => tradeService.addDocument(1, 'doc name', DocumentType.DELIVERY_NOTE, documentStorage, metadataStorage),
+            serviceFunction: () => tradeService.addDocument(1, 'doc name', DocumentType.DELIVERY_NOTE, { spec: documentSpec, fileBuffer: documentBuffer }, { spec: metadataSpec, value: metadata }),
             expectedMockedFunction: mockedTradeDriver.addDocument,
             expectedMockedFunctionArgs: [1, 'doc name', DocumentType.DELIVERY_NOTE, documentExternalUrl],
         },
@@ -80,17 +82,17 @@ describe('TradeService', () => {
         },
         {
             storageDrivers: { metadata: true },
-            serviceFunctionName: 'create (metadata driver)',
-            serviceFunction: () => tradeService.addDocument(1, 'doc name', DocumentType.DELIVERY_NOTE, undefined, metadataStorage),
+            serviceFunctionName: 'add document - create (metadata driver)',
+            serviceFunction: () => tradeService.addDocument(1, 'doc name', DocumentType.DELIVERY_NOTE, undefined, { spec: metadataSpec, value: metadata }),
             expectedMockedFunction: mockedStorageMetadataDriver.create,
-            expectedMockedFunctionArgs: [MetadataType.TRANSACTION_DOCUMENT, metadataStorage],
+            expectedMockedFunctionArgs: [OperationType.TRANSACTION_DOCUMENT, metadata, metadataSpec],
         },
         {
             storageDrivers: { document: true },
-            serviceFunctionName: 'create (document driver)',
-            serviceFunction: () => tradeService.addDocument(1, 'doc name', DocumentType.DELIVERY_NOTE, documentStorage),
+            serviceFunctionName: 'add document - create (document driver)',
+            serviceFunction: () => tradeService.addDocument(1, 'doc name', DocumentType.DELIVERY_NOTE, { spec: documentSpec, fileBuffer: documentBuffer }),
             expectedMockedFunction: mockedStorageDocumentDriver.create,
-            expectedMockedFunctionArgs: [MetadataType.TRANSACTION_DOCUMENT, documentStorage],
+            expectedMockedFunctionArgs: [OperationType.TRANSACTION_DOCUMENT, documentBuffer, documentSpec],
         },
         {
             serviceFunctionName: 'addDocument without metadata and storage drivers',

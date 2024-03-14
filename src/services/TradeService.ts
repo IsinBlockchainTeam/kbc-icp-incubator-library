@@ -2,26 +2,22 @@ import { TradeDriver } from '../drivers/TradeDriver';
 import { TradeStatus } from '../types/TradeStatus';
 import { DocumentType } from '../entities/DocumentInfo';
 import { TradeType } from '../types/TradeType';
-import { IStorageMetadataDriver, MetadataStorage, MetadataType } from '../drivers/IStorageMetadataDriver';
-import { DocumentStorage, IStorageDocumentDriver } from '../drivers/IStorageDocumentDriver';
+import { IStorageMetadataDriver, MetadataSpec, OperationType } from '../drivers/IStorageMetadataDriver';
+import { DocumentSpec, IStorageDocumentDriver } from '../drivers/IStorageDocumentDriver';
 
-export class TradeService {
+export class TradeService<MS extends MetadataSpec, DS extends DocumentSpec> {
     protected _tradeDriver: TradeDriver;
 
-    private readonly _storageMetadataDriver?: IStorageMetadataDriver;
+    protected readonly _storageMetadataDriver?: IStorageMetadataDriver<MS>;
 
-    private readonly _storageDocumentDriver?: IStorageDocumentDriver;
+    protected readonly _storageDocumentDriver?: IStorageDocumentDriver<DS>;
 
-    constructor(args: {tradeDriver: TradeDriver, storageMetadataDriver?: IStorageMetadataDriver, storageDocumentDriver?: IStorageDocumentDriver}) {
+    constructor(args: {tradeDriver: TradeDriver, storageMetadataDriver?: IStorageMetadataDriver<MS>, storageDocumentDriver?: IStorageDocumentDriver<DS>}) {
         this._tradeDriver = args.tradeDriver;
         this._storageMetadataDriver = args.storageMetadataDriver;
+        console.log('this._storageMetadataDriver: ', this._storageMetadataDriver);
         this._storageDocumentDriver = args.storageDocumentDriver;
     }
-    // constructor(supplyChainDriver: TradeDriver, storageMetadataDriver: IStorageMetadataDriver, storageDocumentDriver: IStorageDocumentDriver) {
-    //     this._tradeDriver = supplyChainDriver;
-    //     this._storageMetadataDriver = storageMetadataDriver;
-    //     this._storageDocumentDriver = storageDocumentDriver;
-    // }
 
     async getLineCounter(): Promise<number> {
         return this._tradeDriver.getLineCounter();
@@ -39,15 +35,15 @@ export class TradeService {
         return this._tradeDriver.getTradeStatus();
     }
 
-    async addDocument(lineId: number, name: string, documentType: DocumentType, documentStorage?: DocumentStorage, metadataStorage?: MetadataStorage): Promise<void> {
+    async addDocument(lineId: number, name: string, documentType: DocumentType, documentStorage?: {spec: DS, fileBuffer: Buffer}, metadataStorage?: {spec: MS, value: any}): Promise<void> {
         let externalUrl = '';
         if (documentStorage) {
             if (!this._storageDocumentDriver) throw new Error('Storage document driver is not available');
-            externalUrl = await this._storageDocumentDriver.create(MetadataType.TRANSACTION_DOCUMENT, documentStorage);
+            externalUrl = await this._storageDocumentDriver.create(OperationType.TRANSACTION_DOCUMENT, documentStorage?.fileBuffer, documentStorage?.spec);
         }
         if (metadataStorage) {
             if (!this._storageMetadataDriver) throw new Error('Storage metadata driver is not available');
-            await this._storageMetadataDriver.create(MetadataType.TRANSACTION_DOCUMENT, metadataStorage);
+            await this._storageMetadataDriver.create(OperationType.TRANSACTION_DOCUMENT, metadataStorage.value, metadataStorage.spec);
         }
         console.log('externalUrl: ', externalUrl);
 

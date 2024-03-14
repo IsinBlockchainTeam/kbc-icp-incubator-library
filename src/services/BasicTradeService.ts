@@ -3,8 +3,10 @@ import { BasicTradeDriver } from '../drivers/BasicTradeDriver';
 import { IConcreteTradeService } from './IConcreteTradeService';
 import { BasicTrade } from '../entities/BasicTrade';
 import { Line, LineRequest } from '../entities/Trade';
+import { DocumentSpec } from '../drivers/IStorageDocumentDriver';
+import { MetadataSpec } from '../drivers/IStorageMetadataDriver';
 
-export class BasicTradeService extends TradeService implements IConcreteTradeService {
+export class BasicTradeService<DS extends DocumentSpec, MS extends MetadataSpec> extends TradeService<DS, MS> implements IConcreteTradeService {
     async getTrade(blockNumber?: number): Promise<BasicTrade> {
         return this._tradeDriverImplementation.getTrade(blockNumber);
     }

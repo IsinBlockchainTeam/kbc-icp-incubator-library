@@ -1,7 +1,7 @@
-import {BigNumber, Signer, Wallet} from 'ethers';
-import {createMock} from 'ts-auto-mock';
-import {OrderTradeDriver} from './OrderTradeDriver';
-import {Trade as TradeContract} from '../smart-contracts/contracts/OrderTrade';
+import { BigNumber, Signer, Wallet } from 'ethers';
+import { createMock } from 'ts-auto-mock';
+import { OrderTradeDriver } from './OrderTradeDriver';
+import { Trade as TradeContract } from '../smart-contracts/contracts/OrderTrade';
 import {
     OrderTrade as OrderTradeContract,
     // eslint-disable-next-line camelcase
@@ -12,9 +12,9 @@ import {
     MaterialManager__factory,
     ProductCategoryManager__factory,
 } from '../smart-contracts';
-import {NegotiationStatus} from '../types/NegotiationStatus';
-import {EntityBuilder} from '../utils/EntityBuilder';
-import {OrderLine, OrderLineRequest} from '../entities/OrderTrade';
+import { NegotiationStatus } from '../types/NegotiationStatus';
+import { EntityBuilder } from '../utils/EntityBuilder';
+import { OrderLine, OrderLineRequest } from '../entities/OrderTradeInfo';
 
 describe('OrderTradeDriver', () => {
     let orderTradeDriver: OrderTradeDriver;
@@ -108,7 +108,7 @@ describe('OrderTradeDriver', () => {
     mockedGetLine.mockResolvedValue([line, orderLine]);
     mockedGetLineExists.mockResolvedValue(true);
     mockedGetNegotiationStatus.mockResolvedValue(NegotiationStatus.INITIALIZED);
-    mockedQueryFilter.mockResolvedValue([{event: 'eventName'}]);
+    mockedQueryFilter.mockResolvedValue([{ event: 'eventName' }]);
 
     const mockedContract = createMock<OrderTradeContract>({
         getTrade: mockedGetTrade,
@@ -125,7 +125,7 @@ describe('OrderTradeDriver', () => {
         updateDeliveryDeadline: mockedWriteFunction,
         confirmOrder: mockedWriteFunction,
 
-        interface: {decodeEventLog: mockedDecodeEventLog},
+        interface: { decodeEventLog: mockedDecodeEventLog },
         queryFilter: mockedQueryFilter,
         filters: {
             TradeLineAdded: mockedTradeRegisteredEventFilter,
@@ -140,10 +140,10 @@ describe('OrderTradeDriver', () => {
     mockedGetMaterial.mockReturnValue(materialStruct);
     mockedGetProductCategory.mockReturnValue(productCategoryStruct);
     const mockedMaterialContract = createMock<MaterialManager>({
-        getMaterial: mockedGetMaterial
+        getMaterial: mockedGetMaterial,
     });
     const mockedProductCategoryContract = createMock<ProductCategoryManager>({
-        getProductCategory: mockedGetProductCategory
+        getProductCategory: mockedGetProductCategory,
     });
 
     beforeAll(() => {
@@ -210,7 +210,7 @@ describe('OrderTradeDriver', () => {
         expect(mockedContract.getTrade)
             .toHaveBeenCalledTimes(1);
         expect(mockedContract.getTrade)
-            .toHaveBeenNthCalledWith(1, {blockTag: undefined});
+            .toHaveBeenNthCalledWith(1, { blockTag: undefined });
         expect(mockedGetTrade)
             .toHaveBeenCalledTimes(1);
         expect(mockedContract.getLineCounter)
@@ -230,7 +230,7 @@ describe('OrderTradeDriver', () => {
         expect(mockedContract.getLine)
             .toHaveBeenCalledTimes(1);
         expect(mockedContract.getLine)
-            .toHaveBeenNthCalledWith(1, line.id.toNumber(), {blockTag: undefined});
+            .toHaveBeenNthCalledWith(1, line.id.toNumber(), { blockTag: undefined });
         expect(mockedGetLine)
             .toHaveBeenCalledTimes(1);
     });
@@ -256,7 +256,7 @@ describe('OrderTradeDriver', () => {
         expect(mockedContract.getLine)
             .toHaveBeenCalledTimes(1);
         expect(mockedContract.getLine)
-            .toHaveBeenNthCalledWith(1, line.id, {blockTag: undefined});
+            .toHaveBeenNthCalledWith(1, line.id, { blockTag: undefined });
         expect(mockedGetLine)
             .toHaveBeenCalledTimes(1);
     });
@@ -286,7 +286,7 @@ describe('OrderTradeDriver', () => {
         expect(mockedContract.updateLine)
             .toHaveBeenNthCalledWith(1, updatedLine.id, updatedLine.productCategory.id, updatedLine.quantity, newPrice);
         expect(mockedContract.assignMaterial)
-            .toHaveBeenCalledTimes(1)
+            .toHaveBeenCalledTimes(1);
         expect(mockedContract.assignMaterial)
             .toHaveBeenNthCalledWith(1, updatedLine.id, updatedLine.material!.id);
         expect(mockedWait)
@@ -294,7 +294,7 @@ describe('OrderTradeDriver', () => {
         expect(mockedContract.getLine)
             .toHaveBeenCalledTimes(1);
         expect(mockedContract.getLine)
-            .toHaveBeenNthCalledWith(1, updatedLine.id, {blockTag: undefined});
+            .toHaveBeenNthCalledWith(1, updatedLine.id, { blockTag: undefined });
         expect(mockedGetLine)
             .toHaveBeenCalledTimes(1);
     });

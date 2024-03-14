@@ -1,8 +1,16 @@
 import { SolidDriver, SolidResourceType, SolidSessionCredential } from '@blockchain-lib/common';
-import { IStorageMetadataDriver, MetadataStorage, MetadataType } from './IStorageMetadataDriver';
+import { IStorageMetadataDriver, OperationType } from './IStorageMetadataDriver';
 import { SolidUtilsService } from '../services/SolidUtilsService';
 
-export class SolidMetadataDriver implements IStorageMetadataDriver {
+export type SolidMetadataSpec = {
+    // --- use these when there is no entire url resource because the resource has to be created first
+    resourceName?: string,
+    bcResourceId?: string,
+    // ---
+    entireResourceUrl?: string,
+}
+
+export class SolidMetadataDriver implements IStorageMetadataDriver<SolidMetadataSpec> {
     private readonly _solidDriver: SolidDriver;
 
     private readonly _sessionCredential?: SolidSessionCredential;
@@ -12,18 +20,28 @@ export class SolidMetadataDriver implements IStorageMetadataDriver {
         this._sessionCredential = sessionCredential;
     }
 
-    async create(type: MetadataType, metadataStorage: MetadataStorage): Promise<string> {
-        console.log('spec: ', { relativeUrlPath: SolidUtilsService.defineRelativeResourcePath(type, metadataStorage.bcResourceId), type: SolidResourceType.METADATA });
-        console.log('metadata: ', { metadata: metadataStorage.metadata });
-        console.log('sessionCredential: ', this._sessionCredential);
+    async create(type: OperationType, value: any, metadataSpec?: SolidMetadataSpec): Promise<string> {
         if (!this._sessionCredential?.podName) throw new Error('Invalid or missing session credential, podName is required.');
         return this._solidDriver.create(
             {
                 podName: this._sessionCredential.podName,
-                relativeUrlPath: `${SolidUtilsService.defineRelativeResourcePath(type, metadataStorage.bcResourceId)}${metadataStorage.resourceName || ''}`,
+                relativeUrlPath: `${SolidUtilsService.defineRelativeResourcePath(type, metadataSpec?.bcResourceId)}${metadataSpec?.resourceName || ''}`,
                 type: SolidResourceType.METADATA,
             },
-            { metadata: metadataStorage.metadata },
+            { metadata: value },
+            this._sessionCredential,
+        );
+    }
+
+    async read(type: OperationType, metadataSpec: SolidMetadataSpec): Promise<any> {
+        if (!this._sessionCredential?.podName) throw new Error('Invalid or missing session credential, podName is required.');
+
+        return this._solidDriver.read(
+            {
+                podName: this._sessionCredential.podName,
+                relativeUrlPath: metadataSpec.entireResourceUrl || `${SolidUtilsService.defineRelativeResourcePath(type, metadataSpec.bcResourceId)}${metadataSpec.resourceName || ''}`,
+                type: SolidResourceType.METADATA,
+            },
             this._sessionCredential,
         );
     }

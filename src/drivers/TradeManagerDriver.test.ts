@@ -17,8 +17,8 @@ import { TradeType } from '../types/TradeType';
 
 import * as utilsModule from '../utils/utils';
 import { BasicTrade } from '../entities/BasicTrade';
-import { OrderTrade } from '../entities/OrderTrade';
-import {Trade} from "../entities/Trade";
+import { OrderTradeInfo } from '../entities/OrderTradeInfo';
+import { Trade } from '../entities/Trade';
 
 describe('TradeManagerDriver', () => {
     let tradeManagerDriver: TradeManagerDriver;
@@ -168,10 +168,10 @@ describe('TradeManagerDriver', () => {
     });
 
     it('should correctly register an order trade', async () => {
-        const trade: OrderTrade = await tradeManagerDriver.registerOrderTrade(supplier, customer, commissioner, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);
+        const trade: OrderTradeInfo = await tradeManagerDriver.registerOrderTrade(supplier, customer, commissioner, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);
 
         expect(trade)
-            .toEqual(new OrderTrade(1, supplier, customer, commissioner, externalUrl, [], false, false, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, tokenAddress));
+            .toEqual(new OrderTradeInfo(1, supplier, customer, commissioner, externalUrl, [], false, false, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, tokenAddress));
 
         expect(mockedContract.registerOrderTrade)
             .toHaveBeenCalledTimes(1);
@@ -282,7 +282,7 @@ describe('TradeManagerDriver', () => {
             .toHaveBeenCalledTimes(1);
         expect(mockedContract.getTradeType)
             .toHaveBeenNthCalledWith(1, 1);
-        expect(mockedGetTradeType)
+        expect(mockedGetTradeType);
     });
 
     it('should correctly get trade ids of supplier', async () => {

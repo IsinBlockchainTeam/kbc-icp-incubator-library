@@ -1,11 +1,11 @@
 import { BigNumber } from 'ethers';
-import {MaterialManager, OrderTrade as OrderTradeContract, ProductCategoryManager} from '../smart-contracts';
+import { MaterialManager, OrderTrade as OrderTradeContract, ProductCategoryManager } from '../smart-contracts';
 import {
     OrderLine,
     OrderLinePrice,
     OrderLineRequest,
-    OrderTrade,
-} from './OrderTrade';
+    OrderTradeInfo,
+} from './OrderTradeInfo';
 import { EntityBuilder } from '../utils/EntityBuilder';
 import {
     Trade as TradeContract,
@@ -104,10 +104,10 @@ describe('OrderLineRequest', () => {
 });
 
 describe('OrderTrade', () => {
-    let orderTrade: OrderTrade;
+    let orderTrade: OrderTradeInfo;
 
     beforeAll(() => {
-        orderTrade = new OrderTrade(0, 'supplier', 'customer', 'commissioner', 'https://test.com',
+        orderTrade = new OrderTradeInfo(0, 'supplier', 'customer', 'commissioner', 'https://test.com',
             [], false, false, 100, 200, 'arbitrer', 300, 400, 'escrow');
     });
 

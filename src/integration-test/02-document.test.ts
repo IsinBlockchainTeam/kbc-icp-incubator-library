@@ -1,7 +1,6 @@
 import * as dotenv from 'dotenv';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { ethers, Signer, Wallet } from 'ethers';
-import { IPFSService, PinataIPFSDriver } from '@blockchain-lib/common';
 import DocumentService from '../services/DocumentService';
 import { DocumentDriver } from '../drivers/DocumentDriver';
 import {
@@ -21,24 +20,23 @@ import { TradeManagerService } from '../services/TradeManagerService';
 import { TradeManagerDriver } from '../drivers/TradeManagerDriver';
 import { OrderTradeService } from '../services/OrderTradeService';
 import { OrderTradeDriver } from '../drivers/OrderTradeDriver';
-import { OrderTrade } from '../entities/OrderTrade';
+import { OrderTradeInfo } from '../entities/OrderTradeInfo';
 import { ProductCategoryService } from '../services/ProductCategoryService';
 import { ProductCategoryDriver } from '../drivers/ProductCategoryDriver';
 import { MaterialService } from '../services/MaterialService';
 import { MaterialDriver } from '../drivers/MaterialDriver';
+import { SolidDocumentSpec } from '../drivers/SolidDocumentDriver';
+import { SolidMetadataSpec } from '../drivers/SolidMetadataDriver';
 
 dotenv.config();
 
 describe('Document lifecycle', () => {
-    let documentService: DocumentService;
+    let documentService: DocumentService<SolidMetadataSpec, SolidDocumentSpec>;
     let documentDriver: DocumentDriver;
     let provider: JsonRpcProvider;
     let signer: Signer;
-    let tradeManagerService: TradeManagerService;
+    let tradeManagerService: TradeManagerService<SolidMetadataSpec>;
     let tradeManagerDriver: TradeManagerDriver;
-
-    let pinataDriver: PinataIPFSDriver;
-    let pinataService: IPFSService;
 
     const localFilename = 'samplePdf.pdf';
     const externalUrl = 'externalUrl';
@@ -63,9 +61,9 @@ describe('Document lifecycle', () => {
     };
     const transactionType = 'trade';
     let transactionId: number;
-    let firstOrderTradeService: OrderTradeService;
+    let firstOrderTradeService: OrderTradeService<SolidMetadataSpec, SolidDocumentSpec>;
     let transactionId2: number;
-    let secondOrderTradeService: OrderTradeService;
+    let secondOrderTradeService: OrderTradeService<SolidMetadataSpec, SolidDocumentSpec>;
 
     const productCategoryIds: number[] = [];
     const materialIds: number[] = [];
@@ -79,7 +77,7 @@ describe('Document lifecycle', () => {
             DOCUMENT_MANAGER_CONTRACT_ADDRESS,
         );
 
-        documentService = new DocumentService(documentDriver, pinataService);
+        documentService = new DocumentService({ documentDriver });
     };
 
     const _defineOrderSender = (privateKey: string) => {
@@ -93,8 +91,8 @@ describe('Document lifecycle', () => {
         tradeManagerService = new TradeManagerService(tradeManagerDriver);
     };
 
-    const createOrderAndConfirm = async (): Promise<{orderId: number, orderTradeService: OrderTradeService}> => {
-        const order: OrderTrade = await tradeManagerService.registerOrderTrade(SUPPLIER_ADDRESS, OTHER_ADDRESS, CUSTOMER_ADDRESS, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, MY_TOKEN_CONTRACT_ADDRESS);
+    const createOrderAndConfirm = async (): Promise<{orderId: number, orderTradeService: OrderTradeService<SolidMetadataSpec, SolidDocumentSpec>}> => {
+        const order: OrderTradeInfo = await tradeManagerService.registerOrderTrade(SUPPLIER_ADDRESS, OTHER_ADDRESS, CUSTOMER_ADDRESS, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, MY_TOKEN_CONTRACT_ADDRESS);
         _defineOrderSender(CUSTOMER_PRIVATE_KEY);
         const orderTradeService = new OrderTradeService({
             tradeDriver: new OrderTradeDriver(signer, await tradeManagerService.getTrade(order.tradeId), MATERIAL_MANAGER_CONTRACT_ADDRESS, PRODUCT_CATEGORY_CONTRACT_ADDRESS),
@@ -107,8 +105,6 @@ describe('Document lifecycle', () => {
         provider = new ethers.providers.JsonRpcProvider(NETWORK);
         _defineSender(ADMIN_PRIVATE_KEY);
         _defineOrderSender(ADMIN_PRIVATE_KEY);
-        pinataDriver = new PinataIPFSDriver(process.env.PINATA_API_KEY!, process.env.PINATA_SECRET_API_KEY!, process.env.PINATA_GATEWAY_URL!, process.env.PINATA_GATEWAY_TOKEN!);
-        pinataService = new IPFSService(pinataDriver);
         await documentService.addTradeManager(TRADE_MANAGER_CONTRACT_ADDRESS);
     });
 

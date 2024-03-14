@@ -4,7 +4,7 @@ import { TradeType } from '../types/TradeType';
 import { getTradeTypeByIndex } from '../utils/utils';
 import { BasicTradeDriver } from './BasicTradeDriver';
 import { BasicTrade } from '../entities/BasicTrade';
-import { OrderTrade } from '../entities/OrderTrade';
+import { OrderTradeInfo } from '../entities/OrderTradeInfo';
 import { OrderTradeDriver } from './OrderTradeDriver';
 import { Line, Trade } from '../entities/Trade';
 import { IConcreteTradeDriverInterface } from './IConcreteTradeDriver.interface';
@@ -39,7 +39,7 @@ export class TradeManagerDriver {
         return tradeDriver.getTrade();
     }
 
-    async registerOrderTrade(supplier: string, customer: string, commissioner: string, externalUrl: string, paymentDeadline: number, documentDeliveryDeadline: number, arbiter: string, shippingDeadline: number, deliveryDeadline: number, agreedAmount: number, tokenAddress: string): Promise<OrderTrade> {
+    async registerOrderTrade(supplier: string, customer: string, commissioner: string, externalUrl: string, paymentDeadline: number, documentDeliveryDeadline: number, arbiter: string, shippingDeadline: number, deliveryDeadline: number, agreedAmount: number, tokenAddress: string): Promise<OrderTradeInfo> {
         if (!utils.isAddress(supplier) || !utils.isAddress(customer) || !utils.isAddress(commissioner) || !utils.isAddress(tokenAddress)) {
             throw new Error('Not an address');
         }

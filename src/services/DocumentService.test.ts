@@ -1,8 +1,11 @@
 import { createMock } from 'ts-auto-mock';
-import { IPFSService } from '@blockchain-lib/common';
 import DocumentService from './DocumentService';
 import { DocumentDriver } from '../drivers/DocumentDriver';
 import { DocumentInfo, DocumentType } from '../entities/DocumentInfo';
+import { IStorageMetadataDriver, OperationType } from '../drivers/IStorageMetadataDriver';
+import { SolidMetadataSpec } from '../drivers/SolidMetadataDriver';
+import { IStorageDocumentDriver } from '../drivers/IStorageDocumentDriver';
+import { SolidDocumentSpec } from '../drivers/SolidDocumentDriver';
 
 describe('DocumentService', () => {
     const owner = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8';
@@ -24,13 +27,21 @@ describe('DocumentService', () => {
         addTradeManager: jest.fn(),
         removeTradeManager: jest.fn(),
     });
-    const mockedIPFSService = createMock<IPFSService>({
-        retrieveJSON: jest.fn(),
-        retrieveFile: jest.fn(),
-    });
+    const mockedStorageMetadataDriver = createMock<IStorageMetadataDriver<SolidMetadataSpec>>(
+        { create: jest.fn(), read: jest.fn() },
+    );
+    const metadataSpec: SolidMetadataSpec = {
+        entireResourceUrl: 'metadataExternalUrl',
+    };
+    const mockedStorageDocumentDriver = createMock<IStorageDocumentDriver<SolidDocumentSpec>>(
+        { create: jest.fn(), read: jest.fn() },
+    );
+    const documentSpec: SolidDocumentSpec = {
+        entireResourceUrl: 'fileUrl',
+    };
 
     let documentService = new DocumentService(
-        mockedDocumentDriver,
+        { documentDriver: mockedDocumentDriver },
     );
 
     afterAll(() => {
@@ -96,38 +107,50 @@ describe('DocumentService', () => {
         expect(mockedDocumentDriver.getDocumentsInfoByDocumentType).toHaveBeenNthCalledWith(2, transactionId, transactionType, DocumentType.BILL_OF_LADING);
     });
 
-    it('should get complete document with file retrieved from IPFS', async () => {
-        documentService = new DocumentService(
-            mockedDocumentDriver, mockedIPFSService,
-        );
-        mockedIPFSService.retrieveJSON = jest.fn().mockResolvedValue({ filename: 'file1.pdf', fileUrl: 'fileUrl' });
+    it('should get complete document with file retrieved from external storage', async () => {
+        documentService = new DocumentService({
+            documentDriver: mockedDocumentDriver,
+            storageDocumentDriver: mockedStorageDocumentDriver,
+            storageMetadataDriver: mockedStorageMetadataDriver,
+        });
+        mockedStorageMetadataDriver.read = jest.fn().mockResolvedValue({ filename: 'file1.pdf', date: new Date(), transactionLines: [] });
         const documentInfo = new DocumentInfo(0, 1, 'doc name', rawDocument.documentType, 'metadataExternalUrl');
-        await documentService.getCompleteDocument(documentInfo);
+        await documentService.getCompleteDocument(documentInfo, metadataSpec, documentSpec);
 
-        expect(mockedIPFSService.retrieveJSON).toHaveBeenCalledTimes(1);
-        expect(mockedIPFSService.retrieveJSON).toHaveBeenNthCalledWith(1, documentInfo.externalUrl);
+        expect(mockedStorageMetadataDriver.read).toHaveBeenCalledTimes(1);
+        expect(mockedStorageMetadataDriver.read).toHaveBeenNthCalledWith(1, OperationType.TRANSACTION_DOCUMENT, metadataSpec);
 
-        expect(mockedIPFSService.retrieveFile).toHaveBeenCalledTimes(1);
-        expect(mockedIPFSService.retrieveFile).toHaveBeenNthCalledWith(1, 'fileUrl');
+        expect(mockedStorageDocumentDriver.read).toHaveBeenCalledTimes(1);
+        expect(mockedStorageDocumentDriver.read).toHaveBeenNthCalledWith(1, OperationType.TRANSACTION_DOCUMENT, documentSpec);
     });
 
-    it('should get complete document with file retrieved from IPFS - FAIL', async () => {
-        documentService = new DocumentService(
-            mockedDocumentDriver, mockedIPFSService,
-        );
-        mockedIPFSService.retrieveJSON = jest.fn().mockRejectedValueOnce(new Error('error'));
+    it('should get complete document with file retrieved from external storage - FAIL', async () => {
+        documentService = new DocumentService({
+            documentDriver: mockedDocumentDriver,
+            storageDocumentDriver: mockedStorageDocumentDriver,
+            storageMetadataDriver: mockedStorageMetadataDriver,
+        });
+        mockedStorageMetadataDriver.read = jest.fn().mockRejectedValueOnce(new Error('error'));
         const documentInfo = new DocumentInfo(0, 1, 'doc name', rawDocument.documentType, 'metadataExternalUrl');
 
-        const fn = async () => documentService.getCompleteDocument(documentInfo);
-        await expect(fn).rejects.toThrowError(new Error('Error while retrieve document file from IPFS: error'));
+        const fn = async () => documentService.getCompleteDocument(documentInfo, metadataSpec, documentSpec);
+        await expect(fn).rejects.toThrowError(new Error('Error while retrieve document file from external storage: error'));
     });
 
-    it('should throw error if try to get complete document with file retrieved from IPFS, without passing ipfs service to constructor', async () => {
-        documentService = new DocumentService(
-            mockedDocumentDriver,
-        );
-        const documentInfo = new DocumentInfo(0, 1, 'doc name', rawDocument.documentType, 'metadataExternalUrl');
-        const fn = async () => documentService.getCompleteDocument(documentInfo);
-        await expect(fn).rejects.toThrowError(new Error('IPFS Service not available'));
+    it('should throw error if try to get complete document with file retrieved from external storage, without passing storage drivers to constructor', async () => {
+        documentService = new DocumentService({
+            documentDriver: mockedDocumentDriver,
+        });
+        let documentInfo = new DocumentInfo(0, 1, 'doc name', rawDocument.documentType, 'metadataExternalUrl');
+        let fn = async () => documentService.getCompleteDocument(documentInfo, metadataSpec, documentSpec);
+        await expect(fn).rejects.toThrowError(new Error('Storage document driver is not available'));
+
+        documentService = new DocumentService({
+            documentDriver: mockedDocumentDriver,
+            storageDocumentDriver: mockedStorageDocumentDriver,
+        });
+        documentInfo = new DocumentInfo(0, 1, 'doc name', rawDocument.documentType, 'metadataExternalUrl');
+        fn = async () => documentService.getCompleteDocument(documentInfo, metadataSpec, documentSpec);
+        await expect(fn).rejects.toThrowError(new Error('Storage metadata driver is not available'));
     });
 });

@@ -4,16 +4,18 @@ import { OrderTradeService } from './OrderTradeService';
 import {
     OrderLine,
     OrderLinePrice,
-    OrderLineRequest,
-} from '../entities/OrderTrade';
+    OrderLineRequest, OrderTradeInfo,
+} from '../entities/OrderTradeInfo';
 import { Material } from '../entities/Material';
 import { ProductCategory } from '../entities/ProductCategory';
-import { IStorageMetadataDriver } from '../drivers/IStorageMetadataDriver';
+import { IStorageMetadataDriver, OperationType } from '../drivers/IStorageMetadataDriver';
 import { IStorageDocumentDriver } from '../drivers/IStorageDocumentDriver';
+import { SolidMetadataSpec } from '../drivers/SolidMetadataDriver';
+import { SolidDocumentSpec } from '../drivers/SolidDocumentDriver';
 
 describe('OrderTradeService', () => {
     const mockedOrderTradeDriver: OrderTradeDriver = createMock<OrderTradeDriver>({
-        getTrade: jest.fn(),
+        getTrade: jest.fn().mockResolvedValue(createMock<OrderTradeInfo>()),
         getLines: jest.fn(),
         getLine: jest.fn(),
         addLine: jest.fn(),
@@ -28,14 +30,17 @@ describe('OrderTradeService', () => {
         confirmOrder: jest.fn(),
         getEmittedEvents: jest.fn(),
     });
-    const mockedStorageMetadataDriver = createMock<IStorageMetadataDriver>({
+    const mockedStorageMetadataDriver = createMock<IStorageMetadataDriver<SolidMetadataSpec>>({
         create: jest.fn(),
     });
-    const mockedStorageDocumentDriver = createMock<IStorageDocumentDriver>({
+    const metadataSpec: SolidMetadataSpec = {
+        entireResourceUrl: 'metadataExternalUrl',
+    };
+    const mockedStorageDocumentDriver = createMock<IStorageDocumentDriver<SolidDocumentSpec>>({
         create: jest.fn(),
     });
 
-    const orderTradeService = new OrderTradeService({
+    let orderTradeService = new OrderTradeService({
         tradeDriver: mockedOrderTradeDriver,
     });
 
@@ -139,5 +144,38 @@ describe('OrderTradeService', () => {
             .toHaveBeenCalledTimes(1);
         expect(expectedMockedFunction)
             .toHaveBeenCalledWith(...expectedMockedFunctionArgs);
+    });
+
+    it('should get complete order trade from external storage', async () => {
+        orderTradeService = new OrderTradeService({
+            tradeDriver: mockedOrderTradeDriver,
+            storageDocumentDriver: mockedStorageDocumentDriver,
+            storageMetadataDriver: mockedStorageMetadataDriver,
+        });
+        mockedStorageMetadataDriver.read = jest.fn().mockResolvedValue({ incoterms: 'FOB', shipper: 'shipper', shippingPort: 'port', deliveryPort: 'port' });
+        await orderTradeService.getCompleteTrade(metadataSpec);
+
+        expect(mockedStorageMetadataDriver.read).toHaveBeenCalledTimes(1);
+        expect(mockedStorageMetadataDriver.read).toHaveBeenNthCalledWith(1, OperationType.TRANSACTION, metadataSpec);
+    });
+
+    it('should get complete order trade retrieved from external storage - FAIL', async () => {
+        orderTradeService = new OrderTradeService({
+            tradeDriver: mockedOrderTradeDriver,
+            storageDocumentDriver: mockedStorageDocumentDriver,
+            storageMetadataDriver: mockedStorageMetadataDriver,
+        });
+        mockedStorageMetadataDriver.read = jest.fn().mockRejectedValueOnce(new Error('error'));
+
+        const fn = async () => orderTradeService.getCompleteTrade(metadataSpec);
+        await expect(fn).rejects.toThrowError(new Error('Error while retrieve order trade from external storage: error'));
+    });
+
+    it('should throw error if try to get complete order trade retrieved from external storage, without passing storage drivers to constructor', async () => {
+        orderTradeService = new OrderTradeService({
+            tradeDriver: mockedOrderTradeDriver,
+        });
+        const fn = async () => orderTradeService.getCompleteTrade(metadataSpec);
+        await expect(fn).rejects.toThrowError(new Error('Storage metadata driver is not available'));
     });
 });

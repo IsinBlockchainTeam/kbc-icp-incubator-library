@@ -23,8 +23,8 @@ import {
     OrderLine,
     OrderLinePrice,
     OrderLineRequest,
-    OrderTrade,
-} from '../entities/OrderTrade';
+    OrderTradeInfo,
+} from '../entities/OrderTradeInfo';
 import { NegotiationStatus } from '../types/NegotiationStatus';
 import { BasicTradeService } from '../services/BasicTradeService';
 import { Line, LineRequest } from '../entities/Trade';
@@ -34,6 +34,8 @@ import { ProductCategoryService } from '../services/ProductCategoryService';
 import { ProductCategoryDriver } from '../drivers/ProductCategoryDriver';
 import { Material } from '../entities/Material';
 import { ProductCategory } from '../entities/ProductCategory';
+import { SolidMetadataSpec } from '../drivers/SolidMetadataDriver';
+import { SolidDocumentSpec } from '../drivers/SolidDocumentDriver';
 
 dotenv.config();
 
@@ -41,13 +43,13 @@ describe('Trade lifecycle', () => {
     let provider: JsonRpcProvider;
     let signer: Signer;
 
-    let tradeManagerService: TradeManagerService;
+    let tradeManagerService: TradeManagerService<SolidMetadataSpec>;
 
     let materialService: MaterialService;
     let materialDriver: MaterialDriver;
 
     let existingOrder: number;
-    let existingOrderService: OrderTradeService;
+    let existingOrderService: OrderTradeService<SolidMetadataSpec, SolidDocumentSpec>;
 
     const deadline: number = new Date().getTime() + 1000 * 60 * 60 * 24 * 7;
     const arbiter: string = Wallet.createRandom().address;
@@ -74,10 +76,10 @@ describe('Trade lifecycle', () => {
     };
 
     const _registerOrder = async (): Promise<{
-        order: OrderTrade,
-        orderTradeService: OrderTradeService
+        order: OrderTradeInfo,
+        orderTradeService: OrderTradeService<SolidMetadataSpec, SolidDocumentSpec>
     }> => {
-        const trade: OrderTrade = await tradeManagerService.registerOrderTrade(SUPPLIER_ADDRESS, CUSTOMER_ADDRESS, OTHER_ADDRESS, deadline, deadline, arbiter, deadline, deadline, 1000, MY_TOKEN_CONTRACT_ADDRESS);
+        const trade: OrderTradeInfo = await tradeManagerService.registerOrderTrade(SUPPLIER_ADDRESS, CUSTOMER_ADDRESS, OTHER_ADDRESS, deadline, deadline, arbiter, deadline, deadline, 1000, MY_TOKEN_CONTRACT_ADDRESS);
         existingOrder = trade.tradeId;
         existingOrderService = new OrderTradeService({
             tradeDriver: new OrderTradeDriver(signer, await tradeManagerService.getTrade(trade.tradeId), MATERIAL_MANAGER_CONTRACT_ADDRESS, PRODUCT_CATEGORY_CONTRACT_ADDRESS),
@@ -241,7 +243,7 @@ describe('Trade lifecycle', () => {
     });
 
     describe('Basic trade scenario', () => {
-        let basicTradeService: BasicTradeService;
+        let basicTradeService: BasicTradeService<SolidMetadataSpec, SolidDocumentSpec>;
 
         it('Should correctly register and retrieve a basic trade with a line', async () => {
             _defineSender(SUPPLIER_PRIVATE_KEY);

@@ -4,6 +4,7 @@ import { AssetOperation } from '../entities/AssetOperation';
 import { TradeManagerService } from './TradeManagerService';
 import { AssetOperationService } from './AssetOperationService';
 import { AssetOperationType } from '../types/AssetOperationType';
+import { MetadataSpec } from '../drivers/IStorageMetadataDriver';
 
 export type Node = AssetOperation;
 
@@ -18,10 +19,10 @@ export type GraphData = {
     edges: Array<Edge>,
 }
 
-export class GraphService {
+export class GraphService<MS extends MetadataSpec> {
     private _signer: Signer;
 
-    private _tradeManagerService: TradeManagerService;
+    private _tradeManagerService: TradeManagerService<MS>;
 
     private _assetOperationService: AssetOperationService;
 
@@ -31,7 +32,7 @@ export class GraphService {
 
     private _flag: boolean = false;
 
-    constructor(signer: Signer, tradeManagerService: TradeManagerService, transformationService: AssetOperationService) {
+    constructor(signer: Signer, tradeManagerService: TradeManagerService<MS>, transformationService: AssetOperationService) {
         this._signer = signer;
         this._tradeManagerService = tradeManagerService;
         this._assetOperationService = transformationService;

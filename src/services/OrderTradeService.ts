@@ -6,13 +6,26 @@ import {
 import { NegotiationStatus } from '../types/NegotiationStatus';
 import { OrderLine,
     OrderLineRequest,
-    OrderTrade } from '../entities/OrderTrade';
+    OrderTradeInfo } from '../entities/OrderTradeInfo';
 import { IConcreteTradeService } from './IConcreteTradeService';
+import { DocumentSpec } from '../drivers/IStorageDocumentDriver';
+import { MetadataSpec, OperationType } from '../drivers/IStorageMetadataDriver';
+import { OrderTrade } from '../entities/OrderTrade';
 
-// TODO: Add logic for storing metadata on Solid
-export class OrderTradeService extends TradeService implements IConcreteTradeService {
-    async getTrade(blockNumber?: number): Promise<OrderTrade> {
+export class OrderTradeService<MS extends MetadataSpec, DS extends DocumentSpec> extends TradeService<MS, DS> implements IConcreteTradeService {
+    async getTrade(blockNumber?: number): Promise<OrderTradeInfo> {
         return this._tradeDriverImplementation.getTrade(blockNumber);
+    }
+
+    async getCompleteTrade(metadataSpec: MS, blockNumber?: number): Promise<OrderTrade> {
+        if (!this._storageMetadataDriver) throw new Error('Storage metadata driver is not available');
+        const orderTradeInfo = await this.getTrade(blockNumber);
+        try {
+            const { incoterms, shipper, shippingPort, deliveryPort } = await this._storageMetadataDriver.read(OperationType.TRANSACTION, metadataSpec);
+            return new OrderTrade(orderTradeInfo, incoterms, shipper, shippingPort, deliveryPort);
+        } catch (e: any) {
+            throw new Error(`Error while retrieve order trade from external storage: ${e.message}`);
+        }
     }
 
     async getLines(): Promise<OrderLine[]> {

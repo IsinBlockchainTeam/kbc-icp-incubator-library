@@ -1,40 +1,42 @@
 import { TradeManagerDriver } from '../drivers/TradeManagerDriver';
 import { TradeType } from '../types/TradeType';
 import { BasicTrade } from '../entities/BasicTrade';
-import { OrderTrade } from '../entities/OrderTrade';
+import { OrderTradeInfo } from '../entities/OrderTradeInfo';
 import { Trade } from '../entities/Trade';
-import { MetadataStorage, MetadataType, IStorageMetadataDriver } from '../drivers/IStorageMetadataDriver';
+import { MetadataSpec, OperationType, IStorageMetadataDriver } from '../drivers/IStorageMetadataDriver';
 
-export class TradeManagerService {
+export class TradeManagerService<MS extends MetadataSpec> {
     private _tradeManagerDriver: TradeManagerDriver;
 
-    private readonly _storageMetadataDriver?: IStorageMetadataDriver;
+    private readonly _storageMetadataDriver?: IStorageMetadataDriver<MS>;
 
-    constructor(tradeManagerDriver: TradeManagerDriver, storageMetadataDriver?: IStorageMetadataDriver) {
+    constructor(tradeManagerDriver: TradeManagerDriver, storageMetadataDriver?: IStorageMetadataDriver<MS>) {
         this._tradeManagerDriver = tradeManagerDriver;
         this._storageMetadataDriver = storageMetadataDriver;
     }
 
-    async registerBasicTrade(supplier: string, customer: string, commissioner: string, name: string, metadataStorage?: MetadataStorage): Promise<BasicTrade> {
+    async registerBasicTrade(supplier: string, customer: string, commissioner: string, name: string, metadataStorage?: {spec?: MS, value: any}): Promise<BasicTrade> {
         console.log('metadataStorage: ', metadataStorage);
         let externalUrl = '';
         if (metadataStorage) {
             if (!this._storageMetadataDriver) throw new Error('Missing storage metadata driver.');
             externalUrl = await this._storageMetadataDriver.create(
-                MetadataType.TRANSACTION,
-                { metadata: metadataStorage.metadata, bcResourceId: metadataStorage.bcResourceId },
+                OperationType.TRANSACTION,
+                metadataStorage.value,
+                metadataStorage.spec,
             );
         }
         return this._tradeManagerDriver.registerBasicTrade(supplier, customer, commissioner, externalUrl, name);
     }
 
-    async registerOrderTrade(supplier: string, customer: string, commissioner: string, paymentDeadline: number, documentDeliveryDeadline: number, arbiter: string, shippingDeadline: number, deliveryDeadline: number, agreedAmount: number, tokenAddress: string, metadataStorage?: MetadataStorage): Promise<OrderTrade> {
+    async registerOrderTrade(supplier: string, customer: string, commissioner: string, paymentDeadline: number, documentDeliveryDeadline: number, arbiter: string, shippingDeadline: number, deliveryDeadline: number, agreedAmount: number, tokenAddress: string, metadataStorage?: {spec: MS, value: any}): Promise<OrderTradeInfo> {
         let externalUrl = '';
         if (metadataStorage) {
             if (!this._storageMetadataDriver) throw new Error('Missing storage metadata driver.');
             externalUrl = await this._storageMetadataDriver.create(
-                MetadataType.TRANSACTION,
-                { metadata: metadataStorage.metadata, bcResourceId: metadataStorage.bcResourceId },
+                OperationType.TRANSACTION,
+                metadataStorage.value,
+                metadataStorage.spec,
             );
         }
         return this._tradeManagerDriver.registerOrderTrade(supplier, customer, commissioner, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);

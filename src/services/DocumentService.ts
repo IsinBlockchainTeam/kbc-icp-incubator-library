@@ -1,16 +1,20 @@
-import { IPFSService } from '@blockchain-lib/common';
 import { DocumentDriver } from '../drivers/DocumentDriver';
 import { DocumentInfo, DocumentType } from '../entities/DocumentInfo';
 import { Document } from '../entities/Document';
+import { DocumentSpec, IStorageDocumentDriver } from '../drivers/IStorageDocumentDriver';
+import { IStorageMetadataDriver, MetadataSpec, OperationType } from '../drivers/IStorageMetadataDriver';
 
-export class DocumentService {
+export class DocumentService<MS extends MetadataSpec, DS extends DocumentSpec> {
     private _documentDriver: DocumentDriver;
 
-    private readonly _ipfsService?: IPFSService;
+    private readonly _storageDocumentDriver?: IStorageDocumentDriver<DS>;
 
-    constructor(documentDriver: DocumentDriver, ipfsService?: IPFSService) {
-        this._documentDriver = documentDriver;
-        this._ipfsService = ipfsService;
+    private readonly _storageMetadataDriver?: IStorageMetadataDriver<MS>;
+
+    constructor(args: {documentDriver: DocumentDriver, storageMetadataDriver?: IStorageMetadataDriver<MS>, storageDocumentDriver?: IStorageDocumentDriver<DS>}) {
+        this._documentDriver = args.documentDriver;
+        this._storageMetadataDriver = args.storageMetadataDriver;
+        this._storageDocumentDriver = args.storageDocumentDriver;
     }
 
     async registerDocument(transactionId: number, transactionType: string, name: string, documentType: DocumentType, externalUrl: string): Promise<void> {
@@ -25,14 +29,15 @@ export class DocumentService {
         return this._documentDriver.getDocumentsInfoByDocumentType(transactionId, transactionType, documentType);
     }
 
-    async getCompleteDocument(documentInfo: DocumentInfo): Promise<Document | undefined> {
-        if (!this._ipfsService) throw new Error('IPFS Service not available');
+    async getCompleteDocument(documentInfo: DocumentInfo, metadataSpec: MS, documentSpec: DS): Promise<Document | undefined> {
+        if (!this._storageDocumentDriver) throw new Error('Storage document driver is not available');
+        if (!this._storageMetadataDriver) throw new Error('Storage metadata driver is not available');
         try {
-            const { filename, date, fileUrl, transactionLines } = await this._ipfsService!.retrieveJSON(documentInfo.externalUrl);
-            const fileContent = await this._ipfsService!.retrieveFile(fileUrl);
-            if (fileContent) return new Document(documentInfo, filename, new Date(date), fileContent, transactionLines);
+            const { filename, date, transactionLines } = await this._storageMetadataDriver.read(OperationType.TRANSACTION_DOCUMENT, metadataSpec);
+            const fileContent = await this._storageDocumentDriver.read(OperationType.TRANSACTION_DOCUMENT, documentSpec);
+            if (fileContent) return new Document(documentInfo, filename, new Date(date), new Blob([fileContent]), transactionLines);
         } catch (e: any) {
-            throw new Error(`Error while retrieve document file from IPFS: ${e.message}`);
+            throw new Error(`Error while retrieve document file from external storage: ${e.message}`);
         }
         return undefined;
     }

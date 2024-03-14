@@ -22,19 +22,20 @@ import { serial } from '../utils/utils';
 import { AssetOperation } from '../entities/AssetOperation';
 import { TradeType } from '../types/TradeType';
 import { Line, LineRequest, Trade } from '../entities/Trade';
-import { OrderLine, OrderLinePrice, OrderLineRequest, OrderTrade } from '../entities/OrderTrade';
+import { OrderLine, OrderLinePrice, OrderLineRequest, OrderTradeInfo } from '../entities/OrderTradeInfo';
 import { BasicTrade } from '../entities/BasicTrade';
 import { IConcreteTradeService } from '../services/IConcreteTradeService';
 import { BasicTradeService } from '../services/BasicTradeService';
 import { BasicTradeDriver } from '../drivers/BasicTradeDriver';
 import { OrderTradeService } from '../services/OrderTradeService';
 import { OrderTradeDriver } from '../drivers/OrderTradeDriver';
+import { SolidMetadataSpec } from '../drivers/SolidMetadataDriver';
 
 describe('GraphService lifecycle', () => {
     let provider: JsonRpcProvider;
     let signer: Signer;
 
-    let tradeManagerService: TradeManagerService;
+    let tradeManagerService: TradeManagerService<SolidMetadataSpec>;
 
     let productCategoryService: ProductCategoryService;
 
@@ -70,7 +71,7 @@ describe('GraphService lifecycle', () => {
     const shippingDeadline: number = Date.now() + 1000 * 60 * 60 * 24 * 30;
     const deliveryDeadline: number = Date.now() + 1000 * 60 * 60 * 24 * 30;
 
-    let graphService: GraphService;
+    let graphService: GraphService<SolidMetadataSpec>;
 
     const _defineSender = (privateKey: string) => {
         signer = new ethers.Wallet(privateKey, provider);
@@ -183,7 +184,7 @@ describe('GraphService lifecycle', () => {
             await tradeService.assignMaterial(newLine.id, newLine.material!.id);
             trade.lines.push(newLine);
             if (tradeType === TradeType.ORDER)
-                (trade as OrderTrade).hasSupplierSigned = true;
+                (trade as OrderTradeInfo).hasSupplierSigned = true;
         }));
         return trade;
     };
@@ -250,12 +251,12 @@ describe('GraphService lifecycle', () => {
 
             const newTrades: Trade[] = [
                 new BasicTrade(0, company1.address, customer, company2.address, externalUrl, [], 'shipping processed coffee'),
-                new OrderTrade(0, company2.address, customer, company3.address, externalUrl, [], false, false, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, escrow),
+                new OrderTradeInfo(0, company2.address, customer, company3.address, externalUrl, [], false, false, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, escrow),
                 new BasicTrade(0, company3.address, customer, company4.address, externalUrl, [], 'shipping sea water'),
                 new BasicTrade(0, company3.address, customer, company4.address, externalUrl, [], 'shipping sea water again'),
                 new BasicTrade(0, company3.address, customer, company4.address, externalUrl, [], 'shipping sea water again again'),
                 new BasicTrade(0, company1.address, customer, company3.address, externalUrl, [], 'shipping purified water'),
-                new OrderTrade(0, company3.address, customer, company4.address, externalUrl, [], false, false, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, escrow),
+                new OrderTradeInfo(0, company3.address, customer, company4.address, externalUrl, [], false, false, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, escrow),
                 new BasicTrade(0, company3.address, customer, company4.address, externalUrl, [], 'Small packaging'),
                 new BasicTrade(0, company3.address, customer, company4.address, externalUrl, [], 'Medium packaging'),
                 new BasicTrade(0, company4.address, customer, company1.address, externalUrl, [], 'shipping coffee batch'),
