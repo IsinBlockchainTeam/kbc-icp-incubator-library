@@ -16,7 +16,7 @@ export class TradeManagerService<MS extends MetadataSpec> {
     }
 
     async registerBasicTrade(supplier: string, customer: string, commissioner: string, name: string, metadataStorage?: {spec?: MS, value: any}): Promise<BasicTrade> {
-        console.log('metadataStorage: ', metadataStorage);
+        console.log('registerBasicTrade - metadataStorage: ', metadataStorage);
         let externalUrl = '';
         if (metadataStorage) {
             if (!this._storageMetadataDriver) throw new Error('Missing storage metadata driver.');
@@ -26,11 +26,13 @@ export class TradeManagerService<MS extends MetadataSpec> {
                 metadataStorage.spec,
             );
         }
+        console.log('registerBasicTrade - externalUrl: ', externalUrl);
         return this._tradeManagerDriver.registerBasicTrade(supplier, customer, commissioner, externalUrl, name);
     }
 
-    async registerOrderTrade(supplier: string, customer: string, commissioner: string, paymentDeadline: number, documentDeliveryDeadline: number, arbiter: string, shippingDeadline: number, deliveryDeadline: number, agreedAmount: number, tokenAddress: string, metadataStorage?: {spec: MS, value: any}): Promise<OrderTradeInfo> {
+    async registerOrderTrade(supplier: string, customer: string, commissioner: string, paymentDeadline: number, documentDeliveryDeadline: number, arbiter: string, shippingDeadline: number, deliveryDeadline: number, agreedAmount: number, tokenAddress: string, metadataStorage?: {spec?: MS, value: any}): Promise<OrderTradeInfo> {
         let externalUrl = '';
+        console.log('registerOrderTrade - metadataStorage: ', metadataStorage);
         if (metadataStorage) {
             if (!this._storageMetadataDriver) throw new Error('Missing storage metadata driver.');
             externalUrl = await this._storageMetadataDriver.create(
@@ -39,6 +41,7 @@ export class TradeManagerService<MS extends MetadataSpec> {
                 metadataStorage.spec,
             );
         }
+        console.log('registerOrderTrade - externalUrl: ', externalUrl);
         return this._tradeManagerDriver.registerOrderTrade(supplier, customer, commissioner, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);
     }
 

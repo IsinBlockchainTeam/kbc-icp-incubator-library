@@ -36,10 +36,13 @@ export class SolidMetadataDriver implements IStorageMetadataDriver<SolidMetadata
     async read(type: OperationType, metadataSpec: SolidMetadataSpec): Promise<any> {
         if (!this._sessionCredential?.podName) throw new Error('Invalid or missing session credential, podName is required.');
 
+        const relativeUrl = metadataSpec.entireResourceUrl ?
+            metadataSpec.entireResourceUrl.split(this._sessionCredential.podName)[1] :
+            `${SolidUtilsService.defineRelativeResourcePath(type, metadataSpec.bcResourceId)}${metadataSpec.resourceName || ''}`;
         return this._solidDriver.read(
             {
                 podName: this._sessionCredential.podName,
-                relativeUrlPath: metadataSpec.entireResourceUrl || `${SolidUtilsService.defineRelativeResourcePath(type, metadataSpec.bcResourceId)}${metadataSpec.resourceName || ''}`,
+                relativeUrlPath: relativeUrl,
                 type: SolidResourceType.METADATA,
             },
             this._sessionCredential,

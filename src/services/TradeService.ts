@@ -15,7 +15,6 @@ export class TradeService<MS extends MetadataSpec, DS extends DocumentSpec> {
     constructor(args: {tradeDriver: TradeDriver, storageMetadataDriver?: IStorageMetadataDriver<MS>, storageDocumentDriver?: IStorageDocumentDriver<DS>}) {
         this._tradeDriver = args.tradeDriver;
         this._storageMetadataDriver = args.storageMetadataDriver;
-        console.log('this._storageMetadataDriver: ', this._storageMetadataDriver);
         this._storageDocumentDriver = args.storageDocumentDriver;
     }
 
@@ -37,6 +36,8 @@ export class TradeService<MS extends MetadataSpec, DS extends DocumentSpec> {
 
     async addDocument(lineId: number, name: string, documentType: DocumentType, documentStorage?: {spec: DS, fileBuffer: Buffer}, metadataStorage?: {spec: MS, value: any}): Promise<void> {
         let externalUrl = '';
+        console.log('documentStorage: ', documentStorage);
+        console.log('metadataStorage: ', metadataStorage);
         if (documentStorage) {
             if (!this._storageDocumentDriver) throw new Error('Storage document driver is not available');
             externalUrl = await this._storageDocumentDriver.create(OperationType.TRANSACTION_DOCUMENT, documentStorage?.fileBuffer, documentStorage?.spec);
