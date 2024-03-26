@@ -33,9 +33,10 @@ export class DocumentService<MS extends MetadataSpec, DS extends DocumentSpec> {
         if (!this._storageDocumentDriver) throw new Error('Storage document driver is not available');
         if (!this._storageMetadataDriver) throw new Error('Storage metadata driver is not available');
         try {
-            const { filename, date, transactionLines } = await this._storageMetadataDriver.read(OperationType.TRANSACTION_DOCUMENT, metadataSpec);
+            const resource = await this._storageMetadataDriver.read(OperationType.TRANSACTION_DOCUMENT, metadataSpec);
+            const { filename, date, lines } = resource.metadata;
             const fileContent = await this._storageDocumentDriver.read(OperationType.TRANSACTION_DOCUMENT, documentSpec);
-            if (fileContent) return new Document(documentInfo, filename, new Date(date), new Blob([fileContent]), transactionLines);
+            if (fileContent) return new Document(documentInfo, filename, new Date(date), new Blob([fileContent]), lines);
         } catch (e: any) {
             throw new Error(`Error while retrieve document file from external storage: ${e.message}`);
         }
