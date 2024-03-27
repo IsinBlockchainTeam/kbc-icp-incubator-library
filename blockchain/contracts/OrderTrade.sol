@@ -145,11 +145,11 @@ contract OrderTrade is Trade {
     }
 
     function haveDeadlinesExpired() public view returns (bool) {
-        return block.timestamp > _paymentDeadline || block.timestamp > _documentDeliveryDeadline || block.timestamp > _shippingDeadline || block.timestamp > _deliveryDeadline;
+        return getNegotiationStatus() == NegotiationStatus.COMPLETED && (block.timestamp > _paymentDeadline || block.timestamp > _documentDeliveryDeadline || block.timestamp > _shippingDeadline || block.timestamp > _deliveryDeadline);
     }
 
     function enforceDeadlines() public {
-        if(getNegotiationStatus() == NegotiationStatus.COMPLETED && haveDeadlinesExpired()) {
+        if(haveDeadlinesExpired()) {
             _hasOrderExpired = true;
             emit OrderExpired();
         }
