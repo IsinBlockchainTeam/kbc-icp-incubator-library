@@ -1,5 +1,5 @@
-import { BigNumber, Signer, Event } from 'ethers';
-import { TradeDriver } from './TradeDriver';
+import {BigNumber, Signer, Event} from 'ethers';
+import {TradeDriver} from './TradeDriver';
 // eslint-disable-next-line camelcase
 import {
     MaterialManager,
@@ -7,15 +7,15 @@ import {
     OrderTrade as OrderTradeContract,
     OrderTrade__factory, ProductCategoryManager, ProductCategoryManager__factory,
 } from '../smart-contracts';
-import { NegotiationStatus } from '../types/NegotiationStatus';
+import {NegotiationStatus} from '../types/NegotiationStatus';
 import {
     OrderLine,
     OrderLinePrice,
     OrderLineRequest,
     OrderTradeInfo,
 } from '../entities/OrderTradeInfo';
-import { EntityBuilder } from '../utils/EntityBuilder';
-import { IConcreteTradeDriverInterface } from './IConcreteTradeDriver.interface';
+import {EntityBuilder} from '../utils/EntityBuilder';
+import {IConcreteTradeDriver} from './IConcreteTradeDriver';
 
 export enum OrderTradeEvents {
     TradeLineAdded,
@@ -83,9 +83,9 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
     }
 
     async getLine(id: number, blockNumber?: number): Promise<OrderLine> {
-        const line = await this._actual.getLine(id, { blockTag: blockNumber });
+        const line = await this._actual.getLine(id, {blockTag: blockNumber});
 
-        let materialStruct: MaterialManager.MaterialStructOutput | undefined;
+        let materialStruct: MaterialManager.MaterialStructOutput | undefined = undefined;
         if (line[0].materialId.toNumber() !== 0)
             materialStruct = await this._materialContract.getMaterial(line[0].materialId);
 
@@ -117,14 +117,16 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
 
     async getNegotiationStatus(): Promise<NegotiationStatus> {
         switch (await this._actual.getNegotiationStatus()) {
-        case 0:
-            return NegotiationStatus.INITIALIZED;
-        case 1:
-            return NegotiationStatus.PENDING;
-        case 2:
-            return NegotiationStatus.COMPLETED;
-        default:
-            throw new Error('Invalid state');
+            case 0:
+                return NegotiationStatus.INITIALIZED;
+            case 1:
+                return NegotiationStatus.PENDING;
+            case 2:
+                return NegotiationStatus.COMPLETED;
+            case 3:
+                return NegotiationStatus.EXPIRED;
+            default:
+                throw new Error('Invalid state');
         }
     }
 
@@ -153,6 +155,15 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
         await tx.wait();
     }
 
+    async haveDeadlinesExpired(): Promise<boolean> {
+        return await this._actual.haveDeadlinesExpired();
+    }
+
+    async enforceDeadlines(): Promise<void> {
+        const tx = await this._actual.enforceDeadlines();
+        await tx.wait();
+    }
+
     async confirmOrder(): Promise<void> {
         const tx = await this._actual.confirmOrder();
         await tx.wait();
@@ -166,6 +177,7 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
             this._actual.queryFilter(this._actual.filters.OrderLineUpdated()),
             this._actual.queryFilter(this._actual.filters.OrderSignatureAffixed()),
             this._actual.queryFilter(this._actual.filters.OrderConfirmed()),
+            this._actual.queryFilter(this._actual.filters.OrderExpired()),
         ]);
 
         return emittedEvents.reduce((map, events) => {

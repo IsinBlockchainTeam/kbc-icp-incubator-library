@@ -79,15 +79,20 @@ describe('OrderTradeDriver', () => {
     const mockedGetLine = jest.fn();
     const mockedGetLineExists = jest.fn();
     const mockedGetNegotiationStatus = jest.fn();
+    const mockedHaveDeadlinesExpired = jest.fn();
 
     const mockedDecodeEventLog = jest.fn();
     const mockedQueryFilter = jest.fn();
-    const mockedTradeRegisteredEventFilter = jest.fn();
-    const mockedTradeLineAddedEventFilter = jest.fn();
-    const mockedTradeLineUpdatedEventFilter = jest.fn();
-    const mockedOrderLineAddedEventFilter = jest.fn();
-    const mockedOrderLineUpdatedEventFilter = jest.fn();
-    const mockOrderConfirmedEventFilter = jest.fn();
+
+    const mockedEventFilter = {
+        TradeLineAdded: jest.fn(),
+        TradeLineUpdated: jest.fn(),
+        OrderLineAdded: jest.fn(),
+        OrderLineUpdated: jest.fn(),
+        OrderSignatureAffixed: jest.fn(),
+        OrderConfirmed: jest.fn(),
+        OrderExpired: jest.fn(),
+    };
 
     const mockedGetMaterial = jest.fn();
     const mockedGetProductCategory = jest.fn();
@@ -108,7 +113,8 @@ describe('OrderTradeDriver', () => {
     mockedGetLine.mockResolvedValue([line, orderLine]);
     mockedGetLineExists.mockResolvedValue(true);
     mockedGetNegotiationStatus.mockResolvedValue(NegotiationStatus.INITIALIZED);
-    mockedQueryFilter.mockResolvedValue([{ event: 'eventName' }]);
+    mockedHaveDeadlinesExpired.mockReturnValue(false);
+    mockedQueryFilter.mockResolvedValue([{event: 'eventName'}]);
 
     const mockedContract = createMock<OrderTradeContract>({
         getTrade: mockedGetTrade,
@@ -123,17 +129,20 @@ describe('OrderTradeDriver', () => {
         updateArbiter: mockedWriteFunction,
         updateShippingDeadline: mockedWriteFunction,
         updateDeliveryDeadline: mockedWriteFunction,
+        haveDeadlinesExpired: mockedHaveDeadlinesExpired,
+        enforceDeadlines: mockedWriteFunction,
         confirmOrder: mockedWriteFunction,
 
         interface: { decodeEventLog: mockedDecodeEventLog },
         queryFilter: mockedQueryFilter,
         filters: {
-            TradeLineAdded: mockedTradeRegisteredEventFilter,
-            TradeLineUpdated: mockedTradeLineAddedEventFilter,
-            OrderLineAdded: mockedTradeLineUpdatedEventFilter,
-            OrderLineUpdated: mockedOrderLineAddedEventFilter,
-            OrderSignatureAffixed: mockedOrderLineUpdatedEventFilter,
-            OrderConfirmed: mockOrderConfirmedEventFilter,
+            TradeLineAdded: mockedEventFilter.TradeLineAdded,
+            TradeLineUpdated: mockedEventFilter.TradeLineUpdated,
+            OrderLineAdded: mockedEventFilter.OrderLineAdded,
+            OrderLineUpdated: mockedEventFilter.OrderLineUpdated,
+            OrderSignatureAffixed: mockedEventFilter.OrderSignatureAffixed,
+            OrderConfirmed: mockedEventFilter.OrderConfirmed,
+            OrderExpired: mockedEventFilter.OrderExpired,
         },
     });
 
@@ -343,6 +352,21 @@ describe('OrderTradeDriver', () => {
             .toHaveBeenCalledTimes(1);
     });
 
+    it('should correctly retrieve the negotiation status - EXPIRED', async () => {
+        mockedGetNegotiationStatus.mockReturnValue(Promise.resolve(NegotiationStatus.EXPIRED));
+        const result = await orderTradeDriver.getNegotiationStatus();
+
+        expect(result)
+            .toEqual(NegotiationStatus.EXPIRED);
+
+        expect(mockedContract.getNegotiationStatus)
+            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.getNegotiationStatus)
+            .toHaveBeenNthCalledWith(1);
+        expect(mockedGetNegotiationStatus)
+            .toHaveBeenCalledTimes(1);
+    });
+
     it('should correctly retrieve the negotiation status - FAIL(Invalid state)', async () => {
         mockedGetNegotiationStatus.mockReturnValue(Promise.resolve(42));
         await expect(orderTradeDriver.getNegotiationStatus())
@@ -412,6 +436,31 @@ describe('OrderTradeDriver', () => {
             .toHaveBeenCalledTimes(1);
     });
 
+    it('should correctly check if deadlines have expired', async () => {
+        const result = await orderTradeDriver.haveDeadlinesExpired();
+
+        expect(result)
+            .toEqual(false);
+
+        expect(mockedContract.haveDeadlinesExpired)
+            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.haveDeadlinesExpired)
+            .toHaveBeenNthCalledWith(1);
+        expect(mockedHaveDeadlinesExpired)
+            .toHaveBeenCalledTimes(1);
+    });
+
+    it('should correctly enforce deadlines', async () => {
+        await orderTradeDriver.enforceDeadlines();
+
+        expect(mockedContract.enforceDeadlines)
+            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.enforceDeadlines)
+            .toHaveBeenNthCalledWith(1);
+        expect(mockedWait)
+            .toHaveBeenCalledTimes(1);
+    });
+
     it('should correctly confirm the order', async () => {
         await orderTradeDriver.confirmOrder();
 
@@ -426,36 +475,27 @@ describe('OrderTradeDriver', () => {
     it('should get block numbers per each event name by order id', async () => {
         await orderTradeDriver.getEmittedEvents();
 
-        expect(mockedQueryFilter).toHaveBeenCalledTimes(6);
+        expect(mockedQueryFilter).toHaveBeenCalledTimes(Object.keys(mockedEventFilter).length);
 
-        /*
-        const mockedTradeRegisteredEventFilter = jest.fn();
-        const mockedTradeLineAddedEventFilter = jest.fn();
-        const mockedTradeLineUpdatedEventFilter = jest.fn();
-        const mockedOrderLineAddedEventFilter = jest.fn();
-        const mockedOrderLineUpdatedEventFilter = jest.fn();
-        const mockOrderConfirmedEventFilter = jest.fn();
-         */
+        expect(mockedEventFilter.TradeLineAdded).toHaveBeenCalledTimes(1);
+        expect(mockedEventFilter.TradeLineAdded).toHaveBeenNthCalledWith(1);
 
-        expect(mockedTradeRegisteredEventFilter).toHaveBeenCalledTimes(1);
-        expect(mockedTradeRegisteredEventFilter).toHaveBeenNthCalledWith(1);
+        expect(mockedEventFilter.TradeLineUpdated).toHaveBeenCalledTimes(1);
+        expect(mockedEventFilter.TradeLineUpdated).toHaveBeenNthCalledWith(1);
 
-        expect(mockedTradeLineAddedEventFilter).toHaveBeenCalledTimes(1);
-        expect(mockedTradeLineAddedEventFilter).toHaveBeenNthCalledWith(1);
+        expect(mockedEventFilter.OrderLineAdded).toHaveBeenCalledTimes(1);
+        expect(mockedEventFilter.OrderLineAdded).toHaveBeenNthCalledWith(1);
 
-        expect(mockedTradeLineUpdatedEventFilter).toHaveBeenCalledTimes(1);
-        expect(mockedOrderLineUpdatedEventFilter).toHaveBeenNthCalledWith(1);
+        expect(mockedEventFilter.OrderLineUpdated).toHaveBeenCalledTimes(1);
+        expect(mockedEventFilter.OrderLineUpdated).toHaveBeenNthCalledWith(1);
 
-        expect(mockedOrderLineAddedEventFilter).toHaveBeenCalledTimes(1);
-        expect(mockedOrderLineAddedEventFilter).toHaveBeenNthCalledWith(1);
+        expect(mockedEventFilter.OrderSignatureAffixed).toHaveBeenCalledTimes(1);
+        expect(mockedEventFilter.OrderSignatureAffixed).toHaveBeenNthCalledWith(1);
 
-        expect(mockedOrderLineUpdatedEventFilter).toHaveBeenCalledTimes(1);
-        expect(mockedOrderLineUpdatedEventFilter).toHaveBeenNthCalledWith(1);
+        expect(mockedEventFilter.OrderConfirmed).toHaveBeenCalledTimes(1);
+        expect(mockedEventFilter.OrderConfirmed).toHaveBeenNthCalledWith(1);
 
-        expect(mockOrderConfirmedEventFilter).toHaveBeenCalledTimes(1);
-        expect(mockOrderConfirmedEventFilter).toHaveBeenNthCalledWith(1);
-
-        expect(mockedOrderLineUpdatedEventFilter).toHaveBeenCalledTimes(1);
-        expect(mockedOrderLineUpdatedEventFilter).toHaveBeenNthCalledWith(1);
+        expect(mockedEventFilter.OrderExpired).toHaveBeenCalledTimes(1);
+        expect(mockedEventFilter.OrderExpired).toHaveBeenNthCalledWith(1);
     });
 });
