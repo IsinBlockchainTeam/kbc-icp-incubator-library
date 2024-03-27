@@ -114,7 +114,7 @@ describe('OrderTradeDriver', () => {
     mockedGetLineExists.mockResolvedValue(true);
     mockedGetNegotiationStatus.mockResolvedValue(NegotiationStatus.INITIALIZED);
     mockedHaveDeadlinesExpired.mockReturnValue(false);
-    mockedQueryFilter.mockResolvedValue([{event: 'eventName'}]);
+    mockedQueryFilter.mockResolvedValue([{ event: 'eventName' }]);
 
     const mockedContract = createMock<OrderTradeContract>({
         getTrade: mockedGetTrade,
