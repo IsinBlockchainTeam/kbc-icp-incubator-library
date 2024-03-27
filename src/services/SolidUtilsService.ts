@@ -2,10 +2,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { composeWebId } from '@blockchain-lib/common';
 import { StorageOperationType } from '../types/StorageOperationType';
 
-export enum ResourceType {
-    TRANSACTION, TRANSACTION_DOCUMENT, CERTIFICATION_DOCUMENT
-}
-
 export class SolidUtilsService {
     static defineRelativeResourcePath(serverBaseUrl: string, podName: string, type: StorageOperationType, id?: string) {
         const randomId = id || uuidv4();

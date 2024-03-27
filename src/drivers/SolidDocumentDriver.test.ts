@@ -16,6 +16,9 @@ describe('SolidDocumentDriver', () => {
     const mockedSolidDriver = createMock<SolidDriver>({
         create: jest.fn().mockResolvedValue(resourceId),
     });
+    const documentSpec: SolidDocumentSpec = {
+        filename: 'file.pdf',
+    };
 
     beforeAll(() => {
         jest.spyOn(SolidDriver.prototype as any, 'constructor').mockReturnValue(mockedSolidDriver);
@@ -30,9 +33,6 @@ describe('SolidDocumentDriver', () => {
 
     it('create', async () => {
         const documentBuffer = Buffer.from('file content');
-        const documentSpec: SolidDocumentSpec = {
-            filename: 'file.pdf',
-        };
         await solidDocumentDriver.create(StorageOperationType.TRANSACTION, documentBuffer, documentSpec);
 
         expect(mockedSolidDriver.create).toHaveBeenCalled();
@@ -41,6 +41,16 @@ describe('SolidDocumentDriver', () => {
             type: SolidResourceType.FILE,
         }, {
             value: documentBuffer,
+        }, sessionCredential);
+    });
+
+    it('read', async () => {
+        await solidDocumentDriver.read(StorageOperationType.CERTIFICATION_DOCUMENT, documentSpec);
+
+        expect(mockedSolidDriver.read).toHaveBeenCalled();
+        expect(mockedSolidDriver.read).toHaveBeenNthCalledWith(1, {
+            totalUrlPath: `${relativeUrlPath}${documentSpec.filename}`,
+            type: SolidResourceType.FILE,
         }, sessionCredential);
     });
 });

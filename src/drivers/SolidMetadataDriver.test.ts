@@ -16,6 +16,10 @@ describe('SolidMetadataDriver', () => {
     const mockedSolidDriver = createMock<SolidDriver>({
         create: jest.fn().mockResolvedValue(resourceId),
     });
+    const metadataStorageSpec: SolidMetadataSpec = {
+        resourceName: 'resourceName',
+        bcResourceId: 'bcResourceId',
+    };
 
     beforeAll(() => {
         jest.spyOn(SolidDriver.prototype as any, 'constructor').mockReturnValue(mockedSolidDriver);
@@ -30,15 +34,11 @@ describe('SolidMetadataDriver', () => {
 
     it('create - without ACL', async () => {
         const metadata = { metadata: 'metadata content' };
-        const metadataStorage: SolidMetadataSpec = {
-            resourceName: 'resourceName',
-            bcResourceId: 'bcResourceId',
-        };
-        await solidMetadataDriver.create(StorageOperationType.TRANSACTION, metadata, [], metadataStorage);
+        await solidMetadataDriver.create(StorageOperationType.TRANSACTION, metadata, [], metadataStorageSpec);
 
         expect(mockedSolidDriver.create).toHaveBeenCalled();
         expect(mockedSolidDriver.create).toHaveBeenNthCalledWith(1, {
-            totalUrlPath: `${relativeUrlPath}${metadataStorage.resourceName}`,
+            totalUrlPath: `${relativeUrlPath}${metadataStorageSpec.resourceName}`,
             type: SolidResourceType.METADATA,
         }, {
             metadata,
@@ -47,16 +47,12 @@ describe('SolidMetadataDriver', () => {
 
     it('create - with ACL', async () => {
         const metadata = { metadata: 'metadata content' };
-        const metadataStorage: SolidMetadataSpec = {
-            resourceName: 'resourceName',
-            bcResourceId: 'bcResourceId',
-        };
         const aclRules = [{ modes: [AccessMode.READ, AccessMode.WRITE], agents: ['agent1'] }];
-        await solidMetadataDriver.create(StorageOperationType.TRANSACTION, metadata, aclRules, metadataStorage);
+        await solidMetadataDriver.create(StorageOperationType.TRANSACTION, metadata, aclRules, metadataStorageSpec);
 
         expect(mockedSolidDriver.create).toHaveBeenCalled();
         expect(mockedSolidDriver.create).toHaveBeenNthCalledWith(1, {
-            totalUrlPath: `${relativeUrlPath}${metadataStorage.resourceName}`,
+            totalUrlPath: `${relativeUrlPath}${metadataStorageSpec.resourceName}`,
             type: SolidResourceType.METADATA,
         }, {
             metadata,
@@ -64,8 +60,18 @@ describe('SolidMetadataDriver', () => {
 
         expect(mockedSolidDriver.setAcl).toHaveBeenCalled();
         expect(mockedSolidDriver.setAcl).toHaveBeenNthCalledWith(1, {
-            totalUrlPath: `${relativeUrlPath}${metadataStorage.resourceName}`,
+            totalUrlPath: `${relativeUrlPath}${metadataStorageSpec.resourceName}`,
             type: SolidResourceType.METADATA,
         }, aclRules, sessionCredential);
+    });
+
+    it('read', async () => {
+        await solidMetadataDriver.read(StorageOperationType.CERTIFICATION_DOCUMENT, metadataStorageSpec);
+
+        expect(mockedSolidDriver.read).toHaveBeenCalled();
+        expect(mockedSolidDriver.read).toHaveBeenNthCalledWith(1, {
+            totalUrlPath: `${relativeUrlPath}${metadataStorageSpec.resourceName}`,
+            type: SolidResourceType.METADATA,
+        }, sessionCredential);
     });
 });
