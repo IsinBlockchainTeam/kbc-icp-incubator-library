@@ -25,6 +25,7 @@ export { LineRequest } from './entities/Trade';
 export { OrderLineRequest } from './entities/OrderTradeInfo';
 export { BasicTrade } from './entities/BasicTrade';
 export { OrderTradeInfo } from './entities/OrderTradeInfo';
+export { OrderTrade } from './entities/OrderTrade';
 export { OrderLine } from './entities/OrderTradeInfo';
 export { OrderLinePrice } from './entities/OrderTradeInfo';
 export { TradeStatus } from './types/TradeStatus';
