@@ -349,6 +349,7 @@ describe('OrderTrade.sol', () => {
                 .equal(false);
 
             await orderTradeContract.connect(supplier).updateDocumentDeliveryDeadline(100);
+            await orderTradeContract.connect(commissioner).confirmOrder();
             expect(await orderTradeContract.connect(supplier).haveDeadlinesExpired())
                 .to
                 .equal(true);

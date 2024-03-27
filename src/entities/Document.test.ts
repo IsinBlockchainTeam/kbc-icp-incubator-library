@@ -1,5 +1,6 @@
 import { Document } from './Document';
 import { DocumentInfo, DocumentType } from './DocumentInfo';
+import { Blob } from 'buffer';
 
 describe('Document', () => {
     let document: Document;

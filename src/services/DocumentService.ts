@@ -2,6 +2,7 @@ import { IPFSService } from '@blockchain-lib/common';
 import { DocumentDriver } from '../drivers/DocumentDriver';
 import { DocumentInfo, DocumentType } from '../entities/DocumentInfo';
 import { Document } from '../entities/Document';
+import {Blob} from "buffer";
 
 export class DocumentService {
     private _documentDriver: DocumentDriver;
@@ -30,7 +31,7 @@ export class DocumentService {
         try {
             const { filename, date, fileUrl, transactionLines } = await this._ipfsService!.retrieveJSON(documentInfo.externalUrl);
             const fileContent = await this._ipfsService!.retrieveFile(fileUrl);
-            if (fileContent) return new Document(documentInfo, filename, new Date(date), fileContent, transactionLines);
+            if (fileContent) return new Document(documentInfo, filename, new Date(date), (fileContent as Blob), transactionLines);
         } catch (e: any) {
             throw new Error(`Error while retrieve document file from IPFS: ${e.message}`);
         }
