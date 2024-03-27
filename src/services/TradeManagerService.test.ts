@@ -1,17 +1,19 @@
 import { createMock } from 'ts-auto-mock';
+import { SolidStorageACR } from '@blockchain-lib/common';
 import { TradeManagerService } from './TradeManagerService';
 import { TradeManagerDriver } from '../drivers/TradeManagerDriver';
 import { BasicTrade } from '../entities/BasicTrade';
 
 import { OrderTradeInfo } from '../entities/OrderTradeInfo';
-import { IStorageMetadataDriver, OperationType } from '../drivers/IStorageMetadataDriver';
+import { IStorageMetadataDriver } from '../drivers/IStorageMetadataDriver';
 import { SolidMetadataSpec } from '../drivers/SolidMetadataDriver';
+import { StorageOperationType } from '../types/StorageOperationType';
 
 describe('TradeManagerService', () => {
-    let tradeManagerService: TradeManagerService<SolidMetadataSpec>;
+    let tradeManagerService: TradeManagerService<SolidMetadataSpec, SolidStorageACR>;
 
     let mockedTradeManagerDriver: TradeManagerDriver;
-    let mockedStorageMetadataDriver: IStorageMetadataDriver<SolidMetadataSpec>;
+    let mockedStorageMetadataDriver: IStorageMetadataDriver<SolidMetadataSpec, SolidStorageACR>;
     const mockedInstance = {
         registerBasicTrade: jest.fn(),
         registerOrderTrade: jest.fn(),
@@ -124,7 +126,7 @@ describe('TradeManagerService', () => {
     describe('With storage metadata driver', () => {
         beforeAll(() => {
             mockedTradeManagerDriver = createMock<TradeManagerDriver>(mockedInstance);
-            mockedStorageMetadataDriver = createMock<IStorageMetadataDriver<SolidMetadataSpec>>(mockedStorageMetadataInstance);
+            mockedStorageMetadataDriver = createMock<IStorageMetadataDriver<SolidMetadataSpec, SolidStorageACR>>(mockedStorageMetadataInstance);
 
             tradeManagerService = new TradeManagerService(mockedTradeManagerDriver, mockedStorageMetadataDriver);
         });
@@ -133,16 +135,16 @@ describe('TradeManagerService', () => {
 
         it.each([
             {
-                serviceFunctionName: 'registerBasicTrade',
-                serviceFunction: () => tradeManagerService.registerBasicTrade(basicTrade.supplier, basicTrade.customer, basicTrade.commissioner, basicTrade.name, { spec: metadataSpec, value: metadata }),
+                serviceFunctionName: 'registerBasicTrade - with ACL rules',
+                serviceFunction: () => tradeManagerService.registerBasicTrade(basicTrade.supplier, basicTrade.customer, basicTrade.commissioner, basicTrade.name, { spec: metadataSpec, value: metadata, aclRules: [] }),
                 expectedMockedFunction: mockedStorageMetadataInstance.create,
-                expectedMockedFunctionArgs: [OperationType.TRANSACTION, metadata, metadataSpec],
+                expectedMockedFunctionArgs: [StorageOperationType.TRANSACTION, metadata, [], metadataSpec],
             },
             {
-                serviceFunctionName: 'registerOrderTrade',
+                serviceFunctionName: 'registerOrderTrade - without ACL rules',
                 serviceFunction: () => tradeManagerService.registerOrderTrade(orderTrade.supplier, orderTrade.customer, orderTrade.commissioner, orderTrade.paymentDeadline, orderTrade.documentDeliveryDeadline, orderTrade.arbiter, orderTrade.shippingDeadline, orderTrade.deliveryDeadline, agreedAmount, tokenAddress, { spec: metadataSpec, value: metadata }),
                 expectedMockedFunction: mockedStorageMetadataInstance.create,
-                expectedMockedFunctionArgs: [OperationType.TRANSACTION, metadata, metadataSpec],
+                expectedMockedFunctionArgs: [StorageOperationType.TRANSACTION, metadata, undefined, metadataSpec],
             },
         ])('service should call driver $serviceFunctionName', async ({
             serviceFunction,

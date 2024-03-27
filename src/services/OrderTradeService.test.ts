@@ -1,4 +1,5 @@
 import { createMock } from 'ts-auto-mock';
+import { SolidStorageACR } from '@blockchain-lib/common';
 import { OrderTradeDriver } from '../drivers/OrderTradeDriver';
 import { OrderTradeService } from './OrderTradeService';
 import {
@@ -8,10 +9,11 @@ import {
 } from '../entities/OrderTradeInfo';
 import { Material } from '../entities/Material';
 import { ProductCategory } from '../entities/ProductCategory';
-import { IStorageMetadataDriver, OperationType } from '../drivers/IStorageMetadataDriver';
+import { IStorageMetadataDriver } from '../drivers/IStorageMetadataDriver';
 import { IStorageDocumentDriver } from '../drivers/IStorageDocumentDriver';
 import { SolidMetadataSpec } from '../drivers/SolidMetadataDriver';
 import { SolidDocumentSpec } from '../drivers/SolidDocumentDriver';
+import { StorageOperationType } from '../types/StorageOperationType';
 
 describe('OrderTradeService', () => {
     const mockedOrderTradeDriver: OrderTradeDriver = createMock<OrderTradeDriver>({
@@ -30,7 +32,7 @@ describe('OrderTradeService', () => {
         confirmOrder: jest.fn(),
         getEmittedEvents: jest.fn(),
     });
-    const mockedStorageMetadataDriver = createMock<IStorageMetadataDriver<SolidMetadataSpec>>({
+    const mockedStorageMetadataDriver = createMock<IStorageMetadataDriver<SolidMetadataSpec, SolidStorageACR>>({
         create: jest.fn(),
     });
     const metadataSpec: SolidMetadataSpec = {
@@ -156,7 +158,7 @@ describe('OrderTradeService', () => {
         await orderTradeService.getCompleteTrade(metadataSpec);
 
         expect(mockedStorageMetadataDriver.read).toHaveBeenCalledTimes(1);
-        expect(mockedStorageMetadataDriver.read).toHaveBeenNthCalledWith(1, OperationType.TRANSACTION, metadataSpec);
+        expect(mockedStorageMetadataDriver.read).toHaveBeenNthCalledWith(1, StorageOperationType.TRANSACTION, metadataSpec);
     });
 
     it('should get complete order trade retrieved from external storage - FAIL', async () => {

@@ -1,6 +1,7 @@
 import * as dotenv from 'dotenv';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { ethers, Signer, Wallet } from 'ethers';
+import { SolidStorageACR } from '@blockchain-lib/common';
 import DocumentService from '../services/DocumentService';
 import { DocumentDriver } from '../drivers/DocumentDriver';
 import {
@@ -31,11 +32,11 @@ import { SolidMetadataSpec } from '../drivers/SolidMetadataDriver';
 dotenv.config();
 
 describe('Document lifecycle', () => {
-    let documentService: DocumentService<SolidMetadataSpec, SolidDocumentSpec>;
+    let documentService: DocumentService<SolidMetadataSpec, SolidDocumentSpec, SolidStorageACR>;
     let documentDriver: DocumentDriver;
     let provider: JsonRpcProvider;
     let signer: Signer;
-    let tradeManagerService: TradeManagerService<SolidMetadataSpec>;
+    let tradeManagerService: TradeManagerService<SolidMetadataSpec, SolidStorageACR>;
     let tradeManagerDriver: TradeManagerDriver;
 
     const localFilename = 'samplePdf.pdf';
@@ -61,9 +62,9 @@ describe('Document lifecycle', () => {
     };
     const transactionType = 'trade';
     let transactionId: number;
-    let firstOrderTradeService: OrderTradeService<SolidMetadataSpec, SolidDocumentSpec>;
+    let firstOrderTradeService: OrderTradeService<SolidMetadataSpec, SolidDocumentSpec, SolidStorageACR>;
     let transactionId2: number;
-    let secondOrderTradeService: OrderTradeService<SolidMetadataSpec, SolidDocumentSpec>;
+    let secondOrderTradeService: OrderTradeService<SolidMetadataSpec, SolidDocumentSpec, SolidStorageACR>;
 
     const productCategoryIds: number[] = [];
     const materialIds: number[] = [];
@@ -91,7 +92,7 @@ describe('Document lifecycle', () => {
         tradeManagerService = new TradeManagerService(tradeManagerDriver);
     };
 
-    const createOrderAndConfirm = async (): Promise<{orderId: number, orderTradeService: OrderTradeService<SolidMetadataSpec, SolidDocumentSpec>}> => {
+    const createOrderAndConfirm = async (): Promise<{orderId: number, orderTradeService: OrderTradeService<SolidMetadataSpec, SolidDocumentSpec, SolidStorageACR>}> => {
         const order: OrderTradeInfo = await tradeManagerService.registerOrderTrade(SUPPLIER_ADDRESS, OTHER_ADDRESS, CUSTOMER_ADDRESS, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, MY_TOKEN_CONTRACT_ADDRESS);
         _defineOrderSender(CUSTOMER_PRIVATE_KEY);
         const orderTradeService = new OrderTradeService({

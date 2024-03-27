@@ -1,9 +1,13 @@
-import { SolidDriver, SolidResourceType, SolidSessionCredential } from '@blockchain-lib/common';
-import { IStorageDocumentDriver } from './IStorageDocumentDriver';
-import { OperationType } from './IStorageMetadataDriver';
+import {
+    SolidDriver,
+    SolidResourceType,
+    SolidSessionCredential,
+} from '@blockchain-lib/common';
+import { DocumentSpec, IStorageDocumentDriver } from './IStorageDocumentDriver';
 import { SolidUtilsService } from '../services/SolidUtilsService';
+import { StorageOperationType } from '../types/StorageOperationType';
 
-export type SolidDocumentSpec = {
+export interface SolidDocumentSpec extends DocumentSpec {
     // --- use these when there is no entire url resource because the resource has to be created first
     filename?: string,
     bcResourceId?: string
@@ -14,20 +18,23 @@ export type SolidDocumentSpec = {
 export class SolidDocumentDriver implements IStorageDocumentDriver<SolidDocumentSpec> {
     private readonly _solidDriver: SolidDriver;
 
+    private readonly _solidServerBaseUrl: string;
+
     private readonly _sessionCredential?: SolidSessionCredential;
 
     constructor(serverBaseUrl: string, sessionCredential?: SolidSessionCredential) {
-        this._solidDriver = new SolidDriver(serverBaseUrl);
+        this._solidServerBaseUrl = serverBaseUrl;
+        this._solidDriver = new SolidDriver(this._solidServerBaseUrl);
         this._sessionCredential = sessionCredential;
     }
 
-    async create(type: OperationType, value: Buffer, documentSpec: SolidDocumentSpec): Promise<string> {
+    async create(type: StorageOperationType, value: Buffer, documentSpec: SolidDocumentSpec): Promise<string> {
         if (!this._sessionCredential?.podName) throw new Error('Invalid or missing session credential, podName is required.');
         if (!documentSpec.filename) throw new Error('Missing document filename');
-        return this._solidDriver.create(
+
+        const resource = await this._solidDriver.create(
             {
-                podName: this._sessionCredential.podName,
-                relativeUrlPath: `${SolidUtilsService.defineRelativeResourcePath(type, documentSpec.bcResourceId)}${documentSpec.filename}`,
+                totalUrlPath: `${SolidUtilsService.defineRelativeResourcePath(this._solidServerBaseUrl, this._sessionCredential.podName, type, documentSpec.bcResourceId)}${documentSpec.filename}`,
                 type: SolidResourceType.FILE,
             },
             {
@@ -35,14 +42,14 @@ export class SolidDocumentDriver implements IStorageDocumentDriver<SolidDocument
             },
             this._sessionCredential,
         );
+        return resource.totalUrlPath;
     }
 
-    async read(type: OperationType, documentSpec: SolidDocumentSpec): Promise<Buffer | null> {
+    async read(type: StorageOperationType, documentSpec: SolidDocumentSpec): Promise<Buffer | null> {
         if (!this._sessionCredential?.podName) throw new Error('Invalid or missing session credential, podName is required.');
         const resource = await this._solidDriver.read(
             {
-                podName: this._sessionCredential.podName,
-                relativeUrlPath: documentSpec.entireResourceUrl || `${SolidUtilsService.defineRelativeResourcePath(type, documentSpec.bcResourceId)}${documentSpec.filename}`,
+                totalUrlPath: documentSpec.entireResourceUrl || `${SolidUtilsService.defineRelativeResourcePath(this._solidServerBaseUrl, this._sessionCredential.podName, type, documentSpec.bcResourceId)}${documentSpec.filename}`,
                 type: SolidResourceType.FILE,
             },
             this._sessionCredential,

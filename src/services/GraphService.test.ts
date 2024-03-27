@@ -1,5 +1,6 @@
 import { createMock } from 'ts-auto-mock';
 import { Signer } from 'ethers';
+import { SolidStorageACR } from '@blockchain-lib/common';
 import { GraphService } from './GraphService';
 import { AssetOperation } from '../entities/AssetOperation';
 import { Line, Trade } from '../entities/Trade';
@@ -23,7 +24,7 @@ jest.mock('./BasicTradeService');
 jest.mock('./OrderTradeService');
 
 describe('GraphService', () => {
-    let graphService: GraphService<SolidMetadataSpec>;
+    let graphService: GraphService<SolidMetadataSpec, SolidStorageACR>;
 
     const productCategories: ProductCategory[] = [
         new ProductCategory(1, 'Raw coffee beans', 85, 'first category'),
@@ -66,7 +67,7 @@ describe('GraphService', () => {
     const mockGetTrades = jest.fn().mockReturnValue(Array.from(trades));
     const mockGetAssetOperations = jest.fn().mockReturnValue(Array.from(assetOperations));
 
-    const mockedTradeManagerService: TradeManagerService<SolidMetadataSpec> = createMock<TradeManagerService<SolidMetadataSpec>>({
+    const mockedTradeManagerService: TradeManagerService<SolidMetadataSpec, SolidStorageACR> = createMock<TradeManagerService<SolidMetadataSpec, SolidStorageACR>>({
         getTrades: mockGetTrades,
         getTrade: jest.fn().mockImplementation((id: number) => Promise.resolve(trades[id])),
         getTradeType: jest.fn().mockImplementation((id: number) => Promise.resolve(tradeTypes[id])),
@@ -77,13 +78,13 @@ describe('GraphService', () => {
 
     const mockedBasicGetTrade = jest.fn().mockResolvedValue(trades[0]);
     const mockedBasicGetLines = jest.fn().mockResolvedValue([trades[0].lines]);
-    (BasicTradeService as jest.Mock).mockImplementation(() => createMock<BasicTradeService<SolidDocumentSpec, SolidMetadataSpec>>({
+    (BasicTradeService as jest.Mock).mockImplementation(() => createMock<BasicTradeService<SolidDocumentSpec, SolidMetadataSpec, SolidStorageACR>>({
         getTrade: mockedBasicGetTrade,
         getLines: mockedBasicGetLines,
     }));
     const mockedOrderGetTrade = jest.fn().mockResolvedValue(trades[1]);
     const mockedOrderGetLines = jest.fn().mockResolvedValue(trades[1].lines);
-    (OrderTradeService as jest.Mock).mockImplementation(() => createMock<OrderTradeService<SolidDocumentSpec, SolidMetadataSpec>>({
+    (OrderTradeService as jest.Mock).mockImplementation(() => createMock<OrderTradeService<SolidDocumentSpec, SolidMetadataSpec, SolidStorageACR>>({
         getTrade: mockedOrderGetTrade,
         getLines: mockedOrderGetLines,
     }));

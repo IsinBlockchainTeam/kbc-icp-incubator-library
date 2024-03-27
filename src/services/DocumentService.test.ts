@@ -1,11 +1,13 @@
 import { createMock } from 'ts-auto-mock';
+import { SolidStorageACR } from '@blockchain-lib/common';
 import DocumentService from './DocumentService';
 import { DocumentDriver } from '../drivers/DocumentDriver';
 import { DocumentInfo, DocumentType } from '../entities/DocumentInfo';
-import { IStorageMetadataDriver, OperationType } from '../drivers/IStorageMetadataDriver';
+import { IStorageMetadataDriver } from '../drivers/IStorageMetadataDriver';
 import { SolidMetadataSpec } from '../drivers/SolidMetadataDriver';
 import { IStorageDocumentDriver } from '../drivers/IStorageDocumentDriver';
 import { SolidDocumentSpec } from '../drivers/SolidDocumentDriver';
+import { StorageOperationType } from '../types/StorageOperationType';
 
 describe('DocumentService', () => {
     const owner = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8';
@@ -27,7 +29,7 @@ describe('DocumentService', () => {
         addTradeManager: jest.fn(),
         removeTradeManager: jest.fn(),
     });
-    const mockedStorageMetadataDriver = createMock<IStorageMetadataDriver<SolidMetadataSpec>>(
+    const mockedStorageMetadataDriver = createMock<IStorageMetadataDriver<SolidMetadataSpec, SolidStorageACR>>(
         { create: jest.fn(), read: jest.fn() },
     );
     const metadataSpec: SolidMetadataSpec = {
@@ -118,10 +120,10 @@ describe('DocumentService', () => {
         await documentService.getCompleteDocument(documentInfo, metadataSpec, documentSpec);
 
         expect(mockedStorageMetadataDriver.read).toHaveBeenCalledTimes(1);
-        expect(mockedStorageMetadataDriver.read).toHaveBeenNthCalledWith(1, OperationType.TRANSACTION_DOCUMENT, metadataSpec);
+        expect(mockedStorageMetadataDriver.read).toHaveBeenNthCalledWith(1, StorageOperationType.TRANSACTION_DOCUMENT, metadataSpec);
 
         expect(mockedStorageDocumentDriver.read).toHaveBeenCalledTimes(1);
-        expect(mockedStorageDocumentDriver.read).toHaveBeenNthCalledWith(1, OperationType.TRANSACTION_DOCUMENT, documentSpec);
+        expect(mockedStorageDocumentDriver.read).toHaveBeenNthCalledWith(1, StorageOperationType.TRANSACTION_DOCUMENT, documentSpec);
     });
 
     it('should get complete document with file retrieved from external storage - FAIL', async () => {

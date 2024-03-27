@@ -1,3 +1,4 @@
+import { StorageACR } from '@blockchain-lib/common/types/storage';
 import { TradeService } from './TradeService';
 import {
     OrderTradeDriver,
@@ -9,10 +10,11 @@ import { OrderLine,
     OrderTradeInfo } from '../entities/OrderTradeInfo';
 import { IConcreteTradeService } from './IConcreteTradeService';
 import { DocumentSpec } from '../drivers/IStorageDocumentDriver';
-import { MetadataSpec, OperationType } from '../drivers/IStorageMetadataDriver';
+import { MetadataSpec } from '../drivers/IStorageMetadataDriver';
 import { OrderTrade } from '../entities/OrderTrade';
+import { StorageOperationType } from '../types/StorageOperationType';
 
-export class OrderTradeService<MS extends MetadataSpec, DS extends DocumentSpec> extends TradeService<MS, DS> implements IConcreteTradeService {
+export class OrderTradeService<MS extends MetadataSpec, DS extends DocumentSpec, ACR extends StorageACR> extends TradeService<MS, DS, ACR> implements IConcreteTradeService {
     async getTrade(blockNumber?: number): Promise<OrderTradeInfo> {
         return this._tradeDriverImplementation.getTrade(blockNumber);
     }
@@ -21,8 +23,7 @@ export class OrderTradeService<MS extends MetadataSpec, DS extends DocumentSpec>
         if (!this._storageMetadataDriver) throw new Error('Storage metadata driver is not available');
         const orderTradeInfo = await this.getTrade(blockNumber);
         try {
-            const resource = await this._storageMetadataDriver.read(OperationType.TRANSACTION, metadataSpec);
-            const { incoterms, shipper, shippingPort, deliveryPort } = resource.metadata;
+            const { incoterms, shipper, shippingPort, deliveryPort } = await this._storageMetadataDriver.read(StorageOperationType.TRANSACTION, metadataSpec);
             return new OrderTrade(orderTradeInfo, incoterms, shipper, shippingPort, deliveryPort);
         } catch (e: any) {
             throw new Error(`Error while retrieve order trade from external storage: ${e.message}`);

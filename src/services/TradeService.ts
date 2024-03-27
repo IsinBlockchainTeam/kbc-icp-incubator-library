@@ -1,18 +1,22 @@
+import {
+    StorageACR,
+} from '@blockchain-lib/common/types/storage';
 import { TradeDriver } from '../drivers/TradeDriver';
 import { TradeStatus } from '../types/TradeStatus';
 import { DocumentType } from '../entities/DocumentInfo';
 import { TradeType } from '../types/TradeType';
-import { IStorageMetadataDriver, MetadataSpec, OperationType } from '../drivers/IStorageMetadataDriver';
+import { IStorageMetadataDriver, MetadataSpec } from '../drivers/IStorageMetadataDriver';
 import { DocumentSpec, IStorageDocumentDriver } from '../drivers/IStorageDocumentDriver';
+import { StorageOperationType } from '../types/StorageOperationType';
 
-export class TradeService<MS extends MetadataSpec, DS extends DocumentSpec> {
+export class TradeService<MS extends MetadataSpec, DS extends DocumentSpec, ACR extends StorageACR> {
     protected _tradeDriver: TradeDriver;
 
-    protected readonly _storageMetadataDriver?: IStorageMetadataDriver<MS>;
+    protected readonly _storageMetadataDriver?: IStorageMetadataDriver<MS, ACR>;
 
     protected readonly _storageDocumentDriver?: IStorageDocumentDriver<DS>;
 
-    constructor(args: {tradeDriver: TradeDriver, storageMetadataDriver?: IStorageMetadataDriver<MS>, storageDocumentDriver?: IStorageDocumentDriver<DS>}) {
+    constructor(args: {tradeDriver: TradeDriver, storageMetadataDriver?: IStorageMetadataDriver<MS, ACR>, storageDocumentDriver?: IStorageDocumentDriver<DS>}) {
         this._tradeDriver = args.tradeDriver;
         this._storageMetadataDriver = args.storageMetadataDriver;
         this._storageDocumentDriver = args.storageDocumentDriver;
@@ -36,17 +40,14 @@ export class TradeService<MS extends MetadataSpec, DS extends DocumentSpec> {
 
     async addDocument(lineId: number, name: string, documentType: DocumentType, documentStorage?: {spec: DS, fileBuffer: Buffer}, metadataStorage?: {spec: MS, value: any}): Promise<void> {
         let externalUrl = '';
-        console.log('documentStorage: ', documentStorage);
-        console.log('metadataStorage: ', metadataStorage);
         if (documentStorage) {
             if (!this._storageDocumentDriver) throw new Error('Storage document driver is not available');
-            externalUrl = await this._storageDocumentDriver.create(OperationType.TRANSACTION_DOCUMENT, documentStorage?.fileBuffer, documentStorage?.spec);
+            externalUrl = await this._storageDocumentDriver.create(StorageOperationType.TRANSACTION_DOCUMENT, documentStorage?.fileBuffer, documentStorage?.spec);
         }
         if (metadataStorage) {
             if (!this._storageMetadataDriver) throw new Error('Storage metadata driver is not available');
-            await this._storageMetadataDriver.create(OperationType.TRANSACTION_DOCUMENT, metadataStorage.value, metadataStorage.spec);
+            await this._storageMetadataDriver.create(StorageOperationType.TRANSACTION_DOCUMENT, metadataStorage.value, [], metadataStorage.spec);
         }
-        console.log('externalUrl: ', externalUrl);
 
         return this._tradeDriver.addDocument(lineId, name, documentType, externalUrl);
     }

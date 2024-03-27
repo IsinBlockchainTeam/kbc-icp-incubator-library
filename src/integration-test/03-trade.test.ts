@@ -1,6 +1,7 @@
 import * as dotenv from 'dotenv';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { ethers, Signer, Wallet } from 'ethers';
+import { SolidStorageACR } from '@blockchain-lib/common';
 import {
     CUSTOMER_ADDRESS,
     MATERIAL_MANAGER_CONTRACT_ADDRESS,
@@ -43,13 +44,13 @@ describe('Trade lifecycle', () => {
     let provider: JsonRpcProvider;
     let signer: Signer;
 
-    let tradeManagerService: TradeManagerService<SolidMetadataSpec>;
+    let tradeManagerService: TradeManagerService<SolidMetadataSpec, SolidStorageACR>;
 
     let materialService: MaterialService;
     let materialDriver: MaterialDriver;
 
     let existingOrder: number;
-    let existingOrderService: OrderTradeService<SolidMetadataSpec, SolidDocumentSpec>;
+    let existingOrderService: OrderTradeService<SolidMetadataSpec, SolidDocumentSpec, SolidStorageACR>;
 
     const deadline: number = new Date().getTime() + 1000 * 60 * 60 * 24 * 7;
     const arbiter: string = Wallet.createRandom().address;
@@ -77,7 +78,7 @@ describe('Trade lifecycle', () => {
 
     const _registerOrder = async (): Promise<{
         order: OrderTradeInfo,
-        orderTradeService: OrderTradeService<SolidMetadataSpec, SolidDocumentSpec>
+        orderTradeService: OrderTradeService<SolidMetadataSpec, SolidDocumentSpec, SolidStorageACR>
     }> => {
         const trade: OrderTradeInfo = await tradeManagerService.registerOrderTrade(SUPPLIER_ADDRESS, CUSTOMER_ADDRESS, OTHER_ADDRESS, deadline, deadline, arbiter, deadline, deadline, 1000, MY_TOKEN_CONTRACT_ADDRESS);
         existingOrder = trade.tradeId;
@@ -243,7 +244,7 @@ describe('Trade lifecycle', () => {
     });
 
     describe('Basic trade scenario', () => {
-        let basicTradeService: BasicTradeService<SolidMetadataSpec, SolidDocumentSpec>;
+        let basicTradeService: BasicTradeService<SolidMetadataSpec, SolidDocumentSpec, SolidStorageACR>;
 
         it('Should correctly register and retrieve a basic trade with a line', async () => {
             _defineSender(SUPPLIER_PRIVATE_KEY);

@@ -1,4 +1,5 @@
 import { createMock } from 'ts-auto-mock';
+import { SolidStorageACR } from '@blockchain-lib/common';
 import { BasicTradeDriver } from '../drivers/BasicTradeDriver';
 import { BasicTradeService } from './BasicTradeService';
 import { Line, LineRequest } from '../entities/Trade';
@@ -20,7 +21,7 @@ describe('BasicTradeService', () => {
         setName: jest.fn(),
     });
 
-    const mockedStorageMetadataDriver = createMock<IStorageMetadataDriver<SolidMetadataSpec>>({
+    const mockedStorageMetadataDriver = createMock<IStorageMetadataDriver<SolidMetadataSpec, SolidStorageACR>>({
         create: jest.fn(),
     });
     const mockedStorageDocumentDriver = createMock<IStorageDocumentDriver<SolidDocumentSpec>>({

@@ -1,9 +1,8 @@
-export enum OperationType {
-    TRANSACTION, TRANSACTION_DOCUMENT, CERTIFICATION_DOCUMENT
-}
+import { StorageACR } from '@blockchain-lib/common';
+import { StorageOperationType } from '../types/StorageOperationType';
 
-export type MetadataSpec = {};
-export interface IStorageMetadataDriver<MS extends MetadataSpec> {
-    create(type: OperationType, value: any, metadataSpec?: MS): Promise<string>;
-    read(type: OperationType, metadataSpec: MS): Promise<any>
+export interface MetadataSpec {}
+export interface IStorageMetadataDriver<MS extends MetadataSpec, ACR extends StorageACR> {
+    create(type: StorageOperationType, value: any, aclRules?: ACR[], metadataSpec?: MS): Promise<string>;
+    read(type: StorageOperationType, metadataSpec: MS): Promise<any>;
 }

@@ -1,51 +1,68 @@
-import { SolidDriver, SolidResourceType, SolidSessionCredential } from '@blockchain-lib/common';
-import { IStorageMetadataDriver, OperationType } from './IStorageMetadataDriver';
+import {
+    SolidDriver,
+    SolidResourceType,
+    SolidSessionCredential,
+    SolidStorageACR,
+} from '@blockchain-lib/common';
+import { IStorageMetadataDriver, MetadataSpec } from './IStorageMetadataDriver';
 import { SolidUtilsService } from '../services/SolidUtilsService';
+import { StorageOperationType } from '../types/StorageOperationType';
 
-export type SolidMetadataSpec = {
-    // --- use these when there is no entire url resource because the resource has to be created first
+export interface SolidMetadataSpec extends MetadataSpec {
+    // --- use these when there is no entire url resource because the resource has to be created first ---
     resourceName?: string,
     bcResourceId?: string,
-    // ---
+    // ---------------------------------------------------------------------------------------------------
     entireResourceUrl?: string,
 }
 
-export class SolidMetadataDriver implements IStorageMetadataDriver<SolidMetadataSpec> {
+export class SolidMetadataDriver implements IStorageMetadataDriver<SolidMetadataSpec, SolidStorageACR> {
     private readonly _solidDriver: SolidDriver;
+
+    private readonly _solidServerBaseUrl: string;
 
     private readonly _sessionCredential?: SolidSessionCredential;
 
     constructor(serverBaseUrl: string, sessionCredential?: SolidSessionCredential) {
-        this._solidDriver = new SolidDriver(serverBaseUrl);
+        this._solidServerBaseUrl = serverBaseUrl;
+        this._solidDriver = new SolidDriver(this._solidServerBaseUrl);
         this._sessionCredential = sessionCredential;
     }
 
-    async create(type: OperationType, value: any, metadataSpec?: SolidMetadataSpec): Promise<string> {
+    async create(type: StorageOperationType, value: any, aclRules?: SolidStorageACR[], metadataSpec?: SolidMetadataSpec): Promise<string> {
         if (!this._sessionCredential?.podName) throw new Error('Invalid or missing session credential, podName is required.');
-        return this._solidDriver.create(
+        const resourceUrlPath = `${SolidUtilsService.defineRelativeResourcePath(this._solidServerBaseUrl, this._sessionCredential.podName, type, metadataSpec?.bcResourceId)}${metadataSpec?.resourceName || ''}`;
+        const resource = await this._solidDriver.create(
             {
-                podName: this._sessionCredential.podName,
-                relativeUrlPath: `${SolidUtilsService.defineRelativeResourcePath(type, metadataSpec?.bcResourceId)}${metadataSpec?.resourceName || ''}`,
+                totalUrlPath: resourceUrlPath,
                 type: SolidResourceType.METADATA,
             },
             { metadata: value },
             this._sessionCredential,
         );
+        if (aclRules && aclRules.length > 0)
+            await this._solidDriver.setAcl(
+                {
+                    totalUrlPath: resourceUrlPath,
+                    type: SolidResourceType.METADATA,
+                },
+                aclRules,
+                this._sessionCredential,
+            );
+
+        return resource.totalUrlPath;
     }
 
-    async read(type: OperationType, metadataSpec: SolidMetadataSpec): Promise<any> {
+    async read(type: StorageOperationType, metadataSpec: SolidMetadataSpec): Promise<any> {
         if (!this._sessionCredential?.podName) throw new Error('Invalid or missing session credential, podName is required.');
 
-        const relativeUrl = metadataSpec.entireResourceUrl ?
-            metadataSpec.entireResourceUrl.split(this._sessionCredential.podName)[1] :
-            `${SolidUtilsService.defineRelativeResourcePath(type, metadataSpec.bcResourceId)}${metadataSpec.resourceName || ''}`;
-        return this._solidDriver.read(
+        const resource = await this._solidDriver.read(
             {
-                podName: this._sessionCredential.podName,
-                relativeUrlPath: relativeUrl,
+                totalUrlPath: metadataSpec.entireResourceUrl || `${SolidUtilsService.defineRelativeResourcePath(this._solidServerBaseUrl, this._sessionCredential.podName, type, metadataSpec?.bcResourceId)}${metadataSpec?.resourceName || ''}`,
                 type: SolidResourceType.METADATA,
             },
             this._sessionCredential,
         );
+        return resource?.metadata;
     }
 }

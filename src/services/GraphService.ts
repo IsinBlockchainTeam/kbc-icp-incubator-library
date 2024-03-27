@@ -1,4 +1,5 @@
 import { Signer } from 'ethers';
+import { StorageACR } from '@blockchain-lib/common';
 import { Line, Trade } from '../entities/Trade';
 import { AssetOperation } from '../entities/AssetOperation';
 import { TradeManagerService } from './TradeManagerService';
@@ -19,10 +20,10 @@ export type GraphData = {
     edges: Array<Edge>,
 }
 
-export class GraphService<MS extends MetadataSpec> {
+export class GraphService<MS extends MetadataSpec, ACR extends StorageACR> {
     private _signer: Signer;
 
-    private _tradeManagerService: TradeManagerService<MS>;
+    private _tradeManagerService: TradeManagerService<MS, ACR>;
 
     private _assetOperationService: AssetOperationService;
 
@@ -32,7 +33,7 @@ export class GraphService<MS extends MetadataSpec> {
 
     private _flag: boolean = false;
 
-    constructor(signer: Signer, tradeManagerService: TradeManagerService<MS>, transformationService: AssetOperationService) {
+    constructor(signer: Signer, tradeManagerService: TradeManagerService<MS, ACR>, transformationService: AssetOperationService) {
         this._signer = signer;
         this._tradeManagerService = tradeManagerService;
         this._assetOperationService = transformationService;

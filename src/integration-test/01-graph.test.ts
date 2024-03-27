@@ -1,5 +1,6 @@
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { ethers, Signer, Wallet } from 'ethers';
+import { SolidStorageACR } from '@blockchain-lib/common';
 import { TradeManagerService } from '../services/TradeManagerService';
 import { AssetOperationDriver } from '../drivers/AssetOperationDriver';
 import { AssetOperationService } from '../services/AssetOperationService';
@@ -35,7 +36,7 @@ describe('GraphService lifecycle', () => {
     let provider: JsonRpcProvider;
     let signer: Signer;
 
-    let tradeManagerService: TradeManagerService<SolidMetadataSpec>;
+    let tradeManagerService: TradeManagerService<SolidMetadataSpec, SolidStorageACR>;
 
     let productCategoryService: ProductCategoryService;
 
@@ -71,7 +72,7 @@ describe('GraphService lifecycle', () => {
     const shippingDeadline: number = Date.now() + 1000 * 60 * 60 * 24 * 30;
     const deliveryDeadline: number = Date.now() + 1000 * 60 * 60 * 24 * 30;
 
-    let graphService: GraphService<SolidMetadataSpec>;
+    let graphService: GraphService<SolidMetadataSpec, SolidStorageACR>;
 
     const _defineSender = (privateKey: string) => {
         signer = new ethers.Wallet(privateKey, provider);
