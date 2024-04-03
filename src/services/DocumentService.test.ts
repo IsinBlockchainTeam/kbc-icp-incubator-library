@@ -60,13 +60,13 @@ describe('DocumentService', () => {
         },
         {
             serviceFunctionName: 'getDocumentsInfoByDocumentType',
-            serviceFunction: () => documentService.getDocumentsInfoByDocumentType(transactionId, transactionType, rawDocument.documentType),
+            serviceFunction: () => documentService.getDocumentInfoById(transactionId, transactionType, rawDocument.documentType),
             expectedMockedFunction: mockedDocumentDriver.getDocumentsInfoByDocumentType,
             expectedMockedFunctionArgs: [transactionId, transactionType, rawDocument.documentType],
         },
         {
             serviceFunctionName: 'getDocumentsCounterByTransactionIdAndType',
-            serviceFunction: () => documentService.getDocumentsCounterByTransactionIdAndType(transactionId, transactionType),
+            serviceFunction: () => documentService.getDocumentsCounter(transactionId, transactionType),
             expectedMockedFunction: mockedDocumentDriver.getDocumentsCounterByTransactionIdAndType,
             expectedMockedFunctionArgs: [transactionId, transactionType],
         },

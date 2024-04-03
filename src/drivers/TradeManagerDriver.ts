@@ -12,9 +12,9 @@ import { IConcreteTradeDriverInterface } from './IConcreteTradeDriver.interface'
 export class TradeManagerDriver {
     private _contract: TradeManager;
 
-    private _materialManagerAddress: string;
+    private readonly _materialManagerAddress: string;
 
-    private _productCategoryManagerAddress: string;
+    private readonly _productCategoryManagerAddress: string;
 
     constructor(signer: Signer, tradeManagerAddress: string, materialManagerAddress: string, productCategoryManagerAddress: string) {
         this._contract = TradeManager__factory

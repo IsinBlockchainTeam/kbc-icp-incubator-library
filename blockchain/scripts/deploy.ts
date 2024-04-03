@@ -33,17 +33,8 @@ serial([
             await tx.wait();
         }
     },
-    () => deploy(ContractName.ENUMERABLE_TYPE_MANAGER, [[]], 'EnumerableTransactionTypeManager'),
-    async () => {
-        const enums: string[] = ['trade', 'transformation', 'certification'];
-        for (let i = 0; i < enums.length; i++) {
-            const tx = await contractMap.get('EnumerableTransactionTypeManager')
-                ?.add(enums[i]);
-            await tx.wait();
-        }
-    },
     () => deploy(
-        ContractName.PRODUCT_CATEGORY_MANAGER, []
+        ContractName.PRODUCT_CATEGORY_MANAGER, [],
     ),
     () => deploy(
         ContractName.MATERIAL_MANAGER, [
@@ -53,7 +44,6 @@ serial([
     () => deploy(
         ContractName.DOCUMENT_MANAGER, [
             [process.env.SUPPLIER_ADMIN || ''],
-            contractMap.get('EnumerableTransactionTypeManager')?.address,
         ],
     ),
     () => deploy(

@@ -2,7 +2,7 @@
 /* eslint-disable no-await-in-loop */
 import { Signer, utils } from 'ethers';
 import { DocumentManager, DocumentManager__factory } from '../smart-contracts';
-import { DocumentInfo, DocumentType } from '../entities/DocumentInfo';
+import { DocumentInfo } from '../entities/DocumentInfo';
 import { EntityBuilder } from '../utils/EntityBuilder';
 
 export class DocumentDriver {
@@ -17,28 +17,28 @@ export class DocumentDriver {
             .connect(signer);
     }
 
-    async registerDocument(transactionId: number, transactionType: string, name: string, documentType: DocumentType, externalUrl: string, contentHash: string): Promise<void> {
+    async registerDocument(externalUrl: string, contentHash: string): Promise<void> {
         try {
-            const tx = await this._contract.registerDocument(transactionId, transactionType, name, documentType, externalUrl, contentHash);
+            const tx = await this._contract.registerDocument(externalUrl, contentHash);
             await tx.wait();
         } catch (e: any) {
             throw new Error(e.message);
         }
     }
 
-    async getDocumentsCounterByTransactionIdAndType(transactionId: number, transactionType: string): Promise<number> {
+    async getDocumentById(documentId: number): Promise<DocumentInfo> {
         try {
-            const counter = await this._contract.getDocumentsCounterByTransactionIdAndType(transactionId, transactionType);
-            return counter.toNumber();
+            const document = await this._contract.getDocumentById(documentId);
+            return EntityBuilder.buildDocumentInfo(document);
         } catch (e: any) {
             throw new Error(e.message);
         }
     }
 
-    async getDocumentsInfoByDocumentType(transactionId: number, transactionType: string, documentType: DocumentType): Promise<DocumentInfo[]> {
+    async getDocumentsCounter(): Promise<number> {
         try {
-            const documents = await this._contract.getDocumentsByDocumentType(transactionId, transactionType, documentType);
-            return documents.map((d) => EntityBuilder.buildDocumentInfo(d));
+            const counter = await this._contract.getDocumentsCounter();
+            return counter.toNumber();
         } catch (e: any) {
             throw new Error(e.message);
         }

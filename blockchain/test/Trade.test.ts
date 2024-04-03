@@ -43,38 +43,13 @@ describe('Trade.sol', () => {
     });
 
     describe('Trade status', () => {
-        it('should compute the trade status', async () => {
-            documentManagerContractFake.getDocumentsCounterByTransactionIdAndType.returns(2);
-            documentManagerContractFake.getDocumentsByDocumentType.returns([{
-                id: 1,
-                transactionId: 2,
-                name: 'document',
-                documentType: documentTypes[0],
-                externalUrl: 'url',
-                contentHash: 'hash',
-            }]);
-
-            expect(await basicTradeContract.connect(supplier)
-                .getTradeStatus())
-                .to
-                .equal(1);
-            expect(documentManagerContractFake.getDocumentsByDocumentType)
-                .to
-                .have
-                .callCount(1);
-            expect(documentManagerContractFake.getDocumentsByDocumentType)
-                .to
-                .have
-                .calledWith(1, 'trade', documentTypes[0]);
-        });
-
         // it('should compute the trade status - FAIL (Trade: There are no documents related to this trade)', async () => {
-        //     documentManagerContractFake.getDocumentsCounterByTransactionIdAndType.returns(0);
+        //     documentManagerContractFake.getDocumentsCounter.returns(0);
         //     await expect(basicTradeContract.connect(supplier).getTradeStatus()).to.be.revertedWith('Trade: There are no documents related to this trade');
         // });
 
         it('should compute the trade status - CONTRACTING', async () => {
-            documentManagerContractFake.getDocumentsCounterByTransactionIdAndType.returns(0);
+            documentManagerContractFake.getDocumentsCounter.returns(0);
             expect(await basicTradeContract.connect(supplier)
                 .getTradeStatus())
                 .to
@@ -82,8 +57,7 @@ describe('Trade.sol', () => {
         });
 
         it('should compute the trade status - FAIL (Trade: There are no documents with correct document type)', async () => {
-            documentManagerContractFake.getDocumentsCounterByTransactionIdAndType.returns(2);
-            documentManagerContractFake.getDocumentsByDocumentType.returns([]);
+            documentManagerContractFake.getDocumentsCounter.returns(2);
             await expect(basicTradeContract.connect(customer)
                 .getTradeStatus())
                 .to
@@ -96,7 +70,7 @@ describe('Trade.sol', () => {
         it('should add a document', async () => {
             await basicTradeContract.addLine(1);
             await basicTradeContract.assignMaterial(1, 2);
-            await basicTradeContract.addDocument(1, 'test document', documentTypes[0], 'https://www.test.com', 'content_hash');
+            await basicTradeContract.addDocument(1, documentTypes[0], 'https://www.test.com', 'content_hash');
             expect(documentManagerContractFake.registerDocument)
                 .to
                 .have
@@ -104,7 +78,7 @@ describe('Trade.sol', () => {
             expect(documentManagerContractFake.registerDocument)
                 .to
                 .have
-                .calledWith(1, 'trade', 'test document', documentTypes[0], 'https://www.test.com', 'content_hash');
+                .calledWith('https://www.test.com', 'content_hash');
         });
     });
 

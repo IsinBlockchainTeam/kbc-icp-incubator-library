@@ -21,13 +21,14 @@ import { TradeManagerService } from '../services/TradeManagerService';
 import { TradeManagerDriver } from '../drivers/TradeManagerDriver';
 import { OrderTradeService } from '../services/OrderTradeService';
 import { OrderTradeDriver } from '../drivers/OrderTradeDriver';
-import { OrderTradeInfo } from '../entities/OrderTradeInfo';
+import { OrderLinePrice, OrderLineRequest, OrderTradeInfo } from '../entities/OrderTradeInfo';
 import { ProductCategoryService } from '../services/ProductCategoryService';
 import { ProductCategoryDriver } from '../drivers/ProductCategoryDriver';
 import { MaterialService } from '../services/MaterialService';
 import { MaterialDriver } from '../drivers/MaterialDriver';
 import { SolidDocumentSpec } from '../drivers/SolidDocumentDriver';
 import { SolidMetadataSpec } from '../drivers/SolidMetadataDriver';
+import { TradeStatus } from '../types/TradeStatus';
 
 dotenv.config();
 
@@ -40,7 +41,6 @@ describe('Document lifecycle', () => {
     let tradeManagerDriver: TradeManagerDriver;
 
     const localFilename = 'samplePdf.pdf';
-    const externalUrl = 'externalUrl';
 
     const arbiter: string = Wallet.createRandom().address;
     const paymentDeadline: number = new Date().getTime() + 1000 * 60 * 60 * 24 * 30;
@@ -49,14 +49,12 @@ describe('Document lifecycle', () => {
     const deliveryDeadline: number = new Date().getTime() + 1000 * 60 * 60 * 24 * 30;
     const agreedAmount: number = 1000;
 
-    const transactionDocumentCounter = 0;
+    let documentCounter = 0;
     const billOfLading = {
-        name: 'Document name',
         documentType: DocumentType.BILL_OF_LADING,
         externalUrl: 'externalUrl',
     };
     const deliveryNote = {
-        name: 'Document name2',
         documentType: DocumentType.DELIVERY_NOTE,
         externalUrl: 'externalUr2',
     };
@@ -128,6 +126,28 @@ describe('Document lifecycle', () => {
         materialIds.push((await materialService.registerMaterial(productCategoryIds[1])).id);
     });
 
+    it('should register a document', async () => {
+        _defineSender(ADMIN_PRIVATE_KEY);
+        const { orderId, orderTradeService } = await createOrderAndConfirm();
+        transactionId = orderId;
+        firstOrderTradeService = orderTradeService;
+        firstOrderLineId = (await orderTradeService.addLine(new OrderLineRequest(productCategoryIds[0], 100, new OrderLinePrice(100.50, 'CHF')))).id;
+        await orderTradeService.assignMaterial(firstOrderLineId, materialIds[0]);
+        await orderTradeService.addDocument(firstOrderLineId, deliveryNote.documentType);
+
+        documentCounter = await documentService.getDocumentsCounter();
+        expect(documentCounter).toEqual(1);
+
+        const status = await orderTradeService.getTradeStatus();
+        expect(status).toEqual(TradeStatus.SHIPPED);
+
+        const documentInfo = await documentService.getDocumentInfoById(documentCounter);
+        expect(documentInfo).toBeDefined();
+        expect(documentInfo.id).toEqual(documentCounter);
+        expect(documentInfo.externalUrl).toEqual('');
+        expect(documentInfo.contentHash).toEqual('');
+    });
+
     // it('Should register a document (and store it to ipfs) by invoking the order trade contract, then retrieve the document', async () => {
     //     _defineSender(ADMIN_PRIVATE_KEY);
     //     const filename = 'file1.pdf';
@@ -144,8 +164,8 @@ describe('Document lifecycle', () => {
     //     await orderTradeService.assignMaterial(firstOrderLineId, materialIds[0]);
     //     await orderTradeService.addDocument(firstOrderLineId, deliveryNote.name, deliveryNote.documentType, metadataUrl);
     //
-    //     transactionDocumentCounter = await documentService.getDocumentsCounterByTransactionIdAndType(transactionId, transactionType);
-    //     expect(transactionDocumentCounter).toEqual(1);
+    //     documentCounter = await documentService.getDocumentsCounterByTransactionIdAndType(transactionId, transactionType);
+    //     expect(documentCounter).toEqual(1);
     //
     //     const status = await orderTradeService.getTradeStatus();
     //     expect(status).toEqual(TradeStatus.SHIPPED);
@@ -157,15 +177,15 @@ describe('Document lifecycle', () => {
     //     const savedDocument = await documentService.getCompleteDocument(savedDocumentInfo);
     //     expect(savedDocument).toBeDefined();
     //     expect(savedDocumentInfo).toBeDefined();
-    //     expect(savedDocument!.id).toEqual(transactionDocumentCounter);
-    //     expect(savedDocument!.transactionId).toEqual(transactionId);
-    //     expect(savedDocument!.name).toEqual(deliveryNote.name);
-    //     expect(savedDocument!.documentType).toEqual(deliveryNote.documentType);
-    //     expect(savedDocument!.filename).toEqual(filename);
-    //     expect(savedDocument!.date).toEqual(today);
-    //     expect(savedDocument!.quantity).toBeUndefined();
-    //     expect(savedDocument!.content.size).toEqual(content.size);
-    //     expect(savedDocument!.content.type).toEqual(content.type);
+    //     expect(documentInfo.id).toEqual(documentCounter);
+    //     expect(documentInfo.transactionId).toEqual(transactionId);
+    //     expect(documentInfo.name).toEqual(deliveryNote.name);
+    //     expect(documentInfo.documentType).toEqual(deliveryNote.documentType);
+    //     expect(documentInfo.filename).toEqual(filename);
+    //     expect(documentInfo.date).toEqual(today);
+    //     expect(documentInfo.quantity).toBeUndefined();
+    //     expect(documentInfo.content.size).toEqual(content.size);
+    //     expect(documentInfo.content.type).toEqual(content.type);
     // }, 30000);
     //
     // it('Should add another document for the first order and another to a new order', async () => {

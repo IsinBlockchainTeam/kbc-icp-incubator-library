@@ -1,6 +1,6 @@
 import { StorageACR } from '@blockchain-lib/common';
 import { DocumentDriver } from '../drivers/DocumentDriver';
-import { DocumentInfo, DocumentType } from '../entities/DocumentInfo';
+import { DocumentInfo } from '../entities/DocumentInfo';
 import { Document } from '../entities/Document';
 import { DocumentSpec, IStorageDocumentDriver } from '../drivers/IStorageDocumentDriver';
 import { IStorageMetadataDriver, MetadataSpec } from '../drivers/IStorageMetadataDriver';
@@ -19,16 +19,16 @@ export class DocumentService<MS extends MetadataSpec, DS extends DocumentSpec, A
         this._storageDocumentDriver = args.storageDocumentDriver;
     }
 
-    async registerDocument(transactionId: number, transactionType: string, name: string, documentType: DocumentType, externalUrl: string, contentHash: string): Promise<void> {
-        await this._documentDriver.registerDocument(transactionId, transactionType, name, documentType, externalUrl, contentHash);
+    async registerDocument(externalUrl: string, contentHash: string): Promise<void> {
+        await this._documentDriver.registerDocument(externalUrl, contentHash);
     }
 
-    async getDocumentsCounterByTransactionIdAndType(transactionId: number, transactionType: string): Promise<number> {
-        return this._documentDriver.getDocumentsCounterByTransactionIdAndType(transactionId, transactionType);
+    async getDocumentsCounter(): Promise<number> {
+        return this._documentDriver.getDocumentsCounter();
     }
 
-    async getDocumentsInfoByDocumentType(transactionId: number, transactionType: string, documentType: DocumentType): Promise<DocumentInfo[]> {
-        return this._documentDriver.getDocumentsInfoByDocumentType(transactionId, transactionType, documentType);
+    async getDocumentInfoById(id: number): Promise<DocumentInfo> {
+        return this._documentDriver.getDocumentById(id);
     }
 
     async getCompleteDocument(documentInfo: DocumentInfo, metadataSpec: MS, documentSpec: DS): Promise<Document | undefined> {
@@ -42,13 +42,6 @@ export class DocumentService<MS extends MetadataSpec, DS extends DocumentSpec, A
             throw new Error(`Error while retrieve document file from external storage: ${e.message}`);
         }
         return undefined;
-    }
-
-    async getDocumentsInfoByTransactionIdAndType(transactionId: number, transactionType: string): Promise<DocumentInfo[]> {
-        const docTypesCounter = Object.keys(DocumentType).length / 2;
-        const results = await Promise.all(Array.from({ length: docTypesCounter }, (_, index) => index)
-            .map(async (docTypeIndex) => this.getDocumentsInfoByDocumentType(transactionId, transactionType, docTypeIndex)));
-        return results.reduce((acc, currentResult) => acc.concat(currentResult), []);
     }
 
     async addAdmin(address: string): Promise<void> {

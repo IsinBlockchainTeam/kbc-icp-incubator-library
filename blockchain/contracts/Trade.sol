@@ -11,6 +11,8 @@ import "./MaterialManager.sol";
 abstract contract Trade is AccessControl {
     using Counters for Counters.Counter;
 
+    enum DocumentType { DELIVERY_NOTE, BILL_OF_LADING }
+
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
     enum TradeStatus { SHIPPED, ON_BOARD, CONTRACTING }
@@ -56,6 +58,9 @@ abstract contract Trade is AccessControl {
     mapping(uint256 => Line) internal _lines;
     uint256[] internal _lineIds;
     Counters.Counter internal _lineCounter;
+
+    // document type => document ids
+    mapping(DocumentType => uint256[]) private _documents;
 
     ProductCategoryManager internal _productCategoryManager;
     MaterialManager internal _materialManager;
@@ -123,19 +128,23 @@ abstract contract Trade is AccessControl {
     }
 
     function getTradeStatus() public view returns (TradeStatus) {
-        uint256 documentsCounter = _documentManager.getDocumentsCounterByTransactionIdAndType(_tradeId, "trade");
+        uint256 documentsCounter = _documentManager.getDocumentsCounter();
         //require(documentsCounter > 0, "Trade: There are no documents related to this trade");
         if (documentsCounter == 0) return TradeStatus.CONTRACTING;
 
-        if ((_documentManager.getDocumentsByDocumentType(_tradeId, "trade", DocumentManager.DocumentType.BILL_OF_LADING)).length > 0) return TradeStatus.ON_BOARD;
-        if ((_documentManager.getDocumentsByDocumentType(_tradeId, "trade", DocumentManager.DocumentType.DELIVERY_NOTE)).length > 0) return TradeStatus.SHIPPED;
+        if (_documents[DocumentType.BILL_OF_LADING].length > 0) return TradeStatus.ON_BOARD;
+        if (_documents[DocumentType.DELIVERY_NOTE].length > 0) return TradeStatus.SHIPPED;
         revert("Trade: There are no documents with correct document type");
     }
 
-    function addDocument(uint256 lineId, string memory name, DocumentManager.DocumentType documentType, string memory externalUrl, string memory contentHash) public onlyAdminOrContractPart {
+    function addDocument(uint256 lineId, DocumentType documentType, string memory externalUrl, string memory contentHash) public onlyAdminOrContractPart {
         require(_lines[lineId].exists, "Trade: Line does not exist");
         require(_lines[lineId].materialId != 0, "Trade: A material must be assigned before adding a document for a line");
-        _documentManager.registerDocument(_tradeId, "trade", name, documentType, externalUrl, contentHash);
+        _documents[documentType].push(_documentManager.registerDocument(externalUrl, contentHash));
+    }
+
+    function getDocumentIdsByType(DocumentType documentType) public view returns (uint256[] memory) {
+        return _documents[documentType];
     }
 
     function addAdmin(address account) public onlyAdmin {

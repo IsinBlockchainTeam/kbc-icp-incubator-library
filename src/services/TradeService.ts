@@ -3,22 +3,26 @@ import {
 } from '@blockchain-lib/common/types/storage';
 import { TradeDriver } from '../drivers/TradeDriver';
 import { TradeStatus } from '../types/TradeStatus';
-import { DocumentType } from '../entities/DocumentInfo';
+import { DocumentInfo, DocumentType } from '../entities/DocumentInfo';
 import { TradeType } from '../types/TradeType';
 import { IStorageMetadataDriver, MetadataSpec } from '../drivers/IStorageMetadataDriver';
 import { DocumentSpec, IStorageDocumentDriver } from '../drivers/IStorageDocumentDriver';
 import { StorageOperationType } from '../types/StorageOperationType';
 import { computeHashFromBuffer } from '../utils/utils';
+import { DocumentDriver } from '../drivers/DocumentDriver';
 
 export class TradeService<MS extends MetadataSpec, DS extends DocumentSpec, ACR extends StorageACR> {
     protected _tradeDriver: TradeDriver;
+
+    private readonly _documentDriver?: DocumentDriver;
 
     protected readonly _storageMetadataDriver?: IStorageMetadataDriver<MS, ACR>;
 
     protected readonly _storageDocumentDriver?: IStorageDocumentDriver<DS>;
 
-    constructor(args: {tradeDriver: TradeDriver, storageMetadataDriver?: IStorageMetadataDriver<MS, ACR>, storageDocumentDriver?: IStorageDocumentDriver<DS>}) {
+    constructor(args: {tradeDriver: TradeDriver, documentDriver?: DocumentDriver, storageMetadataDriver?: IStorageMetadataDriver<MS, ACR>, storageDocumentDriver?: IStorageDocumentDriver<DS>}) {
         this._tradeDriver = args.tradeDriver;
+        this._documentDriver = args.documentDriver;
         this._storageMetadataDriver = args.storageMetadataDriver;
         this._storageDocumentDriver = args.storageDocumentDriver;
     }
@@ -39,7 +43,7 @@ export class TradeService<MS extends MetadataSpec, DS extends DocumentSpec, ACR 
         return this._tradeDriver.getTradeStatus();
     }
 
-    async addDocument(lineId: number, name: string, documentType: DocumentType, documentStorage?: {spec: DS, fileBuffer: Buffer}, metadataStorage?: {spec: MS, value: any}): Promise<void> {
+    async addDocument(lineId: number, documentType: DocumentType, documentStorage?: {spec: DS, fileBuffer: Buffer}, metadataStorage?: {spec: MS, value: any}): Promise<void> {
         let externalUrl = '';
         let contentHash = '';
         if (documentStorage) {
@@ -52,7 +56,17 @@ export class TradeService<MS extends MetadataSpec, DS extends DocumentSpec, ACR 
             await this._storageMetadataDriver.create(StorageOperationType.TRANSACTION_DOCUMENT, metadataStorage.value, [], metadataStorage.spec);
         }
 
-        return this._tradeDriver.addDocument(lineId, name, documentType, externalUrl, contentHash);
+        return this._tradeDriver.addDocument(lineId, documentType, externalUrl, contentHash);
+    }
+
+    async getDocumentIdsByType(documentType: DocumentType): Promise<number[]> {
+        return this._tradeDriver.getDocumentIdsByType(documentType);
+    }
+
+    async getDocumentsByType(documentType: DocumentType): Promise<DocumentInfo[]> {
+        if (!this._documentDriver) throw new Error('Cannot perform this operation without a document driver');
+        const ids = await this.getDocumentIdsByType(documentType);
+        return Promise.all(ids.map((id) => this._documentDriver!.getDocumentById(id)));
     }
 
     async addAdmin(account: string): Promise<void> {
