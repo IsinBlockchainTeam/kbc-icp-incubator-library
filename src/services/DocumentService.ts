@@ -19,8 +19,8 @@ export class DocumentService<MS extends MetadataSpec, DS extends DocumentSpec, A
         this._storageDocumentDriver = args.storageDocumentDriver;
     }
 
-    async registerDocument(transactionId: number, transactionType: string, name: string, documentType: DocumentType, externalUrl: string): Promise<void> {
-        await this._documentDriver.registerDocument(transactionId, transactionType, name, documentType, externalUrl);
+    async registerDocument(transactionId: number, transactionType: string, name: string, documentType: DocumentType, externalUrl: string, contentHash: string): Promise<void> {
+        await this._documentDriver.registerDocument(transactionId, transactionType, name, documentType, externalUrl, contentHash);
     }
 
     async getDocumentsCounterByTransactionIdAndType(transactionId: number, transactionType: string): Promise<number> {

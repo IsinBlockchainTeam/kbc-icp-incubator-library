@@ -132,10 +132,10 @@ abstract contract Trade is AccessControl {
         revert("Trade: There are no documents with correct document type");
     }
 
-    function addDocument(uint256 lineId, string memory name, DocumentManager.DocumentType documentType, string memory externalUrl) public onlyAdminOrContractPart {
+    function addDocument(uint256 lineId, string memory name, DocumentManager.DocumentType documentType, string memory externalUrl, string memory contentHash) public onlyAdminOrContractPart {
         require(_lines[lineId].exists, "Trade: Line does not exist");
         require(_lines[lineId].materialId != 0, "Trade: A material must be assigned before adding a document for a line");
-        _documentManager.registerDocument(_tradeId, "trade", name, documentType, externalUrl);
+        _documentManager.registerDocument(_tradeId, "trade", name, documentType, externalUrl, contentHash);
     }
 
     function addAdmin(address account) public onlyAdmin {

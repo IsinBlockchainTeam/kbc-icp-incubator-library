@@ -8,6 +8,7 @@ import { IStorageDocumentDriver } from '../drivers/IStorageDocumentDriver';
 import { SolidDocumentSpec } from '../drivers/SolidDocumentDriver';
 import { SolidMetadataSpec } from '../drivers/SolidMetadataDriver';
 import { StorageOperationType } from '../types/StorageOperationType';
+import { computeHashFromBuffer } from '../utils/utils';
 
 describe('TradeService', () => {
     const mockedTradeDriver: TradeDriver = createMock<TradeDriver>({
@@ -74,13 +75,13 @@ describe('TradeService', () => {
             serviceFunctionName: 'addDocument with metadata and storage drivers',
             serviceFunction: () => tradeService.addDocument(1, 'doc name', DocumentType.DELIVERY_NOTE, { spec: documentSpec, fileBuffer: documentBuffer }, { spec: metadataSpec, value: metadata }),
             expectedMockedFunction: mockedTradeDriver.addDocument,
-            expectedMockedFunctionArgs: [1, 'doc name', DocumentType.DELIVERY_NOTE, documentExternalUrl],
+            expectedMockedFunctionArgs: [1, 'doc name', DocumentType.DELIVERY_NOTE, documentExternalUrl, computeHashFromBuffer(documentBuffer)],
         },
         {
             serviceFunctionName: 'addDocument without metadata and storage drivers',
             serviceFunction: () => tradeService.addDocument(1, 'doc name', DocumentType.DELIVERY_NOTE),
             expectedMockedFunction: mockedTradeDriver.addDocument,
-            expectedMockedFunctionArgs: [1, 'doc name', DocumentType.DELIVERY_NOTE, ''],
+            expectedMockedFunctionArgs: [1, 'doc name', DocumentType.DELIVERY_NOTE, '', ''],
         },
         {
             storageDrivers: { metadata: true },
@@ -95,12 +96,6 @@ describe('TradeService', () => {
             serviceFunction: () => tradeService.addDocument(1, 'doc name', DocumentType.DELIVERY_NOTE, { spec: documentSpec, fileBuffer: documentBuffer }),
             expectedMockedFunction: mockedStorageDocumentDriver.create,
             expectedMockedFunctionArgs: [StorageOperationType.TRANSACTION_DOCUMENT, documentBuffer, documentSpec],
-        },
-        {
-            serviceFunctionName: 'addDocument without metadata and storage drivers',
-            serviceFunction: () => tradeService.addDocument(1, 'doc name', DocumentType.DELIVERY_NOTE),
-            expectedMockedFunction: mockedTradeDriver.addDocument,
-            expectedMockedFunctionArgs: [1, 'doc name', DocumentType.DELIVERY_NOTE, ''],
         },
         {
             serviceFunctionName: 'addAdmin',

@@ -13,12 +13,15 @@ export class DocumentInfo {
 
     private _externalUrl: string;
 
-    constructor(id: number, transactionId: number, name: string, documentType: DocumentType, externalUrl: string) {
+    private _contentHash: string;
+
+    constructor(id: number, transactionId: number, name: string, documentType: DocumentType, externalUrl: string, contentHash: string) {
         this._id = id;
         this._transactionId = transactionId;
         this._name = name;
         this._documentType = documentType;
         this._externalUrl = externalUrl;
+        this._contentHash = contentHash;
     }
 
     get id(): number {
@@ -59,5 +62,13 @@ export class DocumentInfo {
 
     set externalUrl(value: string) {
         this._externalUrl = value;
+    }
+
+    get contentHash(): string {
+        return this._contentHash;
+    }
+
+    set contentHash(value: string) {
+        this._contentHash = value;
     }
 }

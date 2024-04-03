@@ -8,6 +8,7 @@ import { TradeType } from '../types/TradeType';
 import { IStorageMetadataDriver, MetadataSpec } from '../drivers/IStorageMetadataDriver';
 import { DocumentSpec, IStorageDocumentDriver } from '../drivers/IStorageDocumentDriver';
 import { StorageOperationType } from '../types/StorageOperationType';
+import { computeHashFromBuffer } from '../utils/utils';
 
 export class TradeService<MS extends MetadataSpec, DS extends DocumentSpec, ACR extends StorageACR> {
     protected _tradeDriver: TradeDriver;
@@ -40,16 +41,18 @@ export class TradeService<MS extends MetadataSpec, DS extends DocumentSpec, ACR 
 
     async addDocument(lineId: number, name: string, documentType: DocumentType, documentStorage?: {spec: DS, fileBuffer: Buffer}, metadataStorage?: {spec: MS, value: any}): Promise<void> {
         let externalUrl = '';
+        let contentHash = '';
         if (documentStorage) {
             if (!this._storageDocumentDriver) throw new Error('Storage document driver is not available');
             externalUrl = await this._storageDocumentDriver.create(StorageOperationType.TRANSACTION_DOCUMENT, documentStorage?.fileBuffer, documentStorage?.spec);
+            contentHash = computeHashFromBuffer(documentStorage.fileBuffer);
         }
         if (metadataStorage) {
             if (!this._storageMetadataDriver) throw new Error('Storage metadata driver is not available');
             await this._storageMetadataDriver.create(StorageOperationType.TRANSACTION_DOCUMENT, metadataStorage.value, [], metadataStorage.spec);
         }
 
-        return this._tradeDriver.addDocument(lineId, name, documentType, externalUrl);
+        return this._tradeDriver.addDocument(lineId, name, documentType, externalUrl, contentHash);
     }
 
     async addAdmin(account: string): Promise<void> {

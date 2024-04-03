@@ -1,11 +1,11 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import chai, { expect } from 'chai';
 import { FakeContract, smock } from '@defi-wonderland/smock';
-import {BigNumber, Contract} from 'ethers';
+import { BigNumber, Contract } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { ethers } from 'hardhat';
 import { ContractName } from '../utils/constants';
-import {MaterialManager} from "../typechain-types";
+import { MaterialManager } from '../typechain-types';
 
 describe('Trade.sol', () => {
     chai.use(smock.matchers);
@@ -31,7 +31,7 @@ describe('Trade.sol', () => {
         productCategoryManagerContractFake.getProductCategoryExists.returns((value: number) => value <= 10);
         materialManagerContractFake = await smock.fake(ContractName.MATERIAL_MANAGER);
         materialManagerContractFake.getMaterialExists.returns((value: number) => value <= 10);
-        materialManagerContractFake.getMaterial.returns(materialStruct)
+        materialManagerContractFake.getMaterial.returns(materialStruct);
         documentManagerContractFake = await smock.fake(ContractName.DOCUMENT_MANAGER);
     });
 
@@ -51,6 +51,7 @@ describe('Trade.sol', () => {
                 name: 'document',
                 documentType: documentTypes[0],
                 externalUrl: 'url',
+                contentHash: 'hash',
             }]);
 
             expect(await basicTradeContract.connect(supplier)
@@ -95,7 +96,7 @@ describe('Trade.sol', () => {
         it('should add a document', async () => {
             await basicTradeContract.addLine(1);
             await basicTradeContract.assignMaterial(1, 2);
-            await basicTradeContract.addDocument(1, 'test document', documentTypes[0], 'https://www.test.com');
+            await basicTradeContract.addDocument(1, 'test document', documentTypes[0], 'https://www.test.com', 'content_hash');
             expect(documentManagerContractFake.registerDocument)
                 .to
                 .have
@@ -103,7 +104,7 @@ describe('Trade.sol', () => {
             expect(documentManagerContractFake.registerDocument)
                 .to
                 .have
-                .calledWith(1, 'trade', 'test document', documentTypes[0], 'https://www.test.com');
+                .calledWith(1, 'trade', 'test document', documentTypes[0], 'https://www.test.com', 'content_hash');
         });
     });
 

@@ -1,3 +1,4 @@
+import { createHash } from 'crypto';
 import { TradeType } from '../types/TradeType';
 
 export const checkAndGetEnvironmentVariable = (variable: string | undefined, errorMessage?: any): string => {
@@ -17,4 +18,10 @@ export const getTradeTypeByIndex = (index: number): TradeType => {
     default:
         throw new Error(`Utils: an invalid value "${index}" for "TradeType" was returned by the contract`);
     }
+};
+
+export const computeHashFromBuffer = (buffer: Buffer, algorithm = 'sha256'): string => {
+    const hash = createHash(algorithm);
+    hash.update(buffer);
+    return hash.digest('hex');
 };

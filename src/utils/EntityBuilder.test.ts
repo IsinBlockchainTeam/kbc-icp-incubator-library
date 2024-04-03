@@ -95,15 +95,16 @@ describe('EntityBuilder', () => {
 
     describe('buildDocument', () => {
         it('should correctly build a document', () => {
-            const bcDocument: DocumentManager.DocumentStructOutput = [BigNumber.from(0), BigNumber.from(2), 'doc name', DocumentType.DELIVERY_NOTE, 'external url', true] as DocumentManager.DocumentStructOutput;
+            const bcDocument: DocumentManager.DocumentStructOutput = [BigNumber.from(0), BigNumber.from(2), 'doc name', DocumentType.DELIVERY_NOTE, 'external url', 'content_hash', true] as DocumentManager.DocumentStructOutput;
             bcDocument.id = BigNumber.from(0);
             bcDocument.transactionId = BigNumber.from(2);
             bcDocument.name = 'doc name';
             bcDocument.documentType = DocumentType.DELIVERY_NOTE;
             bcDocument.externalUrl = 'external url';
+            bcDocument.contentHash = 'content_hash';
             bcDocument.exists = true;
 
-            const document = new DocumentInfo(0, 2, 'doc name', DocumentType.DELIVERY_NOTE, 'external url');
+            const document = new DocumentInfo(0, 2, 'doc name', DocumentType.DELIVERY_NOTE, 'external url', 'content_hash');
             expect(EntityBuilder.buildDocumentInfo(bcDocument)).toEqual(document);
         });
     });
