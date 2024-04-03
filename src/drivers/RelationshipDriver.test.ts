@@ -102,17 +102,17 @@ describe('RelationshipDriver', () => {
             mockedRegisterRelationship.mockRejectedValue(new Error(errorMessage));
 
             const fn = async () => relationshipDriver.registerRelationship(companyA.address, companyB.address, now);
-            await expect(fn).rejects.toThrowError(new Error(errorMessage));
+            await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
 
         it('should call and wait for register relationship - FAIL (Company A not an address)', async () => {
             const fn = async () => relationshipDriver.registerRelationship('0xaddress', companyB.address, now);
-            await expect(fn).rejects.toThrowError(new Error('Company A not an address'));
+            await expect(fn).rejects.toThrow(new Error('Company A not an address'));
         });
 
         it('should call and wait for register relationship - FAIL (Company B not an address)', async () => {
             const fn = async () => relationshipDriver.registerRelationship(companyA.address, '0xaddress', now);
-            await expect(fn).rejects.toThrowError(new Error('Company B not an address'));
+            await expect(fn).rejects.toThrow(new Error('Company B not an address'));
         });
     });
 
@@ -126,7 +126,7 @@ describe('RelationshipDriver', () => {
             mockedContract.getRelationshipCounter = jest.fn().mockRejectedValue(new Error(errorMessage));
 
             const fn = async () => relationshipDriver.getRelationshipCounter();
-            await expect(fn).rejects.toThrowError(new Error(errorMessage));
+            await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
     });
 
@@ -149,7 +149,7 @@ describe('RelationshipDriver', () => {
             mockedContract.getRelationshipInfo = jest.fn().mockRejectedValue(new Error(errorMessage));
 
             const fn = async () => relationshipDriver.getRelationshipInfo(1);
-            await expect(fn).rejects.toThrowError(new Error(errorMessage));
+            await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
     });
 
@@ -167,7 +167,7 @@ describe('RelationshipDriver', () => {
             mockedContract.getRelationshipIdsByCompany = jest.fn().mockRejectedValue(new Error(errorMessage));
 
             const fn = async () => relationshipDriver.getRelationshipIdsByCompany(companyB.address);
-            await expect(fn).rejects.toThrowError(new Error(errorMessage));
+            await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
     });
 
@@ -189,14 +189,14 @@ describe('RelationshipDriver', () => {
             mockedContract.addAdmin = jest.fn().mockRejectedValue(new Error(errorMessage));
 
             const fn = async () => relationshipDriver.addAdmin(address);
-            await expect(fn).rejects.toThrowError(new Error(errorMessage));
+            await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
 
         it('should call and wait for add admin - fails for address', async () => {
             const address = '123';
 
             const fn = async () => relationshipDriver.addAdmin(address);
-            await expect(fn).rejects.toThrowError(new Error('Not an address'));
+            await expect(fn).rejects.toThrow(new Error('Not an address'));
         });
     });
 
@@ -218,14 +218,14 @@ describe('RelationshipDriver', () => {
             mockedContract.removeAdmin = jest.fn().mockRejectedValue(new Error(errorMessage));
 
             const fn = async () => relationshipDriver.removeAdmin(address);
-            await expect(fn).rejects.toThrowError(new Error(errorMessage));
+            await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
 
         it('should call and wait for remove admin - fails for address', async () => {
             const address = '123';
 
             const fn = async () => relationshipDriver.removeAdmin(address);
-            await expect(fn).rejects.toThrowError(new Error('Not an address'));
+            await expect(fn).rejects.toThrow(new Error('Not an address'));
         });
     });
 });

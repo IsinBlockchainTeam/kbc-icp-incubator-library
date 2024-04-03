@@ -112,7 +112,7 @@ describe('Document lifecycle', () => {
     it('Should register a document by another company, fails because the contract cannot directly be invoked to register a new document', async () => {
         _defineSender(CUSTOMER_PRIVATE_KEY);
         const fn = () => documentService.registerDocument(transactionId, transactionType, billOfLading.name, billOfLading.documentType, billOfLading.externalUrl);
-        await expect(fn).rejects.toThrowError(/Sender has no permissions/);
+        await expect(fn).rejects.toThrow(/Sender has no permissions/);
     });
      */
 
@@ -244,13 +244,13 @@ describe('Document lifecycle', () => {
     //
     // it('should try registering a document specifying a non-existing trade line and be rejected', async () => {
     //     const fn = async () => firstOrderTradeService.addDocument(100, deliveryNote.name, deliveryNote.documentType, deliveryNote.externalUrl);
-    //     await expect(fn).rejects.toThrowError('Trade: Line does not exist');
+    //     await expect(fn).rejects.toThrow('Trade: Line does not exist');
     // });
     //
     // it('should try registering a document specifying a trade line with no material assigned and be rejected', async () => {
     //     const lineId = (await firstOrderTradeService.addLine(new OrderLineRequest(productCategoryIds[0], 10, new OrderLinePrice(1.50, 'USD')))).id;
     //     const fn = async () => firstOrderTradeService.addDocument(lineId, deliveryNote.name, deliveryNote.documentType, deliveryNote.externalUrl);
-    //     await expect(fn).rejects.toThrowError('Trade: A material must be assigned before adding a document for a line');
+    //     await expect(fn).rejects.toThrow('Trade: A material must be assigned before adding a document for a line');
     // });
     //
     // it("should get the trade status ON_BOARD for the second order because document 'Bill of lading' has been uploaded before", async () => {

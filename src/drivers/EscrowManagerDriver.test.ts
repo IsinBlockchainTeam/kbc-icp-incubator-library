@@ -78,7 +78,7 @@ describe('EscrowManagerDriver', () => {
     it('should correctly register a new Escrow - FAIL(Not an address)', async () => {
         await expect(escrowManagerDriver.registerEscrow('notAnAddress', purchaser, 1000, 1, contractAddress))
             .rejects
-            .toThrowError(new Error('Not an address'));
+            .toThrow(new Error('Not an address'));
 
         expect(mockedContract.registerEscrow)
             .toHaveBeenCalledTimes(0);
@@ -95,7 +95,7 @@ describe('EscrowManagerDriver', () => {
         expect(mockedContract.getEscrowCounter)
             .toHaveBeenCalledTimes(1);
         expect(mockedContract.getEscrowCounter)
-            .toHaveBeenNthCalledWith(1)
+            .toHaveBeenNthCalledWith(1);
     });
 
     it('should correctly retrieve commissioner', async () => {
@@ -126,7 +126,7 @@ describe('EscrowManagerDriver', () => {
     it('should correctly update commissioner - FAIL(Not an address)', async () => {
         await expect(escrowManagerDriver.updateCommissioner('notAnAddress'))
             .rejects
-            .toThrowError(new Error('Not an address'));
+            .toThrow(new Error('Not an address'));
 
         expect(mockedContract.updateCommissioner)
             .toHaveBeenCalledTimes(0);
@@ -187,7 +187,7 @@ describe('EscrowManagerDriver', () => {
     it('should correctly update percentage fee - FAIL(Percentage fee must be between 0 and 100)', async () => {
         await expect(escrowManagerDriver.updatePercentageFee(101))
             .rejects
-            .toThrowError(new Error('Percentage fee must be between 0 and 100'));
+            .toThrow(new Error('Percentage fee must be between 0 and 100'));
 
         expect(mockedContract.updatePercentageFee)
             .toHaveBeenCalledTimes(0);

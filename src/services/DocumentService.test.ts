@@ -23,8 +23,8 @@ describe('DocumentService', () => {
 
     const mockedDocumentDriver = createMock<DocumentDriver>({
         registerDocument: jest.fn(),
-        getDocumentsCounterByTransactionIdAndType: jest.fn(),
-        getDocumentsInfoByDocumentType: jest.fn(),
+        getDocumentsCounter: jest.fn(),
+        getDocumentById: jest.fn(),
         addAdmin: jest.fn(),
         removeAdmin: jest.fn(),
         addTradeManager: jest.fn(),
@@ -54,21 +54,21 @@ describe('DocumentService', () => {
     it.each([
         {
             serviceFunctionName: 'registerDocument',
-            serviceFunction: () => documentService.registerDocument(transactionId, transactionType, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl, rawDocument.contentHash),
+            serviceFunction: () => documentService.registerDocument(rawDocument.externalUrl, rawDocument.contentHash),
             expectedMockedFunction: mockedDocumentDriver.registerDocument,
-            expectedMockedFunctionArgs: [transactionId, transactionType, rawDocument.name, rawDocument.documentType, rawDocument.externalUrl, rawDocument.contentHash],
+            expectedMockedFunctionArgs: [rawDocument.externalUrl, rawDocument.contentHash],
         },
         {
-            serviceFunctionName: 'getDocumentsInfoByDocumentType',
-            serviceFunction: () => documentService.getDocumentInfoById(transactionId, transactionType, rawDocument.documentType),
-            expectedMockedFunction: mockedDocumentDriver.getDocumentsInfoByDocumentType,
-            expectedMockedFunctionArgs: [transactionId, transactionType, rawDocument.documentType],
+            serviceFunctionName: 'getDocumentsCounter',
+            serviceFunction: () => documentService.getDocumentsCounter(),
+            expectedMockedFunction: mockedDocumentDriver.getDocumentsCounter,
+            expectedMockedFunctionArgs: [],
         },
         {
-            serviceFunctionName: 'getDocumentsCounterByTransactionIdAndType',
-            serviceFunction: () => documentService.getDocumentsCounter(transactionId, transactionType),
-            expectedMockedFunction: mockedDocumentDriver.getDocumentsCounterByTransactionIdAndType,
-            expectedMockedFunctionArgs: [transactionId, transactionType],
+            serviceFunctionName: 'getDocumentInfoById',
+            serviceFunction: () => documentService.getDocumentInfoById(3),
+            expectedMockedFunction: mockedDocumentDriver.getDocumentById,
+            expectedMockedFunctionArgs: [3],
         },
         {
             serviceFunctionName: 'addAdmin',
@@ -101,15 +101,6 @@ describe('DocumentService', () => {
         expect(expectedMockedFunction).toHaveBeenNthCalledWith(1, ...expectedMockedFunctionArgs);
     });
 
-    it('should get documents info by transaction', async () => {
-        mockedDocumentDriver.getDocumentsCounterByTransactionIdAndType = jest.fn().mockResolvedValue(2);
-        await documentService.getDocumentsInfoByTransactionIdAndType(transactionId, transactionType);
-
-        expect(mockedDocumentDriver.getDocumentsInfoByDocumentType).toHaveBeenCalledTimes(2);
-        expect(mockedDocumentDriver.getDocumentsInfoByDocumentType).toHaveBeenNthCalledWith(1, transactionId, transactionType, DocumentType.DELIVERY_NOTE);
-        expect(mockedDocumentDriver.getDocumentsInfoByDocumentType).toHaveBeenNthCalledWith(2, transactionId, transactionType, DocumentType.BILL_OF_LADING);
-    });
-
     it('should get complete document with file retrieved from external storage', async () => {
         documentService = new DocumentService({
             documentDriver: mockedDocumentDriver,
@@ -117,7 +108,7 @@ describe('DocumentService', () => {
             storageMetadataDriver: mockedStorageMetadataDriver,
         });
         mockedStorageMetadataDriver.read = jest.fn().mockResolvedValue({ filename: 'file1.pdf', date: new Date(), transactionLines: [] });
-        const documentInfo = new DocumentInfo(0, 1, 'doc name', rawDocument.documentType, 'metadataExternalUrl', rawDocument.contentHash);
+        const documentInfo = new DocumentInfo(0, 'metadataExternalUrl', rawDocument.contentHash);
         await documentService.getCompleteDocument(documentInfo, metadataSpec, documentSpec);
 
         expect(mockedStorageMetadataDriver.read).toHaveBeenCalledTimes(1);
@@ -134,26 +125,26 @@ describe('DocumentService', () => {
             storageMetadataDriver: mockedStorageMetadataDriver,
         });
         mockedStorageMetadataDriver.read = jest.fn().mockRejectedValueOnce(new Error('error'));
-        const documentInfo = new DocumentInfo(0, 1, 'doc name', rawDocument.documentType, 'metadataExternalUrl', rawDocument.contentHash);
+        const documentInfo = new DocumentInfo(0, 'metadataExternalUrl', rawDocument.contentHash);
 
         const fn = async () => documentService.getCompleteDocument(documentInfo, metadataSpec, documentSpec);
-        await expect(fn).rejects.toThrowError(new Error('Error while retrieve document file from external storage: error'));
+        await expect(fn).rejects.toThrow(new Error('Error while retrieve document file from external storage: error'));
     });
 
     it('should throw error if try to get complete document with file retrieved from external storage, without passing storage drivers to constructor', async () => {
         documentService = new DocumentService({
             documentDriver: mockedDocumentDriver,
         });
-        let documentInfo = new DocumentInfo(0, 1, 'doc name', rawDocument.documentType, 'metadataExternalUrl', rawDocument.contentHash);
+        let documentInfo = new DocumentInfo(0, 'metadataExternalUrl', rawDocument.contentHash);
         let fn = async () => documentService.getCompleteDocument(documentInfo, metadataSpec, documentSpec);
-        await expect(fn).rejects.toThrowError(new Error('Storage document driver is not available'));
+        await expect(fn).rejects.toThrow(new Error('Storage document driver is not available'));
 
         documentService = new DocumentService({
             documentDriver: mockedDocumentDriver,
             storageDocumentDriver: mockedStorageDocumentDriver,
         });
-        documentInfo = new DocumentInfo(0, 1, 'doc name', rawDocument.documentType, 'metadataExternalUrl', rawDocument.contentHash);
+        documentInfo = new DocumentInfo(0, 'metadataExternalUrl', rawDocument.contentHash);
         fn = async () => documentService.getCompleteDocument(documentInfo, metadataSpec, documentSpec);
-        await expect(fn).rejects.toThrowError(new Error('Storage metadata driver is not available'));
+        await expect(fn).rejects.toThrow(new Error('Storage metadata driver is not available'));
     });
 });

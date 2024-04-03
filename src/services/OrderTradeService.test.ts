@@ -184,7 +184,7 @@ describe('OrderTradeService', () => {
         mockedStorageMetadataDriver.read = jest.fn().mockRejectedValueOnce(new Error('error'));
 
         const fn = async () => orderTradeService.getCompleteTrade(metadataSpec);
-        await expect(fn).rejects.toThrowError(new Error('Error while retrieve order trade from external storage: error'));
+        await expect(fn).rejects.toThrow(new Error('Error while retrieve order trade from external storage: error'));
     });
 
     it('should throw error if try to get complete order trade retrieved from external storage, without passing storage drivers to constructor', async () => {
@@ -192,6 +192,6 @@ describe('OrderTradeService', () => {
             tradeDriver: mockedOrderTradeDriver,
         });
         const fn = async () => orderTradeService.getCompleteTrade(metadataSpec);
-        await expect(fn).rejects.toThrowError(new Error('Storage metadata driver is not available'));
+        await expect(fn).rejects.toThrow(new Error('Storage metadata driver is not available'));
     });
 });

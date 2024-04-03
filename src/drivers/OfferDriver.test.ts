@@ -1,13 +1,13 @@
 /* eslint-disable camelcase */
 
-import {BigNumber, ethers, Signer, Wallet} from 'ethers';
+import { BigNumber, ethers, Signer, Wallet } from 'ethers';
 import { createMock } from 'ts-auto-mock';
 import { OfferDriver } from './OfferDriver';
 import {
     OfferManager,
     OfferManager__factory,
     ProductCategoryManager,
-    ProductCategoryManager__factory
+    ProductCategoryManager__factory,
 } from '../smart-contracts';
 import { EntityBuilder } from '../utils/EntityBuilder';
 import { Offer } from '../entities/Offer';
@@ -97,7 +97,7 @@ describe('OfferDriver', () => {
         });
 
         const mockedProductCategoryContract = createMock<ProductCategoryManager>({
-            getProductCategory: mockedGetProductCategory
+            getProductCategory: mockedGetProductCategory,
         });
 
         mockedOfferConnect.mockReturnValue(mockedContract);
@@ -143,12 +143,12 @@ describe('OfferDriver', () => {
             mockedRegisterSupplier.mockRejectedValueOnce(new Error(errorMessage));
 
             const fn = async () => offerDriver.registerSupplier(companyOwner.address, companyNames[0]);
-            await expect(fn).rejects.toThrowError(new Error(errorMessage));
+            await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
 
         it('should call and wait for register a supplier - fails for companyOwner address', async () => {
             const fn = async () => offerDriver.registerSupplier('0xaddress', companyNames[0]);
-            await expect(fn).rejects.toThrowError(new Error('Not an address'));
+            await expect(fn).rejects.toThrow(new Error('Not an address'));
         });
     });
 
@@ -168,12 +168,12 @@ describe('OfferDriver', () => {
             mockedRegisterOffer.mockRejectedValueOnce(new Error(errorMessage));
 
             const fn = async () => offerDriver.registerOffer(companyOwner.address, 1);
-            await expect(fn).rejects.toThrowError(new Error(errorMessage));
+            await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
 
         it('should call and wait for register an offer - fails for companyOwner address', async () => {
             const fn = async () => offerDriver.registerOffer('0xaddress', 1);
-            await expect(fn).rejects.toThrowError(new Error('Not an address'));
+            await expect(fn).rejects.toThrow(new Error('Not an address'));
         });
     });
 
@@ -187,7 +187,7 @@ describe('OfferDriver', () => {
             mockedContract.getLastId = jest.fn().mockRejectedValueOnce(new Error(errorMessage));
 
             const fn = async () => offerDriver.getLastId();
-            await expect(fn).rejects.toThrowError(new Error(errorMessage));
+            await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
     });
 
@@ -204,11 +204,11 @@ describe('OfferDriver', () => {
             mockedContract.getOfferIdsByCompany = jest.fn().mockRejectedValue(new Error(errorMessage));
 
             const fn = async () => offerDriver.getOfferIdsByCompany(companyOwner.address);
-            await expect(fn).rejects.toThrowError(new Error(errorMessage));
+            await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
 
         it('should get the offers id by company - FAIL(Not an address)', async () => {
-            await expect(offerDriver.getOfferIdsByCompany('0xaddress')).rejects.toThrowError(new Error('Not an address'));
+            await expect(offerDriver.getOfferIdsByCompany('0xaddress')).rejects.toThrow(new Error('Not an address'));
         });
     });
 
@@ -226,11 +226,11 @@ describe('OfferDriver', () => {
             mockedContract.getSupplierName = jest.fn().mockRejectedValue(new Error(errorMessage));
 
             const fn = async () => offerDriver.getSupplierName(companyOwner.address);
-            await expect(fn).rejects.toThrowError(new Error(errorMessage));
+            await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
 
         it('should get the supplier name - FAIL(Not an address)', async () => {
-            await expect(offerDriver.getSupplierName('0xaddress')).rejects.toThrowError(new Error('Not an address'));
+            await expect(offerDriver.getSupplierName('0xaddress')).rejects.toThrow(new Error('Not an address'));
         });
     });
 
@@ -259,7 +259,7 @@ describe('OfferDriver', () => {
             mockedContract.getOffer = jest.fn().mockRejectedValue(new Error(errorMessage));
 
             const fn = async () => offerDriver.getOffer(1);
-            await expect(fn).rejects.toThrowError(new Error(errorMessage));
+            await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
     });
 
@@ -276,12 +276,12 @@ describe('OfferDriver', () => {
             mockedContract.updateSupplier = jest.fn().mockRejectedValue(new Error(errorMessage));
 
             const fn = async () => offerDriver.updateSupplier(companyOwner.address, companyNames[1]);
-            await expect(fn).rejects.toThrowError(new Error(errorMessage));
+            await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
 
         it('should update a supplier - fails for companyOwner address', async () => {
             const fn = async () => offerDriver.updateSupplier('0xaddress', companyNames[1]);
-            await expect(fn).rejects.toThrowError(new Error('Not an address'));
+            await expect(fn).rejects.toThrow(new Error('Not an address'));
         });
     });
 
@@ -298,7 +298,7 @@ describe('OfferDriver', () => {
             mockedContract.updateOffer = jest.fn().mockRejectedValue(new Error(errorMessage));
 
             const fn = async () => offerDriver.updateOffer(1, 2);
-            await expect(fn).rejects.toThrowError(new Error(errorMessage));
+            await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
     });
 
@@ -315,7 +315,7 @@ describe('OfferDriver', () => {
             mockedContract.deleteSupplier = jest.fn().mockRejectedValue(new Error(errorMessage));
 
             const fn = async () => offerDriver.deleteSupplier(companyOwner.address);
-            await expect(fn).rejects.toThrowError(new Error(errorMessage));
+            await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
     });
 
@@ -332,7 +332,7 @@ describe('OfferDriver', () => {
             mockedContract.deleteOffer = jest.fn().mockRejectedValue(new Error(errorMessage));
 
             const fn = async () => offerDriver.deleteOffer(1);
-            await expect(fn).rejects.toThrowError(new Error(errorMessage));
+            await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
     });
 
@@ -354,14 +354,14 @@ describe('OfferDriver', () => {
             mockedContract.addAdmin = jest.fn().mockRejectedValue(new Error(errorMessage));
 
             const fn = async () => offerDriver.addAdmin(address);
-            await expect(fn).rejects.toThrowError(new Error(errorMessage));
+            await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
 
         it('should call and wait for add admin - fails for address', async () => {
             const address = '123';
 
             const fn = async () => offerDriver.addAdmin(address);
-            await expect(fn).rejects.toThrowError(new Error('Not an address'));
+            await expect(fn).rejects.toThrow(new Error('Not an address'));
         });
     });
 
@@ -383,14 +383,14 @@ describe('OfferDriver', () => {
             mockedContract.removeAdmin = jest.fn().mockRejectedValue(new Error(errorMessage));
 
             const fn = async () => offerDriver.removeAdmin(address);
-            await expect(fn).rejects.toThrowError(new Error(errorMessage));
+            await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
 
         it('should call and wait for remove admin - fails for address', async () => {
             const address = '123';
 
             const fn = async () => offerDriver.removeAdmin(address);
-            await expect(fn).rejects.toThrowError(new Error('Not an address'));
+            await expect(fn).rejects.toThrow(new Error('Not an address'));
         });
     });
 });

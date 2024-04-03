@@ -160,12 +160,12 @@ describe('TradeDriver', () => {
     });
 
     it('should correctly add a document', async () => {
-        await tradeDriver.addDocument(1, 'Test document', DocumentType.BILL_OF_LADING, 'https://test.com', 'contentHash');
+        await tradeDriver.addDocument(1, DocumentType.BILL_OF_LADING, 'https://test.com', 'contentHash');
 
         expect(mockedContract.addDocument)
             .toHaveBeenCalledTimes(1);
         expect(mockedContract.addDocument)
-            .toHaveBeenNthCalledWith(1, 1, 'Test document', DocumentType.BILL_OF_LADING, 'https://test.com', 'contentHash');
+            .toHaveBeenNthCalledWith(1, 1, DocumentType.BILL_OF_LADING, 'https://test.com', 'contentHash');
         expect(mockedWait)
             .toHaveBeenCalledTimes(1);
     });

@@ -158,7 +158,7 @@ describe('AssetOperationDriver', () => {
         mockedWait.mockResolvedValueOnce({
             events: undefined,
         });
-        await expect(assetOperationDriver.registerAssetOperation('test', [1, 2], 3, '38.8951', '-77.0364')).rejects.toThrowError('Error during asset operation registration, no events found');
+        await expect(assetOperationDriver.registerAssetOperation('test', [1, 2], 3, '38.8951', '-77.0364')).rejects.toThrow('Error during asset operation registration, no events found');
     });
 
     it('should correctly update an AssetOperation', async () => {
@@ -256,6 +256,6 @@ describe('AssetOperationDriver', () => {
 
     it('should get AssetOperation type - CASE ERROR', async () => {
         mockedGetAssetOperationType.mockReturnValueOnce(10);
-        await expect(assetOperationDriver.getAssetOperationType(1)).rejects.toThrowError('AssetOperationDriver: an invalid value "10" for "AssetOperationType" was returned by the contract');
+        await expect(assetOperationDriver.getAssetOperationType(1)).rejects.toThrow('AssetOperationDriver: an invalid value "10" for "AssetOperationType" was returned by the contract');
     });
 });

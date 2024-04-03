@@ -60,7 +60,7 @@ describe('MaterialDriver', () => {
     });
 
     const mockedProductCategoryContract = createMock<ProductCategoryManager>({
-        getProductCategory: mockedGetProductCategory
+        getProductCategory: mockedGetProductCategory,
     });
 
     beforeAll(() => {
@@ -96,7 +96,7 @@ describe('MaterialDriver', () => {
             events: [{
                 event: 'MaterialRegistered',
                 args: {
-                    id: BigNumber.from(productCategoryStruct.id)
+                    id: BigNumber.from(productCategoryStruct.id),
                 },
             }],
         });
@@ -112,7 +112,7 @@ describe('MaterialDriver', () => {
         mockedWait.mockResolvedValueOnce({
             events: undefined,
         });
-        await expect(materialDriver.registerMaterial(productCategoryStruct.id.toNumber())).rejects.toThrowError('Error during material registration, no events found');
+        await expect(materialDriver.registerMaterial(productCategoryStruct.id.toNumber())).rejects.toThrow('Error during material registration, no events found');
     });
 
     it('should correctly update a Material', async () => {
