@@ -66,6 +66,15 @@ export class TradeDriver {
         }
     }
 
+    async getAllDocumentIds(): Promise<number[]> {
+        try {
+            const ids = await this._contract.getAllDocumentIds();
+            return ids.map((id) => id.toNumber());
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
+    }
+
     async getDocumentIdsByType(documentType: DocumentType): Promise<number[]> {
         try {
             const ids = await this._contract.getDocumentIdsByType(documentType);

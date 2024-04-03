@@ -59,8 +59,9 @@ abstract contract Trade is AccessControl {
     uint256[] internal _lineIds;
     Counters.Counter internal _lineCounter;
 
+    uint256[] private _documentIds;
     // document type => document ids
-    mapping(DocumentType => uint256[]) private _documents;
+    mapping(DocumentType => uint256[]) private _documentsByType;
 
     ProductCategoryManager internal _productCategoryManager;
     MaterialManager internal _materialManager;
@@ -132,19 +133,25 @@ abstract contract Trade is AccessControl {
         //require(documentsCounter > 0, "Trade: There are no documents related to this trade");
         if (documentsCounter == 0) return TradeStatus.CONTRACTING;
 
-        if (_documents[DocumentType.BILL_OF_LADING].length > 0) return TradeStatus.ON_BOARD;
-        if (_documents[DocumentType.DELIVERY_NOTE].length > 0) return TradeStatus.SHIPPED;
+        if (_documentsByType[DocumentType.BILL_OF_LADING].length > 0) return TradeStatus.ON_BOARD;
+        if (_documentsByType[DocumentType.DELIVERY_NOTE].length > 0) return TradeStatus.SHIPPED;
         revert("Trade: There are no documents with correct document type");
     }
 
     function addDocument(uint256 lineId, DocumentType documentType, string memory externalUrl, string memory contentHash) public onlyAdminOrContractPart {
         require(_lines[lineId].exists, "Trade: Line does not exist");
         require(_lines[lineId].materialId != 0, "Trade: A material must be assigned before adding a document for a line");
-        _documents[documentType].push(_documentManager.registerDocument(externalUrl, contentHash));
+        uint256 documentId = _documentManager.registerDocument(externalUrl, contentHash);
+        _documentIds.push(documentId);
+        _documentsByType[documentType].push(documentId);
+    }
+
+    function getAllDocumentIds() public view returns (uint256[] memory) {
+        return _documentIds;
     }
 
     function getDocumentIdsByType(DocumentType documentType) public view returns (uint256[] memory) {
-        return _documents[documentType];
+        return _documentsByType[documentType];
     }
 
     function addAdmin(address account) public onlyAdmin {

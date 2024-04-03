@@ -23,6 +23,8 @@ describe('TradeDriver', () => {
     const mockedGetTradeType = jest.fn();
     const mockedGetLineExists = jest.fn();
     const mockedGetTradeStatus = jest.fn();
+    const mockedgetAllDocumentIds = jest.fn();
+    const mockedgetAllDocumentIdsByType = jest.fn();
 
     mockedWriteFunction.mockResolvedValue({
         wait: mockedWait,
@@ -38,6 +40,8 @@ describe('TradeDriver', () => {
         getLineExists: mockedGetLineExists,
         getTradeStatus: mockedGetTradeStatus,
         addDocument: mockedWriteFunction,
+        getAllDocumentIds: mockedgetAllDocumentIds,
+        getDocumentIdsByType: mockedgetAllDocumentIdsByType,
         addAdmin: mockedWriteFunction,
         removeAdmin: mockedWriteFunction,
     });
@@ -168,6 +172,34 @@ describe('TradeDriver', () => {
             .toHaveBeenNthCalledWith(1, 1, DocumentType.BILL_OF_LADING, 'https://test.com', 'contentHash');
         expect(mockedWait)
             .toHaveBeenCalledTimes(1);
+    });
+
+    it('should correctly retrieve document ids by type', async () => {
+        const documentIds: number[] = [1, 2, 3];
+
+        mockedgetAllDocumentIdsByType.mockResolvedValueOnce(documentIds.map((id) => BigNumber.from(id)));
+
+        const response = await tradeDriver.getDocumentIdsByType(DocumentType.BILL_OF_LADING);
+        expect(response).toEqual(documentIds);
+
+        expect(mockedContract.getDocumentIdsByType)
+            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.getDocumentIdsByType)
+            .toHaveBeenNthCalledWith(1, DocumentType.BILL_OF_LADING);
+    });
+
+    it('should correctly retrieve document ids', async () => {
+        const documentIds: number[] = [1, 2, 3];
+
+        mockedgetAllDocumentIds.mockResolvedValueOnce(documentIds.map((id) => BigNumber.from(id)));
+
+        const response = await tradeDriver.getAllDocumentIds();
+        expect(response).toEqual(documentIds);
+
+        expect(mockedContract.getAllDocumentIds)
+            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.getAllDocumentIds)
+            .toHaveBeenNthCalledWith(1);
     });
 
     it('should correctly add an admin', async () => {

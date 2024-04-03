@@ -95,6 +95,7 @@ describe('Document lifecycle', () => {
         _defineOrderSender(CUSTOMER_PRIVATE_KEY);
         const orderTradeService = new OrderTradeService({
             tradeDriver: new OrderTradeDriver(signer, await tradeManagerService.getTrade(order.tradeId), MATERIAL_MANAGER_CONTRACT_ADDRESS, PRODUCT_CATEGORY_CONTRACT_ADDRESS),
+            documentDriver: new DocumentDriver(signer, DOCUMENT_MANAGER_CONTRACT_ADDRESS),
         });
         await orderTradeService.confirmOrder();
         return { orderId: order.tradeId, orderTradeService };
@@ -131,14 +132,14 @@ describe('Document lifecycle', () => {
         const { orderId, orderTradeService } = await createOrderAndConfirm();
         transactionId = orderId;
         firstOrderTradeService = orderTradeService;
-        firstOrderLineId = (await orderTradeService.addLine(new OrderLineRequest(productCategoryIds[0], 100, new OrderLinePrice(100.50, 'CHF')))).id;
-        await orderTradeService.assignMaterial(firstOrderLineId, materialIds[0]);
-        await orderTradeService.addDocument(firstOrderLineId, deliveryNote.documentType);
+        firstOrderLineId = (await firstOrderTradeService.addLine(new OrderLineRequest(productCategoryIds[0], 100, new OrderLinePrice(100.50, 'CHF')))).id;
+        await firstOrderTradeService.assignMaterial(firstOrderLineId, materialIds[0]);
+        await firstOrderTradeService.addDocument(firstOrderLineId, deliveryNote.documentType);
 
         documentCounter = await documentService.getDocumentsCounter();
         expect(documentCounter).toEqual(1);
 
-        const status = await orderTradeService.getTradeStatus();
+        const status = await firstOrderTradeService.getTradeStatus();
         expect(status).toEqual(TradeStatus.SHIPPED);
 
         const documentInfo = await documentService.getDocumentInfoById(documentCounter);
@@ -146,6 +147,14 @@ describe('Document lifecycle', () => {
         expect(documentInfo.id).toEqual(documentCounter);
         expect(documentInfo.externalUrl).toEqual('');
         expect(documentInfo.contentHash).toEqual('');
+    });
+
+    it('should get documents related to a trade and document type', async () => {
+        const documentsInfo = await firstOrderTradeService.getDocumentsByType(DocumentType.BILL_OF_LADING);
+        expect(documentsInfo.length).toEqual(documentCounter);
+
+        const documentInfo = await documentService.getDocumentInfoById(documentsInfo[0].id);
+        expect(documentInfo).toEqual(documentsInfo[0]);
     });
 
     // it('Should register a document (and store it to ipfs) by invoking the order trade contract, then retrieve the document', async () => {

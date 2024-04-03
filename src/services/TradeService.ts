@@ -59,6 +59,16 @@ export class TradeService<MS extends MetadataSpec, DS extends DocumentSpec, ACR 
         return this._tradeDriver.addDocument(lineId, documentType, externalUrl, contentHash);
     }
 
+    async getAllDocumentIds(): Promise<number[]> {
+        return this._tradeDriver.getAllDocumentIds();
+    }
+
+    async getAllDocuments(): Promise<DocumentInfo[]> {
+        if (!this._documentDriver) throw new Error('Cannot perform this operation without a document driver');
+        const ids = await this.getAllDocumentIds();
+        return Promise.all(ids.map((id) => this._documentDriver!.getDocumentById(id)));
+    }
+
     async getDocumentIdsByType(documentType: DocumentType): Promise<number[]> {
         return this._tradeDriver.getDocumentIdsByType(documentType);
     }

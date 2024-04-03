@@ -80,6 +80,45 @@ describe('Trade.sol', () => {
                 .have
                 .calledWith('https://www.test.com', 'content_hash');
         });
+
+        it("should add a document - FAIL (Trade: Line doesn't exist)", async () => {
+            await expect(basicTradeContract.addDocument(1, documentTypes[0], 'https://www.test.com', 'content_hash'))
+                .to
+                .be
+                .revertedWith('Trade: Line does not exist');
+        });
+
+        it("should add a document - FAIL (Trade: Material doesn't exist)", async () => {
+            await basicTradeContract.addLine(1);
+            await expect(basicTradeContract.addDocument(1, documentTypes[0], 'https://www.test.com', 'content_hash'))
+                .to
+                .be
+                .revertedWith('Trade: A material must be assigned before adding a document for a line');
+        });
+
+        it('should get document ids by type', async () => {
+            documentManagerContractFake.registerDocument.returns(1);
+
+            await basicTradeContract.addLine(1);
+            await basicTradeContract.assignMaterial(1, 2);
+            await basicTradeContract.addDocument(1, documentTypes[0], 'https://www.test.com', 'content_hash');
+            expect(await basicTradeContract.getAllDocumentIdsByType(documentTypes[0]))
+                .to
+                .deep
+                .equal([BigNumber.from(1)]);
+        });
+
+        it('should get document ids', async () => {
+            documentManagerContractFake.registerDocument.returns(1);
+
+            await basicTradeContract.addLine(1);
+            await basicTradeContract.assignMaterial(1, 2);
+            await basicTradeContract.addDocument(1, documentTypes[0], 'https://www.test.com', 'content_hash');
+            expect(await basicTradeContract.getAllDocumentIds())
+                .to
+                .deep
+                .equal([BigNumber.from(1)]);
+        });
     });
 
     describe('Admins', () => {
