@@ -1,4 +1,4 @@
-import { createHash } from 'crypto';
+import CryptoJS from 'crypto-js';
 import { TradeType } from '../types/TradeType';
 
 export const checkAndGetEnvironmentVariable = (variable: string | undefined, errorMessage?: any): string => {
@@ -20,8 +20,10 @@ export const getTradeTypeByIndex = (index: number): TradeType => {
     }
 };
 
-export const computeHashFromBuffer = (buffer: Buffer, algorithm = 'sha256'): string => {
-    const hash = createHash(algorithm);
-    hash.update(buffer);
-    return hash.digest('hex');
+export type SupportedAlgorithm = 'MD5' | 'SHA1' | 'SHA256' | 'SHA224' | 'SHA512' | 'SHA384' | 'SHA3' | 'RIPEMD160';
+
+export const computeHashFromBuffer = (buffer: Buffer, algorithm: SupportedAlgorithm = 'SHA256'): string => {
+    const wordArray = CryptoJS.lib.WordArray.create(buffer);
+    const hash = CryptoJS.algo[algorithm].create().finalize(wordArray);
+    return hash.toString(CryptoJS.enc.Hex);
 };
