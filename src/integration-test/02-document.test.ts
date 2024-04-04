@@ -150,7 +150,7 @@ describe('Document lifecycle', () => {
     });
 
     it('should get documents related to a trade and document type', async () => {
-        const documentsInfo = await firstOrderTradeService.getDocumentsByType(DocumentType.BILL_OF_LADING);
+        const documentsInfo = await firstOrderTradeService.getDocumentsByType(deliveryNote.documentType);
         expect(documentsInfo.length).toEqual(documentCounter);
 
         const documentInfo = await documentService.getDocumentInfoById(documentsInfo[0].id);
