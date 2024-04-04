@@ -46,13 +46,14 @@ describe('GraphService', () => {
         new Material(7, productCategories[6]),
         new Material(8, productCategories[7]),
     ];
+    const processTypes = ['process type 1', 'process type 2', 'process type 3'];
     const assetOperations: AssetOperation[] = [
-        new AssetOperation(1, 'Coffee beans processing', [materials[0], materials[1]], materials[2], '-73.9828170', '-28.6505430'),
-        new AssetOperation(2, 'Coffee grinding', [materials[2]], materials[3], '-73.9265', '-23.4733'),
-        new AssetOperation(3, 'Water purification', [materials[4]], materials[5], '-73.4667', '-23.5505'),
-        new AssetOperation(4, 'Final coffee production', [materials[3], materials[5]], materials[6], '-73.64826', '-23.5505'),
-        new AssetOperation(5, 'Final coffee consolidation', [materials[6]], materials[6], '-34.7567', '135.52'),
-        new AssetOperation(6, 'Pure consolidation', [materials[7]], materials[7], '-73.1643', '-23.5505'),
+        new AssetOperation(1, 'Coffee beans processing', [materials[0], materials[1]], materials[2], '-73.9828170', '-28.6505430', processTypes),
+        new AssetOperation(2, 'Coffee grinding', [materials[2]], materials[3], '-73.9265', '-23.4733', processTypes),
+        new AssetOperation(3, 'Water purification', [materials[4]], materials[5], '-73.4667', '-23.5505', [processTypes[0]]),
+        new AssetOperation(4, 'Final coffee production', [materials[3], materials[5]], materials[6], '-73.64826', '-23.5505', [processTypes[0], processTypes[1]]),
+        new AssetOperation(5, 'Final coffee consolidation', [materials[6]], materials[6], '-34.7567', '135.52', [processTypes[2]]),
+        new AssetOperation(6, 'Pure consolidation', [materials[7]], materials[7], '-73.1643', '-23.5505', [processTypes[2], processTypes[1]]),
         // new AssetOperation(4, 'Doubled material', [materials[5], materials[5]], materials[6]),
     ];
 

@@ -68,15 +68,15 @@ describe('AssetOperationService', () => {
         },
         {
             serviceFunctionName: 'registerAssetOperation',
-            serviceFunction: () => assetOperationService.registerAssetOperation('name', [1, 2], 3, '38.8951', '-77.0364'),
+            serviceFunction: () => assetOperationService.registerAssetOperation('name', [1, 2], 3, '38.8951', '-77.0364', ['processType']),
             expectedMockedFunction: mockedAssetOperationDriver.registerAssetOperation,
-            expectedMockedFunctionArgs: ['name', [1, 2], 3, '38.8951', '-77.0364'],
+            expectedMockedFunctionArgs: ['name', [1, 2], 3, '38.8951', '-77.0364', ['processType']],
         },
         {
             serviceFunctionName: 'updateAssetOperation',
-            serviceFunction: () => assetOperationService.updateAssetOperation(1, 'name', [1, 2], 3, '38.8951', '-77.0364'),
+            serviceFunction: () => assetOperationService.updateAssetOperation(1, 'name', [1, 2], 3, '38.8951', '-77.0364', ['processType']),
             expectedMockedFunction: mockedAssetOperationDriver.updateAssetOperation,
-            expectedMockedFunctionArgs: [1, 'name', [1, 2], 3, '38.8951', '-77.0364'],
+            expectedMockedFunctionArgs: [1, 'name', [1, 2], 3, '38.8951', '-77.0364', ['processType']],
         },
     ])('service should call driver $serviceFunctionName', async ({
         serviceFunction,

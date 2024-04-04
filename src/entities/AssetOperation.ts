@@ -14,13 +14,16 @@ export class AssetOperation {
 
     private _longitude: string;
 
-    constructor(id: number, name: string, inputMaterials: Material[], outputMaterial: Material, latitude: string, longitude: string) {
+    private _processTypes: string[];
+
+    constructor(id: number, name: string, inputMaterials: Material[], outputMaterial: Material, latitude: string, longitude: string, processTypes: string[]) {
         this._id = id;
         this._name = name;
         this._inputMaterials = inputMaterials;
         this._outputMaterial = outputMaterial;
         this._latitude = latitude;
         this._longitude = longitude;
+        this._processTypes = processTypes;
     }
 
     get id(): number {
@@ -77,5 +80,13 @@ export class AssetOperation {
 
     set longitude(value: string) {
         this._longitude = value;
+    }
+
+    get processTypes(): string[] {
+        return this._processTypes;
+    }
+
+    set processTypes(value: string[]) {
+        this._processTypes = value;
     }
 }
