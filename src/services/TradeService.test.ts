@@ -42,7 +42,7 @@ describe('TradeService', () => {
         create: jest.fn().mockResolvedValue(documentExternalUrl),
     });
 
-    const documentBuffer = Buffer.from('file content');
+    const documentBuffer = new Uint8Array([1, 2, 3, 4, 5]);
     const documentSpec: SolidDocumentSpec = {
         filename: 'filename',
         bcResourceId: 'bcResourceId',
@@ -87,27 +87,27 @@ describe('TradeService', () => {
         {
             storageDrivers: { metadata: true, document: true },
             serviceFunctionName: 'addDocument with metadata and storage drivers',
-            serviceFunction: () => tradeService.addDocument(1, DocumentType.DELIVERY_NOTE, { spec: documentSpec, fileBuffer: documentBuffer }, { spec: metadataSpec, value: metadata }),
+            serviceFunction: () => tradeService.addDocument(DocumentType.DELIVERY_NOTE, { spec: documentSpec, fileBuffer: documentBuffer }, { spec: metadataSpec, value: metadata }),
             expectedMockedFunction: mockedTradeDriver.addDocument,
-            expectedMockedFunctionArgs: [1, DocumentType.DELIVERY_NOTE, documentExternalUrl, computeHashFromBuffer(documentBuffer)],
+            expectedMockedFunctionArgs: [DocumentType.DELIVERY_NOTE, documentExternalUrl, computeHashFromBuffer(documentBuffer)],
         },
         {
             serviceFunctionName: 'addDocument without metadata and storage drivers',
-            serviceFunction: () => tradeService.addDocument(1, DocumentType.DELIVERY_NOTE),
+            serviceFunction: () => tradeService.addDocument(DocumentType.DELIVERY_NOTE),
             expectedMockedFunction: mockedTradeDriver.addDocument,
-            expectedMockedFunctionArgs: [1, DocumentType.DELIVERY_NOTE, '', ''],
+            expectedMockedFunctionArgs: [DocumentType.DELIVERY_NOTE, '', ''],
         },
         {
             storageDrivers: { metadata: true },
             serviceFunctionName: 'add document - create (metadata driver)',
-            serviceFunction: () => tradeService.addDocument(1, DocumentType.DELIVERY_NOTE, undefined, { spec: metadataSpec, value: metadata }),
+            serviceFunction: () => tradeService.addDocument(DocumentType.DELIVERY_NOTE, undefined, { spec: metadataSpec, value: metadata }),
             expectedMockedFunction: mockedStorageMetadataDriver.create,
             expectedMockedFunctionArgs: [StorageOperationType.TRANSACTION_DOCUMENT, metadata, [], metadataSpec],
         },
         {
             storageDrivers: { document: true },
             serviceFunctionName: 'add document - create (document driver)',
-            serviceFunction: () => tradeService.addDocument(1, DocumentType.DELIVERY_NOTE, { spec: documentSpec, fileBuffer: documentBuffer }),
+            serviceFunction: () => tradeService.addDocument(DocumentType.DELIVERY_NOTE, { spec: documentSpec, fileBuffer: documentBuffer }),
             expectedMockedFunction: mockedStorageDocumentDriver.create,
             expectedMockedFunctionArgs: [StorageOperationType.TRANSACTION_DOCUMENT, documentBuffer, documentSpec],
         },

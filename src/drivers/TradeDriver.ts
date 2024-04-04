@@ -44,10 +44,12 @@ export class TradeDriver {
             const result = await this._contract.getTradeStatus();
             switch (result) {
             case 0:
-                return TradeStatus.SHIPPED;
+                return TradeStatus.PAYED;
             case 1:
-                return TradeStatus.ON_BOARD;
+                return TradeStatus.SHIPPED;
             case 2:
+                return TradeStatus.ON_BOARD;
+            case 3:
                 return TradeStatus.CONTRACTING;
             default:
                 throw new Error(`TradeDriver: an invalid value "${result}" for "TradeStatus" was returned by the contract`);
@@ -57,9 +59,9 @@ export class TradeDriver {
         }
     }
 
-    async addDocument(lineId: number, documentType: DocumentType, externalUrl: string, contentHash: string): Promise<void> {
+    async addDocument(documentType: DocumentType, externalUrl: string, contentHash: string): Promise<void> {
         try {
-            const tx = await this._contract.addDocument(lineId, documentType, externalUrl, contentHash);
+            const tx = await this._contract.addDocument(documentType, externalUrl, contentHash);
             await tx.wait();
         } catch (e: any) {
             throw new Error(e.message);

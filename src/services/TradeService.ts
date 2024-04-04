@@ -43,7 +43,7 @@ export class TradeService<MS extends MetadataSpec, DS extends DocumentSpec, ACR 
         return this._tradeDriver.getTradeStatus();
     }
 
-    async addDocument(lineId: number, documentType: DocumentType, documentStorage?: {spec: DS, fileBuffer: Buffer}, metadataStorage?: {spec: MS, value: any}): Promise<void> {
+    async addDocument(documentType: DocumentType, documentStorage?: {spec: DS, fileBuffer: Uint8Array}, metadataStorage?: {spec: MS, value: any}): Promise<void> {
         let externalUrl = '';
         let contentHash = '';
         if (documentStorage) {
@@ -56,7 +56,7 @@ export class TradeService<MS extends MetadataSpec, DS extends DocumentSpec, ACR 
             await this._storageMetadataDriver.create(StorageOperationType.TRANSACTION_DOCUMENT, metadataStorage.value, [], metadataStorage.spec);
         }
 
-        return this._tradeDriver.addDocument(lineId, documentType, externalUrl, contentHash);
+        return this._tradeDriver.addDocument(documentType, externalUrl, contentHash);
     }
 
     async getAllDocumentIds(): Promise<number[]> {

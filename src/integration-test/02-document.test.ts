@@ -134,7 +134,7 @@ describe('Document lifecycle', () => {
         firstOrderTradeService = orderTradeService;
         firstOrderLineId = (await firstOrderTradeService.addLine(new OrderLineRequest(productCategoryIds[0], 100, new OrderLinePrice(100.50, 'CHF')))).id;
         await firstOrderTradeService.assignMaterial(firstOrderLineId, materialIds[0]);
-        await firstOrderTradeService.addDocument(firstOrderLineId, deliveryNote.documentType);
+        await firstOrderTradeService.addDocument(deliveryNote.documentType);
 
         documentCounter = await documentService.getDocumentsCounter();
         expect(documentCounter).toEqual(1);

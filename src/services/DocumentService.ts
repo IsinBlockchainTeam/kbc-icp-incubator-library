@@ -37,7 +37,7 @@ export class DocumentService<MS extends MetadataSpec, DS extends DocumentSpec, A
         try {
             const { filename, date, lines } = await this._storageMetadataDriver.read(StorageOperationType.TRANSACTION_DOCUMENT, metadataSpec);
             const fileContent = await this._storageDocumentDriver.read(StorageOperationType.TRANSACTION_DOCUMENT, documentSpec);
-            if (fileContent) return new Document(documentInfo, filename, new Date(date), new Blob([fileContent]), lines);
+            if (fileContent) return new Document(documentInfo, filename, new Date(date), fileContent, lines);
         } catch (e: any) {
             throw new Error(`Error while retrieve document file from external storage: ${e.message}`);
         }
