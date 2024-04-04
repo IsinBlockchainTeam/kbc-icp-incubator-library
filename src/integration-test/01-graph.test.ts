@@ -71,6 +71,7 @@ describe('GraphService lifecycle', () => {
     const documentDeliveryDeadline: number = Date.now() + 1000 * 60 * 60 * 24 * 30;
     const shippingDeadline: number = Date.now() + 1000 * 60 * 60 * 24 * 30;
     const deliveryDeadline: number = Date.now() + 1000 * 60 * 60 * 24 * 30;
+    const processTypes = ['33 - Collecting', '38 - Harvesting'];
 
     let graphService: GraphService<SolidMetadataSpec, SolidStorageACR>;
 
@@ -145,7 +146,7 @@ describe('GraphService lifecycle', () => {
     const _registerAssetOperations = async (assetOperations: AssetOperation[]): Promise<AssetOperation[]> => {
         const result: AssetOperation[] = [];
         await serial(assetOperations.map((assetOperation) => async () => {
-            result.push(await assetOperationService.registerAssetOperation(assetOperation.name, assetOperation.inputMaterials.map((m) => m.id), assetOperation.outputMaterial.id, assetOperation.latitude, assetOperation.longitude));
+            result.push(await assetOperationService.registerAssetOperation(assetOperation.name, assetOperation.inputMaterials.map((m) => m.id), assetOperation.outputMaterial.id, assetOperation.latitude, assetOperation.longitude, assetOperation.processTypes));
         }));
         return result;
     };
@@ -238,16 +239,16 @@ describe('GraphService lifecycle', () => {
             ]);
 
             assetOperations = await _registerAssetOperations([
-                new AssetOperation(0, 'TRANSFORMATION: coffee beans processing', [materials[0], materials[1]], materials[2], '-73.9828170', '-28.6505430'),
-                new AssetOperation(0, 'TRANSFORMATION: coffee grinding', [materials[2]], materials[3], '-74.9828170', '-28.6505430'),
-                new AssetOperation(0, 'TRANSFORMATION: water gathering', [materials[10]], materials[4], '-73.4667', '-23.5505'),
-                new AssetOperation(0, 'CONSOLIDATION: sea water transfer', [materials[4]], materials[4], '-73.9265', '-23.4733'),
-                new AssetOperation(0, 'CONSOLIDATION: another sea water transfer', [materials[4]], materials[4], '-73.3468', '-23.5505'),
-                new AssetOperation(0, 'TRANSFORMATION: water purification', [materials[4]], materials[5], '-72.65497', '-23.5505'),
-                new AssetOperation(0, 'TRANSFORMATION: final coffee production', [materials[3], materials[5]], materials[6], '34.6836', '135.52'),
-                new AssetOperation(0, 'TRANSFORMATION: small coffee packaging', [materials[6]], materials[7], '-73.64826', '-23.5505'),
-                new AssetOperation(0, 'TRANSFORMATION: medium coffee packaging', [materials[6]], materials[8], '-34.7567', '135.52'),
-                new AssetOperation(0, 'TRANSFORMATION: coffee bags packaging', [materials[7], materials[8]], materials[9], '-73.1643', '-23.5505'),
+                new AssetOperation(0, 'TRANSFORMATION: coffee beans processing', [materials[0], materials[1]], materials[2], '-73.9828170', '-28.6505430', processTypes),
+                new AssetOperation(0, 'TRANSFORMATION: coffee grinding', [materials[2]], materials[3], '-74.9828170', '-28.6505430', processTypes),
+                new AssetOperation(0, 'TRANSFORMATION: water gathering', [materials[10]], materials[4], '-73.4667', '-23.5505', [processTypes[0]]),
+                new AssetOperation(0, 'CONSOLIDATION: sea water transfer', [materials[4]], materials[4], '-73.9265', '-23.4733', [processTypes[1]]),
+                new AssetOperation(0, 'CONSOLIDATION: another sea water transfer', [materials[4]], materials[4], '-73.3468', '-23.5505', processTypes),
+                new AssetOperation(0, 'TRANSFORMATION: water purification', [materials[4]], materials[5], '-72.65497', '-23.5505', [processTypes[0]]),
+                new AssetOperation(0, 'TRANSFORMATION: final coffee production', [materials[3], materials[5]], materials[6], '34.6836', '135.52', processTypes),
+                new AssetOperation(0, 'TRANSFORMATION: small coffee packaging', [materials[6]], materials[7], '-73.64826', '-23.5505', processTypes),
+                new AssetOperation(0, 'TRANSFORMATION: medium coffee packaging', [materials[6]], materials[8], '-34.7567', '135.52', processTypes),
+                new AssetOperation(0, 'TRANSFORMATION: coffee bags packaging', [materials[7], materials[8]], materials[9], '-73.1643', '-23.5505', [processTypes[1]]),
             ]);
 
             const newTrades: Trade[] = [
@@ -464,10 +465,10 @@ describe('GraphService lifecycle', () => {
             ]);
 
             assetOperations = await _registerAssetOperations([
-                new AssetOperation(0, 'CONSOLIDATION: arabica beans transfer', [materials[0]], materials[0], '-73.9828170', '-28.6505430'),
-                new AssetOperation(0, 'TRANSFORMATION: arabica beans roasting', [materials[0]], materials[1], '-73.9828170', '-28.6505430'),
-                new AssetOperation(0, 'CONSOLIDATION: roasted arabica beans transfer', [materials[1]], materials[1], '-72.982870', '-26.6505430'),
-                new AssetOperation(0, 'CONSOLIDATION: another roasted arabica beans transfer', [materials[1]], materials[1], '-74.9828170', '-28.7148'),
+                new AssetOperation(0, 'CONSOLIDATION: arabica beans transfer', [materials[0]], materials[0], '-73.9828170', '-28.6505430', processTypes),
+                new AssetOperation(0, 'TRANSFORMATION: arabica beans roasting', [materials[0]], materials[1], '-73.9828170', '-28.6505430', [processTypes[0]]),
+                new AssetOperation(0, 'CONSOLIDATION: roasted arabica beans transfer', [materials[1]], materials[1], '-72.982870', '-26.6505430', processTypes),
+                new AssetOperation(0, 'CONSOLIDATION: another roasted arabica beans transfer', [materials[1]], materials[1], '-74.9828170', '-28.7148', [processTypes[1]]),
             ]);
 
             const newTrades = [
