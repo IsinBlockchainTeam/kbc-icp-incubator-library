@@ -33,6 +33,15 @@ serial([
             await tx.wait();
         }
     },
+    () => deploy(ContractName.ENUMERABLE_TYPE_MANAGER, [[]], 'EnumerableProcessTypeManager'),
+    async () => {
+        const enums: string[] = ['33 - Collecting', '38 - Harvesting'];
+        for (let i = 0; i < enums.length; i++) {
+            const tx = await contractMap.get('EnumerableProcessTypeManager')
+                ?.add(enums[i]);
+            await tx.wait();
+        }
+    },
     () => deploy(
         ContractName.PRODUCT_CATEGORY_MANAGER, [],
     ),
@@ -68,6 +77,7 @@ serial([
     () => deploy(
         ContractName.ASSET_OPERATION_MANAGER, [
             contractMap.get(ContractName.MATERIAL_MANAGER)!.address,
+            contractMap.get('EnumerableProcessTypeManager')!.address,
         ],
     ),
     () => deploy(

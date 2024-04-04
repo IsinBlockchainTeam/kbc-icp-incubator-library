@@ -9,6 +9,8 @@ import { ContractName } from '../utils/constants';
 describe('AssetOperationManager', () => {
     let assertOperationManagerContract: Contract;
     let materialManagerContractFake: FakeContract;
+    let processTypeManagerContractFake: FakeContract;
+    const processTypes = ['33 - Collecting', '38 - Harvesting'];
     let admin: SignerWithAddress, other: SignerWithAddress;
 
     beforeEach(async () => {
@@ -17,8 +19,11 @@ describe('AssetOperationManager', () => {
         materialManagerContractFake = await smock.fake(ContractName.MATERIAL_MANAGER);
         materialManagerContractFake.getMaterialExists.returns((id: number) => id <= 10);
 
-        const AssetOperationManager = await ethers.getContractFactory('AssetOperationManager');
-        assertOperationManagerContract = await AssetOperationManager.deploy(materialManagerContractFake.address);
+        processTypeManagerContractFake = await smock.fake(ContractName.ENUMERABLE_TYPE_MANAGER);
+        processTypeManagerContractFake.contains.returns((value: string) => processTypes.includes(value[0]));
+
+        const AssetOperationManager = await ethers.getContractFactory(ContractName.ASSET_OPERATION_MANAGER);
+        assertOperationManagerContract = await AssetOperationManager.deploy(materialManagerContractFake.address, processTypeManagerContractFake.address);
         await assertOperationManagerContract.deployed();
     });
 
@@ -26,7 +31,7 @@ describe('AssetOperationManager', () => {
         it('should register an AssetOperation', async () => {
             const previousAssetOperationCounter = await assertOperationManagerContract.getAssetOperationsCounter();
             expect(previousAssetOperationCounter).to.be.equal(0);
-            const tx = await assertOperationManagerContract.registerAssetOperation('testTransformation', [[1], [2]], 3, '38.8951', '-77.0364');
+            const tx = await assertOperationManagerContract.registerAssetOperation('testTransformation', [[1], [2]], 3, '38.8951', '-77.0364', [processTypes[0]]);
             await tx.wait();
 
             const currentAssetOperationCounter = await assertOperationManagerContract.getAssetOperationsCounter();
@@ -39,7 +44,8 @@ describe('AssetOperationManager', () => {
             expect(registeredTransformation[3]).to.be.equal(BigNumber.from(3));
             expect(registeredTransformation[4]).to.be.equal('38.8951');
             expect(registeredTransformation[5]).to.be.equal('-77.0364');
-            expect(registeredTransformation[6]).to.be.equal(true);
+            expect(registeredTransformation[6]).to.be.deep.equal([processTypes[0]]);
+            expect(registeredTransformation[7]).to.be.equal(true);
             expect(await assertOperationManagerContract.getAssetOperationExists(1)).to.be.equal(true);
             await expect(tx).to.emit(assertOperationManagerContract, 'AssetOperationRegistered').withArgs(registeredTransformation[0], registeredTransformation[1], registeredTransformation[3]);
             expect(await assertOperationManagerContract.getAssetOperationType(1)).to.be.equal(1);
@@ -49,7 +55,7 @@ describe('AssetOperationManager', () => {
         });
 
         it('should register a Consolidation', async () => {
-            const tx = await assertOperationManagerContract.registerAssetOperation('testConsolidation', [[1]], [3], '38.8951', '-77.0364');
+            const tx = await assertOperationManagerContract.registerAssetOperation('testConsolidation', [[1]], [3], '38.8951', '-77.0364', processTypes);
             await tx.wait();
 
             const registeredConsolidation = await assertOperationManagerContract.getAssetOperation(1);
@@ -59,18 +65,27 @@ describe('AssetOperationManager', () => {
             expect(registeredConsolidation[3]).to.be.equal(BigNumber.from(3));
             expect(registeredConsolidation[4]).to.be.equal('38.8951');
             expect(registeredConsolidation[5]).to.be.equal('-77.0364');
-            expect(registeredConsolidation[6]).to.be.equal(true);
+            expect(registeredConsolidation[6]).to.be.deep.equal(processTypes);
+            expect(registeredConsolidation[7]).to.be.equal(true);
             expect(await assertOperationManagerContract.getAssetOperationExists(1)).to.be.equal(true);
             await expect(tx).to.emit(assertOperationManagerContract, 'AssetOperationRegistered').withArgs(registeredConsolidation[0], registeredConsolidation[1], registeredConsolidation[3]);
             expect(await assertOperationManagerContract.getAssetOperationType(1)).to.be.equal(0);
         });
 
         it('should register an AssetOperation - FAIL(AssetOperationManager: Output material does not exist)', async () => {
-            await expect(assertOperationManagerContract.registerAssetOperation('testTransformation', [[1], [2]], 15, '38.8951', '-77.0364')).to.be.revertedWith('AssetOperationManager: Output material does not exist');
+            await expect(assertOperationManagerContract.registerAssetOperation('testTransformation', [[1], [2]], 15, '38.8951', '-77.0364', processTypes)).to.be.revertedWith('AssetOperationManager: Output material does not exist');
         });
 
         it('should register an AssetOperation - FAIL(AssetOperationManager: Input material does not exist)', async () => {
-            await expect(assertOperationManagerContract.registerAssetOperation('testTransformation', [[1], [15]], 3, '38.8951', '-77.0364')).to.be.revertedWith('AssetOperationManager: Input material does not exist');
+            await expect(assertOperationManagerContract.registerAssetOperation('testTransformation', [[1], [15]], 3, '38.8951', '-77.0364', processTypes)).to.be.revertedWith('AssetOperationManager: Input material does not exist');
+        });
+
+        it('should register an AssetOperation - FAIL(AssetOperationManager: At least one process type must be specified)', async () => {
+            await expect(assertOperationManagerContract.registerAssetOperation('testTransformation', [[1], [2]], 3, '38.8951', '-77.0364', [])).to.be.revertedWith('AssetOperationManager: At least one process type must be specified');
+        });
+
+        it('should register an AssetOperation - FAIL(AssetOperationManager: Process type does not exist)', async () => {
+            await expect(assertOperationManagerContract.registerAssetOperation('testTransformation', [[1], [2]], 3, '38.8951', '-77.0364', ['custom process type'])).to.be.revertedWith('AssetOperationManager: Process type does not exist');
         });
 
         it('should get AssetOperation type - FAIL(AssetOperationManager: Asset operation does not exist)', async () => {
@@ -80,8 +95,8 @@ describe('AssetOperationManager', () => {
 
     describe('Update', () => {
         it('should update an AssetOperation', async () => {
-            await assertOperationManagerContract.registerAssetOperation('testTransformation', [[1], [2]], 3, '38.8951', '-77.0364');
-            const tx = await assertOperationManagerContract.updateAssetOperation(1, 'testTransformationUpdated', [[4], [5]], 6, '46.003677', '8.951052');
+            await assertOperationManagerContract.registerAssetOperation('testTransformation', [[1], [2]], 3, '38.8951', '-77.0364', [processTypes[0]]);
+            const tx = await assertOperationManagerContract.updateAssetOperation(1, 'testTransformationUpdated', [[4], [5]], 6, '46.003677', '8.951052', [processTypes[1]]);
             await tx.wait();
 
             const updatedTransformation = await assertOperationManagerContract.getAssetOperation(1);
@@ -91,7 +106,8 @@ describe('AssetOperationManager', () => {
             expect(updatedTransformation[3]).to.be.equal(BigNumber.from(6));
             expect(updatedTransformation[4]).to.be.equal('46.003677');
             expect(updatedTransformation[5]).to.be.equal('8.951052');
-            expect(updatedTransformation[6]).to.be.equal(true);
+            expect(updatedTransformation[6]).to.be.deep.equal([processTypes[1]]);
+            expect(updatedTransformation[7]).to.be.equal(true);
             expect(tx).to.emit(assertOperationManagerContract, 'AssetOperationUpdated').withArgs(updatedTransformation[0]);
         });
     });

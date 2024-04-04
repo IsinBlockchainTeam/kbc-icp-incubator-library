@@ -1,11 +1,11 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { FakeContract, smock } from '@defi-wonderland/smock';
-import {BigNumber, Contract, Event, Wallet} from 'ethers';
+import { BigNumber, Contract, Event, Wallet } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import chai, { expect } from 'chai';
 import { ethers } from 'hardhat';
 import { ContractName } from '../utils/constants';
-import {MaterialManager} from "../typechain-types";
+import { MaterialManager } from '../typechain-types';
 
 describe('OrderTrade.sol', () => {
     chai.use(smock.matchers);
@@ -35,12 +35,12 @@ describe('OrderTrade.sol', () => {
         const OrderTrade = await ethers.getContractFactory('OrderTrade');
         orderTradeContract = await OrderTrade.deploy(1, productCategoryManagerContractFake.address, materialManagerContractFake.address,
             documentManagerContractFake.address, supplier.address, customer.address, commissioner.address, externalUrl,
-            deadline? deadline : paymentDeadline, deadline? deadline :  deadline? deadline : documentDeliveryDeadline,
-            arbiter.address, deadline? deadline : shippingDeadline, deadline? deadline : deliveryDeadline, escrowContractFake.address,
+            deadline || paymentDeadline, deadline || (deadline || documentDeliveryDeadline),
+            arbiter.address, deadline || shippingDeadline, deadline || deliveryDeadline, escrowContractFake.address,
             enumerableFiatManagerContractFake.address,
         );
         await orderTradeContract.deployed();
-    }
+    };
 
     before(async () => {
         [admin, supplier, customer, commissioner, arbiter] = await ethers.getSigners();
@@ -343,7 +343,7 @@ describe('OrderTrade.sol', () => {
 
     describe('Order expiration', () => {
         it('should return whether a deadline has passed', async () => {
-            await _createOrderTrade(Date.now() + 1000000)
+            await _createOrderTrade(Date.now() + 1000000);
             expect(await orderTradeContract.connect(supplier).haveDeadlinesExpired())
                 .to
                 .equal(false);
