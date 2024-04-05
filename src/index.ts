@@ -59,5 +59,6 @@ export { IStorageMetadataDriver } from './drivers/IStorageMetadataDriver';
 export { IStorageDocumentDriver } from './drivers/IStorageDocumentDriver';
 export { SolidMetadataDriver, SolidMetadataSpec } from './drivers/SolidMetadataDriver';
 export { SolidDocumentDriver, SolidDocumentSpec } from './drivers/SolidDocumentDriver';
+export { ICPStorageDriver } from './drivers/ICPStorageDriver';
 
 export { GraphService, GraphData } from './services/GraphService';

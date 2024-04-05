@@ -8,7 +8,7 @@ import { IStorageDocumentDriver } from '../drivers/IStorageDocumentDriver';
 import { SolidDocumentSpec } from '../drivers/SolidDocumentDriver';
 import { SolidMetadataSpec } from '../drivers/SolidMetadataDriver';
 import { StorageOperationType } from '../types/StorageOperationType';
-import { computeHashFromBuffer } from '../utils/utils';
+import FileHelpers from "../utils/fileHelpers";
 
 describe('TradeService', () => {
     const mockedTradeDriver: TradeDriver = createMock<TradeDriver>({
@@ -75,7 +75,7 @@ describe('TradeService', () => {
             serviceFunctionName: 'addDocument with metadata and storage drivers',
             serviceFunction: () => tradeService.addDocument(1, 'doc name', DocumentType.DELIVERY_NOTE, { spec: documentSpec, fileBuffer: documentBuffer }, { spec: metadataSpec, value: metadata }),
             expectedMockedFunction: mockedTradeDriver.addDocument,
-            expectedMockedFunctionArgs: [1, 'doc name', DocumentType.DELIVERY_NOTE, documentExternalUrl, computeHashFromBuffer(documentBuffer)],
+            expectedMockedFunctionArgs: [1, 'doc name', DocumentType.DELIVERY_NOTE, documentExternalUrl, FileHelpers.computeHashFromBuffer(documentBuffer)],
         },
         {
             serviceFunctionName: 'addDocument without metadata and storage drivers',

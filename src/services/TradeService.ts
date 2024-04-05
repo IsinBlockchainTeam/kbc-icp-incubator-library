@@ -8,7 +8,7 @@ import { TradeType } from '../types/TradeType';
 import { IStorageMetadataDriver, MetadataSpec } from '../drivers/IStorageMetadataDriver';
 import { DocumentSpec, IStorageDocumentDriver } from '../drivers/IStorageDocumentDriver';
 import { StorageOperationType } from '../types/StorageOperationType';
-import { computeHashFromBuffer } from '../utils/utils';
+import FileHelpers from "../utils/fileHelpers";
 
 export class TradeService<MS extends MetadataSpec, DS extends DocumentSpec, ACR extends StorageACR> {
     protected _tradeDriver: TradeDriver;
@@ -45,7 +45,7 @@ export class TradeService<MS extends MetadataSpec, DS extends DocumentSpec, ACR 
         if (documentStorage) {
             if (!this._storageDocumentDriver) throw new Error('Storage document driver is not available');
             externalUrl = await this._storageDocumentDriver.create(StorageOperationType.TRANSACTION_DOCUMENT, documentStorage?.fileBuffer, documentStorage?.spec);
-            contentHash = computeHashFromBuffer(documentStorage.fileBuffer);
+            contentHash = FileHelpers.computeHashFromBuffer(documentStorage.fileBuffer);
         }
         if (metadataStorage) {
             if (!this._storageMetadataDriver) throw new Error('Storage metadata driver is not available');
