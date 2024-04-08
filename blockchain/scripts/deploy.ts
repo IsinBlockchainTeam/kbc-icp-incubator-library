@@ -42,6 +42,15 @@ serial([
             await tx.wait();
         }
     },
+    () => deploy(ContractName.ENUMERABLE_TYPE_MANAGER, [[]], 'EnumerableAssessmentStandardManager'),
+    async () => {
+        const enums: string[] = ['Chemical use assessment', 'Environment assessment', 'Origin assessment', 'Quality assessment', 'Swiss Decode'];
+        for (let i = 0; i < enums.length; i++) {
+            const tx = await contractMap.get('EnumerableAssessmentStandardManager')
+                ?.add(enums[i]);
+            await tx.wait();
+        }
+    },
     () => deploy(
         ContractName.PRODUCT_CATEGORY_MANAGER, [],
     ),
