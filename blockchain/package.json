@@ -23,7 +23,7 @@
     "eslint-plugin-mocha": "^10.1.0"
   },
   "dependencies": {
-    "@blockchain-lib/blockchain-common": "1.0.1",
+    "@blockchain-lib/blockchain-common": "1.1.0",
     "@defi-wonderland/smock": "^2.3.4",
     "@openzeppelin/contracts": "4.8.2",
     "@openzeppelin/hardhat-upgrades": "1.22.1",

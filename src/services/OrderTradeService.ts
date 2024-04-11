@@ -1,4 +1,4 @@
-import { StorageACR } from '@blockchain-lib/common/types/storage';
+import { StorageACR } from '@blockchain-lib/common';
 import { TradeService } from './TradeService';
 import {
     OrderTradeDriver,

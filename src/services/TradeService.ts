@@ -1,6 +1,6 @@
 import {
     StorageACR,
-} from '@blockchain-lib/common/types/storage';
+} from '@blockchain-lib/common';
 import { TradeDriver } from '../drivers/TradeDriver';
 import { TradeStatus } from '../types/TradeStatus';
 import { DocumentInfo, DocumentType } from '../entities/DocumentInfo';
