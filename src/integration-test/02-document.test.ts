@@ -14,7 +14,10 @@ import {
     OTHER_ADDRESS,
     MY_TOKEN_CONTRACT_ADDRESS,
     MATERIAL_MANAGER_CONTRACT_ADDRESS,
-    PRODUCT_CATEGORY_CONTRACT_ADDRESS, ADMIN_PRIVATE_KEY,
+    PRODUCT_CATEGORY_CONTRACT_ADDRESS,
+    ADMIN_PRIVATE_KEY,
+    CERTIFICATE_MANAGER_CONTRACT_ADDRESS,
+    CERTIFICATE_AUTHORITY_ADDRESS,
 } from './config';
 import { DocumentType } from '../entities/DocumentInfo';
 import { TradeManagerService } from '../services/TradeManagerService';
@@ -29,12 +32,15 @@ import { MaterialDriver } from '../drivers/MaterialDriver';
 import { SolidDocumentSpec } from '../drivers/SolidDocumentDriver';
 import { SolidMetadataSpec } from '../drivers/SolidMetadataDriver';
 import { TradeStatus } from '../types/TradeStatus';
+import { CertificateManagerService } from '../services/CertificateManagerService';
+import { CertificateManagerDriver } from '../drivers/CertificateManagerDriver';
 
 dotenv.config();
 
 describe('Document lifecycle', () => {
     let documentService: DocumentService<SolidMetadataSpec, SolidDocumentSpec, SolidStorageACR>;
     let documentDriver: DocumentDriver;
+    let certificateManagerService: CertificateManagerService;
     let provider: JsonRpcProvider;
     let signer: Signer;
     let tradeManagerService: TradeManagerService<SolidMetadataSpec, SolidStorageACR>;
@@ -58,6 +64,8 @@ describe('Document lifecycle', () => {
         documentType: DocumentType.DELIVERY_NOTE,
         externalUrl: 'externalUr2',
     };
+    const assessmentStandards = ['Chemical use assessment', 'Environment assessment', 'Origin assessment'];
+    const processTypes = ['33 - Collecting', '38 - Harvesting'];
     const transactionType = 'trade';
     let transactionId: number;
     let firstOrderTradeService: OrderTradeService<SolidMetadataSpec, SolidDocumentSpec, SolidStorageACR>;
@@ -106,6 +114,10 @@ describe('Document lifecycle', () => {
         _defineSender(ADMIN_PRIVATE_KEY);
         _defineOrderSender(ADMIN_PRIVATE_KEY);
         await documentService.addTradeManager(TRADE_MANAGER_CONTRACT_ADDRESS);
+        certificateManagerService = new CertificateManagerService(new CertificateManagerDriver(
+            signer,
+            CERTIFICATE_MANAGER_CONTRACT_ADDRESS,
+        ));
     });
 
     // TODO: should this be removed after issue #102?
@@ -127,7 +139,7 @@ describe('Document lifecycle', () => {
         materialIds.push((await materialService.registerMaterial(productCategoryIds[1])).id);
     });
 
-    it('should register a document', async () => {
+    it('should register a document to a trade', async () => {
         _defineSender(ADMIN_PRIVATE_KEY);
         const { orderId, orderTradeService } = await createOrderAndConfirm();
         transactionId = orderId;
@@ -155,6 +167,51 @@ describe('Document lifecycle', () => {
 
         const documentInfo = await documentService.getDocumentInfoById(documentsInfo[0].id);
         expect(documentInfo).toEqual(documentsInfo[0]);
+    });
+
+    it('should register different kind of certification documents', async () => {
+        const issueDate = new Date(), validFrom = new Date(), validUntil = new Date('2030-10-10');
+        // company certificate
+        const companyDocumentId = await documentService.registerDocument('certification document url', '0x12345');
+        await certificateManagerService.registerCompanyCertificate(CERTIFICATE_AUTHORITY_ADDRESS, SUPPLIER_ADDRESS, assessmentStandards[0], companyDocumentId, issueDate, validFrom, validUntil);
+        const companyCertificates = await certificateManagerService.getCompanyCertificates(SUPPLIER_ADDRESS);
+        expect(companyCertificates.length).toEqual(1);
+        expect(companyCertificates[0].issuer).toEqual(CERTIFICATE_AUTHORITY_ADDRESS);
+        expect(companyCertificates[0].company).toEqual(SUPPLIER_ADDRESS);
+        expect(companyCertificates[0].assessmentStandard).toEqual(assessmentStandards[0]);
+        expect(companyCertificates[0].documentId).toEqual(companyDocumentId);
+        expect(companyCertificates[0].issueDate).toEqual(issueDate);
+        expect(companyCertificates[0].validFrom).toEqual(validFrom);
+        expect(companyCertificates[0].validUntil).toEqual(validUntil);
+
+        // scope certificate
+        const scopeDocumentId = await documentService.registerDocument('certification document url', '0x12345');
+        await certificateManagerService.registerScopeCertificate(CERTIFICATE_AUTHORITY_ADDRESS, SUPPLIER_ADDRESS, assessmentStandards[1], scopeDocumentId, issueDate, validFrom, validUntil, processTypes);
+        const scopeCertificatesProcessType1 = await certificateManagerService.getScopeCertificates(SUPPLIER_ADDRESS, processTypes[0]);
+        expect(scopeCertificatesProcessType1.length).toEqual(1);
+        expect(scopeCertificatesProcessType1[0].issuer).toEqual(CERTIFICATE_AUTHORITY_ADDRESS);
+        expect(scopeCertificatesProcessType1[0].company).toEqual(SUPPLIER_ADDRESS);
+        expect(scopeCertificatesProcessType1[0].assessmentStandard).toEqual(assessmentStandards[1]);
+        expect(scopeCertificatesProcessType1[0].documentId).toEqual(scopeDocumentId);
+        expect(scopeCertificatesProcessType1[0].issueDate).toEqual(issueDate);
+        expect(scopeCertificatesProcessType1[0].validFrom).toEqual(validFrom);
+        expect(scopeCertificatesProcessType1[0].validUntil).toEqual(validUntil);
+        expect(scopeCertificatesProcessType1[0].processTypes).toEqual(processTypes);
+        const scopeCertificateProcessType2 = await certificateManagerService.getScopeCertificates(SUPPLIER_ADDRESS, processTypes[1]);
+        expect(scopeCertificateProcessType2.length).toEqual(1);
+        expect(scopeCertificateProcessType2[0]).toEqual(scopeCertificatesProcessType1[0]);
+
+        // material certificate
+        const materialDocumentId = await documentService.registerDocument('certification document url', '0x12345');
+        await certificateManagerService.registerMaterialCertificate(CERTIFICATE_AUTHORITY_ADDRESS, assessmentStandards[2], materialDocumentId, issueDate, transactionId, firstOrderLineId);
+        const materialCertificates = await certificateManagerService.getMaterialCertificates(transactionId, firstOrderLineId);
+        expect(materialCertificates.length).toEqual(1);
+        expect(materialCertificates[0].issuer).toEqual(CERTIFICATE_AUTHORITY_ADDRESS);
+        expect(materialCertificates[0].assessmentStandard).toEqual(assessmentStandards[2]);
+        expect(materialCertificates[0].documentId).toEqual(materialDocumentId);
+        expect(materialCertificates[0].issueDate).toEqual(issueDate);
+        expect(materialCertificates[0].tradeId).toEqual(transactionId);
+        expect(materialCertificates[0].lineId).toEqual(firstOrderLineId);
     });
 
     // it('Should register a document (and store it to ipfs) by invoking the order trade contract, then retrieve the document', async () => {

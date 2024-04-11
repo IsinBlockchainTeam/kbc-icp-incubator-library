@@ -10,9 +10,9 @@ contract CertificateManager is AccessControl {
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
-    event CompanyCertificateRegistered(uint256 indexed id);
-    event ScopeCertificateRegistered(uint256 indexed id);
-    event MaterialCertificateRegistered(uint256 indexed id);
+    event CompanyCertificateRegistered(uint256 indexed id, address company);
+    event ScopeCertificateRegistered(uint256 indexed id, address company, string processType);
+    event MaterialCertificateRegistered(uint256 indexed id, uint256 tradeId, uint256 lineId);
 
 
     modifier onlyAdmin() {
@@ -59,11 +59,11 @@ contract CertificateManager is AccessControl {
     // id => material certificate
     mapping(uint256 => MaterialCertificate) private _allMaterialCertificates;
 
-    // company address => company certificates
+    // company address => company certificate ids
     mapping(address => uint256[]) private _companyCertificates;
-    // company address => process type => scope certificates
+    // company address => process type => scope certificate ids
     mapping(address => mapping(string => uint256[])) private _scopeCertificates;
-    // trade id => trade line id => material certificates
+    // trade id => trade line id => material certificate ids
     mapping(uint256 => mapping(uint256 => uint256[])) private _materialCertificates;
 
     EnumerableType private _processTypeManager;
@@ -83,7 +83,7 @@ contract CertificateManager is AccessControl {
         _allCompanyCertificates[certificateId] = CompanyCertificate(baseInfo, company, validFrom, validUntil);
         _companyCertificates[company].push(certificateId);
 
-        emit CompanyCertificateRegistered(certificateId);
+        emit CompanyCertificateRegistered(certificateId, company);
     }
 
     function registerScopeCertificate(address issuer, address company, string memory assessmentStandard, uint256 documentId, uint256 issueDate, uint256 validFrom, uint256 validUntil, string[] memory processTypes) public {
@@ -94,9 +94,8 @@ contract CertificateManager is AccessControl {
         _allScopeCertificates[certificateId] = ScopeCertificate(baseInfo, company, processTypes, validFrom, validUntil);
         for(uint256 i = 0; i < processTypes.length; i++) {
             _scopeCertificates[company][processTypes[i]].push(certificateId);
+            emit ScopeCertificateRegistered(certificateId, company, processTypes[i]);
         }
-
-        emit ScopeCertificateRegistered(certificateId);
     }
 
     function registerMaterialCertificate(address issuer, string memory assessmentStandard, uint256 documentId, uint256 issueDate, uint256 tradeId, uint256 lineId) public {
@@ -104,10 +103,37 @@ contract CertificateManager is AccessControl {
         _allMaterialCertificates[certificateId] = MaterialCertificate(baseInfo, tradeId, lineId);
         _materialCertificates[tradeId][lineId].push(certificateId);
 
-        emit MaterialCertificateRegistered(certificateId);
+        emit MaterialCertificateRegistered(certificateId, tradeId, lineId);
     }
 
-    function _computeBaseInfo(address issuer, string memory assessmentStandard, uint256 documentId, uint256 issueDate) private pure returns (BaseInfo memory, uint256) {
+    function getCompanyCertificates(address company) public view returns (CompanyCertificate[] memory) {
+        uint256[] memory certificateIds = _companyCertificates[company];
+        CompanyCertificate[] memory certificates = new CompanyCertificate[](certificateIds.length);
+        for(uint256 i = 0; i < certificateIds.length; i++) {
+            certificates[i] = _allCompanyCertificates[certificateIds[i]];
+        }
+        return certificates;
+    }
+
+    function getScopeCertificates(address company, string memory processType) public view returns (ScopeCertificate[] memory) {
+        uint256[] memory certificateIds = _scopeCertificates[company][processType];
+        ScopeCertificate[] memory certificates = new ScopeCertificate[](certificateIds.length);
+        for(uint256 i = 0; i < certificateIds.length; i++) {
+            certificates[i] = _allScopeCertificates[certificateIds[i]];
+        }
+        return certificates;
+    }
+
+    function getMaterialCertificates(uint256 tradeId, uint256 lineId) public view returns (MaterialCertificate[] memory) {
+        uint256[] memory certificateIds = _materialCertificates[tradeId][lineId];
+        MaterialCertificate[] memory certificates = new MaterialCertificate[](certificateIds.length);
+        for(uint256 i = 0; i < certificateIds.length; i++) {
+            certificates[i] = _allMaterialCertificates[certificateIds[i]];
+        }
+        return certificates;
+    }
+
+    function _computeBaseInfo(address issuer, string memory assessmentStandard, uint256 documentId, uint256 issueDate) private returns (BaseInfo memory, uint256) {
         require(_assessmentStandardManager.contains(assessmentStandard), "CertificateManager: Assessment standard does not exist");
 
         uint256 certificateId = _counter.current() + 1;

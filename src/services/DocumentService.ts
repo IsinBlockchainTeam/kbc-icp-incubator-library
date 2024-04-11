@@ -19,8 +19,8 @@ export class DocumentService<MS extends MetadataSpec, DS extends DocumentSpec, A
         this._storageDocumentDriver = args.storageDocumentDriver;
     }
 
-    async registerDocument(externalUrl: string, contentHash: string): Promise<void> {
-        await this._documentDriver.registerDocument(externalUrl, contentHash);
+    async registerDocument(externalUrl: string, contentHash: string): Promise<number> {
+        return this._documentDriver.registerDocument(externalUrl, contentHash);
     }
 
     async getDocumentsCounter(): Promise<number> {
@@ -31,6 +31,8 @@ export class DocumentService<MS extends MetadataSpec, DS extends DocumentSpec, A
         return this._documentDriver.getDocumentById(id);
     }
 
+    // TODO: questo metodo ipoteticamente diventerà "getTradeDocument" e l'entità ritornata sarà "TradeDocument" (specifica per il trade)
+    // questo per fare in modo che se si vogliano salvare dei metadati su altre tipologie di documenti (es. certificati) si possa fare
     async getCompleteDocument(documentInfo: DocumentInfo, metadataSpec: MS, documentSpec: DS): Promise<Document | undefined> {
         if (!this._storageDocumentDriver) throw new Error('Storage document driver is not available');
         if (!this._storageMetadataDriver) throw new Error('Storage metadata driver is not available');

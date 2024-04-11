@@ -1,6 +1,6 @@
 /* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
-import { Signer, utils } from 'ethers';
+import { Event, Signer, utils } from 'ethers';
 import { DocumentManager, DocumentManager__factory } from '../smart-contracts';
 import { DocumentInfo } from '../entities/DocumentInfo';
 import { EntityBuilder } from '../utils/EntityBuilder';
@@ -17,10 +17,12 @@ export class DocumentDriver {
             .connect(signer);
     }
 
-    async registerDocument(externalUrl: string, contentHash: string): Promise<void> {
+    async registerDocument(externalUrl: string, contentHash: string): Promise<number> {
         try {
-            const tx = await this._contract.registerDocument(externalUrl, contentHash);
-            await tx.wait();
+            const tx: any = await this._contract.registerDocument(externalUrl, contentHash);
+            const receipt = await tx.wait();
+            const id = receipt.events.find((event: Event) => event.event === 'DocumentRegistered').args[0];
+            return id.toNumber();
         } catch (e: any) {
             throw new Error(e.message);
         }

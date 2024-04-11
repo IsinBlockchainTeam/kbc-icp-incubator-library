@@ -98,6 +98,12 @@ serial([
     () => deploy(
         ContractName.MY_TOKEN, [10000],
     ),
+    () => deploy(
+        ContractName.CERTIFICATE_MANAGER, [
+            contractMap.get('EnumerableProcessTypeManager')!.address,
+            contractMap.get('EnumerableAssessmentStandardManager')!.address,
+        ],
+    ),
 ])
     .catch((error: any) => {
         console.error(error);

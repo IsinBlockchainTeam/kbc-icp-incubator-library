@@ -5,7 +5,7 @@ import {
     DocumentManager,
     MaterialManager, OfferManager, OrderTrade,
     RelationshipManager,
-    AssetOperationManager, ProductCategoryManager,
+    AssetOperationManager, ProductCategoryManager, CertificateManager,
 } from '../smart-contracts';
 import { Relationship } from '../entities/Relationship';
 import { DocumentInfo } from '../entities/DocumentInfo';
@@ -13,6 +13,9 @@ import { Offer } from '../entities/Offer';
 import { Line } from '../entities/Trade';
 import { OrderLine, OrderLinePrice } from '../entities/OrderTradeInfo';
 import { ProductCategory } from '../entities/ProductCategory';
+import { CompanyCertificate } from '../entities/CompanyCertificate';
+import { ScopeCertificate } from '../entities/ScopeCertificate';
+import { MaterialCertificate } from '../entities/MaterialCertificate';
 
 export class EntityBuilder {
     static buildProductCategory(bcProductCategory: ProductCategoryManager.ProductCategoryStructOutput): ProductCategory {
@@ -65,5 +68,22 @@ export class EntityBuilder {
         const line: Line = this.buildTradeLine(bcLine, bcProductCategory, bcMaterial);
         const price: OrderLinePrice = this.buildOrderLinePrice(bcOrderLine.price);
         return new OrderLine(line.id, line.material, line.productCategory, bcOrderLine.quantity.toNumber(), price);
+    }
+
+    static buildCompanyCertificate(bcCompanyCertificate: CertificateManager.CompanyCertificateStructOutput): CompanyCertificate {
+        return new CompanyCertificate(bcCompanyCertificate.baseInfo.id.toNumber(), bcCompanyCertificate.baseInfo.issuer, bcCompanyCertificate.company,
+            bcCompanyCertificate.baseInfo.assessmentStandard, bcCompanyCertificate.baseInfo.documentId.toNumber(), new Date(bcCompanyCertificate.baseInfo.issueDate.toNumber()),
+            new Date(bcCompanyCertificate.validFrom.toNumber()), new Date(bcCompanyCertificate.validUntil.toNumber()));
+    }
+
+    static buildScopeCertificate(bcScopeCertificate: CertificateManager.ScopeCertificateStructOutput): ScopeCertificate {
+        return new ScopeCertificate(bcScopeCertificate.baseInfo.id.toNumber(), bcScopeCertificate.baseInfo.issuer, bcScopeCertificate.baseInfo.assessmentStandard,
+            bcScopeCertificate.baseInfo.documentId.toNumber(), new Date(bcScopeCertificate.baseInfo.issueDate.toNumber()),
+            bcScopeCertificate.company, bcScopeCertificate.processTypes, new Date(bcScopeCertificate.validFrom.toNumber()), new Date(bcScopeCertificate.validUntil.toNumber()));
+    }
+
+    static buildMaterialCertificate(bcMaterialCertificate: CertificateManager.MaterialCertificateStructOutput): MaterialCertificate {
+        return new MaterialCertificate(bcMaterialCertificate.baseInfo.id.toNumber(), bcMaterialCertificate.baseInfo.issuer, bcMaterialCertificate.baseInfo.assessmentStandard,
+            bcMaterialCertificate.baseInfo.documentId.toNumber(), new Date(bcMaterialCertificate.baseInfo.issueDate.toNumber()), bcMaterialCertificate.tradeId.toNumber(), bcMaterialCertificate.lineId.toNumber());
     }
 }
