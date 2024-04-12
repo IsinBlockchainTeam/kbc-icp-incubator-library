@@ -10,7 +10,7 @@ It uses the [Hardhat](https://hardhat.org/) framework as a development environme
 4. Rename the `.env.template` file to `.env` and fill in the missing information
 5. Compile smart contracts with `npm run compile`
 6. In a new terminal, run `npm run node` for starting the local Hardhat blockchain 
-7. Deploy the smart contracts with `npm run deploy`
+7. Deploy the smart contracts with `npm run deploy -- --network localhost`
 
 ### `npmrc` Configuration
 | Registry name              | Description                                                                                                                                                                                                       |
