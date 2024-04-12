@@ -98,6 +98,9 @@ serial([
     () => deploy(
         ContractName.MY_TOKEN, [10000],
     ),
+    () => deploy(
+        ContractName.ETHEREUM_DID_REGISTRY, [],
+    )
 ])
     .catch((error: any) => {
         console.error(error);
