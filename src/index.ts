@@ -62,3 +62,5 @@ export { SolidDocumentDriver, SolidDocumentSpec } from './drivers/SolidDocumentD
 export { ICPStorageDriver } from './drivers/ICPStorageDriver';
 
 export { GraphService, GraphData } from './services/GraphService';
+
+export {FileHelpers} from './utils/fileHelpers';
