@@ -4,13 +4,13 @@ This package defines, tests and deploys the _Solidity_ Smart Contracts of the KB
 It uses the [Hardhat](https://hardhat.org/) framework as a development environment and testing network.
 
 ## Getting Started
-- Move inside the `blockchain` with `cd blockchain`
-- Rename the `.npmrc.template` file to `.npmrc` and fill in the missing information
-- Run `npm i --force` to install the required dependencies
-- Rename the `.env.template` file to `.env` and fill in the missing information
-- Compile smart contracts with `npm run compile`
-- In a new terminal, run `npm run node` for starting the local Hardhat blockchain
-- Deploy the smart contracts with `npm run deploy`
+1. Move inside the `blockchain` with `cd blockchain`
+2. Rename the `.npmrc.template` file to `.npmrc` and fill in the missing information
+3. Run `npm i --force` to install the required dependencies
+4. Rename the `.env.template` file to `.env` and fill in the missing information
+5. Compile smart contracts with `npm run compile`
+6. In a new terminal, run `npm run node` for starting the local Hardhat blockchain 
+7. Deploy the smart contracts with `npm run deploy`
 
 ### `npmrc` Configuration
 | Registry name              | Description                                                                                                                                                                                                       |

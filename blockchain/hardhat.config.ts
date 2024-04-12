@@ -9,7 +9,6 @@ dotenv.config();
 const {
     PRIVATE_KEY,
     DEFAULT_DEPLOY_NETWORK,
-    ETHERNAL_EMAIL,
     NODE_ENV,
     RPC_URL,
 } = process.env;
