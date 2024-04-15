@@ -9,7 +9,7 @@
     "compileOnly": "npx hardhat compile",
     "compile": "npx hardhat compile && rm -rf ../src/smart-contracts && cp -R ./typechain-types ../src/smart-contracts",
     "deploy": "npx hardhat run ./scripts/deploy.ts",
-    "node": "npx hardhat node"
+    "node": "npx hardhat node --hostname 0.0.0.0"
   },
   "author": "",
   "license": "ISC",
