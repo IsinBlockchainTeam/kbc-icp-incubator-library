@@ -22,9 +22,10 @@ services:
     image: gitlab-core.supsi.ch:5050/dti-isin/giuliano.gremlich/blockchain/one-lib-to-rule-them-all/coffee-trading-management-lib/blockchain-node
     entrypoint: sh -c "NODE_ENV=test npx hardhat run scripts/deploy.ts --network testnet"
     environment:
-      SUPPLIER_ADMIN: ${SUPPLIER_ADMIN}
       RPC_URL: "http://blockchain_node:8545/"
       PRIVATE_KEY: ${PRIVATE_KEY}
+    env_file:
+      - .env
     networks:
       - coffee-net
 
