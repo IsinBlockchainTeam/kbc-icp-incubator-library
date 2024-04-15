@@ -33,6 +33,30 @@ serial([
             await tx.wait();
         }
     },
+    () => deploy(
+        ContractName.DOCUMENT_MANAGER, [
+            [process.env.SUPPLIER_ADMIN || ''],
+        ],
+    ),
+    () => deploy(
+        ContractName.ESCROW_MANAGER, [
+            process.env.COMMISSIONER_ADMIN || '',
+            process.env.ESCROW_BASE_FEE || 20,
+            process.env.ESCROW_COMMISSIONER_FEE || 1,
+        ],
+    ),
+    () => deploy(
+        ContractName.TRADE_MANAGER, [
+            contractMap.get(ContractName.PRODUCT_CATEGORY_MANAGER)!.address,
+            contractMap.get(ContractName.MATERIAL_MANAGER)!.address,
+            contractMap.get(ContractName.DOCUMENT_MANAGER)!.address,
+            contractMap.get('EnumerableFiatManager')!.address,
+            contractMap.get(ContractName.ESCROW_MANAGER)!.address,
+        ],
+    ),
+    () => deploy(ContractName.RELATIONSHIP_MANAGER, [
+        [process.env.SUPPLIER_ADMIN || ''],
+    ]),
     () => deploy(ContractName.ENUMERABLE_TYPE_MANAGER, [[]], 'EnumerableProcessTypeManager'),
     async () => {
         const enums: string[] = ['33 - Collecting', '38 - Harvesting'];
@@ -60,30 +84,6 @@ serial([
         ],
     ),
     () => deploy(
-        ContractName.DOCUMENT_MANAGER, [
-            [process.env.SUPPLIER_ADMIN || ''],
-        ],
-    ),
-    () => deploy(
-        ContractName.ESCROW_MANAGER, [
-            process.env.COMMISSIONER_ADMIN || '',
-            process.env.ESCROW_BASE_FEE || 20,
-            process.env.ESCROW_COMMISSIONER_FEE || 1,
-        ],
-    ),
-    () => deploy(
-        ContractName.TRADE_MANAGER, [
-            contractMap.get(ContractName.PRODUCT_CATEGORY_MANAGER)!.address,
-            contractMap.get(ContractName.MATERIAL_MANAGER)!.address,
-            contractMap.get(ContractName.DOCUMENT_MANAGER)!.address,
-            contractMap.get('EnumerableFiatManager')!.address,
-            contractMap.get(ContractName.ESCROW_MANAGER)!.address,
-        ],
-    ),
-    () => deploy(ContractName.RELATIONSHIP_MANAGER, [
-        [process.env.SUPPLIER_ADMIN || ''],
-    ]),
-    () => deploy(
         ContractName.ASSET_OPERATION_MANAGER, [
             contractMap.get(ContractName.MATERIAL_MANAGER)!.address,
             contractMap.get('EnumerableProcessTypeManager')!.address,
@@ -100,7 +100,7 @@ serial([
     ),
     () => deploy(
         ContractName.ETHEREUM_DID_REGISTRY, [],
-    )
+    ),
 ])
     .catch((error: any) => {
         console.error(error);

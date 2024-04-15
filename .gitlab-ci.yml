@@ -43,7 +43,6 @@ blockchain-node-deploy:
   script:
     - cp $GCLOUD_SA_AUTH_KEY gcloud_auth.json
     - cp $DOCKER_ENV_FILE .env.docker
-    - ls -la
     - docker build -f docker/GCloudDockerfile -t gcloud-deployer .
     - docker run -e GCLOUD_PULL_PASSWORD=$REGISTRY_PULL_PASSWORD -e GCLOUD_PULL_USERNAME=$REGISTRY_PULL_USERNAME gcloud-deployer 2>&1
 
