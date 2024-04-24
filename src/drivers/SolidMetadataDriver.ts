@@ -4,7 +4,7 @@ import {
     SolidSessionCredential,
     SolidStorageACR,
 } from '@blockchain-lib/common';
-import { IStorageMetadataDriver, MetadataSpec } from './IStorageMetadataDriver';
+import { ISolidStorageMetadataDriver, MetadataSpec } from './ISolidStorageMetadataDriver';
 import { SolidUtilsService } from '../services/SolidUtilsService';
 import { StorageOperationType } from '../types/StorageOperationType';
 
@@ -16,7 +16,7 @@ export interface SolidMetadataSpec extends MetadataSpec {
     entireResourceUrl?: string,
 }
 
-export class SolidMetadataDriver implements IStorageMetadataDriver<SolidMetadataSpec, SolidStorageACR> {
+export class SolidMetadataDriver implements ISolidStorageMetadataDriver<SolidMetadataSpec, SolidStorageACR> {
     private readonly _solidDriver: SolidDriver;
 
     private readonly _solidServerBaseUrl: string;

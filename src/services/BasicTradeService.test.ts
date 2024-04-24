@@ -5,8 +5,8 @@ import { BasicTradeService } from './BasicTradeService';
 import { Line, LineRequest } from '../entities/Trade';
 import { Material } from '../entities/Material';
 import { ProductCategory } from '../entities/ProductCategory';
-import { IStorageMetadataDriver } from '../drivers/IStorageMetadataDriver';
-import { IStorageDocumentDriver } from '../drivers/IStorageDocumentDriver';
+import { ISolidStorageMetadataDriver } from '../drivers/ISolidStorageMetadataDriver';
+import { ISolidStorageDocumentDriver } from '../drivers/ISolidStorageDocumentDriver';
 import { SolidMetadataSpec } from '../drivers/SolidMetadataDriver';
 import { SolidDocumentSpec } from '../drivers/SolidDocumentDriver';
 
@@ -21,16 +21,16 @@ describe('BasicTradeService', () => {
         setName: jest.fn(),
     });
 
-    const mockedStorageMetadataDriver = createMock<IStorageMetadataDriver<SolidMetadataSpec, SolidStorageACR>>({
+    const mockedStorageMetadataDriver = createMock<ISolidStorageMetadataDriver<SolidMetadataSpec, SolidStorageACR>>({
         create: jest.fn(),
     });
-    const mockedStorageDocumentDriver = createMock<IStorageDocumentDriver<SolidDocumentSpec>>({
+    const mockedStorageDocumentDriver = createMock<ISolidStorageDocumentDriver<SolidDocumentSpec>>({
         create: jest.fn(),
     });
 
-    const basicTradeService = new BasicTradeService({
-        tradeDriver: mockedBasicTradeDriver,
-    });
+    const basicTradeService = new BasicTradeService(
+        mockedBasicTradeDriver,
+    );
 
     afterAll(() => {
         jest.restoreAllMocks();

@@ -2,18 +2,18 @@ import { StorageACR } from '@blockchain-lib/common';
 import { DocumentDriver } from '../drivers/DocumentDriver';
 import { DocumentInfo, DocumentType } from '../entities/DocumentInfo';
 import { Document } from '../entities/Document';
-import { DocumentSpec, IStorageDocumentDriver } from '../drivers/IStorageDocumentDriver';
-import { IStorageMetadataDriver, MetadataSpec } from '../drivers/IStorageMetadataDriver';
+import { DocumentSpec, ISolidStorageDocumentDriver } from '../drivers/ISolidStorageDocumentDriver';
+import { ISolidStorageMetadataDriver, MetadataSpec } from '../drivers/ISolidStorageMetadataDriver';
 import { StorageOperationType } from '../types/StorageOperationType';
 
 export class DocumentService<MS extends MetadataSpec, DS extends DocumentSpec, ACR extends StorageACR> {
     private _documentDriver: DocumentDriver;
 
-    private readonly _storageDocumentDriver?: IStorageDocumentDriver<DS>;
+    private readonly _storageDocumentDriver?: ISolidStorageDocumentDriver<DS>;
 
-    private readonly _storageMetadataDriver?: IStorageMetadataDriver<MS, ACR>;
+    private readonly _storageMetadataDriver?: ISolidStorageMetadataDriver<MS, ACR>;
 
-    constructor(args: {documentDriver: DocumentDriver, storageMetadataDriver?: IStorageMetadataDriver<MS, ACR>, storageDocumentDriver?: IStorageDocumentDriver<DS>}) {
+    constructor(args: {documentDriver: DocumentDriver, storageMetadataDriver?: ISolidStorageMetadataDriver<MS, ACR>, storageDocumentDriver?: ISolidStorageDocumentDriver<DS>}) {
         this._documentDriver = args.documentDriver;
         this._storageMetadataDriver = args.storageMetadataDriver;
         this._storageDocumentDriver = args.storageDocumentDriver;

@@ -14,7 +14,7 @@ import {
 } from '../smart-contracts';
 import { NegotiationStatus } from '../types/NegotiationStatus';
 import { EntityBuilder } from '../utils/EntityBuilder';
-import { OrderLine, OrderLineRequest } from '../entities/OrderTradeInfo';
+import { OrderLine, OrderLineRequest } from '../entities/OrderTrade';
 
 describe('OrderTradeDriver', () => {
     let orderTradeDriver: OrderTradeDriver;

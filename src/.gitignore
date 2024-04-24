@@ -2,7 +2,5 @@
 /node_modules
 /smart-contracts
 .env
-.env.icp
 ../.npmrc
 package-lock.json
-/declarations

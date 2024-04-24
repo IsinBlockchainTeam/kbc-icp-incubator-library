@@ -1,49 +1,73 @@
-import { StorageACR } from '@blockchain-lib/common';
-import { TradeManagerDriver } from '../drivers/TradeManagerDriver';
-import { TradeType } from '../types/TradeType';
-import { BasicTrade } from '../entities/BasicTrade';
-import { OrderTradeInfo } from '../entities/OrderTradeInfo';
-import { Trade } from '../entities/Trade';
-import { IStorageMetadataDriver, MetadataSpec } from '../drivers/IStorageMetadataDriver';
-import { StorageOperationType } from '../types/StorageOperationType';
+import {TradeManagerDriver} from '../drivers/TradeManagerDriver';
+import {TradeType} from '../types/TradeType';
+import {BasicTrade} from '../entities/BasicTrade';
+import {OrderTrade, OrderTradeMetadata} from '../entities/OrderTrade';
+import {Trade} from '../entities/Trade';
+import {ICPMetadataDriver} from "../drivers/ICPMetadataDriver";
+import {ICPResourceSpec} from "@blockchain-lib/common";
 
-export class TradeManagerService<MS extends MetadataSpec, ACR extends StorageACR> {
+export class TradeManagerService {
     private _tradeManagerDriver: TradeManagerDriver;
 
-    private readonly _storageMetadataDriver?: IStorageMetadataDriver<MS, ACR>;
+    private readonly _storageMetadataDriver?: ICPMetadataDriver;
 
-    constructor(tradeManagerDriver: TradeManagerDriver, storageMetadataDriver?: IStorageMetadataDriver<MS, ACR>) {
+    constructor(tradeManagerDriver: TradeManagerDriver, storageMetadataDriver?: ICPMetadataDriver) {
         this._tradeManagerDriver = tradeManagerDriver;
-        this._storageMetadataDriver = storageMetadataDriver;
+        if (storageMetadataDriver)
+            this._storageMetadataDriver = storageMetadataDriver;
     }
 
-    async registerBasicTrade(supplier: string, customer: string, commissioner: string, name: string, metadataStorage?: {spec?: MS, aclRules?: ACR[], value: any}): Promise<BasicTrade> {
-        let externalUrl = '';
-        if (metadataStorage) {
-            if (!this._storageMetadataDriver) throw new Error('Missing storage metadata driver.');
-            externalUrl = await this._storageMetadataDriver.create(
-                StorageOperationType.TRANSACTION,
-                metadataStorage.value,
-                metadataStorage.aclRules,
-                metadataStorage.spec,
-            );
-        }
-        return this._tradeManagerDriver.registerBasicTrade(supplier, customer, commissioner, externalUrl, name);
+    // TODO: store external url
+    async registerBasicTrade(supplier: string, customer: string, commissioner: string,  name: string): Promise<BasicTrade> {
+        return this._tradeManagerDriver.registerBasicTrade(supplier, customer, commissioner, 'externalUrl', name);
     }
 
-    async registerOrderTrade(supplier: string, customer: string, commissioner: string, paymentDeadline: number, documentDeliveryDeadline: number, arbiter: string, shippingDeadline: number, deliveryDeadline: number, agreedAmount: number, tokenAddress: string, metadataStorage?: {spec?: MS, aclRules?: ACR[], value: any}): Promise<OrderTradeInfo> {
-        let externalUrl = '';
-        if (metadataStorage) {
-            if (!this._storageMetadataDriver) throw new Error('Missing storage metadata driver.');
-            externalUrl = await this._storageMetadataDriver.create(
-                StorageOperationType.TRANSACTION,
-                metadataStorage.value,
-                metadataStorage.aclRules,
-                metadataStorage.spec,
-            );
+    // async registerBasicTrade(supplier: string, customer: string, commissioner: string, name: string, metadataStorage?: {spec?: MS, aclRules?: ACR[], value: any}): Promise<BasicTrade> {
+    //     let externalUrl = '';
+    //     if (metadataStorage) {
+    //         if (!this._storageMetadataDriver) throw new Error('Missing storage metadata driver.');
+    //         externalUrl = await this._storageMetadataDriver.create(
+    //             StorageOperationType.TRANSACTION,
+    //             metadataStorage.value,
+    //             metadataStorage.aclRules,
+    //             metadataStorage.spec,
+    //         );
+    //     }
+    //     return this._tradeManagerDriver.registerBasicTrade(supplier, customer, commissioner, externalUrl, name);
+    // }
+
+    // TODO: store external url
+    async registerOrderTrade(supplier: string, customer: string, commissioner: string, paymentDeadline: number, documentDeliveryDeadline: number, arbiter: string, shippingDeadline: number, deliveryDeadline: number, agreedAmount: number, tokenAddress: string, metadata: OrderTradeMetadata): Promise<OrderTrade> {
+        if(!this._storageMetadataDriver)
+            throw new Error("TradeManagerService: Storage metadata driver has not been set");
+
+        // TODO: remove hardcoded data
+        const resourceSpec: ICPResourceSpec = {
+            name: "metadata.json",
+            type: "application/json",
+            organizationId: 0
         }
-        return this._tradeManagerDriver.registerOrderTrade(supplier, customer, commissioner, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);
+        await this._storageMetadataDriver.create(metadata, resourceSpec);
+        return this._tradeManagerDriver.registerOrderTrade(supplier, customer, commissioner, 'externalUrl', paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);
     }
+
+    // async registerOrderTrade(supplier: string, customer: string, commissioner: string, paymentDeadline: number, documentDeliveryDeadline: number, arbiter: string, shippingDeadline: number, deliveryDeadline: number, agreedAmount: number, tokenAddress: string, metadataStorage?: {
+    //     spec?: MS,
+    //     aclRules?: ACR[],
+    //     value: any
+    // }): Promise<OrderTradeInfo> {
+    //     let externalUrl = '';
+    //     if (metadataStorage) {
+    //         if (!this._storageMetadataDriver) throw new Error('Missing storage metadata driver.');
+    //         externalUrl = await this._storageMetadataDriver.create(
+    //             StorageOperationType.TRANSACTION,
+    //             metadataStorage.value,
+    //             metadataStorage.aclRules,
+    //             metadataStorage.spec,
+    //         );
+    //     }
+    //     return this._tradeManagerDriver.registerOrderTrade(supplier, customer, commissioner, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);
+    // }
 
     async getTradeCounter(): Promise<number> {
         return this._tradeManagerDriver.getTradeCounter();

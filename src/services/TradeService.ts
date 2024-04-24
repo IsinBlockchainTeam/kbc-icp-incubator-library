@@ -1,26 +1,18 @@
-import {
-    StorageACR,
-} from '@blockchain-lib/common/types/storage';
 import { TradeDriver } from '../drivers/TradeDriver';
 import { TradeStatus } from '../types/TradeStatus';
 import { DocumentType } from '../entities/DocumentInfo';
 import { TradeType } from '../types/TradeType';
-import { IStorageMetadataDriver, MetadataSpec } from '../drivers/IStorageMetadataDriver';
-import { DocumentSpec, IStorageDocumentDriver } from '../drivers/IStorageDocumentDriver';
-import { StorageOperationType } from '../types/StorageOperationType';
-import FileHelpers from "../utils/fileHelpers";
+import {ICPMetadataDriver} from "../drivers/ICPMetadataDriver";
 
-export class TradeService<MS extends MetadataSpec, DS extends DocumentSpec, ACR extends StorageACR> {
+export class TradeService {
     protected _tradeDriver: TradeDriver;
 
-    protected readonly _storageMetadataDriver?: IStorageMetadataDriver<MS, ACR>;
+    protected _storageMetadataDriver?: ICPMetadataDriver;
 
-    protected readonly _storageDocumentDriver?: IStorageDocumentDriver<DS>;
-
-    constructor(args: {tradeDriver: TradeDriver, storageMetadataDriver?: IStorageMetadataDriver<MS, ACR>, storageDocumentDriver?: IStorageDocumentDriver<DS>}) {
-        this._tradeDriver = args.tradeDriver;
-        this._storageMetadataDriver = args.storageMetadataDriver;
-        this._storageDocumentDriver = args.storageDocumentDriver;
+    constructor(tradeDriver: TradeDriver, storageMetadataDriver?: ICPMetadataDriver) {
+        this._tradeDriver = tradeDriver;
+        if(storageMetadataDriver)
+            this._storageMetadataDriver = storageMetadataDriver;
     }
 
     async getLineCounter(): Promise<number> {
@@ -39,19 +31,25 @@ export class TradeService<MS extends MetadataSpec, DS extends DocumentSpec, ACR 
         return this._tradeDriver.getTradeStatus();
     }
 
-    async addDocument(lineId: number, name: string, documentType: DocumentType, documentStorage?: {spec: DS, fileBuffer: Buffer}, metadataStorage?: {spec: MS, value: any}): Promise<void> {
-        let externalUrl = '';
-        let contentHash = '';
-        if (documentStorage) {
-            if (!this._storageDocumentDriver) throw new Error('Storage document driver is not available');
-            externalUrl = await this._storageDocumentDriver.create(StorageOperationType.TRANSACTION_DOCUMENT, documentStorage?.fileBuffer, documentStorage?.spec);
-            contentHash = FileHelpers.computeHashFromBuffer(documentStorage.fileBuffer);
-        }
-        if (metadataStorage) {
-            if (!this._storageMetadataDriver) throw new Error('Storage metadata driver is not available');
-            await this._storageMetadataDriver.create(StorageOperationType.TRANSACTION_DOCUMENT, metadataStorage.value, [], metadataStorage.spec);
-        }
+    // async addDocument(lineId: number, name: string, documentType: DocumentType, documentStorage?: {spec: DS, fileBuffer: Buffer}, metadataStorage?: {spec: MS, value: any}): Promise<void> {
+    //     let externalUrl = '';
+    //     let contentHash = '';
+    //     if (documentStorage) {
+    //         if (!this._storageDocumentDriver) throw new Error('Storage document driver is not available');
+    //         externalUrl = await this._storageDocumentDriver.create(StorageOperationType.TRANSACTION_DOCUMENT, documentStorage?.fileBuffer, documentStorage?.spec);
+    //         contentHash = FileHelpers.computeHashFromBuffer(documentStorage.fileBuffer);
+    //     }
+    //     if (metadataStorage) {
+    //         if (!this._storageMetadataDriver) throw new Error('Storage metadata driver is not available');
+    //         await this._storageMetadataDriver.create(StorageOperationType.TRANSACTION_DOCUMENT, metadataStorage.value, [], metadataStorage.spec);
+    //     }
+    //
+    //     return this._tradeDriver.addDocument(lineId, name, documentType, externalUrl, contentHash);
+    // }
 
+    // TODO: implement this method
+    async addDocument(lineId: number, name: string, documentType: DocumentType, externalUrl: string): Promise<void> {
+        const contentHash = "";
         return this._tradeDriver.addDocument(lineId, name, documentType, externalUrl, contentHash);
     }
 

@@ -3,7 +3,7 @@ import {
     SolidResourceType,
     SolidSessionCredential,
 } from '@blockchain-lib/common';
-import { DocumentSpec, IStorageDocumentDriver } from './IStorageDocumentDriver';
+import { DocumentSpec, ISolidStorageDocumentDriver } from './ISolidStorageDocumentDriver';
 import { SolidUtilsService } from '../services/SolidUtilsService';
 import { StorageOperationType } from '../types/StorageOperationType';
 
@@ -15,7 +15,7 @@ export interface SolidDocumentSpec extends DocumentSpec {
     entireResourceUrl?: string,
 }
 
-export class SolidDocumentDriver implements IStorageDocumentDriver<SolidDocumentSpec> {
+export class SolidDocumentDriver implements ISolidStorageDocumentDriver<SolidDocumentSpec> {
     private readonly _solidDriver: SolidDriver;
 
     private readonly _solidServerBaseUrl: string;

@@ -3,9 +3,9 @@ import { SolidStorageACR } from '@blockchain-lib/common';
 import DocumentService from './DocumentService';
 import { DocumentDriver } from '../drivers/DocumentDriver';
 import { DocumentInfo, DocumentType } from '../entities/DocumentInfo';
-import { IStorageMetadataDriver } from '../drivers/IStorageMetadataDriver';
+import { ISolidStorageMetadataDriver } from '../drivers/ISolidStorageMetadataDriver';
 import { SolidMetadataSpec } from '../drivers/SolidMetadataDriver';
-import { IStorageDocumentDriver } from '../drivers/IStorageDocumentDriver';
+import { ISolidStorageDocumentDriver } from '../drivers/ISolidStorageDocumentDriver';
 import { SolidDocumentSpec } from '../drivers/SolidDocumentDriver';
 import { StorageOperationType } from '../types/StorageOperationType';
 
@@ -30,13 +30,13 @@ describe('DocumentService', () => {
         addTradeManager: jest.fn(),
         removeTradeManager: jest.fn(),
     });
-    const mockedStorageMetadataDriver = createMock<IStorageMetadataDriver<SolidMetadataSpec, SolidStorageACR>>(
+    const mockedStorageMetadataDriver = createMock<ISolidStorageMetadataDriver<SolidMetadataSpec, SolidStorageACR>>(
         { create: jest.fn(), read: jest.fn() },
     );
     const metadataSpec: SolidMetadataSpec = {
         entireResourceUrl: 'metadataExternalUrl',
     };
-    const mockedStorageDocumentDriver = createMock<IStorageDocumentDriver<SolidDocumentSpec>>(
+    const mockedStorageDocumentDriver = createMock<ISolidStorageDocumentDriver<SolidDocumentSpec>>(
         { create: jest.fn(), read: jest.fn() },
     );
     const documentSpec: SolidDocumentSpec = {

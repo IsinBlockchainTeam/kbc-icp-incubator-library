@@ -10,7 +10,7 @@ import { AssetOperationService } from './AssetOperationService';
 import { ProductCategory } from '../entities/ProductCategory';
 import { TradeType } from '../types/TradeType';
 import { BasicTrade } from '../entities/BasicTrade';
-import { OrderLine, OrderLinePrice, OrderTradeInfo } from '../entities/OrderTradeInfo';
+import { OrderLine, OrderLinePrice, OrderTrade } from '../entities/OrderTrade';
 import { BasicTradeService } from './BasicTradeService';
 import { OrderTradeService } from './OrderTradeService';
 import { SolidMetadataSpec } from '../drivers/SolidMetadataDriver';
@@ -24,7 +24,7 @@ jest.mock('./BasicTradeService');
 jest.mock('./OrderTradeService');
 
 describe('GraphService', () => {
-    let graphService: GraphService<SolidMetadataSpec, SolidStorageACR>;
+    let graphService: GraphService;
 
     const productCategories: ProductCategory[] = [
         new ProductCategory(1, 'Raw coffee beans', 85, 'first category'),
@@ -59,7 +59,7 @@ describe('GraphService', () => {
     const tradeTypes: TradeType[] = [TradeType.BASIC, TradeType.ORDER, TradeType.BASIC, TradeType.BASIC, TradeType.BASIC];
     const trades: Trade[] = [
         new BasicTrade(1, 'company1', 'customer', 'company2', 'externalUrl', [new Line(1, materials[2], productCategories[2])], 'shipping processed coffee'),
-        new OrderTradeInfo(2, 'company2', 'customer', 'company3', 'externalUrl', [new OrderLine(1, materials[3], productCategories[3], 100, new OrderLinePrice(50, 'CHF'))], false, false, 100, 200, 'arbiter', 300, 400, 'escrow'),
+        new OrderTrade(2, 'company2', 'customer', 'company3', 'externalUrl', [new OrderLine(1, materials[3], productCategories[3], 100, new OrderLinePrice(50, 'CHF'))], false, false, 100, 200, 'arbiter', 300, 400, 'escrow'),
         new BasicTrade(3, 'company1', 'customer', 'company3', 'externalUrl', [new Line(1, materials[5], productCategories[5])], 'shipping purified water'),
         new BasicTrade(4, 'company3', 'customer', 'company1', 'externalUrl', [new Line(1, materials[6], productCategories[6])], 'shipping final coffee'),
     ];
@@ -67,7 +67,7 @@ describe('GraphService', () => {
     const mockGetTrades = jest.fn().mockReturnValue(Array.from(trades));
     const mockGetAssetOperations = jest.fn().mockReturnValue(Array.from(assetOperations));
 
-    const mockedTradeManagerService: TradeManagerService<SolidMetadataSpec, SolidStorageACR> = createMock<TradeManagerService<SolidMetadataSpec, SolidStorageACR>>({
+    const mockedTradeManagerService: TradeManagerService = createMock<TradeManagerService>({
         getTrades: mockGetTrades,
         getTrade: jest.fn().mockImplementation((id: number) => Promise.resolve(trades[id])),
         getTradeType: jest.fn().mockImplementation((id: number) => Promise.resolve(tradeTypes[id])),
@@ -78,13 +78,13 @@ describe('GraphService', () => {
 
     const mockedBasicGetTrade = jest.fn().mockResolvedValue(trades[0]);
     const mockedBasicGetLines = jest.fn().mockResolvedValue([trades[0].lines]);
-    (BasicTradeService as jest.Mock).mockImplementation(() => createMock<BasicTradeService<SolidDocumentSpec, SolidMetadataSpec, SolidStorageACR>>({
+    (BasicTradeService as jest.Mock).mockImplementation(() => createMock<BasicTradeService>({
         getTrade: mockedBasicGetTrade,
         getLines: mockedBasicGetLines,
     }));
     const mockedOrderGetTrade = jest.fn().mockResolvedValue(trades[1]);
     const mockedOrderGetLines = jest.fn().mockResolvedValue(trades[1].lines);
-    (OrderTradeService as jest.Mock).mockImplementation(() => createMock<OrderTradeService<SolidDocumentSpec, SolidMetadataSpec, SolidStorageACR>>({
+    (OrderTradeService as jest.Mock).mockImplementation(() => createMock<OrderTradeService>({
         getTrade: mockedOrderGetTrade,
         getLines: mockedOrderGetLines,
     }));

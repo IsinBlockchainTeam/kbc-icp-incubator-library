@@ -22,12 +22,12 @@ export { AssetOperationService } from './services/AssetOperationService';
 export { Trade } from './entities/Trade';
 export { Line } from './entities/Trade';
 export { LineRequest } from './entities/Trade';
-export { OrderLineRequest } from './entities/OrderTradeInfo';
+export { OrderLineRequest } from './entities/OrderTrade';
 export { BasicTrade } from './entities/BasicTrade';
-export { OrderTradeInfo } from './entities/OrderTradeInfo';
 export { OrderTrade } from './entities/OrderTrade';
-export { OrderLine } from './entities/OrderTradeInfo';
-export { OrderLinePrice } from './entities/OrderTradeInfo';
+export { OrderTradeMetadata } from './entities/OrderTrade';
+export { OrderLine } from './entities/OrderTrade';
+export { OrderLinePrice } from './entities/OrderTrade';
 export { TradeStatus } from './types/TradeStatus';
 export { TradeType } from './types/TradeType';
 export { TradeManagerDriver } from './drivers/TradeManagerDriver';
@@ -55,10 +55,12 @@ export { EscrowManagerService } from './services/EscrowManagerService';
 export { EscrowDriver } from './drivers/EscrowDriver';
 export { EscrowService } from './services/EscrowService';
 
-export { IStorageMetadataDriver } from './drivers/IStorageMetadataDriver';
-export { IStorageDocumentDriver } from './drivers/IStorageDocumentDriver';
+export { ISolidStorageMetadataDriver } from './drivers/ISolidStorageMetadataDriver';
+export { ISolidStorageDocumentDriver } from './drivers/ISolidStorageDocumentDriver';
 export { SolidMetadataDriver, SolidMetadataSpec } from './drivers/SolidMetadataDriver';
 export { SolidDocumentDriver, SolidDocumentSpec } from './drivers/SolidDocumentDriver';
+
+export { ICPMetadataDriver } from './drivers/ICPMetadataDriver';
 
 export { GraphService, GraphData } from './services/GraphService';
 
