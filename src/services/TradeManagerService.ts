@@ -20,13 +20,14 @@ export class TradeManagerService<MS extends MetadataSpec, ACR extends StorageACR
     async registerBasicTrade(supplier: string, customer: string, commissioner: string, name: string, metadataStorage?: {spec?: MS, aclRules?: ACR[], value: any}): Promise<BasicTrade> {
         let externalUrl = '';
         if (metadataStorage) {
-            if (!this._storageMetadataDriver) throw new Error('Missing storage metadata driver.');
-            externalUrl = await this._storageMetadataDriver.create(
-                StorageOperationType.TRANSACTION,
-                metadataStorage.value,
-                metadataStorage.aclRules,
-                metadataStorage.spec,
-            );
+            // TODO: remove this comment
+            // if (!this._storageMetadataDriver) throw new Error('Missing storage metadata driver.');
+            // externalUrl = await this._storageMetadataDriver.create(
+            //     StorageOperationType.TRANSACTION,
+            //     metadataStorage.value,
+            //     metadataStorage.aclRules,
+            //     metadataStorage.spec,
+            // );
         }
         return this._tradeManagerDriver.registerBasicTrade(supplier, customer, commissioner, externalUrl, name);
     }
@@ -34,13 +35,14 @@ export class TradeManagerService<MS extends MetadataSpec, ACR extends StorageACR
     async registerOrderTrade(supplier: string, customer: string, commissioner: string, paymentDeadline: number, documentDeliveryDeadline: number, arbiter: string, shippingDeadline: number, deliveryDeadline: number, agreedAmount: number, tokenAddress: string, metadataStorage?: {spec?: MS, aclRules?: ACR[], value: any}): Promise<OrderTradeInfo> {
         let externalUrl = '';
         if (metadataStorage) {
-            if (!this._storageMetadataDriver) throw new Error('Missing storage metadata driver.');
-            externalUrl = await this._storageMetadataDriver.create(
-                StorageOperationType.TRANSACTION,
-                metadataStorage.value,
-                metadataStorage.aclRules,
-                metadataStorage.spec,
-            );
+            // TODO: remove this comment
+            // if (!this._storageMetadataDriver) throw new Error('Missing storage metadata driver.');
+            // externalUrl = await this._storageMetadataDriver.create(
+            //     StorageOperationType.TRANSACTION,
+            //     metadataStorage.value,
+            //     metadataStorage.aclRules,
+            //     metadataStorage.spec,
+            // );
         }
         return this._tradeManagerDriver.registerOrderTrade(supplier, customer, commissioner, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);
     }

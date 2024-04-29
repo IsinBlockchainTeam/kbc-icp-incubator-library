@@ -47,13 +47,15 @@ export class TradeService<MS extends MetadataSpec, DS extends DocumentSpec, ACR 
         let externalUrl = '';
         let contentHash = '';
         if (documentStorage) {
-            if (!this._storageDocumentDriver) throw new Error('Storage document driver is not available');
-            externalUrl = await this._storageDocumentDriver.create(StorageOperationType.TRANSACTION_DOCUMENT, documentStorage?.fileBuffer, documentStorage?.spec);
-            contentHash = computeHashFromBuffer(documentStorage.fileBuffer);
+            // TODO: remove this comment
+            // if (!this._storageDocumentDriver) throw new Error('Storage document driver is not available');
+            // externalUrl = await this._storageDocumentDriver.create(StorageOperationType.TRANSACTION_DOCUMENT, documentStorage?.fileBuffer, documentStorage?.spec);
+            // contentHash = computeHashFromBuffer(documentStorage.fileBuffer);
         }
         if (metadataStorage) {
-            if (!this._storageMetadataDriver) throw new Error('Storage metadata driver is not available');
-            await this._storageMetadataDriver.create(StorageOperationType.TRANSACTION_DOCUMENT, metadataStorage.value, [], metadataStorage.spec);
+            // TODO: remove this comment
+            // if (!this._storageMetadataDriver) throw new Error('Storage metadata driver is not available');
+            // await this._storageMetadataDriver.create(StorageOperationType.TRANSACTION_DOCUMENT, metadataStorage.value, [], metadataStorage.spec);
         }
 
         return this._tradeDriver.addDocument(documentType, externalUrl, contentHash);
