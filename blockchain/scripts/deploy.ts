@@ -100,7 +100,7 @@ serial([
     ),
     () => deploy(
         ContractName.ETHEREUM_DID_REGISTRY, [],
-    )
+    ),
 ])
     .catch((error: any) => {
         console.error(error);

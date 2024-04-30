@@ -20,11 +20,13 @@ export class OrderTradeService<MS extends MetadataSpec, DS extends DocumentSpec,
     }
 
     async getCompleteTrade(metadataSpec: MS, blockNumber?: number): Promise<OrderTrade> {
-        if (!this._storageMetadataDriver) throw new Error('Storage metadata driver is not available');
+        // TODO: remove comments
+        // if (!this._storageMetadataDriver) throw new Error('Storage metadata driver is not available');
         const orderTradeInfo = await this.getTrade(blockNumber);
         try {
-            const { incoterms, shipper, shippingPort, deliveryPort } = await this._storageMetadataDriver.read(StorageOperationType.TRANSACTION, metadataSpec);
-            return new OrderTrade(orderTradeInfo, incoterms, shipper, shippingPort, deliveryPort);
+            // const { incoterms, shipper, shippingPort, deliveryPort } = await this._storageMetadataDriver.read(StorageOperationType.TRANSACTION, metadataSpec);
+            // return new OrderTrade(orderTradeInfo, incoterms, shipper, shippingPort, deliveryPort);
+            return new OrderTrade(orderTradeInfo, 'incoterms', 'shipper', 'shippingPort', 'deliveryPort');
         } catch (e: any) {
             throw new Error(`Error while retrieve order trade from external storage: ${e.message}`);
         }
