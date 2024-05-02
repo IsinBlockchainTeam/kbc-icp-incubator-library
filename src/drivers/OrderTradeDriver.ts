@@ -1,4 +1,4 @@
-import { BigNumber, Signer, Event } from 'ethers';
+import { BigNumber, Signer, Event, utils } from 'ethers';
 import { TradeDriver } from './TradeDriver';
 // eslint-disable-next-line camelcase
 import {
@@ -67,7 +67,8 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
             result[10],
             result[11].toNumber(),
             result[12].toNumber(),
-            result[13],
+            // TODO: verificare se lo zero address viene rilevato da questo controllo
+            utils.isAddress(result[13]) ? result[13] : undefined,
         );
     }
 

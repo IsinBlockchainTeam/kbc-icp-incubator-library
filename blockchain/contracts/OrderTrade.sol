@@ -4,6 +4,7 @@ pragma solidity ^0.8.17;
 import "./Trade.sol";
 import "./Escrow.sol";
 import "hardhat/console.sol";
+import "./EscrowManager.sol";
 
 contract OrderTrade is Trade {
     using Counters for Counters.Counter;
@@ -51,16 +52,22 @@ contract OrderTrade is Trade {
     Escrow private _escrow;
 
     EnumerableType private _fiatManager;
+    EscrowManager private _escrowManager;
 
-    constructor(uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl, uint256 paymentDeadline, uint256 documentDeliveryDeadline, address arbiter, uint256 shippingDeadline, uint256 deliveryDeadline, address escrowAddress, address fiatManagerAddress) Trade(tradeId, productCategoryAddress, materialManagerAddress, documentManagerAddress, supplier, customer, commissioner, externalUrl) {
+    constructor(uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress, address escrowManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl, uint256 paymentDeadline, uint256 documentDeliveryDeadline, address arbiter, uint256 shippingDeadline, uint256 deliveryDeadline, address fiatManagerAddress) Trade(tradeId, productCategoryAddress, materialManagerAddress, documentManagerAddress, supplier, customer, commissioner, externalUrl) {
+        require(productCategoryManagerAddress != address(0), "TradeManager: product category manager address is the zero address");
+        require(materialManagerAddress != address(0), "TradeManager: material manager address is the zero address");
+        require(documentManagerAddress != address(0), "TradeManager: document category manager address is the zero address");
+        require(escrowManagerAddress != address(0), "TradeManager: escrow manager address is the zero address");
+
         _tradeId = tradeId;
         _paymentDeadline = paymentDeadline;
         _documentDeliveryDeadline = documentDeliveryDeadline;
         _arbiter = arbiter;
         _shippingDeadline = shippingDeadline;
         _deliveryDeadline = deliveryDeadline;
-        _escrow = Escrow(escrowAddress);
         _fiatManager = EnumerableType(fiatManagerAddress);
+        _escrowManager = EscrowManager(escrowManagerAddress);
 
         _hasSupplierSigned = false;
         _hasCommissionerSigned = false;
@@ -151,6 +158,7 @@ contract OrderTrade is Trade {
     function enforceDeadlines() public {
         if(haveDeadlinesExpired()) {
             _hasOrderExpired = true;
+            _escrow.enableRefund();
             emit OrderExpired();
         }
     }
@@ -164,6 +172,8 @@ contract OrderTrade is Trade {
         emit OrderSignatureAffixed(_msgSender());
 
         if (_hasSupplierSigned && _hasCommissionerSigned) {
+            _escrow = _escrowManager.registerEscrow(supplier, commissioner, agreedAmount, paymentDeadline - block.timestamp, tokenAddress);
+
             // TODO: should escrow be created here?
             emit OrderConfirmed();
         }
