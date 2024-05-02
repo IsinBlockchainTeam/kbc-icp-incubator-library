@@ -31,5 +31,5 @@ services:
 
 networks:
   coffee-net:
-    external:
-      name: bc-coffee-net
+    name: bc-coffee-net
+    external: true
