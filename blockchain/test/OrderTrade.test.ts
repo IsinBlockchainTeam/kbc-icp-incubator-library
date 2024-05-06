@@ -14,7 +14,8 @@ describe('OrderTrade.sol', () => {
     let enumerableFiatManagerContractFake: FakeContract;
     const fiats: string[] = ['fiat1', 'fiat2'];
     let documentManagerContractFake: FakeContract;
-    let escrowContractFake: FakeContract;
+    let escrowManagerContractFake: FakeContract;
+    let tokenContractFake: FakeContract;
 
     let orderTradeContract: Contract;
     let admin: SignerWithAddress, supplier: SignerWithAddress,
@@ -26,6 +27,10 @@ describe('OrderTrade.sol', () => {
     const shippingDeadline: number = 300;
     const deliveryDeadline: number = 400;
 
+    const escrowFake = {
+        enableRefund: () => {},
+    };
+
     const materialStruct: MaterialManager.MaterialStructOutput = {
         id: BigNumber.from(1),
         productCategoryId: BigNumber.from(1),
@@ -36,8 +41,8 @@ describe('OrderTrade.sol', () => {
         orderTradeContract = await OrderTrade.deploy(1, productCategoryManagerContractFake.address, materialManagerContractFake.address,
             documentManagerContractFake.address, supplier.address, customer.address, commissioner.address, externalUrl,
             deadline || paymentDeadline, deadline || (deadline || documentDeliveryDeadline),
-            arbiter.address, deadline || shippingDeadline, deadline || deliveryDeadline, escrowContractFake.address,
-            enumerableFiatManagerContractFake.address,
+            arbiter.address, deadline || shippingDeadline, deadline || deliveryDeadline, tokenContractFake.address,
+            enumerableFiatManagerContractFake.address, escrowManagerContractFake.address,
         );
         await orderTradeContract.deployed();
     };
@@ -52,7 +57,12 @@ describe('OrderTrade.sol', () => {
         enumerableFiatManagerContractFake = await smock.fake(ContractName.ENUMERABLE_TYPE_MANAGER);
         enumerableFiatManagerContractFake.contains.returns((value: string) => fiats.includes(value[0]));
         documentManagerContractFake = await smock.fake(ContractName.DOCUMENT_MANAGER);
-        escrowContractFake = await smock.fake('Escrow');
+        tokenContractFake = await smock.fake('MyToken');
+
+        const EscrowManager = await ethers.getContractFactory('EscrowManager');
+        const escrowContract = await EscrowManager.deploy(supplier.address, 10, 5);
+        escrowManagerContractFake = await smock.fake('EscrowManager');
+        escrowManagerContractFake.registerEscrow.returns(escrowContract);
     });
 
     beforeEach(async () => {
@@ -105,7 +115,7 @@ describe('OrderTrade.sol', () => {
                 .equal(deliveryDeadline);
             expect(_escrow)
                 .to
-                .equal(escrowContractFake.address);
+                .equal(ethers.constants.AddressZero);
         });
 
         it('should get trade type', async () => {
@@ -417,9 +427,10 @@ describe('OrderTrade.sol', () => {
 
         it('should get status EXPIRED when a deadline has passed', async () => {
             await orderTradeContract.connect(supplier)
-                .updatePaymentDeadline(1);
+                .updatePaymentDeadline(8000000000);
             await orderTradeContract.connect(commissioner)
                 .confirmOrder();
+            await ethers.provider.send('evm_mine', [8000000001]);
             await orderTradeContract.connect(commissioner)
                 .enforceDeadlines();
 

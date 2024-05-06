@@ -50,14 +50,14 @@ contract OrderTrade is Trade {
     mapping(uint256 => OrderLine) private _orderLines;
 
     Escrow private _escrow;
+    // property used to construct the Escrow contract
+    address private _tokenAddress;
+    uint256 private _agreedAmount;
 
     EnumerableType private _fiatManager;
     EscrowManager private _escrowManager;
 
-    constructor(uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress, address escrowManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl, uint256 paymentDeadline, uint256 documentDeliveryDeadline, address arbiter, uint256 shippingDeadline, uint256 deliveryDeadline, address fiatManagerAddress) Trade(tradeId, productCategoryAddress, materialManagerAddress, documentManagerAddress, supplier, customer, commissioner, externalUrl) {
-        require(productCategoryManagerAddress != address(0), "TradeManager: product category manager address is the zero address");
-        require(materialManagerAddress != address(0), "TradeManager: material manager address is the zero address");
-        require(documentManagerAddress != address(0), "TradeManager: document category manager address is the zero address");
+    constructor(uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl, uint256 paymentDeadline, uint256 documentDeliveryDeadline, address arbiter, uint256 shippingDeadline, uint256 deliveryDeadline, uint256 agreedAmount, address tokenAddress, address fiatManagerAddress, address escrowManagerAddress) Trade(tradeId, productCategoryAddress, materialManagerAddress, documentManagerAddress, supplier, customer, commissioner, externalUrl) {
         require(escrowManagerAddress != address(0), "TradeManager: escrow manager address is the zero address");
 
         _tradeId = tradeId;
@@ -68,6 +68,9 @@ contract OrderTrade is Trade {
         _deliveryDeadline = deliveryDeadline;
         _fiatManager = EnumerableType(fiatManagerAddress);
         _escrowManager = EscrowManager(escrowManagerAddress);
+
+        _tokenAddress = tokenAddress;
+        _agreedAmount = agreedAmount;
 
         _hasSupplierSigned = false;
         _hasCommissionerSigned = false;
@@ -172,9 +175,7 @@ contract OrderTrade is Trade {
         emit OrderSignatureAffixed(_msgSender());
 
         if (_hasSupplierSigned && _hasCommissionerSigned) {
-            _escrow = _escrowManager.registerEscrow(supplier, commissioner, agreedAmount, paymentDeadline - block.timestamp, tokenAddress);
-
-            // TODO: should escrow be created here?
+            _escrow = _escrowManager.registerEscrow(_supplier, _commissioner, _agreedAmount, _paymentDeadline - block.timestamp, _tokenAddress);
             emit OrderConfirmed();
         }
     }

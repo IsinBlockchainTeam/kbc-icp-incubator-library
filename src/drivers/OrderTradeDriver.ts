@@ -1,4 +1,4 @@
-import { BigNumber, Signer, Event, utils } from 'ethers';
+import { BigNumber, Signer, Event } from 'ethers';
 import { TradeDriver } from './TradeDriver';
 // eslint-disable-next-line camelcase
 import {
@@ -16,6 +16,7 @@ import {
 } from '../entities/OrderTradeInfo';
 import { EntityBuilder } from '../utils/EntityBuilder';
 import { IConcreteTradeDriverInterface } from './IConcreteTradeDriver.interface';
+import { zeroAddress } from '../utils/constants';
 
 export enum OrderTradeEvents {
     TradeLineAdded,
@@ -68,7 +69,7 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
             result[11].toNumber(),
             result[12].toNumber(),
             // TODO: verificare se lo zero address viene rilevato da questo controllo
-            utils.isAddress(result[13]) ? result[13] : undefined,
+            result[13] === zeroAddress ? undefined : result[13],
         );
     }
 

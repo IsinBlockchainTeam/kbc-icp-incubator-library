@@ -32,12 +32,14 @@ contract TradeManager is AccessControl {
     address private _materialManagerAddress;
     address private _documentManagerAddress;
     address private _fiatManagerAddress;
+    address private _escrowManagerAddress;
 
-    constructor(address productCategoryManagerAddress, address materialManagerAddress, address documentManagerAddress, address fiatManagerAddress) {
+    constructor(address productCategoryManagerAddress, address materialManagerAddress, address documentManagerAddress, address fiatManagerAddress, address escrowManagerAddress) {
         require(productCategoryManagerAddress != address(0), "TradeManager: product category manager address is the zero address");
         require(materialManagerAddress != address(0), "TradeManager: material manager address is the zero address");
         require(documentManagerAddress != address(0), "TradeManager: document category manager address is the zero address");
         require(fiatManagerAddress != address(0), "TradeManager: fiat manager address is the zero address");
+        require(escrowManagerAddress != address(0), "TradeManager: escrow manager address is the zero address");
 
         _setupRole(ADMIN_ROLE, _msgSender());
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
@@ -46,6 +48,7 @@ contract TradeManager is AccessControl {
         _materialManagerAddress = materialManagerAddress;
         _documentManagerAddress = documentManagerAddress;
         _fiatManagerAddress = fiatManagerAddress;
+        _escrowManagerAddress = escrowManagerAddress;
     }
 
     function getTradeCounter() public view returns (uint256) {
@@ -94,7 +97,7 @@ contract TradeManager is AccessControl {
 
         uint256 id = _counter.current() + 1;
         _counter.increment();
-        OrderTrade newTrade = new OrderTrade(id, _productCategoryManagerAddress, _materialManagerAddress, _documentManagerAddress, supplier, customer, commissioner, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, _fiatManagerAddress);
+        OrderTrade newTrade = new OrderTrade(id, _productCategoryManagerAddress, _materialManagerAddress, _documentManagerAddress, supplier, customer, commissioner, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress, _fiatManagerAddress, _escrowManagerAddress);
         _trades[id] = newTrade;
         _tradeIdsOfSupplier[supplier].push(id);
         _tradeIdsOfCommissioner[commissioner].push(id);
