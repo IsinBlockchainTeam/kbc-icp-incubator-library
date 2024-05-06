@@ -1,5 +1,4 @@
 import {ICPResourceSpec, ICPStorageDriver} from "@blockchain-lib/common";
-import {DocumentDriver} from "./DocumentDriver";
 
 export class ICPFileDriver {
     private _icpStorageDriver: ICPStorageDriver;
@@ -30,7 +29,7 @@ export class ICPFileDriver {
         return this._icpStorageDriver.create(bytes, resourceSpec);
     }
 
-    public async read(externalUrl: string): Promise<object> {
+    public async read(externalUrl: string): Promise<Uint8Array> {
         const organizationId = parseInt(externalUrl.split('/')[4]);
         const files = await this._icpStorageDriver.listFiles(organizationId);
 
@@ -38,8 +37,6 @@ export class ICPFileDriver {
         if(!file)
             throw new Error(`ICPMetadataDriver: file with externalUrl ${externalUrl} not found`);
 
-        const bytes = await this._icpStorageDriver.getFile(file.file);
-        const jsonString = new TextDecoder().decode(bytes);
-        return JSON.parse(jsonString);
+        return await this._icpStorageDriver.getFile(file.file);
     }
 }

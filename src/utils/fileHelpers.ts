@@ -62,6 +62,10 @@ export class FileHelpers {
     public static getBytesFromObject(object: object): Uint8Array {
         return new TextEncoder().encode(JSON.stringify(object));
     }
+
+    public static getObjectFromBytes(bytes: Uint8Array): object {
+        return JSON.parse(new TextDecoder().decode(bytes));
+    }
 }
 
 export default FileHelpers;

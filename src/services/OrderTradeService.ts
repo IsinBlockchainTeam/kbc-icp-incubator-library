@@ -3,6 +3,7 @@ import {OrderTradeDriver, OrderTradeEvents,} from '../drivers/OrderTradeDriver';
 import {NegotiationStatus} from '../types/NegotiationStatus';
 import {OrderLine, OrderLineRequest, OrderTrade, OrderTradeMetadata} from '../entities/OrderTrade';
 import {IConcreteTradeService} from './IConcreteTradeService';
+import FileHelpers from "../utils/fileHelpers";
 
 export class OrderTradeService extends TradeService implements IConcreteTradeService {
     async getTrade(blockNumber?: number): Promise<OrderTrade> {
@@ -10,11 +11,12 @@ export class OrderTradeService extends TradeService implements IConcreteTradeSer
     }
 
     async getCompleteTrade(blockNumber?: number): Promise<OrderTrade> {
-        if (!this._storageMetadataDriver)
+        if (!this._icpFileDriver)
             throw new Error('OrderTradeService: Storage metadata driver has not been set');
 
         const trade = await this._tradeDriverImplementation.getTrade(blockNumber);
-        trade.metadata = (await this._storageMetadataDriver.read(trade.externalUrl + "/files/metadata.json")) as OrderTradeMetadata;
+        const bytes = await this._icpFileDriver.read(trade.externalUrl + "/files/metadata.json");
+        trade.metadata = FileHelpers.getObjectFromBytes(bytes) as OrderTradeMetadata;
         return trade;
     }
 

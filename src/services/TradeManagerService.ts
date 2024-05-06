@@ -6,10 +6,7 @@ import {Trade} from '../entities/Trade';
 import {ICPFileDriver} from "../drivers/ICPFileDriver";
 import {ICPResourceSpec} from "@blockchain-lib/common";
 import {URLStructure} from "../types/URLStructure";
-import {DocumentDriver} from "../drivers/DocumentDriver";
-import {TradeDriver} from "../drivers/TradeDriver";
 import FileHelpers from "../utils/fileHelpers";
-import {DocumentType} from "../entities/DocumentInfo";
 
 export interface TradeManagerServiceArgs {
     tradeManagerDriver: TradeManagerDriver,
@@ -77,8 +74,10 @@ export class TradeManagerService {
         const bytes = FileHelpers.getBytesFromObject(metadata);
         await this._icpFileDriver.create(bytes, resourceSpec);
 
-        const fileHash = FileHelpers.getHash(bytes);
-        await this._tradeDriver.addDocument(DocumentType.METADATA, name, fileHash.toString());
+        // TODO: store metadata hash on-chain and associate it with the trade
+        // const tradeDriver = ... find a way to get the trade driver, given that the Signer is not accessible here ...
+        // const fileHash = FileHelpers.getHash(bytes);
+        // await tradeDriver.addDocument(DocumentType.METADATA, name, fileHash.toString());
 
         return trade;
     }

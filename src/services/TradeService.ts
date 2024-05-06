@@ -4,22 +4,22 @@ import {DocumentInfo, DocumentType} from '../entities/DocumentInfo';
 import { TradeType } from '../types/TradeType';
 import {ICPFileDriver} from "../drivers/ICPFileDriver";
 import {DocumentDriver} from "../drivers/DocumentDriver";
+import {ICPResourceSpec} from "@blockchain-lib/common";
+import FileHelpers from "../utils/fileHelpers";
 
 export class TradeService {
     protected _tradeDriver: TradeDriver;
 
     private readonly _documentDriver?: DocumentDriver;
 
-    protected _storageMetadataDriver?: ICPFileDriver;
-
-    // protected readonly _storageDocumentDriver?: IStorageDocumentDriver<DS>;
+    protected _icpFileDriver?: ICPFileDriver;
 
     constructor(tradeDriver: TradeDriver, documentDriver?: DocumentDriver, storageMetadataDriver?: ICPFileDriver) {
         this._tradeDriver = tradeDriver;
         if(documentDriver)
             this._documentDriver = documentDriver;
         if(storageMetadataDriver)
-            this._storageMetadataDriver = storageMetadataDriver;
+            this._icpFileDriver = storageMetadataDriver;
     }
 
     async getLineCounter(): Promise<number> {
@@ -38,29 +38,15 @@ export class TradeService {
         return this._tradeDriver.getTradeStatus();
     }
 
-    // TODO: implement this method
-    async addDocument(documentType: DocumentType, externalUrl: string): Promise<void> {
-        const contentHash = "";
-        return this._tradeDriver.addDocument(documentType, externalUrl, contentHash);
-    }
+    async addDocument(documentType: DocumentType, fileContent: Uint8Array, externalUrl: string, resourceSpec: ICPResourceSpec): Promise<void> {
+        if(!this._icpFileDriver) throw new Error("OrderTradeService: ICPFileDriver has not been set");
 
-    // async addDocument(documentType: DocumentType, documentStorage?: {spec: DS, fileBuffer: Uint8Array}, metadataStorage?: {spec: MS, value: any}): Promise<void> {
-    //     let externalUrl = '';
-    //     let contentHash = '';
-    //     if (documentStorage) {
-    //         // TODO: remove this comment
-    //         // if (!this._storageDocumentDriver) throw new Error('Storage document driver is not available');
-    //         // externalUrl = await this._storageDocumentDriver.create(StorageOperationType.TRANSACTION_DOCUMENT, documentStorage?.fileBuffer, documentStorage?.spec);
-    //         // contentHash = computeHashFromBuffer(documentStorage.fileBuffer);
-    //     }
-    //     if (metadataStorage) {
-    //         // TODO: remove this comment
-    //         // if (!this._storageMetadataDriver) throw new Error('Storage metadata driver is not available');
-    //         // await this._storageMetadataDriver.create(StorageOperationType.TRANSACTION_DOCUMENT, metadataStorage.value, [], metadataStorage.spec);
-    //     }
-    //
-    //     return this._tradeDriver.addDocument(documentType, externalUrl, contentHash);
-    // }
+        resourceSpec.name = externalUrl + "/files/" + resourceSpec.name;
+
+        const contentHash = FileHelpers.getHash(fileContent);
+        await this._icpFileDriver.create(fileContent, resourceSpec);
+        return this._tradeDriver.addDocument(documentType, resourceSpec.name, contentHash.toString());
+    }
 
     async getAllDocumentIds(): Promise<number[]> {
         return this._tradeDriver.getAllDocumentIds();

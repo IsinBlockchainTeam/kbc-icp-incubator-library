@@ -1,22 +1,16 @@
-import { StorageACR } from '@blockchain-lib/common';
 import { DocumentDriver } from '../drivers/DocumentDriver';
 import { DocumentInfo } from '../entities/DocumentInfo';
 import { Document } from '../entities/Document';
-import { DocumentSpec, ISolidStorageDocumentDriver } from '../drivers/ISolidStorageDocumentDriver';
-import { ISolidStorageMetadataDriver, MetadataSpec } from '../drivers/ISolidStorageMetadataDriver';
-import { StorageOperationType } from '../types/StorageOperationType';
+import {ICPFileDriver} from "../drivers/ICPFileDriver";
 
-export class DocumentService<MS extends MetadataSpec, DS extends DocumentSpec, ACR extends StorageACR> {
+export class DocumentService {
     private _documentDriver: DocumentDriver;
 
-    private readonly _storageDocumentDriver?: ISolidStorageDocumentDriver<DS>;
+    private readonly _icpFileDriver: ICPFileDriver;
 
-    private readonly _storageMetadataDriver?: ISolidStorageMetadataDriver<MS, ACR>;
-
-    constructor(args: {documentDriver: DocumentDriver, storageMetadataDriver?: ISolidStorageMetadataDriver<MS, ACR>, storageDocumentDriver?: ISolidStorageDocumentDriver<DS>}) {
-        this._documentDriver = args.documentDriver;
-        this._storageMetadataDriver = args.storageMetadataDriver;
-        this._storageDocumentDriver = args.storageDocumentDriver;
+    constructor(documentDriver: DocumentDriver, icpFileDriver: ICPFileDriver) {
+        this._documentDriver = documentDriver;
+        this._icpFileDriver = icpFileDriver;
     }
 
     async registerDocument(externalUrl: string, contentHash: string): Promise<void> {
@@ -31,17 +25,19 @@ export class DocumentService<MS extends MetadataSpec, DS extends DocumentSpec, A
         return this._documentDriver.getDocumentById(id);
     }
 
-    async getCompleteDocument(documentInfo: DocumentInfo, metadataSpec: MS, documentSpec: DS): Promise<Document | undefined> {
-        if (!this._storageDocumentDriver) throw new Error('Storage document driver is not available');
-        if (!this._storageMetadataDriver) throw new Error('Storage metadata driver is not available');
+    async getCompleteDocument(documentInfo: DocumentInfo): Promise<Document> {
+        if (!this._icpFileDriver) throw new Error('DocumentService: ICPFileDriver has not been set');
         try {
-            const { filename, date, lines } = await this._storageMetadataDriver.read(StorageOperationType.TRANSACTION_DOCUMENT, metadataSpec);
-            const fileContent = await this._storageDocumentDriver.read(StorageOperationType.TRANSACTION_DOCUMENT, documentSpec);
-            if (fileContent) return new Document(documentInfo, filename, new Date(date), fileContent, lines);
+            // const { filename, date, lines } = await this._storageMetadataDriver.read(StorageOperationType.TRANSACTION_DOCUMENT, metadataSpec);
+            // const fileContent = await this._storageDocumentDriver.read(StorageOperationType.TRANSACTION_DOCUMENT, documentSpec);
+            // if (fileContent) return new Document(documentInfo, filename, new Date(date), fileContent, lines);
+
+            const fileContent = await this._icpFileDriver.read(documentInfo.externalUrl);
+            // TODO: refactor this
+            return new Document(documentInfo, documentInfo.externalUrl.split('/')[8], new Date(), fileContent, []);
         } catch (e: any) {
             throw new Error(`Error while retrieve document file from external storage: ${e.message}`);
         }
-        return undefined;
     }
 
     async addAdmin(address: string): Promise<void> {
