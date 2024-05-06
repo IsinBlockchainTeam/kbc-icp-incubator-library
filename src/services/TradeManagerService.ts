@@ -9,29 +9,20 @@ import {URLStructure} from "../types/URLStructure";
 import {DocumentDriver} from "../drivers/DocumentDriver";
 import {TradeDriver} from "../drivers/TradeDriver";
 import FileHelpers from "../utils/fileHelpers";
+import {DocumentType} from "../entities/DocumentInfo";
 
 export interface TradeManagerServiceArgs {
     tradeManagerDriver: TradeManagerDriver,
-    tradeDriver?: TradeDriver,
-    documentDriver?: DocumentDriver,
     icpFileDriver?: ICPFileDriver
 }
 
 export class TradeManagerService {
     private _tradeManagerDriver: TradeManagerDriver;
 
-    private _tradeDriver?: TradeDriver;
-
-    private _documentDriver?: DocumentDriver;
-
     private readonly _icpFileDriver?: ICPFileDriver;
 
     constructor(args: TradeManagerServiceArgs) {
         this._tradeManagerDriver = args.tradeManagerDriver;
-        if (args.tradeDriver)
-            this._tradeDriver = args.tradeDriver;
-        if (args.documentDriver)
-            this._documentDriver = args.documentDriver;
         if (args.icpFileDriver)
             this._icpFileDriver = args.icpFileDriver;
     }
@@ -72,10 +63,6 @@ export class TradeManagerService {
     async registerOrderTrade(supplier: string, customer: string, commissioner: string, paymentDeadline: number, documentDeliveryDeadline: number, arbiter: string, shippingDeadline: number, deliveryDeadline: number, agreedAmount: number, tokenAddress: string, metadata: OrderTradeMetadata, urlStructure: URLStructure): Promise<OrderTrade> {
         if(!this._icpFileDriver)
             throw new Error("TradeManagerService: Storage metadata driver has not been set");
-        if(!this._documentDriver)
-            throw new Error("TradeManagerService: Document driver has not been set");
-        if(!this._tradeDriver)
-            throw new Error("TradeManagerService: Trade driver has not been set");
 
         let externalUrl = urlStructure.prefix.endsWith('/') ? urlStructure.prefix : urlStructure.prefix + '/';
         externalUrl += "organizations/" + urlStructure.organizationId + "/transactions/";
@@ -91,9 +78,7 @@ export class TradeManagerService {
         await this._icpFileDriver.create(bytes, resourceSpec);
 
         const fileHash = FileHelpers.getHash(bytes);
-        await this._documentDriver.registerDocument(name, fileHash.toString());
-
-
+        await this._tradeDriver.addDocument(DocumentType.METADATA, name, fileHash.toString());
 
         return trade;
     }
