@@ -44,7 +44,6 @@ export class TradeService<MS extends MetadataSpec, DS extends DocumentSpec, ACR 
     async addDocument(documentType: DocumentType, documentStorage?: {spec: DS, fileBuffer: Uint8Array}, metadataStorage?: {spec: MS, value: any}): Promise<void> {
         const externalUrl = '';
         const contentHash = '';
-
         if (documentStorage) {
             // TODO: remove this comment
             // if (!this._storageDocumentDriver) throw new Error('Storage document driver is not available');
@@ -65,7 +64,7 @@ export class TradeService<MS extends MetadataSpec, DS extends DocumentSpec, ACR 
     }
 
     async getAllDocuments(): Promise<DocumentInfo[]> {
-        if (!this._documentDriver) throw new Error('Cannot perform this operation without a document driver');
+        // if (!this._documentDriver) throw new Error('Cannot perform this operation without a document driver');
         const ids = await this.getAllDocumentIds();
         return Promise.all(ids.map((id) => this._documentDriver!.getDocumentById(id)));
     }
@@ -75,7 +74,7 @@ export class TradeService<MS extends MetadataSpec, DS extends DocumentSpec, ACR 
     }
 
     async getDocumentsByType(documentType: DocumentType): Promise<DocumentInfo[]> {
-        if (!this._documentDriver) throw new Error('Cannot perform this operation without a document driver');
+        // if (!this._documentDriver) throw new Error('Cannot perform this operation without a document driver');
         const ids = await this.getDocumentIdsByType(documentType);
         return Promise.all(ids.map((id) => this._documentDriver!.getDocumentById(id)));
     }
