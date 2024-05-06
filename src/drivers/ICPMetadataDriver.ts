@@ -29,11 +29,13 @@ export class ICPMetadataDriver {
         return this._storageDriver.create(new TextEncoder().encode(JSON.stringify(value)), resourceSpec);
     }
 
-    public async read(resourceSpec: ICPResourceSpec): Promise<object> {
-        const files = await this._storageDriver.listFiles(resourceSpec.organizationId);
-        const file = files.find(file => file.file.id === resourceSpec.id);
+    public async read(externalUrl: string): Promise<object> {
+        const organizationId = parseInt(externalUrl.split('/')[4]);
+        const files = await this._storageDriver.listFiles(organizationId);
+
+        const file = files.find(file => file.file.name === externalUrl);
         if(!file)
-            throw new Error(`ICPMetadataDriver: file with id ${resourceSpec.id} not found`);
+            throw new Error(`ICPMetadataDriver: file with externalUrl ${externalUrl} not found`);
 
         const bytes = await this._storageDriver.getFile(file.file);
         const jsonString = new TextDecoder().decode(bytes);

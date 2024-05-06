@@ -3,6 +3,7 @@ pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 import "@blockchain-lib/blockchain-common/contracts/EnumerableType.sol";
 import "./DocumentManager.sol";
 import "./ProductCategoryManager.sol";
@@ -88,7 +89,7 @@ abstract contract Trade is AccessControl {
         _supplier = supplier;
         _customer = customer;
         _commissioner = commissioner;
-        _externalUrl = externalUrl;
+        _externalUrl = string.concat(externalUrl, Strings.toString(tradeId));
     }
 
     function getLineCounter() public view returns (uint256) {

@@ -1,4 +1,5 @@
 import CryptoJS from "crypto-js";
+import { Buffer } from "buffer";
 
 const DEFAULT_CHUNK_SIZE = 1900000; // 1.9MB
 

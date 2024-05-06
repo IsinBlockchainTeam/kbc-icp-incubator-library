@@ -1,27 +1,20 @@
 import {TradeService} from './TradeService';
-import {
-    OrderTradeDriver,
-    OrderTradeEvents,
-} from '../drivers/OrderTradeDriver';
+import {OrderTradeDriver, OrderTradeEvents,} from '../drivers/OrderTradeDriver';
 import {NegotiationStatus} from '../types/NegotiationStatus';
-import {
-    OrderLine,
-    OrderLineRequest,
-    OrderTrade, OrderTradeMetadata
-} from '../entities/OrderTrade';
+import {OrderLine, OrderLineRequest, OrderTrade, OrderTradeMetadata} from '../entities/OrderTrade';
 import {IConcreteTradeService} from './IConcreteTradeService';
-import {ICPResourceSpec} from "@blockchain-lib/common";
 
 export class OrderTradeService extends TradeService implements IConcreteTradeService {
-    async getTrade(resourceSpec?: ICPResourceSpec, blockNumber?: number): Promise<OrderTrade> {
+    async getTrade(blockNumber?: number): Promise<OrderTrade> {
+        return this._tradeDriverImplementation.getTrade(blockNumber);
+    }
+
+    async getCompleteTrade(blockNumber?: number): Promise<OrderTrade> {
         if (!this._storageMetadataDriver)
             throw new Error('OrderTradeService: Storage metadata driver has not been set');
-        if (!resourceSpec)
-            throw new Error('OrderTradeService: resourceSpec is required');
 
-        const metadata = (await this._storageMetadataDriver.read(resourceSpec)) as OrderTradeMetadata;
         const trade = await this._tradeDriverImplementation.getTrade(blockNumber);
-        trade.metadata = metadata;
+        trade.metadata = (await this._storageMetadataDriver.read(trade.externalUrl + "/files/metadata.json")) as OrderTradeMetadata;
         return trade;
     }
 

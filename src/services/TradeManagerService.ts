@@ -5,6 +5,7 @@ import {OrderTrade, OrderTradeMetadata} from '../entities/OrderTrade';
 import {Trade} from '../entities/Trade';
 import {ICPMetadataDriver} from "../drivers/ICPMetadataDriver";
 import {ICPResourceSpec} from "@blockchain-lib/common";
+import {URLStructure} from "../types/URLStructure";
 
 export class TradeManagerService {
     private _tradeManagerDriver: TradeManagerDriver;
@@ -50,19 +51,23 @@ export class TradeManagerService {
     //     return this._tradeManagerDriver.registerOrderTrade(supplier, customer, commissioner, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);
     // }
 
-    // TODO: store external url
-    async registerOrderTrade(supplier: string, customer: string, commissioner: string, paymentDeadline: number, documentDeliveryDeadline: number, arbiter: string, shippingDeadline: number, deliveryDeadline: number, agreedAmount: number, tokenAddress: string, metadata: OrderTradeMetadata): Promise<OrderTrade> {
+    async registerOrderTrade(supplier: string, customer: string, commissioner: string, paymentDeadline: number, documentDeliveryDeadline: number, arbiter: string, shippingDeadline: number, deliveryDeadline: number, agreedAmount: number, tokenAddress: string, metadata: OrderTradeMetadata, urlStructure: URLStructure): Promise<OrderTrade> {
         if(!this._storageMetadataDriver)
             throw new Error("TradeManagerService: Storage metadata driver has not been set");
 
-        // TODO: remove hardcoded data
+        let externalUrl = urlStructure.prefix.endsWith('/') ? urlStructure.prefix : urlStructure.prefix + '/';
+        externalUrl += "organizations/" + urlStructure.organizationId + "/transactions/";
+
+        const trade: OrderTrade = await this._tradeManagerDriver.registerOrderTrade(supplier, customer, commissioner, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);
+
+        externalUrl = trade.externalUrl + "/files/metadata.json";
         const resourceSpec: ICPResourceSpec = {
-            name: "metadata.json",
-            type: "application/json",
-            organizationId: 0
-        }
+            name: externalUrl,
+            type: 'application/json'
+        };
         await this._storageMetadataDriver.create(metadata, resourceSpec);
-        return this._tradeManagerDriver.registerOrderTrade(supplier, customer, commissioner, 'externalUrl', paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);
+
+        return trade;
     }
 
     async getTradeCounter(): Promise<number> {

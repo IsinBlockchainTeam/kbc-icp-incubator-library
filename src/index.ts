@@ -39,6 +39,8 @@ export { BasicTradeService } from './services/BasicTradeService';
 export { OrderTradeDriver } from './drivers/OrderTradeDriver';
 export { OrderTradeService } from './services/OrderTradeService';
 export { IConcreteTradeService } from './services/IConcreteTradeService';
+export { URLStructure } from './types/URLStructure';
+
 
 export { DocumentInfo, DocumentType } from './entities/DocumentInfo';
 export { Document, TransactionLine } from './entities/Document';
