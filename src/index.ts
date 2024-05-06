@@ -32,6 +32,7 @@ export { TradeStatus } from './types/TradeStatus';
 export { TradeType } from './types/TradeType';
 export { TradeManagerDriver } from './drivers/TradeManagerDriver';
 export { TradeManagerService } from './services/TradeManagerService';
+export { TradeManagerServiceArgs } from './services/TradeManagerService';
 export { TradeDriver } from './drivers/TradeDriver';
 export { TradeService } from './services/TradeService';
 export { BasicTradeDriver } from './drivers/BasicTradeDriver';
@@ -62,7 +63,7 @@ export { ISolidStorageDocumentDriver } from './drivers/ISolidStorageDocumentDriv
 export { SolidMetadataDriver, SolidMetadataSpec } from './drivers/SolidMetadataDriver';
 export { SolidDocumentDriver, SolidDocumentSpec } from './drivers/SolidDocumentDriver';
 
-export { ICPMetadataDriver } from './drivers/ICPMetadataDriver';
+export { ICPFileDriver } from './drivers/ICPFileDriver';
 
 export { GraphService, GraphData } from './services/GraphService';
 

@@ -2,7 +2,7 @@ import { TradeDriver } from '../drivers/TradeDriver';
 import { TradeStatus } from '../types/TradeStatus';
 import {DocumentInfo, DocumentType} from '../entities/DocumentInfo';
 import { TradeType } from '../types/TradeType';
-import {ICPMetadataDriver} from "../drivers/ICPMetadataDriver";
+import {ICPFileDriver} from "../drivers/ICPFileDriver";
 import {DocumentDriver} from "../drivers/DocumentDriver";
 
 export class TradeService {
@@ -10,11 +10,11 @@ export class TradeService {
 
     private readonly _documentDriver?: DocumentDriver;
 
-    protected _storageMetadataDriver?: ICPMetadataDriver;
+    protected _storageMetadataDriver?: ICPFileDriver;
 
     // protected readonly _storageDocumentDriver?: IStorageDocumentDriver<DS>;
 
-    constructor(tradeDriver: TradeDriver, documentDriver?: DocumentDriver, storageMetadataDriver?: ICPMetadataDriver) {
+    constructor(tradeDriver: TradeDriver, documentDriver?: DocumentDriver, storageMetadataDriver?: ICPFileDriver) {
         this._tradeDriver = tradeDriver;
         if(documentDriver)
             this._documentDriver = documentDriver;

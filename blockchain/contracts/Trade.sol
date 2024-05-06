@@ -13,6 +13,7 @@ abstract contract Trade is AccessControl {
     using Counters for Counters.Counter;
 
     enum DocumentType {
+        METADATA,
         DELIVERY_NOTE,
         BILL_OF_LADING,
         PAYMENT_INVOICE,

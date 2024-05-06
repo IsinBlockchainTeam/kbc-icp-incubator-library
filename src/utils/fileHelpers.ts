@@ -12,7 +12,7 @@ export class FileHelpers {
         return hash.toString(CryptoJS.enc.Hex);
     }
 
-    public static formatBytes(bytes: number, decimals = 2) {
+    public static formatBytes(bytes: number, decimals = 2): string {
         if (!+bytes) return "0 Bytes";
 
         const k = 1024;
@@ -57,6 +57,10 @@ export class FileHelpers {
         }
 
         return chunks;
+    }
+
+    public static getBytesFromObject(object: object): Uint8Array {
+        return new TextEncoder().encode(JSON.stringify(object));
     }
 }
 
