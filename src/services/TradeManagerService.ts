@@ -5,7 +5,6 @@ import { BasicTrade } from '../entities/BasicTrade';
 import { OrderTradeInfo } from '../entities/OrderTradeInfo';
 import { Trade } from '../entities/Trade';
 import { IStorageMetadataDriver, MetadataSpec } from '../drivers/IStorageMetadataDriver';
-import { StorageOperationType } from '../types/StorageOperationType';
 
 export class TradeManagerService<MS extends MetadataSpec, ACR extends StorageACR> {
     private _tradeManagerDriver: TradeManagerDriver;
@@ -18,7 +17,7 @@ export class TradeManagerService<MS extends MetadataSpec, ACR extends StorageACR
     }
 
     async registerBasicTrade(supplier: string, customer: string, commissioner: string, name: string, metadataStorage?: {spec?: MS, aclRules?: ACR[], value: any}): Promise<BasicTrade> {
-        let externalUrl = '';
+        const externalUrl = '';
         if (metadataStorage) {
             // TODO: remove this comment
             // if (!this._storageMetadataDriver) throw new Error('Missing storage metadata driver.');
@@ -33,7 +32,7 @@ export class TradeManagerService<MS extends MetadataSpec, ACR extends StorageACR
     }
 
     async registerOrderTrade(supplier: string, customer: string, commissioner: string, paymentDeadline: number, documentDeliveryDeadline: number, arbiter: string, shippingDeadline: number, deliveryDeadline: number, agreedAmount: number, tokenAddress: string, metadataStorage?: {spec?: MS, aclRules?: ACR[], value: any}): Promise<OrderTradeInfo> {
-        let externalUrl = '';
+        const externalUrl = '';
         if (metadataStorage) {
             // TODO: remove this comment
             // if (!this._storageMetadataDriver) throw new Error('Missing storage metadata driver.');

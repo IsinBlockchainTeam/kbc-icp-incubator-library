@@ -12,7 +12,6 @@ import { IConcreteTradeService } from './IConcreteTradeService';
 import { DocumentSpec } from '../drivers/IStorageDocumentDriver';
 import { MetadataSpec } from '../drivers/IStorageMetadataDriver';
 import { OrderTrade } from '../entities/OrderTrade';
-import { StorageOperationType } from '../types/StorageOperationType';
 
 export class OrderTradeService<MS extends MetadataSpec, DS extends DocumentSpec, ACR extends StorageACR> extends TradeService<MS, DS, ACR> implements IConcreteTradeService {
     async getTrade(blockNumber?: number): Promise<OrderTradeInfo> {
