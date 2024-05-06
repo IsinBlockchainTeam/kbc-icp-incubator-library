@@ -88,8 +88,8 @@ export class AssetOperationDriver {
         return assetOperations.filter((assetOperation: AssetOperation) => assetOperation.outputMaterial.id === materialId);
     }
 
-    async registerAssetOperation(name: string, inputMaterialsIds: number[], outputMaterialId: number, latitude: string, longitude: string): Promise<AssetOperation> {
-        const tx: any = await this._assetOperationContract.registerAssetOperation(name, inputMaterialsIds, outputMaterialId, latitude, longitude);
+    async registerAssetOperation(name: string, inputMaterialsIds: number[], outputMaterialId: number, latitude: string, longitude: string, processTypes: string[]): Promise<AssetOperation> {
+        const tx: any = await this._assetOperationContract.registerAssetOperation(name, inputMaterialsIds, outputMaterialId, latitude, longitude, processTypes);
         const { events } = await tx.wait();
 
         if (!events) {
@@ -99,8 +99,8 @@ export class AssetOperationDriver {
         return this.getAssetOperation(id);
     }
 
-    async updateAssetOperation(id: number, name: string, inputMaterialsIds: number[], outputMaterialId: number, latitude: string, longitude: string): Promise<AssetOperation> {
-        const tx = await this._assetOperationContract.updateAssetOperation(id, name, inputMaterialsIds, outputMaterialId, latitude, longitude);
+    async updateAssetOperation(id: number, name: string, inputMaterialsIds: number[], outputMaterialId: number, latitude: string, longitude: string, processTypes: string[]): Promise<AssetOperation> {
+        const tx = await this._assetOperationContract.updateAssetOperation(id, name, inputMaterialsIds, outputMaterialId, latitude, longitude, processTypes);
         await tx.wait();
         return this.getAssetOperation(id);
     }

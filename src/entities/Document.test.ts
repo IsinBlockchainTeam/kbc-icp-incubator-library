@@ -1,6 +1,5 @@
-import { Blob } from 'buffer';
 import { Document } from './Document';
-import { DocumentInfo, DocumentType } from './DocumentInfo';
+import { DocumentInfo } from './DocumentInfo';
 
 describe('Document', () => {
     let document: Document;
@@ -10,23 +9,19 @@ describe('Document', () => {
     const today = new Date();
 
     beforeAll(() => {
-        documentInfo = new DocumentInfo(0, 1, 'doc name', DocumentType.BILL_OF_LADING, 'external url', 'contentHash');
-        document = new Document(documentInfo, filename, today, content);
+        documentInfo = new DocumentInfo(0, 'external url', 'contentHash');
+        document = new Document(documentInfo, filename, today, new Uint8Array([1, 2, 3]));
     });
 
     it('should correctly initialize a new DocumentFile', () => {
         expect(document.id).toEqual(0);
-        expect(document.transactionId).toEqual(1);
-        expect(document.name).toEqual('doc name');
-        expect(document.documentType).toEqual(DocumentType.BILL_OF_LADING);
         expect(document.externalUrl).toEqual('external url');
         expect(document.contentHash).toEqual('contentHash');
         expect(document.filename).toEqual(filename);
         expect(document.date).toEqual(today);
         expect(document.transactionLines).toBeUndefined();
         expect(document.quantity).toBeUndefined();
-        expect(document.content.size).toEqual(content.size);
-        expect(document.content.type).toEqual(content.type);
+        expect(document.content).toEqual(new Uint8Array([1, 2, 3]));
     });
 
     it('should correctly set the filename', () => {
@@ -35,10 +30,9 @@ describe('Document', () => {
     });
 
     it('should correctly set the content', () => {
-        const newContent = new Blob(['1', '2']);
+        const newContent = new Uint8Array([4, 5, 6]);
         document.content = newContent;
-        expect(document.content.size).toEqual(newContent.size);
-        expect(document.content.type).toEqual(newContent.type);
+        expect(document.content).toEqual(newContent);
     });
 
     it('should correctly set the date', () => {

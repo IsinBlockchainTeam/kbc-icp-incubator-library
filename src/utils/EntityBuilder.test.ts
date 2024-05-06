@@ -8,7 +8,7 @@ import {
     OfferManager, ProductCategoryManager, AssetOperationManager,
 } from '../smart-contracts';
 import { Relationship } from '../entities/Relationship';
-import { DocumentInfo, DocumentType } from '../entities/DocumentInfo';
+import { DocumentInfo } from '../entities/DocumentInfo';
 import { Offer } from '../entities/Offer';
 import { ProductCategory } from '../entities/ProductCategory';
 import { AssetOperation } from '../entities/AssetOperation';
@@ -62,18 +62,19 @@ describe('EntityBuilder', () => {
         bcProductCategory.exists = true;
 
         it('should correctly build a transformation', () => {
-            const bcTransformation: AssetOperationManager.AssetOperationStructOutput = [BigNumber.from(0), 'transformation', [BigNumber.from(0)], BigNumber.from(3), '46.003677', '8.953062', true] as AssetOperationManager.AssetOperationStructOutput;
+            const bcTransformation: AssetOperationManager.AssetOperationStructOutput = [BigNumber.from(0), 'transformation', [BigNumber.from(0)], BigNumber.from(3), '46.003677', '8.953062', ['process type 1'], true] as AssetOperationManager.AssetOperationStructOutput;
             bcTransformation.id = BigNumber.from(0);
             bcTransformation.name = 'transformation';
             bcTransformation.inputMaterialIds = [BigNumber.from(0)];
             bcTransformation.outputMaterialId = BigNumber.from(3);
             bcTransformation.latitude = '46.003677';
             bcTransformation.longitude = '8.953062';
+            bcTransformation.processTypes = ['process type 1'];
             bcTransformation.exists = true;
 
             expect(EntityBuilder.buildAssetOperation(bcTransformation, [bcMaterial], [bcProductCategory], bcMaterial, bcProductCategory))
                 .toEqual(new AssetOperation(0, 'transformation', [new Material(0, new ProductCategory(1, 'product category', 1, 'description'))],
-                    new Material(0, new ProductCategory(1, 'product category', 1, 'description')), '46.003677', '8.953062'));
+                    new Material(0, new ProductCategory(1, 'product category', 1, 'description')), '46.003677', '8.953062', ['process type 1']));
         });
     });
 
@@ -95,16 +96,13 @@ describe('EntityBuilder', () => {
 
     describe('buildDocument', () => {
         it('should correctly build a document', () => {
-            const bcDocument: DocumentManager.DocumentStructOutput = [BigNumber.from(0), BigNumber.from(2), 'doc name', DocumentType.DELIVERY_NOTE, 'external url', 'content_hash', true] as DocumentManager.DocumentStructOutput;
+            const bcDocument: DocumentManager.DocumentStructOutput = [BigNumber.from(0), 'external url', 'content_hash', true] as DocumentManager.DocumentStructOutput;
             bcDocument.id = BigNumber.from(0);
-            bcDocument.transactionId = BigNumber.from(2);
-            bcDocument.name = 'doc name';
-            bcDocument.documentType = DocumentType.DELIVERY_NOTE;
             bcDocument.externalUrl = 'external url';
             bcDocument.contentHash = 'content_hash';
             bcDocument.exists = true;
 
-            const document = new DocumentInfo(0, 2, 'doc name', DocumentType.DELIVERY_NOTE, 'external url', 'content_hash');
+            const document = new DocumentInfo(0, 'external url', 'content_hash');
             expect(EntityBuilder.buildDocumentInfo(bcDocument)).toEqual(document);
         });
     });

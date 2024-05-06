@@ -41,6 +41,7 @@ describe('AssetOperationDriver', () => {
         longitude: '8.953062',
         exists: true,
     } as AssetOperationManager.AssetOperationStructOutput;
+    const processTypes: string[] = ['process type1', 'process type2'];
 
     let mockedSigner: Signer;
 
@@ -67,6 +68,7 @@ describe('AssetOperationDriver', () => {
         new Material(3, new ProductCategory(3, 'category1', 85, 'description')),
         '46.003677',
         '8.953062',
+        processTypes,
     );
 
     const mockedGetMaterial = jest.fn();
@@ -146,10 +148,10 @@ describe('AssetOperationDriver', () => {
                 },
             }],
         });
-        await assetOperationDriver.registerAssetOperation('test', [1, 2], 3, '38.8951', '-77.0364');
+        await assetOperationDriver.registerAssetOperation('test', [1, 2], 3, '38.8951', '-77.0364', processTypes);
 
         expect(mockedContract.registerAssetOperation).toHaveBeenCalledTimes(1);
-        expect(mockedContract.registerAssetOperation).toHaveBeenNthCalledWith(1, 'test', [1, 2], 3, '38.8951', '-77.0364');
+        expect(mockedContract.registerAssetOperation).toHaveBeenNthCalledWith(1, 'test', [1, 2], 3, '38.8951', '-77.0364', processTypes);
 
         expect(mockedWait).toHaveBeenCalledTimes(1);
     });
@@ -158,14 +160,14 @@ describe('AssetOperationDriver', () => {
         mockedWait.mockResolvedValueOnce({
             events: undefined,
         });
-        await expect(assetOperationDriver.registerAssetOperation('test', [1, 2], 3, '38.8951', '-77.0364')).rejects.toThrowError('Error during asset operation registration, no events found');
+        await expect(assetOperationDriver.registerAssetOperation('test', [1, 2], 3, '38.8951', '-77.0364', processTypes)).rejects.toThrow('Error during asset operation registration, no events found');
     });
 
     it('should correctly update an AssetOperation', async () => {
-        await assetOperationDriver.updateAssetOperation(1, 'update', [1, 2], 3, '38.8951', '-77.0364');
+        await assetOperationDriver.updateAssetOperation(1, 'update', [1, 2], 3, '38.8951', '-77.0364', processTypes);
 
         expect(mockedContract.updateAssetOperation).toHaveBeenCalledTimes(1);
-        expect(mockedContract.updateAssetOperation).toHaveBeenNthCalledWith(1, 1, 'update', [1, 2], 3, '38.8951', '-77.0364');
+        expect(mockedContract.updateAssetOperation).toHaveBeenNthCalledWith(1, 1, 'update', [1, 2], 3, '38.8951', '-77.0364', processTypes);
 
         expect(mockedWait).toHaveBeenCalledTimes(1);
     });
@@ -256,6 +258,6 @@ describe('AssetOperationDriver', () => {
 
     it('should get AssetOperation type - CASE ERROR', async () => {
         mockedGetAssetOperationType.mockReturnValueOnce(10);
-        await expect(assetOperationDriver.getAssetOperationType(1)).rejects.toThrowError('AssetOperationDriver: an invalid value "10" for "AssetOperationType" was returned by the contract');
+        await expect(assetOperationDriver.getAssetOperationType(1)).rejects.toThrow('AssetOperationDriver: an invalid value "10" for "AssetOperationType" was returned by the contract');
     });
 });

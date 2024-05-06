@@ -1,3 +1,3 @@
 export enum TradeStatus {
-    SHIPPED, ON_BOARD, CONTRACTING
+    PAYED, SHIPPED, ON_BOARD, CONTRACTING
 }

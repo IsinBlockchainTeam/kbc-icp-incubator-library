@@ -28,7 +28,7 @@ export class SolidDocumentDriver implements ISolidStorageDocumentDriver<SolidDoc
         this._sessionCredential = sessionCredential;
     }
 
-    async create(type: StorageOperationType, value: Buffer, documentSpec: SolidDocumentSpec): Promise<string> {
+    async create(type: StorageOperationType, value: Uint8Array, documentSpec: SolidDocumentSpec): Promise<string> {
         if (!this._sessionCredential?.podName) throw new Error('Invalid or missing session credential, podName is required.');
         if (!documentSpec.filename) throw new Error('Missing document filename');
 
@@ -45,7 +45,7 @@ export class SolidDocumentDriver implements ISolidStorageDocumentDriver<SolidDoc
         return resource.totalUrlPath;
     }
 
-    async read(type: StorageOperationType, documentSpec: SolidDocumentSpec): Promise<Buffer | null> {
+    async read(type: StorageOperationType, documentSpec: SolidDocumentSpec): Promise<Uint8Array | null> {
         if (!this._sessionCredential?.podName) throw new Error('Invalid or missing session credential, podName is required.');
         const resource = await this._solidDriver.read(
             {
@@ -54,6 +54,6 @@ export class SolidDocumentDriver implements ISolidStorageDocumentDriver<SolidDoc
             },
             this._sessionCredential,
         );
-        return resource?.value ? resource.value as Buffer : null;
+        return resource?.value ? resource.value as Uint8Array : null;
     }
 }

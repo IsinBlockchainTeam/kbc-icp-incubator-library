@@ -4,6 +4,7 @@ pragma solidity ^0.8.17;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "./MaterialManager.sol";
+import "@blockchain-lib/blockchain-common/contracts/EnumerableType.sol";
 
 contract AssetOperationManager is AccessControl {
     using Counters for Counters.Counter;
@@ -27,6 +28,7 @@ contract AssetOperationManager is AccessControl {
         uint256 outputMaterialId;
         string latitude;
         string longitude;
+        string[] processTypes;
         bool exists;
     }
 
@@ -35,13 +37,15 @@ contract AssetOperationManager is AccessControl {
     mapping(uint256 => AssetOperation) private _assetOperations;
 
     MaterialManager private _materialManager;
+    EnumerableType private _processTypeManager;
 
-    constructor(address materialManagerAddress) {
+    constructor(address materialManagerAddress, address processTypeManagerAddress) {
         _setupRole(ADMIN_ROLE, _msgSender());
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
         grantRole(ADMIN_ROLE, _msgSender());
 
         _materialManager = MaterialManager(materialManagerAddress);
+        _processTypeManager = EnumerableType(processTypeManagerAddress);
     }
 
     function getAssetOperationsCounter() public view returns (uint256) {
@@ -65,27 +69,35 @@ contract AssetOperationManager is AccessControl {
         return _assetOperations[id].inputMaterialIds.length == 1 ? AssetOperationType.CONSOLIDATION : AssetOperationType.TRANSFORMATION;
     }
 
-    function registerAssetOperation(string memory name, uint256[] memory inputMaterialsIds, uint256 outputMaterialId, string memory latitude, string memory longitude) public {
+    function registerAssetOperation(string memory name, uint256[] memory inputMaterialsIds, uint256 outputMaterialId, string memory latitude, string memory longitude, string[] memory processTypes) public {
         require(_materialManager.getMaterialExists(outputMaterialId), "AssetOperationManager: Output material does not exist");
         require(inputMaterialsIds.length > 0, "AssetOperationManager: inputMaterialsIds array must specify at least one material");
+        require(processTypes.length > 0, "AssetOperationManager: At least one process type must be specified");
         for(uint256 i = 0; i < inputMaterialsIds.length; i++) {
             require(_materialManager.getMaterialExists(inputMaterialsIds[i]), "AssetOperationManager: Input material does not exist");
+        }
+        for(uint256 i = 0; i < processTypes.length; i++) {
+            require(_processTypeManager.contains(processTypes[i]), "AssetOperationManager: Process type does not exist");
         }
 
         uint256 assetOperationId = _counter.current() + 1;
         _counter.increment();
-        AssetOperation memory newAssetOperation = AssetOperation(assetOperationId, name, inputMaterialsIds, outputMaterialId, latitude, longitude, true);
+        AssetOperation memory newAssetOperation = AssetOperation(assetOperationId, name, inputMaterialsIds, outputMaterialId, latitude, longitude, processTypes, true);
         _assetOperations[assetOperationId] = newAssetOperation;
         _assetOperationIdsOfOwner[_msgSender()].push(assetOperationId);
         emit AssetOperationRegistered(assetOperationId, name, outputMaterialId);
     }
 
-    function updateAssetOperation(uint256 id, string memory name, uint256[] memory inputMaterialsIds, uint256 outputMaterialId, string memory latitude, string memory longitude) public {
+    function updateAssetOperation(uint256 id, string memory name, uint256[] memory inputMaterialsIds, uint256 outputMaterialId, string memory latitude, string memory longitude, string[] memory processTypes) public {
         require(_assetOperations[id].exists, "AssetOperationManager: Asset operation does not exist");
         require(_materialManager.getMaterialExists(outputMaterialId), "AssetOperationManager: Output material does not exist");
         require(inputMaterialsIds.length > 0, "AssetOperationManager: inputMaterialsIds array must specify at least one material");
+        require(processTypes.length > 0, "AssetOperationManager: At least one process type must be specified");
         for(uint256 i = 0; i < inputMaterialsIds.length; i++) {
             require(_materialManager.getMaterialExists(inputMaterialsIds[i]), "AssetOperationManager: Input material does not exist");
+        }
+        for(uint256 i = 0; i < processTypes.length; i++) {
+            require(_processTypeManager.contains(processTypes[i]), "AssetOperationManager: Process type does not exist");
         }
 
         _assetOperations[id].name = name;
@@ -93,6 +105,7 @@ contract AssetOperationManager is AccessControl {
         _assetOperations[id].outputMaterialId = outputMaterialId;
         _assetOperations[id].latitude = latitude;
         _assetOperations[id].longitude = longitude;
+        _assetOperations[id].processTypes = processTypes;
         emit AssetOperationUpdated(id);
     }
 

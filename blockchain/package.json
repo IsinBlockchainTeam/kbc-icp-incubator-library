@@ -2,14 +2,14 @@
   "name": "coffee-trading-management-lib-contracts",
   "version": "1.0.0",
   "scripts": {
-    "clear": "rm -rf ./cache ./artifacts ./typechain-types ../src/smart-contracts",
+    "clean": "rm -rf ./cache ./artifacts ./typechain-types ../src/smart-contracts",
     "test": "NODE_ENV=test npx hardhat test",
     "coverage": "NODE_ENV=test NODE_OPTIONS=--max_old_space_size=32000 npx hardhat coverage",
     "gasReport": "REPORT_GAS=true npx hardhat test",
     "compileOnly": "npx hardhat compile",
     "compile": "npx hardhat compile && rm -rf ../src/smart-contracts && cp -R ./typechain-types ../src/smart-contracts",
     "deploy": "npx hardhat run ./scripts/deploy.ts",
-    "node": "npx hardhat node"
+    "node": "npx hardhat node --hostname 0.0.0.0"
   },
   "author": "",
   "license": "ISC",
@@ -23,8 +23,8 @@
     "eslint-plugin-mocha": "^10.1.0"
   },
   "dependencies": {
-    "@blockchain-lib/blockchain-common": "1.0.1",
-    "@defi-wonderland/smock": "^2.3.4",
+    "@blockchain-lib/blockchain-common": "1.1.0",
+    "@defi-wonderland/smock": "2.3.5",
     "@openzeppelin/contracts": "4.8.2",
     "@openzeppelin/hardhat-upgrades": "1.22.1",
     "dotenv": "^16.0.3",

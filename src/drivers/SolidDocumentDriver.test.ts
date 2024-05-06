@@ -32,7 +32,7 @@ describe('SolidDocumentDriver', () => {
     });
 
     it('create', async () => {
-        const documentBuffer = Buffer.from('file content');
+        const documentBuffer = new Uint8Array([1, 2, 3]);
         await solidDocumentDriver.create(StorageOperationType.TRANSACTION, documentBuffer, documentSpec);
 
         expect(mockedSolidDriver.create).toHaveBeenCalled();

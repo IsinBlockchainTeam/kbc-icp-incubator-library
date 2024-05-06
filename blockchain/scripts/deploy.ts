@@ -33,17 +33,26 @@ serial([
             await tx.wait();
         }
     },
-    () => deploy(ContractName.ENUMERABLE_TYPE_MANAGER, [[]], 'EnumerableTransactionTypeManager'),
+    () => deploy(ContractName.ENUMERABLE_TYPE_MANAGER, [[]], 'EnumerableProcessTypeManager'),
     async () => {
-        const enums: string[] = ['trade', 'transformation', 'certification'];
+        const enums: string[] = ['33 - Collecting', '38 - Harvesting'];
         for (let i = 0; i < enums.length; i++) {
-            const tx = await contractMap.get('EnumerableTransactionTypeManager')
+            const tx = await contractMap.get('EnumerableProcessTypeManager')
+                ?.add(enums[i]);
+            await tx.wait();
+        }
+    },
+    () => deploy(ContractName.ENUMERABLE_TYPE_MANAGER, [[]], 'EnumerableAssessmentStandardManager'),
+    async () => {
+        const enums: string[] = ['Chemical use assessment', 'Environment assessment', 'Origin assessment', 'Quality assessment', 'Swiss Decode'];
+        for (let i = 0; i < enums.length; i++) {
+            const tx = await contractMap.get('EnumerableAssessmentStandardManager')
                 ?.add(enums[i]);
             await tx.wait();
         }
     },
     () => deploy(
-        ContractName.PRODUCT_CATEGORY_MANAGER, []
+        ContractName.PRODUCT_CATEGORY_MANAGER, [],
     ),
     () => deploy(
         ContractName.MATERIAL_MANAGER, [
@@ -53,7 +62,6 @@ serial([
     () => deploy(
         ContractName.DOCUMENT_MANAGER, [
             [process.env.SUPPLIER_ADMIN || ''],
-            contractMap.get('EnumerableTransactionTypeManager')?.address,
         ],
     ),
     () => deploy(
@@ -78,6 +86,7 @@ serial([
     () => deploy(
         ContractName.ASSET_OPERATION_MANAGER, [
             contractMap.get(ContractName.MATERIAL_MANAGER)!.address,
+            contractMap.get('EnumerableProcessTypeManager')!.address,
         ],
     ),
     () => deploy(
@@ -88,6 +97,9 @@ serial([
     ),
     () => deploy(
         ContractName.MY_TOKEN, [10000],
+    ),
+    () => deploy(
+        ContractName.ETHEREUM_DID_REGISTRY, [],
     ),
 ])
     .catch((error: any) => {

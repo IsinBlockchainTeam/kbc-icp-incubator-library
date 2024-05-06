@@ -371,7 +371,7 @@ describe('OrderTradeDriver', () => {
         mockedGetNegotiationStatus.mockReturnValue(Promise.resolve(42));
         await expect(orderTradeDriver.getNegotiationStatus())
             .rejects
-            .toThrowError(new Error('Invalid state'));
+            .toThrow(new Error('Invalid state'));
 
         expect(mockedContract.getNegotiationStatus)
             .toHaveBeenCalledTimes(1);

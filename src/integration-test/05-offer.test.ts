@@ -8,11 +8,11 @@ import {
     OFFER_MANAGER_CONTRACT_ADDRESS,
     PRODUCT_CATEGORY_CONTRACT_ADDRESS,
     SUPPLIER_ADDRESS,
-    SUPPLIER_PRIVATE_KEY
+    SUPPLIER_PRIVATE_KEY,
 } from './config';
-import {ProductCategoryService} from "../services/ProductCategoryService";
-import {ProductCategoryDriver} from "../drivers/ProductCategoryDriver";
-import {ProductCategory} from "../entities/ProductCategory";
+import { ProductCategoryService } from '../services/ProductCategoryService';
+import { ProductCategoryDriver } from '../drivers/ProductCategoryDriver';
+import { ProductCategory } from '../entities/ProductCategory';
 
 dotenv.config();
 
@@ -25,7 +25,7 @@ describe('Offer lifecycle', () => {
 
     const companyName = 'Company 1';
     let productCategoryService: ProductCategoryService;
-    let productCategoryIds: number[] = [];
+    const productCategoryIds: number[] = [];
 
     beforeAll(async () => {
         provider = new ethers.providers.JsonRpcProvider(NETWORK);
@@ -86,7 +86,7 @@ describe('Offer lifecycle', () => {
 
         await offerService.deleteOffer(offerIds[0]);
         await expect(() => offerService.getOffer(offerIds[0]))
-            .rejects.toThrowError(/Offer does not exist/);
+            .rejects.toThrow(/Offer does not exist/);
 
         offerIds = await offerService.getOfferIdsByCompany(SUPPLIER_ADDRESS);
         expect(offerIds.length).toEqual(1);
@@ -104,7 +104,7 @@ describe('Offer lifecycle', () => {
 
     it('Should delete a supplier', async () => {
         await expect(() => offerService.deleteSupplier(SUPPLIER_ADDRESS))
-            .rejects.toThrowError(/A supplier cannot be deleted if it still has active offers/);
+            .rejects.toThrow(/A supplier cannot be deleted if it still has active offers/);
 
         let offerIds = await offerService.getOfferIdsByCompany(SUPPLIER_ADDRESS);
         await offerService.deleteOffer(offerIds[0]);

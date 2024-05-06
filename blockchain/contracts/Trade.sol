@@ -11,9 +11,21 @@ import "./MaterialManager.sol";
 abstract contract Trade is AccessControl {
     using Counters for Counters.Counter;
 
+    enum DocumentType {
+        DELIVERY_NOTE,
+        BILL_OF_LADING,
+        PAYMENT_INVOICE,
+        SWISS_DECODE,
+        WEIGHT_CERTIFICATE,
+        FUMIGATION_CERTIFICATE,
+        PREFERENTIAL_ENTRY_CERTIFICATE,
+        PHYTOSANITARY_CERTIFICATE,
+        INSURANCE_CERTIFICATE
+    }
+
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
-    enum TradeStatus { SHIPPED, ON_BOARD, CONTRACTING }
+    enum TradeStatus { PAYED, SHIPPED, ON_BOARD, CONTRACTING }
     enum TradeType { BASIC, ORDER }
 
     event TradeLineAdded(uint256 tradeLineId);
@@ -56,6 +68,10 @@ abstract contract Trade is AccessControl {
     mapping(uint256 => Line) internal _lines;
     uint256[] internal _lineIds;
     Counters.Counter internal _lineCounter;
+
+    uint256[] private _documentIds;
+    // document type => document ids
+    mapping(DocumentType => uint256[]) private _documentsByType;
 
     ProductCategoryManager internal _productCategoryManager;
     MaterialManager internal _materialManager;
@@ -123,19 +139,32 @@ abstract contract Trade is AccessControl {
     }
 
     function getTradeStatus() public view returns (TradeStatus) {
-        uint256 documentsCounter = _documentManager.getDocumentsCounterByTransactionIdAndType(_tradeId, "trade");
+        uint256 documentsCounter = _documentManager.getDocumentsCounter();
         //require(documentsCounter > 0, "Trade: There are no documents related to this trade");
         if (documentsCounter == 0) return TradeStatus.CONTRACTING;
 
-        if ((_documentManager.getDocumentsByDocumentType(_tradeId, "trade", DocumentManager.DocumentType.BILL_OF_LADING)).length > 0) return TradeStatus.ON_BOARD;
-        if ((_documentManager.getDocumentsByDocumentType(_tradeId, "trade", DocumentManager.DocumentType.DELIVERY_NOTE)).length > 0) return TradeStatus.SHIPPED;
+        if (_documentsByType[DocumentType.PAYMENT_INVOICE].length > 0) return TradeStatus.PAYED;
+//        TODO: gestire lo stato del trade a seconda dei documenti caricati, capire come raggruppare i documenti
+//        es. per dire che un trade è in stato SHIPPED teoricamente servirebbero i certificati swiss decode e quello di spedizione
+        if (_documentsByType[DocumentType.BILL_OF_LADING].length > 0) return TradeStatus.ON_BOARD;
+        if (_documentsByType[DocumentType.DELIVERY_NOTE].length > 0) return TradeStatus.SHIPPED;
         revert("Trade: There are no documents with correct document type");
     }
 
-    function addDocument(uint256 lineId, string memory name, DocumentManager.DocumentType documentType, string memory externalUrl, string memory contentHash) public onlyAdminOrContractPart {
-        require(_lines[lineId].exists, "Trade: Line does not exist");
-        require(_lines[lineId].materialId != 0, "Trade: A material must be assigned before adding a document for a line");
-        _documentManager.registerDocument(_tradeId, "trade", name, documentType, externalUrl, contentHash);
+    function addDocument(DocumentType documentType, string memory externalUrl, string memory contentHash) public onlyAdminOrContractPart {
+//        require(_lines[lineId].exists, "Trade: Line does not exist");
+//        require(_lines[lineId].materialId != 0, "Trade: A material must be assigned before adding a document for a line");
+        uint256 documentId = _documentManager.registerDocument(externalUrl, contentHash);
+        _documentIds.push(documentId);
+        _documentsByType[documentType].push(documentId);
+    }
+
+    function getAllDocumentIds() public view returns (uint256[] memory) {
+        return _documentIds;
+    }
+
+    function getDocumentIdsByType(DocumentType documentType) public view returns (uint256[] memory) {
+        return _documentsByType[documentType];
     }
 
     function addAdmin(address account) public onlyAdmin {

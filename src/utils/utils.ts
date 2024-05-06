@@ -22,7 +22,7 @@ export const getTradeTypeByIndex = (index: number): TradeType => {
 
 export type SupportedAlgorithm = 'MD5' | 'SHA1' | 'SHA256' | 'SHA224' | 'SHA512' | 'SHA384' | 'SHA3' | 'RIPEMD160';
 
-export const computeHashFromBuffer = (buffer: Buffer, algorithm: SupportedAlgorithm = 'SHA256'): string => {
+export const computeHashFromBuffer = (buffer: Uint8Array, algorithm: SupportedAlgorithm = 'SHA256'): string => {
     const wordArray = CryptoJS.lib.WordArray.create(buffer);
     const hash = CryptoJS.algo[algorithm].create().finalize(wordArray);
     return hash.toString(CryptoJS.enc.Hex);

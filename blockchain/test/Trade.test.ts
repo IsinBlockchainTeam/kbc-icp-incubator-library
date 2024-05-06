@@ -43,47 +43,21 @@ describe('Trade.sol', () => {
     });
 
     describe('Trade status', () => {
-        it('should compute the trade status', async () => {
-            documentManagerContractFake.getDocumentsCounterByTransactionIdAndType.returns(2);
-            documentManagerContractFake.getDocumentsByDocumentType.returns([{
-                id: 1,
-                transactionId: 2,
-                name: 'document',
-                documentType: documentTypes[0],
-                externalUrl: 'url',
-                contentHash: 'hash',
-            }]);
-
-            expect(await basicTradeContract.connect(supplier)
-                .getTradeStatus())
-                .to
-                .equal(1);
-            expect(documentManagerContractFake.getDocumentsByDocumentType)
-                .to
-                .have
-                .callCount(1);
-            expect(documentManagerContractFake.getDocumentsByDocumentType)
-                .to
-                .have
-                .calledWith(1, 'trade', documentTypes[0]);
-        });
-
         // it('should compute the trade status - FAIL (Trade: There are no documents related to this trade)', async () => {
-        //     documentManagerContractFake.getDocumentsCounterByTransactionIdAndType.returns(0);
+        //     documentManagerContractFake.getDocumentsCounter.returns(0);
         //     await expect(basicTradeContract.connect(supplier).getTradeStatus()).to.be.revertedWith('Trade: There are no documents related to this trade');
         // });
 
         it('should compute the trade status - CONTRACTING', async () => {
-            documentManagerContractFake.getDocumentsCounterByTransactionIdAndType.returns(0);
+            documentManagerContractFake.getDocumentsCounter.returns(0);
             expect(await basicTradeContract.connect(supplier)
                 .getTradeStatus())
                 .to
-                .equal(2);
+                .equal(3);
         });
 
         it('should compute the trade status - FAIL (Trade: There are no documents with correct document type)', async () => {
-            documentManagerContractFake.getDocumentsCounterByTransactionIdAndType.returns(2);
-            documentManagerContractFake.getDocumentsByDocumentType.returns([]);
+            documentManagerContractFake.getDocumentsCounter.returns(2);
             await expect(basicTradeContract.connect(customer)
                 .getTradeStatus())
                 .to
@@ -94,9 +68,7 @@ describe('Trade.sol', () => {
 
     describe('Documents', () => {
         it('should add a document', async () => {
-            await basicTradeContract.addLine(1);
-            await basicTradeContract.assignMaterial(1, 2);
-            await basicTradeContract.addDocument(1, 'test document', documentTypes[0], 'https://www.test.com', 'content_hash');
+            await basicTradeContract.addDocument(documentTypes[0], 'https://www.test.com', 'content_hash');
             expect(documentManagerContractFake.registerDocument)
                 .to
                 .have
@@ -104,7 +76,42 @@ describe('Trade.sol', () => {
             expect(documentManagerContractFake.registerDocument)
                 .to
                 .have
-                .calledWith(1, 'trade', 'test document', documentTypes[0], 'https://www.test.com', 'content_hash');
+                .calledWith('https://www.test.com', 'content_hash');
+        });
+
+        // it("should add a document - FAIL (Trade: Line doesn't exist)", async () => {
+        //     await expect(basicTradeContract.addDocument(1, documentTypes[0], 'https://www.test.com', 'content_hash'))
+        //         .to
+        //         .be
+        //         .revertedWith('Trade: Line does not exist');
+        // });
+        //
+        // it("should add a document - FAIL (Trade: Material doesn't exist)", async () => {
+        //     await basicTradeContract.addLine(1);
+        //     await expect(basicTradeContract.addDocument(1, documentTypes[0], 'https://www.test.com', 'content_hash'))
+        //         .to
+        //         .be
+        //         .revertedWith('Trade: A material must be assigned before adding a document for a line');
+        // });
+
+        it('should get document ids by type', async () => {
+            documentManagerContractFake.registerDocument.returns(1);
+
+            await basicTradeContract.addDocument(documentTypes[0], 'https://www.test.com', 'content_hash');
+            expect(await basicTradeContract.getDocumentIdsByType(documentTypes[0]))
+                .to
+                .deep
+                .equal([BigNumber.from(1)]);
+        });
+
+        it('should get document ids', async () => {
+            documentManagerContractFake.registerDocument.returns(1);
+
+            await basicTradeContract.addDocument(documentTypes[0], 'https://www.test.com', 'content_hash');
+            expect(await basicTradeContract.getAllDocumentIds())
+                .to
+                .deep
+                .equal([BigNumber.from(1)]);
         });
     });
 

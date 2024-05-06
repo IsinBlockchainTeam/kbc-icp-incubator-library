@@ -1,4 +1,3 @@
-import { Blob } from 'buffer';
 import { DocumentInfo } from './DocumentInfo';
 
 export type TransactionLine = {id: number, quantity?: number}
@@ -11,10 +10,10 @@ export class Document extends DocumentInfo {
 
     private _quantity?: number;
 
-    private _content: Blob;
+    private _content: Uint8Array;
 
-    constructor(documentInfo: DocumentInfo, filename: string, date: Date, content: Blob, transactionLines?: TransactionLine[]) {
-        super(documentInfo.id, documentInfo.transactionId, documentInfo.name, documentInfo.documentType, documentInfo.externalUrl, documentInfo.contentHash);
+    constructor(documentInfo: DocumentInfo, filename: string, date: Date, content: Uint8Array, transactionLines?: TransactionLine[]) {
+        super(documentInfo.id, documentInfo.externalUrl, documentInfo.contentHash);
         this._filename = filename;
         this._date = date;
         this._content = content;
@@ -29,11 +28,11 @@ export class Document extends DocumentInfo {
         this._filename = value;
     }
 
-    get content(): Blob {
+    get content(): Uint8Array {
         return this._content;
     }
 
-    set content(value: Blob) {
+    set content(value: Uint8Array) {
         this._content = value;
     }
 

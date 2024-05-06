@@ -36,6 +36,20 @@ export class TradeManagerService {
     //     return this._tradeManagerDriver.registerBasicTrade(supplier, customer, commissioner, externalUrl, name);
     // }
 
+    // async registerOrderTrade(supplier: string, customer: string, commissioner: string, paymentDeadline: number, documentDeliveryDeadline: number, arbiter: string, shippingDeadline: number, deliveryDeadline: number, agreedAmount: number, tokenAddress: string, metadataStorage?: {spec?: MS, aclRules?: ACR[], value: any}): Promise<OrderTradeInfo> {
+    //     let externalUrl = '';
+    //     if (metadataStorage) {
+    //         if (!this._storageMetadataDriver) throw new Error('Missing storage metadata driver.');
+    //         externalUrl = await this._storageMetadataDriver.create(
+    //             StorageOperationType.TRANSACTION,
+    //             metadataStorage.value,
+    //             metadataStorage.aclRules,
+    //             metadataStorage.spec,
+    //         );
+    //     }
+    //     return this._tradeManagerDriver.registerOrderTrade(supplier, customer, commissioner, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);
+    // }
+
     // TODO: store external url
     async registerOrderTrade(supplier: string, customer: string, commissioner: string, paymentDeadline: number, documentDeliveryDeadline: number, arbiter: string, shippingDeadline: number, deliveryDeadline: number, agreedAmount: number, tokenAddress: string, metadata: OrderTradeMetadata): Promise<OrderTrade> {
         if(!this._storageMetadataDriver)
@@ -50,24 +64,6 @@ export class TradeManagerService {
         await this._storageMetadataDriver.create(metadata, resourceSpec);
         return this._tradeManagerDriver.registerOrderTrade(supplier, customer, commissioner, 'externalUrl', paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);
     }
-
-    // async registerOrderTrade(supplier: string, customer: string, commissioner: string, paymentDeadline: number, documentDeliveryDeadline: number, arbiter: string, shippingDeadline: number, deliveryDeadline: number, agreedAmount: number, tokenAddress: string, metadataStorage?: {
-    //     spec?: MS,
-    //     aclRules?: ACR[],
-    //     value: any
-    // }): Promise<OrderTradeInfo> {
-    //     let externalUrl = '';
-    //     if (metadataStorage) {
-    //         if (!this._storageMetadataDriver) throw new Error('Missing storage metadata driver.');
-    //         externalUrl = await this._storageMetadataDriver.create(
-    //             StorageOperationType.TRANSACTION,
-    //             metadataStorage.value,
-    //             metadataStorage.aclRules,
-    //             metadataStorage.spec,
-    //         );
-    //     }
-    //     return this._tradeManagerDriver.registerOrderTrade(supplier, customer, commissioner, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);
-    // }
 
     async getTradeCounter(): Promise<number> {
         return this._tradeManagerDriver.getTradeCounter();
