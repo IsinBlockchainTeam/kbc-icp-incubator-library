@@ -1,16 +1,17 @@
 import { Document } from './Document';
-import { DocumentInfo } from './DocumentInfo';
+import {DocumentInfo, DocumentType} from './DocumentInfo';
 
 describe('Document', () => {
     let document: Document;
     let documentInfo: DocumentInfo;
     const filename = 'filename1.pdf';
+    const documentType: DocumentType = DocumentType.METADATA;
     const content = new Blob(['b', 'l', 'o', 'b']);
     const today = new Date();
 
     beforeAll(() => {
         documentInfo = new DocumentInfo(0, 'external url', 'contentHash');
-        document = new Document(documentInfo, filename, today, new Uint8Array([1, 2, 3]));
+        document = new Document(documentInfo, filename, documentType, today, new Uint8Array([1, 2, 3]));
     });
 
     it('should correctly initialize a new DocumentFile', () => {
@@ -18,6 +19,7 @@ describe('Document', () => {
         expect(document.externalUrl).toEqual('external url');
         expect(document.contentHash).toEqual('contentHash');
         expect(document.filename).toEqual(filename);
+        expect(document.documentType).toEqual(documentType);
         expect(document.date).toEqual(today);
         expect(document.transactionLines).toBeUndefined();
         expect(document.quantity).toBeUndefined();
@@ -33,6 +35,11 @@ describe('Document', () => {
         const newContent = new Uint8Array([4, 5, 6]);
         document.content = newContent;
         expect(document.content).toEqual(newContent);
+    });
+
+    it('should correctly set the document type', () => {
+        document.documentType = DocumentType.DELIVERY_NOTE;
+        expect(document.documentType).toEqual(DocumentType.DELIVERY_NOTE);
     });
 
     it('should correctly set the date', () => {

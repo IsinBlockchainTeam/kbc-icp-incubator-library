@@ -40,11 +40,26 @@ export class TradeService {
 
     async addDocument(documentType: DocumentType, fileContent: Uint8Array, externalUrl: string, resourceSpec: ICPResourceSpec): Promise<void> {
         if(!this._icpFileDriver) throw new Error("OrderTradeService: ICPFileDriver has not been set");
+        const fileName = FileHelpers.removeFileExtension(resourceSpec.name);
 
         resourceSpec.name = externalUrl + "/files/" + resourceSpec.name;
 
         const contentHash = FileHelpers.getHash(fileContent);
         await this._icpFileDriver.create(fileContent, resourceSpec);
+        const documentMetadata = {
+            fileName: resourceSpec.name,
+            documentType,
+            date: new Date(),
+            // TODO: add transaction lines
+            transactionLines: [],
+            // TODO: add quantity
+            quantity: undefined,
+        };
+
+        await this._icpFileDriver.create(FileHelpers.getBytesFromObject(documentMetadata), {
+            name: externalUrl + "/files/" + fileName + ".metadata",
+            type: "application/json",
+        });
         return this._tradeDriver.addDocument(documentType, resourceSpec.name, contentHash.toString());
     }
 

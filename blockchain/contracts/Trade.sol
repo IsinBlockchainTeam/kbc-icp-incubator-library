@@ -143,16 +143,16 @@ abstract contract Trade is AccessControl {
     function getTradeStatus() public view returns (TradeStatus) {
         uint256 documentsCounter = _documentManager.getDocumentsCounter();
         //require(documentsCounter > 0, "Trade: There are no documents related to this trade");
+
         if (documentsCounter == 0) return TradeStatus.CONTRACTING;
 
-        // TODO: fix this
-//        if (_documentsByType[DocumentType.PAYMENT_INVOICE].length > 0) return TradeStatus.PAYED;
-////        TODO: gestire lo stato del trade a seconda dei documenti caricati, capire come raggruppare i documenti
-////        es. per dire che un trade è in stato SHIPPED teoricamente servirebbero i certificati swiss decode e quello di spedizione
-//        if (_documentsByType[DocumentType.BILL_OF_LADING].length > 0) return TradeStatus.ON_BOARD;
-//        if (_documentsByType[DocumentType.DELIVERY_NOTE].length > 0) return TradeStatus.SHIPPED;
-//        revert("Trade: There are no documents with correct document type");
-        return TradeStatus.CONTRACTING;
+        if (documentsCounter == _documentsByType[DocumentType.METADATA].length) return TradeStatus.CONTRACTING;
+        if (_documentsByType[DocumentType.PAYMENT_INVOICE].length > 0) return TradeStatus.PAYED;
+        // TODO: gestire lo stato del trade a seconda dei documenti caricati, capire come raggruppare i documenti
+        // es. per dire che un trade è in stato SHIPPED teoricamente servirebbero i certificati swiss decode e quello di spedizione
+        if (_documentsByType[DocumentType.BILL_OF_LADING].length > 0) return TradeStatus.ON_BOARD;
+        if (_documentsByType[DocumentType.DELIVERY_NOTE].length > 0) return TradeStatus.SHIPPED;
+        revert("Trade: There are no documents with correct document type");
     }
 
     function addDocument(DocumentType documentType, string memory externalUrl, string memory contentHash) public onlyAdminOrContractPart {

@@ -1,11 +1,9 @@
 import { Signer } from 'ethers';
-import { StorageACR } from '@blockchain-lib/common';
 import { Line, Trade } from '../entities/Trade';
 import { AssetOperation } from '../entities/AssetOperation';
 import { TradeManagerService } from './TradeManagerService';
 import { AssetOperationService } from './AssetOperationService';
 import { AssetOperationType } from '../types/AssetOperationType';
-import { MetadataSpec } from '../drivers/ISolidStorageMetadataDriver';
 
 export type Node = AssetOperation;
 

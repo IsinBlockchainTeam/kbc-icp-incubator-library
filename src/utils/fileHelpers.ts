@@ -66,6 +66,10 @@ export class FileHelpers {
     public static getObjectFromBytes(bytes: Uint8Array): object {
         return JSON.parse(new TextDecoder().decode(bytes));
     }
+
+    public static removeFileExtension(file: string): string {
+        return file.split('.').pop() || file;
+    }
 }
 
 export default FileHelpers;

@@ -1,7 +1,8 @@
 import { DocumentDriver } from '../drivers/DocumentDriver';
-import { DocumentInfo } from '../entities/DocumentInfo';
-import { Document } from '../entities/Document';
+import {DocumentInfo, DocumentType} from '../entities/DocumentInfo';
+import {Document, TransactionLine} from '../entities/Document';
 import {ICPFileDriver} from "../drivers/ICPFileDriver";
+import FileHelpers from "../utils/fileHelpers";
 
 export class DocumentService {
     private _documentDriver: DocumentDriver;
@@ -31,10 +32,24 @@ export class DocumentService {
             // const { filename, date, lines } = await this._storageMetadataDriver.read(StorageOperationType.TRANSACTION_DOCUMENT, metadataSpec);
             // const fileContent = await this._storageDocumentDriver.read(StorageOperationType.TRANSACTION_DOCUMENT, documentSpec);
             // if (fileContent) return new Document(documentInfo, filename, new Date(date), fileContent, lines);
+            const path = documentInfo.externalUrl.split('/').slice(0, -1).join('/');
+            const metadataName = FileHelpers.removeFileExtension(documentInfo.externalUrl.split(path + '/')[1]);
+
+            interface DocumentMetadata {
+                fileName: string;
+                documentType: DocumentType;
+                date: Date;
+                transactionLines: TransactionLine[];
+            }
+            const documentMetadata: DocumentMetadata = FileHelpers.getObjectFromBytes(await this._icpFileDriver.read(path + '/' + metadataName + '.metadata')) as DocumentMetadata;
+            const fileName = documentMetadata.fileName;
+            const documentType = documentMetadata.documentType;
+            const date = documentMetadata.date;
+            const transactionLines = documentMetadata.transactionLines;
+            if(!fileName || !documentType || !date) throw new Error('Error while retrieve document metadata from external storage: missing fields');
 
             const fileContent = await this._icpFileDriver.read(documentInfo.externalUrl);
-            // TODO: refactor this
-            return new Document(documentInfo, documentInfo.externalUrl.split('/')[8], new Date(), fileContent, []);
+            return new Document(documentInfo, fileName, documentType, new Date(date), fileContent, transactionLines);
         } catch (e: any) {
             throw new Error(`Error while retrieve document file from external storage: ${e.message}`);
         }
