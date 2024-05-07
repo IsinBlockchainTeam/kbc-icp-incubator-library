@@ -91,4 +91,3 @@ export class TradeService {
         return this._tradeDriver.removeAdmin(account);
     }
 }
-
