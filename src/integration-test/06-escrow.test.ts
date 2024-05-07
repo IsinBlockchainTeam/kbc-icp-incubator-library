@@ -39,7 +39,7 @@ describe('Escrow Manager', () => {
     let escrowManagerService: EscrowManagerService;
     let tradeManagerService: TradeManagerService<SolidMetadataSpec, SolidStorageACR>;
 
-    let escrowInitialIndex: number;
+    let escrowCounter: number;
     let initialExporterBalance: number;
     let initialPurchaserBalance: number;
     let initialDelegateBalance: number;
@@ -106,7 +106,7 @@ describe('Escrow Manager', () => {
         await tokenContract.deployed();
         await tokenContract.transfer(purchaser, 500);
         await tokenContract.transfer(delegate, 10);
-        escrowInitialIndex = await escrowManagerService.getEscrowCounter();
+        escrowCounter = await escrowManagerService.getEscrowCounter();
         initialExporterBalance = (await tokenContract.balanceOf(payee)).toNumber();
         initialPurchaserBalance = (await tokenContract.balanceOf(purchaser)).toNumber();
         initialDelegateBalance = (await tokenContract.balanceOf(delegate)).toNumber();
@@ -154,7 +154,7 @@ describe('Escrow Manager', () => {
             await purchaserOrderTradeService.confirmOrder();
             await supplierOrderTradeService.confirmOrder();
 
-            const escrowCounter = await escrowManagerService.getEscrowCounter();
+            escrowCounter = await escrowManagerService.getEscrowCounter();
             const idsOfPurchaser: number[] = await escrowManagerService.getEscrowIdsOfPurchaser(purchaser);
             const id: number = idsOfPurchaser[idsOfPurchaser.length - 1];
             expect(id).toEqual(escrowCounter);
@@ -252,7 +252,7 @@ describe('Escrow Manager', () => {
             await escrowManagerService.registerEscrow(payee, purchaser, agreedAmount, duration, tokenAddress);
             const idsOdPurchaser: number[] = await escrowManagerService.getEscrowIdsOfPurchaser(purchaser);
             const id: number = idsOdPurchaser[idsOdPurchaser.length - 1];
-            expect(id).toEqual(escrowInitialIndex + 1);
+            expect(id).toEqual(escrowCounter + 1);
 
             escrowAddress = await escrowManagerService.getEscrow(id);
             _defineServices();
