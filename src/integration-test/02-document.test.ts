@@ -48,6 +48,7 @@ describe('Document lifecycle', () => {
     const shippingDeadline: number = new Date().getTime() + 1000 * 60 * 60 * 24 * 30;
     const deliveryDeadline: number = new Date().getTime() + 1000 * 60 * 60 * 24 * 30;
     const agreedAmount: number = 1000;
+    const units = ['BG - Bags', 'KGM - Kilograms', 'H87 - Pieces'];
 
     let documentCounter = 0;
     const billOfLading = {
@@ -132,7 +133,7 @@ describe('Document lifecycle', () => {
         const { orderId, orderTradeService } = await createOrderAndConfirm();
         transactionId = orderId;
         firstOrderTradeService = orderTradeService;
-        firstOrderLineId = (await firstOrderTradeService.addLine(new OrderLineRequest(productCategoryIds[0], 100, new OrderLinePrice(100.50, 'CHF')))).id;
+        firstOrderLineId = (await firstOrderTradeService.addLine(new OrderLineRequest(productCategoryIds[0], 100, units[1], new OrderLinePrice(100.50, 'CHF')))).id;
         await firstOrderTradeService.assignMaterial(firstOrderLineId, materialIds[0]);
         await firstOrderTradeService.addDocument(deliveryNote.documentType);
 

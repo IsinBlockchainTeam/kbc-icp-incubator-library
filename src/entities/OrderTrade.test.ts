@@ -7,9 +7,11 @@ describe('OrderTrade', () => {
     let orderTrade: OrderTrade;
     let orderTradeInfo: OrderTradeInfo;
 
+    const units = ['KGM', 'BG'];
+
     beforeAll(() => {
         jest.useFakeTimers().setSystemTime(new Date('2024-10-10'));
-        orderTradeInfo = new OrderTradeInfo(1, 'supplier', 'customer', 'commissioner', 'externalUrl', [new OrderLine(1, new Material(1, new ProductCategory(1, 'name', 1, 'description')), new ProductCategory(1, 'name', 1, 'description'), 1, new OrderLinePrice(1, 'CHF'))], true, true, new Date().getTime(), new Date().getTime(), 'arbiter', new Date().getTime(), new Date().getTime(), 'escrow');
+        orderTradeInfo = new OrderTradeInfo(1, 'supplier', 'customer', 'commissioner', 'externalUrl', [new OrderLine(1, new Material(1, new ProductCategory(1, 'name', 1, 'description')), new ProductCategory(1, 'name', 1, 'description'), 1, units[1], new OrderLinePrice(1, 'CHF'))], true, true, new Date().getTime(), new Date().getTime(), 'arbiter', new Date().getTime(), new Date().getTime(), 'escrow');
         orderTrade = new OrderTrade(orderTradeInfo, 'incoterms', 'shipper', 'shippingPort', 'deliveryPort');
     });
 
@@ -25,7 +27,7 @@ describe('OrderTrade', () => {
         expect(orderTrade.externalUrl)
             .toEqual('externalUrl');
         expect(orderTrade.lines)
-            .toEqual([new OrderLine(1, new Material(1, new ProductCategory(1, 'name', 1, 'description')), new ProductCategory(1, 'name', 1, 'description'), 1, new OrderLinePrice(1, 'CHF'))]);
+            .toEqual([new OrderLine(1, new Material(1, new ProductCategory(1, 'name', 1, 'description')), new ProductCategory(1, 'name', 1, 'description'), 1, units[1], new OrderLinePrice(1, 'CHF'))]);
         expect(orderTrade.hasSupplierSigned)
             .toEqual(true);
         expect(orderTrade.hasCommissionerSigned)

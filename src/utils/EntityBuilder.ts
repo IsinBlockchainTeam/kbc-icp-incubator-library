@@ -52,8 +52,8 @@ export class EntityBuilder {
 
     static buildTradeLine(bcLine: Trade.LineStructOutput, bcProductCategory: ProductCategoryManager.ProductCategoryStructOutput, bcMaterial?: MaterialManager.MaterialStructOutput): Line {
         if (bcMaterial)
-            return new Line(bcLine.id.toNumber(), this.buildMaterial(bcMaterial, bcProductCategory), this.buildProductCategory(bcProductCategory));
-        return new Line(bcLine.id.toNumber(), undefined, this.buildProductCategory(bcProductCategory));
+            return new Line(bcLine.id.toNumber(), this.buildMaterial(bcMaterial, bcProductCategory), this.buildProductCategory(bcProductCategory), bcLine.quantity.toNumber(), bcLine.unit);
+        return new Line(bcLine.id.toNumber(), undefined, this.buildProductCategory(bcProductCategory), bcLine.quantity.toNumber(), bcLine.unit);
     }
 
     static buildOrderLinePrice(bcOrderLinePrice: OrderTrade.OrderLinePriceStructOutput): OrderLinePrice {
@@ -64,6 +64,6 @@ export class EntityBuilder {
     static buildOrderLine(bcLine: Trade.LineStructOutput, bcOrderLine: OrderTrade.OrderLineStructOutput, bcProductCategory: ProductCategoryManager.ProductCategoryStructOutput, bcMaterial?: MaterialManager.MaterialStructOutput): OrderLine {
         const line: Line = this.buildTradeLine(bcLine, bcProductCategory, bcMaterial);
         const price: OrderLinePrice = this.buildOrderLinePrice(bcOrderLine.price);
-        return new OrderLine(line.id, line.material, line.productCategory, bcOrderLine.quantity.toNumber(), price);
+        return new OrderLine(line.id, line.material, line.productCategory, bcLine.quantity.toNumber(), bcLine.unit, price);
     }
 }

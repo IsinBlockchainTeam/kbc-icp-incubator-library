@@ -71,14 +71,14 @@ export class BasicTradeDriver extends TradeDriver implements IConcreteTradeDrive
     }
 
     async addLine(line: LineRequest): Promise<Line> {
-        const tx: any = await this._basicTradeContract.addLine(line.productCategoryId);
+        const tx: any = await this._basicTradeContract.addLine(line.productCategoryId, line.quantity, line.unit);
         const receipt = await tx.wait();
         const id = receipt.events.find((event: Event) => event.event === 'TradeLineAdded').args[0];
         return this.getLine(id);
     }
 
     async updateLine(line: Line): Promise<Line> {
-        const tx = await this._basicTradeContract.updateLine(line.id, line.productCategory.id);
+        const tx = await this._basicTradeContract.updateLine(line.id, line.productCategory.id, line.quantity, line.unit);
         await tx.wait();
         if (line.material)
             await this.assignMaterial(line.id, line.material.id);

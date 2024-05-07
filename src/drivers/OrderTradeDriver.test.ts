@@ -25,10 +25,13 @@ describe('OrderTradeDriver', () => {
     const customer: string = Wallet.createRandom().address;
     const commissioner: string = Wallet.createRandom().address;
     const externalUrl: string = 'externalUrl';
+    const units = ['KGM', 'BG'];
 
     const line: TradeContract.LineStructOutput = {
         id: BigNumber.from(1),
         productCategoryId: BigNumber.from(2),
+        quantity: BigNumber.from(2),
+        unit: units[0],
         materialId: BigNumber.from(3),
         exists: true,
     } as TradeContract.LineStructOutput;
@@ -38,7 +41,6 @@ describe('OrderTradeDriver', () => {
         fiat: 'fiat',
     } as OrderTradeContract.OrderLinePriceStructOutput;
     const orderLine: OrderTradeContract.OrderLineStructOutput = {
-        quantity: BigNumber.from(2),
         price,
     } as OrderTradeContract.OrderLineStructOutput;
     const materialStruct: MaterialManager.MaterialStructOutput = {
@@ -252,14 +254,14 @@ describe('OrderTradeDriver', () => {
                 args: [line.id],
             }],
         });
-        const newLine: OrderLineRequest = new OrderLineRequest(productCategoryStruct.id.toNumber(), 2, EntityBuilder.buildOrderLinePrice(price));
+        const newLine: OrderLineRequest = new OrderLineRequest(productCategoryStruct.id.toNumber(), 2, units[0], EntityBuilder.buildOrderLinePrice(price));
         const result: OrderLine = await orderTradeDriver.addLine(newLine);
 
-        expect(result).toEqual(new OrderLine(line.id.toNumber(), undefined, EntityBuilder.buildProductCategory(productCategoryStruct), newLine.quantity, newLine.price));
+        expect(result).toEqual(new OrderLine(line.id.toNumber(), undefined, EntityBuilder.buildProductCategory(productCategoryStruct), newLine.quantity, units[0], newLine.price));
         expect(mockedContract.addLine)
             .toHaveBeenCalledTimes(1);
         expect(mockedContract.addLine)
-            .toHaveBeenNthCalledWith(1, newLine.productCategoryId, newLine.quantity, price);
+            .toHaveBeenNthCalledWith(1, newLine.productCategoryId, newLine.quantity, newLine.unit, price);
         expect(mockedWait)
             .toHaveBeenCalledTimes(1);
         expect(mockedContract.getLine)
@@ -279,11 +281,12 @@ describe('OrderTradeDriver', () => {
         const updatedLineStruct: TradeContract.LineStructOutput = {
             id: BigNumber.from(0),
             productCategoryId: BigNumber.from(4),
+            quantity: BigNumber.from(3),
+            unit: units[1],
             materialId: BigNumber.from(5),
             exists: true,
         } as TradeContract.LineStructOutput;
         const updatedOrderLineStruct: OrderTradeContract.OrderLineStructOutput = {
-            quantity: BigNumber.from(3),
             price: newPrice,
         } as OrderTradeContract.OrderLineStructOutput;
         const updatedLine: OrderLine = EntityBuilder.buildOrderLine(updatedLineStruct, updatedOrderLineStruct, productCategoryStruct, materialStruct);
@@ -293,7 +296,7 @@ describe('OrderTradeDriver', () => {
         expect(mockedContract.updateLine)
             .toHaveBeenCalledTimes(1);
         expect(mockedContract.updateLine)
-            .toHaveBeenNthCalledWith(1, updatedLine.id, updatedLine.productCategory.id, updatedLine.quantity, newPrice);
+            .toHaveBeenNthCalledWith(1, updatedLine.id, updatedLine.productCategory.id, updatedLine.quantity, updatedLine.unit, newPrice);
         expect(mockedContract.assignMaterial)
             .toHaveBeenCalledTimes(1);
         expect(mockedContract.assignMaterial)

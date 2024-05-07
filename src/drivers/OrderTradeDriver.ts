@@ -94,7 +94,7 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
 
     async addLine(line: OrderLineRequest): Promise<OrderLine> {
         const _price = this._convertPriceClassInStruct(line.price);
-        const tx: any = await this._actual.addLine(line.productCategoryId, line.quantity, _price);
+        const tx: any = await this._actual.addLine(line.productCategoryId, line.quantity, line.unit, _price);
         const receipt = await tx.wait();
         const id = receipt.events.find((event: Event) => event.event === 'OrderLineAdded').args[0];
         return this.getLine(id);
@@ -102,7 +102,7 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
 
     async updateLine(line: OrderLine): Promise<OrderLine> {
         const _price = this._convertPriceClassInStruct(line.price);
-        const tx = await this._actual.updateLine(line.id, line.productCategory.id, line.quantity, _price);
+        const tx = await this._actual.updateLine(line.id, line.productCategory.id, line.quantity, line.unit, _price);
         await tx.wait();
         if (line.material)
             await this.assignMaterial(line.id, line.material.id);

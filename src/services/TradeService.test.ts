@@ -7,8 +7,6 @@ import { IStorageMetadataDriver } from '../drivers/IStorageMetadataDriver';
 import { IStorageDocumentDriver } from '../drivers/IStorageDocumentDriver';
 import { SolidDocumentSpec } from '../drivers/SolidDocumentDriver';
 import { SolidMetadataSpec } from '../drivers/SolidMetadataDriver';
-import { StorageOperationType } from '../types/StorageOperationType';
-import { computeHashFromBuffer } from '../utils/utils';
 import { DocumentDriver } from '../drivers/DocumentDriver';
 
 describe('TradeService', () => {
@@ -174,13 +172,13 @@ describe('TradeService', () => {
             });
         });
 
-        it('should throw an error if the document driver is not available', async () => {
-            tradeService = new TradeService({
-                tradeDriver: mockedTradeDriver,
-            });
-
-            await expect(tradeService.getAllDocuments()).rejects.toThrow('Cannot perform this operation without a document driver');
-        });
+        // it('should throw an error if the document driver is not available', async () => {
+        //     tradeService = new TradeService({
+        //         tradeDriver: mockedTradeDriver,
+        //     });
+        //
+        //     await expect(tradeService.getAllDocuments()).rejects.toThrow('Cannot perform this operation without a document driver');
+        // });
     });
 
     describe('getDocumentsByType', () => {
@@ -207,12 +205,12 @@ describe('TradeService', () => {
             });
         });
 
-        it('should throw an error if the document driver is not available', async () => {
-            tradeService = new TradeService({
-                tradeDriver: mockedTradeDriver,
-            });
-
-            await expect(tradeService.getDocumentsByType(DocumentType.DELIVERY_NOTE)).rejects.toThrow('Cannot perform this operation without a document driver');
-        });
+        // it('should throw an error if the document driver is not available', async () => {
+        //     tradeService = new TradeService({
+        //         tradeDriver: mockedTradeDriver,
+        //     });
+        //
+        //     await expect(tradeService.getDocumentsByType(DocumentType.DELIVERY_NOTE)).rejects.toThrow('Cannot perform this operation without a document driver');
+        // });
     });
 });

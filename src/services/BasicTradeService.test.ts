@@ -19,6 +19,7 @@ describe('BasicTradeService', () => {
     const basicTradeService = new BasicTradeService({
         tradeDriver: mockedBasicTradeDriver,
     });
+    const units = ['KGM', 'BG'];
 
     afterAll(() => {
         jest.restoreAllMocks();
@@ -45,15 +46,15 @@ describe('BasicTradeService', () => {
         },
         {
             serviceFunctionName: 'addLine',
-            serviceFunction: () => basicTradeService.addLine(new LineRequest(1)),
+            serviceFunction: () => basicTradeService.addLine(new LineRequest(1, 20, units[0])),
             expectedMockedFunction: mockedBasicTradeDriver.addLine,
-            expectedMockedFunctionArgs: [new LineRequest(1)],
+            expectedMockedFunctionArgs: [new LineRequest(1, 20, units[0])],
         },
         {
             serviceFunctionName: 'updateLine',
-            serviceFunction: () => basicTradeService.updateLine(new Line(1, new Material(1, new ProductCategory(2, 'test', 10, 'description')), new ProductCategory(2, 'test', 10, 'description'))),
+            serviceFunction: () => basicTradeService.updateLine(new Line(1, new Material(1, new ProductCategory(2, 'test', 10, 'description')), new ProductCategory(2, 'test', 10, 'description'), 10, units[1])),
             expectedMockedFunction: mockedBasicTradeDriver.updateLine,
-            expectedMockedFunctionArgs: [new Line(1, new Material(1, new ProductCategory(2, 'test', 10, 'description')), new ProductCategory(2, 'test', 10, 'description'))],
+            expectedMockedFunctionArgs: [new Line(1, new Material(1, new ProductCategory(2, 'test', 10, 'description')), new ProductCategory(2, 'test', 10, 'description'), 10, units[1])],
         },
         {
             serviceFunctionName: 'assignMaterial',

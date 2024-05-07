@@ -42,10 +42,11 @@ describe('OrderLinePrice', () => {
 
 describe('OrderLine', () => {
     let line: OrderLine;
+    const units = ['KGM', 'BG'];
 
     beforeAll(() => {
         const productCategory = new ProductCategory(1, 'test', 1, 'test');
-        line = new OrderLine(0, new Material(1, productCategory), productCategory, 10, new OrderLinePrice(10.2, 'CHF'));
+        line = new OrderLine(0, new Material(1, productCategory), productCategory, 10, units[1], new OrderLinePrice(10.2, 'CHF'));
     });
 
     it('should correctly initialize an OrderLine', () => {
@@ -76,9 +77,10 @@ describe('OrderLine', () => {
 
 describe('OrderLineRequest', () => {
     let line: OrderLineRequest;
+    const units = ['KGM', 'BG'];
 
     beforeAll(() => {
-        line = new OrderLineRequest(1, 10, new OrderLinePrice(10.2, 'CHF'));
+        line = new OrderLineRequest(1, 10, units[0], new OrderLinePrice(10.2, 'CHF'));
     });
 
     it('should correctly initialize an OrderLineRequest', () => {
@@ -105,6 +107,7 @@ describe('OrderLineRequest', () => {
 
 describe('OrderTradeInfo', () => {
     let orderTradeInfo: OrderTradeInfo;
+    const units = ['KGM', 'BG'];
 
     beforeAll(() => {
         orderTradeInfo = new OrderTradeInfo(0, 'supplier', 'customer', 'commissioner', 'https://test.com',
@@ -178,6 +181,8 @@ describe('OrderTradeInfo', () => {
         const newLine: TradeContract.LineStructOutput = {
             id: BigNumber.from(1),
             materialId: BigNumber.from(2),
+            quantity: BigNumber.from(10),
+            unit: units[1],
             productCategoryId: BigNumber.from(3),
             exists: true,
         } as TradeContract.LineStructOutput;
@@ -187,7 +192,6 @@ describe('OrderTradeInfo', () => {
             fiat: 'fiat',
         } as OrderTradeContract.OrderLinePriceStructOutput;
         const newOrderLine: OrderTradeContract.OrderLineStructOutput = {
-            quantity: BigNumber.from(4),
             price,
         } as OrderTradeContract.OrderLineStructOutput;
         const materialStruct: MaterialManager.MaterialStructOutput = {

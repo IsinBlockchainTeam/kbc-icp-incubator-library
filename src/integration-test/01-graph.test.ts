@@ -72,6 +72,7 @@ describe('GraphService lifecycle', () => {
     const shippingDeadline: number = Date.now() + 1000 * 60 * 60 * 24 * 30;
     const deliveryDeadline: number = Date.now() + 1000 * 60 * 60 * 24 * 30;
     const processTypes = ['33 - Collecting', '38 - Harvesting'];
+    const units = ['BG - Bags', 'KGM - Kilograms', 'H87 - Pieces'];
 
     let graphService: GraphService<SolidMetadataSpec, SolidStorageACR>;
 
@@ -179,8 +180,8 @@ describe('GraphService lifecycle', () => {
 
         await serial(lines.map((line) => async () => {
             const lineRequest: LineRequest = tradeType === TradeType.BASIC ?
-                new LineRequest(line.productCategory.id) :
-                new OrderLineRequest(line.productCategory.id, (line as OrderLine).quantity, (line as OrderLine).price);
+                new LineRequest(line.productCategory.id, line.quantity, line.unit) :
+                new OrderLineRequest(line.productCategory.id, (line as OrderLine).quantity, line.unit, (line as OrderLine).price);
             const newLine: Line = await tradeService.addLine(lineRequest);
             newLine.material = line.material;
             await tradeService.assignMaterial(newLine.id, newLine.material!.id);
@@ -264,16 +265,16 @@ describe('GraphService lifecycle', () => {
                 new BasicTrade(0, company4.address, customer, company1.address, externalUrl, [], 'shipping coffee batch'),
             ];
             const newTradeLines: Line[] = [
-                new Line(0, materials[2], productCategories[2]),
-                new OrderLine(0, materials[3], productCategories[3], 100, new OrderLinePrice(50, 'CHF')),
-                new Line(0, materials[4], productCategories[4]),
-                new Line(0, materials[4], productCategories[4]),
-                new Line(0, materials[4], productCategories[4]),
-                new Line(0, materials[5], productCategories[5]),
-                new OrderLine(0, materials[6], productCategories[6], 200, new OrderLinePrice(10, 'EUR')),
-                new Line(0, materials[7], productCategories[7]),
-                new Line(0, materials[8], productCategories[8]),
-                new Line(0, materials[9], productCategories[9]),
+                new Line(0, materials[2], productCategories[2], 50, units[0]),
+                new OrderLine(0, materials[3], productCategories[3], 100, units[1], new OrderLinePrice(50, 'CHF')),
+                new Line(0, materials[4], productCategories[4], 30, units[1]),
+                new Line(0, materials[4], productCategories[4], 25, units[1]),
+                new Line(0, materials[4], productCategories[4], 30, units[1]),
+                new Line(0, materials[5], productCategories[5], 60, units[2]),
+                new OrderLine(0, materials[6], productCategories[6], 200, units[0], new OrderLinePrice(10, 'EUR')),
+                new Line(0, materials[7], productCategories[7], 10, units[1]),
+                new Line(0, materials[8], productCategories[8], 200, units[2]),
+                new Line(0, materials[9], productCategories[9], 30, units[1]),
             ];
 
             trades.push(await _registerTrade(newTrades[0], [newTradeLines[0]], TradeType.BASIC));
@@ -477,9 +478,9 @@ describe('GraphService lifecycle', () => {
                 new BasicTrade(0, company3.address, customer, company4.address, externalUrl, [], 'Another roasted arabica beans purchase'),
             ];
             const newTradeLines = [
-                new Line(0, materials[0], productCategories[0]),
-                new Line(0, materials[1], productCategories[1]),
-                new Line(0, materials[1], productCategories[1]),
+                new Line(0, materials[0], productCategories[0], 50, units[1]),
+                new Line(0, materials[1], productCategories[1], 80, units[0]),
+                new Line(0, materials[1], productCategories[1], 30, units[0]),
             ];
 
             for (let i = 0; i < newTrades.length; i++) {

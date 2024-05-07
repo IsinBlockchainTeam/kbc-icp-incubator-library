@@ -46,6 +46,7 @@ describe('GraphService', () => {
         new Material(7, productCategories[6]),
         new Material(8, productCategories[7]),
     ];
+    const units = ['KGM', 'BG'];
     const processTypes = ['process type 1', 'process type 2', 'process type 3'];
     const assetOperations: AssetOperation[] = [
         new AssetOperation(1, 'Coffee beans processing', [materials[0], materials[1]], materials[2], '-73.9828170', '-28.6505430', processTypes),
@@ -59,10 +60,10 @@ describe('GraphService', () => {
 
     const tradeTypes: TradeType[] = [TradeType.BASIC, TradeType.ORDER, TradeType.BASIC, TradeType.BASIC, TradeType.BASIC];
     const trades: Trade[] = [
-        new BasicTrade(1, 'company1', 'customer', 'company2', 'externalUrl', [new Line(1, materials[2], productCategories[2])], 'shipping processed coffee'),
-        new OrderTradeInfo(2, 'company2', 'customer', 'company3', 'externalUrl', [new OrderLine(1, materials[3], productCategories[3], 100, new OrderLinePrice(50, 'CHF'))], false, false, 100, 200, 'arbiter', 300, 400, 'escrow'),
-        new BasicTrade(3, 'company1', 'customer', 'company3', 'externalUrl', [new Line(1, materials[5], productCategories[5])], 'shipping purified water'),
-        new BasicTrade(4, 'company3', 'customer', 'company1', 'externalUrl', [new Line(1, materials[6], productCategories[6])], 'shipping final coffee'),
+        new BasicTrade(1, 'company1', 'customer', 'company2', 'externalUrl', [new Line(1, materials[2], productCategories[2], 10, units[1])], 'shipping processed coffee'),
+        new OrderTradeInfo(2, 'company2', 'customer', 'company3', 'externalUrl', [new OrderLine(1, materials[3], productCategories[3], 100, units[0], new OrderLinePrice(50, 'CHF'))], false, false, 100, 200, 'arbiter', 300, 400, 'escrow'),
+        new BasicTrade(3, 'company1', 'customer', 'company3', 'externalUrl', [new Line(1, materials[5], productCategories[5], 40, units[1])], 'shipping purified water'),
+        new BasicTrade(4, 'company3', 'customer', 'company1', 'externalUrl', [new Line(1, materials[6], productCategories[6], 30, units[0])], 'shipping final coffee'),
     ];
 
     const mockGetTrades = jest.fn().mockReturnValue(Array.from(trades));

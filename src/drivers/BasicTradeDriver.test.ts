@@ -26,6 +26,8 @@ describe('BasicTradeDriver', () => {
     const line: TradeContract.LineStructOutput = {
         id: BigNumber.from(0),
         materialId: BigNumber.from(1),
+        quantity: BigNumber.from(40),
+        unit: 'KGM',
         productCategoryId: BigNumber.from(2),
         exists: true,
     } as TradeContract.LineStructOutput;
@@ -41,6 +43,8 @@ describe('BasicTradeDriver', () => {
         description: 'description',
         exists: true,
     } as ProductCategoryManager.ProductCategoryStructOutput;
+    const quantity = 40;
+    const unit = 'KGM';
     const lineIds: BigNumber[] = [BigNumber.from(line.id)];
     const name: string = 'test trade';
 
@@ -90,10 +94,10 @@ describe('BasicTradeDriver', () => {
     });
 
     const mockedMaterialContract = createMock<MaterialManager>({
-        getMaterial: mockedGetMaterial
+        getMaterial: mockedGetMaterial,
     });
     const mockedProductCategoryContract = createMock<ProductCategoryManager>({
-        getProductCategory: mockedGetProductCategory
+        getProductCategory: mockedGetProductCategory,
     });
 
     beforeAll(() => {
@@ -119,7 +123,6 @@ describe('BasicTradeDriver', () => {
         jest.spyOn(ProductCategoryManager__factory, 'connect')
             .mockReturnValue(mockedProductCategoryManagerContract);
 
-
         mockedSigner = createMock<Signer>();
         basicTradeDriver = new BasicTradeDriver(mockedSigner, contractAddress, Wallet.createRandom().address, Wallet.createRandom().address);
     });
@@ -132,7 +135,7 @@ describe('BasicTradeDriver', () => {
         const result = await basicTradeDriver.getTrade();
 
         expect(mockedGetMaterial)
-            .toHaveBeenCalledTimes(1)
+            .toHaveBeenCalledTimes(1);
 
         expect(result.tradeId)
             .toEqual(tradeId);
@@ -197,14 +200,14 @@ describe('BasicTradeDriver', () => {
                 args: [line.id],
             }],
         });
-        const newLine: LineRequest = new LineRequest(productCategoryStruct.id.toNumber());
+        const newLine: LineRequest = new LineRequest(productCategoryStruct.id.toNumber(), quantity, unit);
         const result: Line = await basicTradeDriver.addLine(newLine);
 
-        expect(result).toEqual(new Line(line.id.toNumber(), undefined, EntityBuilder.buildProductCategory(productCategoryStruct)));
+        expect(result).toEqual(new Line(line.id.toNumber(), undefined, EntityBuilder.buildProductCategory(productCategoryStruct), quantity, unit));
         expect(mockedContract.addLine)
             .toHaveBeenCalledTimes(1);
         expect(mockedContract.addLine)
-            .toHaveBeenNthCalledWith(1, newLine.productCategoryId);
+            .toHaveBeenNthCalledWith(1, newLine.productCategoryId, newLine.quantity, newLine.unit);
         expect(mockedWait)
             .toHaveBeenCalledTimes(1);
         expect(mockedContract.getLine)
@@ -219,6 +222,8 @@ describe('BasicTradeDriver', () => {
         const updatedLineStruct: TradeContract.LineStructOutput = {
             id: BigNumber.from(0),
             productCategoryId: BigNumber.from(2),
+            quantity: BigNumber.from(50),
+            unit: 'KGM',
             materialId: BigNumber.from(1),
             exists: true,
         } as TradeContract.LineStructOutput;
@@ -229,9 +234,9 @@ describe('BasicTradeDriver', () => {
         expect(mockedContract.updateLine)
             .toHaveBeenCalledTimes(1);
         expect(mockedContract.updateLine)
-            .toHaveBeenNthCalledWith(1, updatedLine.id, updatedLine.productCategory.id);
+            .toHaveBeenNthCalledWith(1, updatedLine.id, updatedLine.productCategory.id, updatedLine.quantity, updatedLine.unit);
         expect(mockedContract.assignMaterial)
-            .toHaveBeenCalledTimes(1)
+            .toHaveBeenCalledTimes(1);
         expect(mockedContract.assignMaterial)
             .toHaveBeenNthCalledWith(1, updatedLine.id, updatedLine.material!.id);
         expect(mockedWait)

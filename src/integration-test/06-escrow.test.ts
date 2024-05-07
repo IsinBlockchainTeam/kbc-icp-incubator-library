@@ -104,7 +104,7 @@ describe('Escrow Manager', () => {
         it('should create an escrow', async () => {
             await escrowManagerService.registerEscrow(payee, purchaser, agreedAmount, duration, tokenAddress);
             const idsOfPurchaser: number[] = await escrowManagerService.getEscrowIdsOfPurchaser(purchaser);
-            const id: number = idsOfPurchaser[idsOfPurchaser.length - 1]
+            const id: number = idsOfPurchaser[idsOfPurchaser.length - 1];
             expect(id)
                 .toEqual(escrowInitialIndex);
 
@@ -191,7 +191,7 @@ describe('Escrow Manager', () => {
                 .toEqual(120);
 
             await exporterEscrowService.withdraw();
-            expect(await tokenContract.balanceOf(payee)).toEqual(BigNumber.from( initialExporterBalance + 120 - 20 - 1));
+            expect(await tokenContract.balanceOf(payee)).toEqual(BigNumber.from(initialExporterBalance + 120 - 20 - 1));
             expect(await tokenContract.balanceOf(purchaser)).toEqual(BigNumber.from(initialPurchaserBalance - 120));
         });
     });

@@ -13,7 +13,6 @@ import { IStorageMetadataDriver } from '../drivers/IStorageMetadataDriver';
 import { IStorageDocumentDriver } from '../drivers/IStorageDocumentDriver';
 import { SolidMetadataSpec } from '../drivers/SolidMetadataDriver';
 import { SolidDocumentSpec } from '../drivers/SolidDocumentDriver';
-import { StorageOperationType } from '../types/StorageOperationType';
 
 describe('OrderTradeService', () => {
     const mockedOrderTradeDriver: OrderTradeDriver = createMock<OrderTradeDriver>({
@@ -43,8 +42,8 @@ describe('OrderTradeService', () => {
     const mockedStorageDocumentDriver = createMock<IStorageDocumentDriver<SolidDocumentSpec>>({
         create: jest.fn(),
     });
-
-    let orderTradeService = new OrderTradeService({
+    const units = ['KGM', 'BG'];
+    const orderTradeService = new OrderTradeService({
         tradeDriver: mockedOrderTradeDriver,
     });
 
@@ -73,15 +72,15 @@ describe('OrderTradeService', () => {
         },
         {
             serviceFunctionName: 'addLine',
-            serviceFunction: () => orderTradeService.addLine(new OrderLineRequest(1, 10, new OrderLinePrice(10.2, 'CHF'))),
+            serviceFunction: () => orderTradeService.addLine(new OrderLineRequest(1, 10, units[0], new OrderLinePrice(10.2, 'CHF'))),
             expectedMockedFunction: mockedOrderTradeDriver.addLine,
-            expectedMockedFunctionArgs: [new OrderLineRequest(1, 10, new OrderLinePrice(10.2, 'CHF'))],
+            expectedMockedFunctionArgs: [new OrderLineRequest(1, 10, units[0], new OrderLinePrice(10.2, 'CHF'))],
         },
         {
             serviceFunctionName: 'updateLine',
-            serviceFunction: () => orderTradeService.updateLine(new OrderLine(1, new Material(1, new ProductCategory(2, 'test', 10, 'description')), new ProductCategory(2, 'test', 10, 'description'), 10, new OrderLinePrice(10.2, 'CHF'))),
+            serviceFunction: () => orderTradeService.updateLine(new OrderLine(1, new Material(1, new ProductCategory(2, 'test', 10, 'description')), new ProductCategory(2, 'test', 10, 'description'), 10, units[1], new OrderLinePrice(10.2, 'CHF'))),
             expectedMockedFunction: mockedOrderTradeDriver.updateLine,
-            expectedMockedFunctionArgs: [new OrderLine(1, new Material(1, new ProductCategory(2, 'test', 10, 'description')), new ProductCategory(2, 'test', 10, 'description'), 10, new OrderLinePrice(10.2, 'CHF'))],
+            expectedMockedFunctionArgs: [new OrderLine(1, new Material(1, new ProductCategory(2, 'test', 10, 'description')), new ProductCategory(2, 'test', 10, 'description'), 10, units[1], new OrderLinePrice(10.2, 'CHF'))],
         },
         {
             serviceFunctionName: 'assignMaterial',

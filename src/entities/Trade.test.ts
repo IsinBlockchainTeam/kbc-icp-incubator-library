@@ -6,7 +6,7 @@ import {
 import { EntityBuilder } from '../utils/EntityBuilder';
 import { Material } from './Material';
 import { ProductCategory } from './ProductCategory';
-import {MaterialManager, ProductCategoryManager} from "../smart-contracts";
+import { MaterialManager, ProductCategoryManager } from '../smart-contracts';
 
 class TestTrade extends Trade {
     // eslint-disable-next-line no-useless-constructor
@@ -20,7 +20,7 @@ describe('Line', () => {
 
     beforeAll(() => {
         const productCategory = new ProductCategory(1, 'test', 1, 'test');
-        line = new Line(0, new Material(1, productCategory), productCategory);
+        line = new Line(0, new Material(1, productCategory), productCategory, 10, 'KGM');
     });
 
     it('should correctly initialize a Line', () => {
@@ -30,6 +30,10 @@ describe('Line', () => {
             .toEqual(new Material(1, new ProductCategory(1, 'test', 1, 'test')));
         expect(line.productCategory)
             .toEqual(new ProductCategory(1, 'test', 1, 'test'));
+        expect(line.quantity)
+            .toEqual(10);
+        expect(line.unit)
+            .toEqual('KGM');
     });
 
     it('should correctly set the id', () => {
@@ -49,24 +53,52 @@ describe('Line', () => {
         expect(line.productCategory)
             .toEqual(new ProductCategory(2, 'test2', 2, 'test2'));
     });
+
+    it('should correctly set the quantity', () => {
+        line.quantity = 20;
+        expect(line.quantity)
+            .toEqual(20);
+    });
+
+    it('should correctly set the unit', () => {
+        line.unit = 'BG';
+        expect(line.unit)
+            .toEqual('BG');
+    });
 });
 
 describe('LineRequest', () => {
     let line: LineRequest;
 
     beforeAll(() => {
-        line = new LineRequest(1);
+        line = new LineRequest(1, 15, 'KGM');
     });
 
     it('should correctly initialize a LineRequest', () => {
         expect(line.productCategoryId)
             .toEqual(1);
+        expect(line.quantity)
+            .toEqual(15);
+        expect(line.unit)
+            .toEqual('KGM');
     });
 
     it('should correctly set the product category', () => {
-        line.productCategoryId = 2
+        line.productCategoryId = 2;
         expect(line.productCategoryId)
             .toEqual(2);
+    });
+
+    it('should correctly set the quantity', () => {
+        line.quantity = 20;
+        expect(line.quantity)
+            .toEqual(20);
+    });
+
+    it('should correctly set the unit', () => {
+        line.unit = 'BG';
+        expect(line.unit)
+            .toEqual('BG');
     });
 });
 
@@ -126,6 +158,8 @@ describe('Trade', () => {
         const newLine: TradeContract.LineStructOutput = {
             id: BigNumber.from(1),
             materialId: BigNumber.from(2),
+            quantity: BigNumber.from(10),
+            unit: 'KGM',
             productCategoryId: BigNumber.from(3),
             exists: true,
         } as TradeContract.LineStructOutput;

@@ -30,22 +30,11 @@ export class OrderLinePrice {
 }
 
 export class OrderLineRequest extends LineRequest {
-    private _quantity: number;
-
     private _price: OrderLinePrice;
 
-    constructor(productCategoryId: number, quantity: number, price: OrderLinePrice) {
-        super(productCategoryId);
-        this._quantity = quantity;
+    constructor(productCategoryId: number, quantity: number, unit: string, price: OrderLinePrice) {
+        super(productCategoryId, quantity, unit);
         this._price = price;
-    }
-
-    get quantity(): number {
-        return this._quantity;
-    }
-
-    set quantity(value: number) {
-        this._quantity = value;
     }
 
     get price(): OrderLinePrice {
@@ -58,22 +47,11 @@ export class OrderLineRequest extends LineRequest {
 }
 
 export class OrderLine extends Line {
-    private _quantity: number;
-
     private _price: OrderLinePrice;
 
-    constructor(id: number, material: Material | undefined, productCategory: ProductCategory, quantity: number, price: OrderLinePrice) {
-        super(id, material, productCategory);
-        this._quantity = quantity;
+    constructor(id: number, material: Material | undefined, productCategory: ProductCategory, quantity: number, unit: string, price: OrderLinePrice) {
+        super(id, material, productCategory, quantity, unit);
         this._price = price;
-    }
-
-    get quantity(): number {
-        return this._quantity;
-    }
-
-    set quantity(value: number) {
-        this._quantity = value;
     }
 
     get price(): OrderLinePrice {

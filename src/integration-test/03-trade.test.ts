@@ -57,6 +57,7 @@ describe('Trade lifecycle', () => {
 
     const productCategoryIds: number[] = [];
     const materialIds: number[] = [];
+    const units = ['BG - Bags', 'KGM - Kilograms', 'H87 - Pieces'];
 
     const _defineSender = (privateKey: string) => {
         signer = new ethers.Wallet(privateKey, provider);
@@ -125,7 +126,7 @@ describe('Trade lifecycle', () => {
                 orderTradeService,
             } = await _registerOrder();
 
-            const line: OrderLine = await orderTradeService.addLine(new OrderLineRequest(productCategoryIds[0], 20, new OrderLinePrice(10, 'USD')));
+            const line: OrderLine = await orderTradeService.addLine(new OrderLineRequest(productCategoryIds[0], 20, units[1], new OrderLinePrice(10, 'USD')));
             order.lines.push(line);
 
             const orderData = await orderTradeService.getTrade();
@@ -168,7 +169,7 @@ describe('Trade lifecycle', () => {
         });
 
         it('Should add a line to an order as a supplier and check that the status is still PENDING', async () => {
-            const line: OrderLine = await existingOrderService.addLine(new OrderLineRequest(productCategoryIds[1], 30, new OrderLinePrice(10.25, 'USD')));
+            const line: OrderLine = await existingOrderService.addLine(new OrderLineRequest(productCategoryIds[1], 30, units[1], new OrderLinePrice(10.25, 'USD')));
             expect(await existingOrderService.getLine(line.id))
                 .toEqual(line);
 
@@ -180,7 +181,7 @@ describe('Trade lifecycle', () => {
             _defineSender(OTHER_PRIVATE_KEY);
             await _updateExistingOrderService();
 
-            const line: OrderLine = await existingOrderService.addLine(new OrderLineRequest(productCategoryIds[0], 50, new OrderLinePrice(50.5, 'USD')));
+            const line: OrderLine = await existingOrderService.addLine(new OrderLineRequest(productCategoryIds[0], 50, units[2], new OrderLinePrice(50.5, 'USD')));
             expect(await existingOrderService.getLine(line.id))
                 .toEqual(line);
 
@@ -254,7 +255,7 @@ describe('Trade lifecycle', () => {
                 tradeDriver: new BasicTradeDriver(signer, await tradeManagerService.getTrade(trade.tradeId), MATERIAL_MANAGER_CONTRACT_ADDRESS, PRODUCT_CATEGORY_CONTRACT_ADDRESS),
             });
 
-            const line: Line = await basicTradeService.addLine(new LineRequest(productCategoryIds[0]));
+            const line: Line = await basicTradeService.addLine(new LineRequest(productCategoryIds[0], 20, units[1]));
             trade.lines.push(line);
             const savedBasicTrade = await basicTradeService.getTrade();
             expect(savedBasicTrade.lines.length).toEqual(1);
