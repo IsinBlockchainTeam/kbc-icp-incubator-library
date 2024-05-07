@@ -28,11 +28,11 @@ export class MaterialService {
         return this._materialDriver.getMaterialsOfCreator(creator);
     }
 
-    async registerMaterial(productCategoryId: number): Promise<Material> {
+    async registerMaterial(productCategoryId: number): Promise<number> {
         return this._materialDriver.registerMaterial(productCategoryId);
     }
 
-    async updateMaterial(id: number, productCategoryId: number): Promise<Material> {
+    async updateMaterial(id: number, productCategoryId: number): Promise<void> {
         return this._materialDriver.updateMaterial(id, productCategoryId);
     }
 }

@@ -127,24 +127,24 @@ describe('GraphService lifecycle', () => {
         }
     };
 
-    const _registerProductCategories = async (productCategories: ProductCategory[]): Promise<ProductCategory[]> => {
-        const result: ProductCategory[] = [];
+    const _registerProductCategories = async (productCategories: ProductCategory[]): Promise<number[]> => {
+        const result: number[] = [];
         await serial(productCategories.map((category) => async () => {
             result.push(await productCategoryService.registerProductCategory(category.name, category.quality, category.description));
         }));
         return result;
     };
 
-    const _registerMaterials = async (materials: Material[]): Promise<Material[]> => {
-        const result: Material[] = [];
+    const _registerMaterials = async (materials: Material[]): Promise<number[]> => {
+        const result: number[] = [];
         await serial(materials.map((material) => async () => {
             result.push(await materialService.registerMaterial(material.productCategory.id));
         }));
         return result;
     };
 
-    const _registerAssetOperations = async (assetOperations: AssetOperation[]): Promise<AssetOperation[]> => {
-        const result: AssetOperation[] = [];
+    const _registerAssetOperations = async (assetOperations: AssetOperation[]): Promise<number[]> => {
+        const result: number[] = [];
         await serial(assetOperations.map((assetOperation) => async () => {
             result.push(await assetOperationService.registerAssetOperation(assetOperation.name, assetOperation.inputMaterials.map((m) => m.id), assetOperation.outputMaterial.id, assetOperation.latitude, assetOperation.longitude, assetOperation.processTypes));
         }));
@@ -154,23 +154,24 @@ describe('GraphService lifecycle', () => {
     const _registerTrade = async (trade: Trade, lines: Line[], tradeType: TradeType): Promise<Trade> => {
         _defineSender(_getPrivateKey(trade.supplier));
         let tradeService: IConcreteTradeService;
+        let tradeId: number;
 
         if (tradeType === TradeType.BASIC) {
-            trade = await tradeManagerService.registerBasicTrade(trade.supplier, customer, trade.commissioner, (trade as BasicTrade).name);
+            [tradeId] = await tradeManagerService.registerBasicTrade(trade.supplier, customer, trade.commissioner, (trade as BasicTrade).name);
             tradeService = new BasicTradeService({
                 tradeDriver: new BasicTradeDriver(
                     signer,
-                    await tradeManagerService.getTrade(trade.tradeId),
+                    await tradeManagerService.getTrade(tradeId),
                     MATERIAL_MANAGER_CONTRACT_ADDRESS,
                     PRODUCT_CATEGORY_CONTRACT_ADDRESS,
                 ),
             });
         } else {
-            trade = await tradeManagerService.registerOrderTrade(trade.supplier, customer, trade.commissioner, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);
+            [tradeId] = await tradeManagerService.registerOrderTrade(trade.supplier, customer, trade.commissioner, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);
             tradeService = new OrderTradeService({
                 tradeDriver: new OrderTradeDriver(
                     signer,
-                    await tradeManagerService.getTrade(trade.tradeId),
+                    await tradeManagerService.getTrade(tradeId),
                     MATERIAL_MANAGER_CONTRACT_ADDRESS,
                     PRODUCT_CATEGORY_CONTRACT_ADDRESS,
                 ),
@@ -181,9 +182,10 @@ describe('GraphService lifecycle', () => {
             const lineRequest: LineRequest = tradeType === TradeType.BASIC ?
                 new LineRequest(line.productCategory.id) :
                 new OrderLineRequest(line.productCategory.id, (line as OrderLine).quantity, (line as OrderLine).price);
-            const newLine: Line = await tradeService.addLine(lineRequest);
+            const newLineId = await tradeService.addLine(lineRequest);
+            const newLine = await tradeService.getLine(newLineId);
             newLine.material = line.material;
-            await tradeService.assignMaterial(newLine.id, newLine.material!.id);
+            await tradeService.assignMaterial(newLineId, newLine.material!.id);
             trade.lines.push(newLine);
             if (tradeType === TradeType.ORDER)
                 (trade as OrderTradeInfo).hasSupplierSigned = true;
@@ -210,7 +212,7 @@ describe('GraphService lifecycle', () => {
         const trades: Trade[] = [];
 
         it('should add data that is then used to compute the graph', async () => {
-            productCategories = await _registerProductCategories([
+            await _registerProductCategories([
                 new ProductCategory(0, 'Raw coffee beans', 85, 'first category'),
                 new ProductCategory(0, 'Green coffee beans', 90, 'second category'),
                 new ProductCategory(0, 'Processed coffee beans', 82, 'third category'),
@@ -223,8 +225,9 @@ describe('GraphService lifecycle', () => {
                 new ProductCategory(0, 'Batch of coffee bags', 90, 'Batch of a small and a medium coffee bag'),
                 new ProductCategory(0, 'Rain water', 60, 'Water collected from rain'),
             ]);
+            productCategories = await productCategoryService.getProductCategories();
 
-            materials = await _registerMaterials([
+            await _registerMaterials([
                 new Material(0, productCategories[0]),
                 new Material(0, productCategories[1]),
                 new Material(0, productCategories[2]),
@@ -237,8 +240,9 @@ describe('GraphService lifecycle', () => {
                 new Material(0, productCategories[9]),
                 new Material(0, productCategories[10]),
             ]);
+            materials = await materialService.getMaterials();
 
-            assetOperations = await _registerAssetOperations([
+            await _registerAssetOperations([
                 new AssetOperation(0, 'TRANSFORMATION: coffee beans processing', [materials[0], materials[1]], materials[2], '-73.9828170', '-28.6505430', processTypes),
                 new AssetOperation(0, 'TRANSFORMATION: coffee grinding', [materials[2]], materials[3], '-74.9828170', '-28.6505430', processTypes),
                 new AssetOperation(0, 'TRANSFORMATION: water gathering', [materials[10]], materials[4], '-73.4667', '-23.5505', [processTypes[0]]),
@@ -250,6 +254,7 @@ describe('GraphService lifecycle', () => {
                 new AssetOperation(0, 'TRANSFORMATION: medium coffee packaging', [materials[6]], materials[8], '-34.7567', '135.52', processTypes),
                 new AssetOperation(0, 'TRANSFORMATION: coffee bags packaging', [materials[7], materials[8]], materials[9], '-73.1643', '-23.5505', [processTypes[1]]),
             ]);
+            assetOperations = await assetOperationService.getAssetOperations();
 
             const newTrades: Trade[] = [
                 new BasicTrade(0, company1.address, customer, company2.address, externalUrl, [], 'shipping processed coffee'),
@@ -454,22 +459,25 @@ describe('GraphService lifecycle', () => {
         const trades: Trade[] = [];
 
         it('should add data that is then used to compute the graph', async () => {
-            productCategories = await _registerProductCategories([
+            await _registerProductCategories([
                 new ProductCategory(0, 'Arabica beans', 90, 'Beans of Arabica coffee'),
                 new ProductCategory(0, 'Roasted Arabica beans', 85, 'Roasted beans of Arabica coffee'),
             ]);
+            productCategories = await productCategoryService.getProductCategories();
 
-            materials = await _registerMaterials([
+            await _registerMaterials([
                 new Material(0, productCategories[0]),
                 new Material(0, productCategories[1]),
             ]);
+            materials = await materialService.getMaterials();
 
-            assetOperations = await _registerAssetOperations([
+            await _registerAssetOperations([
                 new AssetOperation(0, 'CONSOLIDATION: arabica beans transfer', [materials[0]], materials[0], '-73.9828170', '-28.6505430', processTypes),
                 new AssetOperation(0, 'TRANSFORMATION: arabica beans roasting', [materials[0]], materials[1], '-73.9828170', '-28.6505430', [processTypes[0]]),
                 new AssetOperation(0, 'CONSOLIDATION: roasted arabica beans transfer', [materials[1]], materials[1], '-72.982870', '-26.6505430', processTypes),
                 new AssetOperation(0, 'CONSOLIDATION: another roasted arabica beans transfer', [materials[1]], materials[1], '-74.9828170', '-28.7148', [processTypes[1]]),
             ]);
+            assetOperations = await assetOperationService.getAssetOperations();
 
             const newTrades = [
                 new BasicTrade(0, company1.address, customer, company2.address, externalUrl, [], 'Arabica beans purchase'),

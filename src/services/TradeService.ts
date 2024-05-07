@@ -7,8 +7,6 @@ import { DocumentInfo, DocumentType } from '../entities/DocumentInfo';
 import { TradeType } from '../types/TradeType';
 import { IStorageMetadataDriver, MetadataSpec } from '../drivers/IStorageMetadataDriver';
 import { DocumentSpec, IStorageDocumentDriver } from '../drivers/IStorageDocumentDriver';
-import { StorageOperationType } from '../types/StorageOperationType';
-import { computeHashFromBuffer } from '../utils/utils';
 import { DocumentDriver } from '../drivers/DocumentDriver';
 
 export class TradeService<MS extends MetadataSpec, DS extends DocumentSpec, ACR extends StorageACR> {
@@ -44,8 +42,8 @@ export class TradeService<MS extends MetadataSpec, DS extends DocumentSpec, ACR 
     }
 
     async addDocument(documentType: DocumentType, documentStorage?: {spec: DS, fileBuffer: Uint8Array}, metadataStorage?: {spec: MS, value: any}): Promise<void> {
-        let externalUrl = '';
-        let contentHash = '';
+        const externalUrl = '';
+        const contentHash = '';
         if (documentStorage) {
             // TODO: remove this comment
             // if (!this._storageDocumentDriver) throw new Error('Storage document driver is not available');

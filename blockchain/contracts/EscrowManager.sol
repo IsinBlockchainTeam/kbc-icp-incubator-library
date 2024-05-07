@@ -13,7 +13,7 @@ contract EscrowManager is AccessControl {
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
-    event EscrowRegistered(uint256 indexed id, address payee, address purchaser, uint256 agreedAmount, address tokenAddress, address commissionAddress);
+    event EscrowRegistered(uint256 indexed id, address escrowAddress, address payee, address purchaser, uint256 agreedAmount, address tokenAddress, address commissionAddress);
     event CommissionerUpdated(address commissionAddress);
     event BaseFeeUpdated(uint256 baseFee);
     event PercentageFeeUpdated(uint256 percentageFee);
@@ -61,7 +61,7 @@ contract EscrowManager is AccessControl {
         _escrowsOfPurchaser[purchaser].push(id);
         newEscrow.addAdmin(_admin);
 
-        emit EscrowRegistered(id, payee, purchaser, agreedAmount, tokenAddress, _commissioner);
+        emit EscrowRegistered(id, address(newEscrow), payee, purchaser, agreedAmount, tokenAddress, _commissioner);
         return newEscrow;
     }
 

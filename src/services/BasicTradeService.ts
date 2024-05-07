@@ -20,11 +20,11 @@ export class BasicTradeService<MS extends MetadataSpec, DS extends DocumentSpec,
         return this._tradeDriverImplementation.getLine(id, blockNumber);
     }
 
-    async addLine(line: LineRequest): Promise<Line> {
+    async addLine(line: LineRequest): Promise<number> {
         return this._tradeDriverImplementation.addLine(line);
     }
 
-    async updateLine(line: Line): Promise<Line> {
+    async updateLine(line: Line): Promise<void> {
         return this._tradeDriverImplementation.updateLine(line);
     }
 

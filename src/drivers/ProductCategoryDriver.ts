@@ -43,20 +43,18 @@ export class ProductCategoryDriver {
         return Promise.all(promises);
     }
 
-    async registerProductCategory(name: string, quality: number, description: string): Promise<ProductCategory> {
+    async registerProductCategory(name: string, quality: number, description: string): Promise<number> {
         const tx: any = await this._contract.registerProductCategory(name, quality, description);
         const { events } = await tx.wait();
 
         if (!events) {
             throw new Error('Error during product category registration, no events found');
         }
-        const id: number = events.find((event: Event) => event.event === 'ProductCategoryRegistered').args.id.toNumber();
-        return this.getProductCategory(id);
+        return events.find((event: Event) => event.event === 'ProductCategoryRegistered').args.id.toNumber();
     }
 
-    async updateProductCategory(id: number, name: string, quality: number, description: string): Promise<ProductCategory> {
+    async updateProductCategory(id: number, name: string, quality: number, description: string): Promise<void> {
         const tx: any = await this._contract.updateProductCategory(id, name, quality, description);
         await tx.wait();
-        return this.getProductCategory(id);
     }
 }

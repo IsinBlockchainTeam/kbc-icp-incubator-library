@@ -4,7 +4,7 @@ export interface IConcreteTradeService {
     getTrade(blockNumber?: number): Promise<Trade>;
     getLines(): Promise<Line[]>;
     getLine(id: number, blockNumber?: number): Promise<Line>;
-    addLine(line: LineRequest): Promise<Line>;
-    updateLine(line: Line): Promise<Line>;
+    addLine(line: LineRequest): Promise<number>;
+    updateLine(line: Line): Promise<void>;
     assignMaterial(lineId: number, materialId: number): Promise<void>;
 }

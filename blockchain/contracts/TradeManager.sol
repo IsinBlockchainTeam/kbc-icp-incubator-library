@@ -14,8 +14,8 @@ contract TradeManager is AccessControl {
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
-    event BasicTradeRegistered(uint256 indexed id, address supplier, address customer, address commissioner);
-    event OrderTradeRegistered(uint256 indexed id, address supplier, address customer, address commissioner);
+    event BasicTradeRegistered(uint256 indexed id, address contractAddress, address supplier, address customer, address commissioner);
+    event OrderTradeRegistered(uint256 indexed id, address contractAddress, address supplier, address customer, address commissioner);
 
     modifier onlyAdmin() {
         require(hasRole(ADMIN_ROLE, _msgSender()), "TradeManager: caller is not the admin");
@@ -84,7 +84,7 @@ contract TradeManager is AccessControl {
         _tradeIdsOfSupplier[supplier].push(id);
         _tradeIdsOfCommissioner[commissioner].push(id);
 
-        emit BasicTradeRegistered(id, supplier, customer, commissioner);
+        emit BasicTradeRegistered(id, address(newTrade), supplier, customer, commissioner);
         return id;
     }
 
@@ -104,7 +104,7 @@ contract TradeManager is AccessControl {
         _tradeIdsOfSupplier[supplier].push(id);
         _tradeIdsOfCommissioner[commissioner].push(id);
 
-        emit OrderTradeRegistered(id, supplier, customer, commissioner);
+        emit OrderTradeRegistered(id, address(newTrade), supplier, customer, commissioner);
         return id;
     }
 }
