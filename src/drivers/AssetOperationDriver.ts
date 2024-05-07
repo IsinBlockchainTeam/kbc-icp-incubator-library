@@ -88,20 +88,18 @@ export class AssetOperationDriver {
         return assetOperations.filter((assetOperation: AssetOperation) => assetOperation.outputMaterial.id === materialId);
     }
 
-    async registerAssetOperation(name: string, inputMaterialsIds: number[], outputMaterialId: number, latitude: string, longitude: string, processTypes: string[]): Promise<AssetOperation> {
+    async registerAssetOperation(name: string, inputMaterialsIds: number[], outputMaterialId: number, latitude: string, longitude: string, processTypes: string[]): Promise<number> {
         const tx: any = await this._assetOperationContract.registerAssetOperation(name, inputMaterialsIds, outputMaterialId, latitude, longitude, processTypes);
         const { events } = await tx.wait();
 
         if (!events) {
             throw new Error('Error during asset operation registration, no events found');
         }
-        const id: number = events.find((event: Event) => event.event === 'AssetOperationRegistered').args.id.toNumber();
-        return this.getAssetOperation(id);
+        return events.find((event: Event) => event.event === 'AssetOperationRegistered').args.id.toNumber();
     }
 
-    async updateAssetOperation(id: number, name: string, inputMaterialsIds: number[], outputMaterialId: number, latitude: string, longitude: string, processTypes: string[]): Promise<AssetOperation> {
+    async updateAssetOperation(id: number, name: string, inputMaterialsIds: number[], outputMaterialId: number, latitude: string, longitude: string, processTypes: string[]): Promise<void> {
         const tx = await this._assetOperationContract.updateAssetOperation(id, name, inputMaterialsIds, outputMaterialId, latitude, longitude, processTypes);
         await tx.wait();
-        return this.getAssetOperation(id);
     }
 }

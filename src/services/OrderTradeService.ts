@@ -40,11 +40,11 @@ export class OrderTradeService extends TradeService implements IConcreteTradeSer
         return this._tradeDriverImplementation.getLine(id, blockNumber);
     }
 
-    async addLine(line: OrderLineRequest): Promise<OrderLine> {
+    async addLine(line: OrderLineRequest): Promise<number> {
         return this._tradeDriverImplementation.addLine(line);
     }
 
-    async updateLine(line: OrderLine): Promise<OrderLine> {
+    async updateLine(line: OrderLine): Promise<void> {
         return this._tradeDriverImplementation.updateLine(line);
     }
 

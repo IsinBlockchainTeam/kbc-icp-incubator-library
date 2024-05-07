@@ -40,6 +40,11 @@ const config: HardhatUserConfig = {
             url: RPC_URL || '',
             accounts: PRIVATE_KEY ? [`0x${PRIVATE_KEY}`] : [],
         },
+        threeachain: {
+            chainId: 222,
+            url: RPC_URL || '',
+            accounts: PRIVATE_KEY ? [`0x${PRIVATE_KEY}`] : [],
+        },
     },
     // @ts-ignore
     typechain: {

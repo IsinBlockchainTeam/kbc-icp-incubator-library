@@ -1,4 +1,4 @@
-import { BigNumber, Signer, utils } from 'ethers';
+import { BigNumber, Event, Signer, utils } from 'ethers';
 import { EscrowManager, EscrowManager__factory } from '../smart-contracts';
 
 export class EscrowManagerDriver {
@@ -14,12 +14,18 @@ export class EscrowManagerDriver {
         return (await this._contract.getEscrowCounter()).toNumber();
     }
 
-    async registerEscrow(payee: string, purchaser: string, agreedAmount: number, duration: number, tokenAddress: string): Promise<void> {
+    async registerEscrow(payee: string, purchaser: string, agreedAmount: number, duration: number, tokenAddress: string): Promise<[number, string, string]> {
         if (!utils.isAddress(payee) || !utils.isAddress(purchaser) || !utils.isAddress(tokenAddress)) {
             throw new Error('Not an address');
         }
         const tx = await this._contract.registerEscrow(payee, purchaser, agreedAmount, duration, tokenAddress);
-        await tx.wait();
+        const { events, transactionHash } = await tx.wait();
+        if (!events) {
+            throw new Error('Error during escrow registration, no events found');
+        }
+        const eventArgs = events.find((e: Event) => e.event === 'EscrowRegistered')?.args;
+
+        return [eventArgs?.id.toNumber(), eventArgs?.escrowAddress, transactionHash];
     }
 
     async getCommissioner(): Promise<string> {
@@ -56,7 +62,7 @@ export class EscrowManagerDriver {
     }
 
     async getEscrow(id: number): Promise<string> {
-        return await this._contract.getEscrow(id);
+        return this._contract.getEscrow(id);
     }
 
     async getEscrowIdsOfPurchaser(purchaser: string): Promise<number[]> {

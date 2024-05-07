@@ -5,7 +5,7 @@ import {
     OfferManager,
     OfferManager__factory,
     ProductCategoryManager,
-    ProductCategoryManager__factory
+    ProductCategoryManager__factory,
 } from '../smart-contracts';
 import { Offer } from '../entities/Offer';
 import { EntityBuilder } from '../utils/EntityBuilder';
@@ -30,24 +30,14 @@ export class OfferDriver {
 
     async registerSupplier(companyAddress: string, name: string): Promise<void> {
         if (!utils.isAddress(companyAddress)) throw new Error('Not an address');
-
-        try {
-            const tx = await this._offerManagerContract.registerSupplier(companyAddress, name);
-            await tx.wait();
-        } catch (e: any) {
-            throw new Error(e.message);
-        }
+        const tx = await this._offerManagerContract.registerSupplier(companyAddress, name);
+        await tx.wait();
     }
 
     async registerOffer(companyAddress: string, productCategoryId: number): Promise<void> {
         if (!utils.isAddress(companyAddress)) throw new Error('Not an address');
-
-        try {
-            const tx = await this._offerManagerContract.registerOffer(companyAddress, productCategoryId);
-            await tx.wait();
-        } catch (e: any) {
-            throw new Error(e.message);
-        }
+        const tx = await this._offerManagerContract.registerOffer(companyAddress, productCategoryId);
+        await tx.wait();
     }
 
     async getLastId(): Promise<number> {
@@ -64,81 +54,45 @@ export class OfferDriver {
 
     async getSupplierName(companyAddress: string, blockNumber?: number): Promise<string> {
         if (!utils.isAddress(companyAddress)) throw new Error('Not an address');
-
-        try {
-            return await this._offerManagerContract.getSupplierName(companyAddress, { blockTag: blockNumber });
-        } catch (e: any) {
-            throw new Error(e.message);
-        }
+        return this._offerManagerContract.getSupplierName(companyAddress, { blockTag: blockNumber });
     }
 
     async getOffer(offerId: number, blockNumber?: number): Promise<Offer> {
-        try {
-            const rawOffer = await this._offerManagerContract.getOffer(offerId, { blockTag: blockNumber });
-            const rawProductCategory = await this._productCategoryManagerContract.getProductCategory(rawOffer.productCategoryId);
-            return EntityBuilder.buildOffer(rawOffer, rawProductCategory);
-        } catch (e: any) {
-            throw new Error(e.message);
-        }
+        const rawOffer = await this._offerManagerContract.getOffer(offerId, { blockTag: blockNumber });
+        const rawProductCategory = await this._productCategoryManagerContract.getProductCategory(rawOffer.productCategoryId);
+        return EntityBuilder.buildOffer(rawOffer, rawProductCategory);
     }
 
     async updateSupplier(companyAddress: string, newName: string): Promise<void> {
         if (!utils.isAddress(companyAddress)) throw new Error('Not an address');
-
-        try {
-            const tx = await this._offerManagerContract.updateSupplier(companyAddress, newName);
-            await tx.wait();
-        } catch (e: any) {
-            throw new Error(e.message);
-        }
+        const tx = await this._offerManagerContract.updateSupplier(companyAddress, newName);
+        await tx.wait();
     }
 
     async updateOffer(offerId: number, productCategoryId: number): Promise<void> {
-        try {
-            const tx = await this._offerManagerContract.updateOffer(offerId, productCategoryId);
-            await tx.wait();
-        } catch (e: any) {
-            throw new Error(e.message);
-        }
+        const tx = await this._offerManagerContract.updateOffer(offerId, productCategoryId);
+        await tx.wait();
     }
 
     async deleteSupplier(companyAddress: string): Promise<void> {
-        try {
-            const tx = await this._offerManagerContract.deleteSupplier(companyAddress);
-            await tx.wait();
-        } catch (e: any) {
-            throw new Error(e.message);
-        }
+        const tx = await this._offerManagerContract.deleteSupplier(companyAddress);
+        await tx.wait();
     }
 
     async deleteOffer(offerId: number): Promise<void> {
-        try {
-            const tx = await this._offerManagerContract.deleteOffer(offerId);
-            await tx.wait();
-        } catch (e: any) {
-            throw new Error(e.message);
-        }
+        const tx = await this._offerManagerContract.deleteOffer(offerId);
+        await tx.wait();
     }
 
     async addAdmin(address: string): Promise<void> {
         if (!utils.isAddress(address)) throw new Error('Not an address');
-
-        try {
-            const tx = await this._offerManagerContract.addAdmin(address);
-            await tx.wait();
-        } catch (e: any) {
-            throw new Error(e.message);
-        }
+        const tx = await this._offerManagerContract.addAdmin(address);
+        await tx.wait();
     }
 
     async removeAdmin(address: string): Promise<void> {
         if (!utils.isAddress(address)) throw new Error('Not an address');
-
-        try {
-            const tx = await this._offerManagerContract.removeAdmin(address);
-            await tx.wait();
-        } catch (e: any) {
-            throw new Error(e.message);
-        }
+        const tx = await this._offerManagerContract.removeAdmin(address);
+        await tx.wait();
     }
 }

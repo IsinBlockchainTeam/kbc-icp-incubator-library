@@ -59,20 +59,18 @@ export class MaterialDriver {
         return Promise.all(promises);
     }
 
-    async registerMaterial(productCategoryId: number): Promise<Material> {
+    async registerMaterial(productCategoryId: number): Promise<number> {
         const tx: any = await this._materialContract.registerMaterial(productCategoryId);
         const { events } = await tx.wait();
 
         if (!events) {
             throw new Error('Error during material registration, no events found');
         }
-        const id: number = events.find((event: Event) => event.event === 'MaterialRegistered').args.id.toNumber();
-        return this.getMaterial(id);
+        return events.find((event: Event) => event.event === 'MaterialRegistered').args.id.toNumber();
     }
 
-    async updateMaterial(id: number, productCategoryId: number): Promise<Material> {
+    async updateMaterial(id: number, productCategoryId: number): Promise<void> {
         const tx: any = await this._materialContract.updateMaterial(id, productCategoryId);
         await tx.wait();
-        return this.getMaterial(id);
     }
 }

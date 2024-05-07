@@ -1,4 +1,4 @@
-import { BigNumber, Signer, Event } from 'ethers';
+import { BigNumber, Event, Signer } from 'ethers';
 import { TradeDriver } from './TradeDriver';
 // eslint-disable-next-line camelcase
 import {
@@ -92,22 +92,21 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
         return EntityBuilder.buildOrderLine(line[0], line[1], await this._productCategoryContract.getProductCategory(line[0].productCategoryId), materialStruct);
     }
 
-    async addLine(line: OrderLineRequest): Promise<OrderLine> {
+    async addLine(line: OrderLineRequest): Promise<number> {
         const _price = this._convertPriceClassInStruct(line.price);
         const tx: any = await this._actual.addLine(line.productCategoryId, line.quantity, _price);
-        const receipt = await tx.wait();
-        const id = receipt.events.find((event: Event) => event.event === 'OrderLineAdded').args[0];
-        return this.getLine(id);
+        const { events } = await tx.wait();
+
+        if (!events) {
+            throw new Error('Error during line registration, no events found');
+        }
+        return events.find((event: Event) => event.event === 'OrderLineAdded').args[0];
     }
 
-    async updateLine(line: OrderLine): Promise<OrderLine> {
+    async updateLine(line: OrderLine): Promise<void> {
         const _price = this._convertPriceClassInStruct(line.price);
         const tx = await this._actual.updateLine(line.id, line.productCategory.id, line.quantity, _price);
         await tx.wait();
-        if (line.material)
-            await this.assignMaterial(line.id, line.material.id);
-
-        return this.getLine(line.id);
     }
 
     async assignMaterial(lineId: number, materialId: number): Promise<void> {
