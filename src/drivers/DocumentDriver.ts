@@ -18,12 +18,8 @@ export class DocumentDriver {
     }
 
     async registerDocument(externalUrl: string, contentHash: string): Promise<void> {
-        try {
-            const tx = await this._contract.registerDocument(externalUrl, contentHash);
-            await tx.wait();
-        } catch (e: any) {
-            throw new Error(e.message);
-        }
+        const tx = await this._contract.registerDocument(externalUrl, contentHash);
+        await tx.wait();
     }
 
     async getDocumentById(documentId: number): Promise<DocumentInfo> {
@@ -46,41 +42,25 @@ export class DocumentDriver {
 
     async addAdmin(address: string): Promise<void> {
         if (!utils.isAddress(address)) throw new Error('Not an address');
-        try {
-            const tx = await this._contract.addAdmin(address);
-            await tx.wait();
-        } catch (e: any) {
-            throw new Error(e.message);
-        }
+        const tx = await this._contract.addAdmin(address);
+        await tx.wait();
     }
 
     async removeAdmin(address: string): Promise<void> {
         if (!utils.isAddress(address)) throw new Error('Not an address');
-        try {
-            const tx = await this._contract.removeAdmin(address);
-            await tx.wait();
-        } catch (e: any) {
-            throw new Error(e.message);
-        }
+        const tx = await this._contract.removeAdmin(address);
+        await tx.wait();
     }
 
     async addTradeManager(address: string): Promise<void> {
         if (!utils.isAddress(address)) throw new Error('Not an address');
-        try {
-            const tx = await this._contract.addTradeManager(address);
-            await tx.wait();
-        } catch (e: any) {
-            throw new Error(e.message);
-        }
+        const tx = await this._contract.addTradeManager(address);
+        await tx.wait();
     }
 
     async removeTradeManager(address: string): Promise<void> {
         if (!utils.isAddress(address)) throw new Error('Not an address');
-        try {
-            const tx = await this._contract.removeTradeManager(address);
-            await tx.wait();
-        } catch (e: any) {
-            throw new Error(e.message);
-        }
+        const tx = await this._contract.removeTradeManager(address);
+        await tx.wait();
     }
 }

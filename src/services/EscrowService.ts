@@ -1,6 +1,6 @@
-import { EscrowDriver } from "../drivers/EscrowDriver";
-import { EscrowStatus } from "../types/EscrowStatus";
-import { Escrow } from "../smart-contracts";
+import { EscrowDriver } from '../drivers/EscrowDriver';
+import { EscrowStatus } from '../types/EscrowStatus';
+import { Escrow } from '../smart-contracts';
 
 export class EscrowService {
     private _escrowDriver: EscrowDriver;

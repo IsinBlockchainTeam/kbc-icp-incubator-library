@@ -35,15 +35,19 @@ export class OfferService {
 
     async getAllOffers(): Promise<Offer[]> {
         const counter = await this._offerDriver.getLastId();
-        const offers = [];
-        for (let i = 1; i <= counter; i++) {
-            try {
-                offers.push(await this.getOffer(i));
-            } catch (e) {
-                console.log(`Offer with id ${i} has been deleted`);
-            }
-        }
-        return offers;
+
+        const offersPromises = Array.from({ length: counter }, (_, i) => {
+            const index = i + 1;
+            return this.getOffer(index).catch((e) => {
+                console.log(`Offer with id ${index} has been deleted`);
+                return null;
+            });
+        });
+
+        const offers: (Offer | null)[] = await Promise.all(offersPromises);
+
+        // Filter out null values (offers that have been deleted)
+        return offers.filter((offer) => offer !== null) as Offer[];
     }
 
     async updateSupplier(companyAddress: string, name: string): Promise<void> {

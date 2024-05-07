@@ -42,8 +42,8 @@ describe('Offer lifecycle', () => {
 
     it('Should register some offers', async () => {
         await offerService.registerSupplier(SUPPLIER_ADDRESS, companyName);
-        productCategoryIds.push((await productCategoryService.registerProductCategory('Coffee Arabica', 85, 'very good coffee')).id);
-        productCategoryIds.push((await productCategoryService.registerProductCategory('Coffee Nordic', 90, 'even better coffee')).id);
+        productCategoryIds.push((await productCategoryService.registerProductCategory('Coffee Arabica', 85, 'very good coffee')));
+        productCategoryIds.push((await productCategoryService.registerProductCategory('Coffee Nordic', 90, 'even better coffee')));
         await offerService.registerOffer(SUPPLIER_ADDRESS, productCategoryIds[0]);
         await offerService.registerOffer(SUPPLIER_ADDRESS, productCategoryIds[1]);
 

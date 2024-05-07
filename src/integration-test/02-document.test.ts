@@ -21,7 +21,7 @@ import { TradeManagerService } from '../services/TradeManagerService';
 import { TradeManagerDriver } from '../drivers/TradeManagerDriver';
 import { OrderTradeService } from '../services/OrderTradeService';
 import { OrderTradeDriver } from '../drivers/OrderTradeDriver';
-import { OrderLinePrice, OrderLineRequest, OrderTradeInfo } from '../entities/OrderTradeInfo';
+import { OrderLinePrice, OrderLineRequest } from '../entities/OrderTradeInfo';
 import { ProductCategoryService } from '../services/ProductCategoryService';
 import { ProductCategoryDriver } from '../drivers/ProductCategoryDriver';
 import { MaterialService } from '../services/MaterialService';
@@ -92,14 +92,14 @@ describe('Document lifecycle', () => {
     };
 
     const createOrderAndConfirm = async (): Promise<{orderId: number, orderTradeService: OrderTradeService<SolidMetadataSpec, SolidDocumentSpec, SolidStorageACR>}> => {
-        const order: OrderTradeInfo = await tradeManagerService.registerOrderTrade(SUPPLIER_ADDRESS, OTHER_ADDRESS, CUSTOMER_ADDRESS, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, MY_TOKEN_CONTRACT_ADDRESS);
+        const [orderId] = await tradeManagerService.registerOrderTrade(SUPPLIER_ADDRESS, OTHER_ADDRESS, CUSTOMER_ADDRESS, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, MY_TOKEN_CONTRACT_ADDRESS);
         _defineOrderSender(CUSTOMER_PRIVATE_KEY);
         const orderTradeService = new OrderTradeService({
-            tradeDriver: new OrderTradeDriver(signer, await tradeManagerService.getTrade(order.tradeId), MATERIAL_MANAGER_CONTRACT_ADDRESS, PRODUCT_CATEGORY_CONTRACT_ADDRESS),
+            tradeDriver: new OrderTradeDriver(signer, await tradeManagerService.getTrade(orderId), MATERIAL_MANAGER_CONTRACT_ADDRESS, PRODUCT_CATEGORY_CONTRACT_ADDRESS),
             documentDriver: new DocumentDriver(signer, DOCUMENT_MANAGER_CONTRACT_ADDRESS),
         });
         await orderTradeService.confirmOrder();
-        return { orderId: order.tradeId, orderTradeService };
+        return { orderId, orderTradeService };
     };
 
     beforeAll(async () => {
@@ -120,12 +120,12 @@ describe('Document lifecycle', () => {
 
     it('Should register two product categories and two materials', async () => {
         const productCategoryService: ProductCategoryService = new ProductCategoryService(new ProductCategoryDriver(signer, PRODUCT_CATEGORY_CONTRACT_ADDRESS));
-        productCategoryIds.push((await productCategoryService.registerProductCategory('Coffee Arabica', 85, 'very good coffee')).id);
-        productCategoryIds.push((await productCategoryService.registerProductCategory('Coffee Nordic', 90, 'even better coffee')).id);
+        productCategoryIds.push((await productCategoryService.registerProductCategory('Coffee Arabica', 85, 'very good coffee')));
+        productCategoryIds.push((await productCategoryService.registerProductCategory('Coffee Nordic', 90, 'even better coffee')));
 
         const materialService: MaterialService = new MaterialService(new MaterialDriver(signer, MATERIAL_MANAGER_CONTRACT_ADDRESS, PRODUCT_CATEGORY_CONTRACT_ADDRESS));
-        materialIds.push((await materialService.registerMaterial(productCategoryIds[0])).id);
-        materialIds.push((await materialService.registerMaterial(productCategoryIds[1])).id);
+        materialIds.push((await materialService.registerMaterial(productCategoryIds[0])));
+        materialIds.push((await materialService.registerMaterial(productCategoryIds[1])));
     });
 
     it('should register a document', async () => {
@@ -133,7 +133,7 @@ describe('Document lifecycle', () => {
         const { orderId, orderTradeService } = await createOrderAndConfirm();
         transactionId = orderId;
         firstOrderTradeService = orderTradeService;
-        firstOrderLineId = (await firstOrderTradeService.addLine(new OrderLineRequest(productCategoryIds[0], 100, units[1], new OrderLinePrice(100.50, 'CHF')))).id;
+        firstOrderLineId = (await firstOrderTradeService.addLine(new OrderLineRequest(productCategoryIds[0], 100, units[1], new OrderLinePrice(100.50, 'CHF'))));
         await firstOrderTradeService.assignMaterial(firstOrderLineId, materialIds[0]);
         await firstOrderTradeService.addDocument(deliveryNote.documentType);
 

@@ -1,6 +1,6 @@
-import {Signer, utils} from 'ethers';
-import { Escrow as EscrowContract, Escrow__factory } from "../smart-contracts";
-import { EscrowStatus } from "../types/EscrowStatus";
+import { Signer, utils } from 'ethers';
+import { Escrow as EscrowContract, Escrow__factory } from '../smart-contracts';
+import { EscrowStatus } from '../types/EscrowStatus';
 
 export class EscrowDriver {
     private _contract: EscrowContract;
@@ -12,23 +12,23 @@ export class EscrowDriver {
     }
 
     async getOwner(): Promise<string> {
-        return await this._contract.getOwner();
+        return this._contract.getOwner();
     }
 
     async getPayee(): Promise<string> {
-        return await this._contract.getPayee();
+        return this._contract.getPayee();
     }
 
     async getPurchaser(): Promise<string> {
-        return await this._contract.getPurchaser();
+        return this._contract.getPurchaser();
     }
 
     async getPayers(): Promise<string[]> {
-        return await this._contract.getPayers();
+        return this._contract.getPayers();
     }
 
     async getPayer(address: string): Promise<EscrowContract.PayerStructOutput> {
-        return await this._contract.getPayer(address);
+        return this._contract.getPayer(address);
     }
 
     async getAgreedAmount(): Promise<number> {
@@ -45,16 +45,16 @@ export class EscrowDriver {
 
     async getState(): Promise<EscrowStatus> {
         switch (await this._contract.getState()) {
-            case 0:
-                return EscrowStatus.ACTIVE;
-            case 1:
-                return EscrowStatus.LOCKED;
-            case 2:
-                return EscrowStatus.REFUNDING;
-            case 3:
-                return EscrowStatus.CLOSED;
-            default:
-                throw new Error('Invalid state');
+        case 0:
+            return EscrowStatus.ACTIVE;
+        case 1:
+            return EscrowStatus.LOCKED;
+        case 2:
+            return EscrowStatus.REFUNDING;
+        case 3:
+            return EscrowStatus.CLOSED;
+        default:
+            throw new Error('Invalid state');
         }
     }
 
@@ -63,11 +63,11 @@ export class EscrowDriver {
     }
 
     async getTokenAddress(): Promise<string> {
-        return await this._contract.getTokenAddress();
+        return this._contract.getTokenAddress();
     }
 
     async getCommissioner(): Promise<string> {
-        return await this._contract.getCommissioner();
+        return this._contract.getCommissioner();
     }
 
     async getBaseFee(): Promise<number> {
@@ -79,7 +79,7 @@ export class EscrowDriver {
     }
 
     async updateCommissioner(newCommissioner: string): Promise<void> {
-        if(!utils.isAddress(newCommissioner)) {
+        if (!utils.isAddress(newCommissioner)) {
             throw new Error('Not an address');
         }
         const tx = await this._contract.updateCommissioner(newCommissioner);
@@ -92,7 +92,7 @@ export class EscrowDriver {
     }
 
     async updatePercentageFee(newPercentageFee: number): Promise<void> {
-        if(newPercentageFee < 0 || newPercentageFee > 100) {
+        if (newPercentageFee < 0 || newPercentageFee > 100) {
             throw new Error('Percentage fee must be between 0 and 100');
         }
         const tx = await this._contract.updatePercentageFee(newPercentageFee);
@@ -104,19 +104,19 @@ export class EscrowDriver {
     }
 
     async hasExpired(): Promise<boolean> {
-        return await this._contract.hasExpired();
+        return this._contract.hasExpired();
     }
 
     async withdrawalAllowed(): Promise<boolean> {
-        return await this._contract.withdrawalAllowed();
+        return this._contract.withdrawalAllowed();
     }
 
     async refundAllowed(): Promise<boolean> {
-        return await this._contract.refundAllowed();
+        return this._contract.refundAllowed();
     }
 
     async addDelegate(delegate: string): Promise<void> {
-        if(!utils.isAddress(delegate)) {
+        if (!utils.isAddress(delegate)) {
             throw new Error('Not an address');
         }
         const tx = await this._contract.addDelegate(delegate);
@@ -124,7 +124,7 @@ export class EscrowDriver {
     }
 
     async removeDelegate(delegate: string): Promise<void> {
-        if(!utils.isAddress(delegate)) {
+        if (!utils.isAddress(delegate)) {
             throw new Error('Not an address');
         }
         const tx = await this._contract.removeDelegate(delegate);

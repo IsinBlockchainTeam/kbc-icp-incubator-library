@@ -1,8 +1,6 @@
 import { StorageACR } from '@blockchain-lib/common';
 import { TradeManagerDriver } from '../drivers/TradeManagerDriver';
 import { TradeType } from '../types/TradeType';
-import { BasicTrade } from '../entities/BasicTrade';
-import { OrderTradeInfo } from '../entities/OrderTradeInfo';
 import { Trade } from '../entities/Trade';
 import { IStorageMetadataDriver, MetadataSpec } from '../drivers/IStorageMetadataDriver';
 
@@ -16,7 +14,7 @@ export class TradeManagerService<MS extends MetadataSpec, ACR extends StorageACR
         this._storageMetadataDriver = storageMetadataDriver;
     }
 
-    async registerBasicTrade(supplier: string, customer: string, commissioner: string, name: string, metadataStorage?: {spec?: MS, aclRules?: ACR[], value: any}): Promise<BasicTrade> {
+    async registerBasicTrade(supplier: string, customer: string, commissioner: string, name: string, metadataStorage?: {spec?: MS, aclRules?: ACR[], value: any}): Promise<[number, string, string]> {
         const externalUrl = '';
         if (metadataStorage) {
             // TODO: remove this comment
@@ -31,7 +29,7 @@ export class TradeManagerService<MS extends MetadataSpec, ACR extends StorageACR
         return this._tradeManagerDriver.registerBasicTrade(supplier, customer, commissioner, externalUrl, name);
     }
 
-    async registerOrderTrade(supplier: string, customer: string, commissioner: string, paymentDeadline: number, documentDeliveryDeadline: number, arbiter: string, shippingDeadline: number, deliveryDeadline: number, agreedAmount: number, tokenAddress: string, metadataStorage?: {spec?: MS, aclRules?: ACR[], value: any}): Promise<OrderTradeInfo> {
+    async registerOrderTrade(supplier: string, customer: string, commissioner: string, paymentDeadline: number, documentDeliveryDeadline: number, arbiter: string, shippingDeadline: number, deliveryDeadline: number, agreedAmount: number, tokenAddress: string, metadataStorage?: {spec?: MS, aclRules?: ACR[], value: any}): Promise<[number, string, string]> {
         const externalUrl = '';
         if (metadataStorage) {
             // TODO: remove this comment
