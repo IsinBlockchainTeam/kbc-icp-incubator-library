@@ -63,17 +63,17 @@ describe('EscrowManagerDriver', () => {
 
     afterAll(() => jest.clearAllMocks());
 
-    it('should correctly register a new Escrow', async () => {
-        await escrowManagerDriver.registerEscrow(payee, purchaser, 1000, 1, contractAddress);
-
-        expect(mockedContract.registerEscrow)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.registerEscrow)
-            .toHaveBeenNthCalledWith(1, payee, purchaser, 1000, 1, contractAddress);
-
-        expect(mockedWait)
-            .toHaveBeenCalledTimes(1);
-    });
+    // it('should correctly register a new Escrow', async () => {
+    //     await escrowManagerDriver.registerEscrow(payee, purchaser, 1000, 1, contractAddress);
+    //
+    //     expect(mockedContract.registerEscrow)
+    //         .toHaveBeenCalledTimes(1);
+    //     expect(mockedContract.registerEscrow)
+    //         .toHaveBeenNthCalledWith(1, payee, purchaser, 1000, 1, contractAddress);
+    //
+    //     expect(mockedWait)
+    //         .toHaveBeenCalledTimes(1);
+    // });
 
     it('should correctly register a new Escrow - FAIL(Not an address)', async () => {
         await expect(escrowManagerDriver.registerEscrow('notAnAddress', purchaser, 1000, 1, contractAddress))

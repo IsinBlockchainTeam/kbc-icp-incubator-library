@@ -28,7 +28,7 @@ serial([
     // async () => {
     //     const enums: string[] = ['USD', 'EUR', 'CHF'];
     //     for (let i = 0; i < enums.length; i++) {
-    //         const contract = await getAttachedContract(ContractName.ENUMERABLE_TYPE_MANAGER, '0x4788F5a460A4b27Cd90fC9F155164Be1eD39F729');
+    //         const contract = await getAttachedContract(ContractName.ENUMERABLE_TYPE_MANAGER, '0x5FbDB2315678afecb367f032d93F642f64180aa3');
     //         const tx = await contract.add(enums[i]);
     //         await tx.wait();
     //     }
@@ -37,7 +37,7 @@ serial([
     // async () => {
     //     const enums: string[] = ['33 - Collecting', '38 - Harvesting'];
     //     for (let i = 0; i < enums.length; i++) {
-    //         const contract = await getAttachedContract(ContractName.ENUMERABLE_TYPE_MANAGER, '0x4eC8bC43bBb2103dAEf4c27cA5249BAF248CcfEe');
+    //         const contract = await getAttachedContract(ContractName.ENUMERABLE_TYPE_MANAGER, '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9');
     //         const tx = await contract.add(enums[i]);
     //         await tx.wait();
     //     }
@@ -55,7 +55,7 @@ serial([
     //     ContractName.PRODUCT_CATEGORY_MANAGER, [],
     // ),
     // () => deploy(
-    //     ContractName.MATERIAL_MANAGER, ['0x649e401eA5b4191CbBc6e6Aa66a64AFFd35b5294'], // ProductCategoryManager
+    //     ContractName.MATERIAL_MANAGER, ['0x9A9f2CCfdE556A7E9Ff0848998Aa4a0CFD8863AE'], // ProductCategoryManager
     // ),
     // () => deploy(
     //     ContractName.DOCUMENT_MANAGER, [[]],
@@ -69,11 +69,12 @@ serial([
     // ),
     () => deploy(
         ContractName.TRADE_MANAGER, [
-            '0x649e401eA5b4191CbBc6e6Aa66a64AFFd35b5294', // PRODUCT_CATEGORY_MANAGER
-            '0x1179C8F52731cc3469c854091E9c6AD3414df0D9', // MATERIAL_MANAGER
-            '0x91315bC14cF4e763D81C3cDe8Fe88272d411CAf5', // DOCUMENT_MANAGER
-            '0x4788F5a460A4b27Cd90fC9F155164Be1eD39F729', // EnumerableFiatManager
-            '0x0700e882cDE2F340cA494D718748b3910fef45d6', // ESCROW_MANAGER
+            '0x9A9f2CCfdE556A7E9Ff0848998Aa4a0CFD8863AE', // PRODUCT_CATEGORY_MANAGER
+            '0x68B1D87F95878fE05B998F19b66F4baba5De1aed', // MATERIAL_MANAGER
+            '0x3Aa5ebB10DC797CAC828524e59A333d0A371443c', // DOCUMENT_MANAGER
+            '0x5FbDB2315678afecb367f032d93F642f64180aa3', // EnumerableFiatManager
+            '0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82', // EnumerableUnitManager
+            '0xc6e7DF5E7b4f2A278906862b61205850344D4e7d', // ESCROW_MANAGER
         ],
     ),
     // () => deploy(ContractName.RELATIONSHIP_MANAGER, [
@@ -81,14 +82,14 @@ serial([
     // ]),
     // () => deploy(
     //     ContractName.ASSET_OPERATION_MANAGER, [
-    //         '0x1179C8F52731cc3469c854091E9c6AD3414df0D9', // MaterialManager
-    //         '0x4eC8bC43bBb2103dAEf4c27cA5249BAF248CcfEe', // EnumerableProcessTypeManager
+    //         '0x68B1D87F95878fE05B998F19b66F4baba5De1aed', // MaterialManager
+    //         '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9', // EnumerableProcessTypeManager
     //     ],
     // ),
     // () => deploy(
     //     ContractName.OFFER_MANAGER, [
     //         ['0x30054880e4E2fA1082C1976cA5547cC3bd185c11'], // ContractsOwner
-    //         '0x649e401eA5b4191CbBc6e6Aa66a64AFFd35b5294', // ProductCategoryManager
+    //         '0x9A9f2CCfdE556A7E9Ff0848998Aa4a0CFD8863AE', // ProductCategoryManager
     //     ],
     // ),
     // () => deploy(
