@@ -67,7 +67,7 @@ describe('EscrowManager.sol', () => {
         });
 
         it('should update commissioner address', async () => {
-            const id = registerNewEscrow(payee, purchaser, agreedAmount, duration);
+            const id = await registerNewEscrow(payee, purchaser, agreedAmount, duration);
 
             const tx = await escrowManagerContract.updateCommissioner(other.address);
             expect(tx)
@@ -86,9 +86,9 @@ describe('EscrowManager.sol', () => {
         });
 
         it('should not update commission address for escrows with state \'Refunding\' or \'Closed\' where funds have been withdrawn', async () => {
-            const firstEscrowId = registerNewEscrow(payee, purchaser, agreedAmount, duration);
-            const secondEscrowId = registerNewEscrow(payee, purchaser, agreedAmount, duration);
-            const thirdEscrowId = registerNewEscrow(payee, purchaser, agreedAmount, duration);
+            const firstEscrowId = await registerNewEscrow(payee, purchaser, agreedAmount, duration);
+            const secondEscrowId = await registerNewEscrow(payee, purchaser, agreedAmount, duration);
+            const thirdEscrowId = await registerNewEscrow(payee, purchaser, agreedAmount, duration);
 
             // STATE: ACTIVE
             const firstEscrowAddress = await escrowManagerContract.getEscrow(firstEscrowId);
@@ -165,7 +165,7 @@ describe('EscrowManager.sol', () => {
 
             expect(id)
                 .to
-                .equal(0);
+                .equal(1);
             expect(tx)
                 .to
                 .emit(escrowManagerContract, 'EscrowRegistered')

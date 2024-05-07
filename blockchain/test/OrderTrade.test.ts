@@ -26,6 +26,7 @@ describe('OrderTrade.sol', () => {
     const documentDeliveryDeadline: number = 200;
     const shippingDeadline: number = 300;
     const deliveryDeadline: number = 400;
+    const agreedAmount = 1000;
 
     const escrowFake = {
         enableRefund: () => {},
@@ -41,8 +42,8 @@ describe('OrderTrade.sol', () => {
         orderTradeContract = await OrderTrade.deploy(1, productCategoryManagerContractFake.address, materialManagerContractFake.address,
             documentManagerContractFake.address, supplier.address, customer.address, commissioner.address, externalUrl,
             deadline || paymentDeadline, deadline || (deadline || documentDeliveryDeadline),
-            arbiter.address, deadline || shippingDeadline, deadline || deliveryDeadline, tokenContractFake.address,
-            enumerableFiatManagerContractFake.address, escrowManagerContractFake.address,
+            arbiter.address, deadline || shippingDeadline, deadline || deliveryDeadline, agreedAmount,
+            tokenContractFake.address, enumerableFiatManagerContractFake.address, escrowManagerContractFake.address,
         );
         await orderTradeContract.deployed();
     };
@@ -59,10 +60,8 @@ describe('OrderTrade.sol', () => {
         documentManagerContractFake = await smock.fake(ContractName.DOCUMENT_MANAGER);
         tokenContractFake = await smock.fake('MyToken');
 
-        const EscrowManager = await ethers.getContractFactory('EscrowManager');
-        const escrowContract = await EscrowManager.deploy(supplier.address, 10, 5);
         escrowManagerContractFake = await smock.fake('EscrowManager');
-        escrowManagerContractFake.registerEscrow.returns(escrowContract);
+        escrowManagerContractFake.registerEscrow.returns(escrowFake);
     });
 
     beforeEach(async () => {
@@ -378,6 +377,7 @@ describe('OrderTrade.sol', () => {
             await _createOrderTrade(Date.now() + 1000000);
             await orderTradeContract.connect(supplier).confirmOrder();
             await orderTradeContract.connect(commissioner).confirmOrder();
+            await ethers.provider.send('evm_mine', [Date.now() + 1000001]);
             await orderTradeContract.enforceDeadlines();
             expect(await orderTradeContract.getNegotiationStatus())
                 .to
@@ -430,7 +430,7 @@ describe('OrderTrade.sol', () => {
                 .updatePaymentDeadline(8000000000);
             await orderTradeContract.connect(commissioner)
                 .confirmOrder();
-            await ethers.provider.send('evm_mine', [8000000001]);
+            await ethers.provider.send('evm_mine', [7999999999]);
             await orderTradeContract.connect(commissioner)
                 .enforceDeadlines();
 
