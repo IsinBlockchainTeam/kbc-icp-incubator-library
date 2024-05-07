@@ -28,7 +28,6 @@ contract OrderTrade is Trade {
     }
 
     struct OrderLine {
-        uint256 quantity;
         OrderLinePrice price;
     }
 
@@ -52,7 +51,7 @@ contract OrderTrade is Trade {
 
     EnumerableType private _fiatManager;
 
-    constructor(uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl, uint256 paymentDeadline, uint256 documentDeliveryDeadline, address arbiter, uint256 shippingDeadline, uint256 deliveryDeadline, address escrowAddress, address fiatManagerAddress) Trade(tradeId, productCategoryAddress, materialManagerAddress, documentManagerAddress, supplier, customer, commissioner, externalUrl) {
+    constructor(uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress, address unitManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl, uint256 paymentDeadline, uint256 documentDeliveryDeadline, address arbiter, uint256 shippingDeadline, uint256 deliveryDeadline, address escrowAddress, address fiatManagerAddress) Trade(tradeId, productCategoryAddress, materialManagerAddress, documentManagerAddress, unitManagerAddress, supplier, customer, commissioner, externalUrl) {
         _tradeId = tradeId;
         _paymentDeadline = paymentDeadline;
         _documentDeliveryDeadline = documentDeliveryDeadline;
@@ -81,22 +80,22 @@ contract OrderTrade is Trade {
         return (line, _orderLines[id]);
     }
 
-    function addLine(uint256 productCategoryId, uint256 quantity, OrderLinePrice memory price) public onlyAdminOrContractPart onlyOrdersInNegotiation returns(uint256) {
+    function addLine(uint256 productCategoryId, uint256 quantity, string memory unit, OrderLinePrice memory price) public onlyAdminOrContractPart onlyOrdersInNegotiation returns(uint256) {
         require(_fiatManager.contains(price.fiat), "OrderTrade: Fiat has not been registered");
 
-        uint256 tradeLineId = _addLine(productCategoryId);
-        _orderLines[tradeLineId] = OrderLine(quantity, price);
+        uint256 tradeLineId = _addLine(productCategoryId, quantity, unit);
+        _orderLines[tradeLineId] = OrderLine(price);
 
         emit OrderLineAdded(tradeLineId);
         _updateSignatures(_msgSender());
         return tradeLineId;
     }
 
-    function updateLine(uint256 id, uint256 productCategoryId, uint256 quantity, OrderLinePrice memory price) public onlyAdminOrContractPart onlyOrdersInNegotiation {
+    function updateLine(uint256 id, uint256 productCategoryId, uint256 quantity, string memory unit, OrderLinePrice memory price) public onlyAdminOrContractPart onlyOrdersInNegotiation {
         require(_fiatManager.contains(price.fiat), "OrderTrade: Fiat has not been registered");
 
-        _updateLine(id, productCategoryId);
-        _orderLines[id] = OrderLine(quantity, price);
+        _updateLine(id, productCategoryId, quantity, unit);
+        _orderLines[id] = OrderLine(price);
 
         emit OrderLineUpdated(id);
         _updateSignatures(_msgSender());

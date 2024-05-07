@@ -15,6 +15,7 @@ describe('TradeManager.sol', () => {
     const materialManagerContractAddress: string = Wallet.createRandom().address;
     const documentManagerAddress: string = Wallet.createRandom().address;
     const fiatManagerAddress: string = Wallet.createRandom().address;
+    const unitManagerAddress: string = Wallet.createRandom().address;
 
     const externalUrl: string = 'https://test.com';
     const name: string = 'Test basic trade';
@@ -49,14 +50,14 @@ describe('TradeManager.sol', () => {
 
     beforeEach(async () => {
         const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER);
-        tradeManagerContract = await TradeManager.deploy(productCategoryManagerContractAddress, materialManagerContractAddress, documentManagerAddress, fiatManagerAddress, escrowManagerContract.address);
+        tradeManagerContract = await TradeManager.deploy(productCategoryManagerContractAddress, materialManagerContractAddress, documentManagerAddress, fiatManagerAddress, unitManagerAddress, escrowManagerContract.address);
         await tradeManagerContract.deployed();
     });
 
     describe('TradeManager creation', () => {
         it('should create a TradeManager - FAIL(TradeManager: product category manager address is the zero address)', async () => {
             const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER);
-            await expect(TradeManager.deploy(ethers.constants.AddressZero, materialManagerContractAddress, documentManagerAddress, fiatManagerAddress, escrowManagerContract.address))
+            await expect(TradeManager.deploy(ethers.constants.AddressZero, materialManagerContractAddress, documentManagerAddress, fiatManagerAddress, unitManagerAddress, escrowManagerContract.address))
                 .to
                 .be
                 .revertedWith('TradeManager: product category manager address is the zero address');
@@ -64,7 +65,7 @@ describe('TradeManager.sol', () => {
 
         it('should create a TradeManager - FAIL(TradeManager: material manager address is the zero address)', async () => {
             const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER);
-            await expect(TradeManager.deploy(productCategoryManagerContractAddress, ethers.constants.AddressZero, documentManagerAddress, fiatManagerAddress, escrowManagerContract.address))
+            await expect(TradeManager.deploy(productCategoryManagerContractAddress, ethers.constants.AddressZero, documentManagerAddress, fiatManagerAddress, unitManagerAddress, escrowManagerContract.address))
                 .to
                 .be
                 .revertedWith('TradeManager: material manager address is the zero address');
@@ -72,7 +73,7 @@ describe('TradeManager.sol', () => {
 
         it('should create a TradeManager - FAIL(TradeManager: document category manager address is the zero address)', async () => {
             const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER);
-            await expect(TradeManager.deploy(productCategoryManagerContractAddress, materialManagerContractAddress, ethers.constants.AddressZero, fiatManagerAddress, escrowManagerContract.address))
+            await expect(TradeManager.deploy(productCategoryManagerContractAddress, materialManagerContractAddress, ethers.constants.AddressZero, fiatManagerAddress, unitManagerAddress, escrowManagerContract.address))
                 .to
                 .be
                 .revertedWith('TradeManager: document category manager address is the zero address');
@@ -80,15 +81,23 @@ describe('TradeManager.sol', () => {
 
         it('should create a TradeManager - FAIL(TradeManager: fiat manager address is the zero address)', async () => {
             const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER);
-            await expect(TradeManager.deploy(productCategoryManagerContractAddress, materialManagerContractAddress, documentManagerAddress, ethers.constants.AddressZero, escrowManagerContract.address))
+            await expect(TradeManager.deploy(productCategoryManagerContractAddress, materialManagerContractAddress, documentManagerAddress, ethers.constants.AddressZero, unitManagerAddress, escrowManagerContract.address))
                 .to
                 .be
                 .revertedWith('TradeManager: fiat manager address is the zero address');
         });
 
+        it('should create a TradeManager - FAIL(TradeManager: unit manager address is the zero address)', async () => {
+            const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER);
+            await expect(TradeManager.deploy(productCategoryManagerContractAddress, materialManagerContractAddress, documentManagerAddress, fiatManagerAddress, ethers.constants.AddressZero, escrowManagerContract.address))
+                .to
+                .be
+                .revertedWith('TradeManager: unit manager address is the zero address');
+        });
+
         it('should create a TradeManager - FAIL(TradeManager: escrow manager address is the zero address)', async () => {
             const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER);
-            await expect(TradeManager.deploy(productCategoryManagerContractAddress, materialManagerContractAddress, documentManagerAddress, fiatManagerAddress, ethers.constants.AddressZero))
+            await expect(TradeManager.deploy(productCategoryManagerContractAddress, materialManagerContractAddress, documentManagerAddress, fiatManagerAddress, unitManagerAddress, ethers.constants.AddressZero))
                 .to
                 .be
                 .revertedWith('TradeManager: escrow manager address is the zero address');

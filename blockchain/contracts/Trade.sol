@@ -50,6 +50,8 @@ abstract contract Trade is AccessControl {
     struct Line {
         uint256 id;
         uint256 productCategoryId;
+        uint256 quantity;
+        string unit;
         uint256 materialId;
         bool exists;
     }
@@ -76,8 +78,9 @@ abstract contract Trade is AccessControl {
     ProductCategoryManager internal _productCategoryManager;
     MaterialManager internal _materialManager;
     DocumentManager internal _documentManager;
+    EnumerableType internal _unitManager;
 
-    constructor(uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl) {
+    constructor(uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress, address unitManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl) {
         _setupRole(ADMIN_ROLE, _msgSender());
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
 
@@ -85,6 +88,7 @@ abstract contract Trade is AccessControl {
         _productCategoryManager = ProductCategoryManager(productCategoryAddress);
         _materialManager = MaterialManager(materialManagerAddress);
         _documentManager = DocumentManager(documentManagerAddress);
+        _unitManager = EnumerableType(unitManagerAddress);
         _supplier = supplier;
         _customer = customer;
         _commissioner = commissioner;
@@ -110,24 +114,29 @@ abstract contract Trade is AccessControl {
         return _lines[id].exists;
     }
 
-    function _addLine(uint256 productCategoryId) internal returns (uint256) {
+    function _addLine(uint256 productCategoryId, uint256 quantity, string memory unit) internal returns (uint256) {
         require(_productCategoryManager.getProductCategoryExists(productCategoryId), "Trade: Product category does not exist");
+        require(_unitManager.contains(unit), "Trade: Unit has not been registered");
 
         uint256 tradeLineId = _lineCounter.current() + 1;
         _lineCounter.increment();
 
-        _lines[tradeLineId] = Line(tradeLineId, productCategoryId, 0, true);
+        _lines[tradeLineId] = Line(tradeLineId, productCategoryId, quantity, unit, 0, true);
         _lineIds.push(tradeLineId);
 
         return tradeLineId;
     }
 
-    function _updateLine(uint256 id, uint256 productCategoryId) internal {
+    function _updateLine(uint256 id, uint256 productCategoryId, uint256 quantity, string memory unit) internal {
         require(_lines[id].exists, "Trade: Line does not exist");
         require(_productCategoryManager.getProductCategoryExists(productCategoryId), "Trade: Product category does not exist");
+        require(_unitManager.contains(unit), "Trade: Unit has not been registered");
 
         if(_lines[id].productCategoryId != productCategoryId)
             _lines[id].productCategoryId = productCategoryId;
+        if (_lines[id].quantity != quantity)
+            _lines[id].quantity = quantity;
+        _lines[id].unit = unit;
     }
 
     function _assignMaterial(uint256 lineId, uint256 materialId) internal {

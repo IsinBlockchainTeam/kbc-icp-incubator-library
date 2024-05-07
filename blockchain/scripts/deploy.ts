@@ -51,6 +51,15 @@ serial([
             await tx.wait();
         }
     },
+    () => deploy(ContractName.ENUMERABLE_TYPE_MANAGER, [[]], 'EnumerableUnitManager'),
+    async () => {
+        const enums: string[] = ['BG - Bags', 'KGM - Kilograms', 'H87 - Pieces'];
+        for (let i = 0; i < enums.length; i++) {
+            const tx = await contractMap.get('EnumerableUnitManager')
+                ?.add(enums[i]);
+            await tx.wait();
+        }
+    },
     () => deploy(
         ContractName.PRODUCT_CATEGORY_MANAGER, [],
     ),
@@ -77,6 +86,7 @@ serial([
             contractMap.get(ContractName.MATERIAL_MANAGER)!.address,
             contractMap.get(ContractName.DOCUMENT_MANAGER)!.address,
             contractMap.get('EnumerableFiatManager')!.address,
+            contractMap.get('EnumerableUnitManager')!.address,
             contractMap.get(ContractName.ESCROW_MANAGER)!.address,
         ],
     ),

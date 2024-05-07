@@ -32,13 +32,15 @@ contract TradeManager is AccessControl {
     address private _materialManagerAddress;
     address private _documentManagerAddress;
     address private _fiatManagerAddress;
+    address private _unitManagerAddress;
     EscrowManager private _escrowManager;
 
-    constructor(address productCategoryManagerAddress, address materialManagerAddress, address documentManagerAddress, address fiatManagerAddress, address escrowManagerAddress) {
+    constructor(address productCategoryManagerAddress, address materialManagerAddress, address documentManagerAddress, address fiatManagerAddress, address unitManagerAddress, address escrowManagerAddress) {
         require(productCategoryManagerAddress != address(0), "TradeManager: product category manager address is the zero address");
         require(materialManagerAddress != address(0), "TradeManager: material manager address is the zero address");
         require(documentManagerAddress != address(0), "TradeManager: document category manager address is the zero address");
         require(fiatManagerAddress != address(0), "TradeManager: fiat manager address is the zero address");
+        require(unitManagerAddress != address(0), "TradeManager: unit manager address is the zero address");
         require(escrowManagerAddress != address(0), "TradeManager: escrow manager address is the zero address");
 
         _setupRole(ADMIN_ROLE, _msgSender());
@@ -48,6 +50,7 @@ contract TradeManager is AccessControl {
         _materialManagerAddress = materialManagerAddress;
         _documentManagerAddress = documentManagerAddress;
         _fiatManagerAddress = fiatManagerAddress;
+        _unitManagerAddress = unitManagerAddress;
         _escrowManager = EscrowManager(escrowManagerAddress);
     }
 
@@ -79,7 +82,7 @@ contract TradeManager is AccessControl {
         uint256 id = _counter.current() + 1;
         _counter.increment();
 
-        BasicTrade newTrade = new BasicTrade(id, _productCategoryManagerAddress, _materialManagerAddress, _documentManagerAddress, supplier, customer, commissioner, externalUrl, name);
+        BasicTrade newTrade = new BasicTrade(id, _productCategoryManagerAddress, _materialManagerAddress, _documentManagerAddress, _unitManagerAddress, supplier, customer, commissioner, externalUrl, name);
         _trades[id] = newTrade;
         _tradeIdsOfSupplier[supplier].push(id);
         _tradeIdsOfCommissioner[commissioner].push(id);
@@ -99,7 +102,7 @@ contract TradeManager is AccessControl {
         _counter.increment();
 
         Escrow escrow = _escrowManager.registerEscrow(supplier, commissioner, agreedAmount, paymentDeadline - block.timestamp, tokenAddress);
-        OrderTrade newTrade = new OrderTrade(id, _productCategoryManagerAddress, _materialManagerAddress, _documentManagerAddress, supplier, customer, commissioner, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, address(escrow), _fiatManagerAddress);
+        OrderTrade newTrade = new OrderTrade(id, _productCategoryManagerAddress, _materialManagerAddress, _documentManagerAddress, _unitManagerAddress, supplier, customer, commissioner, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, address(escrow), _fiatManagerAddress);
         _trades[id] = newTrade;
         _tradeIdsOfSupplier[supplier].push(id);
         _tradeIdsOfCommissioner[commissioner].push(id);

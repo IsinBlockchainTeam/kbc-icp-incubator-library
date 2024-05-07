@@ -5,13 +5,14 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import chai, { expect } from 'chai';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { ContractName } from '../utils/constants';
-import {MaterialManager} from "../typechain-types";
+import { MaterialManager } from '../typechain-types';
 
 describe('BasicTrade.sol', () => {
     chai.use(smock.matchers);
     let productCategoryManagerContractFake: FakeContract;
     let materialManagerContractFake: FakeContract;
     let documentManagerContractFake: FakeContract;
+    let enumerableUnitManagerContractFake: FakeContract;
 
     let basicTradeContract: Contract;
     let admin: SignerWithAddress, supplier: SignerWithAddress,
@@ -23,6 +24,7 @@ describe('BasicTrade.sol', () => {
         id: BigNumber.from(1),
         productCategoryId: BigNumber.from(1),
     } as MaterialManager.MaterialStructOutput;
+    const units = ['BG', 'KGM', 'H87'];
 
     before(async () => {
         [admin, supplier, customer, commissioner] = await ethers.getSigners();
@@ -32,12 +34,14 @@ describe('BasicTrade.sol', () => {
         materialManagerContractFake.getMaterialExists.returns((value: number) => value <= 10);
         materialManagerContractFake.getMaterial.returns(materialStruct);
         documentManagerContractFake = await smock.fake(ContractName.DOCUMENT_MANAGER);
+        enumerableUnitManagerContractFake = await smock.fake(ContractName.ENUMERABLE_TYPE_MANAGER);
+        enumerableUnitManagerContractFake.contains.returns((value: string) => units.includes(value[0]));
     });
 
     beforeEach(async () => {
         const BasicTrade = await ethers.getContractFactory('BasicTrade');
         basicTradeContract = await BasicTrade.deploy(1, productCategoryManagerContractFake.address, materialManagerContractFake.address,
-            documentManagerContractFake.address, supplier.address, customer.address, commissioner.address, externalUrl, name);
+            documentManagerContractFake.address, enumerableUnitManagerContractFake.address, supplier.address, customer.address, commissioner.address, externalUrl, name);
         await basicTradeContract.deployed();
     });
 
@@ -77,20 +81,26 @@ describe('BasicTrade.sol', () => {
 
     describe('Lines', () => {
         it('should add a line, retrieve it and update it', async () => {
-            const tx = await basicTradeContract.addLine(1);
+            const tx = await basicTradeContract.addLine(1, 40, units[2]);
             const receipt = await tx.wait();
             const lineId = receipt.events.find((event: Event) => event.event === 'TradeLineAdded').args[0];
             expect(lineId)
                 .to
                 .equal(1);
 
-            const [id, productCategoryId, materialId, exists] = await basicTradeContract.getLine(lineId);
+            const [id, productCategoryId, quantity, unit, materialId, exists] = await basicTradeContract.getLine(lineId);
             expect(id)
                 .to
                 .equal(lineId);
             expect(productCategoryId)
                 .to
                 .equal(BigNumber.from(1));
+            expect(quantity)
+                .to
+                .equal(BigNumber.from(40));
+            expect(unit)
+                .to
+                .equal(units[2]);
             expect(materialId)
                 .to
                 .equal(BigNumber.from(0));
@@ -98,13 +108,13 @@ describe('BasicTrade.sol', () => {
                 .to
                 .equal(true);
 
-            const updateTx = await basicTradeContract.updateLine(lineId, 2);
+            const updateTx = await basicTradeContract.updateLine(lineId, 2, 30, units[1]);
             const updatedReceipt = await updateTx.wait();
             expect(updatedReceipt.events.find((event: Event) => event.event === 'TradeLineUpdated').args[0])
                 .to
                 .equal(lineId);
 
-            const [updatedId, updatedProductCategoryId, updatedMaterialId, updatedExists] = await basicTradeContract.getLine(lineId);
+            const [updatedId, updatedProductCategoryId, updatedQuantity, updatedUnit, updatedMaterialId, updatedExists] = await basicTradeContract.getLine(lineId);
             expect(updatedId)
                 .to
                 .equal(lineId);
@@ -112,6 +122,13 @@ describe('BasicTrade.sol', () => {
                 .to
                 .deep
                 .equal(BigNumber.from(2));
+            expect(updatedQuantity)
+                .to
+                .deep
+                .equal(BigNumber.from(30));
+            expect(updatedUnit)
+                .to
+                .equal(units[1]);
             expect(updatedMaterialId)
                 .to
                 .equal(BigNumber.from(0));
@@ -119,7 +136,7 @@ describe('BasicTrade.sol', () => {
                 .to
                 .equal(true);
 
-            const secondTx = await basicTradeContract.addLine(3);
+            const secondTx = await basicTradeContract.addLine(3, 50, units[0]);
             const secondReceipt = await secondTx.wait();
             const secondLineId = secondReceipt.events.find((event: Event) => event.event === 'TradeLineAdded').args[0];
             expect(secondLineId)
@@ -133,19 +150,25 @@ describe('BasicTrade.sol', () => {
         });
 
         it('should assign a material to a line', async () => {
-            const tx = await basicTradeContract.addLine(1);
+            const tx = await basicTradeContract.addLine(1, 40, units[2]);
             await tx.wait();
 
             const assignTx = await basicTradeContract.assignMaterial(1, 1);
             const receipt = await assignTx.wait();
 
-            const [id, productCategoryId, materialId, exists] = await basicTradeContract.getLine(1);
+            const [id, productCategoryId, quantity, unit, materialId, exists] = await basicTradeContract.getLine(1);
             expect(id)
                 .to
                 .equal(1);
             expect(productCategoryId)
                 .to
                 .equal(BigNumber.from(1));
+            expect(quantity)
+                .to
+                .equal(BigNumber.from(40));
+            expect(unit)
+                .to
+                .equal(units[2]);
             expect(materialId)
                 .to
                 .equal(BigNumber.from(1));
@@ -156,10 +179,17 @@ describe('BasicTrade.sol', () => {
         });
 
         it('should add a line - FAIL (Trade: Product category does not exist)', async () => {
-            await expect(basicTradeContract.addLine(20))
+            await expect(basicTradeContract.addLine(20, 60, units[0]))
                 .to
                 .be
                 .revertedWith('Trade: Product category does not exist');
+        });
+
+        it('should add a line - FAIL (Trade: Unit has not been registered)', async () => {
+            await expect(basicTradeContract.addLine(1, 60, 'custom unit'))
+                .to
+                .be
+                .revertedWith('Trade: Unit has not been registered');
         });
 
         it('should get a line - FAIL (Trade: Line does not exist)', async () => {
@@ -170,20 +200,30 @@ describe('BasicTrade.sol', () => {
         });
 
         it('should update a line - FAIL (Trade: Line does not exist)', async () => {
-            await expect(basicTradeContract.updateLine(0, 5))
+            await expect(basicTradeContract.updateLine(0, 5, 50, units[1]))
                 .to
                 .be
                 .revertedWith('Trade: Line does not exist');
         });
 
         it('should update a line - FAIL (Trade: Product category does not exist)', async () => {
-            const tx = await basicTradeContract.addLine(5);
+            const tx = await basicTradeContract.addLine(5, 40, units[0]);
             const receipt = await tx.wait();
             const lineId = receipt.events.find((event: Event) => event.event === 'TradeLineAdded').args[0];
-            await expect(basicTradeContract.updateLine(lineId, 20))
+            await expect(basicTradeContract.updateLine(lineId, 20, 70, units[1]))
                 .to
                 .be
                 .revertedWith('Trade: Product category does not exist');
+        });
+
+        it('should update a line - FAIL (Trade: Unit has not been registered)', async () => {
+            const tx = await basicTradeContract.addLine(5, 40, units[0]);
+            const receipt = await tx.wait();
+            const lineId = receipt.events.find((event: Event) => event.event === 'TradeLineAdded').args[0];
+            await expect(basicTradeContract.updateLine(lineId, 1, 70, 'custom unit'))
+                .to
+                .be
+                .revertedWith('Trade: Unit has not been registered');
         });
 
         it('should assign a material to a line - FAIL (Trade: Line does not exist)', async () => {
@@ -194,7 +234,7 @@ describe('BasicTrade.sol', () => {
         });
 
         it('should assign a material to a line - FAIL (Trade: Material does not exist)', async () => {
-            const tx = await basicTradeContract.addLine(1);
+            const tx = await basicTradeContract.addLine(1, 40, units[0]);
             await tx.wait();
             await expect(basicTradeContract.assignMaterial(1, 20))
                 .to

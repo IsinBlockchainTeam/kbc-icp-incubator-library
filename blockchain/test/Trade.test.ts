@@ -12,7 +12,7 @@ describe('Trade.sol', () => {
     let productCategoryManagerContractFake: FakeContract;
     let materialManagerContractFake: FakeContract;
     let documentManagerContractFake: FakeContract;
-    const documentTypes = [1];
+    let enumerableUnitManagerContractFake: FakeContract;
 
     let basicTradeContract: Contract;
     let admin: SignerWithAddress, supplier: SignerWithAddress,
@@ -24,6 +24,8 @@ describe('Trade.sol', () => {
         id: BigNumber.from(1),
         productCategoryId: BigNumber.from(1),
     } as MaterialManager.MaterialStructOutput;
+    const documentTypes = [1];
+    const units = ['BG', 'KGM', 'H87'];
 
     before(async () => {
         [admin, supplier, customer, commissioner] = await ethers.getSigners();
@@ -33,12 +35,14 @@ describe('Trade.sol', () => {
         materialManagerContractFake.getMaterialExists.returns((value: number) => value <= 10);
         materialManagerContractFake.getMaterial.returns(materialStruct);
         documentManagerContractFake = await smock.fake(ContractName.DOCUMENT_MANAGER);
+        enumerableUnitManagerContractFake = await smock.fake(ContractName.ENUMERABLE_TYPE_MANAGER);
+        enumerableUnitManagerContractFake.contains.returns((value: string) => units.includes(value[0]));
     });
 
     beforeEach(async () => {
         const BasicTrade = await ethers.getContractFactory('BasicTrade');
         basicTradeContract = await BasicTrade.deploy(1, productCategoryManagerContractFake.address, materialManagerContractFake.address,
-            documentManagerContractFake.address, supplier.address, customer.address, commissioner.address, externalUrl, name);
+            documentManagerContractFake.address, enumerableUnitManagerContractFake.address, supplier.address, customer.address, commissioner.address, externalUrl, name);
         await basicTradeContract.deployed();
     });
 
