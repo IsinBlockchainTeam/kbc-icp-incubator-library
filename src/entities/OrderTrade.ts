@@ -12,7 +12,7 @@ export class OrderTrade extends OrderTradeInfo {
     constructor(orderTradeInfo: OrderTradeInfo, incoterms: string, shipper: string, shippingPort: string, deliveryPort: string) {
         super(orderTradeInfo.tradeId, orderTradeInfo.supplier, orderTradeInfo.customer, orderTradeInfo.commissioner, orderTradeInfo.externalUrl, orderTradeInfo.lines as OrderLine[],
             orderTradeInfo.hasSupplierSigned, orderTradeInfo.hasCommissionerSigned, orderTradeInfo.paymentDeadline, orderTradeInfo.documentDeliveryDeadline,
-            orderTradeInfo.arbiter, orderTradeInfo.shippingDeadline, orderTradeInfo.deliveryDeadline, orderTradeInfo.escrow, orderTradeInfo.negotiationStatus,
+            orderTradeInfo.arbiter, orderTradeInfo.shippingDeadline, orderTradeInfo.deliveryDeadline, orderTradeInfo.negotiationStatus, orderTradeInfo.agreedAmount, orderTradeInfo.tokenAddress, orderTradeInfo.escrow,
         );
         this._incoterms = incoterms;
         this._shipper = shipper;

@@ -75,6 +75,14 @@ export class OrderTradeService<MS extends MetadataSpec, DS extends DocumentSpec,
         return this._tradeDriverImplementation.updateDeliveryDeadline(deliveryDeadline);
     }
 
+    async updateAgreedAmount(agreedAmount: number): Promise<void> {
+        return this._tradeDriverImplementation.updateAgreedAmount(agreedAmount);
+    }
+
+    async updateTokenAddress(tokenAddress: string): Promise<void> {
+        return this._tradeDriverImplementation.updateTokenAddress(tokenAddress);
+    }
+
     async haveDeadlinesExpired(): Promise<boolean> {
         return this._tradeDriverImplementation.haveDeadlinesExpired();
     }

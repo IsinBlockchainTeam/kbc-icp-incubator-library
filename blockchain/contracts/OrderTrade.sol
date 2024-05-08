@@ -56,7 +56,7 @@ contract OrderTrade is Trade {
     EnumerableType private _fiatManager;
     EscrowManager private _escrowManager;
 
-    constructor(uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl, uint256 paymentDeadline, uint256 documentDeliveryDeadline, address arbiter, uint256 shippingDeadline, uint256 deliveryDeadline, uint256 agreedAmount, address tokenAddress, address fiatManagerAddress, address escrowManagerAddress) Trade(tradeId, productCategoryAddress, materialManagerAddress, documentManagerAddress, supplier, customer, commissioner, externalUrl) {
+    constructor(uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress, address unitManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl, uint256 paymentDeadline, uint256 documentDeliveryDeadline, address arbiter, uint256 shippingDeadline, uint256 deliveryDeadline, uint256 agreedAmount, address tokenAddress, address fiatManagerAddress, address escrowManagerAddress) Trade(tradeId, productCategoryAddress, materialManagerAddress, documentManagerAddress, unitManagerAddress, supplier, customer, commissioner, externalUrl) {
         require(escrowManagerAddress != address(0), "TradeManager: escrow manager address is the zero address");
 
         _tradeId = tradeId;
@@ -76,9 +76,9 @@ contract OrderTrade is Trade {
         _hasOrderExpired = false;
     }
 
-    function getTrade() public view returns (uint256, address, address, address, string memory, uint256[] memory, bool, bool, uint256, uint256, address, uint256, uint256, Escrow, NegotiationStatus, uint256, address) {
+    function getTrade() public view returns (uint256, address, address, address, string memory, uint256[] memory, bool, bool, uint256, uint256, address, uint256, uint256, NegotiationStatus, uint256, address, Escrow) {
         (uint256 tradeId, address supplier, address customer, address commissioner, string memory externalUrl, uint256[] memory lineIds) = _getTrade();
-        return (tradeId, supplier, customer, commissioner, externalUrl, lineIds, _hasSupplierSigned, _hasCommissionerSigned, _paymentDeadline, _documentDeliveryDeadline, _arbiter, _shippingDeadline, _deliveryDeadline, _escrow, getNegotiationStatus(), _agreedAmount, _tokenAddress);
+        return (tradeId, supplier, customer, commissioner, externalUrl, lineIds, _hasSupplierSigned, _hasCommissionerSigned, _paymentDeadline, _documentDeliveryDeadline, _arbiter, _shippingDeadline, _deliveryDeadline, getNegotiationStatus(), _agreedAmount, _tokenAddress, _escrow);
     }
 
     function getTradeType() public override pure returns (TradeType) {
@@ -150,6 +150,16 @@ contract OrderTrade is Trade {
 
     function updateDeliveryDeadline(uint256 deliveryDeadline) public onlyAdminOrContractPart onlyOrdersInNegotiation {
         _deliveryDeadline = deliveryDeadline;
+        _updateSignatures(_msgSender());
+    }
+
+    function updateAgreedAmount(uint256 agreedAmount) public onlyAdminOrContractPart onlyOrdersInNegotiation {
+        _agreedAmount = agreedAmount;
+        _updateSignatures(_msgSender());
+    }
+
+    function updateTokenAddress(address tokenAddress) public onlyAdminOrContractPart onlyOrdersInNegotiation {
+        _tokenAddress = tokenAddress;
         _updateSignatures(_msgSender());
     }
 

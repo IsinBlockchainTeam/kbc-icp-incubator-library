@@ -105,7 +105,7 @@ describe('OrderTradeInfo', () => {
 
     beforeAll(() => {
         orderTradeInfo = new OrderTradeInfo(0, 'supplier', 'customer', 'commissioner', 'https://test.com',
-            [], false, false, 100, 200, 'arbitrer', 300, 400, 'escrow', NegotiationStatus.PENDING);
+            [], false, false, 100, 200, 'arbitrer', 300, 400, NegotiationStatus.PENDING, 100, 'tokenAddr', 'escrow');
     });
 
     it('should correctly initialize an OrderTrade', () => {

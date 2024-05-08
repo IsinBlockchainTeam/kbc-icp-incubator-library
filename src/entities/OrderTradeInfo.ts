@@ -83,6 +83,10 @@ export class OrderTradeInfo extends Trade {
 
     private _negotiationStatus: NegotiationStatus;
 
+    private _agreedAmount: number;
+
+    private _tokenAddress: string;
+
     constructor(
         tradeId: number, supplier: string, customer: string, commissioner: string, externalUrl: string, lines: OrderLine[],
         hasSupplierSigned: boolean,
@@ -93,6 +97,8 @@ export class OrderTradeInfo extends Trade {
         shippingDeadline: number,
         deliveryDeadline: number,
         negotiationStatus: NegotiationStatus,
+        agreedAmount: number,
+        tokenAddress: string,
         escrow?: string,
     ) {
         super(tradeId, supplier, customer, commissioner, externalUrl, lines);
@@ -104,6 +110,8 @@ export class OrderTradeInfo extends Trade {
         this._shippingDeadline = shippingDeadline;
         this._deliveryDeadline = deliveryDeadline;
         this._negotiationStatus = negotiationStatus;
+        this._agreedAmount = agreedAmount;
+        this._tokenAddress = tokenAddress;
         this._escrow = escrow;
     }
 
@@ -177,5 +185,21 @@ export class OrderTradeInfo extends Trade {
 
     set negotiationStatus(value: NegotiationStatus) {
         this._negotiationStatus = value;
+    }
+
+    get agreedAmount(): number {
+        return this._agreedAmount;
+    }
+
+    set agreedAmount(value: number) {
+        this._agreedAmount = value;
+    }
+
+    get tokenAddress(): string {
+        return this._tokenAddress;
+    }
+
+    set tokenAddress(value: string) {
+        this._tokenAddress = value;
     }
 }

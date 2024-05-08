@@ -69,8 +69,10 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
             result[10],
             result[11].toNumber(),
             result[12].toNumber(),
-            result[13] === zeroAddress ? undefined : result[13],
-            getOrderTradeStatusByIndex(result[14]),
+            getOrderTradeStatusByIndex(result[13]),
+            result[14].toNumber(),
+            result[15],
+            result[16] === zeroAddress ? undefined : result[16],
         );
     }
 
@@ -154,6 +156,16 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
 
     async updateDeliveryDeadline(deliveryDeadline: number): Promise<void> {
         const tx = await this._actual.updateDeliveryDeadline(deliveryDeadline);
+        await tx.wait();
+    }
+
+    async updateAgreedAmount(agreedAmount: number): Promise<void> {
+        const tx = await this._actual.updateAgreedAmount(agreedAmount);
+        await tx.wait();
+    }
+
+    async updateTokenAddress(tokenAddress: string): Promise<void> {
+        const tx = await this._actual.updateTokenAddress(tokenAddress);
         await tx.wait();
     }
 

@@ -7,7 +7,7 @@ import { BasicTrade } from '../entities/BasicTrade';
 import { OrderTradeInfo } from '../entities/OrderTradeInfo';
 import { IStorageMetadataDriver } from '../drivers/IStorageMetadataDriver';
 import { SolidMetadataSpec } from '../drivers/SolidMetadataDriver';
-import { StorageOperationType } from '../types/StorageOperationType';
+import { NegotiationStatus } from '../types/NegotiationStatus';
 
 describe('TradeManagerService', () => {
     let tradeManagerService: TradeManagerService<SolidMetadataSpec, SolidStorageACR>;
@@ -31,7 +31,7 @@ describe('TradeManagerService', () => {
     };
 
     const basicTrade: BasicTrade = new BasicTrade(1, 'supplier', 'customer', 'commissioner', 'externalUrl', [], 'name');
-    const orderTrade: OrderTradeInfo = new OrderTradeInfo(1, 'supplier', 'customer', 'commissioner', 'externalUrl', [], true, false, 1000, 2000, 'arbiter', 3000, 4000, 'tokenAddress');
+    const orderTrade: OrderTradeInfo = new OrderTradeInfo(1, 'supplier', 'customer', 'commissioner', 'externalUrl', [], true, false, 1000, 2000, 'arbiter', 3000, 4000, NegotiationStatus.PENDING, 200, 'tokenAddr', 'tokenAddress');
     const agreedAmount: number = 1000;
     const tokenAddress: string = 'tokenAddress';
     const metadata = { metadata: 'metadata' };
