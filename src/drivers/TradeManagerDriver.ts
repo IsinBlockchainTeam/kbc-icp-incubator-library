@@ -22,11 +22,11 @@ export class TradeManagerDriver {
         this._productCategoryManagerAddress = productCategoryManagerAddress;
     }
 
-    async registerBasicTrade(supplier: string, customer: string, commissioner: string, externalUrl: string, name: string): Promise<[number, string, string]> {
+    async registerBasicTrade(supplier: string, customer: string, commissioner: string, externalUrl: string, metadataHash: string, name: string): Promise<[number, string, string]> {
         if (!utils.isAddress(supplier) || !utils.isAddress(customer) || !utils.isAddress(commissioner)) {
             throw new Error('Not an address');
         }
-        const tx = await this._contract.registerBasicTrade(supplier, customer, commissioner, externalUrl, name);
+        const tx = await this._contract.registerBasicTrade(supplier, customer, commissioner, externalUrl, metadataHash, name);
         const { events, transactionHash } = await tx.wait();
 
         if (!events) {
@@ -36,11 +36,11 @@ export class TradeManagerDriver {
         return [eventArgs?.id.toNumber(), eventArgs?.contractAddress, transactionHash];
     }
 
-    async registerOrderTrade(supplier: string, customer: string, commissioner: string, externalUrl: string, paymentDeadline: number, documentDeliveryDeadline: number, arbiter: string, shippingDeadline: number, deliveryDeadline: number, agreedAmount: number, tokenAddress: string): Promise<[number, string, string]> {
+    async registerOrderTrade(supplier: string, customer: string, commissioner: string, externalUrl: string, metadataHash: string, paymentDeadline: number, documentDeliveryDeadline: number, arbiter: string, shippingDeadline: number, deliveryDeadline: number, agreedAmount: number, tokenAddress: string): Promise<[number, string, string]> {
         if (!utils.isAddress(supplier) || !utils.isAddress(customer) || !utils.isAddress(commissioner) || !utils.isAddress(tokenAddress)) {
             throw new Error('Not an address');
         }
-        const tx = await this._contract.registerOrderTrade(supplier, customer, commissioner, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);
+        const tx = await this._contract.registerOrderTrade(supplier, customer, commissioner, externalUrl, metadataHash, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);
         const { events, transactionHash } = await tx.wait();
 
         if (!events) {

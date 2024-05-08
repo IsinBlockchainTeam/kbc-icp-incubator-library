@@ -79,7 +79,8 @@ abstract contract Trade is AccessControl {
     MaterialManager internal _materialManager;
     DocumentManager internal _documentManager;
 
-    constructor(uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl) {
+    constructor(uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress,
+        address supplier, address customer, address commissioner, string memory externalUrl, string memory metadataHash) {
         _setupRole(ADMIN_ROLE, _msgSender());
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
 
@@ -91,6 +92,8 @@ abstract contract Trade is AccessControl {
         _customer = customer;
         _commissioner = commissioner;
         _externalUrl = string.concat(externalUrl, Strings.toString(tradeId));
+
+        addDocument(DocumentType.METADATA, string.concat(_externalUrl, "/files/metadata.json"), metadataHash);
     }
 
     function getLineCounter() public view returns (uint256) {
@@ -144,6 +147,13 @@ abstract contract Trade is AccessControl {
         uint256 documentsCounter = _documentManager.getDocumentsCounter();
         //require(documentsCounter > 0, "Trade: There are no documents related to this trade");
 
+        console.log("documentsCounter: %d", documentsCounter);
+        console.log("_documentsByType[DocumentType.METADATA].length: %d", _documentsByType[DocumentType.METADATA].length);
+        console.log("_documentsByType[DocumentType.PAYMENT_INVOICE].length: %d", _documentsByType[DocumentType.PAYMENT_INVOICE].length);
+        console.log("_documentsByType[DocumentType.BILL_OF_LADING].length: %d", _documentsByType[DocumentType.BILL_OF_LADING].length);
+        console.log("_documentsByType[DocumentType.DELIVERY_NOTE].length: %d", _documentsByType[DocumentType.DELIVERY_NOTE].length);
+
+
         if (documentsCounter == 0) return TradeStatus.CONTRACTING;
 
         if (documentsCounter == _documentsByType[DocumentType.METADATA].length) return TradeStatus.CONTRACTING;
@@ -156,11 +166,15 @@ abstract contract Trade is AccessControl {
     }
 
     function addDocument(DocumentType documentType, string memory externalUrl, string memory contentHash) public onlyAdminOrContractPart {
-//        require(_lines[lineId].exists, "Trade: Line does not exist");
-//        require(_lines[lineId].materialId != 0, "Trade: A material must be assigned before adding a document for a line");
+        // require(_lines[lineId].exists, "Trade: Line does not exist");
+        // require(_lines[lineId].materialId != 0, "Trade: A material must be assigned before adding a document for a line");
         uint256 documentId = _documentManager.registerDocument(externalUrl, contentHash);
         _documentIds.push(documentId);
         _documentsByType[documentType].push(documentId);
+    }
+
+    function updateDocument(uint256 documentId, string memory externalUrl, string memory contentHash) public onlyAdminOrContractPart {
+        _documentManager.updateDocument(documentId, externalUrl, contentHash);
     }
 
     function getAllDocumentIds() public view returns (uint256[] memory) {

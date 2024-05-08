@@ -15,7 +15,11 @@ export class DocumentService {
     }
 
     async registerDocument(externalUrl: string, contentHash: string): Promise<void> {
-        await this._documentDriver.registerDocument(externalUrl, contentHash);
+        return this._documentDriver.registerDocument(externalUrl, contentHash);
+    }
+
+    async updateDocument(documentId: number, externalUrl: string, contentHash: string): Promise<void> {
+        return this._documentDriver.updateDocument(documentId, externalUrl, contentHash);
     }
 
     async getDocumentsCounter(): Promise<number> {
@@ -29,9 +33,6 @@ export class DocumentService {
     async getCompleteDocument(documentInfo: DocumentInfo): Promise<Document> {
         if (!this._icpFileDriver) throw new Error('DocumentService: ICPFileDriver has not been set');
         try {
-            // const { filename, date, lines } = await this._storageMetadataDriver.read(StorageOperationType.TRANSACTION_DOCUMENT, metadataSpec);
-            // const fileContent = await this._storageDocumentDriver.read(StorageOperationType.TRANSACTION_DOCUMENT, documentSpec);
-            // if (fileContent) return new Document(documentInfo, filename, new Date(date), fileContent, lines);
             const path = documentInfo.externalUrl.split('/').slice(0, -1).join('/');
             const metadataName = FileHelpers.removeFileExtension(documentInfo.externalUrl.split(path + '/')[1]);
 
@@ -41,7 +42,7 @@ export class DocumentService {
                 date: Date;
                 transactionLines: TransactionLine[];
             }
-            const documentMetadata: DocumentMetadata = FileHelpers.getObjectFromBytes(await this._icpFileDriver.read(path + '/' + metadataName + '.metadata')) as DocumentMetadata;
+            const documentMetadata: DocumentMetadata = FileHelpers.getObjectFromBytes(await this._icpFileDriver.read(path + '/' + metadataName + '-metadata.json')) as DocumentMetadata;
             const fileName = documentMetadata.fileName;
             const documentType = documentMetadata.documentType;
             const date = documentMetadata.date;
@@ -51,7 +52,7 @@ export class DocumentService {
             const fileContent = await this._icpFileDriver.read(documentInfo.externalUrl);
             return new Document(documentInfo, fileName, documentType, new Date(date), fileContent, transactionLines);
         } catch (e: any) {
-            throw new Error(`Error while retrieve document file from external storage: ${e.message}`);
+            throw new Error(`Error while retrieving document file from external storage: ${e.message}`);
         }
     }
 

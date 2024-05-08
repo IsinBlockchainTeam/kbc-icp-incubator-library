@@ -57,7 +57,7 @@ export class TradeService {
         };
 
         await this._icpFileDriver.create(FileHelpers.getBytesFromObject(documentMetadata), {
-            name: externalUrl + "/files/" + fileName + ".metadata",
+            name: externalUrl + "/files/" + fileName + "-metadata.json",
             type: "application/json",
         });
         return this._tradeDriver.addDocument(documentType, resourceSpec.name, contentHash.toString());

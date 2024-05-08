@@ -6,7 +6,9 @@ import "./Trade.sol";
 contract BasicTrade is Trade {
     string private _name;
 
-    constructor(uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl, string memory name) Trade(tradeId, productCategoryAddress, materialManagerAddress, documentManagerAddress, supplier, customer, commissioner, externalUrl) {
+    constructor(uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress,
+        address supplier, address customer, address commissioner, string memory externalUrl, string memory metadataHash, string memory name)
+    Trade(tradeId, productCategoryAddress, materialManagerAddress, documentManagerAddress, supplier, customer, commissioner, externalUrl, metadataHash) {
         _name = name;
     }
 

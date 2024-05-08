@@ -23,37 +23,46 @@ export class TradeManagerService {
             this._icpFileDriver = args.icpFileDriver;
     }
 
-    // TODO: store external url
-    async registerBasicTrade(supplier: string, customer: string, commissioner: string, name: string): Promise<[number, string, string]> {
-        const externalUrl = '';
-        return this._tradeManagerDriver.registerBasicTrade(supplier, customer, commissioner, externalUrl, name);
+    async registerBasicTrade(supplier: string, customer: string, commissioner: string, name: string, metadata: object, urlStructure: URLStructure): Promise<[number, string, string]> {
+        // if(!this._icpFileDriver)
+        //     throw new Error("TradeManagerService: Storage metadata driver has not been set");
+        //
+        // let externalUrl = this.buildExternalUrl(urlStructure);
+        // const bytes = FileHelpers.getBytesFromObject(metadata);
+        // const fileHash = FileHelpers.getHash(bytes);
+        //
+        // const [newTradeId, newTradeAddress, transactionHash] =
+        //     await this._tradeManagerDriver.registerBasicTrade(supplier, customer, commissioner, externalUrl, fileHash.toString(), name);
+        //
+        // await this.storeMetadataOnICP(newTradeId, bytes, externalUrl);
+        //
+        // return [newTradeId, newTradeAddress, transactionHash];
+
+        return this.createTrade((externalUrl: string, fileHash: string) => {
+            return this._tradeManagerDriver.registerBasicTrade(supplier, customer, commissioner, externalUrl, fileHash, name);
+        }, metadata, urlStructure);
     }
 
     async registerOrderTrade(supplier: string, customer: string, commissioner: string, paymentDeadline: number, documentDeliveryDeadline: number, arbiter: string, shippingDeadline: number, deliveryDeadline: number, agreedAmount: number, tokenAddress: string, metadata: OrderTradeMetadata, urlStructure: URLStructure): Promise<[number, string, string]> {
-        if(!this._icpFileDriver)
-            throw new Error("TradeManagerService: Storage metadata driver has not been set");
-
-        let externalUrl = urlStructure.prefix.endsWith('/') ? urlStructure.prefix : urlStructure.prefix + '/';
-        externalUrl += "organizations/" + urlStructure.organizationId + "/transactions/";
-
-        const [newTradeId, newTradeAddress, transactionHash] = await this._tradeManagerDriver.registerOrderTrade(supplier, customer, commissioner, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);
-
-        // TODO: retrieve new external url
-        const newExternalUrl = '';
-        const name = newExternalUrl + "/files/metadata.json";
-        const resourceSpec: ICPResourceSpec = {
-            name,
-            type: 'application/json'
-        };
-        const bytes = FileHelpers.getBytesFromObject(metadata);
-        await this._icpFileDriver.create(bytes, resourceSpec);
-
-        // TODO: store metadata hash on-chain and associate it with the trade
-        // const tradeDriver = ... find a way to get the trade driver, given that the Signer is not accessible here ...
+        // if(!this._icpFileDriver)
+        //     throw new Error("TradeManagerService: Storage metadata driver has not been set");
+        //
+        // let externalUrl = this.buildExternalUrl(urlStructure);
+        // const bytes = FileHelpers.getBytesFromObject(metadata);
         // const fileHash = FileHelpers.getHash(bytes);
-        // await tradeDriver.addDocument(DocumentType.METADATA, name, fileHash.toString());
+        //
+        // const [newTradeId, newTradeAddress, transactionHash] =
+        //     await this._tradeManagerDriver.registerOrderTrade(supplier, customer, commissioner, externalUrl, fileHash.toString(),
+        //         paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);
+        //
+        // await this.storeMetadataOnICP(newTradeId, bytes, externalUrl);
+        //
+        // return [newTradeId, newTradeAddress, transactionHash];
 
-        return [newTradeId, newTradeAddress, transactionHash];
+        return this.createTrade((externalUrl: string, fileHash: string) => {
+            return this._tradeManagerDriver.registerOrderTrade(supplier, customer, commissioner, externalUrl, fileHash,
+                paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);
+        }, metadata, urlStructure);
     }
 
     async getTradeCounter(): Promise<number> {
@@ -86,5 +95,45 @@ export class TradeManagerService {
 
     async getTradeIdsOfCommissioner(commissioner: string): Promise<number[]> {
         return this._tradeManagerDriver.getTradeIdsOfCommissioner(commissioner);
+    }
+
+    private buildExternalUrl(urlStructure: URLStructure): string {
+        return urlStructure.prefix.endsWith('/') ? urlStructure.prefix : urlStructure.prefix + '/' +
+            "organizations/" + urlStructure.organizationId + "/transactions/";
+    }
+
+    private storeMetadataOnICP(newTradeId: number, bytes: Uint8Array, externalUrl: string): Promise<number> {
+        if(!this._icpFileDriver)
+            throw new Error("TradeManagerService: Storage metadata driver has not been set");
+
+        const newExternalUrl = externalUrl + newTradeId;
+        const name = newExternalUrl + "/files/metadata.json";
+        const resourceSpec: ICPResourceSpec = {
+            name,
+            type: 'application/json'
+        };
+        return this._icpFileDriver.create(bytes, resourceSpec);
+    }
+
+    private async createTrade(registerTrade: (externalUrl: string, fileHash: string) => Promise<[number, string, string]>, metadata: object, urlStructure: URLStructure): Promise<[number, string, string]> {
+        if(!this._icpFileDriver)
+            throw new Error("TradeManagerService: Storage metadata driver has not been set");
+
+        const externalUrl = (urlStructure.prefix.endsWith('/') ? urlStructure.prefix : urlStructure.prefix + '/') +
+            "organizations/" + urlStructure.organizationId + "/transactions/";
+        const bytes = FileHelpers.getBytesFromObject(metadata);
+        const fileHash = FileHelpers.getHash(bytes);
+
+        const [newTradeId, newTradeAddress, transactionHash] = await registerTrade(externalUrl, fileHash.toString());
+
+        const newExternalUrl = externalUrl + newTradeId;
+        const name = newExternalUrl + "/files/metadata.json";
+        const resourceSpec: ICPResourceSpec = {
+            name,
+            type: 'application/json'
+        };
+        await this._icpFileDriver.create(bytes, resourceSpec);
+
+        return [newTradeId, newTradeAddress, transactionHash];
     }
 }

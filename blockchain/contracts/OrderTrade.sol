@@ -52,7 +52,11 @@ contract OrderTrade is Trade {
 
     EnumerableType private _fiatManager;
 
-    constructor(uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl, uint256 paymentDeadline, uint256 documentDeliveryDeadline, address arbiter, uint256 shippingDeadline, uint256 deliveryDeadline, address escrowAddress, address fiatManagerAddress) Trade(tradeId, productCategoryAddress, materialManagerAddress, documentManagerAddress, supplier, customer, commissioner, externalUrl) {
+    constructor(uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress,
+        address supplier, address customer, address commissioner, string memory externalUrl, string memory metadataHash,
+        uint256 paymentDeadline, uint256 documentDeliveryDeadline, address arbiter, uint256 shippingDeadline,
+        uint256 deliveryDeadline, address escrowAddress, address fiatManagerAddress)
+    Trade(tradeId, productCategoryAddress, materialManagerAddress, documentManagerAddress, supplier, customer, commissioner, externalUrl, metadataHash) {
         _tradeId = tradeId;
         _paymentDeadline = paymentDeadline;
         _documentDeliveryDeadline = documentDeliveryDeadline;
