@@ -342,11 +342,11 @@ describe('OrderTradeDriver', () => {
     });
 
     it('should correctly retrieve the negotiation status - COMPLETED', async () => {
-        mockedGetNegotiationStatus.mockReturnValue(Promise.resolve(NegotiationStatus.COMPLETED));
+        mockedGetNegotiationStatus.mockReturnValue(Promise.resolve(NegotiationStatus.CONFIRMED));
         const result = await orderTradeDriver.getNegotiationStatus();
 
         expect(result)
-            .toEqual(NegotiationStatus.COMPLETED);
+            .toEqual(NegotiationStatus.CONFIRMED);
 
         expect(mockedContract.getNegotiationStatus)
             .toHaveBeenCalledTimes(1);

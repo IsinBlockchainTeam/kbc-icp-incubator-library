@@ -5,6 +5,6 @@ export interface IConcreteTradeService {
     getLines(): Promise<Line[]>;
     getLine(id: number, blockNumber?: number): Promise<Line>;
     addLine(line: LineRequest): Promise<number>;
-    updateLine(line: Line): Promise<void>;
+    updateLine(line: LineRequest): Promise<void>;
     assignMaterial(lineId: number, materialId: number): Promise<void>;
 }

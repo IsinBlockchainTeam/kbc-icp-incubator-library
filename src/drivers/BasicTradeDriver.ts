@@ -79,8 +79,8 @@ export class BasicTradeDriver extends TradeDriver implements IConcreteTradeDrive
         return events.find((event: Event) => event.event === 'TradeLineAdded').args[0];
     }
 
-    async updateLine(line: Line): Promise<void> {
-        const tx = await this._basicTradeContract.updateLine(line.id, line.productCategory.id, line.quantity, line.unit);
+    async updateLine(line: LineRequest): Promise<void> {
+        const tx = await this._basicTradeContract.updateLine(line.id!, line.productCategoryId, line.quantity, line.unit);
         await tx.wait();
     }
 

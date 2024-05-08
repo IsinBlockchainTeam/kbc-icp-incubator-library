@@ -102,7 +102,7 @@ contract TradeManager is AccessControl {
         _counter.increment();
 
         Escrow escrow = _escrowManager.registerEscrow(supplier, commissioner, agreedAmount, paymentDeadline - block.timestamp, tokenAddress);
-        OrderTrade newTrade = new OrderTrade(id, _productCategoryManagerAddress, _materialManagerAddress, _documentManagerAddress, _unitManagerAddress, supplier, customer, commissioner, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, address(escrow), _fiatManagerAddress);
+        OrderTrade newTrade = new OrderTrade(id, _productCategoryManagerAddress, _materialManagerAddress, _documentManagerAddress, _unitManagerAddress, supplier, customer, commissioner, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress, address(escrow), _fiatManagerAddress);
         _trades[id] = newTrade;
         _tradeIdsOfSupplier[supplier].push(id);
         _tradeIdsOfCommissioner[commissioner].push(id);

@@ -1,17 +1,11 @@
 import { BigNumber } from 'ethers';
 import { MaterialManager, OrderTrade as OrderTradeContract, ProductCategoryManager } from '../smart-contracts';
-import {
-    OrderLine,
-    OrderLinePrice,
-    OrderLineRequest,
-    OrderTradeInfo,
-} from './OrderTradeInfo';
+import { OrderLine, OrderLinePrice, OrderLineRequest, OrderTradeInfo } from './OrderTradeInfo';
 import { EntityBuilder } from '../utils/EntityBuilder';
-import {
-    Trade as TradeContract,
-} from '../smart-contracts/contracts/OrderTrade';
+import { Trade as TradeContract } from '../smart-contracts/contracts/OrderTrade';
 import { ProductCategory } from './ProductCategory';
 import { Material } from './Material';
+import { NegotiationStatus } from '../types/NegotiationStatus';
 
 describe('OrderLinePrice', () => {
     let price: OrderLinePrice;
@@ -111,7 +105,7 @@ describe('OrderTradeInfo', () => {
 
     beforeAll(() => {
         orderTradeInfo = new OrderTradeInfo(0, 'supplier', 'customer', 'commissioner', 'https://test.com',
-            [], false, false, 100, 200, 'arbitrer', 300, 400, 'escrow');
+            [], false, false, 100, 200, 'arbitrer', 300, 400, 'escrow', NegotiationStatus.PENDING);
     });
 
     it('should correctly initialize an OrderTrade', () => {
@@ -133,6 +127,8 @@ describe('OrderTradeInfo', () => {
             .toEqual([]);
         expect(orderTradeInfo.escrow)
             .toEqual('escrow');
+        expect(orderTradeInfo.negotiationStatus)
+            .toEqual(NegotiationStatus.PENDING);
     });
 
     it('should correctly set the hasSupplierSigned', () => {
@@ -218,5 +214,11 @@ describe('OrderTradeInfo', () => {
         orderTradeInfo.escrow = 'new escrow';
         expect(orderTradeInfo.escrow)
             .toEqual('new escrow');
+    });
+
+    it('should correctly set the negotiationStatus', () => {
+        orderTradeInfo.negotiationStatus = NegotiationStatus.CONFIRMED;
+        expect(orderTradeInfo.negotiationStatus)
+            .toEqual(NegotiationStatus.CONFIRMED);
     });
 });

@@ -24,7 +24,7 @@ export class BasicTradeService<MS extends MetadataSpec, DS extends DocumentSpec,
         return this._tradeDriverImplementation.addLine(line);
     }
 
-    async updateLine(line: Line): Promise<void> {
+    async updateLine(line: LineRequest): Promise<void> {
         return this._tradeDriverImplementation.updateLine(line);
     }
 

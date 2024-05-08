@@ -4,11 +4,12 @@ pragma solidity ^0.8.17;
 import "./Trade.sol";
 import "./Escrow.sol";
 import "hardhat/console.sol";
+import "./EscrowManager.sol";
 
 contract OrderTrade is Trade {
     using Counters for Counters.Counter;
 
-    enum NegotiationStatus {INITIALIZED, PENDING, COMPLETED, EXPIRED}
+    enum NegotiationStatus {INITIALIZED, PENDING, CONFIRMED, EXPIRED}
 
     event OrderLineAdded(uint256 orderLineId);
     event OrderLineUpdated(uint256 orderLineId);
@@ -17,7 +18,7 @@ contract OrderTrade is Trade {
     event OrderExpired();
 
     modifier onlyOrdersInNegotiation() {
-        require(getNegotiationStatus() != NegotiationStatus.COMPLETED, "OrderTrade: The order has already been confirmed, therefore it cannot be changed");
+        require(getNegotiationStatus() != NegotiationStatus.CONFIRMED, "OrderTrade: The order has already been confirmed, therefore it cannot be changed");
         _;
     }
 
@@ -48,27 +49,35 @@ contract OrderTrade is Trade {
     mapping(uint256 => OrderLine) private _orderLines;
 
     Escrow private _escrow;
+    // property used to construct the Escrow contract
+    address private _tokenAddress;
+    uint256 private _agreedAmount;
 
     EnumerableType private _fiatManager;
+    EscrowManager private _escrowManager;
 
-    constructor(uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress, address unitManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl, uint256 paymentDeadline, uint256 documentDeliveryDeadline, address arbiter, uint256 shippingDeadline, uint256 deliveryDeadline, address escrowAddress, address fiatManagerAddress) Trade(tradeId, productCategoryAddress, materialManagerAddress, documentManagerAddress, unitManagerAddress, supplier, customer, commissioner, externalUrl) {
+    constructor(uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl, uint256 paymentDeadline, uint256 documentDeliveryDeadline, address arbiter, uint256 shippingDeadline, uint256 deliveryDeadline, uint256 agreedAmount, address tokenAddress, address fiatManagerAddress, address escrowManagerAddress) Trade(tradeId, productCategoryAddress, materialManagerAddress, documentManagerAddress, supplier, customer, commissioner, externalUrl) {
+        require(escrowManagerAddress != address(0), "TradeManager: escrow manager address is the zero address");
         _tradeId = tradeId;
         _paymentDeadline = paymentDeadline;
         _documentDeliveryDeadline = documentDeliveryDeadline;
         _arbiter = arbiter;
         _shippingDeadline = shippingDeadline;
         _deliveryDeadline = deliveryDeadline;
-        _escrow = Escrow(escrowAddress);
         _fiatManager = EnumerableType(fiatManagerAddress);
+        _escrowManager = EscrowManager(escrowManagerAddress);
+
+        _tokenAddress = tokenAddress;
+        _agreedAmount = agreedAmount;
 
         _hasSupplierSigned = false;
         _hasCommissionerSigned = false;
         _hasOrderExpired = false;
     }
 
-    function getTrade() public view returns (uint256, address, address, address, string memory, uint256[] memory, bool, bool, uint256, uint256, address, uint256, uint256, Escrow) {
+    function getTrade() public view returns (uint256, address, address, address, string memory, uint256[] memory, bool, bool, uint256, uint256, address, uint256, uint256, Escrow, NegotiationStatus, uint256, address) {
         (uint256 tradeId, address supplier, address customer, address commissioner, string memory externalUrl, uint256[] memory lineIds) = _getTrade();
-        return (tradeId, supplier, customer, commissioner, externalUrl, lineIds, _hasSupplierSigned, _hasCommissionerSigned, _paymentDeadline, _documentDeliveryDeadline, _arbiter, _shippingDeadline, _deliveryDeadline, _escrow);
+        return (tradeId, supplier, customer, commissioner, externalUrl, lineIds, _hasSupplierSigned, _hasCommissionerSigned, _paymentDeadline, _documentDeliveryDeadline, _arbiter, _shippingDeadline, _deliveryDeadline, _escrow, getNegotiationStatus(), _agreedAmount, _tokenAddress);
     }
 
     function getTradeType() public override pure returns (TradeType) {
@@ -112,7 +121,7 @@ contract OrderTrade is Trade {
         } else if (!_hasCommissionerSigned && !_hasSupplierSigned) {
             return NegotiationStatus.INITIALIZED;
         } else if (_hasCommissionerSigned && _hasSupplierSigned) {
-            return NegotiationStatus.COMPLETED;
+            return NegotiationStatus.CONFIRMED;
         } else {
             return NegotiationStatus.PENDING;
         }
@@ -144,7 +153,7 @@ contract OrderTrade is Trade {
     }
 
     function haveDeadlinesExpired() public view returns (bool) {
-        return getNegotiationStatus() == NegotiationStatus.COMPLETED && (block.timestamp > _paymentDeadline || block.timestamp > _documentDeliveryDeadline || block.timestamp > _shippingDeadline || block.timestamp > _deliveryDeadline);
+        return getNegotiationStatus() == NegotiationStatus.CONFIRMED && (block.timestamp > _paymentDeadline || block.timestamp > _documentDeliveryDeadline || block.timestamp > _shippingDeadline || block.timestamp > _deliveryDeadline);
     }
 
     function enforceDeadlines() public {

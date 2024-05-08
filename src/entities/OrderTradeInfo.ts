@@ -1,6 +1,7 @@
 import { Line, LineRequest, Trade } from './Trade';
 import { Material } from './Material';
 import { ProductCategory } from './ProductCategory';
+import { NegotiationStatus } from '../types/NegotiationStatus';
 
 export class OrderLinePrice {
     private _amount: number;
@@ -32,8 +33,8 @@ export class OrderLinePrice {
 export class OrderLineRequest extends LineRequest {
     private _price: OrderLinePrice;
 
-    constructor(productCategoryId: number, quantity: number, unit: string, price: OrderLinePrice) {
-        super(productCategoryId, quantity, unit);
+    constructor(productCategoryId: number, quantity: number, unit: string, price: OrderLinePrice, oldId?: number) {
+        super(productCategoryId, quantity, unit, oldId);
         this._price = price;
     }
 
@@ -80,6 +81,8 @@ export class OrderTradeInfo extends Trade {
 
     private _escrow: string;
 
+    private _negotiationStatus: NegotiationStatus;
+
     constructor(
         tradeId: number, supplier: string, customer: string, commissioner: string, externalUrl: string, lines: OrderLine[],
         hasSupplierSigned: boolean,
@@ -90,6 +93,7 @@ export class OrderTradeInfo extends Trade {
         shippingDeadline: number,
         deliveryDeadline: number,
         escrow: string,
+        negotiationStatus: NegotiationStatus,
     ) {
         super(tradeId, supplier, customer, commissioner, externalUrl, lines);
         this._hasSupplierSigned = hasSupplierSigned;
@@ -100,6 +104,7 @@ export class OrderTradeInfo extends Trade {
         this._shippingDeadline = shippingDeadline;
         this._deliveryDeadline = deliveryDeadline;
         this._escrow = escrow;
+        this._negotiationStatus = negotiationStatus;
     }
 
     get hasSupplierSigned(): boolean {
@@ -164,5 +169,13 @@ export class OrderTradeInfo extends Trade {
 
     set escrow(value: string) {
         this._escrow = value;
+    }
+
+    get negotiationStatus(): NegotiationStatus {
+        return this._negotiationStatus;
+    }
+
+    set negotiationStatus(value: NegotiationStatus) {
+        this._negotiationStatus = value;
     }
 }

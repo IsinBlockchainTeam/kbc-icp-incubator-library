@@ -29,6 +29,7 @@ export { OrderTrade } from './entities/OrderTrade';
 export { OrderLine } from './entities/OrderTradeInfo';
 export { OrderLinePrice } from './entities/OrderTradeInfo';
 export { TradeStatus } from './types/TradeStatus';
+export { NegotiationStatus } from './types/NegotiationStatus';
 export { TradeType } from './types/TradeType';
 export { TradeManagerDriver } from './drivers/TradeManagerDriver';
 export { TradeManagerService } from './services/TradeManagerService';

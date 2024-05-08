@@ -16,6 +16,7 @@ import {
 } from '../entities/OrderTradeInfo';
 import { EntityBuilder } from '../utils/EntityBuilder';
 import { IConcreteTradeDriverInterface } from './IConcreteTradeDriver.interface';
+import { getOrderTradeStatusByIndex } from '../utils/utils';
 
 export enum OrderTradeEvents {
     TradeLineAdded,
@@ -68,6 +69,7 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
             result[11].toNumber(),
             result[12].toNumber(),
             result[13],
+            getOrderTradeStatusByIndex(result[14]),
         );
     }
 
@@ -103,9 +105,9 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
         return events.find((event: Event) => event.event === 'OrderLineAdded').args[0];
     }
 
-    async updateLine(line: OrderLine): Promise<void> {
+    async updateLine(line: OrderLineRequest): Promise<void> {
         const _price = this._convertPriceClassInStruct(line.price);
-        const tx = await this._actual.updateLine(line.id, line.productCategory.id, line.quantity, line.unit, _price);
+        const tx = await this._actual.updateLine(line.id!, line.productCategoryId, line.quantity, line.unit, _price);
         await tx.wait();
     }
 
@@ -121,7 +123,7 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
         case 1:
             return NegotiationStatus.PENDING;
         case 2:
-            return NegotiationStatus.COMPLETED;
+            return NegotiationStatus.CONFIRMED;
         case 3:
             return NegotiationStatus.EXPIRED;
         default:

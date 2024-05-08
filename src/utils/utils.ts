@@ -1,5 +1,6 @@
 import CryptoJS from 'crypto-js';
 import { TradeType } from '../types/TradeType';
+import { NegotiationStatus } from '../types/NegotiationStatus';
 
 export const checkAndGetEnvironmentVariable = (variable: string | undefined, errorMessage?: any): string => {
     if (!variable) throw new Error(errorMessage || 'Environment variable is not defined');
@@ -17,6 +18,21 @@ export const getTradeTypeByIndex = (index: number): TradeType => {
         return TradeType.ORDER;
     default:
         throw new Error(`Utils: an invalid value "${index}" for "TradeType" was returned by the contract`);
+    }
+};
+
+export const getOrderTradeStatusByIndex = (index: number): NegotiationStatus => {
+    switch (index) {
+    case 0:
+        return NegotiationStatus.INITIALIZED;
+    case 1:
+        return NegotiationStatus.PENDING;
+    case 2:
+        return NegotiationStatus.CONFIRMED;
+    case 3:
+        return NegotiationStatus.EXPIRED;
+    default:
+        throw new Error(`Utils: an invalid value "${index}" for "NegotiationStatus" was returned by the contract`);
     }
 };
 

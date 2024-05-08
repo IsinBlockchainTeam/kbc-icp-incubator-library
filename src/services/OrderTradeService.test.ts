@@ -3,12 +3,9 @@ import { SolidStorageACR } from '@blockchain-lib/common';
 import { OrderTradeDriver } from '../drivers/OrderTradeDriver';
 import { OrderTradeService } from './OrderTradeService';
 import {
-    OrderLine,
     OrderLinePrice,
     OrderLineRequest, OrderTradeInfo,
 } from '../entities/OrderTradeInfo';
-import { Material } from '../entities/Material';
-import { ProductCategory } from '../entities/ProductCategory';
 import { IStorageMetadataDriver } from '../drivers/IStorageMetadataDriver';
 import { IStorageDocumentDriver } from '../drivers/IStorageDocumentDriver';
 import { SolidMetadataSpec } from '../drivers/SolidMetadataDriver';
@@ -78,9 +75,9 @@ describe('OrderTradeService', () => {
         },
         {
             serviceFunctionName: 'updateLine',
-            serviceFunction: () => orderTradeService.updateLine(new OrderLine(1, new Material(1, new ProductCategory(2, 'test', 10, 'description')), new ProductCategory(2, 'test', 10, 'description'), 10, units[1], new OrderLinePrice(10.2, 'CHF'))),
+            serviceFunction: () => orderTradeService.updateLine(new OrderLineRequest(1, 10, units[1], new OrderLinePrice(10.2, 'CHF'))),
             expectedMockedFunction: mockedOrderTradeDriver.updateLine,
-            expectedMockedFunctionArgs: [new OrderLine(1, new Material(1, new ProductCategory(2, 'test', 10, 'description')), new ProductCategory(2, 'test', 10, 'description'), 10, units[1], new OrderLinePrice(10.2, 'CHF'))],
+            expectedMockedFunctionArgs: [new OrderLineRequest(1, 10, units[1], new OrderLinePrice(10.2, 'CHF'))],
         },
         {
             serviceFunctionName: 'assignMaterial',

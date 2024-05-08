@@ -43,7 +43,7 @@ export class OrderTradeService<MS extends MetadataSpec, DS extends DocumentSpec,
         return this._tradeDriverImplementation.addLine(line);
     }
 
-    async updateLine(line: OrderLine): Promise<void> {
+    async updateLine(line: OrderLineRequest): Promise<void> {
         return this._tradeDriverImplementation.updateLine(line);
     }
 

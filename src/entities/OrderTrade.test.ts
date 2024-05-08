@@ -2,6 +2,7 @@ import { OrderTrade } from './OrderTrade';
 import { OrderLine, OrderLinePrice, OrderTradeInfo } from './OrderTradeInfo';
 import { Material } from './Material';
 import { ProductCategory } from './ProductCategory';
+import { NegotiationStatus } from '../types/NegotiationStatus';
 
 describe('OrderTrade', () => {
     let orderTrade: OrderTrade;
@@ -11,7 +12,7 @@ describe('OrderTrade', () => {
 
     beforeAll(() => {
         jest.useFakeTimers().setSystemTime(new Date('2024-10-10'));
-        orderTradeInfo = new OrderTradeInfo(1, 'supplier', 'customer', 'commissioner', 'externalUrl', [new OrderLine(1, new Material(1, new ProductCategory(1, 'name', 1, 'description')), new ProductCategory(1, 'name', 1, 'description'), 1, units[1], new OrderLinePrice(1, 'CHF'))], true, true, new Date().getTime(), new Date().getTime(), 'arbiter', new Date().getTime(), new Date().getTime(), 'escrow');
+        orderTradeInfo = new OrderTradeInfo(1, 'supplier', 'customer', 'commissioner', 'externalUrl', [new OrderLine(1, new Material(1, new ProductCategory(1, 'name', 1, 'description')), new ProductCategory(1, 'name', 1, 'description'), 1, units[1], new OrderLinePrice(1, 'CHF'))], true, true, new Date().getTime(), new Date().getTime(), 'arbiter', new Date().getTime(), new Date().getTime(), 'escrow', NegotiationStatus.PENDING);
         orderTrade = new OrderTrade(orderTradeInfo, 'incoterms', 'shipper', 'shippingPort', 'deliveryPort');
     });
 

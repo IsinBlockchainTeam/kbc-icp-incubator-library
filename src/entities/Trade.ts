@@ -2,16 +2,27 @@ import { Material } from './Material';
 import { ProductCategory } from './ProductCategory';
 
 export class LineRequest {
+    private _id?: number;
+
     private _productCategoryId: number;
 
     private _quantity: number;
 
     private _unit: string;
 
-    constructor(productCategory: number, quantity: number, unit: string) {
+    constructor(productCategory: number, quantity: number, unit: string, oldId?: number) {
         this._productCategoryId = productCategory;
         this._quantity = quantity;
         this._unit = unit;
+        this._id = oldId;
+    }
+
+    get id(): number | undefined {
+        return this._id;
+    }
+
+    set id(value: number | undefined) {
+        this._id = value;
     }
 
     get productCategoryId(): number {
