@@ -79,7 +79,7 @@ export class OrderTradeInfo extends Trade {
 
     private _deliveryDeadline: number;
 
-    private _escrow: string;
+    private _escrow?: string;
 
     private _negotiationStatus: NegotiationStatus;
 
@@ -92,8 +92,8 @@ export class OrderTradeInfo extends Trade {
         arbiter: string,
         shippingDeadline: number,
         deliveryDeadline: number,
-        escrow: string,
         negotiationStatus: NegotiationStatus,
+        escrow?: string,
     ) {
         super(tradeId, supplier, customer, commissioner, externalUrl, lines);
         this._hasSupplierSigned = hasSupplierSigned;
@@ -103,8 +103,8 @@ export class OrderTradeInfo extends Trade {
         this._arbiter = arbiter;
         this._shippingDeadline = shippingDeadline;
         this._deliveryDeadline = deliveryDeadline;
-        this._escrow = escrow;
         this._negotiationStatus = negotiationStatus;
+        this._escrow = escrow;
     }
 
     get hasSupplierSigned(): boolean {
@@ -163,11 +163,11 @@ export class OrderTradeInfo extends Trade {
         this._deliveryDeadline = value;
     }
 
-    get escrow(): string {
+    get escrow(): string | undefined {
         return this._escrow;
     }
 
-    set escrow(value: string) {
+    set escrow(value: string | undefined) {
         this._escrow = value;
     }
 

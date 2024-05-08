@@ -1,5 +1,6 @@
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { BigNumber, Contract, ethers, Signer, utils } from 'ethers';
+import { SolidStorageACR } from '@blockchain-lib/common';
 import { EscrowManagerDriver } from '../drivers/EscrowManagerDriver';
 import { EscrowManagerService } from '../services/EscrowManagerService';
 import { EscrowDriver } from '../drivers/EscrowDriver';
@@ -7,13 +8,28 @@ import { EscrowService } from '../services/EscrowService';
 import {
     ADMIN_PRIVATE_KEY,
     CUSTOMER_ADDRESS,
-    CUSTOMER_PRIVATE_KEY, DELEGATE_ADDRESS, DELEGATE_PRIVATE_KEY,
+    CUSTOMER_PRIVATE_KEY,
+    DELEGATE_ADDRESS,
+    DELEGATE_PRIVATE_KEY,
     ESCROW_MANAGER_CONTRACT_ADDRESS,
-    MY_TOKEN_CONTRACT_ADDRESS, NETWORK, OTHER_PRIVATE_KEY, SUPPLIER_ADDRESS,
-    SUPPLIER_PRIVATE_KEY,
+    MATERIAL_MANAGER_CONTRACT_ADDRESS,
+    MY_TOKEN_CONTRACT_ADDRESS,
+    NETWORK,
+    OTHER_ADDRESS,
+    OTHER_PRIVATE_KEY,
+    PRODUCT_CATEGORY_CONTRACT_ADDRESS,
+    SUPPLIER_ADDRESS,
+    SUPPLIER_PRIVATE_KEY, TRADE_MANAGER_CONTRACT_ADDRESS,
 } from './config';
 import { MyToken__factory } from '../smart-contracts';
 import { EscrowStatus } from '../types/EscrowStatus';
+import { OrderTradeInfo } from '../entities/OrderTradeInfo';
+import { OrderTradeService } from '../services/OrderTradeService';
+import { SolidMetadataSpec } from '../drivers/SolidMetadataDriver';
+import { SolidDocumentSpec } from '../drivers/SolidDocumentDriver';
+import { OrderTradeDriver } from '../drivers/OrderTradeDriver';
+import { TradeManagerDriver } from '../drivers/TradeManagerDriver';
+import { TradeManagerService } from '../services/TradeManagerService';
 
 describe('Escrow Manager', () => {
     let provider: JsonRpcProvider;
@@ -21,8 +37,9 @@ describe('Escrow Manager', () => {
 
     let escrowManagerDriver: EscrowManagerDriver;
     let escrowManagerService: EscrowManagerService;
+    let tradeManagerService: TradeManagerService<SolidMetadataSpec, SolidStorageACR>;
 
-    let escrowInitialIndex: number;
+    let escrowCounter: number;
     let initialExporterBalance: number;
     let initialPurchaserBalance: number;
     let initialDelegateBalance: number;
@@ -41,14 +58,42 @@ describe('Escrow Manager', () => {
     let delegateEscrowService: EscrowService;
 
     let purchaserSigner: Signer;
+    let supplierSigner: Signer;
     let delegateSigner: Signer;
 
     const tokenAddress: string = MY_TOKEN_CONTRACT_ADDRESS;
     let tokenContract: Contract;
 
+    const deadline: number = new Date().getTime() + 1000 * 60 * 60 * 24 * 7;
+
+    const _registerOrder = async (): Promise<{
+        order: OrderTradeInfo,
+        orderTradeService: OrderTradeService<SolidMetadataSpec, SolidDocumentSpec, SolidStorageACR>
+    }> => {
+        const trade: OrderTradeInfo = await tradeManagerService.registerOrderTrade(payee, purchaser, purchaser, deadline, deadline, OTHER_ADDRESS, deadline, deadline, 1000, MY_TOKEN_CONTRACT_ADDRESS);
+        const orderTradeService = new OrderTradeService({
+            tradeDriver: new OrderTradeDriver(purchaserSigner, await tradeManagerService.getTrade(trade.tradeId), MATERIAL_MANAGER_CONTRACT_ADDRESS, PRODUCT_CATEGORY_CONTRACT_ADDRESS),
+        });
+        return {
+            order: trade,
+            orderTradeService,
+        };
+    };
+
     beforeAll(async () => {
         provider = new ethers.providers.JsonRpcProvider(NETWORK);
         signer = new ethers.Wallet(ADMIN_PRIVATE_KEY, provider);
+        purchaserSigner = new ethers.Wallet(CUSTOMER_PRIVATE_KEY, provider);
+        supplierSigner = new ethers.Wallet(SUPPLIER_PRIVATE_KEY, provider);
+        delegateSigner = new ethers.Wallet(DELEGATE_PRIVATE_KEY, provider);
+
+        const tradeManagerDriver: TradeManagerDriver = new TradeManagerDriver(
+            signer,
+            TRADE_MANAGER_CONTRACT_ADDRESS,
+            MATERIAL_MANAGER_CONTRACT_ADDRESS,
+            PRODUCT_CATEGORY_CONTRACT_ADDRESS,
+        );
+        tradeManagerService = new TradeManagerService(tradeManagerDriver);
 
         escrowManagerDriver = new EscrowManagerDriver(
             signer,
@@ -61,7 +106,7 @@ describe('Escrow Manager', () => {
         await tokenContract.deployed();
         await tokenContract.transfer(purchaser, 500);
         await tokenContract.transfer(delegate, 10);
-        escrowInitialIndex = await escrowManagerService.getEscrowCounter();
+        escrowCounter = await escrowManagerService.getEscrowCounter();
         initialExporterBalance = (await tokenContract.balanceOf(payee)).toNumber();
         initialPurchaserBalance = (await tokenContract.balanceOf(purchaser)).toNumber();
         initialDelegateBalance = (await tokenContract.balanceOf(delegate)).toNumber();
@@ -71,7 +116,6 @@ describe('Escrow Manager', () => {
         expect(utils.isAddress(escrowAddress))
             .toBeTruthy();
 
-        signer = new ethers.Wallet(ADMIN_PRIVATE_KEY, provider);
         adminEscrowService = new EscrowService(new EscrowDriver(
             signer,
             escrowAddress,
@@ -82,13 +126,11 @@ describe('Escrow Manager', () => {
             escrowAddress,
         ));
 
-        purchaserSigner = new ethers.Wallet(CUSTOMER_PRIVATE_KEY, provider);
         importerEscrowService = new EscrowService(new EscrowDriver(
             purchaserSigner,
             escrowAddress,
         ));
 
-        delegateSigner = new ethers.Wallet(DELEGATE_PRIVATE_KEY, provider);
         delegateEscrowService = new EscrowService(new EscrowDriver(
             delegateSigner,
             escrowAddress,
@@ -101,12 +143,21 @@ describe('Escrow Manager', () => {
     };
 
     describe('Withdraw scenario', () => {
-        it('should create an escrow', async () => {
-            await escrowManagerService.registerEscrow(payee, purchaser, agreedAmount, duration, tokenAddress);
+        it('should create an escrow from order trade', async () => {
+            const order: OrderTradeInfo = await tradeManagerService.registerOrderTrade(payee, purchaser, purchaser, deadline, deadline, OTHER_ADDRESS, deadline, deadline, agreedAmount, MY_TOKEN_CONTRACT_ADDRESS);
+            const purchaserOrderTradeService = new OrderTradeService({
+                tradeDriver: new OrderTradeDriver(purchaserSigner, await tradeManagerService.getTrade(order.tradeId), MATERIAL_MANAGER_CONTRACT_ADDRESS, PRODUCT_CATEGORY_CONTRACT_ADDRESS),
+            });
+            const supplierOrderTradeService = new OrderTradeService({
+                tradeDriver: new OrderTradeDriver(supplierSigner, await tradeManagerService.getTrade(order.tradeId), MATERIAL_MANAGER_CONTRACT_ADDRESS, PRODUCT_CATEGORY_CONTRACT_ADDRESS),
+            });
+            await purchaserOrderTradeService.confirmOrder();
+            await supplierOrderTradeService.confirmOrder();
+
+            escrowCounter = await escrowManagerService.getEscrowCounter();
             const idsOfPurchaser: number[] = await escrowManagerService.getEscrowIdsOfPurchaser(purchaser);
             const id: number = idsOfPurchaser[idsOfPurchaser.length - 1];
-            expect(id)
-                .toEqual(escrowInitialIndex);
+            expect(id).toEqual(escrowCounter);
 
             escrowAddress = await escrowManagerService.getEscrow(id);
             _defineServices();
@@ -201,8 +252,7 @@ describe('Escrow Manager', () => {
             await escrowManagerService.registerEscrow(payee, purchaser, agreedAmount, duration, tokenAddress);
             const idsOdPurchaser: number[] = await escrowManagerService.getEscrowIdsOfPurchaser(purchaser);
             const id: number = idsOdPurchaser[idsOdPurchaser.length - 1];
-            expect(id)
-                .toEqual(escrowInitialIndex + 1);
+            expect(id).toEqual(escrowCounter + 1);
 
             escrowAddress = await escrowManagerService.getEscrow(id);
             _defineServices();

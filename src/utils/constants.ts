@@ -5,6 +5,8 @@ export const envVariables = {
     PINATA_SECRET_API_KEY: () => checkAndGetEnvironmentVariable(process.env.PINATA_SECRET_API_KEY, 'Pinata secret API key must be defined'),
 };
 
+export const zeroAddress = '0x0000000000000000000000000000000000000000';
+
 export enum FIAT {
     USD = 'USD',
     EUR = 'EUR',

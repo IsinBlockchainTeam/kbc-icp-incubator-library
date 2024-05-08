@@ -17,6 +17,7 @@ import {
 import { EntityBuilder } from '../utils/EntityBuilder';
 import { IConcreteTradeDriverInterface } from './IConcreteTradeDriver.interface';
 import { getOrderTradeStatusByIndex } from '../utils/utils';
+import { zeroAddress } from '../utils/constants';
 
 export enum OrderTradeEvents {
     TradeLineAdded,
@@ -68,7 +69,7 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
             result[10],
             result[11].toNumber(),
             result[12].toNumber(),
-            result[13],
+            result[13] === zeroAddress ? undefined : result[13],
             getOrderTradeStatusByIndex(result[14]),
         );
     }

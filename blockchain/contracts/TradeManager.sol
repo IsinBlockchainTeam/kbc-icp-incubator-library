@@ -33,7 +33,7 @@ contract TradeManager is AccessControl {
     address private _documentManagerAddress;
     address private _fiatManagerAddress;
     address private _unitManagerAddress;
-    EscrowManager private _escrowManager;
+    address private _escrowManagerAddress;
 
     constructor(address productCategoryManagerAddress, address materialManagerAddress, address documentManagerAddress, address fiatManagerAddress, address unitManagerAddress, address escrowManagerAddress) {
         require(productCategoryManagerAddress != address(0), "TradeManager: product category manager address is the zero address");
@@ -50,8 +50,8 @@ contract TradeManager is AccessControl {
         _materialManagerAddress = materialManagerAddress;
         _documentManagerAddress = documentManagerAddress;
         _fiatManagerAddress = fiatManagerAddress;
+        _escrowManagerAddress = escrowManagerAddress;
         _unitManagerAddress = unitManagerAddress;
-        _escrowManager = EscrowManager(escrowManagerAddress);
     }
 
     function getTradeCounter() public view returns (uint256) {
@@ -100,9 +100,7 @@ contract TradeManager is AccessControl {
 
         uint256 id = _counter.current() + 1;
         _counter.increment();
-
-        Escrow escrow = _escrowManager.registerEscrow(supplier, commissioner, agreedAmount, paymentDeadline - block.timestamp, tokenAddress);
-        OrderTrade newTrade = new OrderTrade(id, _productCategoryManagerAddress, _materialManagerAddress, _documentManagerAddress, _unitManagerAddress, supplier, customer, commissioner, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress, address(escrow), _fiatManagerAddress);
+        OrderTrade newTrade = new OrderTrade(id, _productCategoryManagerAddress, _materialManagerAddress, _documentManagerAddress, _unitManagerAddress, supplier, customer, commissioner, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress, _fiatManagerAddress, _escrowManagerAddress);
         _trades[id] = newTrade;
         _tradeIdsOfSupplier[supplier].push(id);
         _tradeIdsOfCommissioner[commissioner].push(id);

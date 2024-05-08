@@ -53,7 +53,7 @@ contract EscrowManager is AccessControl {
         require(purchaser != address(0), "EscrowManager: purchaser is the zero address");
         require(tokenAddress != address(0), "EscrowManager: token address is the zero address");
 
-        uint256 id = _counter.current();
+        uint256 id = _counter.current() + 1;
         _counter.increment();
 
         Escrow newEscrow = new Escrow(address(this), payee, purchaser, agreedAmount, duration, tokenAddress, _commissioner, _baseFee, _percentageFee);

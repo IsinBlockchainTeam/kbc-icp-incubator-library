@@ -235,7 +235,6 @@ describe('TradeManager.sol', () => {
             expect(_escrow).to.not.be.undefined;
             expect(_escrow)
                 .to
-                .not
                 .equal(ethers.constants.AddressZero);
         });
 

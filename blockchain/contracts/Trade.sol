@@ -81,6 +81,11 @@ abstract contract Trade is AccessControl {
     EnumerableType internal _unitManager;
 
     constructor(uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress, address unitManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl) {
+        require(productCategoryAddress != address(0), "TradeManager: product category manager address is the zero address");
+        require(materialManagerAddress != address(0), "TradeManager: material manager address is the zero address");
+        require(documentManagerAddress != address(0), "TradeManager: document category manager address is the zero address");
+        require(unitManagerAddress != address(0), "TradeManager: unit manager address is the zero address");
+
         _setupRole(ADMIN_ROLE, _msgSender());
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
 

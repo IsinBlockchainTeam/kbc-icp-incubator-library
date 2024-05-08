@@ -58,6 +58,7 @@ contract OrderTrade is Trade {
 
     constructor(uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl, uint256 paymentDeadline, uint256 documentDeliveryDeadline, address arbiter, uint256 shippingDeadline, uint256 deliveryDeadline, uint256 agreedAmount, address tokenAddress, address fiatManagerAddress, address escrowManagerAddress) Trade(tradeId, productCategoryAddress, materialManagerAddress, documentManagerAddress, supplier, customer, commissioner, externalUrl) {
         require(escrowManagerAddress != address(0), "TradeManager: escrow manager address is the zero address");
+
         _tradeId = tradeId;
         _paymentDeadline = paymentDeadline;
         _documentDeliveryDeadline = documentDeliveryDeadline;
@@ -159,6 +160,7 @@ contract OrderTrade is Trade {
     function enforceDeadlines() public {
         if(haveDeadlinesExpired()) {
             _hasOrderExpired = true;
+            _escrow.enableRefund();
             emit OrderExpired();
         }
     }
@@ -172,7 +174,7 @@ contract OrderTrade is Trade {
         emit OrderSignatureAffixed(_msgSender());
 
         if (_hasSupplierSigned && _hasCommissionerSigned) {
-            // TODO: should escrow be created here?
+            _escrow = _escrowManager.registerEscrow(_supplier, _commissioner, _agreedAmount, _paymentDeadline - block.timestamp, _tokenAddress);
             emit OrderConfirmed();
         }
     }
