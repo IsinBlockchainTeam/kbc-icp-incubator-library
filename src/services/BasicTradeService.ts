@@ -1,13 +1,10 @@
-import { StorageACR } from '@blockchain-lib/common';
 import { TradeService } from './TradeService';
 import { BasicTradeDriver } from '../drivers/BasicTradeDriver';
 import { IConcreteTradeService } from './IConcreteTradeService';
 import { BasicTrade } from '../entities/BasicTrade';
 import { Line, LineRequest } from '../entities/Trade';
-import { DocumentSpec } from '../drivers/IStorageDocumentDriver';
-import { MetadataSpec } from '../drivers/IStorageMetadataDriver';
 
-export class BasicTradeService<MS extends MetadataSpec, DS extends DocumentSpec, ACR extends StorageACR> extends TradeService<MS, DS, ACR> implements IConcreteTradeService {
+export class BasicTradeService extends TradeService implements IConcreteTradeService {
     async getTrade(blockNumber?: number): Promise<BasicTrade> {
         return this._tradeDriverImplementation.getTrade(blockNumber);
     }

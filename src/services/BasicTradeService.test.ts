@@ -1,7 +1,9 @@
 import { createMock } from 'ts-auto-mock';
 import { BasicTradeDriver } from '../drivers/BasicTradeDriver';
 import { BasicTradeService } from './BasicTradeService';
-import { LineRequest } from '../entities/Trade';
+import { Line, LineRequest } from '../entities/Trade';
+import { Material } from '../entities/Material';
+import { ProductCategory } from '../entities/ProductCategory';
 
 describe('BasicTradeService', () => {
     const mockedBasicTradeDriver: BasicTradeDriver = createMock<BasicTradeDriver>({
@@ -17,7 +19,6 @@ describe('BasicTradeService', () => {
     const basicTradeService = new BasicTradeService({
         tradeDriver: mockedBasicTradeDriver,
     });
-    const units = ['KGM', 'BG'];
 
     afterAll(() => {
         jest.restoreAllMocks();

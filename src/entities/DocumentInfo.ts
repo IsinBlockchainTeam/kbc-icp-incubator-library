@@ -1,4 +1,5 @@
 export enum DocumentType {
+    METADATA,
     DELIVERY_NOTE,
     BILL_OF_LADING,
     PAYMENT_INVOICE,

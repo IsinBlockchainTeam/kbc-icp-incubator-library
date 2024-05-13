@@ -24,6 +24,7 @@
     },
     "include": [
         "**/*",
+        "./dfx_output/storage/*.ts"
     ],
     "exclude": [
         "node_modules",

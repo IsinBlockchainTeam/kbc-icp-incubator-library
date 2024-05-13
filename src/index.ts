@@ -22,17 +22,18 @@ export { AssetOperationService } from './services/AssetOperationService';
 export { Trade } from './entities/Trade';
 export { Line } from './entities/Trade';
 export { LineRequest } from './entities/Trade';
-export { OrderLineRequest } from './entities/OrderTradeInfo';
+export { OrderLineRequest } from './entities/OrderTrade';
 export { BasicTrade } from './entities/BasicTrade';
-export { OrderTradeInfo } from './entities/OrderTradeInfo';
 export { OrderTrade } from './entities/OrderTrade';
-export { OrderLine } from './entities/OrderTradeInfo';
-export { OrderLinePrice } from './entities/OrderTradeInfo';
+export { OrderTradeMetadata } from './entities/OrderTrade';
+export { OrderLine } from './entities/OrderTrade';
+export { OrderLinePrice } from './entities/OrderTrade';
 export { TradeStatus } from './types/TradeStatus';
 export { NegotiationStatus } from './types/NegotiationStatus';
 export { TradeType } from './types/TradeType';
 export { TradeManagerDriver } from './drivers/TradeManagerDriver';
 export { TradeManagerService } from './services/TradeManagerService';
+export { TradeManagerServiceArgs } from './services/TradeManagerService';
 export { TradeDriver } from './drivers/TradeDriver';
 export { TradeService } from './services/TradeService';
 export { BasicTradeDriver } from './drivers/BasicTradeDriver';
@@ -40,6 +41,8 @@ export { BasicTradeService } from './services/BasicTradeService';
 export { OrderTradeDriver } from './drivers/OrderTradeDriver';
 export { OrderTradeService } from './services/OrderTradeService';
 export { IConcreteTradeService } from './services/IConcreteTradeService';
+export { URLStructure } from './types/URLStructure';
+
 
 export { DocumentInfo, DocumentType } from './entities/DocumentInfo';
 export { Document, TransactionLine } from './entities/Document';
@@ -56,9 +59,15 @@ export { EscrowManagerService } from './services/EscrowManagerService';
 export { EscrowDriver } from './drivers/EscrowDriver';
 export { EscrowService } from './services/EscrowService';
 
-export { IStorageMetadataDriver } from './drivers/IStorageMetadataDriver';
-export { IStorageDocumentDriver } from './drivers/IStorageDocumentDriver';
+export { ISolidStorageMetadataDriver } from './drivers/ISolidStorageMetadataDriver';
+export { ISolidStorageDocumentDriver } from './drivers/ISolidStorageDocumentDriver';
 export { SolidMetadataDriver, SolidMetadataSpec } from './drivers/SolidMetadataDriver';
 export { SolidDocumentDriver, SolidDocumentSpec } from './drivers/SolidDocumentDriver';
 
+export { ICPFileDriver } from './drivers/ICPFileDriver';
+
 export { GraphService, GraphData } from './services/GraphService';
+
+export {FileHelpers} from './utils/fileHelpers';
+export {URL_SEGMENTS} from './constants/ICP';
+export {URL_SEGMENT_INDEXES} from './constants/ICP';

@@ -11,7 +11,7 @@ import { Relationship } from '../entities/Relationship';
 import { DocumentInfo } from '../entities/DocumentInfo';
 import { Offer } from '../entities/Offer';
 import { Line } from '../entities/Trade';
-import { OrderLine, OrderLinePrice } from '../entities/OrderTradeInfo';
+import { OrderLine, OrderLinePrice } from '../entities/OrderTrade';
 import { ProductCategory } from '../entities/ProductCategory';
 
 export class EntityBuilder {

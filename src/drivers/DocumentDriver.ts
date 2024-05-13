@@ -1,9 +1,9 @@
 /* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
-import { Signer, utils } from 'ethers';
-import { DocumentManager, DocumentManager__factory } from '../smart-contracts';
-import { DocumentInfo } from '../entities/DocumentInfo';
-import { EntityBuilder } from '../utils/EntityBuilder';
+import {Signer, utils} from 'ethers';
+import {DocumentManager, DocumentManager__factory} from '../smart-contracts';
+import {DocumentInfo} from '../entities/DocumentInfo';
+import {EntityBuilder} from '../utils/EntityBuilder';
 
 export class DocumentDriver {
     private _contract: DocumentManager;
@@ -22,22 +22,19 @@ export class DocumentDriver {
         await tx.wait();
     }
 
+    async updateDocument(documentId: number, externalUrl: string, contentHash: string): Promise<void> {
+        const tx = await this._contract.updateDocument(documentId, externalUrl, contentHash);
+        await tx.wait();
+    }
+
     async getDocumentById(documentId: number): Promise<DocumentInfo> {
-        try {
-            const document = await this._contract.getDocumentById(documentId);
-            return EntityBuilder.buildDocumentInfo(document);
-        } catch (e: any) {
-            throw new Error(e.message);
-        }
+        const document = await this._contract.getDocumentById(documentId);
+        return EntityBuilder.buildDocumentInfo(document);
     }
 
     async getDocumentsCounter(): Promise<number> {
-        try {
-            const counter = await this._contract.getDocumentsCounter();
-            return counter.toNumber();
-        } catch (e: any) {
-            throw new Error(e.message);
-        }
+        const counter = await this._contract.getDocumentsCounter();
+        return counter.toNumber();
     }
 
     async addAdmin(address: string): Promise<void> {

@@ -26,6 +26,7 @@ describe('TradeManagerDriver', () => {
     const customer: string = Wallet.createRandom().address;
     const commissioner: string = Wallet.createRandom().address;
     const externalUrl: string = 'http://external.url';
+    const metadataHash: string = 'metadataHash';
     const name: string = 'name';
     const paymentDeadline: number = 1;
     const documentDeliveryDeadline: number = 2;
@@ -150,13 +151,13 @@ describe('TradeManagerDriver', () => {
             events: undefined,
         });
 
-        await expect(tradeManagerDriver.registerBasicTrade(supplier, customer, commissioner, externalUrl, name))
+        await expect(tradeManagerDriver.registerBasicTrade(supplier, customer, commissioner, externalUrl, metadataHash, name))
             .rejects
             .toThrow('Error during basic trade registration, no events found');
     });
 
     it('should correctly register a basic trade - FAIL(Not an address)', async () => {
-        await expect(tradeManagerDriver.registerBasicTrade('not an address', customer, commissioner, externalUrl, name))
+        await expect(tradeManagerDriver.registerBasicTrade('not an address', customer, commissioner, externalUrl, metadataHash, name))
             .rejects
             .toThrow('Not an address');
 
@@ -191,13 +192,13 @@ describe('TradeManagerDriver', () => {
             events: undefined,
         });
 
-        await expect(tradeManagerDriver.registerOrderTrade(supplier, customer, commissioner, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress))
+        await expect(tradeManagerDriver.registerOrderTrade(supplier, customer, commissioner, externalUrl, metadataHash, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress))
             .rejects
             .toThrow('Error during order registration, no events found');
     });
 
     it('should correctly register an order trade - FAIL(Not an address)', async () => {
-        await expect(tradeManagerDriver.registerOrderTrade('not an address', customer, commissioner, externalUrl, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress))
+        await expect(tradeManagerDriver.registerOrderTrade('not an address', customer, commissioner, externalUrl, metadataHash, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress))
             .rejects
             .toThrow('Not an address');
 

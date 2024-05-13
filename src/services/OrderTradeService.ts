@@ -1,34 +1,23 @@
-import { StorageACR } from '@blockchain-lib/common';
-import { TradeService } from './TradeService';
-import {
-    OrderTradeDriver,
-    OrderTradeEvents,
-} from '../drivers/OrderTradeDriver';
-import { NegotiationStatus } from '../types/NegotiationStatus';
-import { OrderLine,
-    OrderLineRequest,
-    OrderTradeInfo } from '../entities/OrderTradeInfo';
-import { IConcreteTradeService } from './IConcreteTradeService';
-import { DocumentSpec } from '../drivers/IStorageDocumentDriver';
-import { MetadataSpec } from '../drivers/IStorageMetadataDriver';
-import { OrderTrade } from '../entities/OrderTrade';
+import {TradeService} from './TradeService';
+import {OrderTradeDriver, OrderTradeEvents,} from '../drivers/OrderTradeDriver';
+import {NegotiationStatus} from '../types/NegotiationStatus';
+import {OrderLine, OrderLineRequest, OrderTrade, OrderTradeMetadata} from '../entities/OrderTrade';
+import {IConcreteTradeService} from './IConcreteTradeService';
+import FileHelpers from "../utils/fileHelpers";
 
-export class OrderTradeService<MS extends MetadataSpec, DS extends DocumentSpec, ACR extends StorageACR> extends TradeService<MS, DS, ACR> implements IConcreteTradeService {
-    async getTrade(blockNumber?: number): Promise<OrderTradeInfo> {
+export class OrderTradeService extends TradeService implements IConcreteTradeService {
+    async getTrade(blockNumber?: number): Promise<OrderTrade> {
         return this._tradeDriverImplementation.getTrade(blockNumber);
     }
 
-    async getCompleteTrade(metadataSpec: MS, blockNumber?: number): Promise<OrderTrade> {
-        // TODO: remove comments
-        // if (!this._storageMetadataDriver) throw new Error('Storage metadata driver is not available');
-        const orderTradeInfo = await this.getTrade(blockNumber);
-        try {
-            // const { incoterms, shipper, shippingPort, deliveryPort } = await this._storageMetadataDriver.read(StorageOperationType.TRANSACTION, metadataSpec);
-            // return new OrderTrade(orderTradeInfo, incoterms, shipper, shippingPort, deliveryPort);
-            return new OrderTrade(orderTradeInfo, 'incoterms', 'shipper', 'shippingPort', 'deliveryPort');
-        } catch (e: any) {
-            throw new Error(`Error while retrieve order trade from external storage: ${e.message}`);
-        }
+    async getCompleteTrade(blockNumber?: number): Promise<OrderTrade> {
+        if (!this._icpFileDriver)
+            throw new Error('OrderTradeService: ICPFileDriver has not been set');
+
+        const trade = await this._tradeDriverImplementation.getTrade(blockNumber);
+        const bytes = await this._icpFileDriver.read(trade.externalUrl + "/files/metadata.json");
+        trade.metadata = FileHelpers.getObjectFromBytes(bytes) as OrderTradeMetadata;
+        return trade;
     }
 
     async getLines(): Promise<OrderLine[]> {

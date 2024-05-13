@@ -13,9 +13,10 @@ contract DocumentManager is AccessControl {
     bytes32 public constant TRADE_MANAGER_ROLE = keccak256("TRADE_MANAGER_ROLE");
 
     event DocumentRegistered(uint256 indexed id, string contentHash);
+    event DocumentUpdated(uint256 indexed id, string contentHash);
 
     modifier onlyAdmin() {
-        require(hasRole(ADMIN_ROLE, _msgSender()), "Caller is not the admin");
+        require(hasRole(ADMIN_ROLE, _msgSender()), "DocumentManager: Caller is not the admin");
         _;
     }
 
@@ -41,7 +42,7 @@ contract DocumentManager is AccessControl {
         }
     }
 
-    function registerDocument(string memory externalUrl, string memory contentHash) public returns (uint256){
+    function registerDocument(string memory externalUrl, string memory contentHash) public returns (uint256) {
         uint256 documentId = documentCounter.current() + 1;
         documentCounter.increment();
 
@@ -49,6 +50,14 @@ contract DocumentManager is AccessControl {
 
         emit DocumentRegistered(documentId, contentHash);
         return documentId;
+    }
+
+    function updateDocument(uint256 documentId, string memory externalUrl, string memory contentHash) public {
+        require(documents[documentId].exists, "DocumentManager: Document does not exist");
+
+        documents[documentId].externalUrl = externalUrl;
+        documents[documentId].contentHash = contentHash;
+        emit DocumentUpdated(documentId, contentHash);
     }
 
     function getDocumentById(uint256 documentId) public view returns (Document memory) {

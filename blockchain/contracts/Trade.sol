@@ -12,6 +12,7 @@ abstract contract Trade is AccessControl {
     using Counters for Counters.Counter;
 
     enum DocumentType {
+        METADATA,
         DELIVERY_NOTE,
         BILL_OF_LADING,
         PAYMENT_INVOICE,
@@ -80,7 +81,7 @@ abstract contract Trade is AccessControl {
     DocumentManager internal _documentManager;
     EnumerableType internal _unitManager;
 
-    constructor(uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress, address unitManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl) {
+    constructor(uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress, address unitManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl, string memory metadataHash) {
         require(productCategoryAddress != address(0), "TradeManager: product category manager address is the zero address");
         require(materialManagerAddress != address(0), "TradeManager: material manager address is the zero address");
         require(documentManagerAddress != address(0), "TradeManager: document category manager address is the zero address");
@@ -97,7 +98,9 @@ abstract contract Trade is AccessControl {
         _supplier = supplier;
         _customer = customer;
         _commissioner = commissioner;
-        _externalUrl = externalUrl;
+        _externalUrl = string.concat(externalUrl, Strings.toString(tradeId));
+
+        addDocument(DocumentType.METADATA, string.concat(_externalUrl, "/files/metadata.json"), metadataHash);
     }
 
     function getLineCounter() public view returns (uint256) {
@@ -119,29 +122,24 @@ abstract contract Trade is AccessControl {
         return _lines[id].exists;
     }
 
-    function _addLine(uint256 productCategoryId, uint256 quantity, string memory unit) internal returns (uint256) {
+    function _addLine(uint256 productCategoryId) internal returns (uint256) {
         require(_productCategoryManager.getProductCategoryExists(productCategoryId), "Trade: Product category does not exist");
-        require(_unitManager.contains(unit), "Trade: Unit has not been registered");
 
         uint256 tradeLineId = _lineCounter.current() + 1;
         _lineCounter.increment();
 
-        _lines[tradeLineId] = Line(tradeLineId, productCategoryId, quantity, unit, 0, true);
+        _lines[tradeLineId] = Line(tradeLineId, productCategoryId, 0, true);
         _lineIds.push(tradeLineId);
 
         return tradeLineId;
     }
 
-    function _updateLine(uint256 id, uint256 productCategoryId, uint256 quantity, string memory unit) internal {
+    function _updateLine(uint256 id, uint256 productCategoryId) internal {
         require(_lines[id].exists, "Trade: Line does not exist");
         require(_productCategoryManager.getProductCategoryExists(productCategoryId), "Trade: Product category does not exist");
-        require(_unitManager.contains(unit), "Trade: Unit has not been registered");
 
         if(_lines[id].productCategoryId != productCategoryId)
             _lines[id].productCategoryId = productCategoryId;
-        if (_lines[id].quantity != quantity)
-            _lines[id].quantity = quantity;
-        _lines[id].unit = unit;
     }
 
     function _assignMaterial(uint256 lineId, uint256 materialId) internal {
@@ -157,6 +155,7 @@ abstract contract Trade is AccessControl {
         //require(documentsCounter > 0, "Trade: There are no documents related to this trade");
         if (documentsCounter == 0) return TradeStatus.CONTRACTING;
 
+        if (documentsCounter == _documentsByType[DocumentType.METADATA].length) return TradeStatus.CONTRACTING;
         if (_documentsByType[DocumentType.PAYMENT_INVOICE].length > 0) return TradeStatus.PAYED;
 //        TODO: gestire lo stato del trade a seconda dei documenti caricati, capire come raggruppare i documenti
 //        es. per dire che un trade è in stato SHIPPED teoricamente servirebbero i certificati swiss decode e quello di spedizione
@@ -171,6 +170,10 @@ abstract contract Trade is AccessControl {
         uint256 documentId = _documentManager.registerDocument(externalUrl, contentHash);
         _documentIds.push(documentId);
         _documentsByType[documentType].push(documentId);
+    }
+
+    function updateDocument(uint256 documentId, string memory externalUrl, string memory contentHash) public onlyAdminOrContractPart {
+        _documentManager.updateDocument(documentId, externalUrl, contentHash);
     }
 
     function getAllDocumentIds() public view returns (uint256[] memory) {

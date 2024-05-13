@@ -12,8 +12,8 @@ import {
     OrderLine,
     OrderLinePrice,
     OrderLineRequest,
-    OrderTradeInfo,
-} from '../entities/OrderTradeInfo';
+    OrderTrade,
+} from '../entities/OrderTrade';
 import { EntityBuilder } from '../utils/EntityBuilder';
 import { IConcreteTradeDriverInterface } from './IConcreteTradeDriver.interface';
 import { getOrderTradeStatusByIndex } from '../utils/utils';
@@ -51,11 +51,11 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
             .connect(signer);
     }
 
-    async getTrade(blockNumber?: number): Promise<OrderTradeInfo> {
+    async getTrade(blockNumber?: number): Promise<OrderTrade> {
         const result = await this._actual.getTrade({ blockTag: blockNumber });
         const lines: OrderLine[] = await this.getLines();
 
-        return new OrderTradeInfo(
+        return new OrderTrade(
             result[0].toNumber(),
             result[1],
             result[2],

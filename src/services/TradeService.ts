@@ -1,28 +1,26 @@
-import {
-    StorageACR,
-} from '@blockchain-lib/common';
 import { TradeDriver } from '../drivers/TradeDriver';
 import { TradeStatus } from '../types/TradeStatus';
-import { DocumentInfo, DocumentType } from '../entities/DocumentInfo';
+import {DocumentInfo, DocumentType} from '../entities/DocumentInfo';
 import { TradeType } from '../types/TradeType';
-import { IStorageMetadataDriver, MetadataSpec } from '../drivers/IStorageMetadataDriver';
-import { DocumentSpec, IStorageDocumentDriver } from '../drivers/IStorageDocumentDriver';
-import { DocumentDriver } from '../drivers/DocumentDriver';
+import {ICPFileDriver} from "../drivers/ICPFileDriver";
+import {DocumentDriver} from "../drivers/DocumentDriver";
+import {ICPResourceSpec} from "@blockchain-lib/common";
+import FileHelpers from "../utils/fileHelpers";
+import {TransactionLine} from "../entities/Document";
 
-export class TradeService<MS extends MetadataSpec, DS extends DocumentSpec, ACR extends StorageACR> {
+export class TradeService {
     protected _tradeDriver: TradeDriver;
 
     private readonly _documentDriver?: DocumentDriver;
 
-    protected readonly _storageMetadataDriver?: IStorageMetadataDriver<MS, ACR>;
+    protected _icpFileDriver?: ICPFileDriver;
 
-    protected readonly _storageDocumentDriver?: IStorageDocumentDriver<DS>;
-
-    constructor(args: {tradeDriver: TradeDriver, documentDriver?: DocumentDriver, storageMetadataDriver?: IStorageMetadataDriver<MS, ACR>, storageDocumentDriver?: IStorageDocumentDriver<DS>}) {
-        this._tradeDriver = args.tradeDriver;
-        this._documentDriver = args.documentDriver;
-        this._storageMetadataDriver = args.storageMetadataDriver;
-        this._storageDocumentDriver = args.storageDocumentDriver;
+    constructor(tradeDriver: TradeDriver, documentDriver?: DocumentDriver, storageMetadataDriver?: ICPFileDriver) {
+        this._tradeDriver = tradeDriver;
+        if(documentDriver)
+            this._documentDriver = documentDriver;
+        if(storageMetadataDriver)
+            this._icpFileDriver = storageMetadataDriver;
     }
 
     async getLineCounter(): Promise<number> {
@@ -41,22 +39,27 @@ export class TradeService<MS extends MetadataSpec, DS extends DocumentSpec, ACR 
         return this._tradeDriver.getTradeStatus();
     }
 
-    async addDocument(documentType: DocumentType, documentStorage?: {spec: DS, fileBuffer: Uint8Array}, metadataStorage?: {spec: MS, value: any}): Promise<void> {
-        const externalUrl = '';
-        const contentHash = '';
-        if (documentStorage) {
-            // TODO: remove this comment
-            // if (!this._storageDocumentDriver) throw new Error('Storage document driver is not available');
-            // externalUrl = await this._storageDocumentDriver.create(StorageOperationType.TRANSACTION_DOCUMENT, documentStorage?.fileBuffer, documentStorage?.spec);
-            // contentHash = computeHashFromBuffer(documentStorage.fileBuffer);
-        }
-        if (metadataStorage) {
-            // TODO: remove this comment
-            // if (!this._storageMetadataDriver) throw new Error('Storage metadata driver is not available');
-            // await this._storageMetadataDriver.create(StorageOperationType.TRANSACTION_DOCUMENT, metadataStorage.value, [], metadataStorage.spec);
-        }
+    async addDocument(documentType: DocumentType, fileContent: Uint8Array, externalUrl: string, resourceSpec: ICPResourceSpec, delegatedOrganizationIds: number[] = [], transactionLines: TransactionLine[] = [], quantity: number | undefined = undefined): Promise<void> {
+        if(!this._icpFileDriver) throw new Error("OrderTradeService: ICPFileDriver has not been set");
+        const fileName = FileHelpers.removeFileExtension(resourceSpec.name);
 
-        return this._tradeDriver.addDocument(documentType, externalUrl, contentHash);
+        resourceSpec.name = externalUrl + "/files/" + resourceSpec.name;
+
+        const contentHash = FileHelpers.getHash(fileContent);
+        await this._icpFileDriver.create(fileContent, resourceSpec, delegatedOrganizationIds);
+        const documentMetadata = {
+            fileName: resourceSpec.name,
+            documentType,
+            date: new Date(),
+            transactionLines,
+            quantity,
+        };
+
+        await this._icpFileDriver.create(FileHelpers.getBytesFromObject(documentMetadata), {
+            name: externalUrl + "/files/" + fileName + "-metadata.json",
+            type: "application/json",
+        }, delegatedOrganizationIds);
+        return this._tradeDriver.addDocument(documentType, resourceSpec.name, contentHash.toString());
     }
 
     async getAllDocumentIds(): Promise<number[]> {
@@ -64,7 +67,7 @@ export class TradeService<MS extends MetadataSpec, DS extends DocumentSpec, ACR 
     }
 
     async getAllDocuments(): Promise<DocumentInfo[]> {
-        // if (!this._documentDriver) throw new Error('Cannot perform this operation without a document driver');
+        if (!this._documentDriver) throw new Error('Cannot perform this operation without a document driver');
         const ids = await this.getAllDocumentIds();
         return Promise.all(ids.map((id) => this._documentDriver!.getDocumentById(id)));
     }
@@ -74,7 +77,7 @@ export class TradeService<MS extends MetadataSpec, DS extends DocumentSpec, ACR 
     }
 
     async getDocumentsByType(documentType: DocumentType): Promise<DocumentInfo[]> {
-        // if (!this._documentDriver) throw new Error('Cannot perform this operation without a document driver');
+        if (!this._documentDriver) throw new Error('Cannot perform this operation without a document driver');
         const ids = await this.getDocumentIdsByType(documentType);
         return Promise.all(ids.map((id) => this._documentDriver!.getDocumentById(id)));
     }
