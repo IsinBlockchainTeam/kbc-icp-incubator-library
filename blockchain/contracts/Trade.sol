@@ -147,13 +147,6 @@ abstract contract Trade is AccessControl {
         uint256 documentsCounter = _documentManager.getDocumentsCounter();
         //require(documentsCounter > 0, "Trade: There are no documents related to this trade");
 
-        console.log("documentsCounter: %d", documentsCounter);
-        console.log("_documentsByType[DocumentType.METADATA].length: %d", _documentsByType[DocumentType.METADATA].length);
-        console.log("_documentsByType[DocumentType.PAYMENT_INVOICE].length: %d", _documentsByType[DocumentType.PAYMENT_INVOICE].length);
-        console.log("_documentsByType[DocumentType.BILL_OF_LADING].length: %d", _documentsByType[DocumentType.BILL_OF_LADING].length);
-        console.log("_documentsByType[DocumentType.DELIVERY_NOTE].length: %d", _documentsByType[DocumentType.DELIVERY_NOTE].length);
-
-
         if (documentsCounter == 0) return TradeStatus.CONTRACTING;
 
         if (documentsCounter == _documentsByType[DocumentType.METADATA].length) return TradeStatus.CONTRACTING;

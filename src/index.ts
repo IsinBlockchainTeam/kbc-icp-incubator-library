@@ -68,3 +68,5 @@ export { ICPFileDriver } from './drivers/ICPFileDriver';
 export { GraphService, GraphData } from './services/GraphService';
 
 export {FileHelpers} from './utils/fileHelpers';
+export {URL_SEGMENTS} from './constants/ICP';
+export {URL_SEGMENT_INDEXES} from './constants/ICP';

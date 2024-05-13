@@ -12,25 +12,13 @@ export class OrderTradeService extends TradeService implements IConcreteTradeSer
 
     async getCompleteTrade(blockNumber?: number): Promise<OrderTrade> {
         if (!this._icpFileDriver)
-            throw new Error('OrderTradeService: Storage metadata driver has not been set');
+            throw new Error('OrderTradeService: ICPFileDriver has not been set');
 
         const trade = await this._tradeDriverImplementation.getTrade(blockNumber);
         const bytes = await this._icpFileDriver.read(trade.externalUrl + "/files/metadata.json");
         trade.metadata = FileHelpers.getObjectFromBytes(bytes) as OrderTradeMetadata;
         return trade;
     }
-
-    // async getCompleteTrade(metadataSpec: MS, blockNumber?: number): Promise<OrderTradeInfo> {
-    //     // if (!this._storageMetadataDriver) throw new Error('Storage metadata driver is not available');
-    //     const orderTradeInfo = await this.getTrade(blockNumber);
-    //     // try {
-    //     //     const { incoterms, shipper, shippingPort, deliveryPort } = await this._storageMetadataDriver.read(StorageOperationType.TRANSACTION, metadataSpec);
-    //     //     return new OrderTrade(orderTradeInfo, incoterms, shipper, shippingPort, deliveryPort);
-    //     // } catch (e: any) {
-    //     //     throw new Error(`Error while retrieve order trade from external storage: ${e.message}`);
-    //     // }
-    //     return orderTradeInfo;
-    // }
 
     async getLines(): Promise<OrderLine[]> {
         return this._tradeDriverImplementation.getLines();

@@ -70,6 +70,10 @@ export class FileHelpers {
     public static removeFileExtension(file: string): string {
         return file.split('.').slice(0, -1).join('.') || file;
     }
+
+    public static ensureTrailingSlash(url: string): string {
+        return url.endsWith('/') ? url : url + '/';
+    }
 }
 
 export default FileHelpers;

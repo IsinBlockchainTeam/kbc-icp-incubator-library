@@ -47,7 +47,7 @@ export class DocumentService {
             const documentType = documentMetadata.documentType;
             const date = documentMetadata.date;
             const transactionLines = documentMetadata.transactionLines;
-            if(!fileName || !documentType || !date) throw new Error('Error while retrieve document metadata from external storage: missing fields');
+            if(!fileName || !documentType || !date) throw new Error('Error while retrieving document metadata from external storage: missing fields');
 
             const fileContent = await this._icpFileDriver.read(documentInfo.externalUrl);
             return new Document(documentInfo, fileName, documentType, new Date(date), fileContent, transactionLines);

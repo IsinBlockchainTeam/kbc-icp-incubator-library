@@ -6,6 +6,7 @@ import {ICPFileDriver} from "../drivers/ICPFileDriver";
 import {DocumentDriver} from "../drivers/DocumentDriver";
 import {ICPResourceSpec} from "@blockchain-lib/common";
 import FileHelpers from "../utils/fileHelpers";
+import {TransactionLine} from "../entities/Document";
 
 export class TradeService {
     protected _tradeDriver: TradeDriver;
@@ -38,28 +39,26 @@ export class TradeService {
         return this._tradeDriver.getTradeStatus();
     }
 
-    async addDocument(documentType: DocumentType, fileContent: Uint8Array, externalUrl: string, resourceSpec: ICPResourceSpec): Promise<void> {
+    async addDocument(documentType: DocumentType, fileContent: Uint8Array, externalUrl: string, resourceSpec: ICPResourceSpec, delegatedOrganizationIds: number[] = [], transactionLines: TransactionLine[] = [], quantity: number | undefined = undefined): Promise<void> {
         if(!this._icpFileDriver) throw new Error("OrderTradeService: ICPFileDriver has not been set");
         const fileName = FileHelpers.removeFileExtension(resourceSpec.name);
 
         resourceSpec.name = externalUrl + "/files/" + resourceSpec.name;
 
         const contentHash = FileHelpers.getHash(fileContent);
-        await this._icpFileDriver.create(fileContent, resourceSpec);
+        await this._icpFileDriver.create(fileContent, resourceSpec, delegatedOrganizationIds);
         const documentMetadata = {
             fileName: resourceSpec.name,
             documentType,
             date: new Date(),
-            // TODO: add transaction lines
-            transactionLines: [],
-            // TODO: add quantity
-            quantity: undefined,
+            transactionLines,
+            quantity,
         };
 
         await this._icpFileDriver.create(FileHelpers.getBytesFromObject(documentMetadata), {
             name: externalUrl + "/files/" + fileName + "-metadata.json",
             type: "application/json",
-        });
+        }, delegatedOrganizationIds);
         return this._tradeDriver.addDocument(documentType, resourceSpec.name, contentHash.toString());
     }
 
