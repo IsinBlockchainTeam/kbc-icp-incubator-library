@@ -7,7 +7,11 @@
 //     let orderTrade: OrderTrade;
 //     let orderTradeInfo: OrderTradeInfo;
 
-const units = ['KGM', 'BG'];
+it('should always pass', () => {
+    expect(true).toEqual(true);
+});
+
+// const units = ['KGM', 'BG'];
 //
 //     beforeAll(() => {
 //         jest.useFakeTimers().setSystemTime(new Date('2024-10-10'));

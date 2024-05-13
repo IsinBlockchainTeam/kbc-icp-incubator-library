@@ -122,24 +122,30 @@ abstract contract Trade is AccessControl {
         return _lines[id].exists;
     }
 
-    function _addLine(uint256 productCategoryId) internal returns (uint256) {
+    function _addLine(uint256 productCategoryId, uint256 quantity, string memory unit) internal returns (uint256) {
         require(_productCategoryManager.getProductCategoryExists(productCategoryId), "Trade: Product category does not exist");
+        require(_unitManager.contains(unit), "Trade: Unit has not been registered");
 
         uint256 tradeLineId = _lineCounter.current() + 1;
         _lineCounter.increment();
 
-        _lines[tradeLineId] = Line(tradeLineId, productCategoryId, 0, true);
+        _lines[tradeLineId] = Line(tradeLineId, productCategoryId, quantity, unit, 0, true);
         _lineIds.push(tradeLineId);
 
         return tradeLineId;
     }
 
-    function _updateLine(uint256 id, uint256 productCategoryId) internal {
+    function _updateLine(uint256 id, uint256 productCategoryId, uint256 quantity, string memory unit) internal {
         require(_lines[id].exists, "Trade: Line does not exist");
         require(_productCategoryManager.getProductCategoryExists(productCategoryId), "Trade: Product category does not exist");
+        require(_unitManager.contains(unit), "Trade: Unit has not been registered");
 
         if(_lines[id].productCategoryId != productCategoryId)
             _lines[id].productCategoryId = productCategoryId;
+        if (_lines[id].quantity != quantity)
+            _lines[id].quantity = quantity;
+        _lines[id].unit = unit;
+
     }
 
     function _assignMaterial(uint256 lineId, uint256 materialId) internal {
@@ -152,16 +158,19 @@ abstract contract Trade is AccessControl {
 
     function getTradeStatus() public view returns (TradeStatus) {
         uint256 documentsCounter = _documentManager.getDocumentsCounter();
-        //require(documentsCounter > 0, "Trade: There are no documents related to this trade");
-        if (documentsCounter == 0) return TradeStatus.CONTRACTING;
+        // require(documentsCounter > 0, "Trade: There are no documents related to this trade");
+//        if (documentsCounter == 0) return TradeStatus.CONTRACTING;
 
-        if (documentsCounter == _documentsByType[DocumentType.METADATA].length) return TradeStatus.CONTRACTING;
-        if (_documentsByType[DocumentType.PAYMENT_INVOICE].length > 0) return TradeStatus.PAYED;
-//        TODO: gestire lo stato del trade a seconda dei documenti caricati, capire come raggruppare i documenti
-//        es. per dire che un trade è in stato SHIPPED teoricamente servirebbero i certificati swiss decode e quello di spedizione
-        if (_documentsByType[DocumentType.BILL_OF_LADING].length > 0) return TradeStatus.ON_BOARD;
-        if (_documentsByType[DocumentType.DELIVERY_NOTE].length > 0) return TradeStatus.SHIPPED;
-        revert("Trade: There are no documents with correct document type");
+        return TradeStatus.CONTRACTING;
+
+        // TODO: perfmorm trade status check in issue #157
+//        if (documentsCounter == _documentsByType[DocumentType.METADATA].length) return TradeStatus.CONTRACTING;
+//        if (_documentsByType[DocumentType.PAYMENT_INVOICE].length > 0) return TradeStatus.PAYED;
+//        // TODO: gestire lo stato del trade a seconda dei documenti caricati, capire come raggruppare i documenti
+//        //      es. per dire che un trade è in stato SHIPPED teoricamente servirebbero i certificati swiss decode e quello di spedizione
+//        if (_documentsByType[DocumentType.BILL_OF_LADING].length > 0) return TradeStatus.ON_BOARD;
+//        if (_documentsByType[DocumentType.DELIVERY_NOTE].length > 0) return TradeStatus.SHIPPED;
+//        revert("Trade: There are no documents with correct document type");
     }
 
     function addDocument(DocumentType documentType, string memory externalUrl, string memory contentHash) public onlyAdminOrContractPart {

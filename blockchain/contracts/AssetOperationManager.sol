@@ -61,6 +61,7 @@ contract AssetOperationManager is AccessControl {
     }
 
     function getAssetOperation(uint256 id) public view returns (AssetOperation memory) {
+        require(getAssetOperationExists(id), "AssetOperationManager: Asset operation does not exist");
         return _assetOperations[id];
     }
 

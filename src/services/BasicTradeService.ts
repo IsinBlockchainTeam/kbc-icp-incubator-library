@@ -21,7 +21,7 @@ export class BasicTradeService extends TradeService implements IConcreteTradeSer
         return this._tradeDriverImplementation.addLine(line);
     }
 
-    async updateLine(line: LineRequest): Promise<void> {
+    async updateLine(line: Line): Promise<void> {
         return this._tradeDriverImplementation.updateLine(line);
     }
 

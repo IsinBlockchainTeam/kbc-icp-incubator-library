@@ -100,7 +100,7 @@ contract TradeManager is AccessControl {
 
         uint256 id = _counter.current() + 1;
         _counter.increment();
-        OrderTrade newTrade = new OrderTrade(id, _productCategoryManagerAddress, _materialManagerAddress, _documentManagerAddress, _unitManagerAddress, supplier, customer, commissioner, externalUrl, metadataHash, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, _fiatManagerAddress);
+        OrderTrade newTrade = new OrderTrade(id, _productCategoryManagerAddress, _materialManagerAddress, _documentManagerAddress, _unitManagerAddress, supplier, customer, commissioner, externalUrl, metadataHash, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress, _fiatManagerAddress, _escrowManagerAddress);
         _trades[id] = newTrade;
         _tradeIdsOfSupplier[supplier].push(id);
         _tradeIdsOfCommissioner[commissioner].push(id);

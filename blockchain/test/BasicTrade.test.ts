@@ -17,7 +17,8 @@ describe('BasicTrade.sol', () => {
     let basicTradeContract: Contract;
     let admin: SignerWithAddress, supplier: SignerWithAddress,
         customer: SignerWithAddress, commissioner: SignerWithAddress;
-    const externalUrl: string = 'https://www.test.com';
+    const externalUrl: string = 'https://www.test.com/';
+    const metadataHash: string = 'metadataHash';
     const name: string = 'Test Trade';
 
     const materialStruct: MaterialManager.MaterialStructOutput = {
@@ -41,7 +42,8 @@ describe('BasicTrade.sol', () => {
     beforeEach(async () => {
         const BasicTrade = await ethers.getContractFactory('BasicTrade');
         basicTradeContract = await BasicTrade.deploy(1, productCategoryManagerContractFake.address, materialManagerContractFake.address,
-            documentManagerContractFake.address, enumerableUnitManagerContractFake.address, supplier.address, customer.address, commissioner.address, externalUrl, name);
+            documentManagerContractFake.address, enumerableUnitManagerContractFake.address, supplier.address, customer.address, commissioner.address,
+            externalUrl, metadataHash, name);
         await basicTradeContract.deployed();
     });
 
@@ -62,7 +64,7 @@ describe('BasicTrade.sol', () => {
                 .equal(commissioner.address);
             expect(_externalUrl)
                 .to
-                .equal(externalUrl);
+                .equal(externalUrl + "1");
             expect(_linesId)
                 .to
                 .deep

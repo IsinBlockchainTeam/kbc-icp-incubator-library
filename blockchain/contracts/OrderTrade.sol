@@ -56,7 +56,13 @@ contract OrderTrade is Trade {
     EnumerableType private _fiatManager;
     EscrowManager private _escrowManager;
 
-    constructor(uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress, address unitManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl, string memory metadataHash, uint256 paymentDeadline, uint256 documentDeliveryDeadline, address arbiter, uint256 shippingDeadline, uint256 deliveryDeadline, uint256 agreedAmount, address tokenAddress, address fiatManagerAddress, address escrowManagerAddress) Trade(tradeId, productCategoryAddress, materialManagerAddress, documentManagerAddress, unitManagerAddress, supplier, customer, commissioner, externalUrl) {
+    constructor(uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress,
+        address unitManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl,
+        string memory metadataHash, uint256 paymentDeadline, uint256 documentDeliveryDeadline, address arbiter,
+        uint256 shippingDeadline, uint256 deliveryDeadline, uint256 agreedAmount, address tokenAddress,
+        address fiatManagerAddress, address escrowManagerAddress)
+    Trade(tradeId, productCategoryAddress, materialManagerAddress, documentManagerAddress, unitManagerAddress, supplier,
+    customer, commissioner, externalUrl, metadataHash) {
         require(escrowManagerAddress != address(0), "TradeManager: escrow manager address is the zero address");
 
         _tradeId = tradeId;
@@ -90,22 +96,22 @@ contract OrderTrade is Trade {
         return (line, _orderLines[id]);
     }
 
-    function addLine(uint256 productCategoryId, uint256 quantity, OrderLinePrice memory price) public onlyAdminOrContractPart onlyOrdersInNegotiation returns(uint256) {
+    function addLine(uint256 productCategoryId, uint256 quantity, string memory unit, OrderLinePrice memory price) public onlyAdminOrContractPart onlyOrdersInNegotiation returns(uint256) {
         require(_fiatManager.contains(price.fiat), "OrderTrade: Fiat has not been registered");
 
-        uint256 tradeLineId = _addLine(productCategoryId);
-        _orderLines[tradeLineId] = OrderLine(quantity, price);
+        uint256 tradeLineId = _addLine(productCategoryId, quantity, unit);
+        _orderLines[tradeLineId] = OrderLine(price);
 
         emit OrderLineAdded(tradeLineId);
         _updateSignatures(_msgSender());
         return tradeLineId;
     }
 
-    function updateLine(uint256 id, uint256 productCategoryId, uint256 quantity, OrderLinePrice memory price) public onlyAdminOrContractPart onlyOrdersInNegotiation {
+    function updateLine(uint256 id, uint256 productCategoryId, uint256 quantity, string memory unit, OrderLinePrice memory price) public onlyAdminOrContractPart onlyOrdersInNegotiation {
         require(_fiatManager.contains(price.fiat), "OrderTrade: Fiat has not been registered");
 
-        _updateLine(id, productCategoryId);
-        _orderLines[id] = OrderLine(quantity, price);
+        _updateLine(id, productCategoryId, quantity, unit);
+        _orderLines[id] = OrderLine(price);
 
         emit OrderLineUpdated(id);
         _updateSignatures(_msgSender());
@@ -122,7 +128,7 @@ contract OrderTrade is Trade {
         } else if (!_hasCommissionerSigned && !_hasSupplierSigned) {
             return NegotiationStatus.INITIALIZED;
         } else if (_hasCommissionerSigned && _hasSupplierSigned) {
-            return NegotiationStatus.COMPLETED;
+            return NegotiationStatus.CONFIRMED;
         } else {
             return NegotiationStatus.PENDING;
         }
@@ -153,8 +159,18 @@ contract OrderTrade is Trade {
         _updateSignatures(_msgSender());
     }
 
+    function updateAgreedAmount(uint256 agreedAmount) public onlyAdminOrContractPart onlyOrdersInNegotiation {
+        _agreedAmount = agreedAmount;
+        _updateSignatures(_msgSender());
+    }
+
+    function updateTokenAddress(address tokenAddress) public onlyAdminOrContractPart onlyOrdersInNegotiation {
+        _tokenAddress = tokenAddress;
+        _updateSignatures(_msgSender());
+    }
+
     function haveDeadlinesExpired() public view returns (bool) {
-        return getNegotiationStatus() == NegotiationStatus.COMPLETED && (block.timestamp > _paymentDeadline || block.timestamp > _documentDeliveryDeadline || block.timestamp > _shippingDeadline || block.timestamp > _deliveryDeadline);
+        return getNegotiationStatus() == NegotiationStatus.CONFIRMED && (block.timestamp > _paymentDeadline || block.timestamp > _documentDeliveryDeadline || block.timestamp > _shippingDeadline || block.timestamp > _deliveryDeadline);
     }
 
     function enforceDeadlines() public {

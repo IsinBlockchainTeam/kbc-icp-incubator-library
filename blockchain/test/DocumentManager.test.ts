@@ -68,8 +68,8 @@ describe('DocumentManager', () => {
         });
 
         it('should fail to add and remove admin roles if the caller is not an admin', async () => {
-            await expect(documentManagerContract.connect(otherAccount).addAdmin(admin.address)).to.be.revertedWith('Caller is not the admin');
-            await expect(documentManagerContract.connect(otherAccount).removeAdmin(admin.address)).to.be.revertedWith('Caller is not the admin');
+            await expect(documentManagerContract.connect(otherAccount).addAdmin(admin.address)).to.be.revertedWith('DocumentManager: Caller is not the admin');
+            await expect(documentManagerContract.connect(otherAccount).removeAdmin(admin.address)).to.be.revertedWith('DocumentManager: Caller is not the admin');
         });
 
         it('should add and remove trade manager roles', async () => {
@@ -80,8 +80,8 @@ describe('DocumentManager', () => {
         });
 
         it('should fail to add and remove trade manager roles if the caller is not an admin', async () => {
-            await expect(documentManagerContract.connect(otherAccount).addTradeManager(tradeManager.address)).to.be.revertedWith('Caller is not the admin');
-            await expect(documentManagerContract.connect(otherAccount).removeTradeManager(tradeManager.address)).to.be.revertedWith('Caller is not the admin');
+            await expect(documentManagerContract.connect(otherAccount).addTradeManager(tradeManager.address)).to.be.revertedWith('DocumentManager: Caller is not the admin');
+            await expect(documentManagerContract.connect(otherAccount).removeTradeManager(tradeManager.address)).to.be.revertedWith('DocumentManager: Caller is not the admin');
         });
     });
 });
