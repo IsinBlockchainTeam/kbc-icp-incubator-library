@@ -74,7 +74,7 @@ abstract contract Trade is AccessControl {
 
     uint256[] private _documentIds;
     // document type => document ids
-    mapping(DocumentType => uint256[]) private _documentsByType;
+    mapping(DocumentType => uint256[]) internal _documentsByType;
 
     ProductCategoryManager internal _productCategoryManager;
     MaterialManager internal _materialManager;

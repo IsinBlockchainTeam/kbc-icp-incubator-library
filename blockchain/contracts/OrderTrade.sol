@@ -170,7 +170,16 @@ contract OrderTrade is Trade {
     }
 
     function haveDeadlinesExpired() public view returns (bool) {
-        return getNegotiationStatus() == NegotiationStatus.CONFIRMED && (block.timestamp > _paymentDeadline || block.timestamp > _documentDeliveryDeadline || block.timestamp > _shippingDeadline || block.timestamp > _deliveryDeadline);
+        if (getNegotiationStatus() == NegotiationStatus.CONFIRMED) {
+            if ((block.timestamp > _paymentDeadline && _documentsByType[DocumentType.PAYMENT_INVOICE].length == 0) ||
+                (block.timestamp > _documentDeliveryDeadline && _documentsByType[DocumentType.SWISS_DECODE].length == 0 && _documentsByType[DocumentType.WEIGHT_CERTIFICATE].length == 0 && _documentsByType[DocumentType.FUMIGATION_CERTIFICATE].length == 0 && _documentsByType[DocumentType.PHYTOSANITARY_CERTIFICATE].length == 0 && _documentsByType[DocumentType.PREFERENTIAL_ENTRY_CERTIFICATE].length == 0 && _documentsByType[DocumentType.INSURANCE_CERTIFICATE].length == 0) ||
+                (block.timestamp > _shippingDeadline && _documentsByType[DocumentType.DELIVERY_NOTE].length == 0) ||
+                (block.timestamp > _deliveryDeadline && _documentsByType[DocumentType.BILL_OF_LADING].length == 0)
+            ) {
+                return true;
+            }
+        }
+        return false;
     }
 
     function enforceDeadlines() public {
