@@ -43,9 +43,8 @@ export { OrderTradeService } from './services/OrderTradeService';
 export { IConcreteTradeService } from './services/IConcreteTradeService';
 export { URLStructure } from './types/URLStructure';
 
-
 export { DocumentInfo, DocumentType } from './entities/DocumentInfo';
-export { Document, TransactionLine } from './entities/Document';
+export { Document, DocumentStatus, TransactionLine } from './entities/Document';
 export { DocumentDriver } from './drivers/DocumentDriver';
 export { DocumentService } from './services/DocumentService';
 
@@ -68,6 +67,6 @@ export { ICPFileDriver } from './drivers/ICPFileDriver';
 
 export { GraphService, GraphData } from './services/GraphService';
 
-export {FileHelpers} from './utils/fileHelpers';
-export {URL_SEGMENTS} from './constants/ICP';
-export {URL_SEGMENT_INDEXES} from './constants/ICP';
+export { FileHelpers } from './utils/fileHelpers';
+export { URL_SEGMENTS } from './constants/ICP';
+export { URL_SEGMENT_INDEXES } from './constants/ICP';

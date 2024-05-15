@@ -178,6 +178,10 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
         await tx.wait();
     }
 
+    async getWhoSigned(): Promise<string[]> {
+        return this._actual.getWhoSigned();
+    }
+
     async confirmOrder(): Promise<void> {
         const tx = await this._actual.confirmOrder();
         await tx.wait();

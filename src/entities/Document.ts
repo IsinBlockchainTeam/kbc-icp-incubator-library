@@ -1,6 +1,10 @@
-import {DocumentInfo, DocumentType} from './DocumentInfo';
+import { DocumentInfo, DocumentType } from './DocumentInfo';
 
 export type TransactionLine = {id: number, quantity?: number}
+
+export enum DocumentStatus {
+    NOT_EVALUATED, APPROVED, NOT_APPROVED
+}
 export class Document extends DocumentInfo {
     private _filename: string;
 
@@ -15,7 +19,7 @@ export class Document extends DocumentInfo {
     private _content: Uint8Array;
 
     constructor(documentInfo: DocumentInfo, filename: string, documentType: DocumentType, date: Date, content: Uint8Array, transactionLines?: TransactionLine[]) {
-        super(documentInfo.id, documentInfo.externalUrl, documentInfo.contentHash);
+        super(documentInfo.id, documentInfo.externalUrl, documentInfo.contentHash, documentInfo.status);
         this._filename = filename;
         this._documentType = documentType;
         this._date = date;
@@ -66,7 +70,6 @@ export class Document extends DocumentInfo {
     get transactionLines(): TransactionLine[] | undefined {
         return this._transactionLines;
     }
-
 
     set transactionLines(value: TransactionLine[] | undefined) {
         this._transactionLines = value;

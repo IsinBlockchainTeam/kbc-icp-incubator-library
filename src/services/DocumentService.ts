@@ -1,8 +1,8 @@
 import { DocumentDriver } from '../drivers/DocumentDriver';
-import {DocumentInfo, DocumentType} from '../entities/DocumentInfo';
-import {Document, TransactionLine} from '../entities/Document';
-import {ICPFileDriver} from "../drivers/ICPFileDriver";
-import FileHelpers from "../utils/fileHelpers";
+import { DocumentInfo, DocumentType } from '../entities/DocumentInfo';
+import { Document, DocumentStatus, TransactionLine } from '../entities/Document';
+import { ICPFileDriver } from '../drivers/ICPFileDriver';
+import FileHelpers from '../utils/fileHelpers';
 
 export class DocumentService {
     private _documentDriver: DocumentDriver;
@@ -22,6 +22,10 @@ export class DocumentService {
         return this._documentDriver.updateDocument(documentId, externalUrl, contentHash);
     }
 
+    async evaluateDocument(documentId: number, status: DocumentStatus): Promise<void> {
+        return this._documentDriver.evaluateDocument(documentId, status);
+    }
+
     async getDocumentsCounter(): Promise<number> {
         return this._documentDriver.getDocumentsCounter();
     }
@@ -34,7 +38,7 @@ export class DocumentService {
         if (!this._icpFileDriver) throw new Error('DocumentService: ICPFileDriver has not been set');
         try {
             const path = documentInfo.externalUrl.split('/').slice(0, -1).join('/');
-            const metadataName = FileHelpers.removeFileExtension(documentInfo.externalUrl.split(path + '/')[1]);
+            const metadataName = FileHelpers.removeFileExtension(documentInfo.externalUrl.split(`${path}/`)[1]);
 
             interface DocumentMetadata {
                 fileName: string;
@@ -42,12 +46,12 @@ export class DocumentService {
                 date: Date;
                 transactionLines: TransactionLine[];
             }
-            const documentMetadata: DocumentMetadata = FileHelpers.getObjectFromBytes(await this._icpFileDriver.read(path + '/' + metadataName + '-metadata.json')) as DocumentMetadata;
+            const documentMetadata: DocumentMetadata = FileHelpers.getObjectFromBytes(await this._icpFileDriver.read(`${path}/${metadataName}-metadata.json`)) as DocumentMetadata;
             const fileName = documentMetadata.fileName;
             const documentType = documentMetadata.documentType;
             const date = documentMetadata.date;
             const transactionLines = documentMetadata.transactionLines;
-            if(!fileName || !documentType || !date) throw new Error('Error while retrieving document metadata from external storage: missing fields');
+            if (!fileName || !documentType || !date) throw new Error('Error while retrieving document metadata from external storage: missing fields');
 
             const fileContent = await this._icpFileDriver.read(documentInfo.externalUrl);
             return new Document(documentInfo, fileName, documentType, new Date(date), fileContent, transactionLines);

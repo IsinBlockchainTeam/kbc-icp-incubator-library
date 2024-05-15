@@ -1,5 +1,5 @@
-import { Document } from './Document';
-import {DocumentInfo, DocumentType} from './DocumentInfo';
+import { Document, DocumentStatus } from './Document';
+import { DocumentInfo, DocumentType } from './DocumentInfo';
 
 describe('Document', () => {
     let document: Document;
@@ -10,7 +10,7 @@ describe('Document', () => {
     const today = new Date();
 
     beforeAll(() => {
-        documentInfo = new DocumentInfo(0, 'external url', 'contentHash');
+        documentInfo = new DocumentInfo(0, 'external url', 'contentHash', DocumentStatus.NOT_EVALUATED);
         document = new Document(documentInfo, filename, documentType, today, new Uint8Array([1, 2, 3]));
     });
 
@@ -18,6 +18,7 @@ describe('Document', () => {
         expect(document.id).toEqual(0);
         expect(document.externalUrl).toEqual('external url');
         expect(document.contentHash).toEqual('contentHash');
+        expect(document.status).toEqual(DocumentStatus.NOT_EVALUATED);
         expect(document.filename).toEqual(filename);
         expect(document.documentType).toEqual(documentType);
         expect(document.date).toEqual(today);
@@ -35,6 +36,11 @@ describe('Document', () => {
         const newContent = new Uint8Array([4, 5, 6]);
         document.content = newContent;
         expect(document.content).toEqual(newContent);
+    });
+
+    it('should correctly set the status', () => {
+        document.status = DocumentStatus.APPROVED;
+        expect(document.status).toEqual(DocumentStatus.APPROVED);
     });
 
     it('should correctly set the document type', () => {

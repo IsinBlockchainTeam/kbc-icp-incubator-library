@@ -180,6 +180,17 @@ contract OrderTrade is Trade {
         }
     }
 
+    function getWhoSigned() public view returns (address[] memory) {
+        address[] memory signers = new address[](2);
+        if (_hasSupplierSigned) {
+            signers[0] = _supplier;
+        }
+        if (_hasCommissionerSigned) {
+            signers[1] = _commissioner;
+        }
+        return signers;
+    }
+
     function confirmOrder() public onlyContractPart onlyOrdersInNegotiation {
         if (_msgSender() == _supplier) {
             _hasSupplierSigned = true;
