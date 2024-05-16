@@ -1,9 +1,9 @@
-import {TradeService} from './TradeService';
-import {OrderTradeDriver, OrderTradeEvents,} from '../drivers/OrderTradeDriver';
-import {NegotiationStatus} from '../types/NegotiationStatus';
-import {OrderLine, OrderLineRequest, OrderTrade, OrderTradeMetadata} from '../entities/OrderTrade';
-import {IConcreteTradeService} from './IConcreteTradeService';
-import FileHelpers from "../utils/fileHelpers";
+import { TradeService } from './TradeService';
+import { OrderTradeDriver, OrderTradeEvents } from '../drivers/OrderTradeDriver';
+import { NegotiationStatus } from '../types/NegotiationStatus';
+import { OrderLine, OrderLineRequest, OrderTrade, OrderTradeMetadata } from '../entities/OrderTrade';
+import { IConcreteTradeService } from './IConcreteTradeService';
+import FileHelpers from '../utils/fileHelpers';
 
 export class OrderTradeService extends TradeService implements IConcreteTradeService {
     async getTrade(blockNumber?: number): Promise<OrderTrade> {
@@ -15,7 +15,7 @@ export class OrderTradeService extends TradeService implements IConcreteTradeSer
             throw new Error('OrderTradeService: ICPFileDriver has not been set');
 
         const trade = await this._tradeDriverImplementation.getTrade(blockNumber);
-        const bytes = await this._icpFileDriver.read(trade.externalUrl + "/files/metadata.json");
+        const bytes = await this._icpFileDriver.read(`${trade.externalUrl}/files/metadata.json`);
         trade.metadata = FileHelpers.getObjectFromBytes(bytes) as OrderTradeMetadata;
         return trade;
     }
@@ -78,6 +78,10 @@ export class OrderTradeService extends TradeService implements IConcreteTradeSer
 
     async enforceDeadlines(): Promise<void> {
         return this._tradeDriverImplementation.enforceDeadlines();
+    }
+
+    async getWhoSigned(): Promise<string[]> {
+        return this._tradeDriverImplementation.getWhoSigned();
     }
 
     async confirmOrder(): Promise<void> {

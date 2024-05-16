@@ -1,9 +1,10 @@
 /* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
-import {Signer, utils} from 'ethers';
-import {DocumentManager, DocumentManager__factory} from '../smart-contracts';
-import {DocumentInfo} from '../entities/DocumentInfo';
-import {EntityBuilder} from '../utils/EntityBuilder';
+import { Signer, utils } from 'ethers';
+import { DocumentManager, DocumentManager__factory } from '../smart-contracts';
+import { DocumentInfo } from '../entities/DocumentInfo';
+import { EntityBuilder } from '../utils/EntityBuilder';
+import { DocumentStatus } from '../entities/Document';
 
 export class DocumentDriver {
     private _contract: DocumentManager;
@@ -24,6 +25,11 @@ export class DocumentDriver {
 
     async updateDocument(documentId: number, externalUrl: string, contentHash: string): Promise<void> {
         const tx = await this._contract.updateDocument(documentId, externalUrl, contentHash);
+        await tx.wait();
+    }
+
+    async evaluateDocument(documentId: number, status: DocumentStatus): Promise<void> {
+        const tx = await this._contract.evaluateDocument(documentId, status);
         await tx.wait();
     }
 
