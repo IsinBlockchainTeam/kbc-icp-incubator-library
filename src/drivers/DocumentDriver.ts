@@ -28,8 +28,8 @@ export class DocumentDriver {
         await tx.wait();
     }
 
-    async evaluateDocument(documentId: number, status: DocumentStatus): Promise<void> {
-        const tx = await this._contract.evaluateDocument(documentId, status);
+    async validateDocument(documentId: number, status: DocumentStatus): Promise<void> {
+        const tx = await this._contract.validateDocument(documentId, status);
         await tx.wait();
     }
 

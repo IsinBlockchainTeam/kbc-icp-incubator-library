@@ -31,13 +31,13 @@ export class TradeDriver {
         const result = await this._contract.getTradeStatus();
         switch (result) {
         case 0:
-            return TradeStatus.PAYED;
-        case 1:
-            return TradeStatus.SHIPPED;
-        case 2:
-            return TradeStatus.ON_BOARD;
-        case 3:
             return TradeStatus.CONTRACTING;
+        case 1:
+            return TradeStatus.PAYED;
+        case 2:
+            return TradeStatus.EXPORTED;
+        case 3:
+            return TradeStatus.SHIPPED;
         default:
             throw new Error(`TradeDriver: an invalid value "${result}" for "TradeStatus" was returned by the contract`);
         }

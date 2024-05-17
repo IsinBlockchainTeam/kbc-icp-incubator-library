@@ -22,8 +22,9 @@ export class DocumentService {
         return this._documentDriver.updateDocument(documentId, externalUrl, contentHash);
     }
 
-    async evaluateDocument(documentId: number, status: DocumentStatus): Promise<void> {
-        return this._documentDriver.evaluateDocument(documentId, status);
+    async validateDocument(documentId: number, status: DocumentStatus): Promise<void> {
+        if (status === DocumentStatus.NOT_EVALUATED) throw new Error('Cannot validate document with status NOT_EVALUATED');
+        return this._documentDriver.validateDocument(documentId, status);
     }
 
     async getDocumentsCounter(): Promise<number> {

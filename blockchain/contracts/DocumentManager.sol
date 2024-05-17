@@ -63,7 +63,7 @@ contract DocumentManager is AccessControl {
         emit DocumentUpdated(documentId, contentHash);
     }
 
-    function evaluateDocument(uint256 documentId, DocumentStatus status) public {
+    function validateDocument(uint256 documentId, DocumentStatus status) public {
         require(documents[documentId].exists, "DocumentManager: Document does not exist");
 
         documents[documentId].status = status;
