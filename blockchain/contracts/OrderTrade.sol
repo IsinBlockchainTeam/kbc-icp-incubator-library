@@ -205,6 +205,13 @@ contract OrderTrade is Trade {
         }
     }
 
+    function completeTransaction() public {
+        require(getTradeStatus() == TradeStatus.SHIPPED, "Transaction is not completed until the goods have not been imported has expected");
+
+//        TODO: questo metodo probabilmente non può attualmente essere chiamato in quanto questo contratto non è l'admin
+        _escrow.close();
+    }
+
     function _updateSignatures(address sender) private {
         if (sender == _supplier) {
             _hasSupplierSigned = true;
