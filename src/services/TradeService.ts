@@ -5,7 +5,7 @@ import { TradeType } from '../types/TradeType';
 import { ICPFileDriver } from '../drivers/ICPFileDriver';
 import { DocumentDriver } from '../drivers/DocumentDriver';
 import FileHelpers from '../utils/fileHelpers';
-import { TransactionLine } from '../entities/Document';
+import { DocumentStatus, TransactionLine } from '../entities/Document';
 
 export class TradeService {
     protected _tradeDriver: TradeDriver;
@@ -57,6 +57,11 @@ export class TradeService {
         return this._tradeDriver.addDocument(documentType, resourceSpec.name, contentHash.toString());
     }
 
+    async validateDocument(documentId: number, status: DocumentStatus): Promise<void> {
+        if (status === DocumentStatus.NOT_EVALUATED) throw new Error('Cannot validate document with status NOT_EVALUATED');
+        return this._tradeDriver.validateDocument(documentId, status);
+    }
+
     async getAllDocumentIds(): Promise<number[]> {
         return this._tradeDriver.getAllDocumentIds();
     }
@@ -75,6 +80,10 @@ export class TradeService {
         if (!this._documentDriver) throw new Error('Cannot perform this operation without a document driver');
         const ids = await this.getDocumentIdsByType(documentType);
         return Promise.all(ids.map((id) => this._documentDriver!.getDocumentById(id)));
+    }
+
+    async getDocumentStatus(documentId: number): Promise<DocumentStatus> {
+        return this._tradeDriver.getDocumentStatus(documentId);
     }
 
     async addAdmin(account: string): Promise<void> {

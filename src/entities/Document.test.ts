@@ -1,4 +1,4 @@
-import { Document, DocumentStatus } from './Document';
+import { Document } from './Document';
 import { DocumentInfo, DocumentType } from './DocumentInfo';
 
 describe('Document', () => {
@@ -10,7 +10,7 @@ describe('Document', () => {
     const today = new Date();
 
     beforeAll(() => {
-        documentInfo = new DocumentInfo(0, 'external url', 'contentHash', DocumentStatus.NOT_EVALUATED);
+        documentInfo = new DocumentInfo(0, 'external url', 'contentHash', '0xuplaoer');
         document = new Document(documentInfo, filename, documentType, today, new Uint8Array([1, 2, 3]));
     });
 
@@ -18,7 +18,7 @@ describe('Document', () => {
         expect(document.id).toEqual(0);
         expect(document.externalUrl).toEqual('external url');
         expect(document.contentHash).toEqual('contentHash');
-        expect(document.status).toEqual(DocumentStatus.NOT_EVALUATED);
+        expect(document.uploadedBy).toEqual('0xuplaoer');
         expect(document.filename).toEqual(filename);
         expect(document.documentType).toEqual(documentType);
         expect(document.date).toEqual(today);
@@ -38,9 +38,19 @@ describe('Document', () => {
         expect(document.content).toEqual(newContent);
     });
 
-    it('should correctly set the status', () => {
-        document.status = DocumentStatus.APPROVED;
-        expect(document.status).toEqual(DocumentStatus.APPROVED);
+    it('should correctly set the content hash', () => {
+        document.contentHash = 'new content hash';
+        expect(document.contentHash).toEqual('new content hash');
+    });
+
+    it('should correctly set the external url', () => {
+        document.externalUrl = 'new external url';
+        expect(document.externalUrl).toEqual('new external url');
+    });
+
+    it('should correctly set the uploaded by address', () => {
+        document.uploadedBy = 'new uploader';
+        expect(document.uploadedBy).toEqual('new uploader');
     });
 
     it('should correctly set the document type', () => {

@@ -1,6 +1,6 @@
 import { DocumentDriver } from '../drivers/DocumentDriver';
 import { DocumentInfo, DocumentType } from '../entities/DocumentInfo';
-import { Document, DocumentStatus, TransactionLine } from '../entities/Document';
+import { Document, TransactionLine } from '../entities/Document';
 import { ICPFileDriver } from '../drivers/ICPFileDriver';
 import FileHelpers from '../utils/fileHelpers';
 
@@ -14,17 +14,12 @@ export class DocumentService {
         this._icpFileDriver = icpFileDriver;
     }
 
-    async registerDocument(externalUrl: string, contentHash: string): Promise<void> {
-        return this._documentDriver.registerDocument(externalUrl, contentHash);
+    async registerDocument(externalUrl: string, contentHash: string, uploadedBy: string): Promise<void> {
+        return this._documentDriver.registerDocument(externalUrl, contentHash, uploadedBy);
     }
 
-    async updateDocument(documentId: number, externalUrl: string, contentHash: string): Promise<void> {
-        return this._documentDriver.updateDocument(documentId, externalUrl, contentHash);
-    }
-
-    async validateDocument(documentId: number, status: DocumentStatus): Promise<void> {
-        if (status === DocumentStatus.NOT_EVALUATED) throw new Error('Cannot validate document with status NOT_EVALUATED');
-        return this._documentDriver.validateDocument(documentId, status);
+    async updateDocument(documentId: number, externalUrl: string, contentHash: string, uploadedBy: string): Promise<void> {
+        return this._documentDriver.updateDocument(documentId, externalUrl, contentHash, uploadedBy);
     }
 
     async getDocumentsCounter(): Promise<number> {

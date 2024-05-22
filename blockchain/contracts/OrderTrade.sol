@@ -249,7 +249,7 @@ contract OrderTrade is Trade {
 
     function _areDocumentsApproved(uint256[] memory documentIds) private view returns (bool) {
         for (uint i = 0; i < documentIds.length; i++)
-            if (_documentManager.getDocumentById(documentIds[i]).status != DocumentManager.DocumentStatus.APPROVED) return false;
+            if (_documentsStatus[documentIds[i]].status != DocumentStatus.APPROVED) return false;
 
         return true;
     }

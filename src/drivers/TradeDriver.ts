@@ -3,6 +3,7 @@ import { Trade as TradeContract, Trade__factory } from '../smart-contracts';
 import { DocumentType } from '../entities/DocumentInfo';
 import { TradeType } from '../types/TradeType';
 import { getTradeTypeByIndex } from '../utils/utils';
+import { DocumentStatus } from '../entities/Document';
 
 export class TradeDriver {
     protected _contract: TradeContract;
@@ -31,6 +32,16 @@ export class TradeDriver {
         await tx.wait();
     }
 
+    async updateDocument(documentId: number, externalUrl: string, contentHash: string): Promise<void> {
+        const tx = await this._contract.updateDocument(documentId, externalUrl, contentHash);
+        await tx.wait();
+    }
+
+    async validateDocument(documentId: number, status: DocumentStatus): Promise<void> {
+        const tx = await this._contract.validateDocument(documentId, status);
+        await tx.wait();
+    }
+
     async getAllDocumentIds(): Promise<number[]> {
         const ids = await this._contract.getAllDocumentIds();
         return ids.map((id) => id.toNumber());
@@ -39,6 +50,10 @@ export class TradeDriver {
     async getDocumentIdsByType(documentType: DocumentType): Promise<number[]> {
         const ids = await this._contract.getDocumentIdsByType(documentType);
         return ids.map((id) => id.toNumber());
+    }
+
+    async getDocumentStatus(documentId: number): Promise<DocumentStatus> {
+        return this._contract.getDocumentStatus(documentId);
     }
 
     async addAdmin(account: string): Promise<void> {

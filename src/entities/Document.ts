@@ -19,7 +19,7 @@ export class Document extends DocumentInfo {
     private _content: Uint8Array;
 
     constructor(documentInfo: DocumentInfo, filename: string, documentType: DocumentType, date: Date, content: Uint8Array, transactionLines?: TransactionLine[]) {
-        super(documentInfo.id, documentInfo.externalUrl, documentInfo.contentHash, documentInfo.status);
+        super(documentInfo.id, documentInfo.externalUrl, documentInfo.contentHash, documentInfo.uploadedBy);
         this._filename = filename;
         this._documentType = documentType;
         this._date = date;

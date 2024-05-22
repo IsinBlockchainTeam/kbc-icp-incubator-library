@@ -71,7 +71,7 @@ describe('DocumentDriver', () => {
 
     describe('registerDocument', () => {
         it('should call and wait for register document', async () => {
-            await documentDriver.registerDocument(rawDocument.externalUrl, rawDocument.contentHash);
+            await documentDriver.registerDocument(rawDocument.externalUrl, rawDocument.contentHash, await mockedSigner.getAddress());
 
             expect(mockedContract.registerDocument).toHaveBeenCalledTimes(1);
             expect(mockedContract.registerDocument).toHaveBeenNthCalledWith(1, rawDocument.externalUrl, rawDocument.contentHash);
@@ -81,7 +81,7 @@ describe('DocumentDriver', () => {
         it('should call and wait for register document - transaction fails', async () => {
             mockedContract.registerDocument = jest.fn().mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => documentDriver.registerDocument(rawDocument.externalUrl, rawDocument.contentHash);
+            const fn = async () => documentDriver.registerDocument(rawDocument.externalUrl, rawDocument.contentHash, await mockedSigner.getAddress());
             await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
     });

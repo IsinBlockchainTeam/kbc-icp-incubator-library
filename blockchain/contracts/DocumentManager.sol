@@ -12,8 +12,6 @@ contract DocumentManager is AccessControl {
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant TRADE_MANAGER_ROLE = keccak256("TRADE_MANAGER_ROLE");
 
-    enum DocumentStatus { NOT_EVALUATED, APPROVED, NOT_APPROVED }
-
     event DocumentRegistered(uint256 indexed id, string contentHash);
     event DocumentUpdated(uint256 indexed id, string contentHash);
 
@@ -26,7 +24,7 @@ contract DocumentManager is AccessControl {
         uint256 id;
         string externalUrl;
         string contentHash;
-        DocumentStatus status;
+        address uploadedBy;
 
         bool exists;
     }
@@ -45,28 +43,25 @@ contract DocumentManager is AccessControl {
         }
     }
 
-    function registerDocument(string memory externalUrl, string memory contentHash) public returns (uint256) {
+    function registerDocument(string memory externalUrl, string memory contentHash, address uploadedBy) public returns (uint256) {
         uint256 documentId = documentCounter.current() + 1;
         documentCounter.increment();
 
-        documents[documentId] = Document(documentId, externalUrl, contentHash, DocumentStatus.NOT_EVALUATED, true);
+        documents[documentId] = Document(documentId, externalUrl, contentHash, uploadedBy, true);
 
         emit DocumentRegistered(documentId, contentHash);
         return documentId;
     }
 
-    function updateDocument(uint256 documentId, string memory externalUrl, string memory contentHash) public {
+    function updateDocument(uint256 documentId, string memory externalUrl, string memory contentHash, address uploadedBy) public {
         require(documents[documentId].exists, "DocumentManager: Document does not exist");
+        require(documents[documentId].uploadedBy == uploadedBy, "DocumentManager: Can't update the uploader");
+        // if the caller is not a smart contract and the document was not uploaded by the caller. If the caller is a wallet, it must be the uploader
+        require(_msgSender() == tx.origin && documents[documentId].uploadedBy == tx.origin, "DocumentManager: Caller is not the uploader");
 
         documents[documentId].externalUrl = externalUrl;
         documents[documentId].contentHash = contentHash;
         emit DocumentUpdated(documentId, contentHash);
-    }
-
-    function validateDocument(uint256 documentId, DocumentStatus status) public {
-        require(documents[documentId].exists, "DocumentManager: Document does not exist");
-
-        documents[documentId].status = status;
     }
 
     function getDocumentById(uint256 documentId) public view returns (Document memory) {

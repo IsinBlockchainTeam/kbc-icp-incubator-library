@@ -1,5 +1,3 @@
-import { DocumentStatus } from './Document';
-
 export enum DocumentType {
     METADATA,
     DELIVERY_NOTE,
@@ -20,13 +18,13 @@ export class DocumentInfo {
 
     private _contentHash: string;
 
-    private _status: DocumentStatus;
+    private _uploadedBy: string;
 
-    constructor(id: number, externalUrl: string, contentHash: string, status: DocumentStatus) {
+    constructor(id: number, externalUrl: string, contentHash: string, uploadedBy: string) {
         this._id = id;
         this._externalUrl = externalUrl;
         this._contentHash = contentHash;
-        this._status = status;
+        this._uploadedBy = uploadedBy;
     }
 
     get id(): number {
@@ -53,11 +51,11 @@ export class DocumentInfo {
         this._contentHash = value;
     }
 
-    get status(): DocumentStatus {
-        return this._status;
+    get uploadedBy(): string {
+        return this._uploadedBy;
     }
 
-    set status(value: DocumentStatus) {
-        this._status = value;
+    set uploadedBy(value: string) {
+        this._uploadedBy = value;
     }
 }

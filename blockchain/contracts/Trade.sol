@@ -7,6 +7,7 @@ import "@blockchain-lib/blockchain-common/contracts/EnumerableType.sol";
 import "./DocumentManager.sol";
 import "./ProductCategoryManager.sol";
 import "./MaterialManager.sol";
+import "./DocumentManager.sol";
 
 abstract contract Trade is AccessControl {
     using Counters for Counters.Counter;
@@ -26,6 +27,7 @@ abstract contract Trade is AccessControl {
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
+    enum DocumentStatus { NOT_EVALUATED, APPROVED, NOT_APPROVED }
     enum TradeType { BASIC, ORDER }
 
     event TradeLineAdded(uint256 tradeLineId);
@@ -74,6 +76,12 @@ abstract contract Trade is AccessControl {
     uint256[] private _documentIds;
     // document type => document ids
     mapping(DocumentType => uint256[]) internal _documentsByType;
+
+    struct IsValidated {
+        DocumentStatus status;
+        bool exists;
+    }
+    mapping(uint256 => IsValidated) internal _documentsStatus;
 
     ProductCategoryManager internal _productCategoryManager;
     MaterialManager internal _materialManager;
@@ -158,13 +166,21 @@ abstract contract Trade is AccessControl {
     function addDocument(DocumentType documentType, string memory externalUrl, string memory contentHash) public onlyAdminOrContractPart {
 //        require(_lines[lineId].exists, "Trade: Line does not exist");
 //        require(_lines[lineId].materialId != 0, "Trade: A material must be assigned before adding a document for a line");
-        uint256 documentId = _documentManager.registerDocument(externalUrl, contentHash);
+        uint256 documentId = _documentManager.registerDocument(externalUrl, contentHash, _msgSender());
         _documentIds.push(documentId);
         _documentsByType[documentType].push(documentId);
+        _documentsStatus[documentId] = IsValidated(DocumentStatus.NOT_EVALUATED, true);
+    }
+
+    function validateDocument(uint256 documentId, DocumentStatus status) public {
+        require(_documentsStatus[documentId].exists, "Trade: Document does not exist");
+        require(status != DocumentStatus.NOT_EVALUATED, "Trade: Document status must be different from NOT_EVALUATED");
+
+        _documentsStatus[documentId].status = status;
     }
 
     function updateDocument(uint256 documentId, string memory externalUrl, string memory contentHash) public onlyAdminOrContractPart {
-        _documentManager.updateDocument(documentId, externalUrl, contentHash);
+        _documentManager.updateDocument(documentId, externalUrl, contentHash, _msgSender());
     }
 
     function getAllDocumentIds() public view returns (uint256[] memory) {
@@ -173,6 +189,10 @@ abstract contract Trade is AccessControl {
 
     function getDocumentIdsByType(DocumentType documentType) public view returns (uint256[] memory) {
         return _documentsByType[documentType];
+    }
+
+    function getDocumentStatus(uint256 documentId) public view returns (DocumentStatus) {
+        return _documentsStatus[documentId].status;
     }
 
     function addAdmin(address account) public onlyAdmin {
