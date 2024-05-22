@@ -1,40 +1,10 @@
 import * as dotenv from 'dotenv';
-import { JsonRpcProvider } from '@ethersproject/providers';
-import { ethers, Signer, Wallet } from 'ethers';
-import { SolidStorageACR } from '@blockchain-lib/common';
-import DocumentService from '../services/DocumentService';
-import { DocumentDriver } from '../drivers/DocumentDriver';
-import {
-    CUSTOMER_ADDRESS,
-    CUSTOMER_PRIVATE_KEY,
-    DOCUMENT_MANAGER_CONTRACT_ADDRESS,
-    NETWORK,
-    TRADE_MANAGER_CONTRACT_ADDRESS,
-    SUPPLIER_ADDRESS,
-    OTHER_ADDRESS,
-    MY_TOKEN_CONTRACT_ADDRESS,
-    MATERIAL_MANAGER_CONTRACT_ADDRESS,
-    PRODUCT_CATEGORY_CONTRACT_ADDRESS, ADMIN_PRIVATE_KEY,
-} from './config';
-import { DocumentType } from '../entities/DocumentInfo';
-import { TradeManagerService } from '../services/TradeManagerService';
-import { TradeManagerDriver } from '../drivers/TradeManagerDriver';
-import { OrderTradeService } from '../services/OrderTradeService';
-import { OrderTradeDriver } from '../drivers/OrderTradeDriver';
-import { OrderTrade } from '../entities/OrderTrade';
-import { ProductCategoryService } from '../services/ProductCategoryService';
-import { ProductCategoryDriver } from '../drivers/ProductCategoryDriver';
-import { MaterialService } from '../services/MaterialService';
-import { MaterialDriver } from '../drivers/MaterialDriver';
-import { SolidDocumentSpec } from '../drivers/SolidDocumentDriver';
-import { SolidMetadataSpec } from '../drivers/SolidMetadataDriver';
 
 dotenv.config();
 
 it('always passes', () => {
     expect(true).toBeTruthy();
-})
-
+});
 
 // describe('Document lifecycle', () => {
 //     let documentService: DocumentService<SolidMetadataSpec, SolidDocumentSpec, SolidStorageACR>;
@@ -152,7 +122,7 @@ it('always passes', () => {
 //     //     transactionDocumentCounter = await documentService.getDocumentsCounterByTransactionIdAndType(transactionId, transactionType);
 //     //     expect(transactionDocumentCounter).toEqual(1);
 //     //
-//     //     const status = await orderTradeService.getTradeStatus();
+//     //     const status = await orderTradeService.getOrderStatus();
 //     //     expect(status).toEqual(TradeStatus.SHIPPED);
 //     //
 //     //     const documentsInfo = await documentService.getDocumentsInfoByDocumentType(transactionId, transactionType, deliveryNote.documentType);
@@ -239,7 +209,7 @@ it('always passes', () => {
 //     // });
 //     //
 //     // it("should get the trade status ON_BOARD for the second order because document 'Bill of lading' has been uploaded before", async () => {
-//     //     const status = await secondOrderTradeService.getTradeStatus();
-//     //     expect(status).toEqual(TradeStatus.ON_BOARD);
+//     //     const status = await secondOrderTradeService.getOrderStatus();
+//     //     expect(status).toEqual(TradeStatus.EXPORTED);
 //     // });
 // });

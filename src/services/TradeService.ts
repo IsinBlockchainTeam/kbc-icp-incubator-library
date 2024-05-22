@@ -1,6 +1,5 @@
 import { ICPResourceSpec } from '@blockchain-lib/common';
 import { TradeDriver } from '../drivers/TradeDriver';
-import { TradeStatus } from '../types/TradeStatus';
 import { DocumentInfo, DocumentType } from '../entities/DocumentInfo';
 import { TradeType } from '../types/TradeType';
 import { ICPFileDriver } from '../drivers/ICPFileDriver';
@@ -33,10 +32,6 @@ export class TradeService {
 
     async getLineExists(id: number): Promise<boolean> {
         return this._tradeDriver.getLineExists(id);
-    }
-
-    async getTradeStatus(): Promise<TradeStatus> {
-        return this._tradeDriver.getTradeStatus();
     }
 
     async addDocument(documentType: DocumentType, fileContent: Uint8Array, externalUrl: string, resourceSpec: ICPResourceSpec, delegatedOrganizationIds: number[] = [], transactionLines: TransactionLine[] = [], quantity: number | undefined = undefined): Promise<void> {

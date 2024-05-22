@@ -26,7 +26,6 @@ abstract contract Trade is AccessControl {
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
-    enum TradeStatus { CONTRACTING, PAYED, EXPORTED, SHIPPED }
     enum TradeType { BASIC, ORDER }
 
     event TradeLineAdded(uint256 tradeLineId);
@@ -74,7 +73,7 @@ abstract contract Trade is AccessControl {
 
     uint256[] private _documentIds;
     // document type => document ids
-    mapping(DocumentType => uint256[]) private _documentsByType;
+    mapping(DocumentType => uint256[]) internal _documentsByType;
 
     ProductCategoryManager internal _productCategoryManager;
     MaterialManager internal _materialManager;
@@ -156,24 +155,6 @@ abstract contract Trade is AccessControl {
         _lines[lineId].materialId = materialId;
     }
 
-    function getTradeStatus() public view returns (TradeStatus) {
-        uint256 documentsCounter = _documentManager.getDocumentsCounter();
-        TradeStatus status = TradeStatus.CONTRACTING;
-
-//        if (documentsCounter == _documentsByType[DocumentType.METADATA].length) return TradeStatus.CONTRACTING;
-        // TODO: gestire lo stato di trade "pagato". Capire se risulta pagato solamente nel momento in cui sono stati sbloccati tutti i fondi e l'intera transazione si è conclusa
-        if (_documentsByType[DocumentType.PAYMENT_INVOICE].length > 0 && _areDocumentsApproved(_documentsByType[DocumentType.PAYMENT_INVOICE])) status = TradeStatus.PAYED;
-        if (_documentsByType[DocumentType.SWISS_DECODE].length > 0 && _documentsByType[DocumentType.WEIGHT_CERTIFICATE].length > 0 && _documentsByType[DocumentType.FUMIGATION_CERTIFICATE].length > 0 &&
-            _documentsByType[DocumentType.PREFERENTIAL_ENTRY_CERTIFICATE].length > 0 && _documentsByType[DocumentType.PHYTOSANITARY_CERTIFICATE].length > 0 && _documentsByType[DocumentType.INSURANCE_CERTIFICATE].length > 0 &&
-            _areDocumentsApproved(_documentsByType[DocumentType.SWISS_DECODE]) && _areDocumentsApproved(_documentsByType[DocumentType.WEIGHT_CERTIFICATE]) && _areDocumentsApproved(_documentsByType[DocumentType.FUMIGATION_CERTIFICATE]) &&
-            _areDocumentsApproved(_documentsByType[DocumentType.PREFERENTIAL_ENTRY_CERTIFICATE]) && _areDocumentsApproved(_documentsByType[DocumentType.PHYTOSANITARY_CERTIFICATE]) && _areDocumentsApproved(_documentsByType[DocumentType.INSURANCE_CERTIFICATE])
-        ) status = TradeStatus.EXPORTED;
-        if (_documentsByType[DocumentType.BILL_OF_LADING].length > 0 && _areDocumentsApproved(_documentsByType[DocumentType.BILL_OF_LADING])) status = TradeStatus.SHIPPED;
-
-
-        return status;
-    }
-
     function addDocument(DocumentType documentType, string memory externalUrl, string memory contentHash) public onlyAdminOrContractPart {
 //        require(_lines[lineId].exists, "Trade: Line does not exist");
 //        require(_lines[lineId].materialId != 0, "Trade: A material must be assigned before adding a document for a line");
@@ -204,12 +185,5 @@ abstract contract Trade is AccessControl {
 
     function _isContractPart(address account) internal view returns (bool) {
         return account == _supplier || account == _commissioner;
-    }
-
-    function _areDocumentsApproved(uint256[] memory documentIds) private view returns (bool) {
-        for (uint i = 0; i < documentIds.length; i++)
-            if (_documentManager.getDocumentById(documentIds[i]).status != DocumentManager.DocumentStatus.APPROVED) return false;
-
-        return true;
     }
 }

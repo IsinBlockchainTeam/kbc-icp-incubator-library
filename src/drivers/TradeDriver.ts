@@ -1,6 +1,5 @@
 import { Signer, utils } from 'ethers';
 import { Trade as TradeContract, Trade__factory } from '../smart-contracts';
-import { TradeStatus } from '../types/TradeStatus';
 import { DocumentType } from '../entities/DocumentInfo';
 import { TradeType } from '../types/TradeType';
 import { getTradeTypeByIndex } from '../utils/utils';
@@ -25,22 +24,6 @@ export class TradeDriver {
 
     async getLineExists(id: number): Promise<boolean> {
         return this._contract.getLineExists(id);
-    }
-
-    async getTradeStatus(): Promise<TradeStatus> {
-        const result = await this._contract.getTradeStatus();
-        switch (result) {
-        case 0:
-            return TradeStatus.CONTRACTING;
-        case 1:
-            return TradeStatus.PAYED;
-        case 2:
-            return TradeStatus.EXPORTED;
-        case 3:
-            return TradeStatus.SHIPPED;
-        default:
-            throw new Error(`TradeDriver: an invalid value "${result}" for "TradeStatus" was returned by the contract`);
-        }
     }
 
     async addDocument(documentType: DocumentType, externalUrl: string, contentHash: string): Promise<void> {

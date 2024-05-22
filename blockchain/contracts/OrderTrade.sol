@@ -10,6 +10,7 @@ contract OrderTrade is Trade {
     using Counters for Counters.Counter;
 
     enum NegotiationStatus {INITIALIZED, PENDING, CONFIRMED, EXPIRED}
+    enum OrderStatus { CONTRACTING, PRODUCTION, PAYED, EXPORTED, SHIPPED }
 
     event OrderLineAdded(uint256 orderLineId);
     event OrderLineUpdated(uint256 orderLineId);
@@ -205,8 +206,27 @@ contract OrderTrade is Trade {
         }
     }
 
+    function getOrderStatus() public view returns (OrderStatus) {
+        uint256 documentsCounter = _documentManager.getDocumentsCounter();
+        OrderStatus status = OrderStatus.CONTRACTING;
+
+//        if (documentsCounter == _documentsByType[DocumentType.METADATA].length) return OrderStatus.CONTRACTING;
+        // TODO: gestire lo stato di trade "pagato". Capire se risulta pagato solamente nel momento in cui sono stati sbloccati tutti i fondi e l'intera transazione si è conclusa
+        if (getNegotiationStatus() == NegotiationStatus.CONFIRMED) status = OrderStatus.PRODUCTION;
+        if (_documentsByType[DocumentType.PAYMENT_INVOICE].length > 0 && _areDocumentsApproved(_documentsByType[DocumentType.PAYMENT_INVOICE])) status = OrderStatus.PAYED;
+        if (_documentsByType[DocumentType.SWISS_DECODE].length > 0 && _documentsByType[DocumentType.WEIGHT_CERTIFICATE].length > 0 && _documentsByType[DocumentType.FUMIGATION_CERTIFICATE].length > 0 &&
+        _documentsByType[DocumentType.PREFERENTIAL_ENTRY_CERTIFICATE].length > 0 && _documentsByType[DocumentType.PHYTOSANITARY_CERTIFICATE].length > 0 && _documentsByType[DocumentType.INSURANCE_CERTIFICATE].length > 0 &&
+        _areDocumentsApproved(_documentsByType[DocumentType.SWISS_DECODE]) && _areDocumentsApproved(_documentsByType[DocumentType.WEIGHT_CERTIFICATE]) && _areDocumentsApproved(_documentsByType[DocumentType.FUMIGATION_CERTIFICATE]) &&
+        _areDocumentsApproved(_documentsByType[DocumentType.PREFERENTIAL_ENTRY_CERTIFICATE]) && _areDocumentsApproved(_documentsByType[DocumentType.PHYTOSANITARY_CERTIFICATE]) && _areDocumentsApproved(_documentsByType[DocumentType.INSURANCE_CERTIFICATE])
+        ) status = OrderStatus.EXPORTED;
+        if (_documentsByType[DocumentType.BILL_OF_LADING].length > 0 && _areDocumentsApproved(_documentsByType[DocumentType.BILL_OF_LADING])) status = OrderStatus.SHIPPED;
+
+
+        return status;
+    }
+
     function completeTransaction() public {
-        require(getTradeStatus() == TradeStatus.SHIPPED, "Transaction is not completed until the goods have not been imported has expected");
+        require(getOrderStatus() == OrderStatus.SHIPPED, "Transaction is not completed until the goods have not been imported has expected");
 
 //        TODO: questo metodo probabilmente non può attualmente essere chiamato in quanto questo contratto non è l'admin
         _escrow.close();
@@ -225,5 +245,12 @@ contract OrderTrade is Trade {
             _hasSupplierSigned = false;
             _hasCommissionerSigned = false;
         }
+    }
+
+    function _areDocumentsApproved(uint256[] memory documentIds) private view returns (bool) {
+        for (uint i = 0; i < documentIds.length; i++)
+            if (_documentManager.getDocumentById(documentIds[i]).status != DocumentManager.DocumentStatus.APPROVED) return false;
+
+        return true;
     }
 }

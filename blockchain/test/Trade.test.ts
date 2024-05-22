@@ -49,13 +49,13 @@ describe('Trade.sol', () => {
     describe('Trade status', () => {
         // it('should compute the trade status - FAIL (Trade: There are no documents related to this trade)', async () => {
         //     documentManagerContractFake.getDocumentsCounter.returns(0);
-        //     await expect(basicTradeContract.connect(supplier).getTradeStatus()).to.be.revertedWith('Trade: There are no documents related to this trade');
+        //     await expect(basicTradeContract.connect(supplier).getOrderStatus()).to.be.revertedWith('Trade: There are no documents related to this trade');
         // });
 
         it('should compute the trade status - CONTRACTING', async () => {
             documentManagerContractFake.getDocumentsCounter.returns(0);
             expect(await basicTradeContract.connect(supplier)
-                .getTradeStatus())
+                .getOrderStatus())
                 .to
                 .equal(3);
         });
@@ -63,7 +63,7 @@ describe('Trade.sol', () => {
         it('should compute the trade status - FAIL (Trade: There are no documents with correct document type)', async () => {
             documentManagerContractFake.getDocumentsCounter.returns(2);
             await expect(basicTradeContract.connect(customer)
-                .getTradeStatus())
+                .getOrderStatus())
                 .to
                 .be
                 .revertedWith('Trade: There are no documents with correct document type');

@@ -18,6 +18,7 @@ import { EntityBuilder } from '../utils/EntityBuilder';
 import { IConcreteTradeDriverInterface } from './IConcreteTradeDriver.interface';
 import { getOrderTradeStatusByIndex } from '../utils/utils';
 import { zeroAddress } from '../utils/constants';
+import { OrderStatus } from '../types/OrderStatus';
 
 export enum OrderTradeEvents {
     TradeLineAdded,
@@ -131,6 +132,24 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
             return NegotiationStatus.EXPIRED;
         default:
             throw new Error('Invalid state');
+        }
+    }
+
+    async getOrderStatus(): Promise<OrderStatus> {
+        const result = await this._actual.getOrderStatus();
+        switch (result) {
+        case 0:
+            return OrderStatus.CONTRACTING;
+        case 1:
+            return OrderStatus.PRODUCTION;
+        case 2:
+            return OrderStatus.PAYED;
+        case 3:
+            return OrderStatus.EXPORTED;
+        case 4:
+            return OrderStatus.SHIPPED;
+        default:
+            throw new Error(`TradeDriver: an invalid value "${result}" for "TradeStatus" was returned by the contract`);
         }
     }
 

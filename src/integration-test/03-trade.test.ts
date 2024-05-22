@@ -21,7 +21,7 @@ import { OrderTradeService } from '../services/OrderTradeService';
 import { OrderTradeDriver } from '../drivers/OrderTradeDriver';
 import { OrderTradeMetadata } from '../entities/OrderTrade';
 import { URLStructure } from '../types/URLStructure';
-import { TradeStatus } from '../types/TradeStatus';
+import { OrderStatus } from '../types/OrderStatus';
 import { DocumentType } from '../entities/DocumentInfo';
 import { DocumentService } from '../services/DocumentService';
 import { DocumentStatus } from '../entities/Document';
@@ -123,11 +123,11 @@ describe('Trade lifecycle', () => {
         };
         const delegatedOrganizationIds = [1];
         const { orderTradeService } = await _registerOrder();
-        expect(await orderTradeService.getTradeStatus()).toEqual(TradeStatus.CONTRACTING);
+        expect(await orderTradeService.getOrderStatus()).toEqual(OrderStatus.CONTRACTING);
 
         await orderTradeService.addDocument(DocumentType.PAYMENT_INVOICE, docContent, externalUrl, resourceSpec, delegatedOrganizationIds);
         await documentService.validateDocument((await orderTradeService.getDocumentIdsByType(DocumentType.PAYMENT_INVOICE))[0], DocumentStatus.APPROVED);
-        expect(await orderTradeService.getTradeStatus()).toEqual(TradeStatus.PAYED);
+        expect(await orderTradeService.getOrderStatus()).toEqual(OrderStatus.PAYED);
 
         await orderTradeService.addDocument(DocumentType.SWISS_DECODE, docContent, externalUrl, resourceSpec, delegatedOrganizationIds);
         await orderTradeService.addDocument(DocumentType.WEIGHT_CERTIFICATE, docContent, externalUrl, resourceSpec, delegatedOrganizationIds);
@@ -135,18 +135,18 @@ describe('Trade lifecycle', () => {
         await orderTradeService.addDocument(DocumentType.PREFERENTIAL_ENTRY_CERTIFICATE, docContent, externalUrl, resourceSpec, delegatedOrganizationIds);
         await orderTradeService.addDocument(DocumentType.PHYTOSANITARY_CERTIFICATE, docContent, externalUrl, resourceSpec, delegatedOrganizationIds);
         await orderTradeService.addDocument(DocumentType.INSURANCE_CERTIFICATE, docContent, externalUrl, resourceSpec, delegatedOrganizationIds);
-        expect(await orderTradeService.getTradeStatus()).toEqual(TradeStatus.PAYED); // documents not yet validated
+        expect(await orderTradeService.getOrderStatus()).toEqual(OrderStatus.PAYED); // documents not yet validated
 
         const documentIds = await orderTradeService.getAllDocumentIds();
         await serial(documentIds.map((doc) => async () => documentService.validateDocument(doc, DocumentStatus.APPROVED)));
-        expect(await orderTradeService.getTradeStatus()).toEqual(TradeStatus.EXPORTED);
+        expect(await orderTradeService.getOrderStatus()).toEqual(OrderStatus.EXPORTED);
 
         await orderTradeService.addDocument(DocumentType.BILL_OF_LADING, docContent, externalUrl, resourceSpec, delegatedOrganizationIds);
         await documentService.validateDocument((await orderTradeService.getDocumentIdsByType(DocumentType.BILL_OF_LADING))[0], DocumentStatus.NOT_APPROVED);
-        expect(await orderTradeService.getTradeStatus()).toEqual(TradeStatus.EXPORTED); // bill of lading has not been approved
+        expect(await orderTradeService.getOrderStatus()).toEqual(OrderStatus.EXPORTED); // bill of lading has not been approved
         await documentService.validateDocument((await orderTradeService.getDocumentIdsByType(DocumentType.BILL_OF_LADING))[0], DocumentStatus.APPROVED);
         console.log('info: ', await documentService.getDocumentInfoById((await orderTradeService.getDocumentIdsByType(DocumentType.BILL_OF_LADING))[0]));
-        expect(await orderTradeService.getTradeStatus()).toEqual(TradeStatus.SHIPPED);
+        expect(await orderTradeService.getOrderStatus()).toEqual(OrderStatus.SHIPPED);
     }, 30000);
 
     // it('Should register two product categories and four materials (two per product category to simulate mapping)', async () => {

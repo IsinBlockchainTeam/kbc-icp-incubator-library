@@ -28,7 +28,7 @@ export { OrderTrade } from './entities/OrderTrade';
 export { OrderTradeMetadata } from './entities/OrderTrade';
 export { OrderLine } from './entities/OrderTrade';
 export { OrderLinePrice } from './entities/OrderTrade';
-export { TradeStatus } from './types/TradeStatus';
+export { OrderStatus } from './types/OrderStatus';
 export { NegotiationStatus } from './types/NegotiationStatus';
 export { TradeType } from './types/TradeType';
 export { TradeManagerDriver } from './drivers/TradeManagerDriver';
@@ -68,5 +68,6 @@ export { ICPFileDriver } from './drivers/ICPFileDriver';
 export { GraphService, GraphData } from './services/GraphService';
 
 export { FileHelpers } from './utils/fileHelpers';
+export { serial } from './utils/utils';
 export { URL_SEGMENTS } from './constants/ICP';
 export { URL_SEGMENT_INDEXES } from './constants/ICP';
