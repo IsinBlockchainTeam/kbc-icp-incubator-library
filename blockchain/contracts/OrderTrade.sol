@@ -210,17 +210,15 @@ contract OrderTrade is Trade {
         uint256 documentsCounter = _documentManager.getDocumentsCounter();
         OrderStatus status = OrderStatus.CONTRACTING;
 
-//        if (documentsCounter == _documentsByType[DocumentType.METADATA].length) return OrderStatus.CONTRACTING;
-        // TODO: gestire lo stato di trade "pagato". Capire se risulta pagato solamente nel momento in cui sono stati sbloccati tutti i fondi e l'intera transazione si è conclusa
         if (getNegotiationStatus() == NegotiationStatus.CONFIRMED) status = OrderStatus.PRODUCTION;
+        // TODO: gestire lo stato di trade "pagato". Capire se risulta pagato solamente nel momento in cui sono stati sbloccati tutti i fondi e l'intera transazione si è conclusa
         if (_documentsByType[DocumentType.PAYMENT_INVOICE].length > 0 && _areDocumentsApproved(_documentsByType[DocumentType.PAYMENT_INVOICE])) status = OrderStatus.PAYED;
-        if (_documentsByType[DocumentType.SWISS_DECODE].length > 0 && _documentsByType[DocumentType.WEIGHT_CERTIFICATE].length > 0 && _documentsByType[DocumentType.FUMIGATION_CERTIFICATE].length > 0 &&
-        _documentsByType[DocumentType.PREFERENTIAL_ENTRY_CERTIFICATE].length > 0 && _documentsByType[DocumentType.PHYTOSANITARY_CERTIFICATE].length > 0 && _documentsByType[DocumentType.INSURANCE_CERTIFICATE].length > 0 &&
-        _areDocumentsApproved(_documentsByType[DocumentType.SWISS_DECODE]) && _areDocumentsApproved(_documentsByType[DocumentType.WEIGHT_CERTIFICATE]) && _areDocumentsApproved(_documentsByType[DocumentType.FUMIGATION_CERTIFICATE]) &&
-        _areDocumentsApproved(_documentsByType[DocumentType.PREFERENTIAL_ENTRY_CERTIFICATE]) && _areDocumentsApproved(_documentsByType[DocumentType.PHYTOSANITARY_CERTIFICATE]) && _areDocumentsApproved(_documentsByType[DocumentType.INSURANCE_CERTIFICATE])
+        if (_documentsByType[DocumentType.ORIGIN_SWISS_DECODE].length > 0 && _documentsByType[DocumentType.WEIGHT_CERTIFICATE].length > 0 && _documentsByType[DocumentType.FUMIGATION_CERTIFICATE].length > 0 &&
+            _documentsByType[DocumentType.PREFERENTIAL_ENTRY_CERTIFICATE].length > 0 && _documentsByType[DocumentType.PHYTOSANITARY_CERTIFICATE].length > 0 && _documentsByType[DocumentType.INSURANCE_CERTIFICATE].length > 0 &&
+            _areDocumentsApproved(_documentsByType[DocumentType.ORIGIN_SWISS_DECODE]) && _areDocumentsApproved(_documentsByType[DocumentType.WEIGHT_CERTIFICATE]) && _areDocumentsApproved(_documentsByType[DocumentType.FUMIGATION_CERTIFICATE]) &&
+            _areDocumentsApproved(_documentsByType[DocumentType.PREFERENTIAL_ENTRY_CERTIFICATE]) && _areDocumentsApproved(_documentsByType[DocumentType.PHYTOSANITARY_CERTIFICATE]) && _areDocumentsApproved(_documentsByType[DocumentType.INSURANCE_CERTIFICATE])
         ) status = OrderStatus.EXPORTED;
         if (_documentsByType[DocumentType.BILL_OF_LADING].length > 0 && _areDocumentsApproved(_documentsByType[DocumentType.BILL_OF_LADING])) status = OrderStatus.SHIPPED;
-
 
         return status;
     }
@@ -248,9 +246,12 @@ contract OrderTrade is Trade {
     }
 
     function _areDocumentsApproved(uint256[] memory documentIds) private view returns (bool) {
+//        TODO: capire se bisogna mantenere più documenti per ogni tipo o se ne basta solo uno. Nel primo caso bisogna fare in modo allora che i documenti ricaricati dopo essere stati rifiutati non vengano considerati nel controllo (es. il rifiuto li rimuove da questa lista)
+//        for (uint i = 0; i < documentIds.length; i++)
+//            if (_documentsStatus[documentIds[i]].status != DocumentStatus.APPROVED) return false;
+//        return true;
         for (uint i = 0; i < documentIds.length; i++)
-            if (_documentsStatus[documentIds[i]].status != DocumentStatus.APPROVED) return false;
-
-        return true;
+            if (_documentsStatus[documentIds[i]].status == DocumentStatus.APPROVED) return true;
+        return false;
     }
 }

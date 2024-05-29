@@ -53,7 +53,17 @@ export class TradeDriver {
     }
 
     async getDocumentStatus(documentId: number): Promise<DocumentStatus> {
-        return this._contract.getDocumentStatus(documentId);
+        const result = await this._contract.getDocumentStatus(documentId);
+        switch (result) {
+        case 0:
+            return DocumentStatus.NOT_EVALUATED;
+        case 1:
+            return DocumentStatus.APPROVED;
+        case 2:
+            return DocumentStatus.NOT_APPROVED;
+        default:
+            throw new Error('Invalid document status');
+        }
     }
 
     async addAdmin(account: string): Promise<void> {

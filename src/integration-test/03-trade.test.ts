@@ -129,7 +129,7 @@ describe('Trade lifecycle', () => {
         await orderTradeService.validateDocument((await orderTradeService.getDocumentIdsByType(DocumentType.PAYMENT_INVOICE))[0], DocumentStatus.APPROVED);
         expect(await orderTradeService.getOrderStatus()).toEqual(OrderStatus.PAYED);
 
-        await orderTradeService.addDocument(DocumentType.SWISS_DECODE, docContent, externalUrl, resourceSpec, delegatedOrganizationIds);
+        await orderTradeService.addDocument(DocumentType.ORIGIN_SWISS_DECODE, docContent, externalUrl, resourceSpec, delegatedOrganizationIds);
         await orderTradeService.addDocument(DocumentType.WEIGHT_CERTIFICATE, docContent, externalUrl, resourceSpec, delegatedOrganizationIds);
         await orderTradeService.addDocument(DocumentType.FUMIGATION_CERTIFICATE, docContent, externalUrl, resourceSpec, delegatedOrganizationIds);
         await orderTradeService.addDocument(DocumentType.PREFERENTIAL_ENTRY_CERTIFICATE, docContent, externalUrl, resourceSpec, delegatedOrganizationIds);

@@ -17,12 +17,13 @@ abstract contract Trade is AccessControl {
         DELIVERY_NOTE,
         BILL_OF_LADING,
         PAYMENT_INVOICE,
-        SWISS_DECODE,
+        ORIGIN_SWISS_DECODE,
         WEIGHT_CERTIFICATE,
         FUMIGATION_CERTIFICATE,
         PREFERENTIAL_ENTRY_CERTIFICATE,
         PHYTOSANITARY_CERTIFICATE,
-        INSURANCE_CERTIFICATE
+        INSURANCE_CERTIFICATE,
+        COMPARISON_SWISS_DECODE
     }
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
