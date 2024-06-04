@@ -5,15 +5,12 @@ import {
     MaterialManager,
     MaterialManager__factory,
     OrderTrade as OrderTradeContract,
-    OrderTrade__factory, ProductCategoryManager, ProductCategoryManager__factory,
+    OrderTrade__factory,
+    ProductCategoryManager,
+    ProductCategoryManager__factory,
 } from '../smart-contracts';
 import { NegotiationStatus } from '../types/NegotiationStatus';
-import {
-    OrderLine,
-    OrderLinePrice,
-    OrderLineRequest,
-    OrderTrade,
-} from '../entities/OrderTrade';
+import { OrderLine, OrderLinePrice, OrderLineRequest, OrderTrade } from '../entities/OrderTrade';
 import { EntityBuilder } from '../utils/EntityBuilder';
 import { IConcreteTradeDriverInterface } from './IConcreteTradeDriver.interface';
 import { getOrderTradeStatusByIndex } from '../utils/utils';
@@ -148,6 +145,8 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
             return OrderStatus.EXPORTED;
         case 4:
             return OrderStatus.SHIPPED;
+        case 5:
+            return OrderStatus.COMPLETED;
         default:
             throw new Error(`TradeDriver: an invalid value "${result}" for "TradeStatus" was returned by the contract`);
         }

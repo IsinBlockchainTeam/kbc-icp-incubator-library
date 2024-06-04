@@ -10,7 +10,7 @@ contract OrderTrade is Trade {
     using Counters for Counters.Counter;
 
     enum NegotiationStatus {INITIALIZED, PENDING, CONFIRMED, EXPIRED}
-    enum OrderStatus { CONTRACTING, PRODUCTION, PAYED, EXPORTED, SHIPPED }
+    enum OrderStatus { CONTRACTING, PRODUCTION, PAYED, EXPORTED, SHIPPED, COMPLETED }
 
     event OrderLineAdded(uint256 orderLineId);
     event OrderLineUpdated(uint256 orderLineId);
@@ -219,6 +219,7 @@ contract OrderTrade is Trade {
             _areDocumentsApproved(_documentsByType[DocumentType.PREFERENTIAL_ENTRY_CERTIFICATE]) && _areDocumentsApproved(_documentsByType[DocumentType.PHYTOSANITARY_CERTIFICATE]) && _areDocumentsApproved(_documentsByType[DocumentType.INSURANCE_CERTIFICATE])
         ) status = OrderStatus.EXPORTED;
         if (_documentsByType[DocumentType.BILL_OF_LADING].length > 0 && _areDocumentsApproved(_documentsByType[DocumentType.BILL_OF_LADING])) status = OrderStatus.SHIPPED;
+        if (_documentsByType[DocumentType.COMPARISON_SWISS_DECODE].length > 0 && _areDocumentsApproved(_documentsByType[DocumentType.COMPARISON_SWISS_DECODE])) status = OrderStatus.COMPLETED;
 
         return status;
     }
