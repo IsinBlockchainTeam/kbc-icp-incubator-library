@@ -1,5 +1,5 @@
-import {Escrow} from "./Escrow";
-import {EscrowStatus} from "../types/EscrowStatus";
+import { Escrow } from './Escrow';
+import { EscrowStatus } from '../types/EscrowStatus';
 
 describe('Escrow', () => {
     let escrow: Escrow;
@@ -7,7 +7,19 @@ describe('Escrow', () => {
     const payers: string[] = ['payer1', 'payer2'];
 
     beforeAll(() => {
-        escrow = new Escrow('payee', 'purchaser', payers, 1000, 0, 1000, EscrowStatus.ACTIVE, 'tokenAddress', 'commissioner', 20, 1);
+        escrow = new Escrow(
+            'payee',
+            'purchaser',
+            payers,
+            1000,
+            0,
+            1000,
+            EscrowStatus.ACTIVE,
+            'tokenAddress',
+            'commissioner',
+            20,
+            1
+        );
     });
 
     it('should correctly initialize a new Escrow', () => {
@@ -71,10 +83,10 @@ describe('Escrow', () => {
     it('should correctly set the base fee', () => {
         escrow.baseFee = 21;
         expect(escrow.baseFee).toEqual(21);
-    })
+    });
 
     it('should correctly set the percentage fee', () => {
         escrow.percentageFee = 2;
         expect(escrow.percentageFee).toEqual(2);
-    })
+    });
 });

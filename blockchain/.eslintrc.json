@@ -6,27 +6,17 @@
         "mocha": true
     },
     "ignorePatterns": ["node_modules"],
-    "extends": [
-        "airbnb-base"
-    ],
+    "extends": ["airbnb-base"],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
         "ecmaVersion": "latest",
         "sourceType": "module"
     },
-    "plugins": [
-        "@typescript-eslint",
-        "mocha"
-    ],
+    "plugins": ["@typescript-eslint", "mocha"],
     "settings": {
         "import/resolver": {
             "node": {
-                "extensions": [
-                    ".js",
-                    ".jsx",
-                    ".ts",
-                    ".tsx"
-                ]
+                "extensions": [".js", ".jsx", ".ts", ".tsx"]
             }
         }
     },
@@ -36,15 +26,9 @@
             { "default": ["field", "constructor", "method"] }
         ],
         "max-len": "off",
-        "indent": [
-            "error",
-            4
-        ], // Indent with 4 spaces
+        "indent": ["error", 4], // Indent with 4 spaces
         "no-underscore-dangle": "off",
-        "linebreak-style": [
-            "error",
-            "unix"
-        ],
+        "linebreak-style": ["error", "unix"],
         "import/extensions": [
             "error",
             {
@@ -54,18 +38,12 @@
         "import/no-extraneous-dependencies": [
             "error",
             {
-                "devDependencies": [
-                    "hardhat.config.ts",
-                    "**/*.test.ts",
-                    "**/*.test.tsx"
-                ]
+                "devDependencies": ["hardhat.config.ts", "**/*.test.ts", "**/*.test.tsx"]
             }
         ],
         "import/prefer-default-export": "off",
         "no-shadow": "off",
-        "@typescript-eslint/no-shadow": [
-            "error"
-        ],
+        "@typescript-eslint/no-shadow": ["error"],
         "no-unused-vars": "off",
         "grouped-accessor-pairs": "off",
         "prefer-destructuring": "off",

@@ -1,4 +1,4 @@
-import {EscrowStatus} from "../types/EscrowStatus";
+import { EscrowStatus } from '../types/EscrowStatus';
 
 export class Escrow {
     private _payee: string;
@@ -23,7 +23,19 @@ export class Escrow {
 
     private _percentageFee: number;
 
-    constructor(payee: string, purchaser: string, payers: string[], agreedAmount: number, deployedAt: number, duration: number, state: EscrowStatus, tokenAddress: string, commissioner: string, baseFee: number, percentageFee: number) {
+    constructor(
+        payee: string,
+        purchaser: string,
+        payers: string[],
+        agreedAmount: number,
+        deployedAt: number,
+        duration: number,
+        state: EscrowStatus,
+        tokenAddress: string,
+        commissioner: string,
+        baseFee: number,
+        percentageFee: number
+    ) {
         this._payee = payee;
         this._purchaser = purchaser;
         this._payers = payers;

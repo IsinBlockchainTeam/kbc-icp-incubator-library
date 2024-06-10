@@ -7,7 +7,7 @@ import {
     OrderTrade as OrderTradeContract,
     OrderTrade__factory,
     ProductCategoryManager,
-    ProductCategoryManager__factory,
+    ProductCategoryManager__factory
 } from '../smart-contracts';
 import { NegotiationStatus } from '../types/NegotiationStatus';
 import { OrderLine, OrderLinePrice, OrderLineRequest, OrderTrade } from '../entities/OrderTrade';
@@ -33,20 +33,27 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
 
     private _productCategoryContract: ProductCategoryManager;
 
-    constructor(signer: Signer, orderTradeAddress: string, materialManagerAddress: string, productCategoryManagerAddress: string) {
+    constructor(
+        signer: Signer,
+        orderTradeAddress: string,
+        materialManagerAddress: string,
+        productCategoryManagerAddress: string
+    ) {
         super(signer, orderTradeAddress);
         // eslint-disable-next-line camelcase
-        this._actual = OrderTrade__factory
-            .connect(orderTradeAddress, signer.provider!)
-            .connect(signer);
+        this._actual = OrderTrade__factory.connect(orderTradeAddress, signer.provider!).connect(
+            signer
+        );
 
-        this._materialContract = MaterialManager__factory
-            .connect(materialManagerAddress, signer.provider!)
-            .connect(signer);
+        this._materialContract = MaterialManager__factory.connect(
+            materialManagerAddress,
+            signer.provider!
+        ).connect(signer);
 
-        this._productCategoryContract = ProductCategoryManager__factory
-            .connect(productCategoryManagerAddress, signer.provider!)
-            .connect(signer);
+        this._productCategoryContract = ProductCategoryManager__factory.connect(
+            productCategoryManagerAddress,
+            signer.provider!
+        ).connect(signer);
     }
 
     async getTrade(blockNumber?: number): Promise<OrderTrade> {
@@ -70,7 +77,7 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
             getOrderTradeStatusByIndex(result[13]),
             result[14].toNumber(),
             result[15],
-            result[16] === zeroAddress ? undefined : result[16],
+            result[16] === zeroAddress ? undefined : result[16]
         );
     }
 
@@ -92,12 +99,22 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
         if (line[0].materialId.toNumber() !== 0)
             materialStruct = await this._materialContract.getMaterial(line[0].materialId);
 
-        return EntityBuilder.buildOrderLine(line[0], line[1], await this._productCategoryContract.getProductCategory(line[0].productCategoryId), materialStruct);
+        return EntityBuilder.buildOrderLine(
+            line[0],
+            line[1],
+            await this._productCategoryContract.getProductCategory(line[0].productCategoryId),
+            materialStruct
+        );
     }
 
     async addLine(line: OrderLineRequest): Promise<number> {
         const _price = this._convertPriceClassInStruct(line.price);
-        const tx: any = await this._actual.addLine(line.productCategoryId, line.quantity, line.unit, _price);
+        const tx: any = await this._actual.addLine(
+            line.productCategoryId,
+            line.quantity,
+            line.unit,
+            _price
+        );
         const { events } = await tx.wait();
 
         if (!events) {
@@ -108,7 +125,13 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
 
     async updateLine(line: OrderLine): Promise<void> {
         const _price = this._convertPriceClassInStruct(line.price);
-        const tx = await this._actual.updateLine(line.id, line.productCategory.id, line.quantity, line.unit, _price);
+        const tx = await this._actual.updateLine(
+            line.id,
+            line.productCategory.id,
+            line.quantity,
+            line.unit,
+            _price
+        );
         await tx.wait();
     }
 
@@ -119,36 +142,38 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
 
     async getNegotiationStatus(): Promise<NegotiationStatus> {
         switch (await this._actual.getNegotiationStatus()) {
-        case 0:
-            return NegotiationStatus.INITIALIZED;
-        case 1:
-            return NegotiationStatus.PENDING;
-        case 2:
-            return NegotiationStatus.CONFIRMED;
-        case 3:
-            return NegotiationStatus.EXPIRED;
-        default:
-            throw new Error('Invalid state');
+            case 0:
+                return NegotiationStatus.INITIALIZED;
+            case 1:
+                return NegotiationStatus.PENDING;
+            case 2:
+                return NegotiationStatus.CONFIRMED;
+            case 3:
+                return NegotiationStatus.EXPIRED;
+            default:
+                throw new Error('Invalid state');
         }
     }
 
     async getOrderStatus(): Promise<OrderStatus> {
         const result = await this._actual.getOrderStatus();
         switch (result) {
-        case 0:
-            return OrderStatus.CONTRACTING;
-        case 1:
-            return OrderStatus.PRODUCTION;
-        case 2:
-            return OrderStatus.PAYED;
-        case 3:
-            return OrderStatus.EXPORTED;
-        case 4:
-            return OrderStatus.SHIPPED;
-        case 5:
-            return OrderStatus.COMPLETED;
-        default:
-            throw new Error(`TradeDriver: an invalid value "${result}" for "TradeStatus" was returned by the contract`);
+            case 0:
+                return OrderStatus.CONTRACTING;
+            case 1:
+                return OrderStatus.PRODUCTION;
+            case 2:
+                return OrderStatus.PAYED;
+            case 3:
+                return OrderStatus.EXPORTED;
+            case 4:
+                return OrderStatus.SHIPPED;
+            case 5:
+                return OrderStatus.COMPLETED;
+            default:
+                throw new Error(
+                    `TradeDriver: an invalid value "${result}" for "TradeStatus" was returned by the contract`
+                );
         }
     }
 
@@ -213,19 +238,24 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
             this._actual.queryFilter(this._actual.filters.OrderLineUpdated()),
             this._actual.queryFilter(this._actual.filters.OrderSignatureAffixed()),
             this._actual.queryFilter(this._actual.filters.OrderConfirmed()),
-            this._actual.queryFilter(this._actual.filters.OrderExpired()),
+            this._actual.queryFilter(this._actual.filters.OrderExpired())
         ]);
 
         return emittedEvents.reduce((map, events) => {
             if (events[0]?.event) {
                 const eventName = events[0].event!;
-                map.set(OrderTradeEvents[eventName as keyof typeof OrderTradeEvents], events.map((e) => e.blockNumber));
+                map.set(
+                    OrderTradeEvents[eventName as keyof typeof OrderTradeEvents],
+                    events.map((e) => e.blockNumber)
+                );
             }
             return map;
         }, new Map<OrderTradeEvents, number[]>());
     }
 
-    private _convertPriceClassInStruct(price: OrderLinePrice): OrderTradeContract.OrderLinePriceStructOutput {
+    private _convertPriceClassInStruct(
+        price: OrderLinePrice
+    ): OrderTradeContract.OrderLinePriceStructOutput {
         const _amount: number = Math.floor(price.amount);
         const str = (price.amount - _amount).toString().split('.')[1] || '0';
         const _decimals: number = parseInt(str, 10);
@@ -233,7 +263,7 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
         return {
             amount: BigNumber.from(_amount),
             decimals: BigNumber.from(_decimals),
-            fiat: price.fiat,
+            fiat: price.fiat
         } as OrderTradeContract.OrderLinePriceStructOutput;
     }
 }

@@ -9,9 +9,7 @@ export class TradeDriver {
     protected _contract: TradeContract;
 
     constructor(signer: Signer, tradeAddress: string) {
-        this._contract = Trade__factory
-            .connect(tradeAddress, signer.provider!)
-            .connect(signer);
+        this._contract = Trade__factory.connect(tradeAddress, signer.provider!).connect(signer);
     }
 
     async getLineCounter(): Promise<number> {
@@ -27,12 +25,20 @@ export class TradeDriver {
         return this._contract.getLineExists(id);
     }
 
-    async addDocument(documentType: DocumentType, externalUrl: string, contentHash: string): Promise<void> {
+    async addDocument(
+        documentType: DocumentType,
+        externalUrl: string,
+        contentHash: string
+    ): Promise<void> {
         const tx = await this._contract.addDocument(documentType, externalUrl, contentHash);
         await tx.wait();
     }
 
-    async updateDocument(documentId: number, externalUrl: string, contentHash: string): Promise<void> {
+    async updateDocument(
+        documentId: number,
+        externalUrl: string,
+        contentHash: string
+    ): Promise<void> {
         const tx = await this._contract.updateDocument(documentId, externalUrl, contentHash);
         await tx.wait();
     }
@@ -55,14 +61,14 @@ export class TradeDriver {
     async getDocumentStatus(documentId: number): Promise<DocumentStatus> {
         const result = await this._contract.getDocumentStatus(documentId);
         switch (result) {
-        case 0:
-            return DocumentStatus.NOT_EVALUATED;
-        case 1:
-            return DocumentStatus.APPROVED;
-        case 2:
-            return DocumentStatus.NOT_APPROVED;
-        default:
-            throw new Error('Invalid document status');
+            case 0:
+                return DocumentStatus.NOT_EVALUATED;
+            case 1:
+                return DocumentStatus.APPROVED;
+            case 2:
+                return DocumentStatus.NOT_APPROVED;
+            default:
+                throw new Error('Invalid document status');
         }
     }
 

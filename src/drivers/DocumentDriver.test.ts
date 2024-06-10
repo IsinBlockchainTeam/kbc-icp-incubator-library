@@ -25,16 +25,16 @@ describe('DocumentDriver', () => {
         name: 'Document name',
         documentType: DocumentType.BILL_OF_LADING,
         externalUrl: 'externalUrl',
-        contentHash: 'contentHash',
+        contentHash: 'contentHash'
     };
     const mockedDocument = createMock<DocumentInfo>();
 
     beforeAll(() => {
         mockedWriteFunction.mockResolvedValue({
-            wait: mockedWait,
+            wait: mockedWait
         });
         mockedReadFunction.mockResolvedValue({
-            toNumber: jest.fn(),
+            toNumber: jest.fn()
         });
         mockedDecodeEventLog.mockReturnValue({ id: BigNumber.from(0) });
 
@@ -46,12 +46,12 @@ describe('DocumentDriver', () => {
             removeAdmin: mockedWriteFunction,
             addTradeManager: mockedWriteFunction,
             removeTradeManager: mockedWriteFunction,
-            interface: { decodeEventLog: mockedDecodeEventLog },
+            interface: { decodeEventLog: mockedDecodeEventLog }
         });
 
         mockedDocumentConnect.mockReturnValue(mockedContract);
         const mockedDocumentManager = createMock<DocumentManager>({
-            connect: mockedDocumentConnect,
+            connect: mockedDocumentConnect
         });
         jest.spyOn(DocumentManager__factory, 'connect').mockReturnValue(mockedDocumentManager);
 
@@ -59,10 +59,7 @@ describe('DocumentDriver', () => {
         buildDocumentSpy.mockReturnValue(mockedDocument);
 
         mockedSigner = createMock<Signer>();
-        documentDriver = new DocumentDriver(
-            mockedSigner,
-            testAddress,
-        );
+        documentDriver = new DocumentDriver(mockedSigner, testAddress);
     });
 
     afterAll(() => {
@@ -71,17 +68,30 @@ describe('DocumentDriver', () => {
 
     describe('registerDocument', () => {
         it('should call and wait for register document', async () => {
-            await documentDriver.registerDocument(rawDocument.externalUrl, rawDocument.contentHash, await mockedSigner.getAddress());
+            await documentDriver.registerDocument(
+                rawDocument.externalUrl,
+                rawDocument.contentHash,
+                await mockedSigner.getAddress()
+            );
 
             expect(mockedContract.registerDocument).toHaveBeenCalledTimes(1);
-            expect(mockedContract.registerDocument).toHaveBeenNthCalledWith(1, rawDocument.externalUrl, rawDocument.contentHash);
+            expect(mockedContract.registerDocument).toHaveBeenNthCalledWith(
+                1,
+                rawDocument.externalUrl,
+                rawDocument.contentHash
+            );
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 
         it('should call and wait for register document - transaction fails', async () => {
             mockedContract.registerDocument = jest.fn().mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => documentDriver.registerDocument(rawDocument.externalUrl, rawDocument.contentHash, await mockedSigner.getAddress());
+            const fn = async () =>
+                documentDriver.registerDocument(
+                    rawDocument.externalUrl,
+                    rawDocument.contentHash,
+                    await mockedSigner.getAddress()
+                );
             await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
     });
@@ -93,7 +103,9 @@ describe('DocumentDriver', () => {
         });
 
         it('should retrieve document counter - transaction fails', async () => {
-            mockedContract.getDocumentsCounter = jest.fn().mockRejectedValue(new Error(errorMessage));
+            mockedContract.getDocumentsCounter = jest
+                .fn()
+                .mockRejectedValue(new Error(errorMessage));
 
             const fn = async () => documentDriver.getDocumentsCounter();
             await expect(fn).rejects.toThrow(new Error(errorMessage));
@@ -126,10 +138,7 @@ describe('DocumentDriver', () => {
             await documentDriver.addAdmin(address);
 
             expect(mockedContract.addAdmin).toHaveBeenCalledTimes(1);
-            expect(mockedContract.addAdmin).toHaveBeenNthCalledWith(
-                1,
-                address,
-            );
+            expect(mockedContract.addAdmin).toHaveBeenNthCalledWith(1, address);
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 
@@ -155,10 +164,7 @@ describe('DocumentDriver', () => {
             await documentDriver.removeAdmin(address);
 
             expect(mockedContract.removeAdmin).toHaveBeenCalledTimes(1);
-            expect(mockedContract.removeAdmin).toHaveBeenNthCalledWith(
-                1,
-                address,
-            );
+            expect(mockedContract.removeAdmin).toHaveBeenNthCalledWith(1, address);
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 
@@ -184,10 +190,7 @@ describe('DocumentDriver', () => {
             await documentDriver.addTradeManager(address);
 
             expect(mockedContract.addTradeManager).toHaveBeenCalledTimes(1);
-            expect(mockedContract.addTradeManager).toHaveBeenNthCalledWith(
-                1,
-                address,
-            );
+            expect(mockedContract.addTradeManager).toHaveBeenNthCalledWith(1, address);
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 
@@ -213,16 +216,15 @@ describe('DocumentDriver', () => {
             await documentDriver.removeTradeManager(address);
 
             expect(mockedContract.removeTradeManager).toHaveBeenCalledTimes(1);
-            expect(mockedContract.removeTradeManager).toHaveBeenNthCalledWith(
-                1,
-                address,
-            );
+            expect(mockedContract.removeTradeManager).toHaveBeenNthCalledWith(1, address);
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 
         it('should call and wait for remove order manager - transaction fails', async () => {
             const { address } = ethers.Wallet.createRandom();
-            mockedContract.removeTradeManager = jest.fn().mockRejectedValue(new Error(errorMessage));
+            mockedContract.removeTradeManager = jest
+                .fn()
+                .mockRejectedValue(new Error(errorMessage));
 
             const fn = async () => documentDriver.removeTradeManager(address);
             await expect(fn).rejects.toThrow(new Error(errorMessage));

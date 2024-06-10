@@ -1,6 +1,6 @@
-import {createMock} from 'ts-auto-mock';
-import {EscrowService} from './EscrowService';
-import {EscrowDriver} from '../drivers/EscrowDriver';
+import { createMock } from 'ts-auto-mock';
+import { EscrowService } from './EscrowService';
+import { EscrowDriver } from '../drivers/EscrowDriver';
 
 describe('EscrowService', () => {
     let escrowService: EscrowService;
@@ -36,7 +36,7 @@ describe('EscrowService', () => {
         enableRefund: jest.fn(),
         enableRefundForExpiredEscrow: jest.fn(),
         withdraw: jest.fn(),
-        refund: jest.fn(),
+        refund: jest.fn()
     };
 
     const depositAmount = 10;
@@ -54,191 +54,192 @@ describe('EscrowService', () => {
             serviceFunctionName: 'getOwner',
             serviceFunction: () => escrowService.getOwner(),
             expectedMockedFunction: mockedInstance.getOwner,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: []
         },
         {
             serviceFunctionName: 'getPayee',
             serviceFunction: () => escrowService.getPayee(),
             expectedMockedFunction: mockedInstance.getPayee,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: []
         },
         {
             serviceFunctionName: 'getPurchaser',
             serviceFunction: () => escrowService.getPurchaser(),
             expectedMockedFunction: mockedInstance.getPurchaser,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: []
         },
         {
             serviceFunctionName: 'getPayers',
             serviceFunction: () => escrowService.getPayers(),
             expectedMockedFunction: mockedInstance.getPayers,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: []
         },
         {
             serviceFunctionName: 'getPayer',
-            serviceFunction: () => escrowService.getPayer("0x123"),
+            serviceFunction: () => escrowService.getPayer('0x123'),
             expectedMockedFunction: mockedInstance.getPayer,
-            expectedMockedFunctionArgs: ["0x123"],
+            expectedMockedFunctionArgs: ['0x123']
         },
         {
             serviceFunctionName: 'getAgreedAmount',
             serviceFunction: () => escrowService.getAgreedAmount(),
             expectedMockedFunction: mockedInstance.getAgreedAmount,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: []
         },
         {
             serviceFunctionName: 'getDeployedAt',
             serviceFunction: () => escrowService.getDeployedAt(),
             expectedMockedFunction: mockedInstance.getDeployedAt,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: []
         },
         {
             serviceFunctionName: 'getDuration',
             serviceFunction: () => escrowService.getDuration(),
             expectedMockedFunction: mockedInstance.getDuration,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: []
         },
         {
             serviceFunctionName: 'getState',
             serviceFunction: () => escrowService.getState(),
             expectedMockedFunction: mockedInstance.getState,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: []
         },
         {
             serviceFunctionName: 'getDepositAmount',
             serviceFunction: () => escrowService.getDepositAmount(),
             expectedMockedFunction: mockedInstance.getDepositAmount,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: []
         },
         {
             serviceFunctionName: 'getTokenAddress',
             serviceFunction: () => escrowService.getTokenAddress(),
             expectedMockedFunction: mockedInstance.getTokenAddress,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: []
         },
         {
             serviceFunctionName: 'getCommissioner',
             serviceFunction: () => escrowService.getCommissioner(),
             expectedMockedFunction: mockedInstance.getCommissioner,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: []
         },
         {
             serviceFunctionName: 'getBaseFee',
             serviceFunction: () => escrowService.getBaseFee(),
             expectedMockedFunction: mockedInstance.getBaseFee,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: []
         },
         {
             serviceFunctionName: 'updateBaseFee',
             serviceFunction: () => escrowService.updateBaseFee(1),
             expectedMockedFunction: mockedInstance.updateBaseFee,
-            expectedMockedFunctionArgs: [1],
+            expectedMockedFunctionArgs: [1]
         },
         {
             serviceFunctionName: 'getPercentageFee',
             serviceFunction: () => escrowService.getPercentageFee(),
             expectedMockedFunction: mockedInstance.getPercentageFee,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: []
         },
         {
             serviceFunctionName: 'updatePercentageFee',
             serviceFunction: () => escrowService.updatePercentageFee(1),
             expectedMockedFunction: mockedInstance.updatePercentageFee,
-            expectedMockedFunctionArgs: [1],
+            expectedMockedFunctionArgs: [1]
         },
         {
             serviceFunctionName: 'updateCommissioner',
             serviceFunction: () => escrowService.updateCommissioner('0x123'),
             expectedMockedFunction: mockedInstance.updateCommissioner,
-            expectedMockedFunctionArgs: ['0x123'],
+            expectedMockedFunctionArgs: ['0x123']
         },
         {
             serviceFunctionName: 'getDeadline',
             serviceFunction: () => escrowService.getDeadline(),
             expectedMockedFunction: mockedInstance.getDeadline,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: []
         },
         {
             serviceFunctionName: 'hasExpired',
             serviceFunction: () => escrowService.hasExpired(),
             expectedMockedFunction: mockedInstance.hasExpired,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: []
         },
         {
             serviceFunctionName: 'withdrawalAllowed',
             serviceFunction: () => escrowService.withdrawalAllowed(),
             expectedMockedFunction: mockedInstance.withdrawalAllowed,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: []
         },
         {
             serviceFunctionName: 'refundAllowed',
             serviceFunction: () => escrowService.refundAllowed(),
             expectedMockedFunction: mockedInstance.refundAllowed,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: []
         },
         {
             serviceFunctionName: 'addDelegate',
             serviceFunction: () => escrowService.addDelegate('0x123'),
             expectedMockedFunction: mockedInstance.addDelegate,
-            expectedMockedFunctionArgs: ['0x123'],
+            expectedMockedFunctionArgs: ['0x123']
         },
         {
             serviceFunctionName: 'removeDelegate',
             serviceFunction: () => escrowService.removeDelegate('0x123'),
             expectedMockedFunction: mockedInstance.removeDelegate,
-            expectedMockedFunctionArgs: ['0x123'],
+            expectedMockedFunctionArgs: ['0x123']
         },
         {
             serviceFunctionName: 'deposit',
             serviceFunction: () => escrowService.deposit(depositAmount),
             expectedMockedFunction: mockedInstance.deposit,
-            expectedMockedFunctionArgs: [depositAmount],
+            expectedMockedFunctionArgs: [depositAmount]
         },
         {
             serviceFunctionName: 'lock',
             serviceFunction: () => escrowService.lock(),
             expectedMockedFunction: mockedInstance.lock,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: []
         },
         {
             serviceFunctionName: 'close',
             serviceFunction: () => escrowService.close(),
             expectedMockedFunction: mockedInstance.close,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: []
         },
         {
             serviceFunctionName: 'enableRefund',
             serviceFunction: () => escrowService.enableRefund(),
             expectedMockedFunction: mockedInstance.enableRefund,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: []
         },
         {
             serviceFunctionName: 'enableRefundForExpiredEscrow',
             serviceFunction: () => escrowService.enableRefundForExpiredEscrow(),
             expectedMockedFunction: mockedInstance.enableRefundForExpiredEscrow,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: []
         },
         {
             serviceFunctionName: 'withdraw',
             serviceFunction: () => escrowService.withdraw(),
             expectedMockedFunction: mockedInstance.withdraw,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: []
         },
         {
             serviceFunctionName: 'refund',
             serviceFunction: () => escrowService.refund(),
             expectedMockedFunction: mockedInstance.refund,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: []
         }
+    ])(
+        'should call driver $serviceFunctionName',
+        async ({ serviceFunction, expectedMockedFunction, expectedMockedFunctionArgs }) => {
+            await serviceFunction();
 
-    ])('should call driver $serviceFunctionName', async ({
-                                                             serviceFunction,
-                                                             expectedMockedFunction,
-                                                             expectedMockedFunctionArgs
-                                                         }) => {
-        await serviceFunction();
-
-        expect(expectedMockedFunction).toHaveBeenCalledTimes(1);
-        expect(expectedMockedFunction).toHaveBeenNthCalledWith(1, ...expectedMockedFunctionArgs);
-    });
+            expect(expectedMockedFunction).toHaveBeenCalledTimes(1);
+            expect(expectedMockedFunction).toHaveBeenNthCalledWith(
+                1,
+                ...expectedMockedFunctionArgs
+            );
+        }
+    );
 });

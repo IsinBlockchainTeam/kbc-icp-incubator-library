@@ -1,7 +1,12 @@
 import { TradeService } from './TradeService';
 import { OrderTradeDriver, OrderTradeEvents } from '../drivers/OrderTradeDriver';
 import { NegotiationStatus } from '../types/NegotiationStatus';
-import { OrderLine, OrderLineRequest, OrderTrade, OrderTradeMetadata } from '../entities/OrderTrade';
+import {
+    OrderLine,
+    OrderLineRequest,
+    OrderTrade,
+    OrderTradeMetadata
+} from '../entities/OrderTrade';
 import { IConcreteTradeService } from './IConcreteTradeService';
 import FileHelpers from '../utils/fileHelpers';
 import { OrderStatus } from '../types/OrderStatus';
@@ -54,7 +59,9 @@ export class OrderTradeService extends TradeService implements IConcreteTradeSer
     }
 
     async updateDocumentDeliveryDeadline(documentDeliveryDeadline: number): Promise<void> {
-        return this._tradeDriverImplementation.updateDocumentDeliveryDeadline(documentDeliveryDeadline);
+        return this._tradeDriverImplementation.updateDocumentDeliveryDeadline(
+            documentDeliveryDeadline
+        );
     }
 
     async updateArbiter(arbiter: string): Promise<void> {

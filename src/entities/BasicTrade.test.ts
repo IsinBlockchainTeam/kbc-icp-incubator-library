@@ -4,29 +4,29 @@ describe('BasicTrade', () => {
     let basicTrade: BasicTrade;
 
     beforeAll(() => {
-        basicTrade = new BasicTrade(0, 'supplier', 'customer', 'commissioner', 'https://test.com', [], 'test trade');
+        basicTrade = new BasicTrade(
+            0,
+            'supplier',
+            'customer',
+            'commissioner',
+            'https://test.com',
+            [],
+            'test trade'
+        );
     });
 
     it('should correctly initialize a BasicTrade', () => {
-        expect(basicTrade.tradeId)
-            .toEqual(0);
-        expect(basicTrade.supplier)
-            .toEqual('supplier');
-        expect(basicTrade.customer)
-            .toEqual('customer');
-        expect(basicTrade.commissioner)
-            .toEqual('commissioner');
-        expect(basicTrade.externalUrl)
-            .toEqual('https://test.com');
-        expect(basicTrade.lines)
-            .toEqual([]);
-        expect(basicTrade.name)
-            .toEqual('test trade');
+        expect(basicTrade.tradeId).toEqual(0);
+        expect(basicTrade.supplier).toEqual('supplier');
+        expect(basicTrade.customer).toEqual('customer');
+        expect(basicTrade.commissioner).toEqual('commissioner');
+        expect(basicTrade.externalUrl).toEqual('https://test.com');
+        expect(basicTrade.lines).toEqual([]);
+        expect(basicTrade.name).toEqual('test trade');
     });
 
     it('should correctly set the name', () => {
         basicTrade.name = 'new test trade';
-        expect(basicTrade.name)
-            .toEqual('new test trade');
+        expect(basicTrade.name).toEqual('new test trade');
     });
 });

@@ -14,12 +14,14 @@ export class TradeService {
 
     protected _icpFileDriver?: ICPFileDriver;
 
-    constructor(tradeDriver: TradeDriver, documentDriver?: DocumentDriver, storageMetadataDriver?: ICPFileDriver) {
+    constructor(
+        tradeDriver: TradeDriver,
+        documentDriver?: DocumentDriver,
+        storageMetadataDriver?: ICPFileDriver
+    ) {
         this._tradeDriver = tradeDriver;
-        if (documentDriver)
-            this._documentDriver = documentDriver;
-        if (storageMetadataDriver)
-            this._icpFileDriver = storageMetadataDriver;
+        if (documentDriver) this._documentDriver = documentDriver;
+        if (storageMetadataDriver) this._icpFileDriver = storageMetadataDriver;
     }
 
     async getLineCounter(): Promise<number> {
@@ -34,8 +36,17 @@ export class TradeService {
         return this._tradeDriver.getLineExists(id);
     }
 
-    async addDocument(documentType: DocumentType, fileContent: Uint8Array, externalUrl: string, resourceSpec: ICPResourceSpec, delegatedOrganizationIds: number[] = [], transactionLines: TransactionLine[] = [], quantity: number | undefined = undefined): Promise<void> {
-        if (!this._icpFileDriver) throw new Error('OrderTradeService: ICPFileDriver has not been set');
+    async addDocument(
+        documentType: DocumentType,
+        fileContent: Uint8Array,
+        externalUrl: string,
+        resourceSpec: ICPResourceSpec,
+        delegatedOrganizationIds: number[] = [],
+        transactionLines: TransactionLine[] = [],
+        quantity: number | undefined = undefined
+    ): Promise<void> {
+        if (!this._icpFileDriver)
+            throw new Error('OrderTradeService: ICPFileDriver has not been set');
         const fileName = FileHelpers.removeFileExtension(resourceSpec.name);
 
         resourceSpec.name = `${externalUrl}/files/${resourceSpec.name}`;
@@ -47,18 +58,27 @@ export class TradeService {
             documentType,
             date: new Date(),
             transactionLines,
-            quantity,
+            quantity
         };
 
-        await this._icpFileDriver.create(FileHelpers.getBytesFromObject(documentMetadata), {
-            name: `${externalUrl}/files/${fileName}-metadata.json`,
-            type: 'application/json',
-        }, delegatedOrganizationIds);
-        return this._tradeDriver.addDocument(documentType, resourceSpec.name, contentHash.toString());
+        await this._icpFileDriver.create(
+            FileHelpers.getBytesFromObject(documentMetadata),
+            {
+                name: `${externalUrl}/files/${fileName}-metadata.json`,
+                type: 'application/json'
+            },
+            delegatedOrganizationIds
+        );
+        return this._tradeDriver.addDocument(
+            documentType,
+            resourceSpec.name,
+            contentHash.toString()
+        );
     }
 
     async validateDocument(documentId: number, status: DocumentStatus): Promise<void> {
-        if (status === DocumentStatus.NOT_EVALUATED) throw new Error('Cannot validate document with status NOT_EVALUATED');
+        if (status === DocumentStatus.NOT_EVALUATED)
+            throw new Error('Cannot validate document with status NOT_EVALUATED');
         return this._tradeDriver.validateDocument(documentId, status);
     }
 
@@ -67,7 +87,8 @@ export class TradeService {
     }
 
     async getAllDocuments(): Promise<DocumentInfo[]> {
-        if (!this._documentDriver) throw new Error('Cannot perform this operation without a document driver');
+        if (!this._documentDriver)
+            throw new Error('Cannot perform this operation without a document driver');
         const ids = await this.getAllDocumentIds();
         return Promise.all(ids.map((id) => this._documentDriver!.getDocumentById(id)));
     }
@@ -77,7 +98,8 @@ export class TradeService {
     }
 
     async getDocumentsByType(documentType: DocumentType): Promise<DocumentInfo[]> {
-        if (!this._documentDriver) throw new Error('Cannot perform this operation without a document driver');
+        if (!this._documentDriver)
+            throw new Error('Cannot perform this operation without a document driver');
         const ids = await this.getDocumentIdsByType(documentType);
         return Promise.all(ids.map((id) => this._documentDriver!.getDocumentById(id)));
     }

@@ -2,7 +2,8 @@ import { BigNumber, Event, Signer } from 'ethers';
 import {
     MaterialManager,
     MaterialManager__factory,
-    ProductCategoryManager, ProductCategoryManager__factory,
+    ProductCategoryManager,
+    ProductCategoryManager__factory
 } from '../smart-contracts';
 import { EntityBuilder } from '../utils/EntityBuilder';
 import { Material } from '../entities/Material';
@@ -15,14 +16,16 @@ export class MaterialDriver {
     constructor(
         signer: Signer,
         materialManagerAddress: string,
-        productCategoryManagerAddress: string,
+        productCategoryManagerAddress: string
     ) {
-        this._materialContract = MaterialManager__factory
-            .connect(materialManagerAddress, signer.provider!)
-            .connect(signer);
-        this._productCategoryContract = ProductCategoryManager__factory
-            .connect(productCategoryManagerAddress, signer.provider!)
-            .connect(signer);
+        this._materialContract = MaterialManager__factory.connect(
+            materialManagerAddress,
+            signer.provider!
+        ).connect(signer);
+        this._productCategoryContract = ProductCategoryManager__factory.connect(
+            productCategoryManagerAddress,
+            signer.provider!
+        ).connect(signer);
     }
 
     async getMaterialsCounter(): Promise<number> {
@@ -36,7 +39,9 @@ export class MaterialDriver {
 
     async getMaterial(id: number): Promise<Material> {
         const material = await this._materialContract.getMaterial(id);
-        const productCategory = await this._productCategoryContract.getProductCategory(material.productCategoryId);
+        const productCategory = await this._productCategoryContract.getProductCategory(
+            material.productCategoryId
+        );
         return EntityBuilder.buildMaterial(material, productCategory);
     }
 
@@ -52,7 +57,9 @@ export class MaterialDriver {
     }
 
     async getMaterialsOfCreator(creator: string): Promise<Material[]> {
-        const ids: number[] = (await this._materialContract.getMaterialIdsOfCreator(creator)).map((id: BigNumber) => id.toNumber());
+        const ids: number[] = (await this._materialContract.getMaterialIdsOfCreator(creator)).map(
+            (id: BigNumber) => id.toNumber()
+        );
 
         const promises = ids.map((id: number) => this.getMaterial(id));
 
@@ -66,7 +73,9 @@ export class MaterialDriver {
         if (!events) {
             throw new Error('Error during material registration, no events found');
         }
-        return events.find((event: Event) => event.event === 'MaterialRegistered').args.id.toNumber();
+        return events
+            .find((event: Event) => event.event === 'MaterialRegistered')
+            .args.id.toNumber();
     }
 
     async updateMaterial(id: number, productCategoryId: number): Promise<void> {

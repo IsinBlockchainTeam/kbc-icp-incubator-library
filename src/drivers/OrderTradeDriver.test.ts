@@ -10,7 +10,7 @@ import {
     MaterialManager,
     ProductCategoryManager,
     MaterialManager__factory,
-    ProductCategoryManager__factory,
+    ProductCategoryManager__factory
 } from '../smart-contracts';
 import { NegotiationStatus } from '../types/NegotiationStatus';
 import { EntityBuilder } from '../utils/EntityBuilder';
@@ -33,27 +33,27 @@ describe('OrderTradeDriver', () => {
         quantity: BigNumber.from(2),
         unit: units[0],
         materialId: BigNumber.from(3),
-        exists: true,
+        exists: true
     } as TradeContract.LineStructOutput;
     const price: OrderTradeContract.OrderLinePriceStructOutput = {
         amount: BigNumber.from(10),
         decimals: BigNumber.from(0),
-        fiat: 'fiat',
+        fiat: 'fiat'
     } as OrderTradeContract.OrderLinePriceStructOutput;
     const orderLine: OrderTradeContract.OrderLineStructOutput = {
-        price,
+        price
     } as OrderTradeContract.OrderLineStructOutput;
     const materialStruct: MaterialManager.MaterialStructOutput = {
         id: BigNumber.from(1),
         productCategoryId: BigNumber.from(2),
-        exists: true,
+        exists: true
     } as MaterialManager.MaterialStructOutput;
     const productCategoryStruct: ProductCategoryManager.ProductCategoryStructOutput = {
         id: BigNumber.from(2),
         name: 'category1',
         quality: 85,
         description: 'description',
-        exists: true,
+        exists: true
     } as ProductCategoryManager.ProductCategoryStructOutput;
 
     const lineIds: BigNumber[] = [BigNumber.from(line.id)];
@@ -93,24 +93,37 @@ describe('OrderTradeDriver', () => {
         OrderLineUpdated: jest.fn(),
         OrderSignatureAffixed: jest.fn(),
         OrderConfirmed: jest.fn(),
-        OrderExpired: jest.fn(),
+        OrderExpired: jest.fn()
     };
 
     const mockedGetMaterial = jest.fn();
     const mockedGetProductCategory = jest.fn();
 
     mockedWriteFunction.mockResolvedValue({
-        wait: mockedWait,
+        wait: mockedWait
     });
     mockedUpdateLine.mockResolvedValue({
-        wait: mockedWait,
+        wait: mockedWait
     });
     mockedAssignMaterial.mockResolvedValue({
-        wait: mockedWait,
+        wait: mockedWait
     });
-    mockedGetTrade.mockResolvedValue(
-        [BigNumber.from(tradeId), supplier, customer, commissioner, externalUrl, lineIds, hasSupplierSigned, hasCommissionerSigned, BigNumber.from(paymentDeadline), BigNumber.from(documentDeliveryDeadline), arbiter, BigNumber.from(shippingDeadline), BigNumber.from(deliveryDeadline), escrow],
-    );
+    mockedGetTrade.mockResolvedValue([
+        BigNumber.from(tradeId),
+        supplier,
+        customer,
+        commissioner,
+        externalUrl,
+        lineIds,
+        hasSupplierSigned,
+        hasCommissionerSigned,
+        BigNumber.from(paymentDeadline),
+        BigNumber.from(documentDeliveryDeadline),
+        arbiter,
+        BigNumber.from(shippingDeadline),
+        BigNumber.from(deliveryDeadline),
+        escrow
+    ]);
     mockedGetLineCounter.mockResolvedValue(BigNumber.from(1));
     mockedGetLine.mockResolvedValue([line, orderLine]);
     mockedGetLineExists.mockResolvedValue(true);
@@ -144,44 +157,49 @@ describe('OrderTradeDriver', () => {
             OrderLineUpdated: mockedEventFilter.OrderLineUpdated,
             OrderSignatureAffixed: mockedEventFilter.OrderSignatureAffixed,
             OrderConfirmed: mockedEventFilter.OrderConfirmed,
-            OrderExpired: mockedEventFilter.OrderExpired,
-        },
+            OrderExpired: mockedEventFilter.OrderExpired
+        }
     });
 
     mockedGetMaterial.mockReturnValue(materialStruct);
     mockedGetProductCategory.mockReturnValue(productCategoryStruct);
     const mockedMaterialContract = createMock<MaterialManager>({
-        getMaterial: mockedGetMaterial,
+        getMaterial: mockedGetMaterial
     });
     const mockedProductCategoryContract = createMock<ProductCategoryManager>({
-        getProductCategory: mockedGetProductCategory,
+        getProductCategory: mockedGetProductCategory
     });
 
     beforeAll(() => {
         mockedOrderTradeConnect.mockReturnValue(mockedContract);
         const mockedOrderTradeContract = createMock<OrderTradeContract>({
-            connect: mockedOrderTradeConnect,
+            connect: mockedOrderTradeConnect
         });
         mockedMaterialManagerConnect.mockReturnValue(mockedMaterialContract);
         const mockedMaterialManagerContract = createMock<MaterialManager>({
-            connect: mockedMaterialManagerConnect,
+            connect: mockedMaterialManagerConnect
         });
         mockedProductCategoryManagerConnect.mockReturnValue(mockedProductCategoryContract);
         const mockedProductCategoryManagerContract = createMock<ProductCategoryManager>({
-            connect: mockedProductCategoryManagerConnect,
+            connect: mockedProductCategoryManagerConnect
         });
 
-        jest.spyOn(Trade__factory, 'connect')
-            .mockReturnValue(mockedOrderTradeContract);
-        jest.spyOn(OrderTrade__factory, 'connect')
-            .mockReturnValue(mockedOrderTradeContract);
-        jest.spyOn(MaterialManager__factory, 'connect')
-            .mockReturnValue(mockedMaterialManagerContract);
-        jest.spyOn(ProductCategoryManager__factory, 'connect')
-            .mockReturnValue(mockedProductCategoryManagerContract);
+        jest.spyOn(Trade__factory, 'connect').mockReturnValue(mockedOrderTradeContract);
+        jest.spyOn(OrderTrade__factory, 'connect').mockReturnValue(mockedOrderTradeContract);
+        jest.spyOn(MaterialManager__factory, 'connect').mockReturnValue(
+            mockedMaterialManagerContract
+        );
+        jest.spyOn(ProductCategoryManager__factory, 'connect').mockReturnValue(
+            mockedProductCategoryManagerContract
+        );
 
         mockedSigner = createMock<Signer>();
-        orderTradeDriver = new OrderTradeDriver(mockedSigner, contractAddress, Wallet.createRandom().address, Wallet.createRandom().address);
+        orderTradeDriver = new OrderTradeDriver(
+            mockedSigner,
+            contractAddress,
+            Wallet.createRandom().address,
+            Wallet.createRandom().address
+        );
     });
 
     afterAll(() => {
@@ -191,93 +209,90 @@ describe('OrderTradeDriver', () => {
     it('should correctly retrieve the order trade', async () => {
         const result = await orderTradeDriver.getTrade();
 
-        expect(result.tradeId)
-            .toEqual(tradeId);
-        expect(result.supplier)
-            .toEqual(supplier);
-        expect(result.customer)
-            .toEqual(customer);
-        expect(result.commissioner)
-            .toEqual(commissioner);
-        expect(result.externalUrl)
-            .toEqual(externalUrl);
-        expect(result.hasSupplierSigned)
-            .toEqual(hasSupplierSigned);
-        expect(result.hasCommissionerSigned)
-            .toEqual(hasCommissionerSigned);
-        expect(result.paymentDeadline)
-            .toEqual(paymentDeadline);
-        expect(result.documentDeliveryDeadline)
-            .toEqual(documentDeliveryDeadline);
-        expect(result.arbiter)
-            .toEqual(arbiter);
-        expect(result.shippingDeadline)
-            .toEqual(shippingDeadline);
-        expect(result.deliveryDeadline)
-            .toEqual(deliveryDeadline);
-        expect(result.escrow)
-            .toEqual(escrow);
+        expect(result.tradeId).toEqual(tradeId);
+        expect(result.supplier).toEqual(supplier);
+        expect(result.customer).toEqual(customer);
+        expect(result.commissioner).toEqual(commissioner);
+        expect(result.externalUrl).toEqual(externalUrl);
+        expect(result.hasSupplierSigned).toEqual(hasSupplierSigned);
+        expect(result.hasCommissionerSigned).toEqual(hasCommissionerSigned);
+        expect(result.paymentDeadline).toEqual(paymentDeadline);
+        expect(result.documentDeliveryDeadline).toEqual(documentDeliveryDeadline);
+        expect(result.arbiter).toEqual(arbiter);
+        expect(result.shippingDeadline).toEqual(shippingDeadline);
+        expect(result.deliveryDeadline).toEqual(deliveryDeadline);
+        expect(result.escrow).toEqual(escrow);
 
-        expect(mockedContract.getTrade)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.getTrade)
-            .toHaveBeenNthCalledWith(1, { blockTag: undefined });
-        expect(mockedGetTrade)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.getLineCounter)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.getLineCounter)
-            .toHaveBeenNthCalledWith(1);
-        expect(mockedGetLineCounter)
-            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.getTrade).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getTrade).toHaveBeenNthCalledWith(1, { blockTag: undefined });
+        expect(mockedGetTrade).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getLineCounter).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getLineCounter).toHaveBeenNthCalledWith(1);
+        expect(mockedGetLineCounter).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly retrieve line', async () => {
         const result = await orderTradeDriver.getLine(line.id.toNumber());
 
-        expect(result)
-            .toEqual(EntityBuilder.buildOrderLine(line, orderLine, productCategoryStruct, materialStruct));
+        expect(result).toEqual(
+            EntityBuilder.buildOrderLine(line, orderLine, productCategoryStruct, materialStruct)
+        );
 
-        expect(mockedContract.getLine)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.getLine)
-            .toHaveBeenNthCalledWith(1, line.id.toNumber(), { blockTag: undefined });
-        expect(mockedGetLine)
-            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.getLine).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getLine).toHaveBeenNthCalledWith(1, line.id.toNumber(), {
+            blockTag: undefined
+        });
+        expect(mockedGetLine).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly add a order line', async () => {
         mockedGetMaterial.mockReturnValueOnce(undefined);
         mockedWait.mockResolvedValueOnce({
-            events: [{
-                event: 'OrderLineAdded',
-                args: [line.id],
-            }],
+            events: [
+                {
+                    event: 'OrderLineAdded',
+                    args: [line.id]
+                }
+            ]
         });
-        const newLine: OrderLineRequest = new OrderLineRequest(productCategoryStruct.id.toNumber(), 2, units[0], EntityBuilder.buildOrderLinePrice(price));
+        const newLine: OrderLineRequest = new OrderLineRequest(
+            productCategoryStruct.id.toNumber(),
+            2,
+            units[0],
+            EntityBuilder.buildOrderLinePrice(price)
+        );
         const newOrderLineId = await orderTradeDriver.addLine(newLine);
         const result = await orderTradeDriver.getLine(newOrderLineId);
 
-        expect(result).toEqual(new OrderLine(line.id.toNumber(), undefined, EntityBuilder.buildProductCategory(productCategoryStruct), newLine.quantity, units[0], newLine.price));
-        expect(mockedContract.addLine)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.addLine)
-            .toHaveBeenNthCalledWith(1, newLine.productCategoryId, newLine.quantity, newLine.unit, price);
-        expect(mockedWait)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.getLine)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.getLine)
-            .toHaveBeenNthCalledWith(1, line.id, { blockTag: undefined });
-        expect(mockedGetLine)
-            .toHaveBeenCalledTimes(1);
+        expect(result).toEqual(
+            new OrderLine(
+                line.id.toNumber(),
+                undefined,
+                EntityBuilder.buildProductCategory(productCategoryStruct),
+                newLine.quantity,
+                units[0],
+                newLine.price
+            )
+        );
+        expect(mockedContract.addLine).toHaveBeenCalledTimes(1);
+        expect(mockedContract.addLine).toHaveBeenNthCalledWith(
+            1,
+            newLine.productCategoryId,
+            newLine.quantity,
+            newLine.unit,
+            price
+        );
+        expect(mockedWait).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getLine).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getLine).toHaveBeenNthCalledWith(1, line.id, { blockTag: undefined });
+        expect(mockedGetLine).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly update an existing line', async () => {
         const newPrice: OrderTradeContract.OrderLinePriceStructOutput = {
             amount: BigNumber.from(20),
             decimals: BigNumber.from(0),
-            fiat: 'Pandarmato',
+            fiat: 'Pandarmato'
         } as OrderTradeContract.OrderLinePriceStructOutput;
         const updatedLineStruct: TradeContract.LineStructOutput = {
             id: BigNumber.from(0),
@@ -285,12 +300,17 @@ describe('OrderTradeDriver', () => {
             quantity: BigNumber.from(3),
             unit: units[1],
             materialId: BigNumber.from(5),
-            exists: true,
+            exists: true
         } as TradeContract.LineStructOutput;
         const updatedOrderLineStruct: OrderTradeContract.OrderLineStructOutput = {
-            price: newPrice,
+            price: newPrice
         } as OrderTradeContract.OrderLineStructOutput;
-        const updatedLine: OrderLine = EntityBuilder.buildOrderLine(updatedLineStruct, updatedOrderLineStruct, productCategoryStruct, materialStruct);
+        const updatedLine: OrderLine = EntityBuilder.buildOrderLine(
+            updatedLineStruct,
+            updatedOrderLineStruct,
+            productCategoryStruct,
+            materialStruct
+        );
         mockedGetLine.mockResolvedValueOnce([updatedLineStruct, updatedOrderLineStruct]);
 
         // expect(await orderTradeDriver.updateLine(updatedLine)).toEqual(updatedLine);
@@ -315,165 +335,121 @@ describe('OrderTradeDriver', () => {
     it('should correctly retrieve the negotiation status - INITIALIZED', async () => {
         const result = await orderTradeDriver.getNegotiationStatus();
 
-        expect(result)
-            .toEqual(NegotiationStatus.INITIALIZED);
+        expect(result).toEqual(NegotiationStatus.INITIALIZED);
 
-        expect(mockedContract.getNegotiationStatus)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.getNegotiationStatus)
-            .toHaveBeenNthCalledWith(1);
-        expect(mockedGetNegotiationStatus)
-            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.getNegotiationStatus).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getNegotiationStatus).toHaveBeenNthCalledWith(1);
+        expect(mockedGetNegotiationStatus).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly retrieve the negotiation status - PENDING', async () => {
         mockedGetNegotiationStatus.mockReturnValue(Promise.resolve(NegotiationStatus.PENDING));
         const result = await orderTradeDriver.getNegotiationStatus();
 
-        expect(result)
-            .toEqual(NegotiationStatus.PENDING);
+        expect(result).toEqual(NegotiationStatus.PENDING);
 
-        expect(mockedContract.getNegotiationStatus)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.getNegotiationStatus)
-            .toHaveBeenNthCalledWith(1);
-        expect(mockedGetNegotiationStatus)
-            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.getNegotiationStatus).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getNegotiationStatus).toHaveBeenNthCalledWith(1);
+        expect(mockedGetNegotiationStatus).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly retrieve the negotiation status - COMPLETED', async () => {
         mockedGetNegotiationStatus.mockReturnValue(Promise.resolve(NegotiationStatus.CONFIRMED));
         const result = await orderTradeDriver.getNegotiationStatus();
 
-        expect(result)
-            .toEqual(NegotiationStatus.CONFIRMED);
+        expect(result).toEqual(NegotiationStatus.CONFIRMED);
 
-        expect(mockedContract.getNegotiationStatus)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.getNegotiationStatus)
-            .toHaveBeenNthCalledWith(1);
-        expect(mockedGetNegotiationStatus)
-            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.getNegotiationStatus).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getNegotiationStatus).toHaveBeenNthCalledWith(1);
+        expect(mockedGetNegotiationStatus).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly retrieve the negotiation status - EXPIRED', async () => {
         mockedGetNegotiationStatus.mockReturnValue(Promise.resolve(NegotiationStatus.EXPIRED));
         const result = await orderTradeDriver.getNegotiationStatus();
 
-        expect(result)
-            .toEqual(NegotiationStatus.EXPIRED);
+        expect(result).toEqual(NegotiationStatus.EXPIRED);
 
-        expect(mockedContract.getNegotiationStatus)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.getNegotiationStatus)
-            .toHaveBeenNthCalledWith(1);
-        expect(mockedGetNegotiationStatus)
-            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.getNegotiationStatus).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getNegotiationStatus).toHaveBeenNthCalledWith(1);
+        expect(mockedGetNegotiationStatus).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly retrieve the negotiation status - FAIL(Invalid state)', async () => {
         mockedGetNegotiationStatus.mockReturnValue(Promise.resolve(42));
-        await expect(orderTradeDriver.getNegotiationStatus())
-            .rejects
-            .toThrow(new Error('Invalid state'));
+        await expect(orderTradeDriver.getNegotiationStatus()).rejects.toThrow(
+            new Error('Invalid state')
+        );
 
-        expect(mockedContract.getNegotiationStatus)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.getNegotiationStatus)
-            .toHaveBeenNthCalledWith(1);
-        expect(mockedGetNegotiationStatus)
-            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.getNegotiationStatus).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getNegotiationStatus).toHaveBeenNthCalledWith(1);
+        expect(mockedGetNegotiationStatus).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly update the payment deadline', async () => {
         await orderTradeDriver.updatePaymentDeadline(0);
 
-        expect(mockedContract.updatePaymentDeadline)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.updatePaymentDeadline)
-            .toHaveBeenNthCalledWith(1, 0);
-        expect(mockedWait)
-            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.updatePaymentDeadline).toHaveBeenCalledTimes(1);
+        expect(mockedContract.updatePaymentDeadline).toHaveBeenNthCalledWith(1, 0);
+        expect(mockedWait).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly update the document delivery deadline', async () => {
         await orderTradeDriver.updateDocumentDeliveryDeadline(0);
 
-        expect(mockedContract.updateDocumentDeliveryDeadline)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.updateDocumentDeliveryDeadline)
-            .toHaveBeenNthCalledWith(1, 0);
-        expect(mockedWait)
-            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.updateDocumentDeliveryDeadline).toHaveBeenCalledTimes(1);
+        expect(mockedContract.updateDocumentDeliveryDeadline).toHaveBeenNthCalledWith(1, 0);
+        expect(mockedWait).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly update the document delivery deadline', async () => {
         await orderTradeDriver.updateArbiter('new arbiter');
 
-        expect(mockedContract.updateArbiter)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.updateArbiter)
-            .toHaveBeenNthCalledWith(1, 'new arbiter');
-        expect(mockedWait)
-            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.updateArbiter).toHaveBeenCalledTimes(1);
+        expect(mockedContract.updateArbiter).toHaveBeenNthCalledWith(1, 'new arbiter');
+        expect(mockedWait).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly update the shipping deadline', async () => {
         await orderTradeDriver.updateShippingDeadline(0);
 
-        expect(mockedContract.updateShippingDeadline)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.updateShippingDeadline)
-            .toHaveBeenNthCalledWith(1, 0);
-        expect(mockedWait)
-            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.updateShippingDeadline).toHaveBeenCalledTimes(1);
+        expect(mockedContract.updateShippingDeadline).toHaveBeenNthCalledWith(1, 0);
+        expect(mockedWait).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly update the delivery deadline', async () => {
         await orderTradeDriver.updateDeliveryDeadline(0);
 
-        expect(mockedContract.updateDeliveryDeadline)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.updateDeliveryDeadline)
-            .toHaveBeenNthCalledWith(1, 0);
-        expect(mockedWait)
-            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.updateDeliveryDeadline).toHaveBeenCalledTimes(1);
+        expect(mockedContract.updateDeliveryDeadline).toHaveBeenNthCalledWith(1, 0);
+        expect(mockedWait).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly check if deadlines have expired', async () => {
         const result = await orderTradeDriver.haveDeadlinesExpired();
 
-        expect(result)
-            .toEqual(false);
+        expect(result).toEqual(false);
 
-        expect(mockedContract.haveDeadlinesExpired)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.haveDeadlinesExpired)
-            .toHaveBeenNthCalledWith(1);
-        expect(mockedHaveDeadlinesExpired)
-            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.haveDeadlinesExpired).toHaveBeenCalledTimes(1);
+        expect(mockedContract.haveDeadlinesExpired).toHaveBeenNthCalledWith(1);
+        expect(mockedHaveDeadlinesExpired).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly enforce deadlines', async () => {
         await orderTradeDriver.enforceDeadlines();
 
-        expect(mockedContract.enforceDeadlines)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.enforceDeadlines)
-            .toHaveBeenNthCalledWith(1);
-        expect(mockedWait)
-            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.enforceDeadlines).toHaveBeenCalledTimes(1);
+        expect(mockedContract.enforceDeadlines).toHaveBeenNthCalledWith(1);
+        expect(mockedWait).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly confirm the order', async () => {
         await orderTradeDriver.confirmOrder();
 
-        expect(mockedContract.confirmOrder)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.confirmOrder)
-            .toHaveBeenNthCalledWith(1);
-        expect(mockedWait)
-            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.confirmOrder).toHaveBeenCalledTimes(1);
+        expect(mockedContract.confirmOrder).toHaveBeenNthCalledWith(1);
+        expect(mockedWait).toHaveBeenCalledTimes(1);
     });
 
     it('should get block numbers per each event name by order id', async () => {

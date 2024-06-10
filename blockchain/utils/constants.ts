@@ -12,13 +12,13 @@ export enum ContractName {
     ESCROW_MANAGER = 'EscrowManager',
     ESCROW = 'Escrow',
     MY_TOKEN = 'MyToken',
-    ETHEREUM_DID_REGISTRY = 'EthereumDIDRegistry',
+    ETHEREUM_DID_REGISTRY = 'EthereumDIDRegistry'
 }
 
 export enum FIAT {
     USD = 'USD',
     EUR = 'EUR',
-    CHF = 'CHF',
+    CHF = 'CHF'
 }
 
 export enum PRODUCT_CATEGORY {

@@ -1,3 +1,4 @@
 export enum TradeType {
-    BASIC, ORDER
+    BASIC,
+    ORDER
 }

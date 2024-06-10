@@ -5,14 +5,22 @@ import { AssetOperationType } from '../types/AssetOperationType';
 
 describe('Transformation', () => {
     let assetOperation: AssetOperation;
-    const material: Material = new Material(1, new ProductCategory(1, 'category', 1, 'description'));
+    const material: Material = new Material(
+        1,
+        new ProductCategory(1, 'category', 1, 'description')
+    );
     const processTypes = ['type1', 'type2'];
 
     beforeEach(() => {
-        assetOperation = new AssetOperation(1, 'operation',
+        assetOperation = new AssetOperation(
+            1,
+            'operation',
             [new Material(1, new ProductCategory(1, 'category', 1, 'description'))],
             new Material(1, new ProductCategory(1, 'category', 1, 'description')),
-            '46.6576', '8.953062', processTypes);
+            '46.6576',
+            '8.953062',
+            processTypes
+        );
     });
 
     it('should correctly initialize a new AssetOperation', () => {
@@ -36,13 +44,22 @@ describe('Transformation', () => {
     });
 
     it('should correctly set the inputMaterials', () => {
-        assetOperation.inputMaterials = [new Material(2, new ProductCategory(2, 'category2', 2, 'description2'))];
-        expect(assetOperation.inputMaterials).toEqual([new Material(2, new ProductCategory(2, 'category2', 2, 'description2'))]);
+        assetOperation.inputMaterials = [
+            new Material(2, new ProductCategory(2, 'category2', 2, 'description2'))
+        ];
+        expect(assetOperation.inputMaterials).toEqual([
+            new Material(2, new ProductCategory(2, 'category2', 2, 'description2'))
+        ]);
     });
 
     it('should correctly set the outputMaterial', () => {
-        assetOperation.outputMaterial = new Material(2, new ProductCategory(2, 'category2', 2, 'description2'));
-        expect(assetOperation.outputMaterial).toEqual(new Material(2, new ProductCategory(2, 'category2', 2, 'description2')));
+        assetOperation.outputMaterial = new Material(
+            2,
+            new ProductCategory(2, 'category2', 2, 'description2')
+        );
+        expect(assetOperation.outputMaterial).toEqual(
+            new Material(2, new ProductCategory(2, 'category2', 2, 'description2'))
+        );
     });
 
     it('should correctly set the latitude', () => {
@@ -61,12 +78,22 @@ describe('Transformation', () => {
     });
 
     it('should get type CONSOLIDATION', () => {
-        assetOperation = new AssetOperation(1, 'operation', [material], material, '46.6576', '8.953062', processTypes);
+        assetOperation = new AssetOperation(
+            1,
+            'operation',
+            [material],
+            material,
+            '46.6576',
+            '8.953062',
+            processTypes
+        );
         expect(assetOperation.type).toEqual(AssetOperationType.CONSOLIDATION);
     });
 
     it('should get type TRANSFORMATION', () => {
-        assetOperation.inputMaterials.push(new Material(2, new ProductCategory(2, 'category2', 2, 'description2')));
+        assetOperation.inputMaterials.push(
+            new Material(2, new ProductCategory(2, 'category2', 2, 'description2'))
+        );
         expect(assetOperation.type).toEqual(AssetOperationType.TRANSFORMATION);
     });
 

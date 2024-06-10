@@ -1,5 +1,5 @@
 import { Line, LineRequest, Trade } from '../entities/Trade';
-import { ResourceSpec } from "@blockchain-lib/common";
+import { ResourceSpec } from '@blockchain-lib/common';
 
 export interface IConcreteTradeService {
     getTrade(resourceSpec?: ResourceSpec, blockNumber?: number): Promise<Trade>;

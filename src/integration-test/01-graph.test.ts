@@ -12,7 +12,7 @@ import {
     MATERIAL_MANAGER_CONTRACT_ADDRESS,
     NETWORK,
     PRODUCT_CATEGORY_CONTRACT_ADDRESS,
-    TRADE_MANAGER_CONTRACT_ADDRESS,
+    TRADE_MANAGER_CONTRACT_ADDRESS
 } from './config';
 import { TradeManagerDriver } from '../drivers/TradeManagerDriver';
 import { Material } from '../entities/Material';
@@ -34,7 +34,7 @@ import { SolidMetadataSpec } from '../drivers/SolidMetadataDriver';
 
 it('always passes', () => {
     expect(true).toBeTruthy();
-})
+});
 
 // describe('GraphService lifecycle', () => {
 //     let provider: JsonRpcProvider;

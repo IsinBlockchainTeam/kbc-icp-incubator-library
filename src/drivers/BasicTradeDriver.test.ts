@@ -9,7 +9,7 @@ import {
     MaterialManager,
     ProductCategoryManager,
     MaterialManager__factory,
-    ProductCategoryManager__factory,
+    ProductCategoryManager__factory
 } from '../smart-contracts';
 import { EntityBuilder } from '../utils/EntityBuilder';
 import { Line, LineRequest } from '../entities/Trade';
@@ -29,19 +29,19 @@ describe('BasicTradeDriver', () => {
         quantity: BigNumber.from(40),
         unit: 'KGM',
         productCategoryId: BigNumber.from(2),
-        exists: true,
+        exists: true
     } as TradeContract.LineStructOutput;
     const materialStruct: MaterialManager.MaterialStructOutput = {
         id: BigNumber.from(1),
         productCategoryId: BigNumber.from(2),
-        exists: true,
+        exists: true
     } as MaterialManager.MaterialStructOutput;
     const productCategoryStruct: ProductCategoryManager.ProductCategoryStructOutput = {
         id: BigNumber.from(2),
         name: 'category1',
         quality: 85,
         description: 'description',
-        exists: true,
+        exists: true
     } as ProductCategoryManager.ProductCategoryStructOutput;
     const quantity = 40;
     const unit = 'KGM';
@@ -66,17 +66,23 @@ describe('BasicTradeDriver', () => {
     const mockedGetProductCategory = jest.fn();
 
     mockedWriteFunction.mockResolvedValue({
-        wait: mockedWait,
+        wait: mockedWait
     });
     mockedUpdateLine.mockResolvedValue({
-        wait: mockedWait,
+        wait: mockedWait
     });
     mockedAssignMaterial.mockResolvedValue({
-        wait: mockedWait,
+        wait: mockedWait
     });
-    mockedGetTrade.mockResolvedValue(
-        [BigNumber.from(tradeId), supplier, customer, commissioner, externalUrl, lineIds, name],
-    );
+    mockedGetTrade.mockResolvedValue([
+        BigNumber.from(tradeId),
+        supplier,
+        customer,
+        commissioner,
+        externalUrl,
+        lineIds,
+        name
+    ]);
     mockedGetLineCounter.mockResolvedValue(BigNumber.from(1));
     mockedGetLine.mockResolvedValue(line);
 
@@ -90,41 +96,46 @@ describe('BasicTradeDriver', () => {
         addLine: mockedWriteFunction,
         updateLine: mockedUpdateLine,
         assignMaterial: mockedAssignMaterial,
-        setName: mockedWriteFunction,
+        setName: mockedWriteFunction
     });
 
     const mockedMaterialContract = createMock<MaterialManager>({
-        getMaterial: mockedGetMaterial,
+        getMaterial: mockedGetMaterial
     });
     const mockedProductCategoryContract = createMock<ProductCategoryManager>({
-        getProductCategory: mockedGetProductCategory,
+        getProductCategory: mockedGetProductCategory
     });
 
     beforeAll(() => {
         mockedBasicTradeConnect.mockReturnValue(mockedContract);
         const mockedBasicTradeContract = createMock<BasicTradeContract>({
-            connect: mockedBasicTradeConnect,
+            connect: mockedBasicTradeConnect
         });
         mockedMaterialManagerConnect.mockReturnValue(mockedMaterialContract);
         const mockedMaterialManagerContract = createMock<MaterialManager>({
-            connect: mockedMaterialManagerConnect,
+            connect: mockedMaterialManagerConnect
         });
         mockedProductCategoryManagerConnect.mockReturnValue(mockedProductCategoryContract);
         const mockedProductCategoryManagerContract = createMock<ProductCategoryManager>({
-            connect: mockedProductCategoryManagerConnect,
+            connect: mockedProductCategoryManagerConnect
         });
 
-        jest.spyOn(Trade__factory, 'connect')
-            .mockReturnValue(mockedBasicTradeContract);
-        jest.spyOn(BasicTrade__factory, 'connect')
-            .mockReturnValue(mockedBasicTradeContract);
-        jest.spyOn(MaterialManager__factory, 'connect')
-            .mockReturnValue(mockedMaterialManagerContract);
-        jest.spyOn(ProductCategoryManager__factory, 'connect')
-            .mockReturnValue(mockedProductCategoryManagerContract);
+        jest.spyOn(Trade__factory, 'connect').mockReturnValue(mockedBasicTradeContract);
+        jest.spyOn(BasicTrade__factory, 'connect').mockReturnValue(mockedBasicTradeContract);
+        jest.spyOn(MaterialManager__factory, 'connect').mockReturnValue(
+            mockedMaterialManagerContract
+        );
+        jest.spyOn(ProductCategoryManager__factory, 'connect').mockReturnValue(
+            mockedProductCategoryManagerContract
+        );
 
         mockedSigner = createMock<Signer>();
-        basicTradeDriver = new BasicTradeDriver(mockedSigner, contractAddress, Wallet.createRandom().address, Wallet.createRandom().address);
+        basicTradeDriver = new BasicTradeDriver(
+            mockedSigner,
+            contractAddress,
+            Wallet.createRandom().address,
+            Wallet.createRandom().address
+        );
     });
 
     afterAll(() => {
@@ -134,89 +145,89 @@ describe('BasicTradeDriver', () => {
     it('should correctly retrieve the basic trade', async () => {
         const result = await basicTradeDriver.getTrade();
 
-        expect(mockedGetMaterial)
-            .toHaveBeenCalledTimes(1);
+        expect(mockedGetMaterial).toHaveBeenCalledTimes(1);
 
-        expect(result.tradeId)
-            .toEqual(tradeId);
-        expect(result.supplier)
-            .toEqual(supplier);
-        expect(result.customer)
-            .toEqual(customer);
-        expect(result.commissioner)
-            .toEqual(commissioner);
-        expect(result.externalUrl)
-            .toEqual(externalUrl);
-        expect(result.lines)
-            .toEqual([EntityBuilder.buildTradeLine(line, productCategoryStruct, materialStruct)]);
-        expect(result.name)
-            .toEqual(name);
+        expect(result.tradeId).toEqual(tradeId);
+        expect(result.supplier).toEqual(supplier);
+        expect(result.customer).toEqual(customer);
+        expect(result.commissioner).toEqual(commissioner);
+        expect(result.externalUrl).toEqual(externalUrl);
+        expect(result.lines).toEqual([
+            EntityBuilder.buildTradeLine(line, productCategoryStruct, materialStruct)
+        ]);
+        expect(result.name).toEqual(name);
 
-        expect(mockedContract.getTrade)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.getTrade)
-            .toHaveBeenNthCalledWith(1, { blockTag: undefined });
-        expect(mockedGetTrade)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.getLineCounter)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.getLineCounter)
-            .toHaveBeenNthCalledWith(1);
-        expect(mockedGetLineCounter)
-            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.getTrade).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getTrade).toHaveBeenNthCalledWith(1, { blockTag: undefined });
+        expect(mockedGetTrade).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getLineCounter).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getLineCounter).toHaveBeenNthCalledWith(1);
+        expect(mockedGetLineCounter).toHaveBeenCalledTimes(1);
     });
 
     it('should call getLine the number of time specified by the counter', async () => {
         mockedGetLineCounter.mockResolvedValueOnce(BigNumber.from(10));
 
         await basicTradeDriver.getLines();
-        expect(mockedContract.getLine)
-            .toHaveBeenCalledTimes(10);
+        expect(mockedContract.getLine).toHaveBeenCalledTimes(10);
     });
 
     it('should correctly retrieve a line', async () => {
         const result = await basicTradeDriver.getLine(line.id.toNumber());
 
-        expect(result.id)
-            .toEqual(line.id.toNumber());
-        expect(result.material)
-            .toEqual(EntityBuilder.buildMaterial(materialStruct, productCategoryStruct));
-        expect(result.productCategory)
-            .toEqual(EntityBuilder.buildProductCategory(productCategoryStruct));
+        expect(result.id).toEqual(line.id.toNumber());
+        expect(result.material).toEqual(
+            EntityBuilder.buildMaterial(materialStruct, productCategoryStruct)
+        );
+        expect(result.productCategory).toEqual(
+            EntityBuilder.buildProductCategory(productCategoryStruct)
+        );
 
-        expect(mockedContract.getLine)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.getLine)
-            .toHaveBeenNthCalledWith(1, line.id.toNumber(), { blockTag: undefined });
-        expect(mockedGetLine)
-            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.getLine).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getLine).toHaveBeenNthCalledWith(1, line.id.toNumber(), {
+            blockTag: undefined
+        });
+        expect(mockedGetLine).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly add a new line', async () => {
         mockedGetMaterial.mockReturnValueOnce(undefined);
         mockedWait.mockResolvedValueOnce({
-            events: [{
-                event: 'TradeLineAdded',
-                args: [line.id],
-            }],
+            events: [
+                {
+                    event: 'TradeLineAdded',
+                    args: [line.id]
+                }
+            ]
         });
-        const newLine: LineRequest = new LineRequest(productCategoryStruct.id.toNumber(), quantity, unit);
+        const newLine: LineRequest = new LineRequest(
+            productCategoryStruct.id.toNumber(),
+            quantity,
+            unit
+        );
         const tradeLineId = await basicTradeDriver.addLine(newLine);
         const result = await basicTradeDriver.getLine(tradeLineId);
 
-        expect(result).toEqual(new Line(line.id.toNumber(), undefined, EntityBuilder.buildProductCategory(productCategoryStruct), quantity, unit));
-        expect(mockedContract.addLine)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.addLine)
-            .toHaveBeenNthCalledWith(1, newLine.productCategoryId, newLine.quantity, newLine.unit);
-        expect(mockedWait)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.getLine)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.getLine)
-            .toHaveBeenNthCalledWith(1, line.id, { blockTag: undefined });
-        expect(mockedGetLine)
-            .toHaveBeenCalledTimes(1);
+        expect(result).toEqual(
+            new Line(
+                line.id.toNumber(),
+                undefined,
+                EntityBuilder.buildProductCategory(productCategoryStruct),
+                quantity,
+                unit
+            )
+        );
+        expect(mockedContract.addLine).toHaveBeenCalledTimes(1);
+        expect(mockedContract.addLine).toHaveBeenNthCalledWith(
+            1,
+            newLine.productCategoryId,
+            newLine.quantity,
+            newLine.unit
+        );
+        expect(mockedWait).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getLine).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getLine).toHaveBeenNthCalledWith(1, line.id, { blockTag: undefined });
+        expect(mockedGetLine).toHaveBeenCalledTimes(1);
     });
 
     it('should update an existing line', async () => {
@@ -226,9 +237,13 @@ describe('BasicTradeDriver', () => {
             quantity: BigNumber.from(50),
             unit: 'KGM',
             materialId: BigNumber.from(1),
-            exists: true,
+            exists: true
         } as TradeContract.LineStructOutput;
-        const updatedLine: Line = EntityBuilder.buildTradeLine(updatedLineStruct, productCategoryStruct, materialStruct);
+        const updatedLine: Line = EntityBuilder.buildTradeLine(
+            updatedLineStruct,
+            productCategoryStruct,
+            materialStruct
+        );
         mockedGetLine.mockResolvedValueOnce(updatedLineStruct);
 
         // expect(await basicTradeDriver.updateLine(updatedLine)).toEqual(updatedLine);
@@ -253,11 +268,8 @@ describe('BasicTradeDriver', () => {
     it('should correctly set the new name', async () => {
         await basicTradeDriver.setName('new name');
 
-        expect(mockedContract.setName)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.setName)
-            .toHaveBeenNthCalledWith(1, 'new name');
-        expect(mockedWait)
-            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.setName).toHaveBeenCalledTimes(1);
+        expect(mockedContract.setName).toHaveBeenNthCalledWith(1, 'new name');
+        expect(mockedWait).toHaveBeenCalledTimes(1);
     });
 });

@@ -2,8 +2,10 @@ import { Event, Signer } from 'ethers';
 import {
     BasicTrade as BasicTradeContract,
     BasicTrade__factory,
-    MaterialManager, MaterialManager__factory,
-    ProductCategoryManager, ProductCategoryManager__factory,
+    MaterialManager,
+    MaterialManager__factory,
+    ProductCategoryManager,
+    ProductCategoryManager__factory
 } from '../smart-contracts';
 import { TradeDriver } from './TradeDriver';
 import { IConcreteTradeDriverInterface } from './IConcreteTradeDriver.interface';
@@ -19,19 +21,27 @@ export class BasicTradeDriver extends TradeDriver implements IConcreteTradeDrive
 
     private _productCategoryContract: ProductCategoryManager;
 
-    constructor(signer: Signer, basicTradeAddress: string, materialManagerAddress: string, productCategoryManagerAddress: string) {
+    constructor(
+        signer: Signer,
+        basicTradeAddress: string,
+        materialManagerAddress: string,
+        productCategoryManagerAddress: string
+    ) {
         super(signer, basicTradeAddress);
-        this._basicTradeContract = BasicTrade__factory
-            .connect(basicTradeAddress, signer.provider!)
-            .connect(signer);
+        this._basicTradeContract = BasicTrade__factory.connect(
+            basicTradeAddress,
+            signer.provider!
+        ).connect(signer);
 
-        this._materialContract = MaterialManager__factory
-            .connect(materialManagerAddress, signer.provider!)
-            .connect(signer);
+        this._materialContract = MaterialManager__factory.connect(
+            materialManagerAddress,
+            signer.provider!
+        ).connect(signer);
 
-        this._productCategoryContract = ProductCategoryManager__factory
-            .connect(productCategoryManagerAddress, signer.provider!)
-            .connect(signer);
+        this._productCategoryContract = ProductCategoryManager__factory.connect(
+            productCategoryManagerAddress,
+            signer.provider!
+        ).connect(signer);
     }
 
     async getTrade(blockNumber?: number): Promise<BasicTrade> {
@@ -45,7 +55,7 @@ export class BasicTradeDriver extends TradeDriver implements IConcreteTradeDrive
             result[3],
             result[4],
             lines,
-            result[6],
+            result[6]
         );
     }
 
@@ -61,17 +71,27 @@ export class BasicTradeDriver extends TradeDriver implements IConcreteTradeDrive
     }
 
     async getLine(id: number, blockNumber?: number): Promise<Line> {
-        const line: Trade.LineStructOutput = await this._basicTradeContract.getLine(id, { blockTag: blockNumber });
+        const line: Trade.LineStructOutput = await this._basicTradeContract.getLine(id, {
+            blockTag: blockNumber
+        });
 
         let materialStruct: MaterialManager.MaterialStructOutput | undefined;
         if (line.materialId.toNumber() !== 0)
             materialStruct = await this._materialContract.getMaterial(line.materialId);
 
-        return EntityBuilder.buildTradeLine(line, await this._productCategoryContract.getProductCategory(line.productCategoryId), materialStruct);
+        return EntityBuilder.buildTradeLine(
+            line,
+            await this._productCategoryContract.getProductCategory(line.productCategoryId),
+            materialStruct
+        );
     }
 
     async addLine(line: LineRequest): Promise<number> {
-        const tx: any = await this._basicTradeContract.addLine(line.productCategoryId, line.quantity, line.unit);
+        const tx: any = await this._basicTradeContract.addLine(
+            line.productCategoryId,
+            line.quantity,
+            line.unit
+        );
         const { events } = await tx.wait();
         if (!events) {
             throw new Error('Error during line registration, no events found');
@@ -80,7 +100,12 @@ export class BasicTradeDriver extends TradeDriver implements IConcreteTradeDrive
     }
 
     async updateLine(line: Line): Promise<void> {
-        const tx = await this._basicTradeContract.updateLine(line.id!, line.productCategory.id, line.quantity, line.unit);
+        const tx = await this._basicTradeContract.updateLine(
+            line.id!,
+            line.productCategory.id,
+            line.quantity,
+            line.unit
+        );
         await tx.wait();
     }
 

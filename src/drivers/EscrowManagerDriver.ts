@@ -5,20 +5,37 @@ export class EscrowManagerDriver {
     private _contract: EscrowManager;
 
     constructor(signer: Signer, escrowManagerAddress: string) {
-        this._contract = EscrowManager__factory
-            .connect(escrowManagerAddress, signer.provider!)
-            .connect(signer);
+        this._contract = EscrowManager__factory.connect(
+            escrowManagerAddress,
+            signer.provider!
+        ).connect(signer);
     }
 
     async getEscrowCounter(): Promise<number> {
         return (await this._contract.getEscrowCounter()).toNumber();
     }
 
-    async registerEscrow(payee: string, purchaser: string, agreedAmount: number, duration: number, tokenAddress: string): Promise<[number, string, string]> {
-        if (!utils.isAddress(payee) || !utils.isAddress(purchaser) || !utils.isAddress(tokenAddress)) {
+    async registerEscrow(
+        payee: string,
+        purchaser: string,
+        agreedAmount: number,
+        duration: number,
+        tokenAddress: string
+    ): Promise<[number, string, string]> {
+        if (
+            !utils.isAddress(payee) ||
+            !utils.isAddress(purchaser) ||
+            !utils.isAddress(tokenAddress)
+        ) {
             throw new Error('Not an address');
         }
-        const tx = await this._contract.registerEscrow(payee, purchaser, agreedAmount, duration, tokenAddress);
+        const tx = await this._contract.registerEscrow(
+            payee,
+            purchaser,
+            agreedAmount,
+            duration,
+            tokenAddress
+        );
         const { events, transactionHash } = await tx.wait();
         if (!events) {
             throw new Error('Error during escrow registration, no events found');

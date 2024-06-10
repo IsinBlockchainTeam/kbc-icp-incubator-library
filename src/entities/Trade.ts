@@ -61,7 +61,13 @@ export class Line {
 
     private _unit: string;
 
-    constructor(id: number, material: Material | undefined, productCategory: ProductCategory, quantity: number, unit: string) {
+    constructor(
+        id: number,
+        material: Material | undefined,
+        productCategory: ProductCategory,
+        quantity: number,
+        unit: string
+    ) {
         this._id = id;
         this._material = material;
         this._productCategory = productCategory;
@@ -123,7 +129,14 @@ export abstract class Trade {
 
     protected _lines: Line[];
 
-    protected constructor(tradeId: number, supplier: string, customer: string, commissioner: string, externalUrl: string, lines: Line[]) {
+    protected constructor(
+        tradeId: number,
+        supplier: string,
+        customer: string,
+        commissioner: string,
+        externalUrl: string,
+        lines: Line[]
+    ) {
         this._tradeId = tradeId;
         this._supplier = supplier;
         this._customer = customer;

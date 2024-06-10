@@ -12,18 +12,18 @@ Examples:
  */
 
 export const URL_SEGMENTS = {
-    HTTP: "http://",
-    HTTPS: "https://",
-    LOCAL_REPLICA: "localhost:4943/",
-    MAINNET: "ic0.app/",
-    ORGANIZATION: "organizations/",
-    TRANSACTION: "transactions/",
-    FILE: "files/",
-}
+    HTTP: 'http://',
+    HTTPS: 'https://',
+    LOCAL_REPLICA: 'localhost:4943/',
+    MAINNET: 'ic0.app/',
+    ORGANIZATION: 'organizations/',
+    TRANSACTION: 'transactions/',
+    FILE: 'files/'
+};
 
 export const URL_SEGMENT_INDEXES = {
     CANISTER_ID: 2,
     ORGANIZATION_ID: 4,
     TRANSACTION_ID: 6,
-    FILE_NAME: 8,
-}
+    FILE_NAME: 8
+};

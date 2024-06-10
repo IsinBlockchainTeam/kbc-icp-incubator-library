@@ -1,4 +1,4 @@
-import {ProductCategory} from "./ProductCategory";
+import { ProductCategory } from './ProductCategory';
 
 export class Offer {
     private _id: number;

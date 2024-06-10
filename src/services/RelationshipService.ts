@@ -8,8 +8,18 @@ export class RelationshipService {
         this._relationshipDriver = relationshipDriver;
     }
 
-    async registerRelationship(companyAAddress: string, companyBAddress: string, validFrom: Date, validUntil?: Date): Promise<void> {
-        await this._relationshipDriver.registerRelationship(companyAAddress, companyBAddress, validFrom, validUntil);
+    async registerRelationship(
+        companyAAddress: string,
+        companyBAddress: string,
+        validFrom: Date,
+        validUntil?: Date
+    ): Promise<void> {
+        await this._relationshipDriver.registerRelationship(
+            companyAAddress,
+            companyBAddress,
+            validFrom,
+            validUntil
+        );
     }
 
     async getRelationshipCounter(): Promise<number> {

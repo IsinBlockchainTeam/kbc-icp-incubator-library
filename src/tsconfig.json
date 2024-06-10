@@ -16,16 +16,9 @@
                 "cacheBetweenTests": false
             }
         ],
-        "types": [
-            "jest",
-            "node",
-            "@types/jest"
-        ]
+        "types": ["jest", "node", "@types/jest"]
     },
-    "include": [
-        "**/*",
-        "./dfx_output/storage/*.ts"
-    ],
+    "include": ["**/*", "./dfx_output/storage/*.ts"],
     "exclude": [
         "node_modules",
         "dist",

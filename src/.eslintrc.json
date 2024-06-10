@@ -7,27 +7,17 @@
         "browser": true
     },
     "ignorePatterns": ["node_modules", "dist"],
-    "extends": [
-        "airbnb-base"
-    ],
+    "extends": ["airbnb-base"],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
         "ecmaVersion": "latest",
         "sourceType": "module"
     },
-    "plugins": [
-        "@typescript-eslint",
-        "unused-imports"
-    ],
+    "plugins": ["@typescript-eslint", "unused-imports"],
     "settings": {
         "import/resolver": {
             "node": {
-                "extensions": [
-                    ".js",
-                    ".jsx",
-                    ".ts",
-                    ".tsx"
-                ]
+                "extensions": [".js", ".jsx", ".ts", ".tsx"]
             }
         }
     },
@@ -37,17 +27,11 @@
             { "default": ["field", "constructor", "method"] }
         ],
         "max-len": "off",
-        "indent": [
-            "error",
-            4
-        ], // Indent with 4 spaces
+        "indent": ["error", 4], // Indent with 4 spaces
         "camelcase": "off",
         "unused-imports/no-unused-imports": "error",
         "no-underscore-dangle": "off",
-        "linebreak-style": [
-            "error",
-            "unix"
-        ],
+        "linebreak-style": ["error", "unix"],
         "import/extensions": [
             "error",
             {
@@ -57,17 +41,12 @@
         "import/no-extraneous-dependencies": [
             "error",
             {
-                "devDependencies": [
-                    "**/*.test.ts",
-                    "**/*.test.tsx"
-                ]
+                "devDependencies": ["**/*.test.ts", "**/*.test.tsx"]
             }
         ],
         "import/prefer-default-export": "off",
         "no-shadow": "off",
-        "@typescript-eslint/no-shadow": [
-            "error"
-        ],
+        "@typescript-eslint/no-shadow": ["error"],
         "@typescript-eslint/explicit-module-boundary-types": "off",
         "no-unused-vars": "off",
         "grouped-accessor-pairs": "off",
@@ -79,9 +58,12 @@
         "function-call-argument-newline": "off",
         "one-var": "off",
         "one-var-declaration-per-line": "off",
-        "object-curly-newline": ["error", {
-            "ObjectPattern": { "multiline":  true }
-        }],
+        "object-curly-newline": [
+            "error",
+            {
+                "ObjectPattern": { "multiline": true }
+            }
+        ],
         "no-trailing-spaces": "off",
         "nonblock-statement-body-position": "off",
         "curly": "off",

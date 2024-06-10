@@ -5,7 +5,7 @@ import {
     OfferManager,
     OfferManager__factory,
     ProductCategoryManager,
-    ProductCategoryManager__factory,
+    ProductCategoryManager__factory
 } from '../smart-contracts';
 import { Offer } from '../entities/Offer';
 import { EntityBuilder } from '../utils/EntityBuilder';
@@ -18,14 +18,16 @@ export class OfferDriver {
     constructor(
         signer: Signer,
         offerManagerAddress: string,
-        productCategoryManagerAddress: string,
+        productCategoryManagerAddress: string
     ) {
-        this._offerManagerContract = OfferManager__factory
-            .connect(offerManagerAddress, signer.provider!)
-            .connect(signer);
-        this._productCategoryManagerContract = ProductCategoryManager__factory
-            .connect(productCategoryManagerAddress, signer.provider!)
-            .connect(signer);
+        this._offerManagerContract = OfferManager__factory.connect(
+            offerManagerAddress,
+            signer.provider!
+        ).connect(signer);
+        this._productCategoryManagerContract = ProductCategoryManager__factory.connect(
+            productCategoryManagerAddress,
+            signer.provider!
+        ).connect(signer);
     }
 
     async registerSupplier(companyAddress: string, name: string): Promise<void> {
@@ -36,7 +38,10 @@ export class OfferDriver {
 
     async registerOffer(companyAddress: string, productCategoryId: number): Promise<void> {
         if (!utils.isAddress(companyAddress)) throw new Error('Not an address');
-        const tx = await this._offerManagerContract.registerOffer(companyAddress, productCategoryId);
+        const tx = await this._offerManagerContract.registerOffer(
+            companyAddress,
+            productCategoryId
+        );
         await tx.wait();
     }
 
@@ -54,12 +59,18 @@ export class OfferDriver {
 
     async getSupplierName(companyAddress: string, blockNumber?: number): Promise<string> {
         if (!utils.isAddress(companyAddress)) throw new Error('Not an address');
-        return this._offerManagerContract.getSupplierName(companyAddress, { blockTag: blockNumber });
+        return this._offerManagerContract.getSupplierName(companyAddress, {
+            blockTag: blockNumber
+        });
     }
 
     async getOffer(offerId: number, blockNumber?: number): Promise<Offer> {
-        const rawOffer = await this._offerManagerContract.getOffer(offerId, { blockTag: blockNumber });
-        const rawProductCategory = await this._productCategoryManagerContract.getProductCategory(rawOffer.productCategoryId);
+        const rawOffer = await this._offerManagerContract.getOffer(offerId, {
+            blockTag: blockNumber
+        });
+        const rawProductCategory = await this._productCategoryManagerContract.getProductCategory(
+            rawOffer.productCategoryId
+        );
         return EntityBuilder.buildOffer(rawOffer, rawProductCategory);
     }
 

@@ -24,11 +24,20 @@ export class ProductCategoryService {
         return this._productCategoryDriver.getProductCategories();
     }
 
-    async registerProductCategory(name: string, quality: number, description: string): Promise<number> {
+    async registerProductCategory(
+        name: string,
+        quality: number,
+        description: string
+    ): Promise<number> {
         return this._productCategoryDriver.registerProductCategory(name, quality, description);
     }
 
-    async updateProductCategory(id: number, name: string, quality: number, description: string): Promise<void> {
+    async updateProductCategory(
+        id: number,
+        name: string,
+        quality: number,
+        description: string
+    ): Promise<void> {
         return this._productCategoryDriver.updateProductCategory(id, name, quality, description);
     }
 }

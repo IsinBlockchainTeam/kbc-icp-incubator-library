@@ -37,11 +37,41 @@ export class AssetOperationService {
         return this._assetOperationDriver.getAssetOperationsByOutputMaterial(materialId);
     }
 
-    async registerAssetOperation(name: string, inputMaterialsIds: number[], outputMaterialId: number, latitude: string, longitude: string, processTypes: string[]): Promise<number> {
-        return this._assetOperationDriver.registerAssetOperation(name, inputMaterialsIds, outputMaterialId, latitude, longitude, processTypes);
+    async registerAssetOperation(
+        name: string,
+        inputMaterialsIds: number[],
+        outputMaterialId: number,
+        latitude: string,
+        longitude: string,
+        processTypes: string[]
+    ): Promise<number> {
+        return this._assetOperationDriver.registerAssetOperation(
+            name,
+            inputMaterialsIds,
+            outputMaterialId,
+            latitude,
+            longitude,
+            processTypes
+        );
     }
 
-    async updateAssetOperation(id: number, name: string, inputMaterialsIds: number[], outputMaterialId: number, latitude: string, longitude: string, processTypes: string[]): Promise<void> {
-        return this._assetOperationDriver.updateAssetOperation(id, name, inputMaterialsIds, outputMaterialId, latitude, longitude, processTypes);
+    async updateAssetOperation(
+        id: number,
+        name: string,
+        inputMaterialsIds: number[],
+        outputMaterialId: number,
+        latitude: string,
+        longitude: string,
+        processTypes: string[]
+    ): Promise<void> {
+        return this._assetOperationDriver.updateAssetOperation(
+            id,
+            name,
+            inputMaterialsIds,
+            outputMaterialId,
+            latitude,
+            longitude,
+            processTypes
+        );
     }
 }

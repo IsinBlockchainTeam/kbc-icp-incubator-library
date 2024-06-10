@@ -3,7 +3,8 @@ import { JsonRpcProvider } from '@ethersproject/providers';
 import { ethers, Signer, Wallet } from 'ethers';
 import { ICPResourceSpec } from '@blockchain-lib/common/index';
 import {
-    CUSTOMER_ADDRESS, DOCUMENT_MANAGER_CONTRACT_ADDRESS,
+    CUSTOMER_ADDRESS,
+    DOCUMENT_MANAGER_CONTRACT_ADDRESS,
     MATERIAL_MANAGER_CONTRACT_ADDRESS,
     MY_TOKEN_CONTRACT_ADDRESS,
     NETWORK,
@@ -11,7 +12,7 @@ import {
     PRODUCT_CATEGORY_CONTRACT_ADDRESS,
     SUPPLIER_ADDRESS,
     SUPPLIER_PRIVATE_KEY,
-    TRADE_MANAGER_CONTRACT_ADDRESS,
+    TRADE_MANAGER_CONTRACT_ADDRESS
 } from './config';
 import { MaterialService } from '../services/MaterialService';
 import { MaterialDriver } from '../drivers/MaterialDriver';
@@ -62,36 +63,69 @@ describe('Trade lifecycle', () => {
             signer,
             TRADE_MANAGER_CONTRACT_ADDRESS,
             MATERIAL_MANAGER_CONTRACT_ADDRESS,
-            PRODUCT_CATEGORY_CONTRACT_ADDRESS,
+            PRODUCT_CATEGORY_CONTRACT_ADDRESS
         );
-        tradeManagerService = new TradeManagerService({ tradeManagerDriver, icpFileDriver: {} as ICPFileDriver });
+        tradeManagerService = new TradeManagerService({
+            tradeManagerDriver,
+            icpFileDriver: {} as ICPFileDriver
+        });
     };
 
     const _updateExistingOrderService = async () => {
         const orderAddress: string = await tradeManagerService.getTrade(existingOrder);
-        existingOrderService = new OrderTradeService(new OrderTradeDriver(signer, orderAddress, MATERIAL_MANAGER_CONTRACT_ADDRESS, PRODUCT_CATEGORY_CONTRACT_ADDRESS));
+        existingOrderService = new OrderTradeService(
+            new OrderTradeDriver(
+                signer,
+                orderAddress,
+                MATERIAL_MANAGER_CONTRACT_ADDRESS,
+                PRODUCT_CATEGORY_CONTRACT_ADDRESS
+            )
+        );
     };
 
     const _registerOrder = async (): Promise<{
-        orderAddress: string,
-        orderTradeService: OrderTradeService
+        orderAddress: string;
+        orderTradeService: OrderTradeService;
     }> => {
         const metadata: OrderTradeMetadata = {
             incoterms: 'FOB',
             shipper: 'Shipper 1',
             shippingPort: 'Port 1',
-            deliveryPort: 'Port 2',
+            deliveryPort: 'Port 2'
         };
         const urlStructure: URLStructure = {
             prefix: 'prefix',
-            organizationId: 1,
+            organizationId: 1
         };
-        const [tradeId, tradeAddress] = await tradeManagerService.registerOrderTrade(SUPPLIER_ADDRESS, CUSTOMER_ADDRESS, OTHER_ADDRESS, deadline, deadline, arbiter, deadline, deadline, 1000, MY_TOKEN_CONTRACT_ADDRESS, metadata, urlStructure, [1]);
+        const [tradeId, tradeAddress] = await tradeManagerService.registerOrderTrade(
+            SUPPLIER_ADDRESS,
+            CUSTOMER_ADDRESS,
+            OTHER_ADDRESS,
+            deadline,
+            deadline,
+            arbiter,
+            deadline,
+            deadline,
+            1000,
+            MY_TOKEN_CONTRACT_ADDRESS,
+            metadata,
+            urlStructure,
+            [1]
+        );
         existingOrder = tradeId;
-        existingOrderService = new OrderTradeService(new OrderTradeDriver(signer, await tradeManagerService.getTrade(tradeId), MATERIAL_MANAGER_CONTRACT_ADDRESS, PRODUCT_CATEGORY_CONTRACT_ADDRESS), {} as DocumentDriver, {} as ICPFileDriver);
+        existingOrderService = new OrderTradeService(
+            new OrderTradeDriver(
+                signer,
+                await tradeManagerService.getTrade(tradeId),
+                MATERIAL_MANAGER_CONTRACT_ADDRESS,
+                PRODUCT_CATEGORY_CONTRACT_ADDRESS
+            ),
+            {} as DocumentDriver,
+            {} as ICPFileDriver
+        );
         return {
             orderAddress: tradeAddress,
-            orderTradeService: existingOrderService,
+            orderTradeService: existingOrderService
         };
     };
 
@@ -103,14 +137,11 @@ describe('Trade lifecycle', () => {
         materialDriver = new MaterialDriver(
             signer,
             MATERIAL_MANAGER_CONTRACT_ADDRESS,
-            PRODUCT_CATEGORY_CONTRACT_ADDRESS,
+            PRODUCT_CATEGORY_CONTRACT_ADDRESS
         );
         materialService = new MaterialService(materialDriver);
 
-        documentDriver = new DocumentDriver(
-            signer,
-            DOCUMENT_MANAGER_CONTRACT_ADDRESS,
-        );
+        documentDriver = new DocumentDriver(signer, DOCUMENT_MANAGER_CONTRACT_ADDRESS);
         documentService = new DocumentService(documentDriver, {} as ICPFileDriver);
     });
 
@@ -119,33 +150,100 @@ describe('Trade lifecycle', () => {
         const externalUrl = 'icp_storage/1';
         const resourceSpec: ICPResourceSpec = {
             name: 'filename.pdf',
-            type: 'application/pdf',
+            type: 'application/pdf'
         };
         const delegatedOrganizationIds = [1];
         const { orderTradeService } = await _registerOrder();
         expect(await orderTradeService.getOrderStatus()).toEqual(OrderStatus.CONTRACTING);
 
-        await orderTradeService.addDocument(DocumentType.PAYMENT_INVOICE, docContent, externalUrl, resourceSpec, delegatedOrganizationIds);
-        await orderTradeService.validateDocument((await orderTradeService.getDocumentIdsByType(DocumentType.PAYMENT_INVOICE))[0], DocumentStatus.APPROVED);
+        await orderTradeService.addDocument(
+            DocumentType.PAYMENT_INVOICE,
+            docContent,
+            externalUrl,
+            resourceSpec,
+            delegatedOrganizationIds
+        );
+        await orderTradeService.validateDocument(
+            (await orderTradeService.getDocumentIdsByType(DocumentType.PAYMENT_INVOICE))[0],
+            DocumentStatus.APPROVED
+        );
         expect(await orderTradeService.getOrderStatus()).toEqual(OrderStatus.PAYED);
 
-        await orderTradeService.addDocument(DocumentType.ORIGIN_SWISS_DECODE, docContent, externalUrl, resourceSpec, delegatedOrganizationIds);
-        await orderTradeService.addDocument(DocumentType.WEIGHT_CERTIFICATE, docContent, externalUrl, resourceSpec, delegatedOrganizationIds);
-        await orderTradeService.addDocument(DocumentType.FUMIGATION_CERTIFICATE, docContent, externalUrl, resourceSpec, delegatedOrganizationIds);
-        await orderTradeService.addDocument(DocumentType.PREFERENTIAL_ENTRY_CERTIFICATE, docContent, externalUrl, resourceSpec, delegatedOrganizationIds);
-        await orderTradeService.addDocument(DocumentType.PHYTOSANITARY_CERTIFICATE, docContent, externalUrl, resourceSpec, delegatedOrganizationIds);
-        await orderTradeService.addDocument(DocumentType.INSURANCE_CERTIFICATE, docContent, externalUrl, resourceSpec, delegatedOrganizationIds);
+        await orderTradeService.addDocument(
+            DocumentType.ORIGIN_SWISS_DECODE,
+            docContent,
+            externalUrl,
+            resourceSpec,
+            delegatedOrganizationIds
+        );
+        await orderTradeService.addDocument(
+            DocumentType.WEIGHT_CERTIFICATE,
+            docContent,
+            externalUrl,
+            resourceSpec,
+            delegatedOrganizationIds
+        );
+        await orderTradeService.addDocument(
+            DocumentType.FUMIGATION_CERTIFICATE,
+            docContent,
+            externalUrl,
+            resourceSpec,
+            delegatedOrganizationIds
+        );
+        await orderTradeService.addDocument(
+            DocumentType.PREFERENTIAL_ENTRY_CERTIFICATE,
+            docContent,
+            externalUrl,
+            resourceSpec,
+            delegatedOrganizationIds
+        );
+        await orderTradeService.addDocument(
+            DocumentType.PHYTOSANITARY_CERTIFICATE,
+            docContent,
+            externalUrl,
+            resourceSpec,
+            delegatedOrganizationIds
+        );
+        await orderTradeService.addDocument(
+            DocumentType.INSURANCE_CERTIFICATE,
+            docContent,
+            externalUrl,
+            resourceSpec,
+            delegatedOrganizationIds
+        );
         expect(await orderTradeService.getOrderStatus()).toEqual(OrderStatus.PAYED); // documents not yet validated
 
         const documentIds = await orderTradeService.getAllDocumentIds();
-        await serial(documentIds.map((doc) => async () => orderTradeService.validateDocument(doc, DocumentStatus.APPROVED)));
+        await serial(
+            documentIds.map(
+                (doc) => async () =>
+                    orderTradeService.validateDocument(doc, DocumentStatus.APPROVED)
+            )
+        );
         expect(await orderTradeService.getOrderStatus()).toEqual(OrderStatus.EXPORTED);
 
-        await orderTradeService.addDocument(DocumentType.BILL_OF_LADING, docContent, externalUrl, resourceSpec, delegatedOrganizationIds);
-        await orderTradeService.validateDocument((await orderTradeService.getDocumentIdsByType(DocumentType.BILL_OF_LADING))[0], DocumentStatus.NOT_APPROVED);
+        await orderTradeService.addDocument(
+            DocumentType.BILL_OF_LADING,
+            docContent,
+            externalUrl,
+            resourceSpec,
+            delegatedOrganizationIds
+        );
+        await orderTradeService.validateDocument(
+            (await orderTradeService.getDocumentIdsByType(DocumentType.BILL_OF_LADING))[0],
+            DocumentStatus.NOT_APPROVED
+        );
         expect(await orderTradeService.getOrderStatus()).toEqual(OrderStatus.EXPORTED); // bill of lading has not been approved
-        await orderTradeService.validateDocument((await orderTradeService.getDocumentIdsByType(DocumentType.BILL_OF_LADING))[0], DocumentStatus.APPROVED);
-        console.log('info: ', await documentService.getDocumentInfoById((await orderTradeService.getDocumentIdsByType(DocumentType.BILL_OF_LADING))[0]));
+        await orderTradeService.validateDocument(
+            (await orderTradeService.getDocumentIdsByType(DocumentType.BILL_OF_LADING))[0],
+            DocumentStatus.APPROVED
+        );
+        console.log(
+            'info: ',
+            await documentService.getDocumentInfoById(
+                (await orderTradeService.getDocumentIdsByType(DocumentType.BILL_OF_LADING))[0]
+            )
+        );
         expect(await orderTradeService.getOrderStatus()).toEqual(OrderStatus.SHIPPED);
     }, 30000);
 

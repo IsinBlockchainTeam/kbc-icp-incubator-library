@@ -11,8 +11,7 @@ import { StorageOperationType } from '../types/StorageOperationType';
 
 it('always passes', () => {
     expect(true).toBeTruthy();
-})
-
+});
 
 // describe('TradeManagerService', () => {
 //     let tradeManagerService: TradeManagerService<SolidMetadataSpec, SolidStorageACR>;

@@ -8,22 +8,34 @@ import { EntityBuilder } from '../utils/EntityBuilder';
 export class DocumentDriver {
     private _contract: DocumentManager;
 
-    constructor(
-        signer: Signer,
-        documentAddress: string,
-    ) {
-        this._contract = DocumentManager__factory
-            .connect(documentAddress, signer.provider!)
-            .connect(signer);
+    constructor(signer: Signer, documentAddress: string) {
+        this._contract = DocumentManager__factory.connect(
+            documentAddress,
+            signer.provider!
+        ).connect(signer);
     }
 
-    async registerDocument(externalUrl: string, contentHash: string, uploadedBy: string): Promise<void> {
+    async registerDocument(
+        externalUrl: string,
+        contentHash: string,
+        uploadedBy: string
+    ): Promise<void> {
         const tx = await this._contract.registerDocument(externalUrl, contentHash, uploadedBy);
         await tx.wait();
     }
 
-    async updateDocument(documentId: number, externalUrl: string, contentHash: string, uploadedBy: string): Promise<void> {
-        const tx = await this._contract.updateDocument(documentId, externalUrl, contentHash, uploadedBy);
+    async updateDocument(
+        documentId: number,
+        externalUrl: string,
+        contentHash: string,
+        uploadedBy: string
+    ): Promise<void> {
+        const tx = await this._contract.updateDocument(
+            documentId,
+            externalUrl,
+            contentHash,
+            uploadedBy
+        );
         await tx.wait();
     }
 

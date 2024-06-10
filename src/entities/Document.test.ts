@@ -11,7 +11,13 @@ describe('Document', () => {
 
     beforeAll(() => {
         documentInfo = new DocumentInfo(0, 'external url', 'contentHash', '0xuplaoer');
-        document = new Document(documentInfo, filename, documentType, today, new Uint8Array([1, 2, 3]));
+        document = new Document(
+            documentInfo,
+            filename,
+            documentType,
+            today,
+            new Uint8Array([1, 2, 3])
+        );
     });
 
     it('should correctly initialize a new DocumentFile', () => {

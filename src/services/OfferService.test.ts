@@ -13,12 +13,10 @@ describe('OfferService', () => {
         updateOffer: jest.fn(),
         deleteOffer: jest.fn(),
         addAdmin: jest.fn(),
-        removeAdmin: jest.fn(),
+        removeAdmin: jest.fn()
     });
 
-    const offerService = new OfferService(
-        mockedOfferDriver,
-    );
+    const offerService = new OfferService(mockedOfferDriver);
 
     afterAll(() => {
         jest.restoreAllMocks();
@@ -29,74 +27,80 @@ describe('OfferService', () => {
             serviceFunctionName: 'registerSupplier',
             serviceFunction: () => offerService.registerSupplier(owner, companyNames[0]),
             expectedMockedFunction: mockedOfferDriver.registerSupplier,
-            expectedMockedFunctionArgs: [owner, companyNames[0]],
+            expectedMockedFunctionArgs: [owner, companyNames[0]]
         },
         {
             serviceFunctionName: 'registerOffer',
             serviceFunction: () => offerService.registerOffer(owner, 1),
             expectedMockedFunction: mockedOfferDriver.registerOffer,
-            expectedMockedFunctionArgs: [owner, 1],
+            expectedMockedFunctionArgs: [owner, 1]
         },
         {
             serviceFunctionName: 'getOfferIdsByCompany',
             serviceFunction: () => offerService.getOfferIdsByCompany(owner),
             expectedMockedFunction: mockedOfferDriver.getOfferIdsByCompany,
-            expectedMockedFunctionArgs: [owner],
+            expectedMockedFunctionArgs: [owner]
         },
         {
             serviceFunctionName: 'getSupplierName',
             serviceFunction: () => offerService.getSupplierName(owner),
             expectedMockedFunction: mockedOfferDriver.getSupplierName,
-            expectedMockedFunctionArgs: [owner],
+            expectedMockedFunctionArgs: [owner]
         },
         {
             serviceFunctionName: 'getOffer',
             serviceFunction: () => offerService.getOffer(2),
             expectedMockedFunction: mockedOfferDriver.getOffer,
-            expectedMockedFunctionArgs: [2],
+            expectedMockedFunctionArgs: [2]
         },
         {
             serviceFunctionName: 'updateSupplier',
             serviceFunction: () => offerService.updateSupplier(owner, companyNames[0]),
             expectedMockedFunction: mockedOfferDriver.updateSupplier,
-            expectedMockedFunctionArgs: [owner, companyNames[0]],
+            expectedMockedFunctionArgs: [owner, companyNames[0]]
         },
         {
             serviceFunctionName: 'updateOffer',
             serviceFunction: () => offerService.updateOffer(2, 2),
             expectedMockedFunction: mockedOfferDriver.updateOffer,
-            expectedMockedFunctionArgs: [2, 2],
+            expectedMockedFunctionArgs: [2, 2]
         },
         {
             serviceFunctionName: 'deleteSupplier',
             serviceFunction: () => offerService.deleteSupplier(owner),
             expectedMockedFunction: mockedOfferDriver.deleteSupplier,
-            expectedMockedFunctionArgs: [owner],
+            expectedMockedFunctionArgs: [owner]
         },
         {
             serviceFunctionName: 'deleteOffer',
             serviceFunction: () => offerService.deleteOffer(2),
             expectedMockedFunction: mockedOfferDriver.deleteOffer,
-            expectedMockedFunctionArgs: [2],
+            expectedMockedFunctionArgs: [2]
         },
         {
             serviceFunctionName: 'addAdmin',
             serviceFunction: () => offerService.addAdmin('testAddress'),
             expectedMockedFunction: mockedOfferDriver.addAdmin,
-            expectedMockedFunctionArgs: ['testAddress'],
+            expectedMockedFunctionArgs: ['testAddress']
         },
         {
             serviceFunctionName: 'removeAdmin',
             serviceFunction: () => offerService.removeAdmin('testAddress'),
             expectedMockedFunction: mockedOfferDriver.removeAdmin,
-            expectedMockedFunctionArgs: ['testAddress'],
-        },
-    ])('should call driver $serviceFunctionName', async ({ serviceFunction, expectedMockedFunction, expectedMockedFunctionArgs }) => {
-        await serviceFunction();
+            expectedMockedFunctionArgs: ['testAddress']
+        }
+    ])(
+        'should call driver $serviceFunctionName',
+        async ({ serviceFunction, expectedMockedFunction, expectedMockedFunctionArgs }) => {
+            await serviceFunction();
 
-        expect(expectedMockedFunction).toHaveBeenCalledTimes(1);
-        expect(expectedMockedFunction).toHaveBeenNthCalledWith(1, ...expectedMockedFunctionArgs);
-    });
+            expect(expectedMockedFunction).toHaveBeenCalledTimes(1);
+            expect(expectedMockedFunction).toHaveBeenNthCalledWith(
+                1,
+                ...expectedMockedFunctionArgs
+            );
+        }
+    );
 
     it('should get offers by company', async () => {
         mockedOfferDriver.getOfferIdsByCompany = jest.fn().mockResolvedValue([1, 2]);

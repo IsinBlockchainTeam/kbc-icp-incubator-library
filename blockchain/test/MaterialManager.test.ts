@@ -37,14 +37,22 @@ describe('MaterialManager', () => {
             expect(registeredMaterial[1]).to.be.equal(BigNumber.from(10));
             expect(registeredMaterial[2]).to.be.equal(true);
             expect(await materialManagerContract.getMaterialExists(1)).to.be.equal(true);
-            await expect(tx).to.emit(materialManagerContract, 'MaterialRegistered').withArgs(registeredMaterial[0], registeredMaterial[1]);
+            await expect(tx)
+                .to.emit(materialManagerContract, 'MaterialRegistered')
+                .withArgs(registeredMaterial[0], registeredMaterial[1]);
 
-            expect(await materialManagerContract.getMaterialIdsOfCreator(admin.address)).deep.equal([BigNumber.from(1)]);
-            expect(await materialManagerContract.getMaterialIdsOfCreator(other.address)).deep.equal([]);
+            expect(await materialManagerContract.getMaterialIdsOfCreator(admin.address)).deep.equal(
+                [BigNumber.from(1)]
+            );
+            expect(await materialManagerContract.getMaterialIdsOfCreator(other.address)).deep.equal(
+                []
+            );
         });
 
         it('should register a Material - FAIL(MaterialManager: Product category does not exist)', async () => {
-            await expect(materialManagerContract.registerMaterial(11)).to.be.revertedWith('MaterialManager: Product category does not exist');
+            await expect(materialManagerContract.registerMaterial(11)).to.be.revertedWith(
+                'MaterialManager: Product category does not exist'
+            );
         });
     });
 
@@ -58,20 +66,34 @@ describe('MaterialManager', () => {
             expect(registeredMaterial[0]).to.be.equal(BigNumber.from(1));
             expect(registeredMaterial[1]).to.be.equal(BigNumber.from(2));
             expect(registeredMaterial[2]).to.be.equal(true);
-            await expect(tx).to.emit(materialManagerContract, 'MaterialUpdated').withArgs(registeredMaterial[0]);
+            await expect(tx)
+                .to.emit(materialManagerContract, 'MaterialUpdated')
+                .withArgs(registeredMaterial[0]);
         });
     });
 
     describe('roles', () => {
         it('should add and remove admin roles', async () => {
             await materialManagerContract.connect(admin).addAdmin(other.address);
-            expect(await materialManagerContract.hasRole(await materialManagerContract.ADMIN_ROLE(), other.address)).to.equal(true);
+            expect(
+                await materialManagerContract.hasRole(
+                    await materialManagerContract.ADMIN_ROLE(),
+                    other.address
+                )
+            ).to.equal(true);
             await materialManagerContract.connect(admin).removeAdmin(other.address);
-            expect(await materialManagerContract.hasRole(await materialManagerContract.ADMIN_ROLE(), other.address)).to.equal(false);
+            expect(
+                await materialManagerContract.hasRole(
+                    await materialManagerContract.ADMIN_ROLE(),
+                    other.address
+                )
+            ).to.equal(false);
         });
 
         it('should fail to add and remove admin roles if the caller is not an admin', async () => {
-            await expect(materialManagerContract.connect(other).addAdmin(admin.address)).to.be.revertedWith('MaterialManager: Caller is not the admin');
+            await expect(
+                materialManagerContract.connect(other).addAdmin(admin.address)
+            ).to.be.revertedWith('MaterialManager: Caller is not the admin');
         });
     });
 });

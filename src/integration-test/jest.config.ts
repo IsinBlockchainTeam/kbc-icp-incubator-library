@@ -20,9 +20,7 @@ export default {
     collectCoverage: true,
 
     // An array of glob patterns indicating a set of files for which coverage information should be collected
-    collectCoverageFrom: [
-        '<rootDir>/*.test.ts',
-    ],
+    collectCoverageFrom: ['<rootDir>/*.test.ts'],
 
     // The directory where Jest should output its coverage files
     coverageDirectory: 'coverage',
@@ -42,13 +40,13 @@ export default {
     coverageProvider: 'v8',
 
     transform: {
-        '.(ts|tsx)': 'ts-jest',
+        '.(ts|tsx)': 'ts-jest'
     },
 
     globals: {
         'ts-jest': {
-            compiler: 'ttypescript',
-        },
+            compiler: 'ttypescript'
+        }
     },
 
     testSequencer: '<rootDir>/sequencer.js',
@@ -145,9 +143,7 @@ export default {
     // runner: "jest-runner",
 
     // The paths to modules that run some code to configure or set up the testing environment before each test
-    setupFiles: [
-        '<rootDir>/../ts-config.ts',
-    ],
+    setupFiles: ['<rootDir>/../ts-config.ts'],
 
     // A list of paths to modules that run some code to configure or set up the testing framework before each test
     // setupFilesAfterEnv: [],
@@ -169,7 +165,7 @@ export default {
 
     // The glob patterns Jest uses to detect test files
     testMatch: [
-        '<rootDir>/*.test.ts',
+        '<rootDir>/*.test.ts'
         //   "**/__tests__/**/*.[jt]s?(x)",
         //   "**/?(*.)+(spec|test).[tj]s?(x)"
     ],
@@ -207,7 +203,7 @@ export default {
     // unmockedModulePathPatterns: undefined,
 
     // Indicates whether each individual test should be reported during the run
-    verbose: true,
+    verbose: true
 
     // An array of regexp patterns that are matched against all source file paths before re-running tests in watch mode
     // watchPathIgnorePatterns: [],

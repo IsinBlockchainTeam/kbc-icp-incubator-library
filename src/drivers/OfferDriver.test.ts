@@ -7,7 +7,7 @@ import {
     OfferManager,
     OfferManager__factory,
     ProductCategoryManager,
-    ProductCategoryManager__factory,
+    ProductCategoryManager__factory
 } from '../smart-contracts';
 import { EntityBuilder } from '../utils/EntityBuilder';
 import { Offer } from '../entities/Offer';
@@ -24,7 +24,7 @@ describe('OfferDriver', () => {
         name: 'category1',
         quality: 85,
         description: 'description',
-        exists: true,
+        exists: true
     } as ProductCategoryManager.ProductCategoryStructOutput;
 
     let mockedSigner: Signer;
@@ -58,18 +58,22 @@ describe('OfferDriver', () => {
 
     beforeAll(() => {
         mockedWriteFunction.mockResolvedValue({
-            wait: mockedWait,
+            wait: mockedWait
         });
         mockedReadFunction.mockResolvedValue({
-            toNumber: jest.fn(),
+            toNumber: jest.fn()
         });
         mockedReadStringFunction.mockResolvedValue('test');
-        mockedRegisterSupplier.mockReturnValue(Promise.resolve({
-            wait: mockedWait.mockReturnValue({ events: [{ event: 'OfferSupplierRegistered' }] }),
-        }));
-        mockedRegisterOffer.mockReturnValue(Promise.resolve({
-            wait: mockedWait.mockReturnValue({ events: [{ event: 'OfferRegistered' }] }),
-        }));
+        mockedRegisterSupplier.mockReturnValue(
+            Promise.resolve({
+                wait: mockedWait.mockReturnValue({ events: [{ event: 'OfferSupplierRegistered' }] })
+            })
+        );
+        mockedRegisterOffer.mockReturnValue(
+            Promise.resolve({
+                wait: mockedWait.mockReturnValue({ events: [{ event: 'OfferRegistered' }] })
+            })
+        );
         mockedDecodeEventLog.mockReturnValue({ id: BigNumber.from(0) });
 
         mockedContract = createMock<OfferManager>({
@@ -92,35 +96,31 @@ describe('OfferDriver', () => {
                 OfferDeleted: mockedOfferDeletedEventFilter,
                 OfferSupplierRegistered: mockedOfferSupplierRegisteredEventFilter,
                 OfferSupplierUpdated: mockedOfferSupplierUpdatedEventFilter,
-                OfferSupplierDeleted: mockedOfferSupplierDeletedEventFilter,
-            },
+                OfferSupplierDeleted: mockedOfferSupplierDeletedEventFilter
+            }
         });
 
         const mockedProductCategoryContract = createMock<ProductCategoryManager>({
-            getProductCategory: mockedGetProductCategory,
+            getProductCategory: mockedGetProductCategory
         });
 
         mockedOfferConnect.mockReturnValue(mockedContract);
         const mockedOfferManager = createMock<OfferManager>({
-            connect: mockedOfferConnect,
+            connect: mockedOfferConnect
         });
         mockedProductCategoryManagerConnect.mockReturnValue(mockedProductCategoryContract);
         const mockedProductCategoryManagerContract = createMock<ProductCategoryManager>({
-            connect: mockedProductCategoryManagerConnect,
+            connect: mockedProductCategoryManagerConnect
         });
-        jest.spyOn(OfferManager__factory, 'connect')
-            .mockReturnValue(mockedOfferManager);
-        jest.spyOn(ProductCategoryManager__factory, 'connect')
-            .mockReturnValue(mockedProductCategoryManagerContract);
+        jest.spyOn(OfferManager__factory, 'connect').mockReturnValue(mockedOfferManager);
+        jest.spyOn(ProductCategoryManager__factory, 'connect').mockReturnValue(
+            mockedProductCategoryManagerContract
+        );
 
         buildOfferSpy.mockReturnValue(mockedOffer);
 
         mockedSigner = createMock<Signer>();
-        offerDriver = new OfferDriver(
-            mockedSigner,
-            testAddress,
-            Wallet.createRandom().address,
-        );
+        offerDriver = new OfferDriver(mockedSigner, testAddress, Wallet.createRandom().address);
     });
 
     afterAll(() => {
@@ -132,17 +132,26 @@ describe('OfferDriver', () => {
             await offerDriver.registerSupplier(companyOwner.address, companyNames[0]);
 
             expect(mockedRegisterSupplier).toHaveBeenCalledTimes(1);
-            expect(mockedRegisterSupplier).toHaveBeenNthCalledWith(1, companyOwner.address, companyNames[0]);
+            expect(mockedRegisterSupplier).toHaveBeenNthCalledWith(
+                1,
+                companyOwner.address,
+                companyNames[0]
+            );
             expect(mockedWait).toHaveBeenCalledTimes(1);
 
             expect(mockedContract.registerSupplier).toHaveBeenCalledTimes(1);
-            expect(mockedContract.registerSupplier).toHaveBeenNthCalledWith(1, companyOwner.address, companyNames[0]);
+            expect(mockedContract.registerSupplier).toHaveBeenNthCalledWith(
+                1,
+                companyOwner.address,
+                companyNames[0]
+            );
         });
 
         it('should call and wait for register a supplier - transaction fails', async () => {
             mockedRegisterSupplier.mockRejectedValueOnce(new Error(errorMessage));
 
-            const fn = async () => offerDriver.registerSupplier(companyOwner.address, companyNames[0]);
+            const fn = async () =>
+                offerDriver.registerSupplier(companyOwner.address, companyNames[0]);
             await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
 
@@ -161,7 +170,11 @@ describe('OfferDriver', () => {
             expect(mockedWait).toHaveBeenCalledTimes(1);
 
             expect(mockedContract.registerOffer).toHaveBeenCalledTimes(1);
-            expect(mockedContract.registerOffer).toHaveBeenNthCalledWith(1, companyOwner.address, 1);
+            expect(mockedContract.registerOffer).toHaveBeenNthCalledWith(
+                1,
+                companyOwner.address,
+                1
+            );
         });
 
         it('should call and wait for register an offer - transaction fails', async () => {
@@ -197,18 +210,25 @@ describe('OfferDriver', () => {
             await offerDriver.getOfferIdsByCompany(companyOwner.address);
 
             expect(mockedContract.getOfferIdsByCompany).toHaveBeenCalledTimes(1);
-            expect(mockedContract.getOfferIdsByCompany).toHaveBeenNthCalledWith(1, companyOwner.address);
+            expect(mockedContract.getOfferIdsByCompany).toHaveBeenNthCalledWith(
+                1,
+                companyOwner.address
+            );
         });
 
         it('should get the offers id by company - transaction fails', async () => {
-            mockedContract.getOfferIdsByCompany = jest.fn().mockRejectedValue(new Error(errorMessage));
+            mockedContract.getOfferIdsByCompany = jest
+                .fn()
+                .mockRejectedValue(new Error(errorMessage));
 
             const fn = async () => offerDriver.getOfferIdsByCompany(companyOwner.address);
             await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
 
         it('should get the offers id by company - FAIL(Not an address)', async () => {
-            await expect(offerDriver.getOfferIdsByCompany('0xaddress')).rejects.toThrow(new Error('Not an address'));
+            await expect(offerDriver.getOfferIdsByCompany('0xaddress')).rejects.toThrow(
+                new Error('Not an address')
+            );
         });
     });
 
@@ -219,7 +239,11 @@ describe('OfferDriver', () => {
 
             expect(resp).toEqual(companyNames[0]);
             expect(mockedContract.getSupplierName).toHaveBeenCalledTimes(1);
-            expect(mockedContract.getSupplierName).toHaveBeenNthCalledWith(1, companyOwner.address, { blockTag: undefined });
+            expect(mockedContract.getSupplierName).toHaveBeenNthCalledWith(
+                1,
+                companyOwner.address,
+                { blockTag: undefined }
+            );
         });
 
         it('should get the supplier name - transaction fails', async () => {
@@ -230,7 +254,9 @@ describe('OfferDriver', () => {
         });
 
         it('should get the supplier name - FAIL(Not an address)', async () => {
-            await expect(offerDriver.getSupplierName('0xaddress')).rejects.toThrow(new Error('Not an address'));
+            await expect(offerDriver.getSupplierName('0xaddress')).rejects.toThrow(
+                new Error('Not an address')
+            );
         });
     });
 
@@ -268,14 +294,19 @@ describe('OfferDriver', () => {
             await offerDriver.updateSupplier(companyOwner.address, companyNames[1]);
 
             expect(mockedContract.updateSupplier).toHaveBeenCalledTimes(1);
-            expect(mockedContract.updateSupplier).toHaveBeenNthCalledWith(1, companyOwner.address, companyNames[1]);
+            expect(mockedContract.updateSupplier).toHaveBeenNthCalledWith(
+                1,
+                companyOwner.address,
+                companyNames[1]
+            );
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 
         it('should update a supplier - transaction fails', async () => {
             mockedContract.updateSupplier = jest.fn().mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => offerDriver.updateSupplier(companyOwner.address, companyNames[1]);
+            const fn = async () =>
+                offerDriver.updateSupplier(companyOwner.address, companyNames[1]);
             await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
 
@@ -342,10 +373,7 @@ describe('OfferDriver', () => {
             await offerDriver.addAdmin(address);
 
             expect(mockedContract.addAdmin).toHaveBeenCalledTimes(1);
-            expect(mockedContract.addAdmin).toHaveBeenNthCalledWith(
-                1,
-                address,
-            );
+            expect(mockedContract.addAdmin).toHaveBeenNthCalledWith(1, address);
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 
@@ -371,10 +399,7 @@ describe('OfferDriver', () => {
             await offerDriver.removeAdmin(address);
 
             expect(mockedContract.removeAdmin).toHaveBeenCalledTimes(1);
-            expect(mockedContract.removeAdmin).toHaveBeenNthCalledWith(
-                1,
-                address,
-            );
+            expect(mockedContract.removeAdmin).toHaveBeenNthCalledWith(1, address);
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 

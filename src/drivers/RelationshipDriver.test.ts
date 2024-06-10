@@ -29,14 +29,16 @@ describe('RelationshipDriver', () => {
 
     beforeAll(() => {
         mockedWriteFunction.mockResolvedValue({
-            wait: mockedWait,
+            wait: mockedWait
         });
         mockedReadFunction.mockResolvedValue({
-            toNumber: jest.fn(),
+            toNumber: jest.fn()
         });
-        mockedRegisterRelationship.mockReturnValue(Promise.resolve({
-            wait: mockedWait.mockReturnValue({ events: [{ event: 'RelationshipRegistered' }] }),
-        }));
+        mockedRegisterRelationship.mockReturnValue(
+            Promise.resolve({
+                wait: mockedWait.mockReturnValue({ events: [{ event: 'RelationshipRegistered' }] })
+            })
+        );
         mockedDecodeEventLog.mockReturnValue({ id: BigNumber.from(0) });
 
         mockedContract = createMock<RelationshipManager>({
@@ -46,23 +48,22 @@ describe('RelationshipDriver', () => {
             getRelationshipIdsByCompany: mockedReadFunction,
             addAdmin: mockedWriteFunction,
             removeAdmin: mockedWriteFunction,
-            interface: { decodeEventLog: mockedDecodeEventLog },
+            interface: { decodeEventLog: mockedDecodeEventLog }
         });
 
         mockedRelationshipConnect.mockReturnValue(mockedContract);
         const mockedRelationshipManager = createMock<RelationshipManager>({
-            connect: mockedRelationshipConnect,
+            connect: mockedRelationshipConnect
         });
-        jest.spyOn(RelationshipManager__factory, 'connect').mockReturnValue(mockedRelationshipManager);
+        jest.spyOn(RelationshipManager__factory, 'connect').mockReturnValue(
+            mockedRelationshipManager
+        );
 
         const buildRelationshipSpy = jest.spyOn(EntityBuilder, 'buildRelationship');
         buildRelationshipSpy.mockReturnValue(mockedRelationship);
 
         mockedSigner = createMock<Signer>();
-        relationshipDriver = new RelationshipDriver(
-            mockedSigner,
-            testAddress,
-        );
+        relationshipDriver = new RelationshipDriver(mockedSigner, testAddress);
     });
 
     afterAll(() => {
@@ -71,7 +72,12 @@ describe('RelationshipDriver', () => {
 
     describe('registerRelationship', () => {
         it('should call and wait for register relationship', async () => {
-            await relationshipDriver.registerRelationship(companyA.address, companyB.address, now, new Date('2030-10-10'));
+            await relationshipDriver.registerRelationship(
+                companyA.address,
+                companyB.address,
+                now,
+                new Date('2030-10-10')
+            );
 
             expect(mockedRegisterRelationship).toHaveBeenCalledTimes(1);
             expect(mockedRegisterRelationship).toHaveBeenNthCalledWith(
@@ -79,7 +85,7 @@ describe('RelationshipDriver', () => {
                 companyA.address,
                 companyB.address,
                 now.getTime(),
-                new Date('2030-10-10').getTime(),
+                new Date('2030-10-10').getTime()
             );
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
@@ -93,7 +99,7 @@ describe('RelationshipDriver', () => {
                 companyA.address,
                 companyB.address,
                 now.getTime(),
-                0,
+                0
             );
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
@@ -101,17 +107,20 @@ describe('RelationshipDriver', () => {
         it('should call and wait for register relationship - transaction fails', async () => {
             mockedRegisterRelationship.mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => relationshipDriver.registerRelationship(companyA.address, companyB.address, now);
+            const fn = async () =>
+                relationshipDriver.registerRelationship(companyA.address, companyB.address, now);
             await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
 
         it('should call and wait for register relationship - FAIL (Company A not an address)', async () => {
-            const fn = async () => relationshipDriver.registerRelationship('0xaddress', companyB.address, now);
+            const fn = async () =>
+                relationshipDriver.registerRelationship('0xaddress', companyB.address, now);
             await expect(fn).rejects.toThrow(new Error('Company A not an address'));
         });
 
         it('should call and wait for register relationship - FAIL (Company B not an address)', async () => {
-            const fn = async () => relationshipDriver.registerRelationship(companyA.address, '0xaddress', now);
+            const fn = async () =>
+                relationshipDriver.registerRelationship(companyA.address, '0xaddress', now);
             await expect(fn).rejects.toThrow(new Error('Company B not an address'));
         });
     });
@@ -123,7 +132,9 @@ describe('RelationshipDriver', () => {
         });
 
         it('should get the relationship counter ids - transaction fails', async () => {
-            mockedContract.getRelationshipCounter = jest.fn().mockRejectedValue(new Error(errorMessage));
+            mockedContract.getRelationshipCounter = jest
+                .fn()
+                .mockRejectedValue(new Error(errorMessage));
 
             const fn = async () => relationshipDriver.getRelationshipCounter();
             await expect(fn).rejects.toThrow(new Error(errorMessage));
@@ -139,14 +150,13 @@ describe('RelationshipDriver', () => {
             expect(resp).toEqual(mockedRelationship);
 
             expect(mockedContract.getRelationshipInfo).toHaveBeenCalledTimes(1);
-            expect(mockedContract.getRelationshipInfo).toHaveBeenNthCalledWith(
-                1,
-                1,
-            );
+            expect(mockedContract.getRelationshipInfo).toHaveBeenNthCalledWith(1, 1);
         });
 
         it('should retrieve relationship - transaction fails', async () => {
-            mockedContract.getRelationshipInfo = jest.fn().mockRejectedValue(new Error(errorMessage));
+            mockedContract.getRelationshipInfo = jest
+                .fn()
+                .mockRejectedValue(new Error(errorMessage));
 
             const fn = async () => relationshipDriver.getRelationshipInfo(1);
             await expect(fn).rejects.toThrow(new Error(errorMessage));
@@ -155,16 +165,23 @@ describe('RelationshipDriver', () => {
 
     describe('getRelationshipIdsByCompany', () => {
         it('should retrieve relationship ids by company address', async () => {
-            mockedContract.getRelationshipIdsByCompany = jest.fn().mockResolvedValue([{ toNumber: () => 1 }, { toNumber: () => 2 }]);
+            mockedContract.getRelationshipIdsByCompany = jest
+                .fn()
+                .mockResolvedValue([{ toNumber: () => 1 }, { toNumber: () => 2 }]);
 
             const resp = await relationshipDriver.getRelationshipIdsByCompany(companyB.address);
             expect(resp).toEqual([1, 2]);
             expect(mockedContract.getRelationshipIdsByCompany).toHaveBeenCalledTimes(1);
-            expect(mockedContract.getRelationshipIdsByCompany).toHaveBeenNthCalledWith(1, companyB.address);
+            expect(mockedContract.getRelationshipIdsByCompany).toHaveBeenNthCalledWith(
+                1,
+                companyB.address
+            );
         });
 
         it('should retrieve relationship ids by company address - transaction fails', async () => {
-            mockedContract.getRelationshipIdsByCompany = jest.fn().mockRejectedValue(new Error(errorMessage));
+            mockedContract.getRelationshipIdsByCompany = jest
+                .fn()
+                .mockRejectedValue(new Error(errorMessage));
 
             const fn = async () => relationshipDriver.getRelationshipIdsByCompany(companyB.address);
             await expect(fn).rejects.toThrow(new Error(errorMessage));
@@ -177,10 +194,7 @@ describe('RelationshipDriver', () => {
             await relationshipDriver.addAdmin(address);
 
             expect(mockedContract.addAdmin).toHaveBeenCalledTimes(1);
-            expect(mockedContract.addAdmin).toHaveBeenNthCalledWith(
-                1,
-                address,
-            );
+            expect(mockedContract.addAdmin).toHaveBeenNthCalledWith(1, address);
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 
@@ -206,10 +220,7 @@ describe('RelationshipDriver', () => {
             await relationshipDriver.removeAdmin(address);
 
             expect(mockedContract.removeAdmin).toHaveBeenCalledTimes(1);
-            expect(mockedContract.removeAdmin).toHaveBeenNthCalledWith(
-                1,
-                address,
-            );
+            expect(mockedContract.removeAdmin).toHaveBeenNthCalledWith(1, address);
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 

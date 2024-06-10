@@ -50,7 +50,14 @@ export class OrderLineRequest extends LineRequest {
 export class OrderLine extends Line {
     private _price: OrderLinePrice;
 
-    constructor(id: number, material: Material | undefined, productCategory: ProductCategory, quantity: number, unit: string, price: OrderLinePrice) {
+    constructor(
+        id: number,
+        material: Material | undefined,
+        productCategory: ProductCategory,
+        quantity: number,
+        unit: string,
+        price: OrderLinePrice
+    ) {
         super(id, material, productCategory, quantity, unit);
         this._price = price;
     }
@@ -97,7 +104,12 @@ export class OrderTrade extends Trade {
     private _metadata: OrderTradeMetadata | undefined;
 
     constructor(
-        tradeId: number, supplier: string, customer: string, commissioner: string, externalUrl: string, lines: OrderLine[],
+        tradeId: number,
+        supplier: string,
+        customer: string,
+        commissioner: string,
+        externalUrl: string,
+        lines: OrderLine[],
         hasSupplierSigned: boolean,
         hasCommissionerSigned: boolean,
         paymentDeadline: number,
@@ -109,7 +121,7 @@ export class OrderTrade extends Trade {
         agreedAmount: number,
         tokenAddress: string,
         escrow?: string,
-        metadata?: OrderTradeMetadata,
+        metadata?: OrderTradeMetadata
     ) {
         super(tradeId, supplier, customer, commissioner, externalUrl, lines);
         this._hasSupplierSigned = hasSupplierSigned;
@@ -123,10 +135,8 @@ export class OrderTrade extends Trade {
         this._agreedAmount = agreedAmount;
         this._tokenAddress = tokenAddress;
 
-        if (escrow)
-            this._escrow = escrow;
-        if (metadata)
-            this._metadata = metadata;
+        if (escrow) this._escrow = escrow;
+        if (metadata) this._metadata = metadata;
     }
 
     get hasSupplierSigned(): boolean {

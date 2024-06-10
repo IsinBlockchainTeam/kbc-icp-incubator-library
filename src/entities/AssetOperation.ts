@@ -16,7 +16,15 @@ export class AssetOperation {
 
     private _processTypes: string[];
 
-    constructor(id: number, name: string, inputMaterials: Material[], outputMaterial: Material, latitude: string, longitude: string, processTypes: string[]) {
+    constructor(
+        id: number,
+        name: string,
+        inputMaterials: Material[],
+        outputMaterial: Material,
+        latitude: string,
+        longitude: string,
+        processTypes: string[]
+    ) {
         this._id = id;
         this._name = name;
         this._inputMaterials = inputMaterials;
@@ -61,9 +69,10 @@ export class AssetOperation {
     get type(): AssetOperationType {
         if (this.inputMaterials.length === 0 || !this.outputMaterial)
             throw new Error('Invalid asset operation');
-        return (this.inputMaterials.length === 1 && (this.inputMaterials[0].id === this.outputMaterial.id)) ?
-            AssetOperationType.CONSOLIDATION :
-            AssetOperationType.TRANSFORMATION;
+        return this.inputMaterials.length === 1 &&
+            this.inputMaterials[0].id === this.outputMaterial.id
+            ? AssetOperationType.CONSOLIDATION
+            : AssetOperationType.TRANSFORMATION;
     }
 
     get latitude(): string {

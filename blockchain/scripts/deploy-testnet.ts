@@ -6,17 +6,30 @@ import { ContractName } from '../utils/constants';
 
 dotenv.config({ path: '../.env' });
 
-const serial = (funcs: Function[]) => funcs.reduce((promise: Promise<any>, func: Function) => promise.then((result: any) => func()
-    .then(Array.prototype.concat.bind(result))), Promise.resolve([]));
+const serial = (funcs: Function[]) =>
+    funcs.reduce(
+        (promise: Promise<any>, func: Function) =>
+            promise.then((result: any) => func().then(Array.prototype.concat.bind(result))),
+        Promise.resolve([])
+    );
 
-async function deploy(contractName: string, contractArgs?: any[], contractAliasName?: string): Promise<void> {
+async function deploy(
+    contractName: string,
+    contractArgs?: any[],
+    contractAliasName?: string
+): Promise<void> {
     const ContractFactory = await ethers.getContractFactory(contractName);
     const contract = await ContractFactory.deploy(...(contractArgs || []));
     await contract.deployed();
-    console.log(`New ${contractAliasName || contractName} contract deployed, address ${contract.address}`);
+    console.log(
+        `New ${contractAliasName || contractName} contract deployed, address ${contract.address}`
+    );
 }
 
-async function getAttachedContract(contractName: string, contractAddress: string): Promise<Contract> {
+async function getAttachedContract(
+    contractName: string,
+    contractAddress: string
+): Promise<Contract> {
     const ContractFactory = await ethers.getContractFactory(contractName);
     return ContractFactory.attach(contractAddress);
 }
@@ -76,16 +89,15 @@ serial([
     //         process.env.ESCROW_COMMISSIONER_FEE || 1,
     //     ],
     // ),
-    () => deploy(
-        ContractName.TRADE_MANAGER, [
+    () =>
+        deploy(ContractName.TRADE_MANAGER, [
             '0x649e401eA5b4191CbBc6e6Aa66a64AFFd35b5294', // PRODUCT_CATEGORY_MANAGER
             '0x1179C8F52731cc3469c854091E9c6AD3414df0D9', // MATERIAL_MANAGER
             '0x91315bC14cF4e763D81C3cDe8Fe88272d411CAf5', // DOCUMENT_MANAGER
             '0x4788F5a460A4b27Cd90fC9F155164Be1eD39F729', // EnumerableFiatManager
             '', // TODO: da aggiornare con EnumerableUnitManager
-            '0x0700e882cDE2F340cA494D718748b3910fef45d6', // ESCROW_MANAGER
-        ],
-    ),
+            '0x0700e882cDE2F340cA494D718748b3910fef45d6' // ESCROW_MANAGER
+        ])
     // () => deploy(ContractName.RELATIONSHIP_MANAGER, [
     //     ['0x30054880e4E2fA1082C1976cA5547cC3bd185c11'], // ContractsOwner
     // ]),
@@ -107,8 +119,7 @@ serial([
     // () => deploy(
     //     ContractName.ETHEREUM_DID_REGISTRY, [],
     // ),
-])
-    .catch((error: any) => {
-        console.error(error);
-        process.exitCode = 1;
-    });
+]).catch((error: any) => {
+    console.error(error);
+    process.exitCode = 1;
+});

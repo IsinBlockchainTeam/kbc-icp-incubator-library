@@ -6,9 +6,7 @@ export class EscrowDriver {
     private _contract: EscrowContract;
 
     constructor(signer: Signer, escrowAddress: string) {
-        this._contract = Escrow__factory
-            .connect(escrowAddress, signer.provider!)
-            .connect(signer);
+        this._contract = Escrow__factory.connect(escrowAddress, signer.provider!).connect(signer);
     }
 
     async getOwner(): Promise<string> {
@@ -45,16 +43,16 @@ export class EscrowDriver {
 
     async getState(): Promise<EscrowStatus> {
         switch (await this._contract.getState()) {
-        case 0:
-            return EscrowStatus.ACTIVE;
-        case 1:
-            return EscrowStatus.LOCKED;
-        case 2:
-            return EscrowStatus.REFUNDING;
-        case 3:
-            return EscrowStatus.CLOSED;
-        default:
-            throw new Error('Invalid state');
+            case 0:
+                return EscrowStatus.ACTIVE;
+            case 1:
+                return EscrowStatus.LOCKED;
+            case 2:
+                return EscrowStatus.REFUNDING;
+            case 3:
+                return EscrowStatus.CLOSED;
+            default:
+                throw new Error('Invalid state');
         }
     }
 

@@ -1,4 +1,4 @@
 export enum AssetOperationType {
     CONSOLIDATION,
-    TRANSFORMATION,
+    TRANSFORMATION
 }

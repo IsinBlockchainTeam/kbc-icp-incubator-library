@@ -1,3 +1,6 @@
 export enum NegotiationStatus {
-    INITIALIZED, PENDING, CONFIRMED, EXPIRED
+    INITIALIZED,
+    PENDING,
+    CONFIRMED,
+    EXPIRED
 }
