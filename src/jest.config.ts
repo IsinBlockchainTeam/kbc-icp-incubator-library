@@ -35,7 +35,7 @@ export default {
         '.dev.ts',
         '.type.ts',
         'index.ts',
-        'dist/*'
+        'dist/*',
     ],
 
     // Indicates which provider should be used to instrument code for coverage
@@ -45,9 +45,9 @@ export default {
         '.(ts|tsx)': [
             'ts-jest',
             {
-                compiler: 'ttypescript'
-            }
-        ]
+                compiler: 'ttypescript',
+            },
+        ],
     },
 
     globals: {
@@ -61,7 +61,7 @@ export default {
         '<rootDir>/smart-contracts',
         '<rootDir>/integration-test/',
         '<rootDir>/dist/',
-        '<rootDir>/types/'
+        '<rootDir>/types/',
     ],
     // A list of reporter names that Jest uses when writing coverage reports
     // coverageReporters: [
@@ -180,7 +180,7 @@ export default {
     //   "**/__tests__/**/*.[jt]s?(x)",
     //   "**/?(*.)+(spec|test).[tj]s?(x)"
     // ],
-    testMatch: ['<rootDir>/**/?(*.)+(spec|test).[t]s?(x)']
+    testMatch: ['<rootDir>/**/?(*.)+(spec|test).[t]s?(x)'],
     // An array of regexp pattern strings that are matched against all test paths, matched tests are skipped
     // testPathIgnorePatterns: [
     //   "/node_modules/"
