@@ -173,9 +173,9 @@ contract OrderTrade is Trade {
     function haveDeadlinesExpired() public view returns (bool) {
         if (getNegotiationStatus() == NegotiationStatus.CONFIRMED) {
             if ((block.timestamp > _paymentDeadline && _documentsByType[DocumentType.PAYMENT_INVOICE].length == 0) ||
-                (block.timestamp > _documentDeliveryDeadline && _documentsByType[DocumentType.SWISS_DECODE].length == 0 && _documentsByType[DocumentType.WEIGHT_CERTIFICATE].length == 0 && _documentsByType[DocumentType.FUMIGATION_CERTIFICATE].length == 0 && _documentsByType[DocumentType.PHYTOSANITARY_CERTIFICATE].length == 0 && _documentsByType[DocumentType.PREFERENTIAL_ENTRY_CERTIFICATE].length == 0 && _documentsByType[DocumentType.INSURANCE_CERTIFICATE].length == 0) ||
-                (block.timestamp > _shippingDeadline && _documentsByType[DocumentType.DELIVERY_NOTE].length == 0) ||
-                (block.timestamp > _deliveryDeadline && _documentsByType[DocumentType.BILL_OF_LADING].length == 0)
+                (block.timestamp > _documentDeliveryDeadline && _documentsByType[DocumentType.ORIGIN_SWISS_DECODE].length == 0 && _documentsByType[DocumentType.WEIGHT_CERTIFICATE].length == 0 && _documentsByType[DocumentType.FUMIGATION_CERTIFICATE].length == 0 && _documentsByType[DocumentType.PHYTOSANITARY_CERTIFICATE].length == 0 && _documentsByType[DocumentType.PREFERENTIAL_ENTRY_CERTIFICATE].length == 0 && _documentsByType[DocumentType.INSURANCE_CERTIFICATE].length == 0) ||
+                (block.timestamp > _shippingDeadline && _documentsByType[DocumentType.BILL_OF_LADING].length == 0) ||
+                (block.timestamp > _deliveryDeadline && _documentsByType[DocumentType.COMPARISON_SWISS_DECODE].length == 0)
             ) {
                 return true;
             }
@@ -186,6 +186,7 @@ contract OrderTrade is Trade {
     function enforceDeadlines() public {
         if(haveDeadlinesExpired()) {
             _hasOrderExpired = true;
+            _escrow.enableRefund();
             emit OrderExpired();
         }
     }
@@ -219,6 +220,7 @@ contract OrderTrade is Trade {
         uint256 documentsCounter = _documentManager.getDocumentsCounter();
         OrderStatus status = OrderStatus.CONTRACTING;
 
+//        TODO: va valutato anche la DELIVERY_NOTE per gli ordini o solamente per i basic trade?
         if (getNegotiationStatus() == NegotiationStatus.CONFIRMED) status = OrderStatus.PRODUCTION;
         // TODO: gestire lo stato di trade "pagato". Capire se risulta pagato solamente nel momento in cui sono stati sbloccati tutti i fondi e l'intera transazione si è conclusa
         if (_documentsByType[DocumentType.PAYMENT_INVOICE].length > 0 && _areDocumentsApproved(_documentsByType[DocumentType.PAYMENT_INVOICE])) status = OrderStatus.PAYED;
@@ -236,7 +238,6 @@ contract OrderTrade is Trade {
     function completeTransaction() public {
         require(getOrderStatus() == OrderStatus.SHIPPED, "Transaction is not completed until the goods have not been imported has expected");
 
-//        TODO: questo metodo probabilmente non può attualmente essere chiamato in quanto questo contratto non è l'admin
         _escrow.close();
     }
 

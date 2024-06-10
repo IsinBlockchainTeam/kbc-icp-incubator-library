@@ -56,7 +56,7 @@ contract EscrowManager is AccessControl {
         uint256 id = _counter.current() + 1;
         _counter.increment();
 
-        Escrow newEscrow = new Escrow(address(this), payee, purchaser, agreedAmount, duration, tokenAddress, _commissioner, _baseFee, _percentageFee);
+        Escrow newEscrow = new Escrow(_msgSender(), payee, purchaser, agreedAmount, duration, tokenAddress, _commissioner, _baseFee, _percentageFee);
         _escrows[id] = newEscrow;
         _escrowsOfPurchaser[purchaser].push(id);
         newEscrow.addAdmin(_admin);
