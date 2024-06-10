@@ -20,7 +20,7 @@ docs/*
 !docs/.gitinclude
 pretty_docs
 docs
-.npmrc
+blockchain/.npmrc
 
 .npm
 .idea

@@ -4,7 +4,7 @@
 **/dist
 .git
 .env
-.npmrc
+blockchain/.npmrc
 
 # TODO: understand why with this file, npm install doesn't work (also npm ci command doesn't work..)
 **/package-lock.json

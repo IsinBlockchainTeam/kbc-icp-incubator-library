@@ -6,30 +6,17 @@ import { ContractName } from '../utils/constants';
 
 dotenv.config({ path: '../.env' });
 
-const serial = (funcs: Function[]) =>
-    funcs.reduce(
-        (promise: Promise<any>, func: Function) =>
-            promise.then((result: any) => func().then(Array.prototype.concat.bind(result))),
-        Promise.resolve([])
-    );
+const serial = (funcs: Function[]) => funcs.reduce((promise: Promise<any>, func: Function) => promise.then((result: any) => func()
+    .then(Array.prototype.concat.bind(result))), Promise.resolve([]));
 
-async function deploy(
-    contractName: string,
-    contractArgs?: any[],
-    contractAliasName?: string
-): Promise<void> {
+async function deploy(contractName: string, contractArgs?: any[], contractAliasName?: string): Promise<void> {
     const ContractFactory = await ethers.getContractFactory(contractName);
     const contract = await ContractFactory.deploy(...(contractArgs || []));
     await contract.deployed();
-    console.log(
-        `New ${contractAliasName || contractName} contract deployed, address ${contract.address}`
-    );
+    console.log(`New ${contractAliasName || contractName} contract deployed, address ${contract.address}`);
 }
 
-async function getAttachedContract(
-    contractName: string,
-    contractAddress: string
-): Promise<Contract> {
+async function getAttachedContract(contractName: string, contractAddress: string): Promise<Contract> {
     const ContractFactory = await ethers.getContractFactory(contractName);
     return ContractFactory.attach(contractAddress);
 }
@@ -119,7 +106,8 @@ serial([
     // () => deploy(
     //     ContractName.ETHEREUM_DID_REGISTRY, [],
     // ),
-]).catch((error: any) => {
-    console.error(error);
-    process.exitCode = 1;
-});
+])
+    .catch((error: any) => {
+        console.error(error);
+        process.exitCode = 1;
+    });
