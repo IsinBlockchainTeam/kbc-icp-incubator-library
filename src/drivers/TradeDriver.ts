@@ -1,9 +1,9 @@
 import { Signer, utils } from 'ethers';
 import { Trade as TradeContract, Trade__factory } from '../smart-contracts';
-import { TradeStatus } from '../types/TradeStatus';
 import { DocumentType } from '../entities/DocumentInfo';
 import { TradeType } from '../types/TradeType';
 import { getTradeTypeByIndex } from '../utils/utils';
+import { DocumentStatus } from '../entities/Document';
 
 export class TradeDriver {
     protected _contract: TradeContract;
@@ -27,24 +27,18 @@ export class TradeDriver {
         return this._contract.getLineExists(id);
     }
 
-    async getTradeStatus(): Promise<TradeStatus> {
-        const result = await this._contract.getTradeStatus();
-        switch (result) {
-        case 0:
-            return TradeStatus.PAYED;
-        case 1:
-            return TradeStatus.SHIPPED;
-        case 2:
-            return TradeStatus.ON_BOARD;
-        case 3:
-            return TradeStatus.CONTRACTING;
-        default:
-            throw new Error(`TradeDriver: an invalid value "${result}" for "TradeStatus" was returned by the contract`);
-        }
-    }
-
     async addDocument(documentType: DocumentType, externalUrl: string, contentHash: string): Promise<void> {
         const tx = await this._contract.addDocument(documentType, externalUrl, contentHash);
+        await tx.wait();
+    }
+
+    async updateDocument(documentId: number, externalUrl: string, contentHash: string): Promise<void> {
+        const tx = await this._contract.updateDocument(documentId, externalUrl, contentHash);
+        await tx.wait();
+    }
+
+    async validateDocument(documentId: number, status: DocumentStatus): Promise<void> {
+        const tx = await this._contract.validateDocument(documentId, status);
         await tx.wait();
     }
 
@@ -56,6 +50,20 @@ export class TradeDriver {
     async getDocumentIdsByType(documentType: DocumentType): Promise<number[]> {
         const ids = await this._contract.getDocumentIdsByType(documentType);
         return ids.map((id) => id.toNumber());
+    }
+
+    async getDocumentStatus(documentId: number): Promise<DocumentStatus> {
+        const result = await this._contract.getDocumentStatus(documentId);
+        switch (result) {
+        case 0:
+            return DocumentStatus.NOT_EVALUATED;
+        case 1:
+            return DocumentStatus.APPROVED;
+        case 2:
+            return DocumentStatus.NOT_APPROVED;
+        default:
+            throw new Error('Invalid document status');
+        }
     }
 
     async addAdmin(account: string): Promise<void> {

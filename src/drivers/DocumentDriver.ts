@@ -4,7 +4,6 @@ import { Signer, utils } from 'ethers';
 import { DocumentManager, DocumentManager__factory } from '../smart-contracts';
 import { DocumentInfo } from '../entities/DocumentInfo';
 import { EntityBuilder } from '../utils/EntityBuilder';
-import { DocumentStatus } from '../entities/Document';
 
 export class DocumentDriver {
     private _contract: DocumentManager;
@@ -18,18 +17,13 @@ export class DocumentDriver {
             .connect(signer);
     }
 
-    async registerDocument(externalUrl: string, contentHash: string): Promise<void> {
-        const tx = await this._contract.registerDocument(externalUrl, contentHash);
+    async registerDocument(externalUrl: string, contentHash: string, uploadedBy: string): Promise<void> {
+        const tx = await this._contract.registerDocument(externalUrl, contentHash, uploadedBy);
         await tx.wait();
     }
 
-    async updateDocument(documentId: number, externalUrl: string, contentHash: string): Promise<void> {
-        const tx = await this._contract.updateDocument(documentId, externalUrl, contentHash);
-        await tx.wait();
-    }
-
-    async evaluateDocument(documentId: number, status: DocumentStatus): Promise<void> {
-        const tx = await this._contract.evaluateDocument(documentId, status);
+    async updateDocument(documentId: number, externalUrl: string, contentHash: string, uploadedBy: string): Promise<void> {
+        const tx = await this._contract.updateDocument(documentId, externalUrl, contentHash, uploadedBy);
         await tx.wait();
     }
 

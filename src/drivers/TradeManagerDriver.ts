@@ -37,7 +37,7 @@ export class TradeManagerDriver {
     }
 
     async registerOrderTrade(supplier: string, customer: string, commissioner: string, externalUrl: string, metadataHash: string, paymentDeadline: number, documentDeliveryDeadline: number, arbiter: string, shippingDeadline: number, deliveryDeadline: number, agreedAmount: number, tokenAddress: string): Promise<[number, string, string]> {
-        if (!utils.isAddress(supplier) || !utils.isAddress(customer) || !utils.isAddress(commissioner) || !utils.isAddress(tokenAddress)) {
+        if (!utils.isAddress(supplier) || !utils.isAddress(customer) || !utils.isAddress(commissioner) || !utils.isAddress(tokenAddress) || !utils.isAddress(arbiter)) {
             throw new Error('Not an address');
         }
         const tx = await this._contract.registerOrderTrade(supplier, customer, commissioner, externalUrl, metadataHash, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);

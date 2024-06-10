@@ -22,6 +22,7 @@ export const URL_SEGMENTS = {
 }
 
 export const URL_SEGMENT_INDEXES = {
+    CANISTER_ID: 2,
     ORGANIZATION_ID: 4,
     TRANSACTION_ID: 6,
     FILE_NAME: 8,

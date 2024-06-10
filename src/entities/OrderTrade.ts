@@ -1,7 +1,7 @@
 import { Line, LineRequest, Trade } from './Trade';
 import { Material } from './Material';
 import { ProductCategory } from './ProductCategory';
-import {NegotiationStatus} from "../types/NegotiationStatus";
+import { NegotiationStatus } from '../types/NegotiationStatus';
 
 export class OrderLinePrice {
     private _amount: number;
@@ -123,9 +123,9 @@ export class OrderTrade extends Trade {
         this._agreedAmount = agreedAmount;
         this._tokenAddress = tokenAddress;
 
-        if(escrow)
+        if (escrow)
             this._escrow = escrow;
-        if(metadata)
+        if (metadata)
             this._metadata = metadata;
     }
 

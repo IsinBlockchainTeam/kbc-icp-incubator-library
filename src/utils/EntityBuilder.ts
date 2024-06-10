@@ -43,7 +43,7 @@ export class EntityBuilder {
     }
 
     static buildDocumentInfo(bcDocument: DocumentManager.DocumentStructOutput): DocumentInfo {
-        return new DocumentInfo(bcDocument.id.toNumber(), bcDocument.externalUrl, bcDocument.contentHash, bcDocument.status);
+        return new DocumentInfo(bcDocument.id.toNumber(), bcDocument.externalUrl, bcDocument.contentHash, bcDocument.uploadedBy);
     }
 
     static buildOffer(bcOffer: OfferManager.OfferStructOutput, bcProductCategory: ProductCategoryManager.ProductCategoryStructOutput): Offer {

@@ -51,9 +51,9 @@ it('always passes', () => {
 //             expectedMockedFunctionArgs: [1],
 //         },
 //         {
-//             serviceFunctionName: 'getTradeStatus',
-//             serviceFunction: () => tradeService.getTradeStatus(),
-//             expectedMockedFunction: mockedTradeDriver.getTradeStatus,
+//             serviceFunctionName: 'getOrderStatus',
+//             serviceFunction: () => tradeService.getOrderStatus(),
+//             expectedMockedFunction: mockedTradeDriver.getOrderStatus,
 //             expectedMockedFunctionArgs: [],
 //         },
 //         // TODO: fix this test

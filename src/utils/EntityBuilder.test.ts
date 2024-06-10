@@ -12,7 +12,6 @@ import { DocumentInfo } from '../entities/DocumentInfo';
 import { Offer } from '../entities/Offer';
 import { ProductCategory } from '../entities/ProductCategory';
 import { AssetOperation } from '../entities/AssetOperation';
-import { DocumentStatus } from '../entities/Document';
 
 describe('EntityBuilder', () => {
     describe('buildProductCategory', () => {
@@ -97,14 +96,13 @@ describe('EntityBuilder', () => {
 
     describe('buildDocument', () => {
         it('should correctly build a document', () => {
-            const bcDocument: DocumentManager.DocumentStructOutput = [BigNumber.from(0), 'external url', 'content_hash', DocumentStatus.NOT_EVALUATED, true] as DocumentManager.DocumentStructOutput;
+            const bcDocument: DocumentManager.DocumentStructOutput = [BigNumber.from(0), 'external url', 'content_hash', '0xuploader', true] as DocumentManager.DocumentStructOutput;
             bcDocument.id = BigNumber.from(0);
             bcDocument.externalUrl = 'external url';
             bcDocument.contentHash = 'content_hash';
-            bcDocument.status = DocumentStatus.NOT_EVALUATED;
             bcDocument.exists = true;
 
-            const document = new DocumentInfo(0, 'external url', 'content_hash', DocumentStatus.NOT_EVALUATED);
+            const document = new DocumentInfo(0, 'external url', 'content_hash', '0xuploader');
             expect(EntityBuilder.buildDocumentInfo(bcDocument)).toEqual(document);
         });
     });

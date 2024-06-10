@@ -4,6 +4,7 @@ import { NegotiationStatus } from '../types/NegotiationStatus';
 import { OrderLine, OrderLineRequest, OrderTrade, OrderTradeMetadata } from '../entities/OrderTrade';
 import { IConcreteTradeService } from './IConcreteTradeService';
 import FileHelpers from '../utils/fileHelpers';
+import { OrderStatus } from '../types/OrderStatus';
 
 export class OrderTradeService extends TradeService implements IConcreteTradeService {
     async getTrade(blockNumber?: number): Promise<OrderTrade> {
@@ -42,6 +43,10 @@ export class OrderTradeService extends TradeService implements IConcreteTradeSer
 
     async getNegotiationStatus(): Promise<NegotiationStatus> {
         return this._tradeDriverImplementation.getNegotiationStatus();
+    }
+
+    async getOrderStatus(): Promise<OrderStatus> {
+        return this._tradeDriverImplementation.getOrderStatus();
     }
 
     async updatePaymentDeadline(paymentDeadline: number): Promise<void> {

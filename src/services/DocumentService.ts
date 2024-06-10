@@ -1,6 +1,6 @@
 import { DocumentDriver } from '../drivers/DocumentDriver';
 import { DocumentInfo, DocumentType } from '../entities/DocumentInfo';
-import { Document, DocumentStatus, TransactionLine } from '../entities/Document';
+import { Document, TransactionLine } from '../entities/Document';
 import { ICPFileDriver } from '../drivers/ICPFileDriver';
 import FileHelpers from '../utils/fileHelpers';
 
@@ -14,16 +14,12 @@ export class DocumentService {
         this._icpFileDriver = icpFileDriver;
     }
 
-    async registerDocument(externalUrl: string, contentHash: string): Promise<void> {
-        return this._documentDriver.registerDocument(externalUrl, contentHash);
+    async registerDocument(externalUrl: string, contentHash: string, uploadedBy: string): Promise<void> {
+        return this._documentDriver.registerDocument(externalUrl, contentHash, uploadedBy);
     }
 
-    async updateDocument(documentId: number, externalUrl: string, contentHash: string): Promise<void> {
-        return this._documentDriver.updateDocument(documentId, externalUrl, contentHash);
-    }
-
-    async evaluateDocument(documentId: number, status: DocumentStatus): Promise<void> {
-        return this._documentDriver.evaluateDocument(documentId, status);
+    async updateDocument(documentId: number, externalUrl: string, contentHash: string, uploadedBy: string): Promise<void> {
+        return this._documentDriver.updateDocument(documentId, externalUrl, contentHash, uploadedBy);
     }
 
     async getDocumentsCounter(): Promise<number> {

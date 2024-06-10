@@ -1,12 +1,12 @@
-import {TradeManagerDriver} from '../drivers/TradeManagerDriver';
-import {TradeType} from '../types/TradeType';
-import {OrderTradeMetadata} from '../entities/OrderTrade';
-import {Trade} from '../entities/Trade';
-import {ICPFileDriver} from "../drivers/ICPFileDriver";
-import {ICPResourceSpec} from "@blockchain-lib/common";
-import {URLStructure} from "../types/URLStructure";
-import FileHelpers from "../utils/fileHelpers";
-import {URL_SEGMENTS} from "../constants/ICP";
+import { ICPResourceSpec } from '@blockchain-lib/common';
+import { TradeManagerDriver } from '../drivers/TradeManagerDriver';
+import { TradeType } from '../types/TradeType';
+import { OrderTradeMetadata } from '../entities/OrderTrade';
+import { Trade } from '../entities/Trade';
+import { ICPFileDriver } from '../drivers/ICPFileDriver';
+import { URLStructure } from '../types/URLStructure';
+import FileHelpers from '../utils/fileHelpers';
+import { URL_SEGMENTS } from '../constants/ICP';
 
 export interface TradeManagerServiceArgs {
     tradeManagerDriver: TradeManagerDriver,
@@ -27,16 +27,12 @@ export class TradeManagerService {
     }
 
     async registerBasicTrade(supplier: string, customer: string, commissioner: string, name: string, metadata: object, urlStructure: URLStructure, delegatedOrganizationIds: number[] = []): Promise<[number, string, string]> {
-        return this.registerTrade((externalUrl: string, fileHash: string) => {
-            return this._tradeManagerDriver.registerBasicTrade(supplier, customer, commissioner, externalUrl, fileHash, name);
-        }, metadata, urlStructure, delegatedOrganizationIds);
+        return this.registerTrade((externalUrl: string, fileHash: string) => this._tradeManagerDriver.registerBasicTrade(supplier, customer, commissioner, externalUrl, fileHash, name), metadata, urlStructure, delegatedOrganizationIds);
     }
 
     async registerOrderTrade(supplier: string, customer: string, commissioner: string, paymentDeadline: number, documentDeliveryDeadline: number, arbiter: string, shippingDeadline: number, deliveryDeadline: number, agreedAmount: number, tokenAddress: string, metadata: OrderTradeMetadata, urlStructure: URLStructure, delegatedOrganizationIds: number[] = []): Promise<[number, string, string]> {
-        return this.registerTrade((externalUrl: string, fileHash: string) => {
-            return this._tradeManagerDriver.registerOrderTrade(supplier, customer, commissioner, externalUrl, fileHash,
-                paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress);
-        }, metadata, urlStructure, delegatedOrganizationIds);
+        return this.registerTrade((externalUrl: string, fileHash: string) => this._tradeManagerDriver.registerOrderTrade(supplier, customer, commissioner, externalUrl, fileHash,
+            paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress), metadata, urlStructure, delegatedOrganizationIds);
     }
 
     async getTradeCounter(): Promise<number> {
@@ -72,21 +68,21 @@ export class TradeManagerService {
     }
 
     private async registerTrade(registerCallback: RegisterTradeCallback, metadata: object, urlStructure: URLStructure, delegatedOrganizationIds: number[] = []): Promise<[number, string, string]> {
-        if(!this._icpFileDriver)
-            throw new Error("TradeManagerService: ICPFileDriver has not been set");
+        if (!this._icpFileDriver)
+            throw new Error('TradeManagerService: ICPFileDriver has not been set');
 
-        const externalUrl = FileHelpers.ensureTrailingSlash(urlStructure.prefix) +
-            URL_SEGMENTS.ORGANIZATION + urlStructure.organizationId + '/' + URL_SEGMENTS.TRANSACTION;
+        const externalUrl = `${FileHelpers.ensureTrailingSlash(urlStructure.prefix) +
+            URL_SEGMENTS.ORGANIZATION + urlStructure.organizationId}/${URL_SEGMENTS.TRANSACTION}`;
         const bytes = FileHelpers.getBytesFromObject(metadata);
         const fileHash = FileHelpers.getHash(bytes);
 
         const [newTradeId, newTradeAddress, transactionHash] = await registerCallback(externalUrl, fileHash.toString());
 
         const newExternalUrl = externalUrl + newTradeId;
-        const name = newExternalUrl + '/' + URL_SEGMENTS.FILE + "metadata.json";
+        const name = `${newExternalUrl}/${URL_SEGMENTS.FILE}metadata.json`;
         const resourceSpec: ICPResourceSpec = {
             name,
-            type: 'application/json'
+            type: 'application/json',
         };
         await this._icpFileDriver.create(bytes, resourceSpec, delegatedOrganizationIds);
 

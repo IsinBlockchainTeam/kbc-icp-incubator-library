@@ -1,12 +1,11 @@
+import { ICPResourceSpec } from '@blockchain-lib/common';
 import { TradeDriver } from '../drivers/TradeDriver';
-import { TradeStatus } from '../types/TradeStatus';
-import {DocumentInfo, DocumentType} from '../entities/DocumentInfo';
+import { DocumentInfo, DocumentType } from '../entities/DocumentInfo';
 import { TradeType } from '../types/TradeType';
-import {ICPFileDriver} from "../drivers/ICPFileDriver";
-import {DocumentDriver} from "../drivers/DocumentDriver";
-import {ICPResourceSpec} from "@blockchain-lib/common";
-import FileHelpers from "../utils/fileHelpers";
-import {TransactionLine} from "../entities/Document";
+import { ICPFileDriver } from '../drivers/ICPFileDriver';
+import { DocumentDriver } from '../drivers/DocumentDriver';
+import FileHelpers from '../utils/fileHelpers';
+import { DocumentStatus, TransactionLine } from '../entities/Document';
 
 export class TradeService {
     protected _tradeDriver: TradeDriver;
@@ -17,9 +16,9 @@ export class TradeService {
 
     constructor(tradeDriver: TradeDriver, documentDriver?: DocumentDriver, storageMetadataDriver?: ICPFileDriver) {
         this._tradeDriver = tradeDriver;
-        if(documentDriver)
+        if (documentDriver)
             this._documentDriver = documentDriver;
-        if(storageMetadataDriver)
+        if (storageMetadataDriver)
             this._icpFileDriver = storageMetadataDriver;
     }
 
@@ -35,15 +34,11 @@ export class TradeService {
         return this._tradeDriver.getLineExists(id);
     }
 
-    async getTradeStatus(): Promise<TradeStatus> {
-        return this._tradeDriver.getTradeStatus();
-    }
-
     async addDocument(documentType: DocumentType, fileContent: Uint8Array, externalUrl: string, resourceSpec: ICPResourceSpec, delegatedOrganizationIds: number[] = [], transactionLines: TransactionLine[] = [], quantity: number | undefined = undefined): Promise<void> {
-        if(!this._icpFileDriver) throw new Error("OrderTradeService: ICPFileDriver has not been set");
+        if (!this._icpFileDriver) throw new Error('OrderTradeService: ICPFileDriver has not been set');
         const fileName = FileHelpers.removeFileExtension(resourceSpec.name);
 
-        resourceSpec.name = externalUrl + "/files/" + resourceSpec.name;
+        resourceSpec.name = `${externalUrl}/files/${resourceSpec.name}`;
 
         const contentHash = FileHelpers.getHash(fileContent);
         await this._icpFileDriver.create(fileContent, resourceSpec, delegatedOrganizationIds);
@@ -56,10 +51,15 @@ export class TradeService {
         };
 
         await this._icpFileDriver.create(FileHelpers.getBytesFromObject(documentMetadata), {
-            name: externalUrl + "/files/" + fileName + "-metadata.json",
-            type: "application/json",
+            name: `${externalUrl}/files/${fileName}-metadata.json`,
+            type: 'application/json',
         }, delegatedOrganizationIds);
         return this._tradeDriver.addDocument(documentType, resourceSpec.name, contentHash.toString());
+    }
+
+    async validateDocument(documentId: number, status: DocumentStatus): Promise<void> {
+        if (status === DocumentStatus.NOT_EVALUATED) throw new Error('Cannot validate document with status NOT_EVALUATED');
+        return this._tradeDriver.validateDocument(documentId, status);
     }
 
     async getAllDocumentIds(): Promise<number[]> {
@@ -80,6 +80,10 @@ export class TradeService {
         if (!this._documentDriver) throw new Error('Cannot perform this operation without a document driver');
         const ids = await this.getDocumentIdsByType(documentType);
         return Promise.all(ids.map((id) => this._documentDriver!.getDocumentById(id)));
+    }
+
+    async getDocumentStatus(documentId: number): Promise<DocumentStatus> {
+        return this._tradeDriver.getDocumentStatus(documentId);
     }
 
     async addAdmin(account: string): Promise<void> {
