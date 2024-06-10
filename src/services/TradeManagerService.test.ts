@@ -1,14 +1,3 @@
-import { createMock } from 'ts-auto-mock';
-import { SolidStorageACR } from '@blockchain-lib/common';
-import { TradeManagerService } from './TradeManagerService';
-import { TradeManagerDriver } from '../drivers/TradeManagerDriver';
-import { BasicTrade } from '../entities/BasicTrade';
-
-import { OrderTrade } from '../entities/OrderTrade';
-import { ISolidStorageMetadataDriver } from '../drivers/ISolidStorageMetadataDriver';
-import { SolidMetadataSpec } from '../drivers/SolidMetadataDriver';
-import { StorageOperationType } from '../types/StorageOperationType';
-
 it('always passes', () => {
     expect(true).toBeTruthy();
 });

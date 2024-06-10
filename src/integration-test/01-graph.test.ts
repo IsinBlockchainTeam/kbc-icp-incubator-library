@@ -1,37 +1,3 @@
-import { JsonRpcProvider } from '@ethersproject/providers';
-import { ethers, Signer, Wallet } from 'ethers';
-import { SolidStorageACR } from '@blockchain-lib/common';
-import { TradeManagerService } from '../services/TradeManagerService';
-import { AssetOperationDriver } from '../drivers/AssetOperationDriver';
-import { AssetOperationService } from '../services/AssetOperationService';
-import { MaterialService } from '../services/MaterialService';
-import { MaterialDriver } from '../drivers/MaterialDriver';
-import { GraphService } from '../services/GraphService';
-import {
-    ASSET_OPERATION_MANAGER_CONTRACT_ADDRESS,
-    MATERIAL_MANAGER_CONTRACT_ADDRESS,
-    NETWORK,
-    PRODUCT_CATEGORY_CONTRACT_ADDRESS,
-    TRADE_MANAGER_CONTRACT_ADDRESS
-} from './config';
-import { TradeManagerDriver } from '../drivers/TradeManagerDriver';
-import { Material } from '../entities/Material';
-import { ProductCategory } from '../entities/ProductCategory';
-import { ProductCategoryService } from '../services/ProductCategoryService';
-import { ProductCategoryDriver } from '../drivers/ProductCategoryDriver';
-import { serial } from '../utils/utils';
-import { AssetOperation } from '../entities/AssetOperation';
-import { TradeType } from '../types/TradeType';
-import { Line, LineRequest, Trade } from '../entities/Trade';
-import { OrderLine, OrderLinePrice, OrderLineRequest, OrderTrade } from '../entities/OrderTrade';
-import { BasicTrade } from '../entities/BasicTrade';
-import { IConcreteTradeService } from '../services/IConcreteTradeService';
-import { BasicTradeService } from '../services/BasicTradeService';
-import { BasicTradeDriver } from '../drivers/BasicTradeDriver';
-import { OrderTradeService } from '../services/OrderTradeService';
-import { OrderTradeDriver } from '../drivers/OrderTradeDriver';
-import { SolidMetadataSpec } from '../drivers/SolidMetadataDriver';
-
 it('always passes', () => {
     expect(true).toBeTruthy();
 });

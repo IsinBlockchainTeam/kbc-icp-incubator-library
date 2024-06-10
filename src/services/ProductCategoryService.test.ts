@@ -1,5 +1,5 @@
-import { ProductCategoryDriver } from '../drivers/ProductCategoryDriver';
 import { createMock } from 'ts-auto-mock';
+import { ProductCategoryDriver } from '../drivers/ProductCategoryDriver';
 import { ProductCategoryService } from './ProductCategoryService';
 
 describe('ProductCategoryService', () => {

@@ -32,7 +32,7 @@ export class FileHelpers {
 
         const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-        return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+        return `${parseFloat((bytes / k ** i).toFixed(dm))} ${sizes[i]}`;
     }
 
     public static getHash(bytes: Uint8Array): Uint8Array {
@@ -70,7 +70,7 @@ export class FileHelpers {
     }
 
     public static ensureTrailingSlash(url: string): string {
-        return url.endsWith('/') ? url : url + '/';
+        return url.endsWith('/') ? url : `${url}/`;
     }
 }
 
