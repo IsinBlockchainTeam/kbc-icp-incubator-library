@@ -7,13 +7,13 @@
         "browser": true
     },
     "ignorePatterns": ["node_modules", "dist"],
-    "extends": ["airbnb-base"],
+    "extends": ["airbnb-base", "prettier"],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
         "ecmaVersion": "latest",
         "sourceType": "module"
     },
-    "plugins": ["@typescript-eslint", "unused-imports"],
+    "plugins": ["@typescript-eslint", "unused-imports", "prettier"],
     "settings": {
         "import/resolver": {
             "node": {
@@ -27,7 +27,6 @@
             { "default": ["field", "constructor", "method"] }
         ],
         "max-len": "off",
-        "indent": ["error", 4], // Indent with 4 spaces
         "camelcase": "off",
         "unused-imports/no-unused-imports": "error",
         "no-underscore-dangle": "off",

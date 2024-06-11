@@ -20,6 +20,7 @@ describe('TradeManager.sol', () => {
     const unitManagerAddress: string = Wallet.createRandom().address;
 
     const externalUrl: string = 'https://test.com';
+    const metadataHash: string = '0x123';
     const name: string = 'Test basic trade';
     const paymentDeadline: number = Date.now() + 200000;
     const documentDeliveryDeadline: number = 200;
@@ -557,6 +558,7 @@ describe('TradeManager.sol', () => {
                 customer.address,
                 commissioner.address,
                 externalUrl,
+                metadataHash,
                 paymentDeadline,
                 documentDeliveryDeadline,
                 arbiter.address,

@@ -1,5 +1,5 @@
-// noinspection DuplicatedCode
 /* eslint-disable @typescript-eslint/no-shadow, import/no-extraneous-dependencies */
+// noinspection DuplicatedCode
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { ContractTransaction } from 'ethers';

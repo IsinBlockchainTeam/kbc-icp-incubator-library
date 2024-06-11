@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { ethers, Signer, Wallet } from 'ethers';
-import { ICPResourceSpec } from '@blockchain-lib/common/index';
+import { ICPResourceSpec } from '@blockchain-lib/common';
 import {
     CUSTOMER_ADDRESS,
     DOCUMENT_MANAGER_CONTRACT_ADDRESS,
