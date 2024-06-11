@@ -6,7 +6,7 @@
         "target": "ESNext",
         "noImplicitAny": true,
         "outDir": "dist",
-        // "sourceMap": true,
+        // "sourceMap": true,Ok
         "inlineSourceMap": true,
         "esModuleInterop": true,
         "declaration": true, // This tells TypeScript to emit an .d.ts definitions file along with your compiled JavaScript,

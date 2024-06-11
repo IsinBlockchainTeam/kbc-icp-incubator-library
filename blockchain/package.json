@@ -11,7 +11,8 @@
         "deploy": "npx hardhat run ./scripts/deploy.ts",
         "deploy-testnet": "npx hardhat run ./scripts/deploy-testnet.ts",
         "node": "npx hardhat node --hostname 0.0.0.0",
-        "prettier": "npx prettier . --check"
+        "lint": "eslint \"{contracts,scripts,test,utils}/**/*.ts\" --fix",
+        "prettier": "npx prettier . --write"
     },
     "author": "",
     "license": "ISC",
@@ -28,8 +29,11 @@
     "dependencies": {
         "@blockchain-lib/blockchain-common": "1.1.0",
         "@defi-wonderland/smock": "2.3.5",
+        "@ethersproject/providers": "^5.7.2",
         "@openzeppelin/contracts": "4.8.2",
         "@openzeppelin/hardhat-upgrades": "1.22.1",
+        "chai": "^5.1.1",
+        "chai-as-promised": "^8.0.0",
         "dotenv": "^16.0.3",
         "ethers": "5.7.2",
         "hardhat": "2.13.0",

@@ -1,5 +1,7 @@
+/* eslint-disable no-unused-expressions */
+
 import { ethers } from 'hardhat';
-import { BigNumber, Contract } from 'ethers';
+import { BigNumber, Contract, ContractFactory } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
 import { Escrow } from '../typechain-types';
@@ -19,6 +21,7 @@ describe('Escrow.sol', () => {
     const depositAmount: number = 120;
     const baseFee: number = 20;
     const percentageFee: number = 1;
+    let EscrowContract: ContractFactory;
 
     const mineBlocks = async (n: number) => {
         await ethers.provider.send('hardhat_mine', [`0x${n.toString(16)}`]);
@@ -41,8 +44,8 @@ describe('Escrow.sol', () => {
         await tokenContract.transfer(purchaser.address, depositAmount * 2);
         await tokenContract.transfer(delegate.address, depositAmount * 2);
 
-        const Escrow = await ethers.getContractFactory(ContractName.ESCROW);
-        escrowContract = await Escrow.deploy(
+        EscrowContract = await ethers.getContractFactory(ContractName.ESCROW);
+        escrowContract = await EscrowContract.deploy(
             admin.address,
             payee.address,
             purchaser.address,
@@ -84,9 +87,9 @@ describe('Escrow.sol', () => {
         });
 
         it('should fail creating an escrow if payee is the zero address', async () => {
-            const Escrow = await ethers.getContractFactory(ContractName.ESCROW);
+            EscrowContract = await ethers.getContractFactory(ContractName.ESCROW);
             await expect(
-                Escrow.deploy(
+                EscrowContract.deploy(
                     admin.address,
                     ethers.constants.AddressZero,
                     purchaser.address,
@@ -101,9 +104,9 @@ describe('Escrow.sol', () => {
         });
 
         it('should fail creating an escrow if purchaser is the zero address', async () => {
-            const Escrow = await ethers.getContractFactory(ContractName.ESCROW);
+            EscrowContract = await ethers.getContractFactory(ContractName.ESCROW);
             await expect(
-                Escrow.deploy(
+                EscrowContract.deploy(
                     admin.address,
                     payee.address,
                     ethers.constants.AddressZero,
@@ -118,9 +121,9 @@ describe('Escrow.sol', () => {
         });
 
         it('should fail creating an escrow if token address is the zero address', async () => {
-            const Escrow = await ethers.getContractFactory(ContractName.ESCROW);
+            EscrowContract = await ethers.getContractFactory(ContractName.ESCROW);
             await expect(
-                Escrow.deploy(
+                EscrowContract.deploy(
                     admin.address,
                     payee.address,
                     purchaser.address,
@@ -135,9 +138,9 @@ describe('Escrow.sol', () => {
         });
 
         it('should fail creating an escrow if commissioner is the zero address', async () => {
-            const Escrow = await ethers.getContractFactory(ContractName.ESCROW);
+            EscrowContract = await ethers.getContractFactory(ContractName.ESCROW);
             await expect(
-                Escrow.deploy(
+                EscrowContract.deploy(
                     admin.address,
                     payee.address,
                     purchaser.address,
@@ -152,9 +155,9 @@ describe('Escrow.sol', () => {
         });
 
         it('should fail creating an escrow if percentage fee is greater than 100', async () => {
-            const Escrow = await ethers.getContractFactory(ContractName.ESCROW);
+            EscrowContract = await ethers.getContractFactory(ContractName.ESCROW);
             await expect(
-                Escrow.deploy(
+                EscrowContract.deploy(
                     admin.address,
                     payee.address,
                     purchaser.address,
@@ -475,8 +478,8 @@ describe('Escrow.sol', () => {
         });
 
         it('should pay fees equal to deposit amount if base fee is equal to deposited amount', async () => {
-            const Escrow = await ethers.getContractFactory(ContractName.ESCROW);
-            escrowContract = await Escrow.deploy(
+            EscrowContract = await ethers.getContractFactory(ContractName.ESCROW);
+            escrowContract = await EscrowContract.deploy(
                 admin.address,
                 payee.address,
                 purchaser.address,
@@ -499,8 +502,8 @@ describe('Escrow.sol', () => {
         });
 
         it('should pay fees equal to deposit amount if base fee is greater than deposited amount', async () => {
-            const Escrow = await ethers.getContractFactory(ContractName.ESCROW);
-            escrowContract = await Escrow.deploy(
+            EscrowContract = await ethers.getContractFactory(ContractName.ESCROW);
+            escrowContract = await EscrowContract.deploy(
                 admin.address,
                 payee.address,
                 purchaser.address,
@@ -523,8 +526,8 @@ describe('Escrow.sol', () => {
         });
 
         it('should pay fees equal to deposit amount if percentage fee is 100', async () => {
-            const Escrow = await ethers.getContractFactory(ContractName.ESCROW);
-            escrowContract = await Escrow.deploy(
+            EscrowContract = await ethers.getContractFactory(ContractName.ESCROW);
+            escrowContract = await EscrowContract.deploy(
                 admin.address,
                 payee.address,
                 purchaser.address,

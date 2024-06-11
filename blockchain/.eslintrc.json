@@ -55,6 +55,14 @@
         "function-paren-newline": "off",
         "function-call-argument-newline": "off",
         "object-curly-newline": "off",
-        "no-await-in-loop": "off"
+        "no-await-in-loop": "off",
+        "no-console": "off",
+        "no-restricted-syntax": [
+            "error",
+            {
+                "selector": "CallExpression[callee.object.name='console'][callee.property.name!=/^(log|warn|error|info|trace)$/]",
+                "message": "Unexpected property on console object was called"
+            }
+        ]
     }
 }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-shadow */
 import { Contract, Event } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { ethers } from 'hardhat';

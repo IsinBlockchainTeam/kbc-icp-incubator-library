@@ -1,4 +1,4 @@
-/* eslint-disable import/no-extraneous-dependencies */
+/* eslint-disable import/no-extraneous-dependencies, no-unused-expressions */
 
 import { ethers } from 'hardhat';
 import { expect } from 'chai';

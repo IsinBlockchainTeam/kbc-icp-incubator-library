@@ -73,7 +73,7 @@ describe('BasicTrade.sol', () => {
             expect(_supplier).to.equal(supplier.address);
             expect(_customer).to.equal(customer.address);
             expect(_commissioner).to.equal(commissioner.address);
-            expect(_externalUrl).to.equal(externalUrl + '1');
+            expect(_externalUrl).to.equal(`${externalUrl}1`);
             expect(_linesId).to.deep.equal([]);
             expect(_name).to.equal(name);
         });

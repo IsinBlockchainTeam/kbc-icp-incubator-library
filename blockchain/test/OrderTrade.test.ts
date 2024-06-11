@@ -1,4 +1,4 @@
-/* eslint-disable import/no-extraneous-dependencies */
+/* eslint-disable import/no-extraneous-dependencies, no-unused-expressions */
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { BigNumber, Contract, Event, Wallet } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
@@ -119,7 +119,7 @@ describe('OrderTrade.sol', () => {
             expect(_supplier).to.equal(supplier.address);
             expect(_customer).to.equal(customer.address);
             expect(_commissioner).to.equal(commissioner.address);
-            expect(_externalUrl).to.equal(externalUrl + '1');
+            expect(_externalUrl).to.equal(`${externalUrl}1`);
             expect(_linesId).to.deep.equal([]);
             expect(_hasSupplierSigned).to.equal(false);
             expect(_hasCommissionerSigned).to.equal(false);
