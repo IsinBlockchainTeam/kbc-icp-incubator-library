@@ -1,4 +1,4 @@
-/* eslint-disable no-unused-expressions */
+/* eslint-disable no-unused-expressions, import/no-extraneous-dependencies */
 
 import { ethers } from 'hardhat';
 import { BigNumber, Contract, ContractFactory } from 'ethers';
