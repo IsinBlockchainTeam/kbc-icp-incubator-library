@@ -50,8 +50,8 @@ contract TradeManager is AccessControl {
         _materialManagerAddress = materialManagerAddress;
         _documentManagerAddress = documentManagerAddress;
         _fiatManagerAddress = fiatManagerAddress;
-        _escrowManagerAddress = escrowManagerAddress;
         _unitManagerAddress = unitManagerAddress;
+        _escrowManagerAddress = escrowManagerAddress;
     }
 
     function getTradeCounter() public view returns (uint256) {

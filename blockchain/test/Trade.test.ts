@@ -14,7 +14,7 @@ describe('Trade.sol', () => {
     let documentManagerContractFake: FakeContract;
     let enumerableUnitManagerContractFake: FakeContract;
 
-    let basicTradeContract: Contract;
+    let tradeContract: Contract;
     let admin: SignerWithAddress,
         supplier: SignerWithAddress,
         customer: SignerWithAddress,
@@ -48,8 +48,8 @@ describe('Trade.sol', () => {
     });
 
     beforeEach(async () => {
-        const BasicTrade = await ethers.getContractFactory('BasicTrade');
-        basicTradeContract = await BasicTrade.deploy(
+        const Trade = await ethers.getContractFactory('Trade');
+        tradeContract = await Trade.deploy(
             1,
             productCategoryManagerContractFake.address,
             materialManagerContractFake.address,
@@ -61,23 +61,23 @@ describe('Trade.sol', () => {
             externalUrl,
             name
         );
-        await basicTradeContract.deployed();
+        await tradeContract.deployed();
     });
 
     describe('Trade status', () => {
         // it('should compute the trade status - FAIL (Trade: There are no documents related to this trade)', async () => {
         //     documentManagerContractFake.getDocumentsCounter.returns(0);
-        //     await expect(basicTradeContract.connect(supplier).getOrderStatus()).to.be.revertedWith('Trade: There are no documents related to this trade');
+        //     await expect(tradeContract.connect(supplier).getOrderStatus()).to.be.revertedWith('Trade: There are no documents related to this trade');
         // });
 
         it('should compute the trade status - CONTRACTING', async () => {
             documentManagerContractFake.getDocumentsCounter.returns(0);
-            expect(await basicTradeContract.connect(supplier).getOrderStatus()).to.equal(3);
+            expect(await tradeContract.connect(supplier).getOrderStatus()).to.equal(3);
         });
 
         it('should compute the trade status - FAIL (Trade: There are no documents with correct document type)', async () => {
             documentManagerContractFake.getDocumentsCounter.returns(2);
-            await expect(basicTradeContract.connect(customer).getOrderStatus()).to.be.revertedWith(
+            await expect(tradeContract.connect(customer).getOrderStatus()).to.be.revertedWith(
                 'Trade: There are no documents with correct document type'
             );
         });
@@ -85,7 +85,7 @@ describe('Trade.sol', () => {
 
     describe('Documents', () => {
         it('should add a document', async () => {
-            await basicTradeContract.addDocument(
+            await tradeContract.addDocument(
                 documentTypes[0],
                 'https://www.test.com',
                 'content_hash'
@@ -98,15 +98,15 @@ describe('Trade.sol', () => {
         });
 
         // it("should add a document - FAIL (Trade: Line doesn't exist)", async () => {
-        //     await expect(basicTradeContract.addDocument(1, documentTypes[0], 'https://www.test.com', 'content_hash'))
+        //     await expect(tradeContract.addDocument(1, documentTypes[0], 'https://www.test.com', 'content_hash'))
         //         .to
         //         .be
         //         .revertedWith('Trade: Line does not exist');
         // });
         //
         // it("should add a document - FAIL (Trade: Material doesn't exist)", async () => {
-        //     await basicTradeContract.addLine(1);
-        //     await expect(basicTradeContract.addDocument(1, documentTypes[0], 'https://www.test.com', 'content_hash'))
+        //     await tradeContract.addLine(1);
+        //     await expect(tradeContract.addDocument(1, documentTypes[0], 'https://www.test.com', 'content_hash'))
         //         .to
         //         .be
         //         .revertedWith('Trade: A material must be assigned before adding a document for a line');
@@ -115,12 +115,12 @@ describe('Trade.sol', () => {
         it('should get document ids by type', async () => {
             documentManagerContractFake.registerDocument.returns(1);
 
-            await basicTradeContract.addDocument(
+            await tradeContract.addDocument(
                 documentTypes[0],
                 'https://www.test.com',
                 'content_hash'
             );
-            expect(await basicTradeContract.getDocumentIdsByType(documentTypes[0])).to.deep.equal([
+            expect(await tradeContract.getDocumentIdsByType(documentTypes[0])).to.deep.equal([
                 BigNumber.from(1)
             ]);
         });
@@ -128,24 +128,24 @@ describe('Trade.sol', () => {
         it('should get document ids', async () => {
             documentManagerContractFake.registerDocument.returns(1);
 
-            await basicTradeContract.addDocument(
+            await tradeContract.addDocument(
                 documentTypes[0],
                 'https://www.test.com',
                 'content_hash'
             );
-            expect(await basicTradeContract.getAllDocumentIds()).to.deep.equal([BigNumber.from(1)]);
+            expect(await tradeContract.getAllDocumentIds()).to.deep.equal([BigNumber.from(1)]);
         });
     });
 
     describe('Admins', () => {
         it('should add an admin and later remove it', async () => {
-            await basicTradeContract.connect(admin).addAdmin(supplier.address);
-            await expect(basicTradeContract.connect(supplier).addAdmin(customer.address)).to.not.be
+            await tradeContract.connect(admin).addAdmin(supplier.address);
+            await expect(tradeContract.connect(supplier).addAdmin(customer.address)).to.not.be
                 .reverted;
 
-            await basicTradeContract.connect(admin).removeAdmin(supplier.address);
+            await tradeContract.connect(admin).removeAdmin(supplier.address);
             await expect(
-                basicTradeContract.connect(supplier).addAdmin(commissioner.address)
+                tradeContract.connect(supplier).addAdmin(commissioner.address)
             ).to.be.revertedWith('Trade: Caller is not an admin');
         });
     });
