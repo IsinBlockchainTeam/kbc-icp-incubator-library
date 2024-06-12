@@ -21,7 +21,6 @@
         }
     },
     "rules": {
-        "prettier/prettier": "error",
         "@typescript-eslint/member-ordering": [
             "error",
             { "default": ["field", "constructor", "method"] }

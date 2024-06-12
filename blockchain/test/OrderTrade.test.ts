@@ -70,25 +70,17 @@ describe('OrderTrade.sol', () => {
 
     before(async () => {
         [admin, supplier, customer, commissioner, arbiter] = await ethers.getSigners();
-        productCategoryManagerContractFake = await smock.fake(
-            ContractName.PRODUCT_CATEGORY_MANAGER
-        );
-        productCategoryManagerContractFake.getProductCategoryExists.returns(
-            (value: number) => value <= 10
-        );
+        productCategoryManagerContractFake = await smock.fake(ContractName.PRODUCT_CATEGORY_MANAGER);
+        productCategoryManagerContractFake.getProductCategoryExists.returns((value: number) => value <= 10);
         materialManagerContractFake = await smock.fake(ContractName.MATERIAL_MANAGER);
         materialManagerContractFake.getMaterialExists.returns((value: number) => value <= 10);
         materialManagerContractFake.getMaterial.returns(materialStruct);
         enumerableFiatManagerContractFake = await smock.fake(ContractName.ENUMERABLE_TYPE_MANAGER);
-        enumerableFiatManagerContractFake.contains.returns((value: string) =>
-            fiats.includes(value[0])
-        );
+        enumerableFiatManagerContractFake.contains.returns((value: string) => fiats.includes(value[0]));
         documentManagerContractFake = await smock.fake(ContractName.DOCUMENT_MANAGER);
         tokenContractFake = await smock.fake('MyToken');
         enumerableUnitManagerContractFake = await smock.fake(ContractName.ENUMERABLE_TYPE_MANAGER);
-        enumerableUnitManagerContractFake.contains.returns((value: string) =>
-            units.includes(value[0])
-        );
+        enumerableUnitManagerContractFake.contains.returns((value: string) => units.includes(value[0]));
         escrowManagerContractFake = await smock.fake('EscrowManager');
         escrowManagerContractFake.registerEscrow.returns(escrowFake);
     });
@@ -141,32 +133,21 @@ describe('OrderTrade.sol', () => {
     describe('Updates', () => {
         it('should update the payment deadline', async () => {
             const newPaymentDeadline: number = 1000;
-            const tx = await orderTradeContract
-                .connect(supplier)
-                .updatePaymentDeadline(newPaymentDeadline);
+            const tx = await orderTradeContract.connect(supplier).updatePaymentDeadline(newPaymentDeadline);
             const receipt = await tx.wait();
             const [, , , , , , , , _paymentDeadline] = await orderTradeContract.getTrade();
 
-            expect(
-                receipt.events.find((event: Event) => event.event === 'OrderSignatureAffixed')
-                    .args[0]
-            ).to.equal(supplier.address);
+            expect(receipt.events.find((event: Event) => event.event === 'OrderSignatureAffixed').args[0]).to.equal(supplier.address);
             expect(_paymentDeadline).to.equal(newPaymentDeadline);
         });
 
         it('should update the document delivery deadline', async () => {
             const newDocumentDeliveryDeadline: number = 2000;
-            const tx = await orderTradeContract
-                .connect(commissioner)
-                .updateDocumentDeliveryDeadline(newDocumentDeliveryDeadline);
+            const tx = await orderTradeContract.connect(commissioner).updateDocumentDeliveryDeadline(newDocumentDeliveryDeadline);
             const receipt = await tx.wait();
-            const [, , , , , , , , , _documentDeliveryDeadline] =
-                await orderTradeContract.getTrade();
+            const [, , , , , , , , , _documentDeliveryDeadline] = await orderTradeContract.getTrade();
 
-            expect(
-                receipt.events.find((event: Event) => event.event === 'OrderSignatureAffixed')
-                    .args[0]
-            ).to.equal(commissioner.address);
+            expect(receipt.events.find((event: Event) => event.event === 'OrderSignatureAffixed').args[0]).to.equal(commissioner.address);
             expect(_documentDeliveryDeadline).to.equal(newDocumentDeliveryDeadline);
         });
 
@@ -176,62 +157,54 @@ describe('OrderTrade.sol', () => {
             const receipt = await tx.wait();
             const [, , , , , , , , , , _arbiter] = await orderTradeContract.getTrade();
 
-            expect(
-                receipt.events.find((event: Event) => event.event === 'OrderSignatureAffixed')
-                    .args[0]
-            ).to.equal(commissioner.address);
+            expect(receipt.events.find((event: Event) => event.event === 'OrderSignatureAffixed').args[0]).to.equal(commissioner.address);
             expect(_arbiter).to.equal(newArbiter);
         });
 
         it('should update the shipping deadline', async () => {
             const newShippingDeadline: number = 4000;
-            const tx = await orderTradeContract
-                .connect(admin)
-                .updateShippingDeadline(newShippingDeadline);
+            const tx = await orderTradeContract.connect(admin).updateShippingDeadline(newShippingDeadline);
             const receipt = await tx.wait();
             const [, , , , , , , , , , , _shippingDeadline] = await orderTradeContract.getTrade();
 
-            expect(receipt.events.find((event: Event) => event.event === 'OrderSignatureAffixed'))
-                .to.be.undefined;
+            expect(receipt.events.find((event: Event) => event.event === 'OrderSignatureAffixed')).to.be.undefined;
             expect(_shippingDeadline).to.equal(newShippingDeadline);
         });
 
         it('should update the delivery deadline', async () => {
             const newDeliveryDeadline: number = 5000;
-            const tx = await orderTradeContract
-                .connect(admin)
-                .updateDeliveryDeadline(newDeliveryDeadline);
+            const tx = await orderTradeContract.connect(admin).updateDeliveryDeadline(newDeliveryDeadline);
             const receipt = await tx.wait();
             const [, , , , , , , , , , , , _deliveryDeadline] = await orderTradeContract.getTrade();
 
-            expect(receipt.events.find((event: Event) => event.event === 'OrderSignatureAffixed'))
-                .to.be.undefined;
+            expect(receipt.events.find((event: Event) => event.event === 'OrderSignatureAffixed')).to.be.undefined;
             expect(_deliveryDeadline).to.equal(newDeliveryDeadline);
         });
     });
 
+    describe('Order status', () => {
+        it('should compute the order status - CONTRACTING', async () => {
+            documentManagerContractFake.getDocumentsCounter.returns(0);
+            expect(await orderTradeContract.connect(supplier).getOrderStatus()).to.equal(0);
+        });
+
+        // TODO: add more status tests
+    });
+
     describe('Order lines', () => {
         it('should add, get and update an order line', async () => {
-            const tx = await orderTradeContract
-                .connect(supplier)
-                .addLine(1, 100, units[1], [10, 0, fiats[0]]);
+            const tx = await orderTradeContract.connect(supplier).addLine(1, 100, units[1], [10, 0, fiats[0]]);
             const receipt = await tx.wait();
-            const lineId = receipt.events.find((event: Event) => event.event === 'OrderLineAdded')
-                .args[0];
+            const lineId = receipt.events.find((event: Event) => event.event === 'OrderLineAdded').args[0];
             expect(lineId).to.equal(1);
 
             const result = await orderTradeContract.getLine(lineId);
             expect(result[0]).to.deep.equal([lineId, 1, 100, units[1], 0, true]);
             expect(result[1]).to.deep.equal([[10, 0, fiats[0]]]);
 
-            const updateTx = await orderTradeContract
-                .connect(commissioner)
-                .updateLine(lineId, 2, 200, units[0], [20, 0, fiats[1]]);
+            const updateTx = await orderTradeContract.connect(commissioner).updateLine(lineId, 2, 200, units[0], [20, 0, fiats[1]]);
             const updateReceipt = await updateTx.wait();
-            expect(
-                updateReceipt.events.find((event: Event) => event.event === 'OrderLineUpdated')
-                    .args[0]
-            ).to.equal(lineId);
+            expect(updateReceipt.events.find((event: Event) => event.event === 'OrderLineUpdated').args[0]).to.equal(lineId);
 
             const newResult = await orderTradeContract.getLine(lineId);
             expect(newResult[0]).to.deep.equal([lineId, 2, 200, units[0], 0, true]);
@@ -244,9 +217,7 @@ describe('OrderTrade.sol', () => {
         });
 
         it('should assign a material to an order line', async () => {
-            const tx = await orderTradeContract
-                .connect(supplier)
-                .addLine(1, 100, units[0], [10, 0, fiats[0]]);
+            const tx = await orderTradeContract.connect(supplier).addLine(1, 100, units[0], [10, 0, fiats[0]]);
             await tx.wait();
 
             const assignTx = await orderTradeContract.connect(supplier).assignMaterial(1, 1);
@@ -255,67 +226,52 @@ describe('OrderTrade.sol', () => {
             const line = await orderTradeContract.getLine(1);
             expect(line[0]).to.deep.equal([1, 1, 100, units[0], 1, true]);
             expect(line[1]).to.deep.equal([[10, 0, fiats[0]]]);
-            expect(
-                assignReceipt.events.find((event: Event) => event.event === 'MaterialAssigned')
-                    .args[0]
-            ).to.equal(1);
+            expect(assignReceipt.events.find((event: Event) => event.event === 'MaterialAssigned').args[0]).to.equal(1);
         });
 
         it('should get an order line - FAIL(Trade: Line does not exist)', async () => {
-            await expect(orderTradeContract.getLine(100)).to.be.revertedWith(
-                'Trade: Line does not exist'
-            );
+            await expect(orderTradeContract.getLine(100)).to.be.revertedWith('Trade: Line does not exist');
         });
 
         it('should add an order line - FAIL(OrderTrade: The order has already been confirmed, therefore it cannot be changed)', async () => {
             await orderTradeContract.connect(supplier).confirmOrder();
             await orderTradeContract.connect(commissioner).confirmOrder();
 
-            await expect(
-                orderTradeContract.connect(admin).addLine(1, 100, units[1], [10, 0, fiats[0]])
-            ).to.be.revertedWith(
+            await expect(orderTradeContract.connect(admin).addLine(1, 100, units[1], [10, 0, fiats[0]])).to.be.revertedWith(
                 'OrderTrade: The order has already been confirmed, therefore it cannot be changed'
             );
         });
 
         it('should add an order line - FAIL(OrderTrade: Fiat has not been registered)', async () => {
-            await expect(
-                orderTradeContract
-                    .connect(admin)
-                    .addLine(1, 100, units[0], [10, 0, 'nonExistingFiat'])
-            ).to.be.revertedWith('OrderTrade: Fiat has not been registered');
+            await expect(orderTradeContract.connect(admin).addLine(1, 100, units[0], [10, 0, 'nonExistingFiat'])).to.be.revertedWith(
+                'OrderTrade: Fiat has not been registered'
+            );
         });
 
         it('should update an order line - FAIL(Trade: Line does not exist)', async () => {
-            await expect(
-                orderTradeContract.connect(admin).updateLine(1, 1, 200, units[0], [20, 0, fiats[0]])
-            ).to.be.revertedWith('Trade: Line does not exist');
+            await expect(orderTradeContract.connect(admin).updateLine(1, 1, 200, units[0], [20, 0, fiats[0]])).to.be.revertedWith(
+                'Trade: Line does not exist'
+            );
         });
 
         it('should update an order line - FAIL(OrderTrade: The order has already been confirmed, therefore it cannot be changed)', async () => {
             await orderTradeContract.connect(supplier).confirmOrder();
             await orderTradeContract.connect(commissioner).confirmOrder();
 
-            await expect(
-                orderTradeContract.connect(admin).updateLine(1, 1, 200, units[0], [20, 0, fiats[0]])
-            ).to.be.revertedWith(
+            await expect(orderTradeContract.connect(admin).updateLine(1, 1, 200, units[0], [20, 0, fiats[0]])).to.be.revertedWith(
                 'OrderTrade: The order has already been confirmed, therefore it cannot be changed'
             );
         });
 
         it('should update an order line - FAIL(OrderTrade: Fiat has not been registered)', async () => {
             await orderTradeContract.connect(admin).addLine(1, 100, units[0], [10, 0, fiats[0]]);
-            await expect(
-                orderTradeContract
-                    .connect(admin)
-                    .updateLine(1, 1, 200, units[0], [20, 0, 'non existing fiat'])
-            ).to.be.revertedWith('OrderTrade: Fiat has not been registered');
+            await expect(orderTradeContract.connect(admin).updateLine(1, 1, 200, units[0], [20, 0, 'non existing fiat'])).to.be.revertedWith(
+                'OrderTrade: Fiat has not been registered'
+            );
         });
 
         it('should assign a material to an order line - FAIL(Trade: Line does not exist)', async () => {
-            await expect(
-                orderTradeContract.connect(supplier).assignMaterial(1, 1)
-            ).to.be.rejectedWith('Trade: Line does not exist');
+            await expect(orderTradeContract.connect(supplier).assignMaterial(1, 1)).to.be.rejectedWith('Trade: Line does not exist');
         });
     });
 
@@ -325,24 +281,12 @@ describe('OrderTrade.sol', () => {
             const supplierReceipt = await supplierTx.wait();
             const commissionerTx = await orderTradeContract.connect(commissioner).confirmOrder();
             const commissionerReceipt = await commissionerTx.wait();
-            const [, , , , , , hasSupplierSigned, hasCommissionerSigned] =
-                await orderTradeContract.getTrade();
+            const [, , , , , , hasSupplierSigned, hasCommissionerSigned] = await orderTradeContract.getTrade();
 
-            expect(
-                supplierReceipt.events.find(
-                    (event: Event) => event.event === 'OrderSignatureAffixed'
-                ).args[0]
-            ).to.equal(supplier.address);
-            expect(supplierReceipt.events.find((event: Event) => event.event === 'OrderConfirmed'))
-                .to.be.undefined;
-            expect(
-                commissionerReceipt.events.find(
-                    (event: Event) => event.event === 'OrderSignatureAffixed'
-                ).args[0]
-            ).to.equal(commissioner.address);
-            expect(
-                commissionerReceipt.events.find((event: Event) => event.event === 'OrderConfirmed')
-            ).to.not.be.undefined;
+            expect(supplierReceipt.events.find((event: Event) => event.event === 'OrderSignatureAffixed').args[0]).to.equal(supplier.address);
+            expect(supplierReceipt.events.find((event: Event) => event.event === 'OrderConfirmed')).to.be.undefined;
+            expect(commissionerReceipt.events.find((event: Event) => event.event === 'OrderSignatureAffixed').args[0]).to.equal(commissioner.address);
+            expect(commissionerReceipt.events.find((event: Event) => event.event === 'OrderConfirmed')).to.not.be.undefined;
             expect(hasSupplierSigned).to.equal(true);
             expect(hasCommissionerSigned).to.equal(true);
         });
@@ -361,15 +305,11 @@ describe('OrderTrade.sol', () => {
     describe('Order expiration', () => {
         it('should return whether a deadline has passed', async () => {
             await _createOrderTrade(Date.now() + 1000000);
-            expect(await orderTradeContract.connect(supplier).haveDeadlinesExpired()).to.equal(
-                false
-            );
+            expect(await orderTradeContract.connect(supplier).haveDeadlinesExpired()).to.equal(false);
 
             await orderTradeContract.connect(supplier).updateDocumentDeliveryDeadline(100);
             await orderTradeContract.connect(commissioner).confirmOrder();
-            expect(await orderTradeContract.connect(supplier).haveDeadlinesExpired()).to.equal(
-                true
-            );
+            expect(await orderTradeContract.connect(supplier).haveDeadlinesExpired()).to.equal(true);
         });
 
         it('should change escrow status when enforcing deadlines on an order with expired deadlines', async () => {
