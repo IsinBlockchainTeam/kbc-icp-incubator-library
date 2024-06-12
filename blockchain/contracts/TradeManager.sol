@@ -105,6 +105,7 @@ contract TradeManager is AccessControl {
         _tradeIdsOfSupplier[supplier].push(id);
         _tradeIdsOfCommissioner[commissioner].push(id);
 
+//        emit OrderTradeRegistered(id, supplier, supplier, customer, commissioner);
         emit OrderTradeRegistered(id, address(newTrade), supplier, customer, commissioner);
         return id;
     }

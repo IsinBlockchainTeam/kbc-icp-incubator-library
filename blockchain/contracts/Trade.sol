@@ -4,6 +4,7 @@ pragma solidity ^0.8.17;
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@blockchain-lib/blockchain-common/contracts/EnumerableType.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 import "./DocumentManager.sol";
 import "./ProductCategoryManager.sol";
 import "./MaterialManager.sol";
