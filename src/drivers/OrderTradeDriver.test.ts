@@ -364,17 +364,6 @@ describe('OrderTradeDriver', () => {
         expect(mockedGetNegotiationStatus).toHaveBeenCalledTimes(1);
     });
 
-    it('should correctly retrieve the negotiation status - EXPIRED', async () => {
-        mockedGetNegotiationStatus.mockReturnValue(Promise.resolve(NegotiationStatus.EXPIRED));
-        const result = await orderTradeDriver.getNegotiationStatus();
-
-        expect(result).toEqual(NegotiationStatus.EXPIRED);
-
-        expect(mockedContract.getNegotiationStatus).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getNegotiationStatus).toHaveBeenNthCalledWith(1);
-        expect(mockedGetNegotiationStatus).toHaveBeenCalledTimes(1);
-    });
-
     it('should correctly retrieve the negotiation status - FAIL(Invalid state)', async () => {
         mockedGetNegotiationStatus.mockReturnValue(Promise.resolve(42));
         await expect(orderTradeDriver.getNegotiationStatus()).rejects.toThrow(

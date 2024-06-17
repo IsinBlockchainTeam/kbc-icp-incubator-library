@@ -38,8 +38,6 @@ export const getOrderTradeStatusByIndex = (index: number): NegotiationStatus => 
             return NegotiationStatus.PENDING;
         case 2:
             return NegotiationStatus.CONFIRMED;
-        case 3:
-            return NegotiationStatus.EXPIRED;
         default:
             throw new Error(
                 `Utils: an invalid value "${index}" for "NegotiationStatus" was returned by the contract`

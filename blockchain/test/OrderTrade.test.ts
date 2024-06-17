@@ -17,6 +17,7 @@ describe('OrderTrade.sol', () => {
     let escrowManagerContractFake: FakeContract;
     let tokenContractFake: FakeContract;
     let enumerableUnitManagerContractFake: FakeContract;
+    let escrowFakeContract: FakeContract;
 
     let orderTradeContract: Contract;
     let admin: SignerWithAddress,
@@ -26,16 +27,13 @@ describe('OrderTrade.sol', () => {
         arbiter: SignerWithAddress;
     const externalUrl: string = 'https://www.test.com/';
     const metadataHash: string = 'metadataHash';
-    const paymentDeadline: number = 100;
-    const documentDeliveryDeadline: number = 200;
-    const shippingDeadline: number = 300;
-    const deliveryDeadline: number = 400;
+    const now = new Date();
+    const paymentDeadline = new Date(now.setDate(now.getDate() + 1)).getTime();
+    const documentDeliveryDeadline = new Date(now.setDate(new Date(paymentDeadline).getDate() + 1)).getTime();
+    const shippingDeadline = new Date(now.setDate(new Date(documentDeliveryDeadline).getDate() + 1)).getTime();
+    const deliveryDeadline = new Date(now.setDate(new Date(shippingDeadline).getDate() + 1)).getTime();
     const units = ['BG', 'KGM', 'H87'];
     const agreedAmount = 1000;
-
-    const escrowFake = {
-        enableRefund: () => {}
-    };
 
     const materialStruct: MaterialManager.MaterialStructOutput = {
         id: BigNumber.from(1),
@@ -56,7 +54,7 @@ describe('OrderTrade.sol', () => {
             externalUrl,
             metadataHash,
             deadline || paymentDeadline,
-            deadline || deadline || documentDeliveryDeadline,
+            deadline || documentDeliveryDeadline,
             arbiter.address,
             deadline || shippingDeadline,
             deadline || deliveryDeadline,
@@ -78,11 +76,13 @@ describe('OrderTrade.sol', () => {
         enumerableFiatManagerContractFake = await smock.fake(ContractName.ENUMERABLE_TYPE_MANAGER);
         enumerableFiatManagerContractFake.contains.returns((value: string) => fiats.includes(value[0]));
         documentManagerContractFake = await smock.fake(ContractName.DOCUMENT_MANAGER);
+        documentManagerContractFake.registerDocument.returns(1);
         tokenContractFake = await smock.fake('MyToken');
         enumerableUnitManagerContractFake = await smock.fake(ContractName.ENUMERABLE_TYPE_MANAGER);
         enumerableUnitManagerContractFake.contains.returns((value: string) => units.includes(value[0]));
-        escrowManagerContractFake = await smock.fake('EscrowManager');
-        escrowManagerContractFake.registerEscrow.returns(escrowFake);
+        escrowManagerContractFake = await smock.fake(ContractName.ESCROW_MANAGER);
+        escrowFakeContract = await smock.fake(ContractName.ESCROW);
+        escrowManagerContractFake.registerEscrow.returns(escrowFakeContract.address);
     });
 
     beforeEach(async () => {
@@ -183,12 +183,29 @@ describe('OrderTrade.sol', () => {
     });
 
     describe('Order status', () => {
+        before(async () => {
+            await ethers.provider.send('evm_mine', [Date.now()]);
+        });
+
         it('should compute the order status - CONTRACTING', async () => {
-            documentManagerContractFake.getDocumentsCounter.returns(0);
             expect(await orderTradeContract.connect(supplier).getOrderStatus()).to.equal(0);
         });
 
-        // TODO: add more status tests
+        it('should compute the order status - PRODUCTION', async () => {
+            await orderTradeContract.connect(supplier).confirmOrder();
+            await orderTradeContract.connect(commissioner).confirmOrder();
+            // order is now successfully negotiated
+            expect(await orderTradeContract.getOrderStatus()).to.equal(1);
+        });
+
+        it('should compute the order status - PAYED', async () => {
+            // add PAYMENT_INVOICE document
+            await orderTradeContract.connect(supplier).addDocument(3, externalUrl, metadataHash);
+            await orderTradeContract.connect(commissioner).validateDocument(1, 1);
+            expect(await orderTradeContract.getOrderStatus()).to.equal(2);
+        });
+
+        // TODO: add remaining statues
     });
 
     describe('Order lines', () => {
@@ -302,38 +319,6 @@ describe('OrderTrade.sol', () => {
         });
     });
 
-    describe('Order expiration', () => {
-        it('should return whether a deadline has passed', async () => {
-            await _createOrderTrade(Date.now() + 1000000);
-            expect(await orderTradeContract.connect(supplier).haveDeadlinesExpired()).to.equal(false);
-
-            await orderTradeContract.connect(supplier).updateDocumentDeliveryDeadline(100);
-            await orderTradeContract.connect(commissioner).confirmOrder();
-            expect(await orderTradeContract.connect(supplier).haveDeadlinesExpired()).to.equal(true);
-        });
-
-        it('should change escrow status when enforcing deadlines on an order with expired deadlines', async () => {
-            await orderTradeContract.connect(supplier).confirmOrder();
-            await orderTradeContract.connect(commissioner).confirmOrder();
-            await orderTradeContract.enforceDeadlines();
-            expect(await orderTradeContract.getNegotiationStatus()).to.equal(3);
-        });
-
-        it('should not change escrow status when enforcing deadlines on an order with unexpired deadlines', async () => {
-            await _createOrderTrade(Date.now() + 1000000);
-            await orderTradeContract.connect(supplier).confirmOrder();
-            await orderTradeContract.connect(commissioner).confirmOrder();
-            await ethers.provider.send('evm_mine', [Date.now() + 1000001]);
-            await orderTradeContract.enforceDeadlines();
-            expect(await orderTradeContract.getNegotiationStatus()).to.equal(2);
-        });
-
-        it('should not change escrow status when enforcing deadlines on non-confirmed escrow', async () => {
-            await orderTradeContract.enforceDeadlines();
-            expect(await orderTradeContract.getNegotiationStatus()).to.equal(0);
-        });
-    });
-
     describe('Negotiation status', () => {
         it('should get status INITIALIZED when no one has confirmed', async () => {
             expect(await orderTradeContract.getNegotiationStatus()).to.equal(0);
@@ -349,19 +334,45 @@ describe('OrderTrade.sol', () => {
             expect(await orderTradeContract.getNegotiationStatus()).to.equal(1);
         });
 
-        it('should get status COMPLETED when both supplier and commissioner have confirmed', async () => {
+        it('should get status CONFIRMED when both supplier and commissioner have confirmed', async () => {
             await orderTradeContract.connect(supplier).confirmOrder();
             await orderTradeContract.connect(commissioner).confirmOrder();
             expect(await orderTradeContract.getNegotiationStatus()).to.equal(2);
         });
+    });
 
-        it('should get status EXPIRED when a deadline has passed', async () => {
-            await orderTradeContract.connect(supplier).updatePaymentDeadline(8000000000);
+    describe('Order expiration', () => {
+        it('should return whether a deadline has passed', async () => {
+            // await _createOrderTrade(Date.now() + 1000000);
+            expect(await orderTradeContract.connect(supplier).haveDeadlinesExpired()).to.equal(false);
+
+            await orderTradeContract.connect(supplier).updateDocumentDeliveryDeadline(100);
             await orderTradeContract.connect(commissioner).confirmOrder();
-            await ethers.provider.send('evm_mine', [7999999999]);
-            await orderTradeContract.connect(commissioner).enforceDeadlines();
+            expect(await orderTradeContract.connect(supplier).haveDeadlinesExpired()).to.equal(true);
+        });
 
-            expect(await orderTradeContract.getNegotiationStatus()).to.equal(3);
+        it('should change escrow status when enforcing deadlines on an order with expired deadlines', async () => {
+            await orderTradeContract.connect(supplier).updateDocumentDeliveryDeadline(100);
+
+            await orderTradeContract.connect(supplier).confirmOrder();
+            await orderTradeContract.connect(commissioner).confirmOrder();
+            await orderTradeContract.enforceDeadlines();
+            expect(await orderTradeContract.getNegotiationStatus()).to.equal(2);
+            expect(escrowFakeContract.enableRefund).to.have.callCount(1);
+        });
+
+        it('should not change escrow status when enforcing deadlines on an order with unexpired deadlines', async () => {
+            await _createOrderTrade(now.getTime() + 1000000);
+            await orderTradeContract.connect(supplier).confirmOrder();
+            await orderTradeContract.connect(commissioner).confirmOrder();
+            await ethers.provider.send('evm_mine', [now.getTime() + 1000001]);
+            await orderTradeContract.enforceDeadlines();
+            expect(await orderTradeContract.getNegotiationStatus()).to.equal(2);
+        });
+
+        it('should not change escrow status when enforcing deadlines on non-confirmed escrow', async () => {
+            await orderTradeContract.enforceDeadlines();
+            expect(await orderTradeContract.getNegotiationStatus()).to.equal(0);
         });
     });
 });

@@ -148,8 +148,6 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
                 return NegotiationStatus.PENDING;
             case 2:
                 return NegotiationStatus.CONFIRMED;
-            case 3:
-                return NegotiationStatus.EXPIRED;
             default:
                 throw new Error('Invalid state');
         }

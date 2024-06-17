@@ -9,7 +9,7 @@ import "./EscrowManager.sol";
 contract OrderTrade is Trade {
     using Counters for Counters.Counter;
 
-    enum NegotiationStatus {INITIALIZED, PENDING, CONFIRMED, EXPIRED}
+    enum NegotiationStatus {INITIALIZED, PENDING, CONFIRMED}
     enum OrderStatus { CONTRACTING, PRODUCTION, PAYED, EXPORTED, SHIPPED, COMPLETED }
 
     event OrderLineAdded(uint256 orderLineId);
@@ -124,9 +124,7 @@ contract OrderTrade is Trade {
     }
 
     function getNegotiationStatus() public view returns (NegotiationStatus) {
-        if(_hasOrderExpired) {
-            return NegotiationStatus.EXPIRED;
-        } else if (!_hasCommissionerSigned && !_hasSupplierSigned) {
+        if (!_hasCommissionerSigned && !_hasSupplierSigned) {
             return NegotiationStatus.INITIALIZED;
         } else if (_hasCommissionerSigned && _hasSupplierSigned) {
             return NegotiationStatus.CONFIRMED;
@@ -217,7 +215,6 @@ contract OrderTrade is Trade {
     }
 
     function getOrderStatus() public view returns (OrderStatus) {
-        uint256 documentsCounter = _documentManager.getDocumentsCounter();
         OrderStatus status = OrderStatus.CONTRACTING;
 
 //        TODO: va valutato anche la DELIVERY_NOTE per gli ordini o solamente per i basic trade?
