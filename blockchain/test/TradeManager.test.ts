@@ -23,10 +23,11 @@ describe('TradeManager.sol', () => {
     const externalUrl: string = 'https://test.com';
     const metadataHash: string = '0x123';
     const name: string = 'Test basic trade';
-    const paymentDeadline: number = Date.now() + 200000;
-    const documentDeliveryDeadline: number = 200;
-    const shippingDeadline: number = 300;
-    const deliveryDeadline: number = 400;
+    const startDate = new Date();
+    const paymentDeadline = new Date(startDate.setDate(startDate.getDate() + 1)).getTime();
+    const documentDeliveryDeadline = new Date(startDate.setDate(new Date(paymentDeadline).getDate() + 1)).getTime();
+    const shippingDeadline = new Date(startDate.setDate(new Date(documentDeliveryDeadline).getDate() + 1)).getTime();
+    const deliveryDeadline = new Date(startDate.setDate(new Date(shippingDeadline).getDate() + 1)).getTime();
     const agreedAmount: number = 1000;
     const tokenAddress: string = Wallet.createRandom().address;
 
@@ -40,13 +41,12 @@ describe('TradeManager.sol', () => {
             case 1:
                 return ethers.getContractAt(ContractName.ORDER_TRADE, tradeAddress);
             default:
-                throw new Error(
-                    `TradeManagerTest: an invalid value "${tradeType}" for "TradeType" was returned by the contract`
-                );
+                throw new Error(`TradeManagerTest: an invalid value "${tradeType}" for "TradeType" was returned by the contract`);
         }
     };
 
     before(async () => {
+        await ethers.provider.send('evm_mine', [Date.now() + 10]);
         [admin, supplier, customer, commissioner, arbiter] = await ethers.getSigners();
         const DocumentManager = await ethers.getContractFactory(ContractName.DOCUMENT_MANAGER);
         documentManagerContract = await DocumentManager.deploy([]);
@@ -81,9 +81,7 @@ describe('TradeManager.sol', () => {
                     unitManagerAddress,
                     escrowManagerAddress
                 )
-            ).to.be.revertedWith(
-                'TradeManager: product category manager address is the zero address'
-            );
+            ).to.be.revertedWith('TradeManager: product category manager address is the zero address');
         });
 
         it('should create a TradeManager - FAIL(TradeManager: material manager address is the zero address)', async () => {
@@ -111,9 +109,7 @@ describe('TradeManager.sol', () => {
                     unitManagerAddress,
                     escrowManagerAddress
                 )
-            ).to.be.revertedWith(
-                'TradeManager: document category manager address is the zero address'
-            );
+            ).to.be.revertedWith('TradeManager: document category manager address is the zero address');
         });
 
         it('should create a TradeManager - FAIL(TradeManager: fiat manager address is the zero address)', async () => {
@@ -170,9 +166,7 @@ describe('TradeManager.sol', () => {
                 name
             );
             const receipt = await tx.wait();
-            const eventArgs = receipt.events.find(
-                (event: Event) => event.event === 'BasicTradeRegistered'
-            ).args;
+            const eventArgs = receipt.events.find((event: Event) => event.event === 'BasicTradeRegistered').args;
             const id = eventArgs[0];
 
             expect(id).to.equal(1);
@@ -189,8 +183,7 @@ describe('TradeManager.sol', () => {
             const basicTradeAddress = await tradeManagerContract.getTrade(id);
             const basicTradeContract = await ethers.getContractAt('BasicTrade', basicTradeAddress);
 
-            const [_tradeId, _supplier, _customer, _commissioner, _externalUrl, _linesId, _name] =
-                await basicTradeContract.getTrade();
+            const [_tradeId, _supplier, _customer, _commissioner, _externalUrl, _linesId, _name] = await basicTradeContract.getTrade();
             expect(_tradeId).to.equal(id);
             expect(_supplier).to.equal(supplier.address);
             expect(_customer).to.equal(customer.address);
@@ -257,9 +250,7 @@ describe('TradeManager.sol', () => {
                 tokenAddress
             );
             const receipt = await tx.wait();
-            const eventArgs = receipt.events.find(
-                (event: Event) => event.event === 'OrderTradeRegistered'
-            ).args;
+            const eventArgs = receipt.events.find((event: Event) => event.event === 'OrderTradeRegistered').args;
             const id = eventArgs[0];
 
             expect(id).to.equal(1);
@@ -274,10 +265,7 @@ describe('TradeManager.sol', () => {
             //     .equal(commissioner.address);
 
             const orderTradeAddress = await tradeManagerContract.getTrade(id);
-            const orderTradeContract = await ethers.getContractAt(
-                ContractName.ORDER_TRADE,
-                orderTradeAddress
-            );
+            const orderTradeContract = await ethers.getContractAt(ContractName.ORDER_TRADE, orderTradeAddress);
 
             const [
                 _tradeId,
@@ -512,19 +500,13 @@ describe('TradeManager.sol', () => {
             expect(await tradeManagerContract.getTradeCounter()).to.equal(3);
 
             const firstTrade = await _getTradeContract(1);
-            expect(await firstTrade.getTradeType()).to.equal(
-                await tradeManagerContract.getTradeType(1)
-            );
+            expect(await firstTrade.getTradeType()).to.equal(await tradeManagerContract.getTradeType(1));
 
             const secondTrade = await _getTradeContract(2);
-            expect(await secondTrade.getTradeType()).to.equal(
-                await tradeManagerContract.getTradeType(2)
-            );
+            expect(await secondTrade.getTradeType()).to.equal(await tradeManagerContract.getTradeType(2));
 
             const thirdTrade = await _getTradeContract(3);
-            expect(await thirdTrade.getTradeType()).to.equal(
-                await tradeManagerContract.getTradeType(3)
-            );
+            expect(await thirdTrade.getTradeType()).to.equal(await tradeManagerContract.getTradeType(3));
         });
 
         it('should get trade IDs of supplier', async () => {
@@ -624,13 +606,9 @@ describe('TradeManager.sol', () => {
                 tokenAddress
             );
 
-            const commissionerIds = await tradeManagerContract.getTradeIdsOfCommissioner(
-                commissioner.address
-            );
+            const commissionerIds = await tradeManagerContract.getTradeIdsOfCommissioner(commissioner.address);
             const adminIds = await tradeManagerContract.getTradeIdsOfCommissioner(admin.address);
-            const customerIds = await tradeManagerContract.getTradeIdsOfCommissioner(
-                customer.address
-            );
+            const customerIds = await tradeManagerContract.getTradeIdsOfCommissioner(customer.address);
 
             expect(commissionerIds.length).to.equal(2);
             expect(commissionerIds[0]).to.equal(1);

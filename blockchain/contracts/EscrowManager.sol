@@ -73,7 +73,7 @@ contract EscrowManager is AccessControl {
         require(commissioner != address(0), "EscrowManager: commission address is the zero address");
         require(commissioner != _commissioner, "EscrowManager: new commission address is the same of the current one");
         _commissioner = commissioner;
-        for(uint256 i = 0; i < _counter.current(); i++) {
+        for(uint256 i = 1; i <= _counter.current(); i++) {
             if(_escrows[i].getState() == Escrow.State.Active || _escrows[i].getDepositAmount() > 0) {
                 _escrows[i].updateCommissioner(commissioner);
             }

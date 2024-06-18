@@ -233,7 +233,7 @@ contract OrderTrade is Trade {
     }
 
     function completeTransaction() public {
-        require(getOrderStatus() == OrderStatus.SHIPPED, "Transaction is not completed until the goods have not been imported has expected");
+        require(getOrderStatus() == OrderStatus.COMPLETED, "Transaction is not completed until the goods have not been imported and the quality is the expected one");
 
         _escrow.close();
     }

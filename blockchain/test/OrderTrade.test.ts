@@ -27,11 +27,11 @@ describe('OrderTrade.sol', () => {
         arbiter: SignerWithAddress;
     const externalUrl: string = 'https://www.test.com/';
     const metadataHash: string = 'metadataHash';
-    const now = new Date();
-    const paymentDeadline = new Date(now.setDate(now.getDate() + 1)).getTime();
-    const documentDeliveryDeadline = new Date(now.setDate(new Date(paymentDeadline).getDate() + 1)).getTime();
-    const shippingDeadline = new Date(now.setDate(new Date(documentDeliveryDeadline).getDate() + 1)).getTime();
-    const deliveryDeadline = new Date(now.setDate(new Date(shippingDeadline).getDate() + 1)).getTime();
+    const startDate = new Date();
+    const paymentDeadline = new Date(startDate.setDate(startDate.getDate() + 1)).getTime();
+    const documentDeliveryDeadline = new Date(startDate.setDate(new Date(paymentDeadline).getDate() + 1)).getTime();
+    const shippingDeadline = new Date(startDate.setDate(new Date(documentDeliveryDeadline).getDate() + 1)).getTime();
+    const deliveryDeadline = new Date(startDate.setDate(new Date(shippingDeadline).getDate() + 1)).getTime();
     const units = ['BG', 'KGM', 'H87'];
     const agreedAmount = 1000;
 
@@ -82,6 +82,7 @@ describe('OrderTrade.sol', () => {
         enumerableUnitManagerContractFake.contains.returns((value: string) => units.includes(value[0]));
         escrowManagerContractFake = await smock.fake(ContractName.ESCROW_MANAGER);
         escrowFakeContract = await smock.fake(ContractName.ESCROW);
+        escrowFakeContract.close.returns();
         escrowManagerContractFake.registerEscrow.returns(escrowFakeContract.address);
     });
 
@@ -276,6 +277,17 @@ describe('OrderTrade.sol', () => {
             await orderTradeContract.connect(commissioner).validateDocument(1, 1);
             expect(await orderTradeContract.getOrderStatus()).to.equal(5);
         });
+
+        it('should complete the transaction', async () => {
+            await orderTradeContract.connect(supplier).confirmOrder();
+            await orderTradeContract.connect(commissioner).confirmOrder();
+
+            await orderTradeContract.connect(supplier).addDocument(10, externalUrl, metadataHash);
+            await orderTradeContract.connect(commissioner).validateDocument(1, 1);
+
+            await orderTradeContract.completeTransaction();
+            expect(escrowFakeContract.close).to.have.callCount(1);
+        });
     });
 
     describe('Order lines', () => {
@@ -432,10 +444,11 @@ describe('OrderTrade.sol', () => {
         });
 
         it('should not change escrow status when enforcing deadlines on an order with unexpired deadlines', async () => {
-            await _createOrderTrade(now.getTime() + 1000000);
+            const now = Date.now();
+            await _createOrderTrade(now + 1);
             await orderTradeContract.connect(supplier).confirmOrder();
             await orderTradeContract.connect(commissioner).confirmOrder();
-            await ethers.provider.send('evm_mine', [now.getTime() + 1000001]);
+            await ethers.provider.send('evm_mine', [now + 2]);
             await orderTradeContract.enforceDeadlines();
             expect(await orderTradeContract.getNegotiationStatus()).to.equal(2);
         });
