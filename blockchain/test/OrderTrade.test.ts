@@ -76,7 +76,7 @@ describe('OrderTrade.sol', () => {
         enumerableFiatManagerContractFake = await smock.fake(ContractName.ENUMERABLE_TYPE_MANAGER);
         enumerableFiatManagerContractFake.contains.returns((value: string) => fiats.includes(value[0]));
         documentManagerContractFake = await smock.fake(ContractName.DOCUMENT_MANAGER);
-        documentManagerContractFake.registerDocument.returns(1);
+        documentManagerContractFake.registerDocument.returns(() => 1);
         tokenContractFake = await smock.fake('MyToken');
         enumerableUnitManagerContractFake = await smock.fake(ContractName.ENUMERABLE_TYPE_MANAGER);
         enumerableUnitManagerContractFake.contains.returns((value: string) => units.includes(value[0]));
@@ -127,6 +127,14 @@ describe('OrderTrade.sol', () => {
 
         it('should get trade type', async () => {
             expect(await orderTradeContract.getTradeType()).to.equal(1);
+        });
+
+        it('should get who has signed the order', async () => {
+            expect(await orderTradeContract.getWhoSigned()).to.deep.equal([ethers.constants.AddressZero, ethers.constants.AddressZero]);
+            await orderTradeContract.connect(supplier).confirmOrder();
+            expect(await orderTradeContract.getWhoSigned()).to.deep.equal([supplier.address, ethers.constants.AddressZero]);
+            await orderTradeContract.connect(commissioner).confirmOrder();
+            expect(await orderTradeContract.getWhoSigned()).to.deep.equal([supplier.address, commissioner.address]);
         });
     });
 
@@ -180,6 +188,26 @@ describe('OrderTrade.sol', () => {
             expect(receipt.events.find((event: Event) => event.event === 'OrderSignatureAffixed')).to.be.undefined;
             expect(_deliveryDeadline).to.equal(newDeliveryDeadline);
         });
+
+        it('should update the agreed amount', async () => {
+            const newAgreedAmount: number = 2000;
+            const tx = await orderTradeContract.connect(admin).updateAgreedAmount(newAgreedAmount);
+            const receipt = await tx.wait();
+            const [, , , , , , , , , , , , , , _agreedAmount] = await orderTradeContract.getTrade();
+
+            expect(receipt.events.find((event: Event) => event.event === 'OrderSignatureAffixed')).to.be.undefined;
+            expect(_agreedAmount).to.equal(newAgreedAmount);
+        });
+
+        it('should update the token address', async () => {
+            const newTokenAddress = Wallet.createRandom().address;
+            const tx = await orderTradeContract.connect(admin).updateTokenAddress(newTokenAddress);
+            const receipt = await tx.wait();
+            const [, , , , , , , , , , , , , , , _tokenAddress] = await orderTradeContract.getTrade();
+
+            expect(receipt.events.find((event: Event) => event.event === 'OrderSignatureAffixed')).to.be.undefined;
+            expect(_tokenAddress).to.equal(newTokenAddress);
+        });
     });
 
     describe('Order status', () => {
@@ -205,7 +233,49 @@ describe('OrderTrade.sol', () => {
             expect(await orderTradeContract.getOrderStatus()).to.equal(2);
         });
 
-        // TODO: add remaining statues
+        it('should compute the order status - EXPORTED', async () => {
+            // add ORIGIN_SWISS_DECODE document
+            await orderTradeContract.connect(supplier).addDocument(4, externalUrl, metadataHash);
+            await orderTradeContract.connect(commissioner).validateDocument(1, 1);
+            // add WEIGHT_CERTIFICATE document
+            await orderTradeContract.connect(supplier).addDocument(5, externalUrl, metadataHash);
+            await orderTradeContract.connect(commissioner).validateDocument(1, 1);
+            // add FUMIGATION_CERTIFICATE document
+            await orderTradeContract.connect(supplier).addDocument(6, externalUrl, metadataHash);
+            await orderTradeContract.connect(commissioner).validateDocument(1, 1);
+            // add PREFERENTIAL_ENTRY_CERTIFICATE document
+            await orderTradeContract.connect(supplier).addDocument(7, externalUrl, metadataHash);
+            await orderTradeContract.connect(commissioner).validateDocument(1, 1);
+            // add PHYTOSANITARY_CERTIFICATE document
+            await orderTradeContract.connect(supplier).addDocument(8, externalUrl, metadataHash);
+            await orderTradeContract.connect(commissioner).validateDocument(1, 1);
+            // add INSURANCE_CERTIFICATE document
+            await orderTradeContract.connect(supplier).addDocument(9, externalUrl, metadataHash);
+            await orderTradeContract.connect(commissioner).validateDocument(1, 1);
+
+            expect(await orderTradeContract.getOrderStatus()).to.equal(3);
+        });
+
+        // it('should compute the order status - EXPORTED (because BILL_OF_LADING not approved)', async () => {
+        //     add BILL_OF_LADING document
+        // await orderTradeContract.connect(supplier).addDocument(2, externalUrl, metadataHash);
+        // await orderTradeContract.connect(commissioner).validateDocument(1, 2);
+        // expect(await orderTradeContract.getOrderStatus()).to.equal(3);
+        // });
+
+        it('should compute the order status - SHIPPED', async () => {
+            // add BILL_OF_LADING document
+            await orderTradeContract.connect(supplier).addDocument(2, externalUrl, metadataHash);
+            await orderTradeContract.connect(commissioner).validateDocument(1, 1);
+            expect(await orderTradeContract.getOrderStatus()).to.equal(4);
+        });
+
+        it('should compute the order status - COMPLETED', async () => {
+            // add COMPARISON_SWISS_DECODE document
+            await orderTradeContract.connect(supplier).addDocument(10, externalUrl, metadataHash);
+            await orderTradeContract.connect(commissioner).validateDocument(1, 1);
+            expect(await orderTradeContract.getOrderStatus()).to.equal(5);
+        });
     });
 
     describe('Order lines', () => {

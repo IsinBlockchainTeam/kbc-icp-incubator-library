@@ -175,6 +175,7 @@ abstract contract Trade is AccessControl {
     }
 
 //    TODO: il documento dovrebbe poter essere validato solamente dalla controparte. Chi ha immesso il documento non può approvare o rifiutare da solo
+    // Una volta validato il documento, il documento non può essere più modificato?
     function validateDocument(uint256 documentId, DocumentStatus status) public {
         require(_documentsStatus[documentId].exists, "Trade: Document does not exist");
         require(status != DocumentStatus.NOT_EVALUATED, "Trade: Document status must be different from NOT_EVALUATED");
