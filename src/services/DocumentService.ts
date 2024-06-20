@@ -45,8 +45,6 @@ export class DocumentService {
     }
 
     async getCompleteDocument(documentInfo: DocumentInfo): Promise<Document> {
-        if (!this._icpFileDriver)
-            throw new Error('DocumentService: ICPFileDriver has not been set');
         try {
             const path = documentInfo.externalUrl.split('/').slice(0, -1).join('/');
             const metadataName = FileHelpers.removeFileExtension(

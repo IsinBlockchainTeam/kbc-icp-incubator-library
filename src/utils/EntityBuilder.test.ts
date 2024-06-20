@@ -178,6 +178,7 @@ describe('EntityBuilder', () => {
             bcDocument.id = BigNumber.from(0);
             bcDocument.externalUrl = 'external url';
             bcDocument.contentHash = 'content_hash';
+            bcDocument.uploadedBy = '0xuploader';
             bcDocument.exists = true;
 
             const document = new DocumentInfo(0, 'external url', 'content_hash', '0xuploader');
