@@ -25,7 +25,8 @@ describe('DocumentDriver', () => {
         name: 'Document name',
         documentType: DocumentType.BILL_OF_LADING,
         externalUrl: 'externalUrl',
-        contentHash: 'contentHash'
+        contentHash: 'contentHash',
+        uploadedBy: '0xaddress'
     };
     const mockedDocument = createMock<DocumentInfo>();
 
@@ -40,6 +41,7 @@ describe('DocumentDriver', () => {
 
         mockedContract = createMock<DocumentManager>({
             registerDocument: mockedWriteFunction,
+            updateDocument: mockedWriteFunction,
             getDocumentById: mockedReadFunction,
             getDocumentsCounter: mockedReadFunction,
             addAdmin: mockedWriteFunction,
@@ -78,7 +80,8 @@ describe('DocumentDriver', () => {
             expect(mockedContract.registerDocument).toHaveBeenNthCalledWith(
                 1,
                 rawDocument.externalUrl,
-                rawDocument.contentHash
+                rawDocument.contentHash,
+                await mockedSigner.getAddress()
             );
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
@@ -88,6 +91,40 @@ describe('DocumentDriver', () => {
 
             const fn = async () =>
                 documentDriver.registerDocument(
+                    rawDocument.externalUrl,
+                    rawDocument.contentHash,
+                    await mockedSigner.getAddress()
+                );
+            await expect(fn).rejects.toThrow(new Error(errorMessage));
+        });
+    });
+
+    describe('updateDocument', () => {
+        it('should call and wait for update document', async () => {
+            await documentDriver.updateDocument(
+                3,
+                rawDocument.externalUrl,
+                rawDocument.contentHash,
+                await mockedSigner.getAddress()
+            );
+
+            expect(mockedContract.updateDocument).toHaveBeenCalledTimes(1);
+            expect(mockedContract.updateDocument).toHaveBeenNthCalledWith(
+                1,
+                3,
+                rawDocument.externalUrl,
+                rawDocument.contentHash,
+                await mockedSigner.getAddress()
+            );
+            expect(mockedWait).toHaveBeenCalledTimes(1);
+        });
+
+        it('should call and wait for update document - transaction fails', async () => {
+            mockedContract.updateDocument = jest.fn().mockRejectedValue(new Error(errorMessage));
+
+            const fn = async () =>
+                documentDriver.updateDocument(
+                    3,
                     rawDocument.externalUrl,
                     rawDocument.contentHash,
                     await mockedSigner.getAddress()

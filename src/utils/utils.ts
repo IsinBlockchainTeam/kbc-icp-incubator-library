@@ -30,7 +30,7 @@ export const getTradeTypeByIndex = (index: number): TradeType => {
     }
 };
 
-export const getOrderTradeStatusByIndex = (index: number): NegotiationStatus => {
+export const getNegotiationStatusByIndex = (index: number): NegotiationStatus => {
     switch (index) {
         case 0:
             return NegotiationStatus.INITIALIZED;

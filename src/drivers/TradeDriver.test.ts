@@ -5,6 +5,7 @@ import { Trade as TradeContract, Trade__factory } from '../smart-contracts';
 import { OrderStatus } from '../types/OrderStatus';
 import { DocumentType } from '../entities/DocumentInfo';
 import { TradeType } from '../types/TradeType';
+import { DocumentStatus } from '../entities/Document';
 
 describe('TradeDriver', () => {
     let tradeDriver: TradeDriver;
@@ -22,9 +23,10 @@ describe('TradeDriver', () => {
     const mockedGetLineCounter = jest.fn();
     const mockedGetTradeType = jest.fn();
     const mockedGetLineExists = jest.fn();
-    const mockedgetOrderStatus = jest.fn();
-    const mockedgetAllDocumentIds = jest.fn();
-    const mockedgetAllDocumentIdsByType = jest.fn();
+    const mockedGetOrderStatus = jest.fn();
+    const mockedGetAllDocumentIds = jest.fn();
+    const mockedGetAllDocumentIdsByType = jest.fn();
+    const mockedGetDocumentStatus = jest.fn();
 
     mockedWriteFunction.mockResolvedValue({
         wait: mockedWait
@@ -32,16 +34,18 @@ describe('TradeDriver', () => {
     mockedGetLineCounter.mockReturnValue(BigNumber.from(lineIds.length));
     mockedGetTradeType.mockResolvedValue(TradeType.BASIC);
     mockedGetLineExists.mockResolvedValue(true);
-    mockedgetOrderStatus.mockResolvedValue(OrderStatus.SHIPPED);
+    mockedGetOrderStatus.mockResolvedValue(OrderStatus.SHIPPED);
 
     const mockedContract = createMock<TradeContract>({
         getLineCounter: mockedGetLineCounter,
         getTradeType: mockedGetTradeType,
         getLineExists: mockedGetLineExists,
-        // getOrderStatus: mockedgetOrderStatus,
         addDocument: mockedWriteFunction,
-        getAllDocumentIds: mockedgetAllDocumentIds,
-        getDocumentIdsByType: mockedgetAllDocumentIdsByType,
+        updateDocument: mockedWriteFunction,
+        validateDocument: mockedWriteFunction,
+        getAllDocumentIds: mockedGetAllDocumentIds,
+        getDocumentIdsByType: mockedGetAllDocumentIdsByType,
+        getDocumentStatus: mockedGetDocumentStatus,
         addAdmin: mockedWriteFunction,
         removeAdmin: mockedWriteFunction
     });
@@ -95,64 +99,6 @@ describe('TradeDriver', () => {
         expect(mockedGetLineExists).toHaveBeenCalledTimes(1);
     });
 
-    // it('should correctly retrieve the trade status  - SHIPPED', async () => {
-    //     const response = await tradeDriver.getOrderStatus();
-    //
-    //     expect(response)
-    //         .toEqual(OrderStatus.SHIPPED);
-    //
-    //     expect(mockedContract.getOrderStatus)
-    //         .toHaveBeenCalledTimes(1);
-    //     expect(mockedContract.getOrderStatus)
-    //         .toHaveBeenNthCalledWith(1);
-    //     expect(mockedgetOrderStatus)
-    //         .toHaveBeenCalledTimes(1);
-    // });
-    //
-    // it('should correctly retrieve the trade status - ON_BOARD', async () => {
-    //     mockedgetOrderStatus.mockReturnValue(Promise.resolve(OrderStatus.EXPORTED));
-    //     const response = await tradeDriver.getOrderStatus();
-    //
-    //     expect(response)
-    //         .toEqual(OrderStatus.EXPORTED);
-    //
-    //     expect(mockedContract.getOrderStatus)
-    //         .toHaveBeenCalledTimes(1);
-    //     expect(mockedContract.getOrderStatus)
-    //         .toHaveBeenNthCalledWith(1);
-    //     expect(mockedgetOrderStatus)
-    //         .toHaveBeenCalledTimes(1);
-    // });
-    //
-    // it('should correctly retrieve the trade status - CONTRACTING', async () => {
-    //     mockedgetOrderStatus.mockReturnValue(Promise.resolve(OrderStatus.CONTRACTING));
-    //     const response = await tradeDriver.getOrderStatus();
-    //
-    //     expect(response)
-    //         .toEqual(OrderStatus.CONTRACTING);
-    //
-    //     expect(mockedContract.getOrderStatus)
-    //         .toHaveBeenCalledTimes(1);
-    //     expect(mockedContract.getOrderStatus)
-    //         .toHaveBeenNthCalledWith(1);
-    //     expect(mockedgetOrderStatus)
-    //         .toHaveBeenCalledTimes(1);
-    // });
-    //
-    // it('should correctly retrieve the trade status - FAIL(TradeDriver: an invalid value "..." for "TradeStatus" was returned by the contract)', async () => {
-    //     mockedgetOrderStatus.mockReturnValue(Promise.resolve(42));
-    //     await expect(tradeDriver.getOrderStatus())
-    //         .rejects
-    //         .toThrow(new Error('TradeDriver: an invalid value "42" for "TradeStatus" was returned by the contract'));
-    //
-    //     expect(mockedContract.getOrderStatus)
-    //         .toHaveBeenCalledTimes(1);
-    //     expect(mockedContract.getOrderStatus)
-    //         .toHaveBeenNthCalledWith(1);
-    //     expect(mockedgetOrderStatus)
-    //         .toHaveBeenCalledTimes(1);
-    // });
-
     it('should correctly add a document', async () => {
         await tradeDriver.addDocument(
             DocumentType.BILL_OF_LADING,
@@ -170,10 +116,35 @@ describe('TradeDriver', () => {
         expect(mockedWait).toHaveBeenCalledTimes(1);
     });
 
+    it('should correctly update a document', async () => {
+        await tradeDriver.updateDocument(1, 'https://test.com', 'contentHash');
+
+        expect(mockedContract.updateDocument).toHaveBeenCalledTimes(1);
+        expect(mockedContract.updateDocument).toHaveBeenNthCalledWith(
+            1,
+            1,
+            'https://test.com',
+            'contentHash'
+        );
+        expect(mockedWait).toHaveBeenCalledTimes(1);
+    });
+
+    it('should correctly validate a document', async () => {
+        await tradeDriver.validateDocument(1, DocumentStatus.APPROVED);
+
+        expect(mockedContract.validateDocument).toHaveBeenCalledTimes(1);
+        expect(mockedContract.validateDocument).toHaveBeenNthCalledWith(
+            1,
+            1,
+            DocumentStatus.APPROVED
+        );
+        expect(mockedWait).toHaveBeenCalledTimes(1);
+    });
+
     it('should correctly retrieve document ids by type', async () => {
         const documentIds: number[] = [1, 2, 3];
 
-        mockedgetAllDocumentIdsByType.mockResolvedValueOnce(
+        mockedGetAllDocumentIdsByType.mockResolvedValueOnce(
             documentIds.map((id) => BigNumber.from(id))
         );
 
@@ -190,13 +161,31 @@ describe('TradeDriver', () => {
     it('should correctly retrieve document ids', async () => {
         const documentIds: number[] = [1, 2, 3];
 
-        mockedgetAllDocumentIds.mockResolvedValueOnce(documentIds.map((id) => BigNumber.from(id)));
+        mockedGetAllDocumentIds.mockResolvedValueOnce(documentIds.map((id) => BigNumber.from(id)));
 
         const response = await tradeDriver.getAllDocumentIds();
         expect(response).toEqual(documentIds);
 
         expect(mockedContract.getAllDocumentIds).toHaveBeenCalledTimes(1);
         expect(mockedContract.getAllDocumentIds).toHaveBeenNthCalledWith(1);
+    });
+
+    it('should get document status', async () => {
+        mockedGetDocumentStatus.mockResolvedValueOnce(DocumentStatus.NOT_EVALUATED);
+        expect(await tradeDriver.getDocumentStatus(1)).toEqual(DocumentStatus.NOT_EVALUATED);
+
+        mockedGetDocumentStatus.mockResolvedValueOnce(DocumentStatus.NOT_APPROVED);
+        expect(await tradeDriver.getDocumentStatus(1)).toEqual(DocumentStatus.NOT_APPROVED);
+
+        mockedGetDocumentStatus.mockResolvedValueOnce(DocumentStatus.APPROVED);
+        expect(await tradeDriver.getDocumentStatus(1)).toEqual(DocumentStatus.APPROVED);
+
+        mockedGetDocumentStatus.mockResolvedValueOnce(40);
+        await expect(tradeDriver.getDocumentStatus(1)).rejects.toThrow(
+            new Error('Invalid document status')
+        );
+
+        expect(mockedContract.getDocumentStatus).toHaveBeenCalledTimes(4);
     });
 
     it('should correctly add an admin', async () => {

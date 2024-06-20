@@ -13,7 +13,7 @@ import { NegotiationStatus } from '../types/NegotiationStatus';
 import { OrderLine, OrderLinePrice, OrderLineRequest, OrderTrade } from '../entities/OrderTrade';
 import { EntityBuilder } from '../utils/EntityBuilder';
 import { IConcreteTradeDriverInterface } from './IConcreteTradeDriver.interface';
-import { getOrderTradeStatusByIndex } from '../utils/utils';
+import { getNegotiationStatusByIndex } from '../utils/utils';
 import { zeroAddress } from '../utils/constants';
 import { OrderStatus } from '../types/OrderStatus';
 
@@ -74,7 +74,7 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
             result[10],
             result[11].toNumber(),
             result[12].toNumber(),
-            getOrderTradeStatusByIndex(result[13]),
+            getNegotiationStatusByIndex(result[13]),
             result[14].toNumber(),
             result[15],
             result[16] === zeroAddress ? undefined : result[16]

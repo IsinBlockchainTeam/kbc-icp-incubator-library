@@ -244,25 +244,28 @@ describe('BasicTradeDriver', () => {
             productCategoryStruct,
             materialStruct
         );
-        mockedGetLine.mockResolvedValueOnce(updatedLineStruct);
+        await basicTradeDriver.updateLine(updatedLine);
 
-        // expect(await basicTradeDriver.updateLine(updatedLine)).toEqual(updatedLine);
-        // expect(mockedContract.updateLine)
-        //     .toHaveBeenCalledTimes(1);
-        // expect(mockedContract.updateLine)
-        //     .toHaveBeenNthCalledWith(1, updatedLine.id, updatedLine.productCategory.id, updatedLine.quantity, updatedLine.unit);
-        // expect(mockedContract.assignMaterial)
-        //     .toHaveBeenCalledTimes(1);
-        // expect(mockedContract.assignMaterial)
-        //     .toHaveBeenNthCalledWith(1, updatedLine.id, updatedLine.material!.id);
-        // expect(mockedWait)
-        //     .toHaveBeenCalledTimes(2);
-        // expect(mockedContract.getLine)
-        //     .toHaveBeenCalledTimes(1);
-        // expect(mockedContract.getLine)
-        //     .toHaveBeenNthCalledWith(1, line.id.toNumber(), { blockTag: undefined });
-        // expect(mockedGetLine)
-        //     .toHaveBeenCalledTimes(1);
+        expect(mockedContract.updateLine).toHaveBeenCalledTimes(1);
+        expect(mockedContract.updateLine).toHaveBeenNthCalledWith(
+            1,
+            updatedLine.id,
+            updatedLine.productCategory.id,
+            updatedLine.quantity,
+            updatedLine.unit
+        );
+        expect(mockedWait).toHaveBeenCalledTimes(1);
+    });
+
+    it('should assign a material to a line', async () => {
+        await basicTradeDriver.assignMaterial(line.id.toNumber(), materialStruct.id.toNumber());
+        expect(mockedContract.assignMaterial).toHaveBeenCalledTimes(1);
+        expect(mockedContract.assignMaterial).toHaveBeenNthCalledWith(
+            1,
+            line.id.toNumber(),
+            materialStruct.id.toNumber()
+        );
+        expect(mockedWait).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly set the new name', async () => {
