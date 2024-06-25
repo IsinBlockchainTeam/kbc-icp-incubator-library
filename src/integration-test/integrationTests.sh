@@ -8,6 +8,7 @@ read -p "These tests will be handled by the IDE user interface? (Y/n): " TEST_ID
 smartContractsCleanDeploy () {
   echo "1) Checking local network..."
   echo "------------------------------------"
+# I want to check if node is already running on port 8545
   if $(curl --output /dev/null --silent --head --fail localhost:8545)
   then
       echo "Port 8545 already in use"
@@ -31,8 +32,39 @@ smartContractsCleanDeploy () {
   NODE_ENV=test npx hardhat run deploy.ts --network localhost
 }
 
-killLocalNetwork () {
-    echo "...Killing local network..."
+icpCanistersDeploy() {
+  echo "1) Checking local network..."
+  echo "------------------------------------"
+
+
+#  I want to check if the dfx network is already running on port 4943
+  if $(curl --output /dev/null --silent --head --fail localhost:4943)
+  then
+      echo "Port 4943 already in use"
+      exit 1
+  fi
+
+
+  echo "2) Starting new local network..."
+  echo "------------------------------------"
+  #create local network
+  dfx start --clean &
+  local_network_pid=$!
+
+  #wait until localnetwork is up
+  until $(curl --output /dev/null --silent --head --fail localhost:4943); do
+      sleep 5
+  done
+
+  echo "3) Deploying contracts on local network..."
+  echo "------------------------------------"
+  #deploy smart contract
+  dfx deploy --network local
+
+}
+
+killLocalNetworks () {
+    echo "...Killing local Hardhat and ICP network..."
     echo "------------------------------------"
     #pkill -TERM -P $local_network_pid
     # kill -9 -$(ps -o pgid=$local_network_pid | grep -o '[0-9]*')
@@ -45,10 +77,11 @@ killLocalNetwork () {
         kill -9 "$PID"
       fi
     fi
+    dfx stop
 }
 
-killLocalNetwork
-smartContractsCleanDeploy
+#killLocalNetworks
+icpCanistersDeploy
 
 if [ ! -z "$TEST_IDE" ] && [[ $TEST_IDE == "n" ]]; then
   cd "$ROOT_DIR"
@@ -58,7 +91,7 @@ if [ ! -z "$TEST_IDE" ] && [[ $TEST_IDE == "n" ]]; then
   NODE_ENV=test npx jest --config ./integration-test/jest.config.ts --runInBand
 
   IS_FAILED=$?
-  killLocalNetwork
+  killLocalNetworks
 
   if [ $IS_FAILED -ne 0 ]; then
     echo "At least one test has failed";
@@ -70,10 +103,10 @@ else
     echo ""
     read -p "Do you want to run again the tests? (Y/n): " TEST_RUN
     if [ ! -z "$TEST_RUN" ] && [[ $TEST_RUN == "n" ]]; then
-      killLocalNetwork
+      killLocalNetworks
       break
     fi
-    killLocalNetwork
+    killLocalNetworks
     smartContractsCleanDeploy
   done
 fi
