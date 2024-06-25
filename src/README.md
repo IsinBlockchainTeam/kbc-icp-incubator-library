@@ -44,7 +44,7 @@ For running integration tests, you have two ways:
 
 Create a test configuration with Jest with:
 
--   configuration file: absolute path to file `./integration-test/jest.config.ts`
+-   configuration file: absolute path to file `./integration-test/jest.ethereum.ts`
 -   working directory: absolute path to `src` folder
 -   jest options: --runInBand
 -   environment variables: NODE_ENV=test

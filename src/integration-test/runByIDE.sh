@@ -1,10 +1,40 @@
 #!/bin/bash
 
 ROOT_DIR=$PWD
+echo "Enable environment variables ...done"
+source ./integration-test/.env
 cd ../blockchain/scripts
 
+icpCanistersDeploy() {
+  echo "1) Checking local network..."
+  echo "------------------------------------"
 
-smartContractsCleanDeploy () {
+  # I want to check if the dfx network is already running on port 4943
+  if [ -n "$(lsof -t -i:4943)" ]; then
+      echo "Port 4943 already in use"
+      exit 1
+  fi
+
+  echo "2) Starting new local network..."
+  echo "------------------------------------"
+  # create local network
+  nohup dfx start --clean > /dev/null &
+  #wait until localnetwork is up
+  while true; do
+    dfx ping 2> /dev/null
+    if [ $? -eq 0 ]; then
+      break
+    fi
+    sleep 2
+  done
+
+  echo "3) Deploying contracts on local network..."
+  echo "------------------------------------"
+  cd $ICP_LIB_PATH
+  sh ./scripts/deploy-local.sh
+}
+
+smartContractsDeploy () {
   echo "1) Checking local network..."
   echo "------------------------------------"
   if $(curl --output /dev/null --silent --head --fail localhost:8545)
@@ -31,14 +61,16 @@ smartContractsCleanDeploy () {
 }
 
 killLocalNetwork () {
-    echo "...Killing local network on port 8545..."
+    echo "...Killing local Hardhat and ICP network..."
     echo "------------------------------------"
     #pkill -TERM -P $local_network_pid
     kill -9 $(lsof -t -i:8545)
     # kill -9 -$(ps -o pgid=$local_network_pid | grep -o '[0-9]*')
+    dfx stop
 }
 
 killLocalNetwork
-smartContractsCleanDeploy
+icpCanistersDeploy
+smartContractsDeploy
 
 

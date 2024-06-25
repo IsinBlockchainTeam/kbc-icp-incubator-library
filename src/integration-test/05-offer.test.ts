@@ -9,7 +9,7 @@ import {
     PRODUCT_CATEGORY_CONTRACT_ADDRESS,
     SUPPLIER_ADDRESS,
     SUPPLIER_PRIVATE_KEY
-} from './config';
+} from './constants/ethereum';
 import { ProductCategoryService } from '../services/ProductCategoryService';
 import { ProductCategoryDriver } from '../drivers/ProductCategoryDriver';
 import { ProductCategory } from '../entities/ProductCategory';

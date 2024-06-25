@@ -13,7 +13,7 @@ import {
     SUPPLIER_ADDRESS,
     SUPPLIER_PRIVATE_KEY,
     TRADE_MANAGER_CONTRACT_ADDRESS
-} from './config';
+} from './constants/ethereum';
 import { MaterialService } from '../services/MaterialService';
 import { MaterialDriver } from '../drivers/MaterialDriver';
 import { TradeManagerService } from '../services/TradeManagerService';

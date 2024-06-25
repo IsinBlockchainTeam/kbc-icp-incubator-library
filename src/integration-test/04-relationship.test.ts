@@ -11,7 +11,7 @@ import {
     RELATIONSHIP_MANAGER_CONTRACT_ADDRESS,
     SUPPLIER_ADDRESS,
     SUPPLIER_PRIVATE_KEY
-} from './config';
+} from './constants/ethereum';
 
 describe('Relationship lifecycle', () => {
     let relationshipService: RelationshipService;

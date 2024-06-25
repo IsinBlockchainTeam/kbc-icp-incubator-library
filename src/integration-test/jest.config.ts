@@ -28,7 +28,7 @@ export default {
     // An array of regexp pattern strings used to skip coverage collection
     // coveragePathIgnorePatterns: [
     // 'smart-contracts/*',
-    // '.config.ts',
+    // '.ethereum.ts',
     // '.interface.ts',
     // '.dev.ts',
     // '.type.ts',
