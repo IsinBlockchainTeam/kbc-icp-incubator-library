@@ -1,12 +1,23 @@
 import { TradeService } from './TradeService';
 import { BasicTradeDriver } from '../drivers/BasicTradeDriver';
 import { IConcreteTradeService } from './IConcreteTradeService';
-import { BasicTrade } from '../entities/BasicTrade';
+import { BasicTrade, BasicTradeMetadata } from '../entities/BasicTrade';
 import { Line, LineRequest } from '../entities/Trade';
+import FileHelpers from '../utils/fileHelpers';
 
 export class BasicTradeService extends TradeService implements IConcreteTradeService {
     async getTrade(blockNumber?: number): Promise<BasicTrade> {
         return this._tradeDriverImplementation.getTrade(blockNumber);
+    }
+
+    async getCompleteTrade(blockNumber?: number): Promise<BasicTrade> {
+        if (!this._icpFileDriver)
+            throw new Error('BasicTradeService: ICPFileDriver has not been set');
+
+        const trade = await this._tradeDriverImplementation.getTrade(blockNumber);
+        const bytes = await this._icpFileDriver.read(`${trade.externalUrl}/files/metadata.json`);
+        trade.metadata = FileHelpers.getObjectFromBytes(bytes) as BasicTradeMetadata;
+        return trade;
     }
 
     async getLines(): Promise<Line[]> {

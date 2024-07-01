@@ -30,7 +30,7 @@ export default {
         'smart-contracts/*',
         'integration-test/*',
         'types/*',
-        '.ethereum.ts',
+        '.config.ts',
         '.interface.ts',
         '.dev.ts',
         '.type.ts',
@@ -56,7 +56,7 @@ export default {
         // },
     },
 
-    setupFiles: ['<rootDir>/ts-ethereum.ts', '<rootDir>/jest_env.ts'],
+    setupFiles: ['<rootDir>/ts-config.ts'],
     testPathIgnorePatterns: [
         '<rootDir>/smart-contracts',
         '<rootDir>/integration-test/',

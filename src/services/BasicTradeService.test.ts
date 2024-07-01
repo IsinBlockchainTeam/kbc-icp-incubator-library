@@ -1,4 +1,5 @@
 import { createMock } from 'ts-auto-mock';
+import { TextEncoder } from 'util';
 import { BasicTradeDriver } from '../drivers/BasicTradeDriver';
 import { BasicTradeService } from './BasicTradeService';
 import { Line, LineRequest } from '../entities/Trade';
@@ -6,10 +7,16 @@ import { DocumentDriver } from '../drivers/DocumentDriver';
 import { ICPFileDriver } from '../drivers/ICPFileDriver';
 import { Material } from '../entities/Material';
 import { ProductCategory } from '../entities/ProductCategory';
+import { OrderTrade } from '../entities/OrderTrade';
 
 describe('BasicTradeService', () => {
+    const externalUrl = 'externalUrl';
     const mockedBasicTradeDriver: BasicTradeDriver = createMock<BasicTradeDriver>({
-        getTrade: jest.fn(),
+        getTrade: jest.fn().mockResolvedValue(
+            createMock<OrderTrade>({
+                externalUrl
+            })
+        ),
         getLines: jest.fn(),
         getLine: jest.fn(),
         addLine: jest.fn(),
@@ -27,7 +34,7 @@ describe('BasicTradeService', () => {
     const productCategory = new ProductCategory(1, 'category', 85, 'description');
     const material = new Material(1, productCategory);
 
-    const basicTradeService = new BasicTradeService(
+    let basicTradeService = new BasicTradeService(
         mockedBasicTradeDriver,
         mockedDocumentDriver,
         mockedIcpFileDriver
@@ -90,4 +97,35 @@ describe('BasicTradeService', () => {
             expect(expectedMockedFunction).toHaveBeenCalledWith(...expectedMockedFunctionArgs);
         }
     );
+
+    it('should get complete basic trade from external storage', async () => {
+        basicTradeService = new BasicTradeService(
+            mockedBasicTradeDriver,
+            mockedDocumentDriver,
+            mockedIcpFileDriver
+        );
+        mockedIcpFileDriver.read = jest.fn().mockResolvedValue(
+            new TextEncoder().encode(
+                JSON.stringify({
+                    issueDate: new Date()
+                })
+            )
+        );
+        await basicTradeService.getCompleteTrade();
+
+        expect(mockedBasicTradeDriver.getTrade).toHaveBeenCalledTimes(1);
+        expect(mockedIcpFileDriver.read).toHaveBeenCalledTimes(1);
+        expect(mockedIcpFileDriver.read).toHaveBeenNthCalledWith(
+            1,
+            `${externalUrl}/files/metadata.json`
+        );
+    });
+
+    it('should throw error if try to get complete basic trade retrieved from external storage, without passing storage drivers to constructor', async () => {
+        basicTradeService = new BasicTradeService(mockedBasicTradeDriver);
+        const fn = async () => basicTradeService.getCompleteTrade();
+        await expect(fn).rejects.toThrow(
+            new Error('BasicTradeService: ICPFileDriver has not been set')
+        );
+    });
 });
