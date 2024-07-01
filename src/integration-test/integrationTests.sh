@@ -1,12 +1,13 @@
 #!/bin/bash
 
 ROOT_DIR=$PWD
-echo "Enable environment variables ...done"
+echo "Enable environment variables..."
 source ./integration-test/.env
 
 read -p "These tests will be handled by the IDE user interface? (Y/n): " TEST_IDE
 
 smartContractsDeploy () {
+  echo "----------------- Deploying smart contracts -----------------"
   cd ../blockchain/scripts
   echo "1) Checking local network..."
   echo "------------------------------------"
@@ -35,6 +36,7 @@ smartContractsDeploy () {
 }
 
 icpCanistersDeploy() {
+  echo "----------------- Deploying ICP canisters -----------------"
   if [ -z "$ICP_LIB_PATH" ]; then
     echo "ICP_LIB_PATH is not set"
     exit 1
@@ -52,18 +54,23 @@ icpCanistersDeploy() {
   echo "------------------------------------"
   # create local network
   nohup dfx start --clean > /dev/null &
-  #wait until localnetwork is up
+  #wait until local network is up
   while true; do
-    dfx ping 2> /dev/null
+    dfx ping > /dev/null 2>&1
     if [ $? -eq 0 ]; then
+      echo "ICP network is now up and running!"
       break
     fi
-    sleep 2
+    echo "Waiting..."
+    sleep 10
   done
+#  echo "Dashboard port: $(dfx info replica-port)"
+#  echo "Network port: $(dfx info webserver-port)"
 
   echo "3) Deploying contracts on local network..."
   echo "------------------------------------"
   cd "$ICP_LIB_PATH"
+#  dfx identity get-wallet
   sh ./scripts/deploy-local.sh
   cd "$ROOT_DIR"
 }

@@ -5,6 +5,7 @@ import path from 'path';
 import { ICPStorageDriver } from '@blockchain-lib/common';
 import { Secp256k1KeyIdentity } from '@dfinity/identity-secp256k1';
 import * as fs from 'fs';
+import { ICPFileDriver } from '../drivers/ICPFileDriver';
 import DocumentService from '../services/DocumentService';
 import { DocumentDriver } from '../drivers/DocumentDriver';
 import { TradeManagerService } from '../services/TradeManagerService';
@@ -26,7 +27,6 @@ import {
     TRADE_MANAGER_CONTRACT_ADDRESS
 } from './constants/ethereum';
 import { OrderTradeDriver } from '../drivers/OrderTradeDriver';
-import { ICPFileDriver } from '../drivers/ICPFileDriver';
 import { OrderStatus } from '../types/OrderStatus';
 import { DocumentStatus, TransactionLine } from '../entities/Document';
 import FileHelpers from '../utils/fileHelpers';
