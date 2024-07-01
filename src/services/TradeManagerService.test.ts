@@ -1,7 +1,7 @@
 import { createMock } from 'ts-auto-mock';
 import { TradeManagerService } from './TradeManagerService';
 import { TradeManagerDriver } from '../drivers/TradeManagerDriver';
-import { BasicTrade } from '../entities/BasicTrade';
+import { BasicTrade, BasicTradeMetadata } from '../entities/BasicTrade';
 import { OrderTrade, OrderTradeMetadata } from '../entities/OrderTrade';
 import { NegotiationStatus } from '../types/NegotiationStatus';
 import { URLStructure } from '../types/URLStructure';
@@ -62,7 +62,7 @@ describe('TradeManagerService', () => {
     );
     const agreedAmount: number = 1000;
     const tokenAddress: string = 'tokenAddress';
-    const basicTradeMetadata = { metadata: 'metadata' };
+    const basicTradeMetadata: BasicTradeMetadata = { issueDate: new Date() };
     const orderTradeMetadata: OrderTradeMetadata = {
         incoterms: 'incoterms',
         shipper: 'shipper',

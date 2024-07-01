@@ -7,6 +7,7 @@ import { ICPFileDriver } from '../drivers/ICPFileDriver';
 import { URLStructure } from '../types/URLStructure';
 import FileHelpers from '../utils/fileHelpers';
 import { URL_SEGMENTS } from '../constants/ICP';
+import { BasicTradeMetadata } from '../entities/BasicTrade';
 
 export interface TradeManagerServiceArgs {
     tradeManagerDriver: TradeManagerDriver;
@@ -33,7 +34,7 @@ export class TradeManagerService {
         customer: string,
         commissioner: string,
         name: string,
-        metadata: object,
+        metadata: BasicTradeMetadata,
         urlStructure: URLStructure,
         delegatedOrganizationIds: number[] = []
     ): Promise<[number, string, string]> {
@@ -124,7 +125,7 @@ export class TradeManagerService {
 
     private async registerTrade(
         registerCallback: RegisterTradeCallback,
-        metadata: object,
+        metadata: BasicTradeMetadata | OrderTradeMetadata,
         urlStructure: URLStructure,
         delegatedOrganizationIds: number[] = []
     ): Promise<[number, string, string]> {
