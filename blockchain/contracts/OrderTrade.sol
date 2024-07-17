@@ -184,7 +184,7 @@ contract OrderTrade is Trade {
     function enforceDeadlines() public {
         if(haveDeadlinesExpired()) {
             _hasOrderExpired = true;
-            _escrow.enableRefund();
+            _escrow.enableRefund(100);
             emit OrderExpired();
         }
     }
@@ -209,7 +209,7 @@ contract OrderTrade is Trade {
         emit OrderSignatureAffixed(_msgSender());
 
         if (_hasSupplierSigned && _hasCommissionerSigned) {
-            _escrow = _escrowManager.registerEscrow(_supplier, _commissioner, _agreedAmount, _paymentDeadline - block.timestamp, _tokenAddress);
+            _escrow = _escrowManager.registerEscrow(_supplier, _paymentDeadline - block.timestamp, _tokenAddress);
             emit OrderConfirmed();
         }
     }
@@ -235,7 +235,7 @@ contract OrderTrade is Trade {
     function completeTransaction() public {
         require(getOrderStatus() == OrderStatus.COMPLETED, "Transaction is not completed until the goods have not been imported and the quality is the expected one");
 
-        _escrow.close();
+        _escrow.enableWithdrawal(100);
     }
 
     function _updateSignatures(address sender) private {
