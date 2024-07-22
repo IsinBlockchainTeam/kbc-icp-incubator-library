@@ -13,20 +13,14 @@ describe('Escrow.sol', () => {
         payee: SignerWithAddress,
         payer1: SignerWithAddress,
         payer2: SignerWithAddress,
-        feeRecipient: SignerWithAddress;
+        feeRecipient: SignerWithAddress,
+        anotherFeeRecipient: SignerWithAddress;
     const duration = 60 * 60 * 24 * 30; // 30 days
     const depositAmount: number = 120;
     const baseFee: number = 20;
     const percentageFee: number = 1;
     let EscrowContract: ContractFactory;
 
-    const mineBlocks = async (n: number) => {
-        await ethers.provider.send('hardhat_mine', [`0x${n.toString(16)}`]);
-    };
-    const skipToDeadline = async () => {
-        const proposalDeadline = await escrowContract.getDeadline();
-        await mineBlocks(Number(proposalDeadline));
-    };
     const calculateFee = (amount: number) => baseFee + Math.floor(((amount - baseFee) * percentageFee) / 100);
     const deposit = async (actor: SignerWithAddress, amount: number) => {
         await tokenContract.connect(actor).approve(escrowContract.address, amount);
@@ -34,7 +28,7 @@ describe('Escrow.sol', () => {
     }
 
     beforeEach(async () => {
-        [admin, payee, payer1, payer2, feeRecipient] = await ethers.getSigners();
+        [admin, payee, payer1, payer2, feeRecipient, anotherFeeRecipient] = await ethers.getSigners();
 
         const Token = await ethers.getContractFactory(ContractName.MY_TOKEN);
         tokenContract = await Token.deploy(depositAmount * 10);
@@ -54,8 +48,6 @@ describe('Escrow.sol', () => {
         );
         await escrowContract.deployed();
     });
-
-
     describe('Escrow creation', () => {
         it('should retrieve escrow correctly', async () => {
             expect(await escrowContract.getOwner()).to.equal(payee.address);
@@ -159,7 +151,6 @@ describe('Escrow.sol', () => {
             ).to.be.revertedWith('Escrow: percentage fee cannot be greater than 100');
         });
     });
-    // TODO: Updates
     describe('Deposit', () => {
         it('should be able to deposit in Active state', async () => {
             const initialBalance = Number(await tokenContract.balanceOf(payer1.address));
@@ -312,52 +303,100 @@ describe('Escrow.sol', () => {
             ).to.be.revertedWith('Escrow: can only refund when there is something to refund');
         });
     });
-    //
-    //     describe('Update', () => {
-    //         it('should update commission address', async () => {
-    //             await tokenContract.connect(purchaser).approve(escrowContract.address, depositAmount);
-    //             await escrowContract.connect(purchaser).deposit(depositAmount);
-    //             await escrowContract.connect(admin).updateCommissioner(anotherCommissioner.address);
-    //
-    //             await escrowContract.connect(admin).close();
-    //             await escrowContract.connect(payee).withdraw();
-    //             expect(await tokenContract.balanceOf(commissioner.address)).to.equal(0);
-    //             expect(await tokenContract.balanceOf(anotherCommissioner.address)).to.equal(calculateFee(depositAmount));
-    //         });
-    //
-    //         it('should fail updating commission address if caller is not admin', async () => {
-    //             await expect(escrowContract.connect(purchaser).updateCommissioner(anotherCommissioner.address)).to.be.revertedWith(
-    //                 'Escrow: caller is not the admin'
-    //             );
-    //         });
-    //
-    //         it('should update commission address - FAIL(Escrow: commissioner is the zero address)', async () => {
-    //             await expect(escrowContract.connect(admin).updateCommissioner(ethers.constants.AddressZero)).to.be.revertedWith(
-    //                 'Escrow: commissioner is the zero address'
-    //             );
-    //         });
-    //
-    //         it('should update the base fee', async () => {
-    //             await escrowContract.connect(admin).updateBaseFee(50);
-    //             expect(await escrowContract.getBaseFee()).to.equal(50);
-    //         });
-    //
-    //         it('should update the percentage fee', async () => {
-    //             await escrowContract.connect(admin).updatePercentageFee(5);
-    //             expect(await escrowContract.getPercentageFee()).to.equal(5);
-    //         });
-    //     });
-    //
-    //     describe('Admins', () => {
-    //         it('should add an admin and later remove it', async () => {
-    //             await escrowContract.connect(admin).addAdmin(delegate.address);
-    //             await expect(escrowContract.connect(delegate).addAdmin(anotherCommissioner.address)).to.not.be.reverted;
-    //
-    //             await escrowContract.connect(admin).removeAdmin(delegate.address);
-    //             await expect(escrowContract.connect(delegate).addAdmin(anotherCommissioner.address)).to.be.revertedWith(
-    //                 'Escrow: caller is not the admin'
-    //             );
-    //         });
-    //     });
-    // });
+    describe('Update Fee Recipient', () => {
+        it('should update fee recipient', async () => {
+            await deposit(payer1, depositAmount);
+            await escrowContract.connect(admin).updateFeeRecipient(anotherFeeRecipient.address);
+            await escrowContract.connect(admin).enableRefund(100);
+
+            const feeRecipientInitialBalance = Number(await tokenContract.balanceOf(feeRecipient.address));
+            const anotherFeeRecipientInitialBalance = Number(await tokenContract.balanceOf(anotherFeeRecipient.address));
+            await escrowContract.connect(payer1).payerRefund();
+            const fees = calculateFee(depositAmount);
+
+            expect(await tokenContract.balanceOf(feeRecipient.address)).to.equal(feeRecipientInitialBalance);
+            expect(await tokenContract.balanceOf(anotherFeeRecipient.address)).to.equal(anotherFeeRecipientInitialBalance + fees);
+        });
+        it('should fail updating fee recipient address if in wrong state', async () => {
+            await escrowContract.connect(admin).enableWithdrawal(0);
+            await expect(escrowContract.connect(admin).updateFeeRecipient(payer1.address)).to.be.revertedWith(
+                'Escrow: can only edit while active'
+            );
+
+            await escrowContract.connect(admin).enableRefund(0);
+            await expect(escrowContract.connect(admin).updateFeeRecipient(payer1.address)).to.be.revertedWith(
+                'Escrow: can only edit while active'
+            );
+        });
+        it('should fail updating fee recipient address if caller is not admin', async () => {
+            await expect(escrowContract.connect(payer1).updateFeeRecipient(payer1.address)).to.be.revertedWith(
+                'Escrow: caller is not the admin'
+            );
+        });
+        it('should fail updating fee recipient address if the new recipient is the zero address', async () => {
+            await expect(escrowContract.connect(admin).updateFeeRecipient(ethers.constants.AddressZero)).to.be.revertedWith(
+                'Escrow: fee recipient is the zero address'
+            );
+        });
+        it('should fail updating fee recipient address if the new recipient is the same to the current one', async () => {
+            await expect(escrowContract.connect(admin).updateFeeRecipient(feeRecipient.address)).to.be.revertedWith(
+                'Escrow: new fee recipient is the same of the current one'
+            );
+        });
+    });
+    describe('Update Base Fee', () => {
+        it('should update the base fee', async () => {
+            await escrowContract.connect(admin).updateBaseFee(50);
+            expect(await escrowContract.getBaseFee()).to.equal(50);
+        });
+        it('should fail updating base fee if in wrong state', async () => {
+            await escrowContract.connect(admin).enableWithdrawal(0);
+            await expect(escrowContract.connect(admin).updateBaseFee(0)).to.be.revertedWith(
+                'Escrow: can only edit while active'
+            );
+
+            await escrowContract.connect(admin).enableRefund(0);
+            await expect(escrowContract.connect(admin).updateBaseFee(0)).to.be.revertedWith(
+                'Escrow: can only edit while active'
+            );
+        });
+        it('should fail updating base fee if caller is not admin', async () => {
+            await expect(escrowContract.connect(payer1).updateBaseFee(0)).to.be.revertedWith(
+                'Escrow: caller is not the admin'
+            );
+        });
+    });
+    describe('Update Percentage Fee', () => {
+        it('should update the percentage fee', async () => {
+            await escrowContract.connect(admin).updatePercentageFee(5);
+            expect(await escrowContract.getPercentageFee()).to.equal(5);
+        });
+        it('should fail updating percentage fee if in wrong state', async () => {
+            await escrowContract.connect(admin).enableWithdrawal(0);
+            await expect(escrowContract.connect(admin).updatePercentageFee(0)).to.be.revertedWith(
+                'Escrow: can only edit while active'
+            );
+
+            await escrowContract.connect(admin).enableRefund(0);
+            await expect(escrowContract.connect(admin).updatePercentageFee(0)).to.be.revertedWith(
+                'Escrow: can only edit while active'
+            );
+        });
+        it('should fail updating percentage fee if caller is not admin', async () => {
+            await expect(escrowContract.connect(payer1).updatePercentageFee(0)).to.be.revertedWith(
+                'Escrow: caller is not the admin'
+            );
+        });
+    });
+    describe('Admins', () => {
+        it('should add an admin and later remove it', async () => {
+            await escrowContract.connect(admin).addAdmin(feeRecipient.address);
+            await expect(escrowContract.connect(feeRecipient).addAdmin(anotherFeeRecipient.address)).to.not.be.reverted;
+
+            await escrowContract.connect(admin).removeAdmin(feeRecipient.address);
+            await expect(escrowContract.connect(feeRecipient).addAdmin(feeRecipient.address)).to.be.revertedWith(
+                'Escrow: caller is not the admin'
+            );
+        });
+    });
 });
