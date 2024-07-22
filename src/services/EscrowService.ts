@@ -1,6 +1,5 @@
 import { EscrowDriver } from '../drivers/EscrowDriver';
 import { EscrowStatus } from '../types/EscrowStatus';
-import { Escrow } from '../smart-contracts';
 
 export class EscrowService {
     private _escrowDriver: EscrowDriver;
@@ -12,120 +11,97 @@ export class EscrowService {
     async getOwner(): Promise<string> {
         return this._escrowDriver.getOwner();
     }
-
     async getPayee(): Promise<string> {
         return this._escrowDriver.getPayee();
     }
-
-    async getPurchaser(): Promise<string> {
-        return this._escrowDriver.getPurchaser();
-    }
-
-    async getPayers(): Promise<string[]> {
-        return this._escrowDriver.getPayers();
-    }
-
-    async getPayer(address: string): Promise<Escrow.PayerStructOutput> {
-        return this._escrowDriver.getPayer(address);
-    }
-
-    async getAgreedAmount(): Promise<number> {
-        return this._escrowDriver.getAgreedAmount();
-    }
-
     async getDeployedAt(): Promise<number> {
         return this._escrowDriver.getDeployedAt();
     }
-
     async getDuration(): Promise<number> {
         return this._escrowDriver.getDuration();
     }
-
-    async getState(): Promise<EscrowStatus> {
-        return this._escrowDriver.getState();
+    async getDeadline(): Promise<number> {
+        return this._escrowDriver.getDeadline();
     }
-
-    async getDepositAmount(): Promise<number> {
-        return this._escrowDriver.getDepositAmount();
-    }
-
     async getTokenAddress(): Promise<string> {
         return this._escrowDriver.getTokenAddress();
     }
-
-    async getCommissioner(): Promise<string> {
-        return this._escrowDriver.getCommissioner();
+    async getState(): Promise<EscrowStatus> {
+        return this._escrowDriver.getState();
     }
-
+    async getFeeRecipient(): Promise<string> {
+        return this._escrowDriver.getFeeRecipient();
+    }
     async getBaseFee(): Promise<number> {
         return this._escrowDriver.getBaseFee();
     }
-
-    async updateBaseFee(newBaseFee: number): Promise<void> {
-        await this._escrowDriver.updateBaseFee(newBaseFee);
-    }
-
     async getPercentageFee(): Promise<number> {
         return this._escrowDriver.getPercentageFee();
     }
+    async getFees(amount: number): Promise<number> {
+        return this._escrowDriver.getFees(amount);
+    }
 
+    async getDepositedAmount(): Promise<number> {
+        return this._escrowDriver.getDepositedAmount();
+    }
+    async getTotalDepositedAmount(): Promise<number> {
+        return this._escrowDriver.getTotalDepositedAmount();
+    }
+    async getRefundedAmount(): Promise<number> {
+        return this._escrowDriver.getRefundedAmount();
+    }
+    async getTotalRefundedAmount(): Promise<number> {
+        return this._escrowDriver.getTotalRefundedAmount();
+    }
+    async getTotalWithdrawnAmount(): Promise<number> {
+        return this._escrowDriver.getTotalWithdrawnAmount();
+    }
+
+    async getRefundablePercentage(): Promise<number> {
+        return this._escrowDriver.getRefundablePercentage();
+    }
+    async getWithdrawablePercentage(): Promise<number> {
+        return this._escrowDriver.getWithdrawablePercentage();
+    }
+    async getWithdrawableAmount(): Promise<number> {
+        return this._escrowDriver.getWithdrawableAmount();
+    }
+    async getRefundableAmount(payer: string): Promise<number> {
+        return this._escrowDriver.getRefundableAmount(payer);
+    }
+
+    async updateFeeRecipient(newFeeRecipient: string): Promise<void> {
+        await this._escrowDriver.updateFeeRecipient(newFeeRecipient);
+    }
+    async updateBaseFee(newBaseFee: number): Promise<void> {
+        await this._escrowDriver.updateBaseFee(newBaseFee);
+    }
     async updatePercentageFee(newPercentageFee: number): Promise<void> {
         await this._escrowDriver.updatePercentageFee(newPercentageFee);
     }
 
-    async updateCommissioner(newCommissioner: string): Promise<void> {
-        await this._escrowDriver.updateCommissioner(newCommissioner);
+    async isExpired(): Promise<boolean> {
+        return this._escrowDriver.isExpired();
     }
 
-    async getDeadline(): Promise<number> {
-        return this._escrowDriver.getDeadline();
+    async enableWithdrawal(withdrawablePercentage: number): Promise<void> {
+        await this._escrowDriver.enableWithdrawal(withdrawablePercentage);
     }
-
-    async hasExpired(): Promise<boolean> {
-        return this._escrowDriver.hasExpired();
-    }
-
-    async withdrawalAllowed(): Promise<boolean> {
-        return this._escrowDriver.withdrawalAllowed();
-    }
-
-    async refundAllowed(): Promise<boolean> {
-        return this._escrowDriver.refundAllowed();
-    }
-
-    async addDelegate(delegate: string): Promise<void> {
-        await this._escrowDriver.addDelegate(delegate);
-    }
-
-    async removeDelegate(delegate: string): Promise<void> {
-        await this._escrowDriver.removeDelegate(delegate);
+    async enableRefund(refundablePercentage: number): Promise<void> {
+        await this._escrowDriver.enableRefund(refundablePercentage);
     }
 
     async deposit(amount: number): Promise<void> {
         await this._escrowDriver.deposit(amount);
     }
-
-    async lock(): Promise<void> {
-        await this._escrowDriver.lock();
+    async payerWithdraw(amount: number): Promise<void> {
+        await this._escrowDriver.payerWithdraw(amount);
     }
-
-    async close(): Promise<void> {
-        await this._escrowDriver.close();
+    async payeeWithdraw(): Promise<void> {
+        await this._escrowDriver.payeeWithdraw();
     }
-
-    async enableRefund(): Promise<void> {
-        await this._escrowDriver.enableRefund();
-    }
-
-    async enableRefundForExpiredEscrow(): Promise<void> {
-        await this._escrowDriver.enableRefundForExpiredEscrow();
-    }
-
-    async withdraw(): Promise<void> {
-        await this._escrowDriver.withdraw();
-    }
-
-    async refund(): Promise<void> {
-        await this._escrowDriver.refund();
+    async payerRefund(): Promise<void> {
+        await this._escrowDriver.payerRefund();
     }
 }

@@ -82,7 +82,6 @@ contract Escrow is AccessControl {
         require(hasRole(ADMIN_ROLE, _msgSender()), "Escrow: caller is not the admin");
         _;
     }
-
     modifier depositable() {
         require(_state == State.Active, "Escrow: can only deposit while active");
         _;

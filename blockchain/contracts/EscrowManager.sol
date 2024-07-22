@@ -47,9 +47,9 @@ contract EscrowManager is AccessControl {
     }
 
     function registerEscrow(address payee, uint256 duration, address tokenAddress) public returns(Escrow)  {
-        require(payee != address(0), "Escrow: payee is the zero address");
-        require(duration != 0, "Escrow: duration is zero");
-        require(tokenAddress != address(0), "Escrow: token address is the zero address");
+        require(payee != address(0), "EscrowManager: payee is the zero address");
+        require(duration != 0, "EscrowManager: duration is zero");
+        require(tokenAddress != address(0), "EscrowManager: token address is the zero address");
 
         uint256 id = _counter.current() + 1;
         _counter.increment();
@@ -65,7 +65,17 @@ contract EscrowManager is AccessControl {
     function getFeeRecipient() public view returns (address) {
         return _feeRecipient;
     }
+    function getBaseFee() public view returns (uint256) {
+        return _baseFee;
+    }
+    function getPercentageFee() public view returns (uint256) {
+        return _percentageFee;
+    }
+    function getEscrow(uint256 id) public view returns (Escrow) {
+        return _escrows[id];
+    }
 
+    // Updates
     function updateFeeRecipient(address feeRecipient) public onlyAdmin {
         require(feeRecipient != address(0), "EscrowManager: commission address is the zero address");
         require(feeRecipient != _feeRecipient, "EscrowManager: new commission address is the same of the current one");
@@ -77,11 +87,6 @@ contract EscrowManager is AccessControl {
         }
         emit FeeRecipientUpdated(feeRecipient);
     }
-
-    function getBaseFee() public view returns (uint256) {
-        return _baseFee;
-    }
-
     function updateBaseFee(uint256 baseFee) public onlyAdmin {
         require(baseFee != _baseFee, "EscrowManager: new base fee is the same of the current one");
         _baseFee = baseFee;
@@ -92,11 +97,6 @@ contract EscrowManager is AccessControl {
         }
         emit BaseFeeUpdated(baseFee);
     }
-
-    function getPercentageFee() public view returns (uint256) {
-        return _percentageFee;
-    }
-
     function updatePercentageFee(uint256 percentageFee) public onlyAdmin {
         require(percentageFee != _percentageFee, "EscrowManager: new percentage fee is the same of the current one");
         require(percentageFee <= 100, "EscrowManager: percentage fee cannot be greater than 100");
@@ -109,15 +109,10 @@ contract EscrowManager is AccessControl {
         emit PercentageFeeUpdated(percentageFee);
     }
 
-    function getEscrow(uint256 id) public view returns (Escrow) {
-        return _escrows[id];
-    }
-
     // ROLES
     function addAdmin(address admin) public onlyAdmin {
         grantRole(ADMIN_ROLE, admin);
     }
-
     function removeAdmin(address admin) public onlyAdmin {
         revokeRole(ADMIN_ROLE, admin);
     }
