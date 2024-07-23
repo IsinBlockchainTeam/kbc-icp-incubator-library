@@ -9,7 +9,6 @@ import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-// TODO: add a withdraw allowance for the payee
 contract Escrow is AccessControl {
     using Address for address;
     using SafeERC20 for IERC20;
@@ -217,6 +216,7 @@ contract Escrow is AccessControl {
     function deposit(uint256 amount) public depositable {
         require(amount > 0, "Escrow: can only deposit positive amount");
 
+        _token.approve(address(this), amount);
         _token.safeTransferFrom(_msgSender(), address(this), amount);
 
         _depositedAmount[_msgSender()] += amount;

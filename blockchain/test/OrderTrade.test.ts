@@ -82,7 +82,6 @@ describe('OrderTrade.sol', () => {
         enumerableUnitManagerContractFake.contains.returns((value: string) => units.includes(value[0]));
         escrowManagerContractFake = await smock.fake(ContractName.ESCROW_MANAGER);
         escrowFakeContract = await smock.fake(ContractName.ESCROW);
-        escrowFakeContract.close.returns();
         escrowManagerContractFake.registerEscrow.returns(escrowFakeContract.address);
     });
 
@@ -286,7 +285,7 @@ describe('OrderTrade.sol', () => {
             await orderTradeContract.connect(commissioner).validateDocument(1, 1);
 
             await orderTradeContract.completeTransaction();
-            expect(escrowFakeContract.close).to.have.callCount(1);
+            expect(escrowFakeContract.enableWithdrawal).to.have.callCount(1);
         });
     });
 
