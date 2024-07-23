@@ -1,11 +1,10 @@
-import { ICPResourceSpec } from '@blockchain-lib/common';
+import { FileHelpers, ICPResourceSpec } from '@blockchain-lib/common';
 import { TradeManagerDriver } from '../drivers/TradeManagerDriver';
 import { TradeType } from '../types/TradeType';
 import { OrderTradeMetadata } from '../entities/OrderTrade';
 import { Trade } from '../entities/Trade';
 import { ICPFileDriver } from '../drivers/ICPFileDriver';
 import { URLStructure } from '../types/URLStructure';
-import FileHelpers from '../utils/fileHelpers';
 import { URL_SEGMENTS } from '../constants/ICP';
 import { BasicTradeMetadata } from '../entities/BasicTrade';
 

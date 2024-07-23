@@ -7,6 +7,15 @@ export enum DocumentStatus {
     APPROVED,
     NOT_APPROVED
 }
+
+export interface DocumentMetadata {
+    fileName: string;
+    documentType: DocumentType;
+    date: Date;
+    transactionLines: TransactionLine[];
+    quantity?: number;
+}
+
 export class Document extends DocumentInfo {
     private _filename: string;
 
@@ -26,7 +35,8 @@ export class Document extends DocumentInfo {
         documentType: DocumentType,
         date: Date,
         content: Uint8Array,
-        transactionLines?: TransactionLine[]
+        transactionLines?: TransactionLine[],
+        quantity?: number
     ) {
         super(
             documentInfo.id,
@@ -39,6 +49,7 @@ export class Document extends DocumentInfo {
         this._date = date;
         this._content = content;
         this._transactionLines = transactionLines;
+        this._quantity = quantity;
     }
 
     get filename(): string {

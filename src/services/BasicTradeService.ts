@@ -1,9 +1,9 @@
+import { FileHelpers } from '@blockchain-lib/common';
 import { TradeService } from './TradeService';
 import { BasicTradeDriver } from '../drivers/BasicTradeDriver';
 import { IConcreteTradeService } from './IConcreteTradeService';
 import { BasicTrade, BasicTradeMetadata } from '../entities/BasicTrade';
 import { Line, LineRequest } from '../entities/Trade';
-import FileHelpers from '../utils/fileHelpers';
 
 export class BasicTradeService extends TradeService implements IConcreteTradeService {
     async getTrade(blockNumber?: number): Promise<BasicTrade> {

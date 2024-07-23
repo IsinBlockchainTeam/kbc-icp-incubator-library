@@ -1,4 +1,4 @@
-import { ICPResourceSpec } from '@blockchain-lib/common';
+import { FileHelpers, ICPResourceSpec } from '@blockchain-lib/common';
 import { createMock } from 'ts-auto-mock';
 import { TradeService } from './TradeService';
 import { DocumentType } from '../entities/DocumentInfo';
@@ -6,7 +6,6 @@ import { DocumentStatus, TransactionLine } from '../entities/Document';
 import { ICPFileDriver } from '../drivers/ICPFileDriver';
 import { DocumentDriver } from '../drivers/DocumentDriver';
 import { TradeDriver } from '../drivers/TradeDriver';
-import FileHelpers from '../utils/fileHelpers';
 
 describe('TradeService', () => {
     const mockedGetAllDocumentIds = jest.fn();

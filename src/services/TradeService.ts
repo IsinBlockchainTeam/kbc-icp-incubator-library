@@ -1,11 +1,10 @@
-import { ICPResourceSpec } from '@blockchain-lib/common';
+import { FileHelpers, ICPResourceSpec } from '@blockchain-lib/common';
 import { TradeDriver } from '../drivers/TradeDriver';
 import { DocumentInfo, DocumentType } from '../entities/DocumentInfo';
 import { TradeType } from '../types/TradeType';
 import { ICPFileDriver } from '../drivers/ICPFileDriver';
 import { DocumentDriver } from '../drivers/DocumentDriver';
-import FileHelpers from '../utils/fileHelpers';
-import { DocumentStatus, TransactionLine } from '../entities/Document';
+import { DocumentMetadata, DocumentStatus, TransactionLine } from '../entities/Document';
 
 export class TradeService {
     protected _tradeDriver: TradeDriver;
@@ -53,7 +52,7 @@ export class TradeService {
 
         const contentHash = FileHelpers.getHash(fileContent);
         await this._icpFileDriver.create(fileContent, resourceSpec, delegatedOrganizationIds);
-        const documentMetadata = {
+        const documentMetadata: DocumentMetadata = {
             fileName: resourceSpec.name,
             documentType,
             date: new Date(),

@@ -38,13 +38,18 @@ export { TradeDriver } from './drivers/TradeDriver';
 export { TradeService } from './services/TradeService';
 export { BasicTradeDriver } from './drivers/BasicTradeDriver';
 export { BasicTradeService } from './services/BasicTradeService';
-export { OrderTradeDriver } from './drivers/OrderTradeDriver';
+export { OrderTradeDriver, OrderTradeEvents } from './drivers/OrderTradeDriver';
 export { OrderTradeService } from './services/OrderTradeService';
 export type { IConcreteTradeService } from './services/IConcreteTradeService';
 export type { URLStructure } from './types/URLStructure';
 
 export { DocumentInfo, DocumentType } from './entities/DocumentInfo';
-export { Document, DocumentStatus, type TransactionLine } from './entities/Document';
+export {
+    Document,
+    DocumentMetadata,
+    DocumentStatus,
+    type TransactionLine
+} from './entities/Document';
 export { DocumentDriver } from './drivers/DocumentDriver';
 export { DocumentService } from './services/DocumentService';
 
@@ -68,7 +73,6 @@ export { ICPFileDriver } from './drivers/ICPFileDriver';
 
 export { GraphService, type GraphData } from './services/GraphService';
 
-export { FileHelpers } from './utils/fileHelpers';
 export { serial } from './utils/utils';
 export { URL_SEGMENTS } from './constants/ICP';
 export { URL_SEGMENT_INDEXES } from './constants/ICP';

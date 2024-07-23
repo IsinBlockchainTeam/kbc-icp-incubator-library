@@ -1,4 +1,5 @@
 import { createMock } from 'ts-auto-mock';
+import { FileHelpers } from '@blockchain-lib/common';
 import { TradeManagerService } from './TradeManagerService';
 import { TradeManagerDriver } from '../drivers/TradeManagerDriver';
 import { BasicTrade, BasicTradeMetadata } from '../entities/BasicTrade';
@@ -6,7 +7,6 @@ import { OrderTrade, OrderTradeMetadata } from '../entities/OrderTrade';
 import { NegotiationStatus } from '../types/NegotiationStatus';
 import { URLStructure } from '../types/URLStructure';
 import { ICPFileDriver } from '../drivers/ICPFileDriver';
-import FileHelpers from '../utils/fileHelpers';
 import { URL_SEGMENTS } from '../constants/ICP';
 
 describe('TradeManagerService', () => {

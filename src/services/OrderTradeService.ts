@@ -1,3 +1,4 @@
+import { FileHelpers } from '@blockchain-lib/common';
 import { TradeService } from './TradeService';
 import { OrderTradeDriver, OrderTradeEvents } from '../drivers/OrderTradeDriver';
 import { NegotiationStatus } from '../types/NegotiationStatus';
@@ -8,7 +9,6 @@ import {
     OrderTradeMetadata
 } from '../entities/OrderTrade';
 import { IConcreteTradeService } from './IConcreteTradeService';
-import FileHelpers from '../utils/fileHelpers';
 import { OrderStatus } from '../types/OrderStatus';
 
 export class OrderTradeService extends TradeService implements IConcreteTradeService {

@@ -168,7 +168,7 @@ abstract contract Trade is AccessControl {
     function addDocument(DocumentType documentType, string memory externalUrl, string memory contentHash) public onlyAdminOrContractPart {
 //        require(_lines[lineId].exists, "Trade: Line does not exist");
 //        require(_lines[lineId].materialId != 0, "Trade: A material must be assigned before adding a document for a line");
-        uint256 documentId = _documentManager.registerDocument(externalUrl, contentHash, _msgSender());
+        uint256 documentId = _documentManager.registerDocument(externalUrl, contentHash, tx.origin);
         _documentIds.push(documentId);
         _documentsByType[documentType].push(documentId);
         _documentsStatus[documentId] = IsValidated(DocumentStatus.NOT_EVALUATED, true);

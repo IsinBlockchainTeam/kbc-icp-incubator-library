@@ -1,8 +1,8 @@
+import { FileHelpers } from '@blockchain-lib/common';
 import { DocumentDriver } from '../drivers/DocumentDriver';
-import { DocumentInfo, DocumentType } from '../entities/DocumentInfo';
-import { Document, TransactionLine } from '../entities/Document';
+import { DocumentInfo } from '../entities/DocumentInfo';
+import { Document, DocumentMetadata } from '../entities/Document';
 import { ICPFileDriver } from '../drivers/ICPFileDriver';
-import FileHelpers from '../utils/fileHelpers';
 
 export class DocumentService {
     private _documentDriver: DocumentDriver;
@@ -51,12 +51,6 @@ export class DocumentService {
                 documentInfo.externalUrl.split(`${path}/`)[1]
             );
 
-            interface DocumentMetadata {
-                fileName: string;
-                documentType: DocumentType;
-                date: Date;
-                transactionLines: TransactionLine[];
-            }
             const documentMetadata: DocumentMetadata = FileHelpers.getObjectFromBytes(
                 await this._icpFileDriver.read(`${path}/${metadataName}-metadata.json`)
             ) as DocumentMetadata;
@@ -64,6 +58,7 @@ export class DocumentService {
             const documentType = documentMetadata.documentType;
             const date = documentMetadata.date;
             const transactionLines = documentMetadata.transactionLines;
+            const quantity = documentMetadata.quantity;
             if (!fileName || !documentType || !date)
                 throw new Error(
                     'Error while retrieving document metadata from external storage: missing fields'
@@ -76,7 +71,8 @@ export class DocumentService {
                 documentType,
                 new Date(date),
                 fileContent,
-                transactionLines
+                transactionLines,
+                quantity
             );
         } catch (e: any) {
             throw new Error(
