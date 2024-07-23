@@ -169,9 +169,7 @@ describe('DocumentService', () => {
                 )
             )
         ).rejects.toThrow(
-            new Error(
-                'Error while retrieving document file from external storage: Error while retrieving document metadata from external storage: missing fields'
-            )
+            new Error('Error while retrieving document file from external storage: Missing fields')
         );
     });
 
