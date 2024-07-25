@@ -76,8 +76,9 @@ serial([
     //     deploy(ContractName.ESCROW_MANAGER, [
     //         '0x30054880e4E2fA1082C1976cA5547cC3bd185c11', // ContractsOwner
     //         process.env.ESCROW_BASE_FEE || 20,
-    //         process.env.ESCROW_COMMISSIONER_FEE || 1
-    //     ])
+    //         process.env.ESCROW_COMMISSIONER_FEE || 1,
+    //     ],
+    // ),
     () =>
         deploy(ContractName.TRADE_MANAGER, [
             '0x1B6cBA041508366A394D40410bca580bE6b69F4b', // PRODUCT_CATEGORY_MANAGER
@@ -108,7 +109,8 @@ serial([
     // () => deploy(
     //     ContractName.ETHEREUM_DID_REGISTRY, [],
     // ),
-]).catch((error: any) => {
-    console.error(error);
-    process.exitCode = 1;
-});
+])
+    .catch((error: any) => {
+        console.error(error);
+        process.exitCode = 1;
+    });
