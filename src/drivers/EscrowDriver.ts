@@ -12,83 +12,92 @@ export class EscrowDriver {
     async getOwner(): Promise<string> {
         return this._contract.getOwner();
     }
-
     async getPayee(): Promise<string> {
         return this._contract.getPayee();
     }
-
-    async getPurchaser(): Promise<string> {
-        return this._contract.getPurchaser();
-    }
-
-    async getPayers(): Promise<string[]> {
-        return this._contract.getPayers();
-    }
-
-    async getPayer(address: string): Promise<EscrowContract.PayerStructOutput> {
-        return this._contract.getPayer(address);
-    }
-
-    async getAgreedAmount(): Promise<number> {
-        return (await this._contract.getAgreedAmount()).toNumber();
-    }
-
     async getDeployedAt(): Promise<number> {
         return (await this._contract.getDeployedAt()).toNumber();
     }
-
     async getDuration(): Promise<number> {
         return (await this._contract.getDuration()).toNumber();
     }
-
+    async getDeadline(): Promise<number> {
+        return (await this._contract.getDeadline()).toNumber();
+    }
+    async getTokenAddress(): Promise<string> {
+        return this._contract.getTokenAddress();
+    }
     async getState(): Promise<EscrowStatus> {
         switch (await this._contract.getState()) {
             case 0:
                 return EscrowStatus.ACTIVE;
             case 1:
-                return EscrowStatus.LOCKED;
+                return EscrowStatus.WITHDRAWING;
             case 2:
                 return EscrowStatus.REFUNDING;
-            case 3:
-                return EscrowStatus.CLOSED;
             default:
                 throw new Error('Invalid state');
         }
     }
-
-    async getDepositAmount(): Promise<number> {
-        return (await this._contract.getDepositAmount()).toNumber();
+    async getFeeRecipient(): Promise<string> {
+        return this._contract.getFeeRecipient();
     }
-
-    async getTokenAddress(): Promise<string> {
-        return this._contract.getTokenAddress();
-    }
-
-    async getCommissioner(): Promise<string> {
-        return this._contract.getCommissioner();
-    }
-
     async getBaseFee(): Promise<number> {
         return (await this._contract.getBaseFee()).toNumber();
     }
-
     async getPercentageFee(): Promise<number> {
         return (await this._contract.getPercentageFee()).toNumber();
     }
+    async getFees(amount: number): Promise<number> {
+        return (await this._contract.getFees(amount)).toNumber();
+    }
 
-    async updateCommissioner(newCommissioner: string): Promise<void> {
+    async getDepositedAmount(): Promise<number> {
+        return (await this._contract.getDepositedAmount()).toNumber();
+    }
+    async getTotalDepositedAmount(): Promise<number> {
+        return (await this._contract.getTotalDepositedAmount()).toNumber();
+    }
+    async getRefundedAmount(): Promise<number> {
+        return (await this._contract.getRefundedAmount()).toNumber();
+    }
+    async getTotalRefundedAmount(): Promise<number> {
+        return (await this._contract.getTotalRefundedAmount()).toNumber();
+    }
+    async getTotalWithdrawnAmount(): Promise<number> {
+        return (await this._contract.getTotalWithdrawnAmount()).toNumber();
+    }
+
+    async getRefundablePercentage(): Promise<number> {
+        return (await this._contract.getRefundablePercentage()).toNumber();
+    }
+    async getWithdrawablePercentage(): Promise<number> {
+        return (await this._contract.getWithdrawablePercentage()).toNumber();
+    }
+    async getWithdrawableAmount(): Promise<number> {
+        return (await this._contract.getWithdrawableAmount()).toNumber();
+    }
+    async getRefundableAmount(payer: string): Promise<number> {
+        if (!utils.isAddress(payer)) {
+            throw new Error('Not an address');
+        }
+        return (await this._contract.getRefundableAmount(payer)).toNumber();
+    }
+
+    async updateFeeRecipient(newCommissioner: string): Promise<void> {
         if (!utils.isAddress(newCommissioner)) {
             throw new Error('Not an address');
         }
-        const tx = await this._contract.updateCommissioner(newCommissioner);
+        const tx = await this._contract.updateFeeRecipient(newCommissioner);
         await tx.wait();
     }
-
     async updateBaseFee(newBaseFee: number): Promise<void> {
+        if (newBaseFee < 0) {
+            throw new Error('Base fee must be greater than or equal to 0');
+        }
         const tx = await this._contract.updateBaseFee(newBaseFee);
         await tx.wait();
     }
-
     async updatePercentageFee(newPercentageFee: number): Promise<void> {
         if (newPercentageFee < 0 || newPercentageFee > 100) {
             throw new Error('Percentage fee must be between 0 and 100');
@@ -97,70 +106,45 @@ export class EscrowDriver {
         await tx.wait();
     }
 
-    async getDeadline(): Promise<number> {
-        return (await this._contract.getDeadline()).toNumber();
+    async isExpired(): Promise<boolean> {
+        return this._contract.isExpired();
     }
 
-    async hasExpired(): Promise<boolean> {
-        return this._contract.hasExpired();
-    }
-
-    async withdrawalAllowed(): Promise<boolean> {
-        return this._contract.withdrawalAllowed();
-    }
-
-    async refundAllowed(): Promise<boolean> {
-        return this._contract.refundAllowed();
-    }
-
-    async addDelegate(delegate: string): Promise<void> {
-        if (!utils.isAddress(delegate)) {
-            throw new Error('Not an address');
+    async enableWithdrawal(withdrawablePercentage: number): Promise<void> {
+        if (withdrawablePercentage < 0 || withdrawablePercentage > 100) {
+            throw new Error('Percentage must be between 0 and 100');
         }
-        const tx = await this._contract.addDelegate(delegate);
+        const tx = await this._contract.enableWithdrawal(withdrawablePercentage);
         await tx.wait();
     }
-
-    async removeDelegate(delegate: string): Promise<void> {
-        if (!utils.isAddress(delegate)) {
-            throw new Error('Not an address');
+    async enableRefund(refundablePercentage: number): Promise<void> {
+        if (refundablePercentage < 0 || refundablePercentage > 100) {
+            throw new Error('Percentage must be between 0 and 100');
         }
-        const tx = await this._contract.removeDelegate(delegate);
+        const tx = await this._contract.enableRefund(refundablePercentage);
         await tx.wait();
     }
 
     async deposit(amount: number): Promise<void> {
+        if (amount < 0) {
+            throw new Error('Amount must be greater than or equal to 0');
+        }
         const tx = await this._contract.deposit(amount);
         await tx.wait();
     }
-
-    async lock(): Promise<void> {
-        const tx = await this._contract.lock();
+    async payerWithdraw(amount: number): Promise<void> {
+        if (amount < 0) {
+            throw new Error('Amount must be greater than or equal to 0');
+        }
+        const tx = await this._contract.payerWithdraw(amount);
         await tx.wait();
     }
-
-    async close(): Promise<void> {
-        const tx = await this._contract.close();
+    async payeeWithdraw(): Promise<void> {
+        const tx = await this._contract.payeeWithdraw();
         await tx.wait();
     }
-
-    async enableRefund(): Promise<void> {
-        const tx = await this._contract.enableRefund();
-        await tx.wait();
-    }
-
-    async enableRefundForExpiredEscrow(): Promise<void> {
-        const tx = await this._contract.enableRefundForExpiredEscrow();
-        await tx.wait();
-    }
-
-    async withdraw(): Promise<void> {
-        const tx = await this._contract.withdraw();
-        await tx.wait();
-    }
-
-    async refund(): Promise<void> {
-        const tx = await this._contract.refund();
+    async payerRefund(): Promise<void> {
+        const tx = await this._contract.payerRefund();
         await tx.wait();
     }
 }

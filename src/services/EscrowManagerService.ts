@@ -11,51 +11,34 @@ export class EscrowManagerService {
         return this._escrowManagerDriver.getEscrowCounter();
     }
 
-    async registerEscrow(
-        payee: string,
-        purchaser: string,
-        agreedAmount: number,
-        duration: number,
-        tokenAddress: string
-    ): Promise<[number, string, string]> {
+    async registerEscrow(payee: string, duration: number, tokenAddress: string): Promise<[number, string, string]> {
         return this._escrowManagerDriver.registerEscrow(
             payee,
-            purchaser,
-            agreedAmount,
             duration,
             tokenAddress
         );
     }
 
-    async getCommissioner(): Promise<string> {
-        return this._escrowManagerDriver.getCommissioner();
+    async getFeeRecipient(): Promise<string> {
+        return this._escrowManagerDriver.getFeeRecipient();
     }
-
-    async updateCommissioner(newCommissioner: string): Promise<void> {
-        await this._escrowManagerDriver.updateCommissioner(newCommissioner);
-    }
-
     async getBaseFee(): Promise<number> {
         return this._escrowManagerDriver.getBaseFee();
     }
-
-    async updateBaseFee(newBaseFee: number): Promise<void> {
-        await this._escrowManagerDriver.updateBaseFee(newBaseFee);
-    }
-
     async getPercentageFee(): Promise<number> {
         return this._escrowManagerDriver.getPercentageFee();
     }
-
-    async updatePercentageFee(newPercentageFee: number): Promise<void> {
-        await this._escrowManagerDriver.updatePercentageFee(newPercentageFee);
-    }
-
     async getEscrow(id: number): Promise<string> {
         return this._escrowManagerDriver.getEscrow(id);
     }
 
-    async getEscrowIdsOfPurchaser(purchaser: string): Promise<number[]> {
-        return this._escrowManagerDriver.getEscrowIdsOfPurchaser(purchaser);
+    async updateFeeRecipient(newFeeRecipient: string): Promise<void> {
+        await this._escrowManagerDriver.updateFeeRecipient(newFeeRecipient);
+    }
+    async updateBaseFee(newBaseFee: number): Promise<void> {
+        await this._escrowManagerDriver.updateBaseFee(newBaseFee);
+    }
+    async updatePercentageFee(newPercentageFee: number): Promise<void> {
+        await this._escrowManagerDriver.updatePercentageFee(newPercentageFee);
     }
 }

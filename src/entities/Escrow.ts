@@ -2,49 +2,30 @@ import { EscrowStatus } from '../types/EscrowStatus';
 
 export class Escrow {
     private _payee: string;
-
-    private _purchaser: string;
-
-    private _payers: string[];
-
-    private _agreedAmount: number;
-
     private _deployedAt: number;
-
     private _duration: number;
-
-    private _state: EscrowStatus;
-
     private _tokenAddress: string;
-
-    private _commissioner: string;
-
+    private _state: EscrowStatus;
+    private _feeRecipient: string;
     private _baseFee: number;
-
     private _percentageFee: number;
 
     constructor(
         payee: string,
-        purchaser: string,
-        payers: string[],
-        agreedAmount: number,
         deployedAt: number,
         duration: number,
-        state: EscrowStatus,
         tokenAddress: string,
-        commissioner: string,
+        state: EscrowStatus,
+        feeRecipient: string,
         baseFee: number,
         percentageFee: number
     ) {
         this._payee = payee;
-        this._purchaser = purchaser;
-        this._payers = payers;
-        this._agreedAmount = agreedAmount;
         this._deployedAt = deployedAt;
         this._duration = duration;
-        this._state = state;
         this._tokenAddress = tokenAddress;
-        this._commissioner = commissioner;
+        this._state = state;
+        this._feeRecipient = feeRecipient;
         this._baseFee = baseFee;
         this._percentageFee = percentageFee;
     }
@@ -55,30 +36,6 @@ export class Escrow {
 
     set payee(value: string) {
         this._payee = value;
-    }
-
-    get purchaser(): string {
-        return this._purchaser;
-    }
-
-    set purchaser(value: string) {
-        this._purchaser = value;
-    }
-
-    get payers(): string[] {
-        return this._payers;
-    }
-
-    set payers(value: string[]) {
-        this._payers = value;
-    }
-
-    get agreedAmount(): number {
-        return this._agreedAmount;
-    }
-
-    set agreedAmount(value: number) {
-        this._agreedAmount = value;
     }
 
     get deployedAt(): number {
@@ -97,14 +54,6 @@ export class Escrow {
         this._duration = value;
     }
 
-    get state(): EscrowStatus {
-        return this._state;
-    }
-
-    set state(value: EscrowStatus) {
-        this._state = value;
-    }
-
     get tokenAddress(): string {
         return this._tokenAddress;
     }
@@ -113,12 +62,20 @@ export class Escrow {
         this._tokenAddress = value;
     }
 
-    get commissioner(): string {
-        return this._commissioner;
+    get state(): EscrowStatus {
+        return this._state;
     }
 
-    set commissioner(value: string) {
-        this._commissioner = value;
+    set state(value: EscrowStatus) {
+        this._state = value;
+    }
+
+    get feeRecipient(): string {
+        return this._feeRecipient;
+    }
+
+    set feeRecipient(value: string) {
+        this._feeRecipient = value;
     }
 
     get baseFee(): number {

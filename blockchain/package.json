@@ -9,7 +9,7 @@
         "compileOnly": "npx hardhat compile",
         "compile": "npx hardhat compile && rm -rf ../src/smart-contracts && cp -R ./typechain-types ../src/smart-contracts",
         "deploy": "npx hardhat run ./scripts/deploy.ts",
-        "deploy-testnet": "npx hardhat run ./scripts/deploy-testnet.ts",
+        "deploy-testnet": "npx hardhat run ./scripts/deploy-testnet.ts --network threeachain",
         "node": "npx hardhat node --hostname 0.0.0.0",
         "lint": "eslint \"{contracts,scripts,test,utils}/**/*.ts\" --fix",
         "prettier": "npx prettier . --write"
@@ -38,6 +38,7 @@
         "dotenv": "^16.0.3",
         "ethers": "5.7.2",
         "hardhat": "2.13.0",
-        "hardhat-ethernal": "3.1.0"
+        "hardhat-ethernal": "3.1.0",
+        "ts-mocha": "^10.0.0"
     }
 }

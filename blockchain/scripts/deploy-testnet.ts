@@ -76,18 +76,17 @@ serial([
     //     deploy(ContractName.ESCROW_MANAGER, [
     //         '0x30054880e4E2fA1082C1976cA5547cC3bd185c11', // ContractsOwner
     //         process.env.ESCROW_BASE_FEE || 20,
-    //         process.env.ESCROW_COMMISSIONER_FEE || 1,
-    //     ],
-    // ),
-    () =>
-        deploy(ContractName.TRADE_MANAGER, [
-            '0x1B6cBA041508366A394D40410bca580bE6b69F4b', // PRODUCT_CATEGORY_MANAGER
-            '0x65ac7209AE90D0CdB2B38D3a246881C101A62193', // MATERIAL_MANAGER
-            '0x1D45Ef71E69AaFFDef169AD29b0A798Edf9B1A89', // DOCUMENT_MANAGER
-            '0x52A45e1bfAd77E396B7c5180E499B69fA5BB93b8', // EnumerableFiatManager
-            '0x108a6ea0280500f7Ddf6434864B4124cdFd88D4C', // EnumerableUnitManager
-            '0x04FB04bF3597794FdA1c92a159bec4231887f49f' // ESCROW_MANAGER
-        ])
+    //         process.env.ESCROW_COMMISSIONER_FEE || 1
+    //     ])
+    // () =>
+    //     deploy(ContractName.TRADE_MANAGER, [
+    //         '0x1B6cBA041508366A394D40410bca580bE6b69F4b', // PRODUCT_CATEGORY_MANAGER
+    //         '0x65ac7209AE90D0CdB2B38D3a246881C101A62193', // MATERIAL_MANAGER
+    //         '0x1D45Ef71E69AaFFDef169AD29b0A798Edf9B1A89', // DOCUMENT_MANAGER
+    //         '0x52A45e1bfAd77E396B7c5180E499B69fA5BB93b8', // EnumerableFiatManager
+    //         '0x108a6ea0280500f7Ddf6434864B4124cdFd88D4C', // EnumerableUnitManager
+    //         '0x04FB04bF3597794FdA1c92a159bec4231887f49f' // ESCROW_MANAGER
+    //     ])
     // () => deploy(ContractName.RELATIONSHIP_MANAGER, [
     //     ['0x30054880e4E2fA1082C1976cA5547cC3bd185c11'], // ContractsOwner
     // ]),
@@ -109,8 +108,23 @@ serial([
     // () => deploy(
     //     ContractName.ETHEREUM_DID_REGISTRY, [],
     // ),
-])
-    .catch((error: any) => {
-        console.error(error);
-        process.exitCode = 1;
-    });
+    // () => deploy(
+    //     ContractName.ESCROW, [
+    //         '0x30054880e4E2fA1082C1976cA5547cC3bd185c11', // ContractsOwner
+    //         '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123', // payee
+    //         50000000,
+    //         '0x4D559cDf9e7C2C2D51a8a0e0dD5DA583caC673BF', // tokenAddress
+    //         '0x30054880e4E2fA1082C1976cA5547cC3bd185c11',
+    //         process.env.ESCROW_BASE_FEE || 20,
+    //         process.env.ESCROW_COMMISSIONER_FEE || 1
+    //     ]
+    // ),
+    // async () => {
+    //     const contract = await getAttachedContract(ContractName.MY_TOKEN, '0x4D559cDf9e7C2C2D51a8a0e0dD5DA583caC673BF');
+    //     const tx = await contract.transfer('0xa1f48005f183780092E0E277B282dC1934AE3308', 50);
+    //     await tx.wait();
+    // }
+]).catch((error: any) => {
+    console.error(error);
+    process.exitCode = 1;
+});
