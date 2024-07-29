@@ -5,6 +5,7 @@ import "./Trade.sol";
 import "./Escrow.sol";
 import "hardhat/console.sol";
 import "./EscrowManager.sol";
+import "./ShipmentManager.sol";
 
 contract OrderTrade is Trade {
     using Counters for Counters.Counter;
@@ -56,6 +57,7 @@ contract OrderTrade is Trade {
 
     EnumerableType private _fiatManager;
     EscrowManager private _escrowManager;
+    ShipmentManager private _shipmentsManager;
 
     constructor(uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress,
         address unitManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl,
@@ -210,6 +212,9 @@ contract OrderTrade is Trade {
 
         if (_hasSupplierSigned && _hasCommissionerSigned) {
             _escrow = _escrowManager.registerEscrow(_supplier, _paymentDeadline - block.timestamp, _tokenAddress);
+            // TODO: convert amount into tokens
+            // TODO: multiple lines?
+            _shipmentsManager = new ShipmentManager(_supplier, _commissioner, _lines[1].quantity, _orderLines[1].price.amount, address(_documentManager), address(_escrow));
             emit OrderConfirmed();
         }
     }
@@ -261,5 +266,9 @@ contract OrderTrade is Trade {
         for (uint i = 0; i < documentIds.length; i++)
             if (_documentsStatus[documentIds[i]].status == DocumentStatus.APPROVED) return true;
         return false;
+    }
+
+    function getShipmentsManager() public view returns (ShipmentManager) {
+        return _shipmentsManager;
     }
 }
