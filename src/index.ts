@@ -63,7 +63,6 @@ export { EscrowManagerDriver } from './drivers/EscrowManagerDriver';
 export { EscrowManagerService } from './services/EscrowManagerService';
 export { EscrowDriver } from './drivers/EscrowDriver';
 export { EscrowService } from './services/EscrowService';
-export { EscrowStatus } from './types/EscrowStatus';
 export { TokenDriver } from './drivers/TokenDriver';
 export { TokenService } from './services/TokenService';
 

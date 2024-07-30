@@ -204,7 +204,7 @@ contract Escrow is AccessControl {
         emit EscrowStatusUpdated(_state, _withdrawablePercentage, _refundablePercentage);
     }
     function enableRefund(uint256 refundablePercentage) public {
-        require(hasRole(ADMIN_ROLE, _msgSender()) || isExpired(), "Escrow: only admin or expired escrow can enable refund");
+        require(hasRole(ADMIN_ROLE, _msgSender()) || isExpired(), "Escrow: refund could be enable only if you are the admin or the escrow is expired");
         require(refundablePercentage <= 100, "Escrow: refundable percentage cannot be greater than 100");
         _state = State.Refunding;
         _withdrawablePercentage = 0;
@@ -240,6 +240,7 @@ contract Escrow is AccessControl {
 
         uint256 fees = getFees(withdrawableAmount);
         uint256 payment = withdrawableAmount - fees;
+        console.log("payment", payment);
 
         _token.approve(address(this), withdrawableAmount);
         _token.safeTransferFrom(address(this), _feeRecipient, fees);
