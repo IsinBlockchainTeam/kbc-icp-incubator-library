@@ -13,8 +13,6 @@ describe('Shipment Manager', () => {
         commissioner: SignerWithAddress;
     let documentManagerContractFake: FakeContract;
     let escrowFakeContract: FakeContract;
-    const orderQuantity = 100;
-    const orderPrice = 1000;
 
     beforeEach(async () => {
         [supplier, commissioner] = await ethers.getSigners();
@@ -26,16 +24,18 @@ describe('Shipment Manager', () => {
         contract = await ShipmentManagerContractFactory.deploy(
             supplier.address,
             commissioner.address,
-            orderQuantity,
-            orderPrice,
             documentManagerContractFake.address,
             escrowFakeContract.address
         );
         await contract.deployed();
     });
 
-    const addShipment = async (date: number, quantity: number, weight: number) => {
-        const tx = await contract.connect(supplier).addShipment(date, quantity, weight);
+    const addShipment = async (date: number, quantity: number, weight: number, price: number) => {
+        const tx = await contract.connect(supplier).addShipment(date, quantity, weight, price);
+        return tx.wait();
+    }
+    const approveShipment = async (shipmentId: number) => {
+        const tx = await contract.connect(commissioner).approveShipment(shipmentId);
         return tx.wait();
     }
     const addDocument = async (shipmentId: number, documentType: number, externalUrl: string, contextHash: string) => {
@@ -50,11 +50,11 @@ describe('Shipment Manager', () => {
     describe('Getters', () => {
         it('should get shipment count', async () => {
             expect(await contract.getShipmentCounter()).to.equal(0);
-            await addShipment(1, 1, 1);
+            await addShipment(1, 1, 1, 1);
             expect(await contract.getShipmentCounter()).to.equal(1);
         });
         it('should get shipment by id', async () => {
-            await addShipment(1, 2, 3);
+            await addShipment(1, 2, 3, 4);
             const [id, date, quantity, weight] = await contract.getShipment(1);
             expect(id).to.equal(1);
             expect(date).to.equal(1);
@@ -65,7 +65,7 @@ describe('Shipment Manager', () => {
         });
         it('should get documents ids', async () => {
             documentManagerContractFake.registerDocument.returns(123);
-            await addShipment(1, 2, 3);
+            await addShipment(1, 2, 3, 4);
             await addDocument(1, 1, 'url', 'hash');
             const documentsIds = await contract.getDocumentsIds(1);
             expect(documentsIds).to.have.length(1);
@@ -75,7 +75,7 @@ describe('Shipment Manager', () => {
         });
         it('should get document info', async () => {
             documentManagerContractFake.registerDocument.returns(123);
-            await addShipment(1, 2, 3);
+            await addShipment(1, 2, 3, 4);
             await addDocument(1, 1, 'url', 'hash');
             const documentInfo = await contract.getDocumentInfo(1, 123);
             expect(documentInfo.id).to.equal(123);
@@ -88,7 +88,7 @@ describe('Shipment Manager', () => {
             await expect(contract.getDocumentInfo(1, 124)).to.be.revertedWith('ShipmentManager: Document does not exist');
         });
         it('should get documents ids by document type', async () => {
-            await addShipment(1, 2, 3);
+            await addShipment(1, 2, 3, 4);
             documentManagerContractFake.registerDocument.returns(12);
             await addDocument(1, 1, 'url', 'hash');
             documentManagerContractFake.registerDocument.returns(34);
@@ -108,15 +108,23 @@ describe('Shipment Manager', () => {
 
             await expect(contract.getDocumentsIdsByType(2, 1)).to.be.revertedWith('ShipmentManager: Shipment does not exist');
         });
-        it('should get shipment status - ShipmentStatus.SHIPPING', async () => {
-            await addShipment(1, 2, 3);
-            escrowFakeContract.getState.returns(0);
+        it('should get shipment status - ShipmentStatus.PENDING', async () => {
+            await addShipment(1, 2, 3, 4);
             expect(await contract.getShipmentStatus(1)).to.equal(0);
 
             await expect(contract.getShipmentStatus(2)).to.be.revertedWith('ShipmentManager: Shipment does not exist');
         });
+        it('should get shipment status - ShipmentStatus.SHIPPING', async () => {
+            await addShipment(1, 2, 3, 4);
+            await approveShipment(1);
+            escrowFakeContract.getState.returns(0);
+            expect(await contract.getShipmentStatus(1)).to.equal(1);
+
+            await expect(contract.getShipmentStatus(2)).to.be.revertedWith('ShipmentManager: Shipment does not exist');
+        });
         it('should get shipment status - ShipmentStatus.TRANSPORTATION', async () => {
-            await addShipment(1, 2, 3);
+            await addShipment(1, 2, 3, 4);
+            await approveShipment(1);
             escrowFakeContract.getState.returns(1);
             escrowFakeContract.getTotalDepositedAmount.returns(20);
             expect(await contract.getShipmentStatus(1)).to.equal(1);
@@ -125,7 +133,7 @@ describe('Shipment Manager', () => {
             expect(await contract.getShipmentStatus(1)).to.equal(0);
         });
         it('should get shipment status - ShipmentStatus.ONBOARDED', async () => {
-            await addShipment(1, 2, 3);
+            await addShipment(1, 2, 3, 4);
             escrowFakeContract.getState.returns(1);
             escrowFakeContract.getTotalDepositedAmount.returns(20);
             documentManagerContractFake.registerDocument.returns(1);
@@ -142,28 +150,9 @@ describe('Shipment Manager', () => {
             await approveDocument(1, 4);
             expect(await contract.getShipmentStatus(1)).to.equal(2);
         });
-        it('should get shipment status - ShipmentStatus.ARBITRATION', async () => {
-            await addShipment(1, 2, 3);
-            escrowFakeContract.getState.returns(1);
-            escrowFakeContract.getTotalDepositedAmount.returns(20);
-            documentManagerContractFake.registerDocument.returns(1);
-            await addDocument(1, 0, 'url', 'hash');
-            await approveDocument(1, 1);
-            documentManagerContractFake.registerDocument.returns(2);
-            await addDocument(1, 1, 'url', 'hash');
-            await approveDocument(1, 2);
-            documentManagerContractFake.registerDocument.returns(3);
-            await addDocument(1, 2, 'url', 'hash');
-            await approveDocument(1, 3);
-            documentManagerContractFake.registerDocument.returns(4);
-            await addDocument(1, 3, 'url', 'hash');
-            await approveDocument(1, 4);
-
-            await contract.connect(commissioner).startShipmentArbitration(1);
-            expect(await contract.getShipmentStatus(1)).to.equal(3);
-        });
         it('should get shipment status - ShipmentStatus.CONFIRMED', async () => {
-            await addShipment(1, 2, 3);
+            await addShipment(1, 2, 3, 4);
+            await approveShipment(1);
             escrowFakeContract.getState.returns(1);
             escrowFakeContract.getTotalDepositedAmount.returns(20);
             documentManagerContractFake.registerDocument.returns(1);
@@ -180,19 +169,40 @@ describe('Shipment Manager', () => {
             await approveDocument(1, 4);
 
             await contract.connect(commissioner).confirmShipment(1);
+            expect(await contract.getShipmentStatus(1)).to.equal(5);
+        });
+        it('should get shipment status - ShipmentStatus.ARBITRATION', async () => {
+            await addShipment(1, 2, 3, 4);
+            await approveShipment(1);
+            escrowFakeContract.getState.returns(1);
+            escrowFakeContract.getTotalDepositedAmount.returns(20);
+            documentManagerContractFake.registerDocument.returns(1);
+            await addDocument(1, 0, 'url', 'hash');
+            await approveDocument(1, 1);
+            documentManagerContractFake.registerDocument.returns(2);
+            await addDocument(1, 1, 'url', 'hash');
+            await approveDocument(1, 2);
+            documentManagerContractFake.registerDocument.returns(3);
+            await addDocument(1, 2, 'url', 'hash');
+            await approveDocument(1, 3);
+            documentManagerContractFake.registerDocument.returns(4);
+            await addDocument(1, 3, 'url', 'hash');
+            await approveDocument(1, 4);
+
+            await contract.connect(commissioner).startShipmentArbitration(1);
             expect(await contract.getShipmentStatus(1)).to.equal(4);
         });
     });
     describe('Functions', () => {
         it('should add shipment', async () => {
-            const receipt = await addShipment(1, 2, 3);
+            const receipt = await addShipment(1, 2, 3, 4);
             expect(await contract.getShipmentCounter()).to.equal(1);
             expect(receipt.events.find((event: Event) => event.event === 'ShipmentAdded').args[0]).to.equal(1);
 
             await expect(contract.connect(commissioner).addShipment(1, 2, 3)).to.be.revertedWith('ShipmentManager: Caller is not the supplier');
         });
         it('should confirm shipment', async () => {
-            await addShipment(1, 2, 3);
+            await addShipment(1, 2, 3, 4);
             escrowFakeContract.getState.returns(1);
             escrowFakeContract.getTotalDepositedAmount.returns(20);
             documentManagerContractFake.registerDocument.returns(1);
@@ -213,13 +223,13 @@ describe('Shipment Manager', () => {
             expect(receipt.events.find((event: Event) => event.event === 'ShipmentConfirmed').args[0]).to.equal(1);
         });
         it('should not confirm shipment if conditions are not met', async () => {
-            await addShipment(1, 2, 3);
+            await addShipment(1, 2, 3, 4);
             await expect(contract.connect(commissioner).confirmShipment(2)).to.be.revertedWith('ShipmentManager: Shipment does not exist');
             await expect(contract.connect(commissioner).confirmShipment(1)).to.be.revertedWith('ShipmentManager: Shipment is not onboarded');
             await expect(contract.connect(supplier).confirmShipment(1)).to.be.revertedWith('ShipmentManager: Caller is not the commissioner');
         });
         it('should start shipment arbitration', async () => {
-            await addShipment(1, 2, 3);
+            await addShipment(1, 2, 3, 4);
             escrowFakeContract.getState.returns(1);
             escrowFakeContract.getTotalDepositedAmount.returns(20);
             documentManagerContractFake.registerDocument.returns(1);
@@ -240,14 +250,14 @@ describe('Shipment Manager', () => {
             expect(receipt.events.find((event: Event) => event.event === 'ShipmentArbitrationStarted').args[0]).to.equal(1);
         });
         it('should not start shipment arbitration if conditions are not met', async () => {
-            await addShipment(1, 2, 3);
+            await addShipment(1, 2, 3, 4);
             await expect(contract.connect(commissioner).startShipmentArbitration(2)).to.be.revertedWith('ShipmentManager: Shipment does not exist');
             await expect(contract.connect(commissioner).startShipmentArbitration(1)).to.be.revertedWith('ShipmentManager: Shipment is not onboarded');
             await expect(contract.connect(supplier).startShipmentArbitration(1)).to.be.revertedWith('ShipmentManager: Caller is not the commissioner');
 
         });
         it('should add document', async () => {
-            await addShipment(1, 2, 3);
+            await addShipment(1, 2, 3, 4);
             documentManagerContractFake.registerDocument.returns(123);
             const receipt = await addDocument(1, 1, 'url', 'hash');
             expect(receipt.events.find((event: Event) => event.event === 'DocumentAdded').args[0]).to.equal(1);
@@ -256,7 +266,7 @@ describe('Shipment Manager', () => {
             await expect(contract.connect(commissioner).addDocument(1, 1, 'url', 'hash')).to.be.revertedWith('ShipmentManager: Caller is not the supplier');
         });
         it('should update document', async () => {
-            await addShipment(1, 2, 3);
+            await addShipment(1, 2, 3, 4);
             documentManagerContractFake.registerDocument.returns(123);
             await addDocument(1, 1, 'url', 'hash');
             documentManagerContractFake.updateDocument.returns(123);
@@ -270,7 +280,7 @@ describe('Shipment Manager', () => {
             await expect(contract.connect(commissioner).updateDocument(1, 2, 'url', 'hash')).to.be.revertedWith('ShipmentManager: Caller is not the supplier');
         });
         it('should approve document', async () => {
-            await addShipment(1, 2, 3);
+            await addShipment(1, 2, 3, 4);
             documentManagerContractFake.registerDocument.returns(123);
             await addDocument(1, 1, 'url', 'hash');
             const receipt = await approveDocument(1, 123);
@@ -281,7 +291,7 @@ describe('Shipment Manager', () => {
             await expect(contract.connect(supplier).approveDocument(1, 123)).to.be.revertedWith('ShipmentManager: Caller is not the commissioner');
         });
         it('should reject document', async () => {
-            await addShipment(1, 2, 3);
+            await addShipment(1, 2, 3, 4);
             documentManagerContractFake.registerDocument.returns(123);
             await addDocument(1, 1, 'url', 'hash');
             const tx = await contract.connect(commissioner).rejectDocument(1, 123);

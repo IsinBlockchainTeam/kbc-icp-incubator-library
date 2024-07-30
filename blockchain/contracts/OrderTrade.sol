@@ -212,9 +212,7 @@ contract OrderTrade is Trade {
 
         if (_hasSupplierSigned && _hasCommissionerSigned) {
             _escrow = _escrowManager.registerEscrow(_supplier, _paymentDeadline - block.timestamp, _tokenAddress);
-            // TODO: convert amount into tokens
-            // TODO: multiple lines?
-            _shipmentsManager = new ShipmentManager(_supplier, _commissioner, _lines[1].quantity, _orderLines[1].price.amount, address(_documentManager), address(_escrow));
+            _shipmentsManager = new ShipmentManager(_supplier, _commissioner, address(_documentManager), address(_escrow));
             emit OrderConfirmed();
         }
     }

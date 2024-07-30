@@ -9,6 +9,7 @@ contract ShipmentManager{
     using Counters for Counters.Counter;
 
     enum ShipmentStatus {
+        PENDING,
         SHIPPING,
         TRANSPORTATION,
         ONBOARDED,
@@ -32,14 +33,16 @@ contract ShipmentManager{
     }
     struct Shipment {
         uint256 id;
+        bool approved;
         uint256 date;
         uint256 quantity;
         uint256 weight;
+        uint256 price;
         bool confirmed;
         bool arbitration;
-
         uint256[] documentsIds;
         mapping(uint256 => DocumentInfo) documentsInfo;
+        bool fundsLocked;
         bool exists;
     }
 
@@ -47,22 +50,16 @@ contract ShipmentManager{
     mapping(uint256 => Shipment) private _shipments;
     address private _supplier;
     address private _commissioner;
-    uint256 private _orderQuantity;
-    uint256 private _orderPrice;
     DocumentManager internal _documentManager;
     Escrow internal _escrow;
 
     constructor(
         address supplier,
         address commissioner,
-        uint256 orderQuantity,
-        uint256 orderPrice,
         address documentManagerAddress,
         address escrowAddress) {
         _supplier = supplier;
         _commissioner = commissioner;
-        _orderQuantity = orderQuantity;
-        _orderPrice = orderPrice;
 
         _documentManager = DocumentManager(documentManagerAddress);
         _escrow = Escrow(escrowAddress);
@@ -80,6 +77,7 @@ contract ShipmentManager{
 
     // Events
     event ShipmentAdded(uint256 shipmentId);
+    event ShipmentApproved(uint256 shipmentId);
     event ShipmentConfirmed(uint256 shipmentId);
     event ShipmentArbitrationStarted(uint256 shipmentId);
     event DocumentAdded(uint256 shipmentId, uint256 documentId);
@@ -94,6 +92,34 @@ contract ShipmentManager{
     function getShipment(uint256 id) public view returns (uint256, uint256, uint256, uint256) {
         require(_shipments[id].exists, "ShipmentManager: Shipment does not exist");
         return (_shipments[id].id, _shipments[id].date, _shipments[id].quantity, _shipments[id].weight);
+    }
+    function getShipmentStatus(uint256 shipmentId) public view returns (ShipmentStatus) {
+        require(_shipments[shipmentId].exists, "ShipmentManager: Shipment does not exist");
+
+        if(!_shipments[shipmentId].approved)
+            return ShipmentStatus.PENDING;
+
+        if(_shipments[shipmentId].confirmed)
+            return ShipmentStatus.CONFIRMED;
+
+        if(_shipments[shipmentId].arbitration)
+            return ShipmentStatus.ARBITRATION;
+
+        uint256[] memory icDocumentsIds = getDocumentsIdsByType(shipmentId, DocumentType.INSURANCE_CERTIFICATE);
+        uint256[] memory wcDocumentsIds = getDocumentsIdsByType(shipmentId, DocumentType.WEIGHT_CERTIFICATE);
+        uint256[] memory peDocumentIds = getDocumentsIdsByType(shipmentId, DocumentType.PREFERENTIAL_ENTRY_CERTIFICATE);
+        uint256[] memory bolDocumentIds = getDocumentsIdsByType(shipmentId, DocumentType.BILL_OF_LADING);
+        if(icDocumentsIds.length > 0 && wcDocumentsIds.length > 0 && peDocumentIds.length > 0 && bolDocumentIds.length > 0 &&
+        _areDocumentsApproved(shipmentId, icDocumentsIds) &&
+        _areDocumentsApproved(shipmentId, wcDocumentsIds) &&
+        _areDocumentsApproved(shipmentId, peDocumentIds) &&
+            _areDocumentsApproved(shipmentId, bolDocumentIds))
+            return ShipmentStatus.ONBOARDED;
+
+        if (_shipments[shipmentId].fundsLocked)
+            return ShipmentStatus.TRANSPORTATION;
+
+        return ShipmentStatus.SHIPPING;
     }
     function getDocumentsIds(uint256 shipmentId) public view returns (uint256[] memory) {
         require(_shipments[shipmentId].exists, "ShipmentManager: Shipment does not exist");
@@ -128,35 +154,9 @@ contract ShipmentManager{
             filteredDocumentsIds[i] = documentsIdsTemp[i];
         }
     }
-    function getShipmentStatus(uint256 shipmentId) public view returns (ShipmentStatus) {
-        require(_shipments[shipmentId].exists, "ShipmentManager: Shipment does not exist");
-        ShipmentStatus status = ShipmentStatus.SHIPPING;
-
-        // TODO: bloccare la garanzia per non essere utilizzata in un'altra spedizione
-        uint256 requiredAmount = _orderPrice * _shipments[shipmentId].quantity / _orderQuantity;
-        if(_escrow.getState() == Escrow.State.Withdrawing && _escrow.getTotalDepositedAmount() >= requiredAmount)
-            status = ShipmentStatus.TRANSPORTATION;
-
-        uint256[] memory icDocumentsIds = getDocumentsIdsByType(shipmentId, DocumentType.INSURANCE_CERTIFICATE);
-        uint256[] memory wcDocumentsIds = getDocumentsIdsByType(shipmentId, DocumentType.WEIGHT_CERTIFICATE);
-        uint256[] memory peDocumentIds = getDocumentsIdsByType(shipmentId, DocumentType.PREFERENTIAL_ENTRY_CERTIFICATE);
-        uint256[] memory bolDocumentIds = getDocumentsIdsByType(shipmentId, DocumentType.BILL_OF_LADING);
-        if(icDocumentsIds.length > 0 && wcDocumentsIds.length > 0 && peDocumentIds.length > 0 && bolDocumentIds.length > 0 &&
-            _areDocumentsApproved(shipmentId, icDocumentsIds) &&
-            _areDocumentsApproved(shipmentId, wcDocumentsIds) &&
-            _areDocumentsApproved(shipmentId, peDocumentIds) &&
-            _areDocumentsApproved(shipmentId, bolDocumentIds))
-            status = ShipmentStatus.ONBOARDED;
-
-        if(_shipments[shipmentId].arbitration) status = ShipmentStatus.ARBITRATION;
-
-        if(_shipments[shipmentId].confirmed) status = ShipmentStatus.CONFIRMED;
-
-        return status;
-    }
 
     // Functions
-    function addShipment(uint256 date, uint256 quantity, uint256 weight) public onlySupplier {
+    function addShipment(uint256 date, uint256 quantity, uint256 weight, uint256 price) public onlySupplier {
         _counter.increment();
         uint256 id = _counter.current();
         Shipment storage shipment = _shipments[id];
@@ -164,14 +164,46 @@ contract ShipmentManager{
         shipment.date = date;
         shipment.quantity = quantity;
         shipment.weight = weight;
+        shipment.price = price;
         shipment.exists = true;
         emit ShipmentAdded(id);
+    }
+    function approveShipment(uint256 shipmentId) public onlyCommissioner {
+        require(_shipments[shipmentId].exists, "ShipmentManager: Shipment does not exist");
+        require(getShipmentStatus(shipmentId) == ShipmentStatus.PENDING, "ShipmentManager: Shipment is not in pending phase");
+        require(!_shipments[shipmentId].approved, "ShipmentManager: Shipment already approved");
+
+        _shipments[shipmentId].approved = true;
+        emit ShipmentApproved(shipmentId);
+    }
+    function lockFunds(uint256 shipmentId) public onlyCommissioner {
+        require(_shipments[shipmentId].exists, "ShipmentManager: Shipment does not exist");
+        require(getShipmentStatus(shipmentId) == ShipmentStatus.SHIPPING, "ShipmentManager: Shipment is not in shipping phase");
+        require(!_shipments[shipmentId].fundsLocked, "ShipmentManager: Funds already locked");
+        require(_escrow.getState() == Escrow.State.Active, "ShipmentManager: Escrow is not active"); // TODO: change
+        uint256 totalLockedFunds = 0; // TODO: call escrow to get total locked funds
+        uint256 amountToLock = _shipments[shipmentId].price;
+        require(_escrow.getTotalDepositedAmount() >= totalLockedFunds + amountToLock);
+        _shipments[shipmentId].fundsLocked = true;
+
+        // TODO: call escrow to lock funds
+    }
+    function _unlockFunds(uint256 shipmentId) private {
+        require(_shipments[shipmentId].exists, "ShipmentManager: Shipment does not exist");
+        require(getShipmentStatus(shipmentId) == ShipmentStatus.ONBOARDED, "ShipmentManager: Shipment is not in onboarded phase");
+        require(_shipments[shipmentId].fundsLocked, "ShipmentManager: Funds are not locked");
+
+        uint256 amountToUnlock = _shipments[shipmentId].price;
+
+        _shipments[shipmentId].fundsLocked = false;
+        // TODO: call escrow to unlock funds
     }
     function confirmShipment(uint256 shipmentId) public onlyCommissioner {
         require(_shipments[shipmentId].exists, "ShipmentManager: Shipment does not exist");
         require(getShipmentStatus(shipmentId) == ShipmentStatus.ONBOARDED, "ShipmentManager: Shipment is not onboarded");
         require(!_shipments[shipmentId].confirmed, "ShipmentManager: Shipment already confirmed");
         require(!_shipments[shipmentId].arbitration, "ShipmentManager: Shipment is in arbitration");
+
         _shipments[shipmentId].confirmed = true;
         emit ShipmentConfirmed(shipmentId);
     }
@@ -180,6 +212,7 @@ contract ShipmentManager{
         require(getShipmentStatus(shipmentId) == ShipmentStatus.ONBOARDED, "ShipmentManager: Shipment is not onboarded");
         require(!_shipments[shipmentId].confirmed, "ShipmentManager: Shipment is confirmed");
         require(!_shipments[shipmentId].arbitration, "ShipmentManager: Shipment is already in arbitration");
+
         _shipments[shipmentId].arbitration = true;
         emit ShipmentArbitrationStarted(shipmentId);
     }
@@ -208,6 +241,9 @@ contract ShipmentManager{
     }
     function approveDocument(uint256 shipmentId, uint256 documentId) public onlyCommissioner {
         _evaluateDocument(shipmentId, documentId, DocumentStatus.APPROVED);
+        // Unlock funds if all required documents are approved
+        if(getShipmentStatus(shipmentId) == ShipmentStatus.ONBOARDED && _shipments[shipmentId].fundsLocked)
+            _unlockFunds(shipmentId);
         emit DocumentApproved(shipmentId, documentId);
     }
     function rejectDocument(uint256 shipmentId, uint256 documentId) public onlyCommissioner {
