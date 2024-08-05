@@ -15,36 +15,30 @@ contract Escrow is AccessControl {
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
-    enum State {
-        Active,
-        Withdrawing,
-        Refunding
-    }
-
-    event EscrowStatusUpdated(State status, uint256 withdrawablePercentage, uint256 refundablePercentage);
     event EscrowDeposited(address depositorAddress, uint256 amount);
     event EscrowWithdrawn(address withDrawerAddress, uint256 amount);
     event EscrowRefunded(address refundedAddress, uint256 amount);
 
     address private _owner;
     address private _payee;
+    address[] private _payers;
     uint256 private _deployedAt;
     uint256 private _duration;
-    State private _state;
     IERC20 private _token;
     address private _feeRecipient;
     uint256 private _baseFee;
     uint256 private _percentageFee;
 
-    mapping(address => uint256) private _depositedAmount;
     uint256 private _totalDepositedAmount;
+    mapping(address => uint256) private _depositedAmount;
+    uint256 private _lockedAmount;
 
+    uint256 private _releasableAmount;
+    uint256 private _releasedAmount;
+
+    uint256 private _totalRefundableAmount;
     mapping(address => uint256) private _refundedAmount;
     uint256 private _totalRefundedAmount;
-    uint256 private _totalWithdrawnAmount;
-
-    uint256 private _refundablePercentage;
-    uint256 private _withdrawablePercentage;
 
     constructor(address admin, address payee, uint256 duration, address tokenAddress, address feeRecipient, uint256 baseFee, uint256 percentageFee) {
         require(admin != address(0), "Escrow: admin is the zero address");
@@ -61,40 +55,25 @@ contract Escrow is AccessControl {
         _deployedAt = block.timestamp;
         _duration = duration;
         _token = IERC20(tokenAddress);
-        _state = State.Active;
         _feeRecipient = feeRecipient;
         _baseFee = baseFee;
         _percentageFee = percentageFee;
+
+        _totalDepositedAmount = 0;
+        _lockedAmount = 0;
+        _releasableAmount = 0;
+        _releasedAmount = 0;
+        _totalRefundableAmount = 0;
         _totalRefundedAmount = 0;
-        _totalWithdrawnAmount = 0;
-        _refundablePercentage = 0;
-        _withdrawablePercentage = 0;
-        emit EscrowStatusUpdated(_state, _withdrawablePercentage, _refundablePercentage);
     }
 
     // Modifiers
     modifier editable() {
-        require(_state == State.Active, "Escrow: can only edit while active");
+        require(_lockedAmount == 0, "Escrow: can only edit while no funds are locked");
         _;
     }
     modifier onlyAdmin() {
         require(hasRole(ADMIN_ROLE, _msgSender()), "Escrow: caller is not the admin");
-        _;
-    }
-    modifier depositable() {
-        require(_state == State.Active, "Escrow: can only deposit while active");
-        _;
-    }
-    modifier payerWithdrawable() {
-        require(_state == State.Active, "Escrow: can only withdraw while active");
-        _;
-    }
-    modifier payeeWithdrawable() {
-        require(_state == State.Withdrawing, "Escrow: can only withdraw while withdrawing");
-        _;
-    }
-    modifier refundable() {
-        require(_state == State.Refunding, "Escrow: can only refund while refunding");
         _;
     }
 
@@ -104,6 +83,9 @@ contract Escrow is AccessControl {
     }
     function getPayee() public view returns (address) {
         return _payee;
+    }
+    function getPayers() public view returns (address[] memory) {
+        return _payers;
     }
     function getDeployedAt() public view returns (uint256) {
         return _deployedAt;
@@ -120,9 +102,6 @@ contract Escrow is AccessControl {
     function getToken() public view returns (IERC20) {
         return _token;
     }
-    function getState() public view returns (State) {
-        return _state;
-    }
     function getFeeRecipient() public view returns (address) {
         return _feeRecipient;
     }
@@ -138,41 +117,53 @@ contract Escrow is AccessControl {
         return expectedPercentageFee > amount - fees ? amount : fees + expectedPercentageFee;
     }
 
-    function getDepositedAmount() public view returns (uint256) {
-        return _depositedAmount[_msgSender()];
-    }
     function getTotalDepositedAmount() public view returns (uint256) {
         return _totalDepositedAmount;
     }
-    function getRefundedAmount() public view returns (uint256) {
-        return _refundedAmount[_msgSender()];
+    function getDepositedAmount(address payer) public view returns (uint256) {
+        return _depositedAmount[payer];
+    }
+    function getLockedAmount() public view returns (uint256) {
+        return _lockedAmount;
+    }
+    function getReleasableAmount() public view returns (uint256) {
+        return _releasableAmount;
+    }
+    function getReleasedAmount() public view returns (uint256) {
+        return _releasedAmount;
+    }
+    function getTotalRefundableAmount() public view returns (uint256) {
+        return _totalRefundableAmount;
+    }
+    function getRefundedAmount(address payer) public view returns (uint256) {
+        return _refundedAmount[payer];
     }
     function getTotalRefundedAmount() public view returns (uint256) {
         return _totalRefundedAmount;
     }
-    function getTotalWithdrawnAmount() public view returns (uint256) {
-        return _totalWithdrawnAmount;
+    function getBalance() public view returns (uint256) {
+        return _totalDepositedAmount - _releasedAmount - _totalRefundedAmount;
     }
 
-    function getRefundablePercentage() public view returns (uint256) {
-        return _refundablePercentage;
-    }
-    function getWithdrawablePercentage() public view returns (uint256) {
-        return _withdrawablePercentage;
-    }
-    function getWithdrawableAmount() public view returns (uint256) {
-        uint256 balance = _totalDepositedAmount - _totalWithdrawnAmount - _totalRefundedAmount;
-        uint256 withdrawableAmount = balance * _withdrawablePercentage / 100;
-        return withdrawableAmount;
-    }
-    function getRefundableAmount(address payer) public view returns (uint256) {
-        uint256 balance = _totalDepositedAmount - _totalWithdrawnAmount - _totalRefundedAmount;
-        uint256 payerDepositedAmount = _depositedAmount[payer];
+    function getWithdrawableAmount(address payer) public view returns (uint256) {
+        uint256 balance = getBalance() - _lockedAmount;
         if (balance == 0) {
             return 0;
         }
-        uint256 proportion = (payerDepositedAmount * 100) / balance;
-        uint256 refundableAmount = (balance * proportion) / 100;
+        // calculate the proportion of the payer's deposited amount to the total payers deposited amount
+        uint256 proportion = (_depositedAmount[payer] * 100) / _totalDepositedAmount;
+        // calculate the withdrawable amount based on the proportion
+        uint256 withdrawableAmount = (balance * proportion) / 100;
+        return withdrawableAmount;
+    }
+    function getRefundableAmount(uint256 amount, address payer) public view returns (uint256) {
+        if (amount == 0) {
+            return 0;
+        }
+        // calculate the proportion of the payer's deposited amount to the total payers deposited amount
+        uint256 proportion = (_depositedAmount[payer] * 100) / _totalDepositedAmount;
+        // calculate the refundable amount based on the proportion
+        uint256 refundableAmount = (amount * proportion) / 100;
         return refundableAmount;
     }
 
@@ -195,80 +186,81 @@ contract Escrow is AccessControl {
         return block.timestamp >= _deployedAt +_duration;
     }
 
-    // State updates
-    function enableWithdrawal(uint256 withdrawablePercentage) public onlyAdmin {
-        require(withdrawablePercentage <= 100, "Escrow: withdrawable percentage cannot be greater than 100");
-        _state = State.Withdrawing;
-        _withdrawablePercentage = withdrawablePercentage;
-        _refundablePercentage = 0;
-        emit EscrowStatusUpdated(_state, _withdrawablePercentage, _refundablePercentage);
-    }
-    function enableRefund(uint256 refundablePercentage) public {
-        require(hasRole(ADMIN_ROLE, _msgSender()) || isExpired(), "Escrow: only admin or expired escrow can enable refund");
-        require(refundablePercentage <= 100, "Escrow: refundable percentage cannot be greater than 100");
-        _state = State.Refunding;
-        _withdrawablePercentage = 0;
-        _refundablePercentage = refundablePercentage;
-        emit EscrowStatusUpdated(_state, _withdrawablePercentage, _refundablePercentage);
-    }
-
     // Actions
-    function deposit(uint256 amount) public depositable {
-        require(amount > 0, "Escrow: can only deposit positive amount");
+    function lockFunds(uint256 amount) public onlyAdmin {
+        require(amount > 0, "Escrow: can only lock positive amount");
+        require(_lockedAmount + amount <= getBalance(), "Escrow: can only lock up to the balance");
+
+        _lockedAmount += amount;
+    }
+    function releaseFunds(uint256 amount) public onlyAdmin {
+        require(amount > 0, "Escrow: can only release positive amount");
+        require(amount <= _lockedAmount, "Escrow: can only release up to the locked amount");
+
+        uint256 fees = getFees(amount);
+        uint256 payment = amount - fees;
 
         _token.approve(address(this), amount);
+        _token.safeTransferFrom(address(this), _feeRecipient, fees);
+        _token.safeTransferFrom(address(this), _payee, payment);
+
+        _lockedAmount -= amount;
+        _releasedAmount += amount;
+        emit EscrowWithdrawn(_payee, payment);
+    }
+    function refundFunds(uint256 amount) public onlyAdmin {
+        require(amount > 0, "Escrow: can only refund positive amount");
+        require(amount <= _lockedAmount, "Escrow: can only refund up to the locked amount");
+        // for each payer, calculate the refundable amount and refund it
+        for (uint256 i = 0; i < _payers.length; i++) {
+            address payer = _payers[i];
+            uint256 refundableAmount = getRefundableAmount(amount, payer);
+            if (refundableAmount > 0) {
+                uint256 fees = getFees(refundableAmount);
+                uint256 payment = refundableAmount - fees;
+
+                _token.approve(address(this), refundableAmount);
+                _token.safeTransferFrom(address(this), _feeRecipient, fees);
+                _token.safeTransferFrom(address(this), payer, payment);
+
+                _refundedAmount[payer] += refundableAmount;
+                _totalRefundedAmount += refundableAmount;
+                emit EscrowRefunded(payer, payment);
+            }
+        }
+    }
+    function deposit(uint256 amount) public {
+        require(amount > 0, "Escrow: can only deposit positive amount");
+
         _token.safeTransferFrom(_msgSender(), address(this), amount);
 
+        if(_depositedAmount[_msgSender()] == 0)
+            _payers.push(_msgSender());
         _depositedAmount[_msgSender()] += amount;
         _totalDepositedAmount += amount;
         emit EscrowDeposited(_msgSender(), amount);
     }
-    function payerWithdraw(uint256 amount) public payerWithdrawable {
+    function withdraw(uint256 amount) public {
         require(amount > 0, "Escrow: can only withdraw positive amount");
-        require(amount < _depositedAmount[_msgSender()], "Escrow: can only withdraw up to the deposited amount");
+        require(amount <= getWithdrawableAmount(_msgSender()), "Escrow: can only withdraw up to the withdrawable amount");
 
-        _token.approve(address(this), amount);
         _token.safeTransferFrom(address(this), _msgSender(), amount);
 
         _depositedAmount[_msgSender()] -= amount;
+        if(_depositedAmount[_msgSender()] == 0)
+            delete _depositedAmount[_msgSender()];
+
         _totalDepositedAmount -= amount;
         emit EscrowWithdrawn(_msgSender(), amount);
-    }
-    function payeeWithdraw() public payeeWithdrawable {
-        uint256 withdrawableAmount = getWithdrawableAmount();
-        require(withdrawableAmount > 0, "Escrow: can only withdraw when there is something to withdraw");
-
-        uint256 fees = getFees(withdrawableAmount);
-        uint256 payment = withdrawableAmount - fees;
-
-        _token.approve(address(this), withdrawableAmount);
-        _token.safeTransferFrom(address(this), _feeRecipient, fees);
-        _token.safeTransferFrom(address(this), _payee, payment);
-
-        _totalWithdrawnAmount += withdrawableAmount;
-        emit EscrowWithdrawn(_payee, payment);
-    }
-    function payerRefund() public refundable {
-        uint256 refundableAmount = getRefundableAmount(_msgSender());
-        require(refundableAmount > 0, "Escrow: can only refund when there is something to refund");
-
-        uint256 fees = getFees(refundableAmount);
-        uint256 payment = refundableAmount - fees;
-
-        _token.approve(address(this), refundableAmount);
-        _token.safeTransferFrom(address(this), _feeRecipient, fees);
-        _token.safeTransferFrom(address(this), _msgSender(), payment);
-
-        _refundedAmount[_msgSender()] += refundableAmount;
-        _totalRefundedAmount += refundableAmount;
-        emit EscrowRefunded(_msgSender(), payment);
     }
 
     // Roles
     function addAdmin(address admin) public onlyAdmin {
+        require(admin != address(0), "Escrow: admin is the zero address");
         grantRole(ADMIN_ROLE, admin);
     }
     function removeAdmin(address admin) public onlyAdmin {
+        require(admin != address(0), "Escrow: admin is the zero address");
         revokeRole(ADMIN_ROLE, admin);
     }
 }

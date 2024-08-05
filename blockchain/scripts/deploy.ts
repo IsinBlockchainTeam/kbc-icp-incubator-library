@@ -15,6 +15,11 @@ const serial = (funcs: Function[]) =>
         Promise.resolve([])
     );
 
+async function getAttachedContract(contractName: string, contractAddress: string): Promise<Contract> {
+    const ContractFactory = await ethers.getContractFactory(contractName);
+    return ContractFactory.attach(contractAddress);
+}
+
 async function deploy(
     contractName: string,
     contractArgs?: any[],
@@ -105,7 +110,12 @@ serial([
             contractMap.get(ContractName.PRODUCT_CATEGORY_MANAGER)!.address
         ]),
     () => deploy(ContractName.MY_TOKEN, [10000]),
-    () => deploy(ContractName.ETHEREUM_DID_REGISTRY, [])
+    () => deploy(ContractName.ETHEREUM_DID_REGISTRY, []),
+    async () => {
+        const contract = await getAttachedContract(ContractName.MY_TOKEN, '0x4A679253410272dd5232B3Ff7cF5dbB88f295319');
+        const tx = await contract.transfer('0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65', 50);
+        await tx.wait();
+    }
 ]).catch((error: any) => {
     console.error(error);
     process.exitCode = 1;

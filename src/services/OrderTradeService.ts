@@ -107,4 +107,12 @@ export class OrderTradeService extends TradeService implements IConcreteTradeSer
     private get _tradeDriverImplementation(): OrderTradeDriver {
         return this._tradeDriver as OrderTradeDriver;
     }
+
+    async getShipmentManagerAddress(): Promise<string> {
+        return this._tradeDriverImplementation.getShipmentManagerAddress();
+    }
+
+    async getEscrowAddress(): Promise<string> {
+        return this._tradeDriverImplementation.getEscrowAddress();
+    }
 }

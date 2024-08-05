@@ -57,7 +57,7 @@ contract OrderTrade is Trade {
 
     EnumerableType private _fiatManager;
     EscrowManager private _escrowManager;
-    ShipmentManager private _shipmentsManager;
+    ShipmentManager private _shipmentManager;
 
     constructor(uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress,
         address unitManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl,
@@ -186,7 +186,7 @@ contract OrderTrade is Trade {
     function enforceDeadlines() public {
         if(haveDeadlinesExpired()) {
             _hasOrderExpired = true;
-            _escrow.enableRefund(100);
+            _escrow.refundFunds(100);
             emit OrderExpired();
         }
     }
@@ -211,8 +211,9 @@ contract OrderTrade is Trade {
         emit OrderSignatureAffixed(_msgSender());
 
         if (_hasSupplierSigned && _hasCommissionerSigned) {
-            _escrow = _escrowManager.registerEscrow(_supplier, _paymentDeadline - block.timestamp, _tokenAddress);
-            _shipmentsManager = new ShipmentManager(_supplier, _commissioner, address(_documentManager), address(_escrow));
+            _escrow = _escrowManager.registerEscrow(address(this), _supplier, _paymentDeadline - block.timestamp, _tokenAddress);
+            _shipmentManager = new ShipmentManager(_supplier, _commissioner, address(_documentManager), address(_escrow));
+            _escrow.addAdmin(address(_shipmentManager));
             emit OrderConfirmed();
         }
     }
@@ -238,7 +239,7 @@ contract OrderTrade is Trade {
     function completeTransaction() public {
         require(getOrderStatus() == OrderStatus.COMPLETED, "Transaction is not completed until the goods have not been imported and the quality is the expected one");
 
-        _escrow.enableWithdrawal(100);
+        _escrow.releaseFunds(100);
     }
 
     function _updateSignatures(address sender) private {
@@ -266,7 +267,11 @@ contract OrderTrade is Trade {
         return false;
     }
 
-    function getShipmentsManager() public view returns (ShipmentManager) {
-        return _shipmentsManager;
+    function getShipmentManager() public view returns (ShipmentManager) {
+        return _shipmentManager;
+    }
+
+    function getEscrow() public view returns (Escrow) {
+        return _escrow;
     }
 }

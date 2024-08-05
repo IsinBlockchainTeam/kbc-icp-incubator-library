@@ -46,7 +46,8 @@ contract EscrowManager is AccessControl {
         return _counter.current();
     }
 
-    function registerEscrow(address payee, uint256 duration, address tokenAddress) public returns(Escrow)  {
+    function registerEscrow(address admin, address payee, uint256 duration, address tokenAddress) public returns(Escrow)  {
+        require(admin != address(0), "EscrowManager: admin is the zero address");
         require(payee != address(0), "EscrowManager: payee is the zero address");
         require(duration != 0, "EscrowManager: duration is zero");
         require(tokenAddress != address(0), "EscrowManager: token address is the zero address");
@@ -56,6 +57,7 @@ contract EscrowManager is AccessControl {
 
         Escrow newEscrow = new Escrow(address(this), payee, duration, tokenAddress, _feeRecipient, _baseFee, _percentageFee);
         _escrows[id] = newEscrow;
+        newEscrow.addAdmin(admin);
         newEscrow.addAdmin(_admin);
 
         emit EscrowRegistered(id, address(newEscrow), payee, tokenAddress, _feeRecipient);
@@ -81,7 +83,7 @@ contract EscrowManager is AccessControl {
         require(feeRecipient != _feeRecipient, "EscrowManager: new commission address is the same of the current one");
         _feeRecipient = feeRecipient;
         for(uint256 i = 1; i <= _counter.current(); i++) {
-            if(_escrows[i].getState() == Escrow.State.Active) {
+            if(_escrows[i].getLockedAmount() == 0) {
                 _escrows[i].updateFeeRecipient(feeRecipient);
             }
         }
@@ -91,7 +93,7 @@ contract EscrowManager is AccessControl {
         require(baseFee != _baseFee, "EscrowManager: new base fee is the same of the current one");
         _baseFee = baseFee;
         for(uint256 i = 0; i < _counter.current(); i++) {
-            if(_escrows[i].getState() == Escrow.State.Active) {
+            if(_escrows[i].getLockedAmount() == 0) {
                 _escrows[i].updateBaseFee(baseFee);
             }
         }
@@ -102,7 +104,7 @@ contract EscrowManager is AccessControl {
         require(percentageFee <= 100, "EscrowManager: percentage fee cannot be greater than 100");
         _percentageFee = percentageFee;
         for(uint256 i = 0; i < _counter.current(); i++) {
-            if(_escrows[i].getState() == Escrow.State.Active) {
+            if(_escrows[i].getLockedAmount() == 0) {
                 _escrows[i].updatePercentageFee(percentageFee);
             }
         }

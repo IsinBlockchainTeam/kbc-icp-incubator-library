@@ -264,4 +264,12 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
             fiat: price.fiat
         } as OrderTradeContract.OrderLinePriceStructOutput;
     }
+
+    async getShipmentManagerAddress(): Promise<string> {
+        return this._actual.getShipmentManager();
+    }
+
+    async getEscrowAddress(): Promise<string> {
+        return this._actual.getEscrow();
+    }
 }

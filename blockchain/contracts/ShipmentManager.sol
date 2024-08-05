@@ -90,9 +90,19 @@ contract ShipmentManager{
     function getShipmentCounter() public view returns (uint256) {
         return _counter.current();
     }
-    function getShipment(uint256 id) public view returns (uint256, uint256, uint256, uint256) {
+    function getShipment(uint256 id) public view returns (uint256, bool, uint256, uint256, uint256, uint256, ShipmentEvaluationStatus, uint256[] memory, FundsStatus) {
         require(_shipments[id].exists, "ShipmentManager: Shipment does not exist");
-        return (_shipments[id].id, _shipments[id].date, _shipments[id].quantity, _shipments[id].weight);
+        return (
+            _shipments[id].id,
+            _shipments[id].approved,
+            _shipments[id].date,
+            _shipments[id].quantity,
+            _shipments[id].weight,
+            _shipments[id].price,
+            _shipments[id].evaluationStatus,
+            _shipments[id].documentsIds,
+            _shipments[id].fundsStatus
+        );
     }
     function getShipmentStatus(uint256 shipmentId) public view returns (ShipmentStatus) {
         require(_shipments[shipmentId].exists, "ShipmentManager: Shipment does not exist");
@@ -182,13 +192,12 @@ contract ShipmentManager{
         require(_shipments[shipmentId].exists, "ShipmentManager: Shipment does not exist");
         require(getShipmentStatus(shipmentId) == ShipmentStatus.SHIPPING, "ShipmentManager: Shipment is not in shipping phase");
         require(_shipments[shipmentId].fundsStatus == FundsStatus.NOT_LOCKED, "ShipmentManager: Funds already locked");
-        require(_escrow.getState() == Escrow.State.Active, "ShipmentManager: Escrow is not active"); // TODO: change
-        uint256 totalLockedFunds = 0; // TODO: call escrow to get total locked funds
+        uint256 totalLockedFunds = _escrow.getLockedAmount();
         uint256 amountToLock = _shipments[shipmentId].price;
-        require(_escrow.getTotalDepositedAmount() >= totalLockedFunds + amountToLock);
-        _shipments[shipmentId].fundsStatus = FundsStatus.LOCKED;
+        require(_escrow.getTotalDepositedAmount() >= totalLockedFunds + amountToLock, "ShipmentManager: Not enough funds to lock");
 
-        // TODO: call escrow to lock funds
+        _shipments[shipmentId].fundsStatus = FundsStatus.LOCKED;
+        _escrow.lockFunds(amountToLock);
     }
     function _releaseFunds(uint256 shipmentId) private {
         require(_shipments[shipmentId].exists, "ShipmentManager: Shipment does not exist");
@@ -198,7 +207,7 @@ contract ShipmentManager{
         uint256 amountToUnlock = _shipments[shipmentId].price;
 
         _shipments[shipmentId].fundsStatus = FundsStatus.RELEASED;
-        // TODO: call escrow to unlock funds
+        _escrow.releaseFunds(amountToUnlock);
     }
     function confirmShipment(uint256 shipmentId) public onlyCommissioner {
         require(_shipments[shipmentId].exists, "ShipmentManager: Shipment does not exist");
