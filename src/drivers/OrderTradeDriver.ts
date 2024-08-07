@@ -265,8 +265,17 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
         } as OrderTradeContract.OrderLinePriceStructOutput;
     }
 
-    async getShipmentManagerAddress(): Promise<string> {
-        return this._actual.getShipmentManager();
+    async createShipment(expirationDate: Date, quantity: number, weight: number, price: number): Promise<void> {
+        if(quantity < 0 || weight < 0 || price < 0) {
+            throw new Error('Invalid arguments');
+        }
+        const tx = await this._actual.createShipment(expirationDate.getDate(), quantity, weight, price);
+        await tx.wait();
+
+    }
+
+    async getShipmentAddress(): Promise<string> {
+        return this._actual.getShipment();
     }
 
     async getEscrowAddress(): Promise<string> {

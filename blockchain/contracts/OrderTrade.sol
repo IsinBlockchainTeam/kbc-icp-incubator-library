@@ -5,7 +5,7 @@ import "./Trade.sol";
 import "./Escrow.sol";
 import "hardhat/console.sol";
 import "./EscrowManager.sol";
-import "./ShipmentManager.sol";
+import "./Shipment.sol";
 
 contract OrderTrade is Trade {
     using Counters for Counters.Counter;
@@ -57,7 +57,7 @@ contract OrderTrade is Trade {
 
     EnumerableType private _fiatManager;
     EscrowManager private _escrowManager;
-    ShipmentManager private _shipmentManager;
+    Shipment private _shipment;
 
     constructor(uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress,
         address unitManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl,
@@ -211,9 +211,6 @@ contract OrderTrade is Trade {
         emit OrderSignatureAffixed(_msgSender());
 
         if (_hasSupplierSigned && _hasCommissionerSigned) {
-            _escrow = _escrowManager.registerEscrow(address(this), _supplier, _paymentDeadline - block.timestamp, _tokenAddress);
-            _shipmentManager = new ShipmentManager(_supplier, _commissioner, address(_documentManager), address(_escrow));
-            _escrow.addAdmin(address(_shipmentManager));
             emit OrderConfirmed();
         }
     }
@@ -267,8 +264,38 @@ contract OrderTrade is Trade {
         return false;
     }
 
-    function getShipmentManager() public view returns (ShipmentManager) {
-        return _shipmentManager;
+    function createShipment(uint256 expirationDate, uint256 quantity, uint256 weight, uint256 price) public {
+        require(_hasSupplierSigned && _hasCommissionerSigned, "OrderTrade: The order has not been confirmed yet");
+        require(_msgSender() == _supplier, "OrderTrade: Only the supplier can create the shipment");
+        require(_shipment == Shipment(address(0)), "OrderTrade: Shipment already created");
+
+        _escrow = _escrowManager.registerEscrow(address(this), _supplier, _paymentDeadline - block.timestamp, _tokenAddress);
+        DocumentLibrary.DocumentType[] memory landTransportationRequiredDocuments = new DocumentLibrary.DocumentType[](3);
+        landTransportationRequiredDocuments[0] = DocumentLibrary.DocumentType.INSURANCE_CERTIFICATE;
+        landTransportationRequiredDocuments[1] = DocumentLibrary.DocumentType.BOOKING_CONFIRMATION;
+        landTransportationRequiredDocuments[2] = DocumentLibrary.DocumentType.SHIPPING_NOTE;
+        DocumentLibrary.DocumentType[] memory seaTransportationRequiredDocuments = new DocumentLibrary.DocumentType[](4);
+        seaTransportationRequiredDocuments[0] = DocumentLibrary.DocumentType.WEIGHT_CERTIFICATE;
+        seaTransportationRequiredDocuments[1] = DocumentLibrary.DocumentType.BILL_OF_LADING;
+        seaTransportationRequiredDocuments[2] = DocumentLibrary.DocumentType.PHYTOSANITARY_CERTIFICATE;
+        seaTransportationRequiredDocuments[3] = DocumentLibrary.DocumentType.SINGLE_EXPORT_DECLARATION;
+        _shipment = new Shipment(
+            expirationDate,
+            quantity,
+            weight,
+            price,
+            _supplier,
+            _commissioner,
+            address(_documentManager),
+            address(_escrow),
+            _externalUrl,
+            landTransportationRequiredDocuments,
+            seaTransportationRequiredDocuments
+        );
+        _escrow.addAdmin(address(_shipment));
+    }
+    function getShipment() public view returns (Shipment) {
+        return _shipment;
     }
 
     function getEscrow() public view returns (Escrow) {

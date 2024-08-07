@@ -229,16 +229,16 @@ contract Escrow is AccessControl {
             }
         }
     }
-    function deposit(uint256 amount) public {
+    function deposit(uint256 amount, address payer) public onlyAdmin {
         require(amount > 0, "Escrow: can only deposit positive amount");
 
-        _token.safeTransferFrom(_msgSender(), address(this), amount);
+        _token.safeTransferFrom(payer, address(this), amount);
 
-        if(_depositedAmount[_msgSender()] == 0)
-            _payers.push(_msgSender());
-        _depositedAmount[_msgSender()] += amount;
+        if(_depositedAmount[payer] == 0)
+            _payers.push(payer);
+        _depositedAmount[payer] += amount;
         _totalDepositedAmount += amount;
-        emit EscrowDeposited(_msgSender(), amount);
+        emit EscrowDeposited(payer, amount);
     }
     function withdraw(uint256 amount) public {
         require(amount > 0, "Escrow: can only withdraw positive amount");

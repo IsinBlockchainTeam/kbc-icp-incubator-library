@@ -166,11 +166,14 @@ export class EscrowDriver {
         await tx.wait();
     }
 
-    async deposit(amount: number): Promise<void> {
+    async deposit(amount: number, payer: string): Promise<void> {
         if (amount < 0) {
             throw new Error('Amount must be greater than or equal to 0');
         }
-        const tx = await this._contract.deposit(amount);
+        if (!utils.isAddress(payer)) {
+            throw new Error('Not an address');
+        }
+        const tx = await this._contract.deposit(amount, payer);
         await tx.wait();
     }
 

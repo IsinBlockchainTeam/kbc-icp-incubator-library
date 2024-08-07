@@ -1,8 +1,12 @@
 export enum DocumentType {
     INSURANCE_CERTIFICATE,
+    BOOKING_CONFIRMATION,
+    SHIPPING_NOTE,
     WEIGHT_CERTIFICATE,
-    PREFERENTIAL_ENTRY_CERTIFICATE,
-    BILL_OF_LADING
+    BILL_OF_LADING,
+    PHYTOSANITARY_CERTIFICATE,
+    SINGLE_EXPORT_DECLARATION,
+    OTHER
 }
 export enum DocumentStatus {
     NOT_EVALUATED, APPROVED, NOT_APPROVED
@@ -55,13 +59,11 @@ export class DocumentInfo {
         this._uploader = value;
     }
 }
-export enum ShipmentStatus {
-    PENDING,
-    SHIPPING,
-    TRANSPORTATION,
-    ONBOARDED,
-    ARBITRATION,
-    CONFIRMED
+export enum ShipmentPhase {
+    APPROVAL,
+    LAND_TRANSPORTATION,
+    SEA_TRANSPORTATION,
+    COMPARISON
 }
 export enum ShipmentEvaluationStatus {
     NOT_EVALUATED,
@@ -74,11 +76,9 @@ export enum FundsStatus {
     RELEASED
 }
 export class Shipment {
-    private _id: number;
-
     private _approved: boolean;
 
-    private _date: number;
+    private _expirationDate: Date;
 
     private _quantity: number;
 
@@ -92,27 +92,21 @@ export class Shipment {
 
     private _fundsStatus: FundsStatus;
 
-    constructor(id: number, approved: boolean, date: number, quantity: number, weight: number, price: number, evaluationStatus: ShipmentEvaluationStatus, documentsIds: number[], fundsStatus: FundsStatus) {
-        if(id < 0 || date < 0 || quantity < 0 || weight < 0 || price < 0) {
+    private _externalUrl: string;
+
+    constructor(approved: boolean, expirationDate: Date, quantity: number, weight: number, price: number, evaluationStatus: ShipmentEvaluationStatus, documentsIds: number[], fundsStatus: FundsStatus, externalUrl: string) {
+        if(quantity < 0 || weight < 0 || price < 0) {
             throw new Error('Invalid shipment data');
         }
-        this._id = id;
         this._approved = approved;
-        this._date = date;
+        this._expirationDate = expirationDate;
         this._quantity = quantity;
         this._weight = weight;
         this._price = price;
         this._evaluationStatus = evaluationStatus;
         this._documentsIds = documentsIds;
         this._fundsStatus = fundsStatus;
-    }
-
-    get id(): number {
-        return this._id;
-    }
-
-    set id(value: number) {
-        this._id = value;
+        this._externalUrl = externalUrl;
     }
 
     get approved(): boolean {
@@ -123,12 +117,12 @@ export class Shipment {
         this._approved = value;
     }
 
-    get date(): number {
-        return this._date;
+    get expirationDate(): Date {
+        return this._expirationDate;
     }
 
-    set date(value: number) {
-        this._date = value;
+    set expirationDate(value: Date) {
+        this._expirationDate = value;
     }
 
     get quantity(): number {
@@ -177,5 +171,13 @@ export class Shipment {
 
     set fundsStatus(value: FundsStatus) {
         this._fundsStatus = value;
+    }
+
+    get externalUrl(): string {
+        return this._externalUrl;
+    }
+
+    set externalUrl(value: string) {
+        this._externalUrl = value;
     }
 }
