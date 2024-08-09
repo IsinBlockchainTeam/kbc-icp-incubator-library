@@ -94,7 +94,11 @@ export class Shipment {
 
     private _externalUrl: string;
 
-    constructor(approved: boolean, expirationDate: Date, quantity: number, weight: number, price: number, evaluationStatus: ShipmentEvaluationStatus, documentsIds: number[], fundsStatus: FundsStatus, externalUrl: string) {
+    private _landTransportationRequiredDocumentsTypes: DocumentType[];
+
+    private _seaTransportationRequiredDocumentsTypes: DocumentType[];
+
+    constructor(approved: boolean, expirationDate: Date, quantity: number, weight: number, price: number, evaluationStatus: ShipmentEvaluationStatus, documentsIds: number[], fundsStatus: FundsStatus, externalUrl: string, landTransportationRequiredDocumentsTypes: DocumentType[], seaTransportationRequiredDocumentsTypes: DocumentType[]) {
         if(quantity < 0 || weight < 0 || price < 0) {
             throw new Error('Invalid shipment data');
         }
@@ -107,6 +111,8 @@ export class Shipment {
         this._documentsIds = documentsIds;
         this._fundsStatus = fundsStatus;
         this._externalUrl = externalUrl;
+        this._landTransportationRequiredDocumentsTypes = landTransportationRequiredDocumentsTypes;
+        this._seaTransportationRequiredDocumentsTypes = seaTransportationRequiredDocumentsTypes;
     }
 
     get approved(): boolean {
@@ -179,5 +185,21 @@ export class Shipment {
 
     set externalUrl(value: string) {
         this._externalUrl = value;
+    }
+
+    get landTransportationRequiredDocumentsTypes(): DocumentType[] {
+        return this._landTransportationRequiredDocumentsTypes;
+    }
+
+    set landTransportationRequiredDocumentsTypes(value: DocumentType[]) {
+        this._landTransportationRequiredDocumentsTypes = value;
+    }
+
+    get seaTransportationRequiredDocumentsTypes(): DocumentType[] {
+        return this._seaTransportationRequiredDocumentsTypes;
+    }
+
+    set seaTransportationRequiredDocumentsTypes(value: DocumentType[]) {
+        this._seaTransportationRequiredDocumentsTypes = value;
     }
 }

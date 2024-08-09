@@ -23,7 +23,9 @@ export class ShipmentDriver {
             result[5],
             result[6].map((value) => value.toNumber()),
             result[7],
-            result[8]
+            result[8],
+            result[9],
+            result[10],
         );
     }
 
@@ -40,7 +42,7 @@ export class ShipmentDriver {
             result[0].toNumber(),
             result[1],
             result[2],
-            result[3]
+            result[3],
         );
     }
 
@@ -55,7 +57,7 @@ export class ShipmentDriver {
         if(quantity < 0 || weight < 0 || price < 0) {
             throw new Error('Invalid arguments');
         }
-        const tx = await this._contract.updateShipment(expirationDate.getDate(), quantity, weight, price);
+        const tx = await this._contract.updateShipment(expirationDate.getTime(), quantity, weight, price);
         await tx.wait();
     }
 
@@ -72,13 +74,13 @@ export class ShipmentDriver {
         await tx.wait();
     }
 
-    async addDocument(documentType: DocumentType, documentHash: string): Promise<void> {
-        const tx = await this._contract.addDocument(documentType, documentHash);
+    async addDocument(documentType: DocumentType, externalUrl: string, documentHash: string): Promise<void> {
+        const tx = await this._contract.addDocument(documentType, externalUrl, documentHash);
         await tx.wait();
     }
 
-    async updateDocument(documentId: number, documentHash: string): Promise<void> {
-        const tx = await this._contract.updateDocument(documentId, documentHash);
+    async updateDocument(documentId: number, externalUrl: string, documentHash: string): Promise<void> {
+        const tx = await this._contract.updateDocument(documentId, externalUrl, documentHash);
         await tx.wait();
     }
 

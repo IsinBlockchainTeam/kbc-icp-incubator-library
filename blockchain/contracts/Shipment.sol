@@ -122,7 +122,7 @@ contract Shipment is AccessControl {
     event DocumentRejected(uint256 documentId);
 
     // Getters
-    function getShipment() public view returns (bool, uint256, uint256, uint256, uint256, ComparisonStatus, uint256[] memory, FundsStatus, string memory) {
+    function getShipment() public view returns (bool, uint256, uint256, uint256, uint256, ComparisonStatus, uint256[] memory, FundsStatus, string memory, DocumentLibrary.DocumentType[] memory, DocumentLibrary.DocumentType[] memory) {
         return (
             _approved,
             _expirationDate,
@@ -132,7 +132,9 @@ contract Shipment is AccessControl {
             _comparisonStatus,
             _documentsIds,
             _fundsStatus,
-            _externalUrl
+            _externalUrl,
+            _landTransportationRequiredDocuments,
+            _seaTransportationRequiredDocuments
         );
     }
     function getPhase() public view returns (Phase) {
@@ -216,18 +218,18 @@ contract Shipment is AccessControl {
             _fundsStatus = FundsStatus.LOCKED;
         }
     }
-    function addDocument(DocumentLibrary.DocumentType documentType, string memory contentHash) public onlySupplierOrCommissioner shipmentApproved {
-        uint256 documentId = _documentManager.registerDocument(_externalUrl, contentHash, _msgSender());
+    function addDocument(DocumentLibrary.DocumentType documentType, string memory externalUrl, string memory contentHash) public onlySupplierOrCommissioner shipmentApproved {
+        uint256 documentId = _documentManager.registerDocument(externalUrl, contentHash, _msgSender());
         _documentsIds.push(documentId);
         _documentsInfo[documentId] = DocumentLibrary.DocumentInfo(documentId, documentType, DocumentLibrary.DocumentStatus.NOT_EVALUATED, _msgSender(), true);
         emit DocumentAdded(documentId);
     }
-    function updateDocument(uint256 documentId, string memory contentHash) public onlySupplierOrCommissioner shipmentApproved {
+    function updateDocument(uint256 documentId, string memory externalUrl, string memory contentHash) public onlySupplierOrCommissioner shipmentApproved {
         require(_documentsInfo[documentId].exists, "ShipmentManager: Document does not exist");
         require(_documentsInfo[documentId].uploader == _msgSender(), "ShipmentManager: Caller is not the uploader");
         require(_documentsInfo[documentId].status != DocumentLibrary.DocumentStatus.APPROVED, "ShipmentManager: Document already approved");
 
-        _documentManager.updateDocument(documentId, _externalUrl, contentHash, _msgSender());
+        _documentManager.updateDocument(documentId, externalUrl, contentHash, _msgSender());
         _documentsInfo[documentId].status = DocumentLibrary.DocumentStatus.NOT_EVALUATED;
         emit DocumentUpdated(documentId);
     }
@@ -240,7 +242,7 @@ contract Shipment is AccessControl {
         emit DocumentApproved(documentId);
 
         // Unlock funds if all required documents are approved
-        if(getPhase() == Phase.SEA_TRANSPORTATION && _fundsStatus == FundsStatus.LOCKED) {
+        if(getPhase() == Phase.COMPARISON && _fundsStatus == FundsStatus.LOCKED) {
             _escrow.releaseFunds(_price);
             _fundsStatus = FundsStatus.RELEASED;
         }

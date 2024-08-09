@@ -60,27 +60,28 @@ export class ShipmentService {
     }
 
     async addDocument(documentType: DocumentType, fileContent: Uint8Array, resourceSpec: ICPResourceSpec, delegatedOrganizationIds: number[] = [],): Promise<void> {
-        const externalUrl = (await this.getShipment()).externalUrl;
+        const shipmentExternalUrl = (await this.getShipment()).externalUrl;
         const fileName = FileHelpers.removeFileExtension(resourceSpec.name);
         const spec = { ...resourceSpec };
-        spec.name = `${externalUrl}/files/${resourceSpec.name}`;
+        spec.name = `${shipmentExternalUrl}/files/${spec.name}`;
         const contentHash = FileHelpers.getHash(fileContent);
-        await this._icpFileDriver.create(fileContent, resourceSpec, delegatedOrganizationIds);
+        await this._icpFileDriver.create(fileContent, spec, delegatedOrganizationIds);
         const documentMetadata: ShipmentDocumentMetadata = {
-            fileName: resourceSpec.name,
+            fileName: spec.name,
             documentType,
             date: new Date()
         };
         await this._icpFileDriver.create(
             FileHelpers.getBytesFromObject(documentMetadata),
             {
-                name: `${externalUrl}/files/${fileName}-metadata.json`,
+                name: `${shipmentExternalUrl}/files/${fileName}-metadata.json`,
                 type: 'application/json'
             },
             delegatedOrganizationIds
         );
         return this._shipmentManagerDriver.addDocument(
             documentType,
+            spec.name,
             contentHash.toString()
         );
     }

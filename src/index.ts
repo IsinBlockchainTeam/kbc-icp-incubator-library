@@ -67,7 +67,7 @@ export { TokenService } from './services/TokenService';
 
 export { Shipment, ShipmentPhase, DocumentStatus as ShipmentDocumentStatus, DocumentInfo as ShipmentDocumentInfo, DocumentType as ShipmentDocumentType, ShipmentEvaluationStatus, FundsStatus} from './entities/Shipment';
 export { ShipmentDriver } from './drivers/ShipmentDriver';
-export { ShipmentService } from './services/ShipmentService';
+export { ShipmentService, ShipmentDocument } from './services/ShipmentService';
 
 export type { ISolidStorageMetadataDriver } from './drivers/ISolidStorageMetadataDriver';
 export type { ISolidStorageDocumentDriver } from './drivers/ISolidStorageDocumentDriver';

@@ -269,9 +269,8 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
         if(quantity < 0 || weight < 0 || price < 0) {
             throw new Error('Invalid arguments');
         }
-        const tx = await this._actual.createShipment(expirationDate.getDate(), quantity, weight, price);
+        const tx = await this._actual.createShipment(expirationDate.getTime(), quantity, weight, price);
         await tx.wait();
-
     }
 
     async getShipmentAddress(): Promise<string> {

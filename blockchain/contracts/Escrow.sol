@@ -244,6 +244,7 @@ contract Escrow is AccessControl {
         require(amount > 0, "Escrow: can only withdraw positive amount");
         require(amount <= getWithdrawableAmount(_msgSender()), "Escrow: can only withdraw up to the withdrawable amount");
 
+        _token.approve(address(this), amount);
         _token.safeTransferFrom(address(this), _msgSender(), amount);
 
         _depositedAmount[_msgSender()] -= amount;
