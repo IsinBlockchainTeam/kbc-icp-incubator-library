@@ -103,12 +103,6 @@ describe('OrderTradeService', () => {
             expectedMockedFunctionArgs: []
         },
         {
-            serviceFunctionName: 'getOrderStatus',
-            serviceFunction: () => orderTradeService.getOrderStatus(),
-            expectedMockedFunction: mockedOrderTradeDriver.getOrderStatus,
-            expectedMockedFunctionArgs: []
-        },
-        {
             serviceFunctionName: 'updatePaymentDeadline',
             serviceFunction: () => orderTradeService.updatePaymentDeadline(1),
             expectedMockedFunction: mockedOrderTradeDriver.updatePaymentDeadline,

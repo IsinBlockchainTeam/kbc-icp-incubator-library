@@ -2,7 +2,6 @@ import { BigNumber, Signer, Wallet } from 'ethers';
 import { createMock } from 'ts-auto-mock';
 import { TradeDriver } from './TradeDriver';
 import { Trade as TradeContract, Trade__factory } from '../smart-contracts';
-import { OrderStatus } from '../types/OrderStatus';
 import { DocumentType } from '../entities/DocumentInfo';
 import { TradeType } from '../types/TradeType';
 import { DocumentStatus } from '../entities/Document';
@@ -23,7 +22,6 @@ describe('TradeDriver', () => {
     const mockedGetLineCounter = jest.fn();
     const mockedGetTradeType = jest.fn();
     const mockedGetLineExists = jest.fn();
-    const mockedGetOrderStatus = jest.fn();
     const mockedGetAllDocumentIds = jest.fn();
     const mockedGetAllDocumentIdsByType = jest.fn();
     const mockedGetDocumentStatus = jest.fn();
@@ -34,7 +32,6 @@ describe('TradeDriver', () => {
     mockedGetLineCounter.mockReturnValue(BigNumber.from(lineIds.length));
     mockedGetTradeType.mockResolvedValue(TradeType.BASIC);
     mockedGetLineExists.mockResolvedValue(true);
-    mockedGetOrderStatus.mockResolvedValue(OrderStatus.SHIPPED);
 
     const mockedContract = createMock<TradeContract>({
         getLineCounter: mockedGetLineCounter,

@@ -28,7 +28,6 @@ export {
     OrderLineRequest,
     type OrderTradeMetadata
 } from './entities/OrderTrade';
-export { OrderStatus } from './types/OrderStatus';
 export { NegotiationStatus } from './types/NegotiationStatus';
 export { TradeType } from './types/TradeType';
 export { TradeManagerDriver } from './drivers/TradeManagerDriver';

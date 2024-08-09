@@ -15,7 +15,6 @@ import {
 import { NegotiationStatus } from '../types/NegotiationStatus';
 import { EntityBuilder } from '../utils/EntityBuilder';
 import { OrderLine, OrderLineRequest, OrderTradeMetadata } from '../entities/OrderTrade';
-import { OrderStatus } from '../types/OrderStatus';
 
 describe('OrderTradeDriver', () => {
     let orderTradeDriver: OrderTradeDriver;
@@ -90,7 +89,6 @@ describe('OrderTradeDriver', () => {
     const mockedGetLine = jest.fn();
     const mockedGetLineExists = jest.fn();
     const mockedGetNegotiationStatus = jest.fn();
-    const mockedGetOrderStatus = jest.fn();
     const mockedHaveDeadlinesExpired = jest.fn();
     const mockedGetWhoSigned = jest.fn();
 
@@ -154,7 +152,6 @@ describe('OrderTradeDriver', () => {
         updateLine: mockedWriteFunction,
         assignMaterial: mockedAssignMaterial,
         getNegotiationStatus: mockedGetNegotiationStatus,
-        getOrderStatus: mockedGetOrderStatus,
         updatePaymentDeadline: mockedWriteFunction,
         updateDocumentDeliveryDeadline: mockedWriteFunction,
         updateArbiter: mockedWriteFunction,
@@ -416,28 +413,6 @@ describe('OrderTradeDriver', () => {
         expect(mockedContract.getNegotiationStatus).toHaveBeenCalledTimes(1);
         expect(mockedContract.getNegotiationStatus).toHaveBeenNthCalledWith(1);
         expect(mockedGetNegotiationStatus).toHaveBeenCalledTimes(1);
-    });
-
-    it('should correctly retrieve the order status', async () => {
-        mockedGetOrderStatus.mockResolvedValueOnce(OrderStatus.CONTRACTING);
-        expect(await orderTradeDriver.getOrderStatus()).toEqual(OrderStatus.CONTRACTING);
-
-        mockedGetOrderStatus.mockResolvedValueOnce(OrderStatus.PRODUCTION);
-        expect(await orderTradeDriver.getOrderStatus()).toEqual(OrderStatus.PRODUCTION);
-
-        mockedGetOrderStatus.mockResolvedValueOnce(OrderStatus.PAYED);
-        expect(await orderTradeDriver.getOrderStatus()).toEqual(OrderStatus.PAYED);
-
-        mockedGetOrderStatus.mockResolvedValueOnce(OrderStatus.EXPORTED);
-        expect(await orderTradeDriver.getOrderStatus()).toEqual(OrderStatus.EXPORTED);
-
-        mockedGetOrderStatus.mockResolvedValueOnce(OrderStatus.SHIPPED);
-        expect(await orderTradeDriver.getOrderStatus()).toEqual(OrderStatus.SHIPPED);
-
-        mockedGetOrderStatus.mockResolvedValueOnce(OrderStatus.COMPLETED);
-        expect(await orderTradeDriver.getOrderStatus()).toEqual(OrderStatus.COMPLETED);
-
-        expect(mockedContract.getOrderStatus).toHaveBeenCalledTimes(6);
     });
 
     it('should correctly update the payment deadline', async () => {

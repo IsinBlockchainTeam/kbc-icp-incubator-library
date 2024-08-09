@@ -11,7 +11,6 @@ contract OrderTrade is Trade {
     using Counters for Counters.Counter;
 
     enum NegotiationStatus {INITIALIZED, PENDING, CONFIRMED}
-    enum OrderStatus { CONTRACTING, PRODUCTION, PAYED, EXPORTED, SHIPPED, COMPLETED }
 
     event OrderLineAdded(uint256 orderLineId);
     event OrderLineUpdated(uint256 orderLineId);
@@ -186,7 +185,7 @@ contract OrderTrade is Trade {
     function enforceDeadlines() public {
         if(haveDeadlinesExpired()) {
             _hasOrderExpired = true;
-            _escrow.refundFunds(100);
+            // TODO: Refund _escrow
             emit OrderExpired();
         }
     }
@@ -215,30 +214,6 @@ contract OrderTrade is Trade {
         }
     }
 
-    function getOrderStatus() public view returns (OrderStatus) {
-        OrderStatus status = OrderStatus.CONTRACTING;
-
-//        TODO: va valutato anche la DELIVERY_NOTE per gli ordini o solamente per i basic trade?
-        if (getNegotiationStatus() == NegotiationStatus.CONFIRMED) status = OrderStatus.PRODUCTION;
-        // TODO: gestire lo stato di trade "pagato". Capire se risulta pagato solamente nel momento in cui sono stati sbloccati tutti i fondi e l'intera transazione si è conclusa
-        if (_documentsByType[DocumentType.PAYMENT_INVOICE].length > 0 && _areDocumentsApproved(_documentsByType[DocumentType.PAYMENT_INVOICE])) status = OrderStatus.PAYED;
-        if (_documentsByType[DocumentType.ORIGIN_SWISS_DECODE].length > 0 && _documentsByType[DocumentType.WEIGHT_CERTIFICATE].length > 0 && _documentsByType[DocumentType.FUMIGATION_CERTIFICATE].length > 0 &&
-            _documentsByType[DocumentType.PREFERENTIAL_ENTRY_CERTIFICATE].length > 0 && _documentsByType[DocumentType.PHYTOSANITARY_CERTIFICATE].length > 0 && _documentsByType[DocumentType.INSURANCE_CERTIFICATE].length > 0 &&
-            _areDocumentsApproved(_documentsByType[DocumentType.ORIGIN_SWISS_DECODE]) && _areDocumentsApproved(_documentsByType[DocumentType.WEIGHT_CERTIFICATE]) && _areDocumentsApproved(_documentsByType[DocumentType.FUMIGATION_CERTIFICATE]) &&
-            _areDocumentsApproved(_documentsByType[DocumentType.PREFERENTIAL_ENTRY_CERTIFICATE]) && _areDocumentsApproved(_documentsByType[DocumentType.PHYTOSANITARY_CERTIFICATE]) && _areDocumentsApproved(_documentsByType[DocumentType.INSURANCE_CERTIFICATE])
-        ) status = OrderStatus.EXPORTED;
-        if (_documentsByType[DocumentType.BILL_OF_LADING].length > 0 && _areDocumentsApproved(_documentsByType[DocumentType.BILL_OF_LADING])) status = OrderStatus.SHIPPED;
-        if (_documentsByType[DocumentType.COMPARISON_SWISS_DECODE].length > 0 && _areDocumentsApproved(_documentsByType[DocumentType.COMPARISON_SWISS_DECODE])) status = OrderStatus.COMPLETED;
-
-        return status;
-    }
-
-    function completeTransaction() public {
-        require(getOrderStatus() == OrderStatus.COMPLETED, "Transaction is not completed until the goods have not been imported and the quality is the expected one");
-
-        _escrow.releaseFunds(100);
-    }
-
     function _updateSignatures(address sender) private {
         if (sender == _supplier) {
             _hasSupplierSigned = true;
@@ -252,16 +227,6 @@ contract OrderTrade is Trade {
             _hasSupplierSigned = false;
             _hasCommissionerSigned = false;
         }
-    }
-
-    function _areDocumentsApproved(uint256[] memory documentIds) private view returns (bool) {
-//        TODO: capire se bisogna mantenere più documenti per ogni tipo o se ne basta solo uno. Nel primo caso bisogna fare in modo allora che i documenti ricaricati dopo essere stati rifiutati non vengano considerati nel controllo (es. il rifiuto li rimuove da questa lista)
-//        for (uint i = 0; i < documentIds.length; i++)
-//            if (_documentsStatus[documentIds[i]].status != DocumentStatus.APPROVED) return false;
-//        return true;
-        for (uint i = 0; i < documentIds.length; i++)
-            if (_documentsStatus[documentIds[i]].status == DocumentStatus.APPROVED) return true;
-        return false;
     }
 
     function createShipment(uint256 expirationDate, uint256 quantity, uint256 weight, uint256 price) public {
