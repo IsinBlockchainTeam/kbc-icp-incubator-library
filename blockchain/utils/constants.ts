@@ -12,7 +12,8 @@ export enum ContractName {
     ESCROW_MANAGER = 'EscrowManager',
     ESCROW = 'Escrow',
     MY_TOKEN = 'MyToken',
-    ETHEREUM_DID_REGISTRY = 'EthereumDIDRegistry'
+    ETHEREUM_DID_REGISTRY = 'EthereumDIDRegistry',
+    DELEGATE_MANAGER = 'DelegateManager',
 }
 
 export enum FIAT {
