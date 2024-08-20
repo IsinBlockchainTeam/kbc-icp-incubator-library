@@ -6,7 +6,7 @@ import "./Trade.sol";
 contract BasicTrade is Trade {
     string private _name;
 
-    constructor(uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress, address unitManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl, string memory metadataHash, string memory name) Trade(tradeId, productCategoryAddress, materialManagerAddress, documentManagerAddress, unitManagerAddress, supplier, customer, commissioner, externalUrl, metadataHash) {
+    constructor(address delegateManagerAddress, uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress, address unitManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl, string memory metadataHash, string memory name) Trade(delegateManagerAddress, tradeId, productCategoryAddress, materialManagerAddress, documentManagerAddress, unitManagerAddress, supplier, customer, commissioner, externalUrl, metadataHash) {
         _name = name;
     }
 
@@ -23,14 +23,14 @@ contract BasicTrade is Trade {
         return _getLine(id);
     }
 
-    function addLine(uint256 productCategoryId, uint256 quantity, string memory unit) public onlyAdminOrContractPart returns (uint256) {
-        uint256 tradeLineId = _addLine(productCategoryId, quantity, unit);
+    function addLine(RoleProof memory roleProof, uint256 productCategoryId, uint256 quantity, string memory unit) public onlyAdminOrContractPart atLeastEditor(roleProof) returns (uint256) {
+        uint256 tradeLineId = _addLine(roleProof, productCategoryId, quantity, unit);
         emit TradeLineAdded(tradeLineId);
         return tradeLineId;
     }
 
-    function updateLine(uint256 id, uint256 productCategoryId, uint256 quantity, string memory unit) public onlyAdminOrContractPart {
-        _updateLine(id, productCategoryId, quantity, unit);
+    function updateLine(RoleProof memory roleProof, uint256 id, uint256 productCategoryId, uint256 quantity, string memory unit) public atLeastEditor(roleProof) onlyAdminOrContractPart {
+        _updateLine(roleProof, id, productCategoryId, quantity, unit);
         emit TradeLineUpdated(id);
     }
 

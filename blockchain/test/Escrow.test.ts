@@ -25,7 +25,7 @@ describe('Escrow.sol', () => {
     const deposit = async (actor: SignerWithAddress, amount: number) => {
         await tokenContract.connect(actor).approve(escrowContract.address, amount);
         return escrowContract.connect(actor).deposit(amount);
-    }
+    };
 
     beforeEach(async () => {
         [admin, payee, payer1, payer2, feeRecipient, anotherFeeRecipient] = await ethers.getSigners();
@@ -97,15 +97,7 @@ describe('Escrow.sol', () => {
         it('should fail creating an escrow if duration is zero', async () => {
             EscrowContract = await ethers.getContractFactory(ContractName.ESCROW);
             await expect(
-                EscrowContract.deploy(
-                    admin.address,
-                    payee.address,
-                    0,
-                    tokenContract.address,
-                    feeRecipient.address,
-                    baseFee,
-                    percentageFee
-                )
+                EscrowContract.deploy(admin.address, payee.address, 0, tokenContract.address, feeRecipient.address, baseFee, percentageFee)
             ).to.be.revertedWith('Escrow: duration is zero');
         });
         it('should fail creating an escrow if token address is the zero address', async () => {
@@ -139,15 +131,7 @@ describe('Escrow.sol', () => {
         it('should fail creating an escrow if percentage fee is greater than 100', async () => {
             EscrowContract = await ethers.getContractFactory(ContractName.ESCROW);
             await expect(
-                EscrowContract.deploy(
-                    admin.address,
-                    payee.address,
-                    duration,
-                    tokenContract.address,
-                    feeRecipient.address,
-                    baseFee,
-                    101
-                )
+                EscrowContract.deploy(admin.address, payee.address, duration, tokenContract.address, feeRecipient.address, baseFee, 101)
             ).to.be.revertedWith('Escrow: percentage fee cannot be greater than 100');
         });
     });
@@ -163,20 +147,14 @@ describe('Escrow.sol', () => {
         it('should not be able to deposit in other state', async () => {
             await escrowContract.connect(admin).enableWithdrawal(0);
             expect(await escrowContract.getState()).to.equal(1);
-            await expect(
-                deposit(payer1, depositAmount)
-            ).to.be.revertedWith('Escrow: can only deposit while active');
+            await expect(deposit(payer1, depositAmount)).to.be.revertedWith('Escrow: can only deposit while active');
 
             await escrowContract.connect(admin).enableRefund(0);
             expect(await escrowContract.getState()).to.equal(2);
-            await expect(
-                deposit(payer1, depositAmount)
-            ).to.be.revertedWith('Escrow: can only deposit while active');
+            await expect(deposit(payer1, depositAmount)).to.be.revertedWith('Escrow: can only deposit while active');
         });
         it('should not be able to deposit zero tokens', async () => {
-            await expect(
-                deposit(payer1, 0)
-            ).to.be.revertedWith('Escrow: can only deposit positive amount');
+            await expect(deposit(payer1, 0)).to.be.revertedWith('Escrow: can only deposit positive amount');
         });
     });
     describe('Payer Withdraw', () => {
@@ -185,7 +163,7 @@ describe('Escrow.sol', () => {
             expect(await escrowContract.connect(payer1).getDepositedAmount()).to.equal(depositAmount);
 
             const initialBalance = Number(await tokenContract.balanceOf(payer1.address));
-            const tx = await escrowContract.connect(payer1).payerWithdraw(depositAmount-10);
+            const tx = await escrowContract.connect(payer1).payerWithdraw(depositAmount - 10);
             await expect(tx).to.emit(escrowContract, 'EscrowWithdrawn');
             expect(await escrowContract.connect(payer1).getDepositedAmount()).to.equal(10);
             expect(await escrowContract.getTotalDepositedAmount()).to.equal(10);
@@ -198,26 +176,20 @@ describe('Escrow.sol', () => {
 
             await escrowContract.connect(admin).enableWithdrawal(0);
             expect(await escrowContract.getState()).to.equal(1);
-            await expect(
-                escrowContract.connect(payer1).payerWithdraw(depositAmount)
-            ).to.be.revertedWith('Escrow: can only withdraw while active');
+            await expect(escrowContract.connect(payer1).payerWithdraw(depositAmount)).to.be.revertedWith('Escrow: can only withdraw while active');
 
             await escrowContract.connect(admin).enableRefund(0);
             expect(await escrowContract.getState()).to.equal(2);
-            await expect(
-                escrowContract.connect(payer1).payerWithdraw(depositAmount)
-            ).to.be.revertedWith('Escrow: can only withdraw while active');
+            await expect(escrowContract.connect(payer1).payerWithdraw(depositAmount)).to.be.revertedWith('Escrow: can only withdraw while active');
         });
         it('should not be able to withdraw zero tokens', async () => {
-            await expect(
-                escrowContract.connect(payer1).payerWithdraw(0)
-            ).to.be.revertedWith('Escrow: can only withdraw positive amount');
+            await expect(escrowContract.connect(payer1).payerWithdraw(0)).to.be.revertedWith('Escrow: can only withdraw positive amount');
         });
         it('should not be able to withdraw more tokens then I deposited', async () => {
             await deposit(payer1, depositAmount);
-            await expect(
-                escrowContract.connect(payer1).payerWithdraw(depositAmount + 10)
-            ).to.be.revertedWith('Escrow: can only withdraw up to the deposited amount');
+            await expect(escrowContract.connect(payer1).payerWithdraw(depositAmount + 10)).to.be.revertedWith(
+                'Escrow: can only withdraw up to the deposited amount'
+            );
         });
     });
     describe('Payee Withdraw', () => {
@@ -242,23 +214,17 @@ describe('Escrow.sol', () => {
             await deposit(payer1, depositAmount);
             expect(await escrowContract.connect(payer1).getDepositedAmount()).to.equal(depositAmount);
 
-            await expect(
-                escrowContract.payeeWithdraw()
-            ).to.be.revertedWith('Escrow: can only withdraw while withdrawing');
+            await expect(escrowContract.payeeWithdraw()).to.be.revertedWith('Escrow: can only withdraw while withdrawing');
 
             await escrowContract.connect(admin).enableRefund(0);
             expect(await escrowContract.getState()).to.equal(2);
-            await expect(
-                escrowContract.payeeWithdraw()
-            ).to.be.revertedWith('Escrow: can only withdraw while withdrawing');
+            await expect(escrowContract.payeeWithdraw()).to.be.revertedWith('Escrow: can only withdraw while withdrawing');
         });
         it('should not be able to withdraw zero tokens', async () => {
             await escrowContract.connect(admin).enableWithdrawal(100);
             expect(await escrowContract.getState()).to.equal(1);
 
-            await expect(
-                escrowContract.payeeWithdraw()
-            ).to.be.revertedWith('Escrow: can only withdraw when there is something to withdraw');
+            await expect(escrowContract.payeeWithdraw()).to.be.revertedWith('Escrow: can only withdraw when there is something to withdraw');
         });
     });
     describe('Payer Refund', () => {
@@ -284,23 +250,19 @@ describe('Escrow.sol', () => {
             await deposit(payer1, depositAmount);
             expect(await escrowContract.connect(payer1).getDepositedAmount()).to.equal(depositAmount);
 
-            await expect(
-                escrowContract.connect(payer1).payerRefund()
-            ).to.be.revertedWith('Escrow: can only refund while refunding');
+            await expect(escrowContract.connect(payer1).payerRefund()).to.be.revertedWith('Escrow: can only refund while refunding');
 
             await escrowContract.connect(admin).enableWithdrawal(0);
             expect(await escrowContract.getState()).to.equal(1);
-            await expect(
-                escrowContract.connect(payer1).payerRefund()
-            ).to.be.revertedWith('Escrow: can only refund while refunding');
+            await expect(escrowContract.connect(payer1).payerRefund()).to.be.revertedWith('Escrow: can only refund while refunding');
         });
         it('should not be able to withdraw zero tokens', async () => {
             await escrowContract.connect(admin).enableRefund(100);
             expect(await escrowContract.getState()).to.equal(2);
 
-            await expect(
-                escrowContract.connect(payer1).payerRefund()
-            ).to.be.revertedWith('Escrow: can only refund when there is something to refund');
+            await expect(escrowContract.connect(payer1).payerRefund()).to.be.revertedWith(
+                'Escrow: can only refund when there is something to refund'
+            );
         });
     });
     describe('Update Fee Recipient', () => {
@@ -319,19 +281,13 @@ describe('Escrow.sol', () => {
         });
         it('should fail updating fee recipient address if in wrong state', async () => {
             await escrowContract.connect(admin).enableWithdrawal(0);
-            await expect(escrowContract.connect(admin).updateFeeRecipient(payer1.address)).to.be.revertedWith(
-                'Escrow: can only edit while active'
-            );
+            await expect(escrowContract.connect(admin).updateFeeRecipient(payer1.address)).to.be.revertedWith('Escrow: can only edit while active');
 
             await escrowContract.connect(admin).enableRefund(0);
-            await expect(escrowContract.connect(admin).updateFeeRecipient(payer1.address)).to.be.revertedWith(
-                'Escrow: can only edit while active'
-            );
+            await expect(escrowContract.connect(admin).updateFeeRecipient(payer1.address)).to.be.revertedWith('Escrow: can only edit while active');
         });
         it('should fail updating fee recipient address if caller is not admin', async () => {
-            await expect(escrowContract.connect(payer1).updateFeeRecipient(payer1.address)).to.be.revertedWith(
-                'Escrow: caller is not the admin'
-            );
+            await expect(escrowContract.connect(payer1).updateFeeRecipient(payer1.address)).to.be.revertedWith('Escrow: caller is not the admin');
         });
         it('should fail updating fee recipient address if the new recipient is the zero address', async () => {
             await expect(escrowContract.connect(admin).updateFeeRecipient(ethers.constants.AddressZero)).to.be.revertedWith(
@@ -351,19 +307,13 @@ describe('Escrow.sol', () => {
         });
         it('should fail updating base fee if in wrong state', async () => {
             await escrowContract.connect(admin).enableWithdrawal(0);
-            await expect(escrowContract.connect(admin).updateBaseFee(0)).to.be.revertedWith(
-                'Escrow: can only edit while active'
-            );
+            await expect(escrowContract.connect(admin).updateBaseFee(0)).to.be.revertedWith('Escrow: can only edit while active');
 
             await escrowContract.connect(admin).enableRefund(0);
-            await expect(escrowContract.connect(admin).updateBaseFee(0)).to.be.revertedWith(
-                'Escrow: can only edit while active'
-            );
+            await expect(escrowContract.connect(admin).updateBaseFee(0)).to.be.revertedWith('Escrow: can only edit while active');
         });
         it('should fail updating base fee if caller is not admin', async () => {
-            await expect(escrowContract.connect(payer1).updateBaseFee(0)).to.be.revertedWith(
-                'Escrow: caller is not the admin'
-            );
+            await expect(escrowContract.connect(payer1).updateBaseFee(0)).to.be.revertedWith('Escrow: caller is not the admin');
         });
     });
     describe('Update Percentage Fee', () => {
@@ -373,19 +323,13 @@ describe('Escrow.sol', () => {
         });
         it('should fail updating percentage fee if in wrong state', async () => {
             await escrowContract.connect(admin).enableWithdrawal(0);
-            await expect(escrowContract.connect(admin).updatePercentageFee(0)).to.be.revertedWith(
-                'Escrow: can only edit while active'
-            );
+            await expect(escrowContract.connect(admin).updatePercentageFee(0)).to.be.revertedWith('Escrow: can only edit while active');
 
             await escrowContract.connect(admin).enableRefund(0);
-            await expect(escrowContract.connect(admin).updatePercentageFee(0)).to.be.revertedWith(
-                'Escrow: can only edit while active'
-            );
+            await expect(escrowContract.connect(admin).updatePercentageFee(0)).to.be.revertedWith('Escrow: can only edit while active');
         });
         it('should fail updating percentage fee if caller is not admin', async () => {
-            await expect(escrowContract.connect(payer1).updatePercentageFee(0)).to.be.revertedWith(
-                'Escrow: caller is not the admin'
-            );
+            await expect(escrowContract.connect(payer1).updatePercentageFee(0)).to.be.revertedWith('Escrow: caller is not the admin');
         });
     });
     describe('Admins', () => {
@@ -394,9 +338,7 @@ describe('Escrow.sol', () => {
             await expect(escrowContract.connect(feeRecipient).addAdmin(anotherFeeRecipient.address)).to.not.be.reverted;
 
             await escrowContract.connect(admin).removeAdmin(feeRecipient.address);
-            await expect(escrowContract.connect(feeRecipient).addAdmin(feeRecipient.address)).to.be.revertedWith(
-                'Escrow: caller is not the admin'
-            );
+            await expect(escrowContract.connect(feeRecipient).addAdmin(feeRecipient.address)).to.be.revertedWith('Escrow: caller is not the admin');
         });
     });
 });

@@ -68,7 +68,9 @@ contract DelegateManager is AccessControl {
     }
 
     function hasValidRole(bytes memory signedProof, string memory role, address delegator) public view returns (bool) {
-        address delegate = _msgSender();
+        // TODO: understand why this doesn't work
+        // address delegate = _msgSender();
+        address delegate = tx.origin;
         bytes32 structHash = keccak256(abi.encode(ROLE_DELEGATION_TYPEHASH, delegate, keccak256(bytes(role))));
         bytes32 hash = keccak256(abi.encodePacked("\x19\x01", domainSeparator, structHash));
         address signer = hash.recover(signedProof);

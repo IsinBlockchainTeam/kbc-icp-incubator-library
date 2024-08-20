@@ -9,8 +9,9 @@ import "./DocumentManager.sol";
 import "./ProductCategoryManager.sol";
 import "./MaterialManager.sol";
 import "./DocumentManager.sol";
+import "./KBCAccessControl.sol";
 
-abstract contract Trade is AccessControl {
+abstract contract Trade is AccessControl, KBCAccessControl {
     using Counters for Counters.Counter;
 
     enum DocumentType {
@@ -90,7 +91,7 @@ abstract contract Trade is AccessControl {
     DocumentManager internal _documentManager;
     EnumerableType internal _unitManager;
 
-    constructor(uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress, address unitManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl, string memory metadataHash) {
+    constructor(address delegateManagerAddress, uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress, address unitManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl, string memory metadataHash)  KBCAccessControl(delegateManagerAddress) {
         require(productCategoryAddress != address(0), "TradeManager: product category manager address is the zero address");
         require(materialManagerAddress != address(0), "TradeManager: material manager address is the zero address");
         require(documentManagerAddress != address(0), "TradeManager: document category manager address is the zero address");
@@ -131,8 +132,8 @@ abstract contract Trade is AccessControl {
         return _lines[id].exists;
     }
 
-    function _addLine(uint256 productCategoryId, uint256 quantity, string memory unit) internal returns (uint256) {
-        require(_productCategoryManager.getProductCategoryExists(productCategoryId), "Trade: Product category does not exist");
+    function _addLine(RoleProof memory roleProof, uint256 productCategoryId, uint256 quantity, string memory unit) internal atLeastEditor(roleProof) returns (uint256) {
+        require(_productCategoryManager.getProductCategoryExists(roleProof, productCategoryId), "Trade: Product category does not exist");
         require(_unitManager.contains(unit), "Trade: Unit has not been registered");
 
         uint256 tradeLineId = _lineCounter.current() + 1;
@@ -144,9 +145,9 @@ abstract contract Trade is AccessControl {
         return tradeLineId;
     }
 
-    function _updateLine(uint256 id, uint256 productCategoryId, uint256 quantity, string memory unit) internal {
+    function _updateLine(RoleProof memory roleProof, uint256 id, uint256 productCategoryId, uint256 quantity, string memory unit) internal atLeastEditor(roleProof) {
         require(_lines[id].exists, "Trade: Line does not exist");
-        require(_productCategoryManager.getProductCategoryExists(productCategoryId), "Trade: Product category does not exist");
+        require(_productCategoryManager.getProductCategoryExists(roleProof, productCategoryId), "Trade: Product category does not exist");
         require(_unitManager.contains(unit), "Trade: Unit has not been registered");
 
         if(_lines[id].productCategoryId != productCategoryId)

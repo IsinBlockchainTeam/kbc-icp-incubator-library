@@ -5,8 +5,9 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@blockchain-lib/blockchain-common/contracts/EnumerableType.sol";
 import "./ProductCategoryManager.sol";
+import "./KBCAccessControl.sol";
 
-contract OfferManager is AccessControl {
+contract OfferManager is AccessControl, KBCAccessControl {
     using Counters for Counters.Counter;
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
@@ -41,7 +42,7 @@ contract OfferManager is AccessControl {
 
     ProductCategoryManager private productCategoryManager;
 
-    constructor(address[] memory admins, address productCategoryAddress) {
+    constructor(address delegateManagerAddress, address[] memory admins, address productCategoryAddress) KBCAccessControl(delegateManagerAddress) {
         _setupRole(ADMIN_ROLE, msg.sender);
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
 
@@ -60,8 +61,8 @@ contract OfferManager is AccessControl {
         emit OfferSupplierRegistered(addr, name);
     }
 
-    function registerOffer(address owner, uint256 productCategoryId) public {
-        require(productCategoryManager.getProductCategoryExists(productCategoryId), "OfferManager: Product category does not exist");
+    function registerOffer(RoleProof memory roleProof, address owner, uint256 productCategoryId) public atLeastEditor(roleProof) {
+        require(productCategoryManager.getProductCategoryExists(roleProof, productCategoryId), "OfferManager: Product category does not exist");
         require(bytes(suppliersNames[owner]).length != 0, "OfferManager: Offer's supplier not registered");
         uint256 offerId = offersIdCounter.current() + 1;
         offersIdCounter.increment();
@@ -104,8 +105,8 @@ contract OfferManager is AccessControl {
         emit OfferSupplierUpdated(addr, newName);
     }
 
-    function updateOffer(uint256 offerId, uint256 productCategoryId) public {
-        require(productCategoryManager.getProductCategoryExists(productCategoryId), "OfferManager: Product category does not exist");
+    function updateOffer(RoleProof memory roleProof, uint256 offerId, uint256 productCategoryId) public atLeastEditor(roleProof) {
+        require(productCategoryManager.getProductCategoryExists(roleProof, productCategoryId), "OfferManager: Product category does not exist");
         Offer storage offer = offers[offerId];
         require(offer.exists, "Offer does not exist");
 

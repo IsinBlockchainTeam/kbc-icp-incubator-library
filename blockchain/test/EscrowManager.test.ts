@@ -7,11 +7,7 @@ import { expect } from 'chai';
 describe('EscrowManager.sol', () => {
     let escrowManagerContract: Contract;
     let tokenContract: Contract;
-    let admin: SignerWithAddress,
-        payee: SignerWithAddress,
-        payer1: SignerWithAddress,
-        other: SignerWithAddress,
-        feeRecipient: SignerWithAddress;
+    let admin: SignerWithAddress, payee: SignerWithAddress, payer1: SignerWithAddress, other: SignerWithAddress, feeRecipient: SignerWithAddress;
     const depositAmount: number = 120;
     const duration: number = 60 * 60 * 24 * 30; // 30 days
     const baseFee: number = 20;
@@ -30,10 +26,7 @@ describe('EscrowManager.sol', () => {
         await tokenContract.transfer(payer1.address, depositAmount * 2);
     });
 
-    async function registerNewEscrow(
-        payee: SignerWithAddress,
-        duration: number
-    ): Promise<number> {
+    async function registerNewEscrow(payee: SignerWithAddress, duration: number): Promise<number> {
         const tx = await escrowManagerContract.registerEscrow(payee.address, duration, tokenContract.address);
         const receipt = await tx.wait();
         return receipt.events.find((event: Event) => event.event === 'EscrowRegistered').args.id.toNumber();
@@ -65,7 +58,7 @@ describe('EscrowManager.sol', () => {
             const escrowContract = await ethers.getContractAt('Escrow', escrowAddress);
             expect(await escrowContract.getFeeRecipient()).to.equal(other.address);
         });
-        it("should not update fee recipient address for escrows with state not active", async () => {
+        it('should not update fee recipient address for escrows with state not active', async () => {
             const firstEscrowId = await registerNewEscrow(payee, duration);
             const secondEscrowId = await registerNewEscrow(payee, duration);
 
@@ -93,9 +86,7 @@ describe('EscrowManager.sol', () => {
             expect(await escrowManagerContract.getBaseFee()).to.equal(30);
         });
         it('should not update base fee if caller is not the admin', async () => {
-            await expect(escrowManagerContract.connect(payer1).updateBaseFee(30)).to.be.revertedWith(
-                'EscrowManager: caller is not the admin'
-            );
+            await expect(escrowManagerContract.connect(payer1).updateBaseFee(30)).to.be.revertedWith('EscrowManager: caller is not the admin');
         });
         it('should update percentage fee', async () => {
             const tx = await escrowManagerContract.updatePercentageFee(2);
@@ -103,9 +94,7 @@ describe('EscrowManager.sol', () => {
             expect(await escrowManagerContract.getPercentageFee()).to.equal(2);
         });
         it('should not update percentage fee if caller is not the admin', async () => {
-            await expect(escrowManagerContract.connect(payer1).updatePercentageFee(30)).to.be.revertedWith(
-                'EscrowManager: caller is not the admin'
-            );
+            await expect(escrowManagerContract.connect(payer1).updatePercentageFee(30)).to.be.revertedWith('EscrowManager: caller is not the admin');
         });
     });
     describe('Escrow creation', () => {
@@ -131,19 +120,19 @@ describe('EscrowManager.sol', () => {
             expect(await escrowContract.getTokenAddress()).to.equal(tokenContract.address);
         });
         it('should fail escrow registration if payee is zero address', async () => {
-            await expect(
-                escrowManagerContract.registerEscrow(ethers.constants.AddressZero, duration, tokenContract.address)
-            ).to.be.revertedWith('EscrowManager: payee is the zero address');
+            await expect(escrowManagerContract.registerEscrow(ethers.constants.AddressZero, duration, tokenContract.address)).to.be.revertedWith(
+                'EscrowManager: payee is the zero address'
+            );
         });
         it('should fail escrow registration if duration is zero', async () => {
-            await expect(
-                escrowManagerContract.registerEscrow(payee.address, 0, tokenContract.address)
-            ).to.be.revertedWith('EscrowManager: duration is zero');
+            await expect(escrowManagerContract.registerEscrow(payee.address, 0, tokenContract.address)).to.be.revertedWith(
+                'EscrowManager: duration is zero'
+            );
         });
         it('should fail escrow registration if token address is zero address', async () => {
-            await expect(
-                escrowManagerContract.registerEscrow(payee.address, duration, ethers.constants.AddressZero)
-            ).to.be.revertedWith('EscrowManager: token address is the zero address');
+            await expect(escrowManagerContract.registerEscrow(payee.address, duration, ethers.constants.AddressZero)).to.be.revertedWith(
+                'EscrowManager: token address is the zero address'
+            );
         });
     });
     describe('Admins', () => {

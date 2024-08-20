@@ -7,8 +7,9 @@ import "./Trade.sol";
 import "./EscrowManager.sol";
 import {BasicTrade} from "./BasicTrade.sol";
 import {OrderTrade} from "./OrderTrade.sol";
+import "./KBCAccessControl.sol";
 
-contract TradeManager is AccessControl {
+contract TradeManager is AccessControl, KBCAccessControl {
     using Counters for Counters.Counter;
     Counters.Counter private _counter;
 
@@ -35,7 +36,7 @@ contract TradeManager is AccessControl {
     address private _unitManagerAddress;
     address private _escrowManagerAddress;
 
-    constructor(address productCategoryManagerAddress, address materialManagerAddress, address documentManagerAddress, address fiatManagerAddress, address unitManagerAddress, address escrowManagerAddress) {
+    constructor(address delegateManagerAddress, address productCategoryManagerAddress, address materialManagerAddress, address documentManagerAddress, address fiatManagerAddress, address unitManagerAddress, address escrowManagerAddress) KBCAccessControl(delegateManagerAddress) {
         require(productCategoryManagerAddress != address(0), "TradeManager: product category manager address is the zero address");
         require(materialManagerAddress != address(0), "TradeManager: material manager address is the zero address");
         require(documentManagerAddress != address(0), "TradeManager: document category manager address is the zero address");
@@ -74,7 +75,7 @@ contract TradeManager is AccessControl {
         return _tradeIdsOfCommissioner[commissioner];
     }
 
-    function registerBasicTrade(address supplier, address customer, address commissioner, string memory externalUrl, string memory metadataHash, string memory name) public returns(uint256) {
+    function registerBasicTrade(RoleProof memory roleProof, address supplier, address customer, address commissioner, string memory externalUrl, string memory metadataHash, string memory name) public atLeastEditor(roleProof) returns(uint256) {
         require(supplier != address(0), "TradeManager: supplier is the zero address");
         require(customer != address(0), "TradeManager: customer is the zero address");
         require(commissioner != address(0), "TradeManager: commissioner is the zero address");
@@ -82,7 +83,7 @@ contract TradeManager is AccessControl {
         uint256 id = _counter.current() + 1;
         _counter.increment();
 
-        BasicTrade newTrade = new BasicTrade(id, _productCategoryManagerAddress, _materialManagerAddress, _documentManagerAddress, _unitManagerAddress, supplier, customer, commissioner, externalUrl, metadataHash, name);
+        BasicTrade newTrade = new BasicTrade(address(_delegateManager), id, _productCategoryManagerAddress, _materialManagerAddress, _documentManagerAddress, _unitManagerAddress, supplier, customer, commissioner, externalUrl, metadataHash, name);
         _trades[id] = newTrade;
         _tradeIdsOfSupplier[supplier].push(id);
         _tradeIdsOfCommissioner[commissioner].push(id);
@@ -91,7 +92,7 @@ contract TradeManager is AccessControl {
         return id;
     }
 
-    function registerOrderTrade(address supplier, address customer, address commissioner, string memory externalUrl, string memory metadataHash, uint256 paymentDeadline, uint256 documentDeliveryDeadline, address arbiter, uint256 shippingDeadline, uint256 deliveryDeadline, uint256 agreedAmount, address tokenAddress) public returns(uint256) {
+    function registerOrderTrade(RoleProof memory roleProof, address supplier, address customer, address commissioner, string memory externalUrl, string memory metadataHash, uint256 paymentDeadline, uint256 documentDeliveryDeadline, address arbiter, uint256 shippingDeadline, uint256 deliveryDeadline, uint256 agreedAmount, address tokenAddress) public atLeastEditor(roleProof) returns(uint256) {
         require(supplier != address(0), "TradeManager: supplier is the zero address");
         require(customer != address(0), "TradeManager: customer is the zero address");
         require(commissioner != address(0), "TradeManager: commissioner is the zero address");
@@ -100,7 +101,7 @@ contract TradeManager is AccessControl {
 
         uint256 id = _counter.current() + 1;
         _counter.increment();
-        OrderTrade newTrade = new OrderTrade(id, _productCategoryManagerAddress, _materialManagerAddress, _documentManagerAddress, _unitManagerAddress, supplier, customer, commissioner, externalUrl, metadataHash, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress, _fiatManagerAddress, _escrowManagerAddress);
+        OrderTrade newTrade = new OrderTrade(address(_delegateManager), id, _productCategoryManagerAddress, _materialManagerAddress, _documentManagerAddress, _unitManagerAddress, supplier, customer, commissioner, externalUrl, metadataHash, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress, _fiatManagerAddress, _escrowManagerAddress);
         _trades[id] = newTrade;
         _tradeIdsOfSupplier[supplier].push(id);
         _tradeIdsOfCommissioner[commissioner].push(id);

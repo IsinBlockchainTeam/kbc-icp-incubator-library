@@ -21,10 +21,7 @@
         }
     },
     "rules": {
-        "@typescript-eslint/member-ordering": [
-            "error",
-            { "default": ["field", "constructor", "method"] }
-        ],
+        "@typescript-eslint/member-ordering": ["error", { "default": ["field", "constructor", "method"] }],
         "max-len": "off",
         "no-underscore-dangle": "off",
         "linebreak-style": ["error", "unix"],

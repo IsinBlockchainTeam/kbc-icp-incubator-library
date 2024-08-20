@@ -4,7 +4,7 @@ pragma solidity ^0.8.17;
 import "./DelegateManager.sol";
 
 abstract contract KBCAccessControl {
-    DelegateManager private _delegateManager;
+    DelegateManager internal _delegateManager;
 
     struct RoleProof {
         bytes signedProof;
@@ -15,7 +15,7 @@ abstract contract KBCAccessControl {
         _delegateManager = DelegateManager(delegateManagerAddress);
     }
 
-    modifier isViewer(RoleProof memory roleProof) {
+    modifier atLeastViewer(RoleProof memory roleProof) {
         require(
             _delegateManager.hasValidRole(roleProof.signedProof, "Viewer", roleProof.delegator)
             || _delegateManager.hasValidRole(roleProof.signedProof, "Editor", roleProof.delegator)
@@ -24,7 +24,7 @@ abstract contract KBCAccessControl {
         _;
     }
 
-    modifier isEditor(RoleProof memory roleProof) {
+    modifier atLeastEditor(RoleProof memory roleProof) {
         require(
             _delegateManager.hasValidRole(roleProof.signedProof, "Editor", roleProof.delegator)
             || _delegateManager.hasValidRole(roleProof.signedProof, "Signer", roleProof.delegator),
@@ -32,7 +32,7 @@ abstract contract KBCAccessControl {
         _;
     }
 
-    modifier isSigner(RoleProof memory roleProof) {
+    modifier atLeastSigner(RoleProof memory roleProof) {
         require(
             _delegateManager.hasValidRole(roleProof.signedProof, "Signer", roleProof.delegator),
             "KBCAccessControl: Caller doesn't have 'Signer' role");

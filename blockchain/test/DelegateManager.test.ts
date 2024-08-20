@@ -68,7 +68,6 @@ describe('DelegateManager', () => {
             await delegateManagerContract.connect(delegator).addDelegate(delegate.address);
             const signature = await delegator._signTypedData(domain, types, message);
 
-            console.log('delegator:', delegator.address);
             expect(await delegateManagerContract.connect(delegate).hasValidRole(signature, 'Role1', delegator.address)).to.be.true;
         });
 
