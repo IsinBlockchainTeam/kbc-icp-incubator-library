@@ -2,6 +2,7 @@ import { BigNumber, Event, Signer } from 'ethers';
 import { ProductCategoryManager, ProductCategoryManager__factory } from '../smart-contracts';
 import { ProductCategory } from '../entities/ProductCategory';
 import { EntityBuilder } from '../utils/EntityBuilder';
+import { RoleProof } from '../types/RoleProof';
 
 export class ProductCategoryDriver {
     private _contract: ProductCategoryManager;
@@ -13,37 +14,43 @@ export class ProductCategoryDriver {
         ).connect(signer);
     }
 
-    async getProductCategoryCounter(): Promise<number> {
-        const counter: BigNumber = await this._contract.getProductCategoriesCounter();
+    async getProductCategoryCounter(roleProof: RoleProof): Promise<number> {
+        const counter: BigNumber = await this._contract.getProductCategoriesCounter(roleProof);
         return counter.toNumber();
     }
 
-    async getProductCategoryExists(id: number): Promise<boolean> {
-        return this._contract.getProductCategoryExists(id);
+    async getProductCategoryExists(roleProof: RoleProof, id: number): Promise<boolean> {
+        return this._contract.getProductCategoryExists(roleProof, id);
     }
 
-    async getProductCategory(id: number): Promise<ProductCategory> {
-        const result = await this._contract.getProductCategory(id);
+    async getProductCategory(roleProof: RoleProof, id: number): Promise<ProductCategory> {
+        const result = await this._contract.getProductCategory(roleProof, id);
         return EntityBuilder.buildProductCategory(result);
     }
 
-    async getProductCategories(): Promise<ProductCategory[]> {
-        const counter: number = await this.getProductCategoryCounter();
+    async getProductCategories(roleProof: RoleProof): Promise<ProductCategory[]> {
+        const counter: number = await this.getProductCategoryCounter(roleProof);
 
         const promises = [];
         for (let i = 1; i <= counter; i++) {
-            promises.push(this.getProductCategory(i));
+            promises.push(this.getProductCategory(roleProof, i));
         }
 
         return Promise.all(promises);
     }
 
     async registerProductCategory(
+        roleProof: RoleProof,
         name: string,
         quality: number,
         description: string
     ): Promise<number> {
-        const tx: any = await this._contract.registerProductCategory(name, quality, description);
+        const tx: any = await this._contract.registerProductCategory(
+            roleProof,
+            name,
+            quality,
+            description
+        );
         const { events } = await tx.wait();
 
         if (!events) {
@@ -55,12 +62,19 @@ export class ProductCategoryDriver {
     }
 
     async updateProductCategory(
+        roleProof: RoleProof,
         id: number,
         name: string,
         quality: number,
         description: string
     ): Promise<void> {
-        const tx: any = await this._contract.updateProductCategory(id, name, quality, description);
+        const tx: any = await this._contract.updateProductCategory(
+            roleProof,
+            id,
+            name,
+            quality,
+            description
+        );
         await tx.wait();
     }
 }

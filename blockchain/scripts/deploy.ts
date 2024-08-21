@@ -59,8 +59,13 @@ serial([
             await tx.wait();
         }
     },
-    () => deploy(ContractName.PRODUCT_CATEGORY_MANAGER, []),
-    () => deploy(ContractName.MATERIAL_MANAGER, [contractMap.get(ContractName.PRODUCT_CATEGORY_MANAGER)!.address]),
+    () => deploy(ContractName.DELEGATE_MANAGER, ['KBC Delegate Manager', '1.0.1', 31337]),
+    () => deploy(ContractName.PRODUCT_CATEGORY_MANAGER, [contractMap.get(ContractName.DELEGATE_MANAGER)!.address]),
+    () =>
+        deploy(ContractName.MATERIAL_MANAGER, [
+            contractMap.get(ContractName.DELEGATE_MANAGER)!.address,
+            contractMap.get(ContractName.PRODUCT_CATEGORY_MANAGER)!.address
+        ]),
     () => deploy(ContractName.DOCUMENT_MANAGER, [[process.env.SUPPLIER_ADMIN || '']]),
     () =>
         deploy(ContractName.ESCROW_MANAGER, [
@@ -70,6 +75,7 @@ serial([
         ]),
     () =>
         deploy(ContractName.TRADE_MANAGER, [
+            contractMap.get(ContractName.DELEGATE_MANAGER)!.address,
             contractMap.get(ContractName.PRODUCT_CATEGORY_MANAGER)!.address,
             contractMap.get(ContractName.MATERIAL_MANAGER)!.address,
             contractMap.get(ContractName.DOCUMENT_MANAGER)!.address,
@@ -83,7 +89,12 @@ serial([
             contractMap.get(ContractName.MATERIAL_MANAGER)!.address,
             contractMap.get('EnumerableProcessTypeManager')!.address
         ]),
-    () => deploy(ContractName.OFFER_MANAGER, [[process.env.SUPPLIER_ADMIN || ''], contractMap.get(ContractName.PRODUCT_CATEGORY_MANAGER)!.address]),
+    () =>
+        deploy(ContractName.OFFER_MANAGER, [
+            contractMap.get(ContractName.DELEGATE_MANAGER)!.address,
+            [process.env.SUPPLIER_ADMIN || ''],
+            contractMap.get(ContractName.PRODUCT_CATEGORY_MANAGER)!.address
+        ]),
     () => deploy(ContractName.MY_TOKEN, [10000]),
     () => deploy(ContractName.ETHEREUM_DID_REGISTRY, [])
 ]).catch((error: any) => {

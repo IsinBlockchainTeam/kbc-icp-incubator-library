@@ -16,6 +16,7 @@ import { IConcreteTradeDriverInterface } from './IConcreteTradeDriver.interface'
 import { getNegotiationStatusByIndex } from '../utils/utils';
 import { zeroAddress } from '../utils/constants';
 import { OrderStatus } from '../types/OrderStatus';
+import { RoleProof } from '../types/RoleProof';
 
 export enum OrderTradeEvents {
     TradeLineAdded,
@@ -56,9 +57,9 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
         ).connect(signer);
     }
 
-    async getTrade(blockNumber?: number): Promise<OrderTrade> {
+    async getTrade(roleProof: RoleProof, blockNumber?: number): Promise<OrderTrade> {
         const result = await this._actual.getTrade({ blockTag: blockNumber });
-        const lines: OrderLine[] = await this.getLines();
+        const lines: OrderLine[] = await this.getLines(roleProof);
 
         return new OrderTrade(
             result[0].toNumber(),
@@ -81,18 +82,18 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
         );
     }
 
-    async getLines(): Promise<OrderLine[]> {
+    async getLines(roleProof: RoleProof): Promise<OrderLine[]> {
         const counter: number = await this.getLineCounter();
 
         const promises = [];
         for (let i = 1; i <= counter; i++) {
-            promises.push(this.getLine(i));
+            promises.push(this.getLine(roleProof, i));
         }
 
         return Promise.all(promises);
     }
 
-    async getLine(id: number, blockNumber?: number): Promise<OrderLine> {
+    async getLine(roleProof: RoleProof, id: number, blockNumber?: number): Promise<OrderLine> {
         const line = await this._actual.getLine(id, { blockTag: blockNumber });
 
         let materialStruct: MaterialManager.MaterialStructOutput | undefined;
@@ -102,14 +103,18 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
         return EntityBuilder.buildOrderLine(
             line[0],
             line[1],
-            await this._productCategoryContract.getProductCategory(line[0].productCategoryId),
+            await this._productCategoryContract.getProductCategory(
+                roleProof,
+                line[0].productCategoryId
+            ),
             materialStruct
         );
     }
 
-    async addLine(line: OrderLineRequest): Promise<number> {
+    async addLine(roleProof: RoleProof, line: OrderLineRequest): Promise<number> {
         const _price = this._convertPriceClassInStruct(line.price);
         const tx: any = await this._actual.addLine(
+            roleProof,
             line.productCategoryId,
             line.quantity,
             line.unit,
@@ -123,9 +128,10 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
         return events.find((event: Event) => event.event === 'OrderLineAdded').args[0];
     }
 
-    async updateLine(line: OrderLine): Promise<void> {
+    async updateLine(roleProof: RoleProof, line: OrderLine): Promise<void> {
         const _price = this._convertPriceClassInStruct(line.price);
         const tx = await this._actual.updateLine(
+            roleProof,
             line.id,
             line.productCategory.id,
             line.quantity,

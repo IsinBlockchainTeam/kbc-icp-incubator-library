@@ -35,26 +35,26 @@ contract ProductCategoryManager is AccessControl, KBCAccessControl {
         grantRole(ADMIN_ROLE, _msgSender());
     }
 
-    function getProductCategoriesCounter(RoleProof memory signedProof) public view atLeastViewer(signedProof) returns (uint256) {
+    function getProductCategoriesCounter(RoleProof memory roleProof) public view atLeastViewer(roleProof) returns (uint256) {
         return _counter.current();
     }
 
-    function getProductCategoryExists(RoleProof memory signedProof, uint256 id) public view atLeastViewer(signedProof) returns (bool) {
+    function getProductCategoryExists(RoleProof memory roleProof, uint256 id) public view atLeastViewer(roleProof) returns (bool) {
         return productCategories[id].exists;
     }
 
-    function getProductCategory(RoleProof memory signedProof, uint256 id) public view atLeastViewer(signedProof) returns (ProductCategory memory) {
+    function getProductCategory(RoleProof memory roleProof, uint256 id) public view atLeastViewer(roleProof) returns (ProductCategory memory) {
         return productCategories[id];
     }
 
-    function registerProductCategory(RoleProof memory signedProof, string memory name, uint8 quality, string memory description) public atLeastEditor(signedProof) {
+    function registerProductCategory(RoleProof memory roleProof, string memory name, uint8 quality, string memory description) public atLeastEditor(roleProof) {
         uint256 productCategoryId = _counter.current() + 1;
         _counter.increment();
         productCategories[productCategoryId] = ProductCategory(productCategoryId, name, quality, description, true);
         emit ProductCategoryRegistered(productCategoryId, name, quality);
     }
 
-    function updateProductCategory(RoleProof memory signedProof, uint256 id, string memory name, uint8 quality, string memory description) public atLeastEditor(signedProof) {
+    function updateProductCategory(RoleProof memory roleProof, uint256 id, string memory name, uint8 quality, string memory description) public atLeastEditor(roleProof) {
         require(productCategories[id].exists, "ProductCategoryManager: Product category does not exist");
         productCategories[id].name = name;
         productCategories[id].quality = quality;

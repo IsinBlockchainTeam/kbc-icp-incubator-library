@@ -13,6 +13,7 @@ import { BasicTrade } from '../entities/BasicTrade';
 import { Line, LineRequest } from '../entities/Trade';
 import { Trade } from '../smart-contracts/contracts/BasicTrade';
 import { EntityBuilder } from '../utils/EntityBuilder';
+import { RoleProof } from '../types/RoleProof';
 
 export class BasicTradeDriver extends TradeDriver implements IConcreteTradeDriverInterface {
     private _basicTradeContract: BasicTradeContract;
@@ -44,9 +45,9 @@ export class BasicTradeDriver extends TradeDriver implements IConcreteTradeDrive
         ).connect(signer);
     }
 
-    async getTrade(blockNumber?: number): Promise<BasicTrade> {
+    async getTrade(roleProof: RoleProof, blockNumber?: number): Promise<BasicTrade> {
         const result = await this._basicTradeContract.getTrade({ blockTag: blockNumber });
-        const lines: Line[] = await this.getLines();
+        const lines: Line[] = await this.getLines(roleProof);
 
         return new BasicTrade(
             result[0].toNumber(),
@@ -59,18 +60,18 @@ export class BasicTradeDriver extends TradeDriver implements IConcreteTradeDrive
         );
     }
 
-    async getLines(): Promise<Line[]> {
+    async getLines(roleProof: RoleProof): Promise<Line[]> {
         const counter: number = await this.getLineCounter();
 
         const promises = [];
         for (let i = 1; i <= counter; i++) {
-            promises.push(this.getLine(i));
+            promises.push(this.getLine(roleProof, i));
         }
 
         return Promise.all(promises);
     }
 
-    async getLine(id: number, blockNumber?: number): Promise<Line> {
+    async getLine(roleProof: RoleProof, id: number, blockNumber?: number): Promise<Line> {
         const line: Trade.LineStructOutput = await this._basicTradeContract.getLine(id, {
             blockTag: blockNumber
         });
@@ -81,13 +82,17 @@ export class BasicTradeDriver extends TradeDriver implements IConcreteTradeDrive
 
         return EntityBuilder.buildTradeLine(
             line,
-            await this._productCategoryContract.getProductCategory(line.productCategoryId),
+            await this._productCategoryContract.getProductCategory(
+                roleProof,
+                line.productCategoryId
+            ),
             materialStruct
         );
     }
 
-    async addLine(line: LineRequest): Promise<number> {
+    async addLine(roleProof: RoleProof, line: LineRequest): Promise<number> {
         const tx: any = await this._basicTradeContract.addLine(
+            roleProof,
             line.productCategoryId,
             line.quantity,
             line.unit
@@ -99,8 +104,9 @@ export class BasicTradeDriver extends TradeDriver implements IConcreteTradeDrive
         return events.find((event: Event) => event.event === 'TradeLineAdded').args[0];
     }
 
-    async updateLine(line: Line): Promise<void> {
+    async updateLine(roleProof: RoleProof, line: Line): Promise<void> {
         const tx = await this._basicTradeContract.updateLine(
+            roleProof,
             line.id!,
             line.productCategory.id,
             line.quantity,

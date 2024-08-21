@@ -6,6 +6,10 @@ export { Relationship } from './entities/Relationship';
 export { RelationshipDriver } from './drivers/RelationshipDriver';
 export { RelationshipService } from './services/RelationshipService';
 
+export { RoleProof } from './types/RoleProof';
+export { DelegateManagerDriver } from './drivers/DelegateManagerDriver';
+export { DelegateManagerService } from './services/DelegateManagerService';
+
 export { Material } from './entities/Material';
 export { MaterialDriver } from './drivers/MaterialDriver';
 export { MaterialService } from './services/MaterialService';

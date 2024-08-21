@@ -39,19 +39,19 @@ contract MaterialManager is AccessControl, KBCAccessControl {
         _productCategoryManager = ProductCategoryManager(productCategoryManagerAddress);
     }
 
-    function getMaterialsCounter() public view returns (uint256) {
+    function getMaterialsCounter(RoleProof memory roleProof) public view atLeastViewer(roleProof) returns (uint256) {
         return _counter.current();
     }
 
-    function getMaterialExists(uint256 id) public view returns (bool) {
+    function getMaterialExists(RoleProof memory roleProof, uint256 id) public view atLeastViewer(roleProof) returns (bool) {
         return _materials[id].exists;
     }
 
-    function getMaterial(uint256 id) public view returns (Material memory) {
+    function getMaterial(RoleProof memory roleProof, uint256 id) public view atLeastViewer(roleProof) returns (Material memory) {
         return _materials[id];
     }
 
-    function getMaterialIdsOfCreator(address creator) public view returns (uint256[] memory) {
+    function getMaterialIdsOfCreator(RoleProof memory roleProof, address creator) public view atLeastViewer(roleProof) returns (uint256[] memory) {
         return _createdMaterialIds[creator];
     }
 

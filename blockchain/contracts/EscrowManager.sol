@@ -6,8 +6,9 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "./Escrow.sol";
 
 import "hardhat/console.sol";
+import "./KBCAccessControl.sol";
 
-contract EscrowManager is AccessControl {
+contract EscrowManager is AccessControl, KBCAccessControl {
     using Counters for Counters.Counter;
     Counters.Counter private _counter;
 
@@ -29,7 +30,7 @@ contract EscrowManager is AccessControl {
     uint256 private _percentageFee;
     mapping(uint256 => Escrow) private _escrows;
 
-    constructor(address feeRecipient, uint256 baseFee, uint256 percentageFee) {
+    constructor(address delegateManagerAddress, address feeRecipient, uint256 baseFee, uint256 percentageFee) KBCAccessControl(delegateManagerAddress) {
         require(feeRecipient != address(0), "EscrowManager: fee recipient is the zero address");
         require(percentageFee <= 100, "EscrowManager: percentage fee cannot be greater than 100");
 
@@ -42,11 +43,16 @@ contract EscrowManager is AccessControl {
         _percentageFee = percentageFee;
     }
 
-    function getEscrowCounter() public view returns (uint256) {
+    function getEscrowCounter(RoleProof memory roleProof) public view atLeastViewer(roleProof) returns (uint256) {
         return _counter.current();
     }
 
-    function registerEscrow(address payee, uint256 duration, address tokenAddress) public returns(Escrow)  {
+    function registerEscrow(
+        RoleProof memory roleProof,
+        address payee,
+        uint256 duration,
+        address tokenAddress
+    ) public atLeastEditor(roleProof) returns (Escrow) {
         require(payee != address(0), "EscrowManager: payee is the zero address");
         require(duration != 0, "EscrowManager: duration is zero");
         require(tokenAddress != address(0), "EscrowManager: token address is the zero address");
@@ -62,18 +68,22 @@ contract EscrowManager is AccessControl {
         return newEscrow;
     }
 
-    function getFeeRecipient() public view returns (address) {
+    function getFeeRecipient(RoleProof memory roleProof) public view atLeastViewer(roleProof) returns (address) {
         return _feeRecipient;
     }
-    function getBaseFee() public view returns (uint256) {
+
+    function getBaseFee(RoleProof memory roleProof) public view atLeastViewer(roleProof) returns (uint256) {
         return _baseFee;
     }
-    function getPercentageFee() public view returns (uint256) {
+
+    function getPercentageFee(RoleProof memory roleProof) public view atLeastViewer(roleProof) returns (uint256) {
         return _percentageFee;
     }
-    function getEscrow(uint256 id) public view returns (Escrow) {
+
+    function getEscrow(RoleProof memory roleProof, uint256 id) public view atLeastViewer(roleProof) returns (Escrow) {
         return _escrows[id];
     }
+
 
     // Updates
     function updateFeeRecipient(address feeRecipient) public onlyAdmin {

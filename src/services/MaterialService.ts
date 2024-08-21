@@ -1,5 +1,6 @@
 import { MaterialDriver } from '../drivers/MaterialDriver';
 import { Material } from '../entities/Material';
+import { RoleProof } from '../types/RoleProof';
 
 export class MaterialService {
     private _materialDriver: MaterialDriver;
@@ -16,23 +17,27 @@ export class MaterialService {
         return this._materialDriver.getMaterialExists(id);
     }
 
-    async getMaterial(id: number): Promise<Material> {
-        return this._materialDriver.getMaterial(id);
+    async getMaterial(roleProof: RoleProof, id: number): Promise<Material> {
+        return this._materialDriver.getMaterial(roleProof, id);
     }
 
-    async getMaterials(): Promise<Material[]> {
-        return this._materialDriver.getMaterials();
+    async getMaterials(roleProof: RoleProof): Promise<Material[]> {
+        return this._materialDriver.getMaterials(roleProof);
     }
 
-    async getMaterialsOfCreator(creator: string): Promise<Material[]> {
-        return this._materialDriver.getMaterialsOfCreator(creator);
+    async getMaterialsOfCreator(roleProof: RoleProof, creator: string): Promise<Material[]> {
+        return this._materialDriver.getMaterialsOfCreator(roleProof, creator);
     }
 
-    async registerMaterial(productCategoryId: number): Promise<number> {
-        return this._materialDriver.registerMaterial(productCategoryId);
+    async registerMaterial(roleProof: RoleProof, productCategoryId: number): Promise<number> {
+        return this._materialDriver.registerMaterial(roleProof, productCategoryId);
     }
 
-    async updateMaterial(id: number, productCategoryId: number): Promise<void> {
-        return this._materialDriver.updateMaterial(id, productCategoryId);
+    async updateMaterial(
+        roleProof: RoleProof,
+        id: number,
+        productCategoryId: number
+    ): Promise<void> {
+        return this._materialDriver.updateMaterial(roleProof, id, productCategoryId);
     }
 }

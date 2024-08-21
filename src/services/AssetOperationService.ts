@@ -1,6 +1,7 @@
 import { AssetOperation } from '../entities/AssetOperation';
 import { AssetOperationDriver } from '../drivers/AssetOperationDriver';
 import { AssetOperationType } from '../types/AssetOperationType';
+import { RoleProof } from '../types/RoleProof';
 
 export class AssetOperationService {
     private _assetOperationDriver: AssetOperationDriver;
@@ -17,24 +18,30 @@ export class AssetOperationService {
         return this._assetOperationDriver.getAssetOperationExists(id);
     }
 
-    async getAssetOperation(id: number): Promise<AssetOperation> {
-        return this._assetOperationDriver.getAssetOperation(id);
+    async getAssetOperation(roleProof: RoleProof, id: number): Promise<AssetOperation> {
+        return this._assetOperationDriver.getAssetOperation(roleProof, id);
     }
 
-    async getAssetOperations(): Promise<AssetOperation[]> {
-        return this._assetOperationDriver.getAssetOperations();
+    async getAssetOperations(roleProof: RoleProof): Promise<AssetOperation[]> {
+        return this._assetOperationDriver.getAssetOperations(roleProof);
     }
 
     async getAssetOperationType(id: number): Promise<AssetOperationType> {
         return this._assetOperationDriver.getAssetOperationType(id);
     }
 
-    async getAssetOperationsOfCreator(creator: string): Promise<AssetOperation[]> {
-        return this._assetOperationDriver.getAssetOperationsOfCreator(creator);
+    async getAssetOperationsOfCreator(
+        roleProof: RoleProof,
+        creator: string
+    ): Promise<AssetOperation[]> {
+        return this._assetOperationDriver.getAssetOperationsOfCreator(roleProof, creator);
     }
 
-    async getAssetOperationsByOutputMaterial(materialId: number): Promise<AssetOperation[]> {
-        return this._assetOperationDriver.getAssetOperationsByOutputMaterial(materialId);
+    async getAssetOperationsByOutputMaterial(
+        roleProof: RoleProof,
+        materialId: number
+    ): Promise<AssetOperation[]> {
+        return this._assetOperationDriver.getAssetOperationsByOutputMaterial(roleProof, materialId);
     }
 
     async registerAssetOperation(

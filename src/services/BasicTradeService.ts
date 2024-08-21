@@ -4,36 +4,37 @@ import { BasicTradeDriver } from '../drivers/BasicTradeDriver';
 import { IConcreteTradeService } from './IConcreteTradeService';
 import { BasicTrade, BasicTradeMetadata } from '../entities/BasicTrade';
 import { Line, LineRequest } from '../entities/Trade';
+import { RoleProof } from '../types/RoleProof';
 
 export class BasicTradeService extends TradeService implements IConcreteTradeService {
-    async getTrade(blockNumber?: number): Promise<BasicTrade> {
-        return this._tradeDriverImplementation.getTrade(blockNumber);
+    async getTrade(roleProof: RoleProof, blockNumber?: number): Promise<BasicTrade> {
+        return this._tradeDriverImplementation.getTrade(roleProof, blockNumber);
     }
 
-    async getCompleteTrade(blockNumber?: number): Promise<BasicTrade> {
+    async getCompleteTrade(roleProof: RoleProof, blockNumber?: number): Promise<BasicTrade> {
         if (!this._icpFileDriver)
             throw new Error('BasicTradeService: ICPFileDriver has not been set');
 
-        const trade = await this._tradeDriverImplementation.getTrade(blockNumber);
+        const trade = await this._tradeDriverImplementation.getTrade(roleProof, blockNumber);
         const bytes = await this._icpFileDriver.read(`${trade.externalUrl}/files/metadata.json`);
         trade.metadata = FileHelpers.getObjectFromBytes(bytes) as BasicTradeMetadata;
         return trade;
     }
 
-    async getLines(): Promise<Line[]> {
-        return this._tradeDriverImplementation.getLines();
+    async getLines(roleProof: RoleProof): Promise<Line[]> {
+        return this._tradeDriverImplementation.getLines(roleProof);
     }
 
-    async getLine(id: number, blockNumber?: number): Promise<Line> {
-        return this._tradeDriverImplementation.getLine(id, blockNumber);
+    async getLine(roleProof: RoleProof, id: number, blockNumber?: number): Promise<Line> {
+        return this._tradeDriverImplementation.getLine(roleProof, id, blockNumber);
     }
 
-    async addLine(line: LineRequest): Promise<number> {
-        return this._tradeDriverImplementation.addLine(line);
+    async addLine(roleProof: RoleProof, line: LineRequest): Promise<number> {
+        return this._tradeDriverImplementation.addLine(roleProof, line);
     }
 
-    async updateLine(line: Line): Promise<void> {
-        return this._tradeDriverImplementation.updateLine(line);
+    async updateLine(roleProof: RoleProof, line: Line): Promise<void> {
+        return this._tradeDriverImplementation.updateLine(roleProof, line);
     }
 
     async assignMaterial(lineId: number, materialId: number): Promise<void> {

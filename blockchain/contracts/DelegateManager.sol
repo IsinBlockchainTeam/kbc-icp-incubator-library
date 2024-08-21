@@ -67,6 +67,16 @@ contract DelegateManager is AccessControl {
         }
     }
 
+    function isDelegate(address delegate) public view returns (bool) {
+        address[] storage delegates = _delegates[_msgSender()];
+        for (uint i = 0; i < delegates.length; i++) {
+            if (delegates[i] == delegate) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     function hasValidRole(bytes memory signedProof, string memory role, address delegator) public view returns (bool) {
         // TODO: understand why this doesn't work
         // address delegate = _msgSender();

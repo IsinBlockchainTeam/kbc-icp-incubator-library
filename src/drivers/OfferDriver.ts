@@ -9,6 +9,7 @@ import {
 } from '../smart-contracts';
 import { Offer } from '../entities/Offer';
 import { EntityBuilder } from '../utils/EntityBuilder';
+import { RoleProof } from '../types/RoleProof';
 
 export class OfferDriver {
     private _offerManagerContract: OfferManager;
@@ -36,9 +37,14 @@ export class OfferDriver {
         await tx.wait();
     }
 
-    async registerOffer(companyAddress: string, productCategoryId: number): Promise<void> {
+    async registerOffer(
+        roleProof: RoleProof,
+        companyAddress: string,
+        productCategoryId: number
+    ): Promise<void> {
         if (!utils.isAddress(companyAddress)) throw new Error('Not an address');
         const tx = await this._offerManagerContract.registerOffer(
+            roleProof,
             companyAddress,
             productCategoryId
         );
@@ -64,11 +70,12 @@ export class OfferDriver {
         });
     }
 
-    async getOffer(offerId: number, blockNumber?: number): Promise<Offer> {
+    async getOffer(roleProof: RoleProof, offerId: number, blockNumber?: number): Promise<Offer> {
         const rawOffer = await this._offerManagerContract.getOffer(offerId, {
             blockTag: blockNumber
         });
         const rawProductCategory = await this._productCategoryManagerContract.getProductCategory(
+            roleProof,
             rawOffer.productCategoryId
         );
         return EntityBuilder.buildOffer(rawOffer, rawProductCategory);
@@ -80,8 +87,16 @@ export class OfferDriver {
         await tx.wait();
     }
 
-    async updateOffer(offerId: number, productCategoryId: number): Promise<void> {
-        const tx = await this._offerManagerContract.updateOffer(offerId, productCategoryId);
+    async updateOffer(
+        roleProof: RoleProof,
+        offerId: number,
+        productCategoryId: number
+    ): Promise<void> {
+        const tx = await this._offerManagerContract.updateOffer(
+            roleProof,
+            offerId,
+            productCategoryId
+        );
         await tx.wait();
     }
 

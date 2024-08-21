@@ -7,6 +7,7 @@ import {
 } from '../smart-contracts';
 import { EntityBuilder } from '../utils/EntityBuilder';
 import { Material } from '../entities/Material';
+import { RoleProof } from '../types/RoleProof';
 
 export class MaterialDriver {
     private _materialContract: MaterialManager;
@@ -37,37 +38,38 @@ export class MaterialDriver {
         return this._materialContract.getMaterialExists(id);
     }
 
-    async getMaterial(id: number): Promise<Material> {
+    async getMaterial(roleProof: RoleProof, id: number): Promise<Material> {
         const material = await this._materialContract.getMaterial(id);
         const productCategory = await this._productCategoryContract.getProductCategory(
+            roleProof,
             material.productCategoryId
         );
         return EntityBuilder.buildMaterial(material, productCategory);
     }
 
-    async getMaterials(): Promise<Material[]> {
+    async getMaterials(roleProof: RoleProof): Promise<Material[]> {
         const counter: number = await this.getMaterialsCounter();
 
         const promises = [];
         for (let i = 1; i <= counter; i++) {
-            promises.push(this.getMaterial(i));
+            promises.push(this.getMaterial(roleProof, i));
         }
 
         return Promise.all(promises);
     }
 
-    async getMaterialsOfCreator(creator: string): Promise<Material[]> {
+    async getMaterialsOfCreator(roleProof: RoleProof, creator: string): Promise<Material[]> {
         const ids: number[] = (await this._materialContract.getMaterialIdsOfCreator(creator)).map(
             (id: BigNumber) => id.toNumber()
         );
 
-        const promises = ids.map((id: number) => this.getMaterial(id));
+        const promises = ids.map((id: number) => this.getMaterial(roleProof, id));
 
         return Promise.all(promises);
     }
 
-    async registerMaterial(productCategoryId: number): Promise<number> {
-        const tx: any = await this._materialContract.registerMaterial(productCategoryId);
+    async registerMaterial(roleProof: RoleProof, productCategoryId: number): Promise<number> {
+        const tx: any = await this._materialContract.registerMaterial(roleProof, productCategoryId);
         const { events } = await tx.wait();
 
         if (!events) {
@@ -78,8 +80,16 @@ export class MaterialDriver {
             .args.id.toNumber();
     }
 
-    async updateMaterial(id: number, productCategoryId: number): Promise<void> {
-        const tx: any = await this._materialContract.updateMaterial(id, productCategoryId);
+    async updateMaterial(
+        roleProof: RoleProof,
+        id: number,
+        productCategoryId: number
+    ): Promise<void> {
+        const tx: any = await this._materialContract.updateMaterial(
+            roleProof,
+            id,
+            productCategoryId
+        );
         await tx.wait();
     }
 }

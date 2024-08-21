@@ -6,6 +6,7 @@ import { BasicTradeDriver } from './BasicTradeDriver';
 import { OrderTradeDriver } from './OrderTradeDriver';
 import { Line, Trade } from '../entities/Trade';
 import { IConcreteTradeDriverInterface } from './IConcreteTradeDriver.interface';
+import { RoleProof } from '../types/RoleProof';
 
 export class TradeManagerDriver {
     private _contract: TradeManager;
@@ -29,6 +30,7 @@ export class TradeManagerDriver {
     }
 
     async registerBasicTrade(
+        roleProof: RoleProof,
         supplier: string,
         customer: string,
         commissioner: string,
@@ -44,6 +46,7 @@ export class TradeManagerDriver {
             throw new Error('Not an address');
         }
         const tx = await this._contract.registerBasicTrade(
+            roleProof,
             supplier,
             customer,
             commissioner,
@@ -63,6 +66,7 @@ export class TradeManagerDriver {
     }
 
     async registerOrderTrade(
+        roleProof: RoleProof,
         supplier: string,
         customer: string,
         commissioner: string,
@@ -86,6 +90,7 @@ export class TradeManagerDriver {
             throw new Error('Not an address');
         }
         const tx = await this._contract.registerOrderTrade(
+            roleProof,
             supplier,
             customer,
             commissioner,
@@ -114,7 +119,7 @@ export class TradeManagerDriver {
         return (await this._contract.getTradeCounter()).toNumber();
     }
 
-    async getTrades(): Promise<Trade[]> {
+    async getTrades(roleProof: RoleProof): Promise<Trade[]> {
         const tradeCounter: number = await this.getTradeCounter();
 
         const tradesPromises: Promise<Trade>[] = Array.from(
@@ -136,7 +141,7 @@ export class TradeManagerDriver {
                               this._materialManagerAddress,
                               this._productCategoryManagerAddress
                           );
-                return tradeDriver.getTrade();
+                return tradeDriver.getTrade(roleProof);
             }
         );
 
@@ -171,8 +176,8 @@ export class TradeManagerDriver {
         return this._contract.getTrade(id);
     }
 
-    async getTradesByMaterial(materialId: number): Promise<Trade[]> {
-        const trades: Trade[] = await this.getTrades();
+    async getTradesByMaterial(roleProof: RoleProof, materialId: number): Promise<Trade[]> {
+        const trades: Trade[] = await this.getTrades(roleProof);
         return trades.filter((trade: Trade) =>
             trade.lines.some((line: Line) => line.material!.id === materialId)
         );

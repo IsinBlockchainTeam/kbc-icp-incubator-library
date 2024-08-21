@@ -1,5 +1,6 @@
 import { OfferDriver } from '../drivers/OfferDriver';
 import { Offer } from '../entities/Offer';
+import { RoleProof } from '../types/RoleProof';
 
 export class OfferService {
     private _offerDriver: OfferDriver;
@@ -12,8 +13,12 @@ export class OfferService {
         await this._offerDriver.registerSupplier(companyAddress, name);
     }
 
-    async registerOffer(companyAddress: string, productCategoryId: number): Promise<void> {
-        await this._offerDriver.registerOffer(companyAddress, productCategoryId);
+    async registerOffer(
+        roleProof: RoleProof,
+        companyAddress: string,
+        productCategoryId: number
+    ): Promise<void> {
+        await this._offerDriver.registerOffer(roleProof, companyAddress, productCategoryId);
     }
 
     async getOfferIdsByCompany(companyAddress: string): Promise<number[]> {
@@ -24,21 +29,21 @@ export class OfferService {
         return this._offerDriver.getSupplierName(companyAddress);
     }
 
-    async getOffer(offerId: number): Promise<Offer> {
-        return this._offerDriver.getOffer(offerId);
+    async getOffer(roleProof: RoleProof, offerId: number): Promise<Offer> {
+        return this._offerDriver.getOffer(roleProof, offerId);
     }
 
-    async getOffersByCompany(companyAddress: string): Promise<Offer[]> {
+    async getOffersByCompany(roleProof: RoleProof, companyAddress: string): Promise<Offer[]> {
         const offerIds = await this.getOfferIdsByCompany(companyAddress);
-        return Promise.all(offerIds.map(async (id) => this.getOffer(id)));
+        return Promise.all(offerIds.map(async (id) => this.getOffer(roleProof, id)));
     }
 
-    async getAllOffers(): Promise<Offer[]> {
+    async getAllOffers(roleProof: RoleProof): Promise<Offer[]> {
         const counter = await this._offerDriver.getLastId();
 
         const offersPromises = Array.from({ length: counter }, (_, i) => {
             const index = i + 1;
-            return this.getOffer(index).catch((e) => {
+            return this.getOffer(roleProof, index).catch((e) => {
                 console.log(`Offer with id ${index} has been deleted`);
                 return null;
             });
@@ -54,8 +59,12 @@ export class OfferService {
         await this._offerDriver.updateSupplier(companyAddress, name);
     }
 
-    async updateOffer(offerId: number, productCategoryId: number): Promise<void> {
-        await this._offerDriver.updateOffer(offerId, productCategoryId);
+    async updateOffer(
+        roleProof: RoleProof,
+        offerId: number,
+        productCategoryId: number
+    ): Promise<void> {
+        await this._offerDriver.updateOffer(roleProof, offerId, productCategoryId);
     }
 
     async deleteSupplier(companyAddress: string): Promise<void> {
