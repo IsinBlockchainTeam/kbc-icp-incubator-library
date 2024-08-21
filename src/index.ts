@@ -32,7 +32,6 @@ export {
     OrderLineRequest,
     type OrderTradeMetadata
 } from './entities/OrderTrade';
-export { OrderStatus } from './types/OrderStatus';
 export { NegotiationStatus } from './types/NegotiationStatus';
 export { TradeType } from './types/TradeType';
 export { TradeManagerDriver } from './drivers/TradeManagerDriver';
@@ -62,13 +61,16 @@ export { OfferDriver } from './drivers/OfferDriver';
 export { OfferService } from './services/OfferService';
 
 export { Escrow } from './entities/Escrow';
-export { EscrowStatus } from './types/EscrowStatus';
 export { EscrowManagerDriver } from './drivers/EscrowManagerDriver';
 export { EscrowManagerService } from './services/EscrowManagerService';
 export { EscrowDriver } from './drivers/EscrowDriver';
 export { EscrowService } from './services/EscrowService';
 export { TokenDriver } from './drivers/TokenDriver';
 export { TokenService } from './services/TokenService';
+
+export { Shipment, ShipmentPhase, DocumentStatus as ShipmentDocumentStatus, DocumentInfo as ShipmentDocumentInfo, DocumentType as ShipmentDocumentType, ShipmentEvaluationStatus, FundsStatus} from './entities/Shipment';
+export { ShipmentDriver } from './drivers/ShipmentDriver';
+export { ShipmentService, ShipmentDocument } from './services/ShipmentService';
 
 export type { ISolidStorageMetadataDriver } from './drivers/ISolidStorageMetadataDriver';
 export type { ISolidStorageDocumentDriver } from './drivers/ISolidStorageDocumentDriver';

@@ -15,8 +15,6 @@ import { EntityBuilder } from '../utils/EntityBuilder';
 import { IConcreteTradeDriverInterface } from './IConcreteTradeDriver.interface';
 import { getNegotiationStatusByIndex } from '../utils/utils';
 import { zeroAddress } from '../utils/constants';
-import { OrderStatus } from '../types/OrderStatus';
-import { RoleProof } from '../types/RoleProof';
 
 export enum OrderTradeEvents {
     TradeLineAdded,
@@ -57,9 +55,9 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
         ).connect(signer);
     }
 
-    async getTrade(roleProof: RoleProof, blockNumber?: number): Promise<OrderTrade> {
+    async getTrade(blockNumber?: number): Promise<OrderTrade> {
         const result = await this._actual.getTrade({ blockTag: blockNumber });
-        const lines: OrderLine[] = await this.getLines(roleProof);
+        const lines: OrderLine[] = await this.getLines();
 
         return new OrderTrade(
             result[0].toNumber(),
@@ -82,18 +80,18 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
         );
     }
 
-    async getLines(roleProof: RoleProof): Promise<OrderLine[]> {
+    async getLines(): Promise<OrderLine[]> {
         const counter: number = await this.getLineCounter();
 
         const promises = [];
         for (let i = 1; i <= counter; i++) {
-            promises.push(this.getLine(roleProof, i));
+            promises.push(this.getLine(i));
         }
 
         return Promise.all(promises);
     }
 
-    async getLine(roleProof: RoleProof, id: number, blockNumber?: number): Promise<OrderLine> {
+    async getLine(id: number, blockNumber?: number): Promise<OrderLine> {
         const line = await this._actual.getLine(id, { blockTag: blockNumber });
 
         let materialStruct: MaterialManager.MaterialStructOutput | undefined;
@@ -103,18 +101,14 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
         return EntityBuilder.buildOrderLine(
             line[0],
             line[1],
-            await this._productCategoryContract.getProductCategory(
-                roleProof,
-                line[0].productCategoryId
-            ),
+            await this._productCategoryContract.getProductCategory(line[0].productCategoryId),
             materialStruct
         );
     }
 
-    async addLine(roleProof: RoleProof, line: OrderLineRequest): Promise<number> {
+    async addLine(line: OrderLineRequest): Promise<number> {
         const _price = this._convertPriceClassInStruct(line.price);
         const tx: any = await this._actual.addLine(
-            roleProof,
             line.productCategoryId,
             line.quantity,
             line.unit,
@@ -128,10 +122,9 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
         return events.find((event: Event) => event.event === 'OrderLineAdded').args[0];
     }
 
-    async updateLine(roleProof: RoleProof, line: OrderLine): Promise<void> {
+    async updateLine(line: OrderLine): Promise<void> {
         const _price = this._convertPriceClassInStruct(line.price);
         const tx = await this._actual.updateLine(
-            roleProof,
             line.id,
             line.productCategory.id,
             line.quantity,
@@ -156,28 +149,6 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
                 return NegotiationStatus.CONFIRMED;
             default:
                 throw new Error('Invalid state');
-        }
-    }
-
-    async getOrderStatus(): Promise<OrderStatus> {
-        const result = await this._actual.getOrderStatus();
-        switch (result) {
-            case 0:
-                return OrderStatus.CONTRACTING;
-            case 1:
-                return OrderStatus.PRODUCTION;
-            case 2:
-                return OrderStatus.PAYED;
-            case 3:
-                return OrderStatus.EXPORTED;
-            case 4:
-                return OrderStatus.SHIPPED;
-            case 5:
-                return OrderStatus.COMPLETED;
-            default:
-                throw new Error(
-                    `TradeDriver: an invalid value "${result}" for "TradeStatus" was returned by the contract`
-                );
         }
     }
 
@@ -269,5 +240,21 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
             decimals: BigNumber.from(_decimals),
             fiat: price.fiat
         } as OrderTradeContract.OrderLinePriceStructOutput;
+    }
+
+    async createShipment(expirationDate: Date, quantity: number, weight: number, price: number): Promise<void> {
+        if(quantity < 0 || weight < 0 || price < 0) {
+            throw new Error('Invalid arguments');
+        }
+        const tx = await this._actual.createShipment(expirationDate.getTime(), quantity, weight, price);
+        await tx.wait();
+    }
+
+    async getShipmentAddress(): Promise<string> {
+        return this._actual.getShipment();
+    }
+
+    async getEscrowAddress(): Promise<string> {
+        return this._actual.getEscrow();
     }
 }
