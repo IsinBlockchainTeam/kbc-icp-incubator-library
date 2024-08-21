@@ -5,9 +5,12 @@ import { expect } from 'chai';
 import { ethers } from 'hardhat';
 import { ContractName } from '../utils/constants';
 import { Trade } from '../typechain-types';
+import { KBCAccessControl } from '../typechain-types/contracts/MaterialManager';
+import { FakeContract, smock } from '@defi-wonderland/smock';
 
 describe('TradeManager.sol', () => {
     let tradeManagerContract: Contract;
+    let delegateManagerContractFake: FakeContract;
     let admin: SignerWithAddress,
         supplier: SignerWithAddress,
         customer: SignerWithAddress,
@@ -19,6 +22,11 @@ describe('TradeManager.sol', () => {
     const fiatManagerAddress: string = Wallet.createRandom().address;
     const unitManagerAddress: string = Wallet.createRandom().address;
     const escrowManagerAddress: string = Wallet.createRandom().address;
+
+    const roleProof: KBCAccessControl.RoleProofStruct = {
+        signedProof: '0x',
+        delegator: ''
+    };
 
     const externalUrl: string = 'https://test.com';
     const metadataHash: string = '0x123';
@@ -33,8 +41,8 @@ describe('TradeManager.sol', () => {
 
     let documentManagerContract: Contract;
     const _getTradeContract = async (id: number): Promise<Trade> => {
-        const tradeAddress = await tradeManagerContract.getTrade(id);
-        const tradeType = await tradeManagerContract.getTradeType(id);
+        const tradeAddress = await tradeManagerContract.getTrade(roleProof, id);
+        const tradeType = await tradeManagerContract.getTradeType(roleProof, id);
         switch (tradeType) {
             case 0:
                 return ethers.getContractAt(ContractName.BASIC_TRADE, tradeAddress);
@@ -48,17 +56,21 @@ describe('TradeManager.sol', () => {
     before(async () => {
         await ethers.provider.send('evm_mine', [Date.now() + 10]);
         [admin, supplier, customer, commissioner, arbiter] = await ethers.getSigners();
-        const DocumentManager = await ethers.getContractFactory(ContractName.DOCUMENT_MANAGER);
-        documentManagerContract = await DocumentManager.deploy([]);
-        await documentManagerContract.deployed();
+        roleProof.delegator = admin.address;
         // const EscrowManager = await ethers.getContractFactory(ContractName.ESCROW_MANAGER);
         // escrowManagerContract = await EscrowManager.deploy(Wallet.createRandom().address, 10, 1);
         // await escrowManagerContract.deployed();
     });
 
     beforeEach(async () => {
+        delegateManagerContractFake = await smock.fake(ContractName.DELEGATE_MANAGER);
+        delegateManagerContractFake.hasValidRole.returns(true);
+        const DocumentManager = await ethers.getContractFactory(ContractName.DOCUMENT_MANAGER);
+        documentManagerContract = await DocumentManager.deploy(delegateManagerContractFake.address, []);
+        await documentManagerContract.deployed();
         const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER);
         tradeManagerContract = await TradeManager.deploy(
+            delegateManagerContractFake.address,
             productCategoryManagerContractAddress,
             materialManagerContractAddress,
             documentManagerContract.address,
@@ -74,6 +86,7 @@ describe('TradeManager.sol', () => {
             const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER);
             await expect(
                 TradeManager.deploy(
+                    delegateManagerContractFake.address,
                     ethers.constants.AddressZero,
                     materialManagerContractAddress,
                     documentManagerAddress,
@@ -88,6 +101,7 @@ describe('TradeManager.sol', () => {
             const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER);
             await expect(
                 TradeManager.deploy(
+                    delegateManagerContractFake.address,
                     productCategoryManagerContractAddress,
                     ethers.constants.AddressZero,
                     documentManagerAddress,
@@ -102,6 +116,7 @@ describe('TradeManager.sol', () => {
             const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER);
             await expect(
                 TradeManager.deploy(
+                    delegateManagerContractFake.address,
                     productCategoryManagerContractAddress,
                     materialManagerContractAddress,
                     ethers.constants.AddressZero,
@@ -116,6 +131,7 @@ describe('TradeManager.sol', () => {
             const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER);
             await expect(
                 TradeManager.deploy(
+                    delegateManagerContractFake.address,
                     productCategoryManagerContractAddress,
                     materialManagerContractAddress,
                     documentManagerAddress,
@@ -130,6 +146,7 @@ describe('TradeManager.sol', () => {
             const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER);
             await expect(
                 TradeManager.deploy(
+                    delegateManagerContractFake.address,
                     productCategoryManagerContractAddress,
                     materialManagerContractAddress,
                     documentManagerAddress,
@@ -144,6 +161,7 @@ describe('TradeManager.sol', () => {
             const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER);
             await expect(
                 TradeManager.deploy(
+                    delegateManagerContractFake.address,
                     productCategoryManagerContractAddress,
                     materialManagerContractAddress,
                     documentManagerAddress,
@@ -158,6 +176,7 @@ describe('TradeManager.sol', () => {
     describe('Basic trades registration', () => {
         it('should register a basic trade and retrieve it', async () => {
             const tx = await tradeManagerContract.registerBasicTrade(
+                roleProof,
                 supplier.address,
                 customer.address,
                 commissioner.address,
@@ -180,10 +199,10 @@ describe('TradeManager.sol', () => {
             //     .to
             //     .equal(commissioner.address);
 
-            const basicTradeAddress = await tradeManagerContract.getTrade(id);
+            const basicTradeAddress = await tradeManagerContract.getTrade(roleProof, id);
             const basicTradeContract = await ethers.getContractAt('BasicTrade', basicTradeAddress);
 
-            const [_tradeId, _supplier, _customer, _commissioner, _externalUrl, _linesId, _name] = await basicTradeContract.getTrade();
+            const [_tradeId, _supplier, _customer, _commissioner, _externalUrl, _linesId, _name] = await basicTradeContract.getTrade(roleProof);
             expect(_tradeId).to.equal(id);
             expect(_supplier).to.equal(supplier.address);
             expect(_customer).to.equal(customer.address);
@@ -196,6 +215,7 @@ describe('TradeManager.sol', () => {
         it('should register a basic trade - FAIL(TradeManager: supplier is the zero address)', async () => {
             await expect(
                 tradeManagerContract.registerBasicTrade(
+                    roleProof,
                     ethers.constants.AddressZero,
                     customer.address,
                     commissioner.address,
@@ -209,6 +229,7 @@ describe('TradeManager.sol', () => {
         it('should register a basic trade - FAIL(TradeManager: customer is the zero address)', async () => {
             await expect(
                 tradeManagerContract.registerBasicTrade(
+                    roleProof,
                     supplier.address,
                     ethers.constants.AddressZero,
                     commissioner.address,
@@ -222,6 +243,7 @@ describe('TradeManager.sol', () => {
         it('should register a basic trade - FAIL(TradeManager: commissioner is the zero address)', async () => {
             await expect(
                 tradeManagerContract.registerBasicTrade(
+                    roleProof,
                     supplier.address,
                     customer.address,
                     ethers.constants.AddressZero,
@@ -236,6 +258,7 @@ describe('TradeManager.sol', () => {
     describe('Order trades registration', async () => {
         it('should register an order trade and retrieve it', async () => {
             const tx = await tradeManagerContract.registerOrderTrade(
+                roleProof,
                 supplier.address,
                 customer.address,
                 commissioner.address,
@@ -264,7 +287,7 @@ describe('TradeManager.sol', () => {
             //     .to
             //     .equal(commissioner.address);
 
-            const orderTradeAddress = await tradeManagerContract.getTrade(id);
+            const orderTradeAddress = await tradeManagerContract.getTrade(roleProof, id);
             const orderTradeContract = await ethers.getContractAt(ContractName.ORDER_TRADE, orderTradeAddress);
 
             const [
@@ -285,7 +308,7 @@ describe('TradeManager.sol', () => {
                 _agreedAmount,
                 _tokenAddress,
                 _escrow
-            ] = await orderTradeContract.getTrade();
+            ] = await orderTradeContract.getTrade(roleProof);
             expect(_tradeId).to.equal(id);
             expect(_supplier).to.equal(supplier.address);
             expect(_customer).to.equal(customer.address);
@@ -309,6 +332,7 @@ describe('TradeManager.sol', () => {
         it('should register an order trade - - FAIL(TradeManager: supplier is the zero address)', async () => {
             await expect(
                 tradeManagerContract.registerOrderTrade(
+                    roleProof,
                     ethers.constants.AddressZero,
                     customer.address,
                     commissioner.address,
@@ -328,6 +352,7 @@ describe('TradeManager.sol', () => {
         it('should register an order trade - - FAIL(TradeManager: customer is the zero address)', async () => {
             await expect(
                 tradeManagerContract.registerOrderTrade(
+                    roleProof,
                     supplier.address,
                     ethers.constants.AddressZero,
                     commissioner.address,
@@ -347,6 +372,7 @@ describe('TradeManager.sol', () => {
         it('should register an order trade - - FAIL(TradeManager: supplier is the zero address)', async () => {
             await expect(
                 tradeManagerContract.registerOrderTrade(
+                    roleProof,
                     supplier.address,
                     customer.address,
                     ethers.constants.AddressZero,
@@ -366,6 +392,7 @@ describe('TradeManager.sol', () => {
         it('should register an order trade - - FAIL(TradeManager: arbiter is the zero address)', async () => {
             await expect(
                 tradeManagerContract.registerOrderTrade(
+                    roleProof,
                     supplier.address,
                     customer.address,
                     commissioner.address,
@@ -385,6 +412,7 @@ describe('TradeManager.sol', () => {
         it('should register an order trade - - FAIL(TradeManager: payment deadline must be in the future)', async () => {
             await expect(
                 tradeManagerContract.registerOrderTrade(
+                    roleProof,
                     supplier.address,
                     customer.address,
                     commissioner.address,
@@ -405,6 +433,7 @@ describe('TradeManager.sol', () => {
     describe('Getters', () => {
         it('should get all trades', async () => {
             await tradeManagerContract.registerOrderTrade(
+                roleProof,
                 supplier.address,
                 customer.address,
                 commissioner.address,
@@ -419,6 +448,7 @@ describe('TradeManager.sol', () => {
                 tokenAddress
             );
             await tradeManagerContract.registerOrderTrade(
+                roleProof,
                 Wallet.createRandom().address,
                 customer.address,
                 commissioner.address,
@@ -433,6 +463,7 @@ describe('TradeManager.sol', () => {
                 tokenAddress
             );
             await tradeManagerContract.registerOrderTrade(
+                roleProof,
                 supplier.address,
                 customer.address,
                 admin.address,
@@ -447,20 +478,21 @@ describe('TradeManager.sol', () => {
                 tokenAddress
             );
 
-            expect(await tradeManagerContract.getTradeCounter()).to.equal(3);
+            expect(await tradeManagerContract.getTradeCounter(roleProof)).to.equal(3);
 
             const firstTrade = await _getTradeContract(1);
-            expect(firstTrade.address).to.equal(await tradeManagerContract.getTrade(1));
+            expect(firstTrade.address).to.equal(await tradeManagerContract.getTrade(roleProof, 1));
 
             const secondTrade = await _getTradeContract(2);
-            expect(secondTrade.address).to.equal(await tradeManagerContract.getTrade(2));
+            expect(secondTrade.address).to.equal(await tradeManagerContract.getTrade(roleProof, 2));
 
             const thirdTrade = await _getTradeContract(3);
-            expect(thirdTrade.address).to.equal(await tradeManagerContract.getTrade(3));
+            expect(thirdTrade.address).to.equal(await tradeManagerContract.getTrade(roleProof, 3));
         });
 
         it('should get all trades and types', async () => {
             await tradeManagerContract.registerOrderTrade(
+                roleProof,
                 supplier.address,
                 customer.address,
                 commissioner.address,
@@ -475,6 +507,7 @@ describe('TradeManager.sol', () => {
                 tokenAddress
             );
             await tradeManagerContract.registerBasicTrade(
+                roleProof,
                 Wallet.createRandom().address,
                 customer.address,
                 commissioner.address,
@@ -483,6 +516,7 @@ describe('TradeManager.sol', () => {
                 'test'
             );
             await tradeManagerContract.registerOrderTrade(
+                roleProof,
                 supplier.address,
                 customer.address,
                 admin.address,
@@ -497,20 +531,21 @@ describe('TradeManager.sol', () => {
                 tokenAddress
             );
 
-            expect(await tradeManagerContract.getTradeCounter()).to.equal(3);
+            expect(await tradeManagerContract.getTradeCounter(roleProof)).to.equal(3);
 
             const firstTrade = await _getTradeContract(1);
-            expect(await firstTrade.getTradeType()).to.equal(await tradeManagerContract.getTradeType(1));
+            expect(await firstTrade.getTradeType(roleProof)).to.equal(await tradeManagerContract.getTradeType(roleProof, 1));
 
             const secondTrade = await _getTradeContract(2);
-            expect(await secondTrade.getTradeType()).to.equal(await tradeManagerContract.getTradeType(2));
+            expect(await secondTrade.getTradeType(roleProof)).to.equal(await tradeManagerContract.getTradeType(roleProof, 2));
 
             const thirdTrade = await _getTradeContract(3);
-            expect(await thirdTrade.getTradeType()).to.equal(await tradeManagerContract.getTradeType(3));
+            expect(await thirdTrade.getTradeType(roleProof)).to.equal(await tradeManagerContract.getTradeType(roleProof, 3));
         });
 
         it('should get trade IDs of supplier', async () => {
             await tradeManagerContract.registerOrderTrade(
+                roleProof,
                 supplier.address,
                 customer.address,
                 commissioner.address,
@@ -525,6 +560,7 @@ describe('TradeManager.sol', () => {
                 tokenAddress
             );
             await tradeManagerContract.registerOrderTrade(
+                roleProof,
                 Wallet.createRandom().address,
                 customer.address,
                 commissioner.address,
@@ -539,6 +575,7 @@ describe('TradeManager.sol', () => {
                 tokenAddress
             );
             await tradeManagerContract.registerOrderTrade(
+                roleProof,
                 supplier.address,
                 customer.address,
                 admin.address,
@@ -553,8 +590,8 @@ describe('TradeManager.sol', () => {
                 tokenAddress
             );
 
-            const supplierIds = await tradeManagerContract.getTradeIdsOfSupplier(supplier.address);
-            const adminIds = await tradeManagerContract.getTradeIdsOfSupplier(admin.address);
+            const supplierIds = await tradeManagerContract.getTradeIdsOfSupplier(roleProof, supplier.address);
+            const adminIds = await tradeManagerContract.getTradeIdsOfSupplier(roleProof, admin.address);
 
             expect(supplierIds.length).to.equal(2);
             expect(supplierIds[0]).to.equal(1);
@@ -564,6 +601,7 @@ describe('TradeManager.sol', () => {
 
         it('should get trade IDs of commissioner', async () => {
             await tradeManagerContract.registerOrderTrade(
+                roleProof,
                 supplier.address,
                 customer.address,
                 commissioner.address,
@@ -578,6 +616,7 @@ describe('TradeManager.sol', () => {
                 tokenAddress
             );
             await tradeManagerContract.registerOrderTrade(
+                roleProof,
                 Wallet.createRandom().address,
                 customer.address,
                 commissioner.address,
@@ -592,6 +631,7 @@ describe('TradeManager.sol', () => {
                 tokenAddress
             );
             await tradeManagerContract.registerOrderTrade(
+                roleProof,
                 supplier.address,
                 customer.address,
                 admin.address,
@@ -606,9 +646,9 @@ describe('TradeManager.sol', () => {
                 tokenAddress
             );
 
-            const commissionerIds = await tradeManagerContract.getTradeIdsOfCommissioner(commissioner.address);
-            const adminIds = await tradeManagerContract.getTradeIdsOfCommissioner(admin.address);
-            const customerIds = await tradeManagerContract.getTradeIdsOfCommissioner(customer.address);
+            const commissionerIds = await tradeManagerContract.getTradeIdsOfCommissioner(roleProof, commissioner.address);
+            const adminIds = await tradeManagerContract.getTradeIdsOfCommissioner(roleProof, admin.address);
+            const customerIds = await tradeManagerContract.getTradeIdsOfCommissioner(roleProof, customer.address);
 
             expect(commissionerIds.length).to.equal(2);
             expect(commissionerIds[0]).to.equal(1);

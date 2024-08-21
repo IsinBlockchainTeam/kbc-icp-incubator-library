@@ -29,7 +29,7 @@ library DocumentLibrary {
         bool exists;
     }
 }
-contract Shipment is AccessControl {
+contract Shipment is AccessControl, KBCAccessControl {
     enum Phase {
         APPROVAL,
         LAND_TRANSPORTATION,
@@ -60,6 +60,8 @@ contract Shipment is AccessControl {
     DocumentLibrary.DocumentType[] private _seaTransportationRequiredDocuments;
 
     constructor(
+        RoleProof memory roleProof,
+        address delegateManagerAddress,
         uint256 expirationDate,
         uint256 quantity,
         uint256 weight,
@@ -71,7 +73,8 @@ contract Shipment is AccessControl {
         string memory externalUrl,
         DocumentLibrary.DocumentType[] memory landTransportationRequiredDocuments,
         DocumentLibrary.DocumentType[] memory seaTransportationRequiredDocuments
-    ) {
+    ) KBCAccessControl(delegateManagerAddress) {
+        require(_isAtLeastEditor(roleProof), "KBCAccessControl: Caller doesn't have role 'Editor' or higher");
         _approved = false;
         _expirationDate = expirationDate;
         _quantity = quantity;
@@ -122,7 +125,7 @@ contract Shipment is AccessControl {
     event DocumentRejected(uint256 documentId);
 
     // Getters
-    function getShipment() public view returns (bool, uint256, uint256, uint256, uint256, ComparisonStatus, uint256[] memory, FundsStatus, string memory, DocumentLibrary.DocumentType[] memory, DocumentLibrary.DocumentType[] memory) {
+    function getShipment(RoleProof memory roleProof) public view atLeastViewer(roleProof) returns (bool, uint256, uint256, uint256, uint256, ComparisonStatus, uint256[] memory, FundsStatus, string memory, DocumentLibrary.DocumentType[] memory, DocumentLibrary.DocumentType[] memory) {
         return (
             _approved,
             _expirationDate,
@@ -137,13 +140,13 @@ contract Shipment is AccessControl {
             _seaTransportationRequiredDocuments
         );
     }
-    function getPhase() public view returns (Phase) {
+    function getPhase(RoleProof memory roleProof) public view atLeastViewer(roleProof) returns (Phase) {
         if(!_approved)
             return Phase.APPROVAL;
 
         // check if all required documents for land transportation are uploaded and approved
         for(uint256 i = 0; i < _landTransportationRequiredDocuments.length; i++) {
-            uint256[] memory documentsIds = getDocumentsIdsByType(_landTransportationRequiredDocuments[i]);
+            uint256[] memory documentsIds = getDocumentsIdsByType(roleProof, _landTransportationRequiredDocuments[i]);
             if(documentsIds.length == 0 || !_areDocumentsApproved(documentsIds))
                 return Phase.LAND_TRANSPORTATION;
         }
@@ -152,14 +155,14 @@ contract Shipment is AccessControl {
 
         // check if all required documents for sea transportation are uploaded and approved
         for(uint256 i = 0; i < _seaTransportationRequiredDocuments.length; i++) {
-            uint256[] memory documentsIds = getDocumentsIdsByType(_seaTransportationRequiredDocuments[i]);
+            uint256[] memory documentsIds = getDocumentsIdsByType(roleProof, _seaTransportationRequiredDocuments[i]);
             if(documentsIds.length == 0 || !_areDocumentsApproved(documentsIds))
                 return Phase.SEA_TRANSPORTATION;
         }
 
         return Phase.COMPARISON;
     }
-    function getDocumentInfo(uint256 documentId) public view returns (DocumentLibrary.DocumentInfo memory) {
+    function getDocumentInfo(RoleProof memory roleProof, uint256 documentId) public view atLeastViewer(roleProof) returns (DocumentLibrary.DocumentInfo memory) {
         require(_documentsInfo[documentId].exists, "ShipmentManager: Document does not exist");
         return _documentsInfo[documentId];
     }
@@ -168,7 +171,7 @@ contract Shipment is AccessControl {
             if (_documentsInfo[documentIds[i]].exists && _documentsInfo[documentIds[i]].status == DocumentLibrary.DocumentStatus.APPROVED) return true;
         return false;
     }
-    function getDocumentsIdsByType(DocumentLibrary.DocumentType documentType) public view returns (uint256[] memory filteredDocumentsIds) {
+    function getDocumentsIdsByType(RoleProof memory roleProof, DocumentLibrary.DocumentType documentType) public view atLeastViewer(roleProof) returns (uint256[] memory filteredDocumentsIds) {
         uint256 documentsIdsCount = _documentsIds.length;
         uint256[] memory documentsIdsTemp = new uint256[](documentsIdsCount);
         uint256 count = 0;
@@ -187,7 +190,7 @@ contract Shipment is AccessControl {
     }
 
     // Functions
-    function updateShipment(uint256 expirationDate, uint256 quantity, uint256 weight, uint256 price) public onlySupplier {
+    function updateShipment(RoleProof memory roleProof, uint256 expirationDate, uint256 quantity, uint256 weight, uint256 price) public onlySupplier atLeastEditor(roleProof) {
         require(!_approved, "ShipmentManager: Shipment already approved");
 
         _expirationDate = expirationDate;
@@ -199,15 +202,15 @@ contract Shipment is AccessControl {
 
         emit ShipmentUpdated();
     }
-    function approveShipment() public onlyCommissioner {
+    function approveShipment(RoleProof memory roleProof) public onlyCommissioner atLeastEditor(roleProof) {
         require(!_approved, "ShipmentManager: Shipment already approved");
 
         _approved = true;
         emit ShipmentApproved();
     }
-    function depositFunds(uint256 amount) public shipmentApproved {
+    function depositFunds(RoleProof memory roleProof, uint256 amount) public shipmentApproved atLeastEditor(roleProof) {
         require(_fundsStatus == FundsStatus.NOT_LOCKED, "ShipmentManager: Funds already locked");
-        require(getPhase() == Phase.LAND_TRANSPORTATION, "ShipmentManager: Shipment is not in land transportation phase");
+        require(getPhase(roleProof) == Phase.LAND_TRANSPORTATION, "ShipmentManager: Shipment is not in land transportation phase");
 
         _escrow.deposit(amount, _msgSender());
 
@@ -218,22 +221,22 @@ contract Shipment is AccessControl {
             _fundsStatus = FundsStatus.LOCKED;
         }
     }
-    function addDocument(DocumentLibrary.DocumentType documentType, string memory externalUrl, string memory contentHash) public onlySupplierOrCommissioner shipmentApproved {
-        uint256 documentId = _documentManager.registerDocument(externalUrl, contentHash, _msgSender());
+    function addDocument(RoleProof memory roleProof, DocumentLibrary.DocumentType documentType, string memory externalUrl, string memory contentHash) public onlySupplierOrCommissioner shipmentApproved atLeastEditor(roleProof) {
+        uint256 documentId = _documentManager.registerDocument(roleProof, externalUrl, contentHash, _msgSender());
         _documentsIds.push(documentId);
         _documentsInfo[documentId] = DocumentLibrary.DocumentInfo(documentId, documentType, DocumentLibrary.DocumentStatus.NOT_EVALUATED, _msgSender(), true);
         emit DocumentAdded(documentId);
     }
-    function updateDocument(uint256 documentId, string memory externalUrl, string memory contentHash) public onlySupplierOrCommissioner shipmentApproved {
+    function updateDocument(RoleProof memory roleProof, uint256 documentId, string memory externalUrl, string memory contentHash) public onlySupplierOrCommissioner shipmentApproved atLeastEditor(roleProof) {
         require(_documentsInfo[documentId].exists, "ShipmentManager: Document does not exist");
         require(_documentsInfo[documentId].uploader == _msgSender(), "ShipmentManager: Caller is not the uploader");
         require(_documentsInfo[documentId].status != DocumentLibrary.DocumentStatus.APPROVED, "ShipmentManager: Document already approved");
 
-        _documentManager.updateDocument(documentId, externalUrl, contentHash, _msgSender());
+        _documentManager.updateDocument(roleProof, documentId, externalUrl, contentHash, _msgSender());
         _documentsInfo[documentId].status = DocumentLibrary.DocumentStatus.NOT_EVALUATED;
         emit DocumentUpdated(documentId);
     }
-    function approveDocument(uint256 documentId) public onlySupplierOrCommissioner shipmentApproved {
+    function approveDocument(RoleProof memory roleProof, uint256 documentId) public onlySupplierOrCommissioner shipmentApproved atLeastEditor(roleProof) {
         require(_documentsInfo[documentId].exists, "ShipmentManager: Document does not exist");
         require(_documentsInfo[documentId].uploader != _msgSender(), "ShipmentManager: Caller is the uploader");
         require(_documentsInfo[documentId].status == DocumentLibrary.DocumentStatus.NOT_EVALUATED, "ShipmentManager: Document already evaluated");
@@ -242,27 +245,27 @@ contract Shipment is AccessControl {
         emit DocumentApproved(documentId);
 
         // Unlock funds if all required documents are approved
-        if(getPhase() == Phase.COMPARISON && _fundsStatus == FundsStatus.LOCKED) {
+        if(getPhase(roleProof) == Phase.COMPARISON && _fundsStatus == FundsStatus.LOCKED) {
             _escrow.releaseFunds(_price);
             _fundsStatus = FundsStatus.RELEASED;
         }
     }
-    function rejectDocument(uint256 documentId) public onlyCommissioner shipmentApproved {
+    function rejectDocument(RoleProof memory roleProof, uint256 documentId) public onlyCommissioner shipmentApproved atLeastEditor(roleProof) {
         require(_documentsInfo[documentId].exists, "ShipmentManager: Document does not exist");
         require(_documentsInfo[documentId].status == DocumentLibrary.DocumentStatus.NOT_EVALUATED, "ShipmentManager: Document already evaluated");
 
         _documentsInfo[documentId].status = DocumentLibrary.DocumentStatus.NOT_APPROVED;
         emit DocumentRejected(documentId);
     }
-    function confirmShipment() public onlyCommissioner shipmentApproved {
-        require(getPhase() == Phase.COMPARISON, "ShipmentManager: Shipment is not in comparison phase");
+    function confirmShipment(RoleProof memory roleProof) public onlyCommissioner shipmentApproved atLeastEditor(roleProof) {
+        require(getPhase(roleProof) == Phase.COMPARISON, "ShipmentManager: Shipment is not in comparison phase");
         require(_comparisonStatus == ComparisonStatus.NOT_EVALUATED, "ShipmentManager: Shipment already evaluated");
 
         _comparisonStatus = ComparisonStatus.CONFIRMED;
         emit ShipmentConfirmed();
     }
-    function startShipmentArbitration() public onlyCommissioner shipmentApproved {
-        require(getPhase() == Phase.COMPARISON, "ShipmentManager: Shipment is not in comparison phase");
+    function startShipmentArbitration(RoleProof memory roleProof) public onlyCommissioner shipmentApproved atLeastEditor(roleProof) {
+        require(getPhase(roleProof) == Phase.COMPARISON, "ShipmentManager: Shipment is not in comparison phase");
         require(_comparisonStatus == ComparisonStatus.NOT_EVALUATED, "ShipmentManager: Shipment already evaluated");
 
         _comparisonStatus = ComparisonStatus.ARBITRATION;

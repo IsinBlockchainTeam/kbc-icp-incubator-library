@@ -28,8 +28,6 @@ abstract contract Trade is AccessControl, KBCAccessControl {
         COMPARISON_SWISS_DECODE
     }
 
-    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
-
     enum DocumentStatus { NOT_EVALUATED, APPROVED, NOT_APPROVED }
     enum TradeType { BASIC, ORDER }
 
@@ -37,12 +35,8 @@ abstract contract Trade is AccessControl, KBCAccessControl {
     event TradeLineUpdated(uint256 tradeLineId);
     event MaterialAssigned(uint256 tradeLineId);
 
-    modifier onlyAdmin() {
-        require(hasRole(ADMIN_ROLE, _msgSender()), "Trade: Caller is not an admin");
-        _;
-    }
-
     modifier onlyContractPart() {
+        address sender = _msgSender();
         require(_isContractPart(_msgSender()), "Trade: Caller is not a contract party");
         _;
     }
@@ -86,15 +80,12 @@ abstract contract Trade is AccessControl, KBCAccessControl {
     DocumentManager internal _documentManager;
     EnumerableType internal _unitManager;
 
-    constructor(RoleProof memory roleProof, address delegateManagerAddress, uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress, address unitManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl, string memory metadataHash)  KBCAccessControl(delegateManagerAddress) {
+    constructor(RoleProof memory roleProof, uint256 tradeId, address delegateManagerAddress, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress, address unitManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl, string memory metadataHash)  KBCAccessControl(delegateManagerAddress) {
         require(productCategoryAddress != address(0), "Trade: product category manager address is the zero address");
         require(materialManagerAddress != address(0), "Trade: material manager address is the zero address");
         require(documentManagerAddress != address(0), "Trade: document category manager address is the zero address");
         require(unitManagerAddress != address(0), "Trade: unit manager address is the zero address");
-        require(_isAtLeastEditor(roleProof), "KBCAccessControl: Caller doesn't have role 'Editor' or higher");
-
-        _setupRole(ADMIN_ROLE, _msgSender());
-        _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
+        require(_isAtLeastEditor(roleProof), "Trade: Caller doesn't have role 'Editor' or higher");
 
         _tradeId = tradeId;
         _productCategoryManager = ProductCategoryManager(productCategoryAddress);
@@ -106,7 +97,7 @@ abstract contract Trade is AccessControl, KBCAccessControl {
         _commissioner = commissioner;
         _externalUrl = string.concat(externalUrl, Strings.toString(tradeId));
 
-        addDocument(roleProof, DocumentType.METADATA, string.concat(_externalUrl, "/files/metadata.json"), metadataHash);
+        _addDocument(roleProof, DocumentType.METADATA, string.concat(_externalUrl, "/files/metadata.json"), metadataHash);
     }
 
     function getLineCounter(RoleProof memory roleProof) public view atLeastViewer(roleProof) returns (uint256) {
@@ -165,13 +156,17 @@ abstract contract Trade is AccessControl, KBCAccessControl {
         _lines[lineId].materialId = materialId;
     }
 
-    function addDocument(RoleProof memory roleProof, DocumentType documentType, string memory externalUrl, string memory contentHash) public onlyContractPart atLeastEditor(roleProof) {
-//        require(_lines[lineId].exists, "Trade: Line does not exist");
-//        require(_lines[lineId].materialId != 0, "Trade: A material must be assigned before adding a document for a line");
+    function _addDocument(RoleProof memory roleProof, DocumentType documentType, string memory externalUrl, string memory contentHash) internal {
+        // require(_lines[lineId].exists, "Trade: Line does not exist");
+        //  require(_lines[lineId].materialId != 0, "Trade: A material must be assigned before adding a document for a line");
         uint256 documentId = _documentManager.registerDocument(roleProof, externalUrl, contentHash, tx.origin);
         _documentIds.push(documentId);
         _documentsByType[documentType].push(documentId);
         _documentsStatus[documentId] = IsValidated(DocumentStatus.NOT_EVALUATED, true);
+    }
+
+    function addDocument(RoleProof memory roleProof, DocumentType documentType, string memory externalUrl, string memory contentHash) public onlyContractPart atLeastEditor(roleProof) {
+        _addDocument(roleProof, documentType, externalUrl, contentHash);
     }
 
 //    TODO: il documento dovrebbe poter essere validato solamente dalla controparte. Chi ha immesso il documento non può approvare o rifiutare da solo
@@ -207,14 +202,6 @@ abstract contract Trade is AccessControl, KBCAccessControl {
         uint256 documentId
     ) public view atLeastViewer(roleProof) returns (DocumentStatus) {
         return _documentsStatus[documentId].status;
-    }
-
-    function addAdmin(address account) public onlyAdmin {
-        grantRole(ADMIN_ROLE, account);
-    }
-
-    function removeAdmin(address account) public onlyAdmin {
-        revokeRole(ADMIN_ROLE, account);
     }
 
     function _isContractPart(address account) internal view returns (bool) {

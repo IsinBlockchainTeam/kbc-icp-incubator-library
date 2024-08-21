@@ -91,7 +91,7 @@ contract TradeManager is AccessControl, KBCAccessControl {
         uint256 id = _counter.current() + 1;
         _counter.increment();
 
-        BasicTrade newTrade = new BasicTrade(roleProof, address(_delegateManager), id, _productCategoryManagerAddress, _materialManagerAddress, _documentManagerAddress, _unitManagerAddress, supplier, customer, commissioner, externalUrl, metadataHash, name);
+        BasicTrade newTrade = new BasicTrade(roleProof, id, address(_delegateManager), _productCategoryManagerAddress, _materialManagerAddress, _documentManagerAddress, _unitManagerAddress, supplier, customer, commissioner, externalUrl, metadataHash, name);
         _trades[id] = newTrade;
         _tradeIdsOfSupplier[supplier].push(id);
         _tradeIdsOfCommissioner[commissioner].push(id);
@@ -123,7 +123,7 @@ contract TradeManager is AccessControl, KBCAccessControl {
 
         uint256 id = _counter.current() + 1;
         _counter.increment();
-        OrderTrade newTrade = new OrderTrade(roleProof, address(_delegateManager), id, _productCategoryManagerAddress, _materialManagerAddress, _documentManagerAddress, _unitManagerAddress, supplier, customer, commissioner, externalUrl, metadataHash, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress, _fiatManagerAddress, _escrowManagerAddress);
+        OrderTrade newTrade = new OrderTrade(roleProof, id, address(_delegateManager), _productCategoryManagerAddress, _materialManagerAddress, _documentManagerAddress, _unitManagerAddress, supplier, customer, commissioner, externalUrl, metadataHash, paymentDeadline, documentDeliveryDeadline, arbiter, shippingDeadline, deliveryDeadline, agreedAmount, tokenAddress, _fiatManagerAddress, _escrowManagerAddress);
         _trades[id] = newTrade;
         _tradeIdsOfSupplier[supplier].push(id);
         _tradeIdsOfCommissioner[commissioner].push(id);

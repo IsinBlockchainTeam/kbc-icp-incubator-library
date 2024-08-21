@@ -10,7 +10,7 @@ import { ContractName } from '../utils/constants';
 describe('ProductCategoryManager', () => {
     let productCategoryManagerContract: Contract;
     let admin: SignerWithAddress, other: SignerWithAddress;
-    let delegateManagerFake: FakeContract;
+    let delegateManagerContractFake: FakeContract;
 
     const roleProof: KBCAccessControl.RoleProofStruct = {
         signedProof: '0x',
@@ -21,10 +21,10 @@ describe('ProductCategoryManager', () => {
         [admin, other] = await ethers.getSigners();
 
         roleProof.delegator = admin.address;
-        delegateManagerFake = await smock.fake(ContractName.DELEGATE_MANAGER);
-        delegateManagerFake.hasValidRole.returns(true);
+        delegateManagerContractFake = await smock.fake(ContractName.DELEGATE_MANAGER);
+        delegateManagerContractFake.hasValidRole.returns(true);
         const ProductCategoryManager = await ethers.getContractFactory('ProductCategoryManager');
-        productCategoryManagerContract = await ProductCategoryManager.deploy(delegateManagerFake.address);
+        productCategoryManagerContract = await ProductCategoryManager.deploy(delegateManagerContractFake.address);
         await productCategoryManagerContract.deployed();
     });
 

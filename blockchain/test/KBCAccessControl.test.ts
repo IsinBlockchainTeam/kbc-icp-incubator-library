@@ -40,7 +40,7 @@ describe('KBCAccessControl', () => {
         const signature = await delegator._signTypedData(domain, types, message);
         const roleProof: KBCAccessControl.RoleProofStruct = {
             signedProof: signature,
-            delegator: delegator.address,
+            delegator: delegator.address
         };
         switch (neededRole) {
             case ROLES.VIEWER:
@@ -50,7 +50,7 @@ describe('KBCAccessControl', () => {
             case ROLES.SIGNER:
                 return kbcAccessControlContract.connect(delegate).testAtLeastSigner(roleProof);
         }
-    }
+    };
 
     before(async () => {
         [admin, delegator, delegate, other] = await ethers.getSigners();
@@ -76,14 +76,14 @@ describe('KBCAccessControl', () => {
     });
 
     it('atLeastEditor', async () => {
-        await expect(checkRole(ROLES.EDITOR, ROLES.VIEWER)).to.be.revertedWith("KBCAccessControl: Caller doesn't have 'Editor' role");
+        await expect(checkRole(ROLES.EDITOR, ROLES.VIEWER)).to.be.revertedWith("KBCAccessControl: Caller doesn't have role 'Editor' or higher");
         expect(await checkRole(ROLES.EDITOR, ROLES.EDITOR)).to.be.true;
         expect(await checkRole(ROLES.EDITOR, ROLES.SIGNER)).to.be.true;
     });
 
     it('atLeastSigner', async () => {
-        await expect(checkRole(ROLES.SIGNER, ROLES.VIEWER)).to.be.revertedWith("KBCAccessControl: Caller doesn't have 'Signer' role");
-        await expect(checkRole(ROLES.SIGNER, ROLES.EDITOR)).to.be.revertedWith("KBCAccessControl: Caller doesn't have 'Signer' role");
+        await expect(checkRole(ROLES.SIGNER, ROLES.VIEWER)).to.be.revertedWith("KBCAccessControl: Caller doesn't have role 'Signer'");
+        await expect(checkRole(ROLES.SIGNER, ROLES.EDITOR)).to.be.revertedWith("KBCAccessControl: Caller doesn't have role 'Signer'");
         expect(await checkRole(ROLES.SIGNER, ROLES.SIGNER)).to.be.true;
     });
 });

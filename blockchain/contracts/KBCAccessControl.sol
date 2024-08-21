@@ -12,6 +12,7 @@ abstract contract KBCAccessControl {
     }
 
     constructor(address delegateManagerAddress) {
+        require(delegateManagerAddress != address(0), "KBCAccessControl: delegate manager address is the zero address");
         _delegateManager = DelegateManager(delegateManagerAddress);
     }
 

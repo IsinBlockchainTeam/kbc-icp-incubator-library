@@ -53,7 +53,7 @@ contract OfferManager is AccessControl, KBCAccessControl {
         productCategoryManager = ProductCategoryManager(productCategoryAddress);
     }
 
-    function registerSupplier(address addr, string memory name) public {
+    function registerSupplier(RoleProof memory roleProof, address addr, string memory name) public atLeastEditor(roleProof) {
         require(bytes(suppliersNames[addr]).length == 0, "Offer's supplier already registered");
 
         suppliersNames[addr] = name;
