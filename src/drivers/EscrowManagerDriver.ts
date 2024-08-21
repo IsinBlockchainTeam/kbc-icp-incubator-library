@@ -1,5 +1,6 @@
 import { Event, Signer, utils } from 'ethers';
 import { EscrowManager, EscrowManager__factory } from '../smart-contracts';
+import { RoleProof } from '../types/RoleProof';
 
 export class EscrowManagerDriver {
     private _contract: EscrowManager;
@@ -11,22 +12,25 @@ export class EscrowManagerDriver {
         ).connect(signer);
     }
 
-    async getEscrowCounter(): Promise<number> {
-        return (await this._contract.getEscrowCounter()).toNumber();
+    async getEscrowCounter(roleProof: RoleProof): Promise<number> {
+        return (await this._contract.getEscrowCounter(roleProof)).toNumber();
     }
 
-    async registerEscrow(admin: string, payee: string, duration: number, tokenAddress: string): Promise<[number, string, string]> {
-        if (
-            !utils.isAddress(admin) ||
-            !utils.isAddress(payee) ||
-            !utils.isAddress(tokenAddress)
-        ) {
+    async registerEscrow(
+        roleProof: RoleProof,
+        admin: string,
+        payee: string,
+        duration: number,
+        tokenAddress: string
+    ): Promise<[number, string, string]> {
+        if (!utils.isAddress(admin) || !utils.isAddress(payee) || !utils.isAddress(tokenAddress)) {
             throw new Error('Not an address');
         }
         if (duration <= 0) {
             throw new Error('Duration must be greater than 0');
         }
         const tx = await this._contract.registerEscrow(
+            roleProof,
             admin,
             payee,
             duration,
@@ -44,20 +48,20 @@ export class EscrowManagerDriver {
         return [eventArgs.id.toNumber(), eventArgs.escrowAddress, transactionHash];
     }
 
-    async getFeeRecipient(): Promise<string> {
-        return this._contract.getFeeRecipient();
+    async getFeeRecipient(roleProof: RoleProof): Promise<string> {
+        return this._contract.getFeeRecipient(roleProof);
     }
 
-    async getBaseFee(): Promise<number> {
-        return (await this._contract.getBaseFee()).toNumber();
+    async getBaseFee(roleProof: RoleProof): Promise<number> {
+        return (await this._contract.getBaseFee(roleProof)).toNumber();
     }
 
-    async getPercentageFee(): Promise<number> {
-        return (await this._contract.getPercentageFee()).toNumber();
+    async getPercentageFee(roleProof: RoleProof): Promise<number> {
+        return (await this._contract.getPercentageFee(roleProof)).toNumber();
     }
 
-    async getEscrow(id: number): Promise<string> {
-        return this._contract.getEscrow(id);
+    async getEscrow(roleProof: RoleProof, id: number): Promise<string> {
+        return this._contract.getEscrow(roleProof, id);
     }
 
     async updateFeeRecipient(newFeeRecipient: string): Promise<void> {

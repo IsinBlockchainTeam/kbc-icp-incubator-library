@@ -30,4 +30,16 @@ export class DelegateManagerDriver {
         const tx = await this._delegateManagerContract.removeDelegate(delegateAddress);
         await tx.wait();
     }
+
+    async isDelegate(delegateAddress: string): Promise<boolean> {
+        return this._delegateManagerContract.isDelegate(delegateAddress);
+    }
+
+    async hasValidRole(
+        signedProof: string,
+        role: string,
+        delegatorAddress: string
+    ): Promise<boolean> {
+        return this._delegateManagerContract.hasValidRole(signedProof, role, delegatorAddress);
+    }
 }

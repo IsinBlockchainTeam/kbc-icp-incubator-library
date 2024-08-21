@@ -12,5 +12,5 @@ export interface IConcreteTradeService {
     getLine(roleProof: RoleProof, id: number, blockNumber?: number): Promise<Line>;
     addLine(roleProof: RoleProof, line: LineRequest): Promise<number>;
     updateLine(roleProof: RoleProof, line: Line): Promise<void>;
-    assignMaterial(lineId: number, materialId: number): Promise<void>;
+    assignMaterial(roleProof: RoleProof, lineId: number, materialId: number): Promise<void>;
 }

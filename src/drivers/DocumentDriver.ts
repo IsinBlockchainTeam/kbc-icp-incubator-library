@@ -4,6 +4,7 @@ import { Signer, utils } from 'ethers';
 import { DocumentManager, DocumentManager__factory } from '../smart-contracts';
 import { DocumentInfo } from '../entities/DocumentInfo';
 import { EntityBuilder } from '../utils/EntityBuilder';
+import { RoleProof } from '../types/RoleProof';
 
 export class DocumentDriver {
     private _contract: DocumentManager;
@@ -16,21 +17,29 @@ export class DocumentDriver {
     }
 
     async registerDocument(
+        roleProof: RoleProof,
         externalUrl: string,
         contentHash: string,
         uploadedBy: string
     ): Promise<void> {
-        const tx = await this._contract.registerDocument(externalUrl, contentHash, uploadedBy);
+        const tx = await this._contract.registerDocument(
+            roleProof,
+            externalUrl,
+            contentHash,
+            uploadedBy
+        );
         await tx.wait();
     }
 
     async updateDocument(
+        roleProof: RoleProof,
         documentId: number,
         externalUrl: string,
         contentHash: string,
         uploadedBy: string
     ): Promise<void> {
         const tx = await this._contract.updateDocument(
+            roleProof,
             documentId,
             externalUrl,
             contentHash,
@@ -39,13 +48,13 @@ export class DocumentDriver {
         await tx.wait();
     }
 
-    async getDocumentById(documentId: number): Promise<DocumentInfo> {
-        const document = await this._contract.getDocumentById(documentId);
+    async getDocumentById(roleProof: RoleProof, documentId: number): Promise<DocumentInfo> {
+        const document = await this._contract.getDocumentById(roleProof, documentId);
         return EntityBuilder.buildDocumentInfo(document);
     }
 
-    async getDocumentsCounter(): Promise<number> {
-        const counter = await this._contract.getDocumentsCounter();
+    async getDocumentsCounter(roleProof: RoleProof): Promise<number> {
+        const counter = await this._contract.getDocumentsCounter(roleProof);
         return counter.toNumber();
     }
 

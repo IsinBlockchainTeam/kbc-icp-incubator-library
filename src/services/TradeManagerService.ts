@@ -95,36 +95,36 @@ export class TradeManagerService {
         );
     }
 
-    async getTradeCounter(): Promise<number> {
-        return this._tradeManagerDriver.getTradeCounter();
+    async getTradeCounter(roleProof: RoleProof): Promise<number> {
+        return this._tradeManagerDriver.getTradeCounter(roleProof);
     }
 
     async getTrades(roleProof: RoleProof): Promise<Trade[]> {
         return this._tradeManagerDriver.getTrades(roleProof);
     }
 
-    async getTradeType(id: number): Promise<TradeType> {
-        return this._tradeManagerDriver.getTradeType(id);
+    async getTradeType(roleProof: RoleProof, id: number): Promise<TradeType> {
+        return this._tradeManagerDriver.getTradeType(roleProof, id);
     }
 
-    async getTradesAndTypes(): Promise<Map<string, TradeType>> {
-        return this._tradeManagerDriver.getTradesAndTypes();
+    async getTradesAndTypes(roleProof: RoleProof): Promise<Map<string, TradeType>> {
+        return this._tradeManagerDriver.getTradesAndTypes(roleProof);
     }
 
-    async getTrade(id: number): Promise<string> {
-        return this._tradeManagerDriver.getTrade(id);
+    async getTrade(roleProof: RoleProof, id: number): Promise<string> {
+        return this._tradeManagerDriver.getTrade(roleProof, id);
     }
 
     async getTradesByMaterial(roleProof: RoleProof, materialId: number): Promise<Trade[]> {
         return this._tradeManagerDriver.getTradesByMaterial(roleProof, materialId);
     }
 
-    async getTradeIdsOfSupplier(supplier: string): Promise<number[]> {
-        return this._tradeManagerDriver.getTradeIdsOfSupplier(supplier);
+    async getTradeIdsOfSupplier(roleProof: RoleProof, supplier: string): Promise<number[]> {
+        return this._tradeManagerDriver.getTradeIdsOfSupplier(roleProof, supplier);
     }
 
-    async getTradeIdsOfCommissioner(commissioner: string): Promise<number[]> {
-        return this._tradeManagerDriver.getTradeIdsOfCommissioner(commissioner);
+    async getTradeIdsOfCommissioner(roleProof: RoleProof, commissioner: string): Promise<number[]> {
+        return this._tradeManagerDriver.getTradeIdsOfCommissioner(roleProof, commissioner);
     }
 
     private async registerTrade(

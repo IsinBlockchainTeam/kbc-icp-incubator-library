@@ -46,7 +46,9 @@ export class BasicTradeDriver extends TradeDriver implements IConcreteTradeDrive
     }
 
     async getTrade(roleProof: RoleProof, blockNumber?: number): Promise<BasicTrade> {
-        const result = await this._basicTradeContract.getTrade({ blockTag: blockNumber });
+        const result = await this._basicTradeContract.getTrade(roleProof, {
+            blockTag: blockNumber
+        });
         const lines: Line[] = await this.getLines(roleProof);
 
         return new BasicTrade(
@@ -61,7 +63,7 @@ export class BasicTradeDriver extends TradeDriver implements IConcreteTradeDrive
     }
 
     async getLines(roleProof: RoleProof): Promise<Line[]> {
-        const counter: number = await this.getLineCounter();
+        const counter: number = await this.getLineCounter(roleProof);
 
         const promises = [];
         for (let i = 1; i <= counter; i++) {
@@ -72,13 +74,13 @@ export class BasicTradeDriver extends TradeDriver implements IConcreteTradeDrive
     }
 
     async getLine(roleProof: RoleProof, id: number, blockNumber?: number): Promise<Line> {
-        const line: Trade.LineStructOutput = await this._basicTradeContract.getLine(id, {
+        const line: Trade.LineStructOutput = await this._basicTradeContract.getLine(roleProof, id, {
             blockTag: blockNumber
         });
 
         let materialStruct: MaterialManager.MaterialStructOutput | undefined;
         if (line.materialId.toNumber() !== 0)
-            materialStruct = await this._materialContract.getMaterial(line.materialId);
+            materialStruct = await this._materialContract.getMaterial(roleProof, line.materialId);
 
         return EntityBuilder.buildTradeLine(
             line,
@@ -115,13 +117,13 @@ export class BasicTradeDriver extends TradeDriver implements IConcreteTradeDrive
         await tx.wait();
     }
 
-    async assignMaterial(lineId: number, materialId: number): Promise<void> {
-        const tx = await this._basicTradeContract.assignMaterial(lineId, materialId);
+    async assignMaterial(roleProof: RoleProof, lineId: number, materialId: number): Promise<void> {
+        const tx = await this._basicTradeContract.assignMaterial(roleProof, lineId, materialId);
         await tx.wait();
     }
 
-    async setName(name: string): Promise<void> {
-        const tx = await this._basicTradeContract.setName(name);
+    async setName(roleProof: RoleProof, name: string): Promise<void> {
+        const tx = await this._basicTradeContract.setName(roleProof, name);
         await tx.wait();
     }
 }

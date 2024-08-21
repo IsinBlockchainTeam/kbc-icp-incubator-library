@@ -10,12 +10,12 @@ export class AssetOperationService {
         this._assetOperationDriver = assetOperationDriver;
     }
 
-    async getAssetOperationsCounter(): Promise<number> {
-        return this._assetOperationDriver.getAssetOperationsCounter();
+    async getAssetOperationsCounter(roleProof: RoleProof): Promise<number> {
+        return this._assetOperationDriver.getAssetOperationsCounter(roleProof);
     }
 
-    async getAssetOperationExists(id: number): Promise<boolean> {
-        return this._assetOperationDriver.getAssetOperationExists(id);
+    async getAssetOperationExists(roleProof: RoleProof, id: number): Promise<boolean> {
+        return this._assetOperationDriver.getAssetOperationExists(roleProof, id);
     }
 
     async getAssetOperation(roleProof: RoleProof, id: number): Promise<AssetOperation> {
@@ -26,8 +26,8 @@ export class AssetOperationService {
         return this._assetOperationDriver.getAssetOperations(roleProof);
     }
 
-    async getAssetOperationType(id: number): Promise<AssetOperationType> {
-        return this._assetOperationDriver.getAssetOperationType(id);
+    async getAssetOperationType(roleProof: RoleProof, id: number): Promise<AssetOperationType> {
+        return this._assetOperationDriver.getAssetOperationType(roleProof, id);
     }
 
     async getAssetOperationsOfCreator(
@@ -45,6 +45,7 @@ export class AssetOperationService {
     }
 
     async registerAssetOperation(
+        roleProof: RoleProof,
         name: string,
         inputMaterialsIds: number[],
         outputMaterialId: number,
@@ -53,6 +54,7 @@ export class AssetOperationService {
         processTypes: string[]
     ): Promise<number> {
         return this._assetOperationDriver.registerAssetOperation(
+            roleProof,
             name,
             inputMaterialsIds,
             outputMaterialId,
@@ -63,6 +65,7 @@ export class AssetOperationService {
     }
 
     async updateAssetOperation(
+        roleProof: RoleProof,
         id: number,
         name: string,
         inputMaterialsIds: number[],
@@ -72,6 +75,7 @@ export class AssetOperationService {
         processTypes: string[]
     ): Promise<void> {
         return this._assetOperationDriver.updateAssetOperation(
+            roleProof,
             id,
             name,
             inputMaterialsIds,

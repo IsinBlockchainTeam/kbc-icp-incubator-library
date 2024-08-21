@@ -9,12 +9,12 @@ export class MaterialService {
         this._materialDriver = supplyChainDriver;
     }
 
-    async getMaterialsCounter(): Promise<number> {
-        return this._materialDriver.getMaterialsCounter();
+    async getMaterialsCounter(roleProof: RoleProof): Promise<number> {
+        return this._materialDriver.getMaterialsCounter(roleProof);
     }
 
-    async getMaterialExists(id: number): Promise<boolean> {
-        return this._materialDriver.getMaterialExists(id);
+    async getMaterialExists(roleProof: RoleProof, id: number): Promise<boolean> {
+        return this._materialDriver.getMaterialExists(roleProof, id);
     }
 
     async getMaterial(roleProof: RoleProof, id: number): Promise<Material> {

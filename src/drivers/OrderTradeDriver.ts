@@ -15,6 +15,7 @@ import { EntityBuilder } from '../utils/EntityBuilder';
 import { IConcreteTradeDriverInterface } from './IConcreteTradeDriver.interface';
 import { getNegotiationStatusByIndex } from '../utils/utils';
 import { zeroAddress } from '../utils/constants';
+import { RoleProof } from '../types/RoleProof';
 
 export enum OrderTradeEvents {
     TradeLineAdded,
@@ -55,9 +56,9 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
         ).connect(signer);
     }
 
-    async getTrade(blockNumber?: number): Promise<OrderTrade> {
-        const result = await this._actual.getTrade({ blockTag: blockNumber });
-        const lines: OrderLine[] = await this.getLines();
+    async getTrade(roleProof: RoleProof, blockNumber?: number): Promise<OrderTrade> {
+        const result = await this._actual.getTrade(roleProof, { blockTag: blockNumber });
+        const lines: OrderLine[] = await this.getLines(roleProof);
 
         return new OrderTrade(
             result[0].toNumber(),
@@ -80,35 +81,42 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
         );
     }
 
-    async getLines(): Promise<OrderLine[]> {
-        const counter: number = await this.getLineCounter();
+    async getLines(roleProof: RoleProof): Promise<OrderLine[]> {
+        const counter: number = await this.getLineCounter(roleProof);
 
         const promises = [];
         for (let i = 1; i <= counter; i++) {
-            promises.push(this.getLine(i));
+            promises.push(this.getLine(roleProof, i));
         }
 
         return Promise.all(promises);
     }
 
-    async getLine(id: number, blockNumber?: number): Promise<OrderLine> {
-        const line = await this._actual.getLine(id, { blockTag: blockNumber });
+    async getLine(roleProof: RoleProof, id: number, blockNumber?: number): Promise<OrderLine> {
+        const line = await this._actual.getLine(roleProof, id, { blockTag: blockNumber });
 
         let materialStruct: MaterialManager.MaterialStructOutput | undefined;
         if (line[0].materialId.toNumber() !== 0)
-            materialStruct = await this._materialContract.getMaterial(line[0].materialId);
+            materialStruct = await this._materialContract.getMaterial(
+                roleProof,
+                line[0].materialId
+            );
 
         return EntityBuilder.buildOrderLine(
             line[0],
             line[1],
-            await this._productCategoryContract.getProductCategory(line[0].productCategoryId),
+            await this._productCategoryContract.getProductCategory(
+                roleProof,
+                line[0].productCategoryId
+            ),
             materialStruct
         );
     }
 
-    async addLine(line: OrderLineRequest): Promise<number> {
+    async addLine(roleProof: RoleProof, line: OrderLineRequest): Promise<number> {
         const _price = this._convertPriceClassInStruct(line.price);
         const tx: any = await this._actual.addLine(
+            roleProof,
             line.productCategoryId,
             line.quantity,
             line.unit,
@@ -122,9 +130,10 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
         return events.find((event: Event) => event.event === 'OrderLineAdded').args[0];
     }
 
-    async updateLine(line: OrderLine): Promise<void> {
+    async updateLine(roleProof: RoleProof, line: OrderLine): Promise<void> {
         const _price = this._convertPriceClassInStruct(line.price);
         const tx = await this._actual.updateLine(
+            roleProof,
             line.id,
             line.productCategory.id,
             line.quantity,
@@ -134,8 +143,8 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
         await tx.wait();
     }
 
-    async assignMaterial(lineId: number, materialId: number): Promise<void> {
-        const tx = await this._actual.assignMaterial(lineId, materialId);
+    async assignMaterial(roleProof: RoleProof, lineId: number, materialId: number): Promise<void> {
+        const tx = await this._actual.assignMaterial(roleProof, lineId, materialId);
         await tx.wait();
     }
 
@@ -152,38 +161,44 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
         }
     }
 
-    async updatePaymentDeadline(paymentDeadline: number): Promise<void> {
-        const tx = await this._actual.updatePaymentDeadline(paymentDeadline);
+    async updatePaymentDeadline(roleProof: RoleProof, paymentDeadline: number): Promise<void> {
+        const tx = await this._actual.updatePaymentDeadline(roleProof, paymentDeadline);
         await tx.wait();
     }
 
-    async updateDocumentDeliveryDeadline(documentDeliveryDeadline: number): Promise<void> {
-        const tx = await this._actual.updateDocumentDeliveryDeadline(documentDeliveryDeadline);
+    async updateDocumentDeliveryDeadline(
+        roleProof: RoleProof,
+        documentDeliveryDeadline: number
+    ): Promise<void> {
+        const tx = await this._actual.updateDocumentDeliveryDeadline(
+            roleProof,
+            documentDeliveryDeadline
+        );
         await tx.wait();
     }
 
-    async updateArbiter(arbiter: string): Promise<void> {
-        const tx = await this._actual.updateArbiter(arbiter);
+    async updateArbiter(roleProof: RoleProof, arbiter: string): Promise<void> {
+        const tx = await this._actual.updateArbiter(roleProof, arbiter);
         await tx.wait();
     }
 
-    async updateShippingDeadline(shippingDeadline: number): Promise<void> {
-        const tx = await this._actual.updateShippingDeadline(shippingDeadline);
+    async updateShippingDeadline(roleProof: RoleProof, shippingDeadline: number): Promise<void> {
+        const tx = await this._actual.updateShippingDeadline(roleProof, shippingDeadline);
         await tx.wait();
     }
 
-    async updateDeliveryDeadline(deliveryDeadline: number): Promise<void> {
-        const tx = await this._actual.updateDeliveryDeadline(deliveryDeadline);
+    async updateDeliveryDeadline(roleProof: RoleProof, deliveryDeadline: number): Promise<void> {
+        const tx = await this._actual.updateDeliveryDeadline(roleProof, deliveryDeadline);
         await tx.wait();
     }
 
-    async updateAgreedAmount(agreedAmount: number): Promise<void> {
-        const tx = await this._actual.updateAgreedAmount(agreedAmount);
+    async updateAgreedAmount(roleProof: RoleProof, agreedAmount: number): Promise<void> {
+        const tx = await this._actual.updateAgreedAmount(roleProof, agreedAmount);
         await tx.wait();
     }
 
-    async updateTokenAddress(tokenAddress: string): Promise<void> {
-        const tx = await this._actual.updateTokenAddress(tokenAddress);
+    async updateTokenAddress(roleProof: RoleProof, tokenAddress: string): Promise<void> {
+        const tx = await this._actual.updateTokenAddress(roleProof, tokenAddress);
         await tx.wait();
     }
 
@@ -196,12 +211,12 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
         await tx.wait();
     }
 
-    async getWhoSigned(): Promise<string[]> {
-        return this._actual.getWhoSigned();
+    async getWhoSigned(roleProof: RoleProof): Promise<string[]> {
+        return this._actual.getWhoSigned(roleProof);
     }
 
-    async confirmOrder(): Promise<void> {
-        const tx = await this._actual.confirmOrder();
+    async confirmOrder(roleProof: RoleProof): Promise<void> {
+        const tx = await this._actual.confirmOrder(roleProof);
         await tx.wait();
     }
 
@@ -242,19 +257,20 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
         } as OrderTradeContract.OrderLinePriceStructOutput;
     }
 
-    async createShipment(expirationDate: Date, quantity: number, weight: number, price: number): Promise<void> {
-        if(quantity < 0 || weight < 0 || price < 0) {
-            throw new Error('Invalid arguments');
-        }
-        const tx = await this._actual.createShipment(expirationDate.getTime(), quantity, weight, price);
-        await tx.wait();
-    }
-
-    async getShipmentAddress(): Promise<string> {
-        return this._actual.getShipment();
-    }
-
-    async getEscrowAddress(): Promise<string> {
-        return this._actual.getEscrow();
-    }
+    // TODO: understand if this methods are still needed
+    // async createShipment(expirationDate: Date, quantity: number, weight: number, price: number): Promise<void> {
+    //     if(quantity < 0 || weight < 0 || price < 0) {
+    //         throw new Error('Invalid arguments');
+    //     }
+    //     const tx = await this._actual.createShipment(expirationDate.getTime(), quantity, weight, price);
+    //     await tx.wait();
+    // }
+    //
+    // async getShipmentAddress(): Promise<string> {
+    //     return this._actual.getShipment();
+    // }
+    //
+    // async getEscrowAddress(): Promise<string> {
+    //     return this._actual.getEscrow();
+    // }
 }

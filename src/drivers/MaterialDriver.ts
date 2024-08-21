@@ -29,17 +29,17 @@ export class MaterialDriver {
         ).connect(signer);
     }
 
-    async getMaterialsCounter(): Promise<number> {
-        const counter = await this._materialContract.getMaterialsCounter();
+    async getMaterialsCounter(roleProof: RoleProof): Promise<number> {
+        const counter = await this._materialContract.getMaterialsCounter(roleProof);
         return counter.toNumber();
     }
 
-    async getMaterialExists(id: number): Promise<boolean> {
-        return this._materialContract.getMaterialExists(id);
+    async getMaterialExists(roleProof: RoleProof, id: number): Promise<boolean> {
+        return this._materialContract.getMaterialExists(roleProof, id);
     }
 
     async getMaterial(roleProof: RoleProof, id: number): Promise<Material> {
-        const material = await this._materialContract.getMaterial(id);
+        const material = await this._materialContract.getMaterial(roleProof, id);
         const productCategory = await this._productCategoryContract.getProductCategory(
             roleProof,
             material.productCategoryId
@@ -48,7 +48,7 @@ export class MaterialDriver {
     }
 
     async getMaterials(roleProof: RoleProof): Promise<Material[]> {
-        const counter: number = await this.getMaterialsCounter();
+        const counter: number = await this.getMaterialsCounter(roleProof);
 
         const promises = [];
         for (let i = 1; i <= counter; i++) {
@@ -59,9 +59,9 @@ export class MaterialDriver {
     }
 
     async getMaterialsOfCreator(roleProof: RoleProof, creator: string): Promise<Material[]> {
-        const ids: number[] = (await this._materialContract.getMaterialIdsOfCreator(creator)).map(
-            (id: BigNumber) => id.toNumber()
-        );
+        const ids: number[] = (
+            await this._materialContract.getMaterialIdsOfCreator(roleProof, creator)
+        ).map((id: BigNumber) => id.toNumber());
 
         const promises = ids.map((id: number) => this.getMaterial(roleProof, id));
 

@@ -3,6 +3,7 @@ import { DocumentDriver } from '../drivers/DocumentDriver';
 import { DocumentInfo } from '../entities/DocumentInfo';
 import { Document, DocumentMetadata } from '../entities/Document';
 import { ICPFileDriver } from '../drivers/ICPFileDriver';
+import { RoleProof } from '../types/RoleProof';
 
 export class DocumentService {
     private _documentDriver: DocumentDriver;
@@ -15,20 +16,28 @@ export class DocumentService {
     }
 
     async registerDocument(
+        roleProof: RoleProof,
         externalUrl: string,
         contentHash: string,
         uploadedBy: string
     ): Promise<void> {
-        return this._documentDriver.registerDocument(externalUrl, contentHash, uploadedBy);
+        return this._documentDriver.registerDocument(
+            roleProof,
+            externalUrl,
+            contentHash,
+            uploadedBy
+        );
     }
 
     async updateDocument(
+        roleProof: RoleProof,
         documentId: number,
         externalUrl: string,
         contentHash: string,
         uploadedBy: string
     ): Promise<void> {
         return this._documentDriver.updateDocument(
+            roleProof,
             documentId,
             externalUrl,
             contentHash,
@@ -36,12 +45,12 @@ export class DocumentService {
         );
     }
 
-    async getDocumentsCounter(): Promise<number> {
-        return this._documentDriver.getDocumentsCounter();
+    async getDocumentsCounter(roleProof: RoleProof): Promise<number> {
+        return this._documentDriver.getDocumentsCounter(roleProof);
     }
 
-    async getDocumentInfoById(id: number): Promise<DocumentInfo> {
-        return this._documentDriver.getDocumentById(id);
+    async getDocumentInfoById(roleProof: RoleProof, id: number): Promise<DocumentInfo> {
+        return this._documentDriver.getDocumentById(roleProof, id);
     }
 
     async getCompleteDocument(documentInfo: DocumentInfo): Promise<Document> {
