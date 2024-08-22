@@ -52,6 +52,13 @@ describe('DelegateManagerService', () => {
             serviceFunction: () => delegatorService.isDelegate('delegateAddress'),
             expectedMockedFunction: mockedDelegateManagerDriver.isDelegate,
             expectedMockedFunctionArgs: ['delegateAddress']
+        },
+        {
+            serviceFunctionName: 'hasValidRole',
+            serviceFunction: () =>
+                delegatorService.hasValidRole('signedProof', 'role', 'delegatorAddress'),
+            expectedMockedFunction: mockedDelegateManagerDriver.hasValidRole,
+            expectedMockedFunctionArgs: ['signedProof', 'role', 'delegatorAddress']
         }
     ])(
         'should call driver $serviceFunctionName',

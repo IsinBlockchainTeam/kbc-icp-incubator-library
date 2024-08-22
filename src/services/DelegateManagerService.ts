@@ -30,4 +30,12 @@ export class DelegateManagerService {
     async isDelegate(delegateAddress: string): Promise<boolean> {
         return this._delegateManagerDriver.isDelegate(delegateAddress);
     }
+
+    async hasValidRole(
+        signedProof: string,
+        role: string,
+        delegatorAddress: string
+    ): Promise<boolean> {
+        return this._delegateManagerDriver.hasValidRole(signedProof, role, delegatorAddress);
+    }
 }
