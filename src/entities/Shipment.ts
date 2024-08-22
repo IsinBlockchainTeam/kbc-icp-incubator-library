@@ -9,7 +9,9 @@ export enum DocumentType {
     OTHER
 }
 export enum DocumentStatus {
-    NOT_EVALUATED, APPROVED, NOT_APPROVED
+    NOT_EVALUATED,
+    APPROVED,
+    NOT_APPROVED
 }
 export class DocumentInfo {
     private _id: number;
@@ -98,8 +100,20 @@ export class Shipment {
 
     private _seaTransportationRequiredDocumentsTypes: DocumentType[];
 
-    constructor(approved: boolean, expirationDate: Date, quantity: number, weight: number, price: number, evaluationStatus: ShipmentEvaluationStatus, documentsIds: number[], fundsStatus: FundsStatus, externalUrl: string, landTransportationRequiredDocumentsTypes: DocumentType[], seaTransportationRequiredDocumentsTypes: DocumentType[]) {
-        if(quantity < 0 || weight < 0 || price < 0) {
+    constructor(
+        approved: boolean,
+        expirationDate: Date,
+        quantity: number,
+        weight: number,
+        price: number,
+        evaluationStatus: ShipmentEvaluationStatus,
+        documentsIds: number[],
+        fundsStatus: FundsStatus,
+        externalUrl: string,
+        landTransportationRequiredDocumentsTypes: DocumentType[],
+        seaTransportationRequiredDocumentsTypes: DocumentType[]
+    ) {
+        if (quantity < 0 || weight < 0 || price < 0) {
             throw new Error('Invalid shipment data');
         }
         this._approved = approved;

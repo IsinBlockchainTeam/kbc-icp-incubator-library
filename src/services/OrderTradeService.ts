@@ -103,15 +103,25 @@ export class OrderTradeService extends TradeService implements IConcreteTradeSer
         return this._tradeDriver as OrderTradeDriver;
     }
 
-    async createShipment(expirationDate: Date, quantity: number, weight: number, price: number): Promise<void> {
-        return this._tradeDriverImplementation.createShipment(expirationDate, quantity, weight, price);
+    async createShipment(
+        expirationDate: Date,
+        quantity: number,
+        weight: number,
+        price: number
+    ): Promise<void> {
+        return this._tradeDriverImplementation.createShipment(
+            expirationDate,
+            quantity,
+            weight,
+            price
+        );
     }
 
-    async getShipmentAddress(): Promise<string> {
+    async getShipmentAddress(): Promise<string | undefined> {
         return this._tradeDriverImplementation.getShipmentAddress();
     }
 
-    async getEscrowAddress(): Promise<string> {
+    async getEscrowAddress(): Promise<string | undefined> {
         return this._tradeDriverImplementation.getEscrowAddress();
     }
 }

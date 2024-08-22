@@ -185,6 +185,9 @@ contract Shipment is AccessControl {
             filteredDocumentsIds[i] = documentsIdsTemp[i];
         }
     }
+    function getAllDocumentIds() public view returns (uint256[] memory) {
+        return _documentsIds;
+    }
 
     // Functions
     function updateShipment(uint256 expirationDate, uint256 quantity, uint256 weight, uint256 price) public onlySupplier {

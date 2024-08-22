@@ -1,23 +1,21 @@
-import {
-    FileHelpers,
-    ICPResourceSpec
-} from "@blockchain-lib/common";
-import {ShipmentDriver} from "../drivers/ShipmentDriver";
-import {DocumentInfo, DocumentType, Shipment, ShipmentPhase} from "../entities/Shipment";
-import {DocumentDriver} from "../drivers/DocumentDriver";
-import {ICPFileDriver} from "../drivers/ICPFileDriver";
+import { FileHelpers, ICPResourceSpec } from '@blockchain-lib/common';
+import { ShipmentDriver } from '../drivers/ShipmentDriver';
+import { DocumentInfo, DocumentType, Shipment, ShipmentPhase } from '../entities/Shipment';
+import { DocumentDriver } from '../drivers/DocumentDriver';
+import { ICPFileDriver } from '../drivers/ICPFileDriver';
 
 export type ShipmentDocument = {
     id: number;
     fileName: string;
     documentType: DocumentType;
     fileContent: Uint8Array;
-}
+};
 export type ShipmentDocumentMetadata = {
     fileName: string;
     documentType: DocumentType;
     date: Date;
-}
+    documentReferenceId: string;
+};
 export class ShipmentService {
     private _shipmentManagerDriver: ShipmentDriver;
 
@@ -25,7 +23,11 @@ export class ShipmentService {
 
     private _icpFileDriver: ICPFileDriver;
 
-    constructor(shipmentManagerDriver: ShipmentDriver, documentDriver: DocumentDriver, icpFileDriver: ICPFileDriver) {
+    constructor(
+        shipmentManagerDriver: ShipmentDriver,
+        documentDriver: DocumentDriver,
+        icpFileDriver: ICPFileDriver
+    ) {
         this._shipmentManagerDriver = shipmentManagerDriver;
         this._documentDriver = documentDriver;
         this._icpFileDriver = icpFileDriver;
@@ -47,7 +49,16 @@ export class ShipmentService {
         return this._shipmentManagerDriver.getDocumentsIdsByType(documentType);
     }
 
-    async updateShipment(expirationDate: Date, quantity: number, weight: number, price: number): Promise<void> {
+    async getAllDocumentIds(): Promise<number[]> {
+        return this._shipmentManagerDriver.getAllDocumentIds();
+    }
+
+    async updateShipment(
+        expirationDate: Date,
+        quantity: number,
+        weight: number,
+        price: number
+    ): Promise<void> {
         return this._shipmentManagerDriver.updateShipment(expirationDate, quantity, weight, price);
     }
 
@@ -59,7 +70,13 @@ export class ShipmentService {
         return this._shipmentManagerDriver.depositFunds(amount);
     }
 
-    async addDocument(documentType: DocumentType, fileContent: Uint8Array, resourceSpec: ICPResourceSpec, delegatedOrganizationIds: number[] = [],): Promise<void> {
+    async addDocument(
+        documentType: DocumentType,
+        documentReferenceId: string,
+        fileContent: Uint8Array,
+        resourceSpec: ICPResourceSpec,
+        delegatedOrganizationIds: number[] = []
+    ): Promise<void> {
         const shipmentExternalUrl = (await this.getShipment()).externalUrl;
         const fileName = FileHelpers.removeFileExtension(resourceSpec.name);
         const spec = { ...resourceSpec };
@@ -68,6 +85,7 @@ export class ShipmentService {
         await this._icpFileDriver.create(fileContent, spec, delegatedOrganizationIds);
         const documentMetadata: ShipmentDocumentMetadata = {
             fileName: spec.name,
+            documentReferenceId,
             documentType,
             date: new Date()
         };
@@ -104,7 +122,7 @@ export class ShipmentService {
                 id: documentInfo.id,
                 fileName,
                 documentType,
-                fileContent,
+                fileContent
             };
         } catch (e: any) {
             throw new Error(
