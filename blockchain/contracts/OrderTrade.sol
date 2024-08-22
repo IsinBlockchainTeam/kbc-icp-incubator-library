@@ -5,6 +5,7 @@ import "./Trade.sol";
 import "./Escrow.sol";
 import "hardhat/console.sol";
 import "./EscrowManager.sol";
+import "./Shipment.sol";
 
 contract OrderTrade is Trade {
     using Counters for Counters.Counter;
@@ -56,6 +57,7 @@ contract OrderTrade is Trade {
 
     EnumerableType private _fiatManager;
     EscrowManager private _escrowManager;
+    Shipment private _shipment;
 
     constructor(RoleProof memory roleProof, uint256 tradeId, address delegateManagerAddress,  address productCategoryAddress, address materialManagerAddress, address documentManagerAddress,
         address unitManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl,
@@ -189,7 +191,6 @@ contract OrderTrade is Trade {
         }
     }
 
-
     function getWhoSigned(RoleProof memory roleProof) public view atLeastViewer(roleProof) returns (address[] memory) {
         address[] memory signers = new address[](2);
         if (_hasSupplierSigned) {
@@ -229,13 +230,43 @@ contract OrderTrade is Trade {
         }
     }
 
-    function _areDocumentsApproved(uint256[] memory documentIds) private view returns (bool) {
-//        TODO: capire se bisogna mantenere più documenti per ogni tipo o se ne basta solo uno. Nel primo caso bisogna fare in modo allora che i documenti ricaricati dopo essere stati rifiutati non vengano considerati nel controllo (es. il rifiuto li rimuove da questa lista)
-//        for (uint i = 0; i < documentIds.length; i++)
-//            if (_documentsStatus[documentIds[i]].status != DocumentStatus.APPROVED) return false;
-//        return true;
-        for (uint i = 0; i < documentIds.length; i++)
-            if (_documentsStatus[documentIds[i]].status == DocumentStatus.APPROVED) return true;
-        return false;
+    function createShipment(RoleProof memory roleProof, uint256 expirationDate, uint256 quantity, uint256 weight, uint256 price) public atLeastEditor(roleProof) {
+        require(_hasSupplierSigned && _hasCommissionerSigned, "OrderTrade: The order has not been confirmed yet");
+        require(_msgSender() == _supplier, "OrderTrade: Only the supplier can create the shipment");
+        require(_shipment == Shipment(address(0)), "OrderTrade: Shipment already created");
+
+        _escrow = _escrowManager.registerEscrow(roleProof, address(this), _supplier, _paymentDeadline - block.timestamp, _tokenAddress);
+        DocumentLibrary.DocumentType[] memory landTransportationRequiredDocuments = new DocumentLibrary.DocumentType[](3);
+        landTransportationRequiredDocuments[0] = DocumentLibrary.DocumentType.INSURANCE_CERTIFICATE;
+        landTransportationRequiredDocuments[1] = DocumentLibrary.DocumentType.BOOKING_CONFIRMATION;
+        landTransportationRequiredDocuments[2] = DocumentLibrary.DocumentType.SHIPPING_NOTE;
+        DocumentLibrary.DocumentType[] memory seaTransportationRequiredDocuments = new DocumentLibrary.DocumentType[](4);
+        seaTransportationRequiredDocuments[0] = DocumentLibrary.DocumentType.WEIGHT_CERTIFICATE;
+        seaTransportationRequiredDocuments[1] = DocumentLibrary.DocumentType.BILL_OF_LADING;
+        seaTransportationRequiredDocuments[2] = DocumentLibrary.DocumentType.PHYTOSANITARY_CERTIFICATE;
+        seaTransportationRequiredDocuments[3] = DocumentLibrary.DocumentType.SINGLE_EXPORT_DECLARATION;
+        _shipment = new Shipment(
+            roleProof,
+            address(_delegateManager),
+            expirationDate,
+            quantity,
+            weight,
+            price,
+            _supplier,
+            _commissioner,
+            address(_documentManager),
+            address(_escrow),
+            _externalUrl,
+            landTransportationRequiredDocuments,
+            seaTransportationRequiredDocuments
+        );
+        _escrow.addAdmin(address(_shipment));
+    }
+    function getShipment(RoleProof memory roleProof) public view atLeastViewer(roleProof) returns (Shipment) {
+        return _shipment;
+    }
+
+    function getEscrow(RoleProof memory roleProof) public view atLeastViewer(roleProof) returns (Escrow) {
+        return _escrow;
     }
 }
