@@ -11,10 +11,12 @@ describe('DelegateManagerDriver', () => {
     const mockedWait = jest.fn();
 
     const mockedWriteFunction = jest.fn();
+    const mockedIsDelegator = jest.fn();
     const mockedIsDelegate = jest.fn();
     const mockedHasValidRole = jest.fn();
 
     mockedWriteFunction.mockReturnValue({ wait: mockedWait });
+    mockedIsDelegator.mockReturnValue(true);
     mockedIsDelegate.mockReturnValue(true);
     mockedHasValidRole.mockReturnValue(true);
 
@@ -22,6 +24,7 @@ describe('DelegateManagerDriver', () => {
         connect: mockedDelegateManagerConnect,
         addDelegator: mockedWriteFunction,
         removeDelegator: mockedWriteFunction,
+        isDelegator: mockedIsDelegator,
         addDelegate: mockedWriteFunction,
         removeDelegate: mockedWriteFunction,
         isDelegate: mockedIsDelegate,
@@ -59,6 +62,15 @@ describe('DelegateManagerDriver', () => {
         expect(mockedWriteFunction).toHaveBeenCalledTimes(1);
         expect(mockedWriteFunction).toHaveBeenCalledWith(delegator);
         expect(mockedWait).toHaveBeenCalledTimes(1);
+    });
+
+    it('should check if address is delegator', async () => {
+        const delegator = Wallet.createRandom().address;
+        const isDelegator = await delegateManagerDriver.isDelegator(delegator);
+
+        expect(mockedIsDelegator).toHaveBeenCalledTimes(1);
+        expect(mockedIsDelegator).toHaveBeenCalledWith(delegator);
+        expect(isDelegator).toBe(true);
     });
 
     it('should add delegate', async () => {

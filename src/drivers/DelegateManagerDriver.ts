@@ -21,6 +21,10 @@ export class DelegateManagerDriver {
         await tx.wait();
     }
 
+    async isDelegator(delegatorAddress: string): Promise<boolean> {
+        return this._delegateManagerContract.isDelegator(delegatorAddress);
+    }
+
     async addDelegate(delegateAddress: string): Promise<void> {
         const tx = await this._delegateManagerContract.addDelegate(delegateAddress);
         await tx.wait();

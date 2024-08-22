@@ -257,20 +257,31 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
         } as OrderTradeContract.OrderLinePriceStructOutput;
     }
 
-    // TODO: understand if this methods are still needed
-    // async createShipment(expirationDate: Date, quantity: number, weight: number, price: number): Promise<void> {
-    //     if(quantity < 0 || weight < 0 || price < 0) {
-    //         throw new Error('Invalid arguments');
-    //     }
-    //     const tx = await this._actual.createShipment(expirationDate.getTime(), quantity, weight, price);
-    //     await tx.wait();
-    // }
-    //
-    // async getShipmentAddress(): Promise<string> {
-    //     return this._actual.getShipment();
-    // }
-    //
-    // async getEscrowAddress(): Promise<string> {
-    //     return this._actual.getEscrow();
-    // }
+    async createShipment(
+        roleProof: RoleProof,
+        expirationDate: Date,
+        quantity: number,
+        weight: number,
+        price: number
+    ): Promise<void> {
+        if (quantity < 0 || weight < 0 || price < 0) {
+            throw new Error('Invalid arguments');
+        }
+        const tx = await this._actual.createShipment(
+            roleProof,
+            expirationDate.getTime(),
+            quantity,
+            weight,
+            price
+        );
+        await tx.wait();
+    }
+
+    async getShipmentAddress(roleProof: RoleProof): Promise<string> {
+        return this._actual.getShipment(roleProof);
+    }
+
+    async getEscrowAddress(roleProof: RoleProof): Promise<string> {
+        return this._actual.getEscrow(roleProof);
+    }
 }

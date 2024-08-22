@@ -109,6 +109,30 @@ export class OrderTradeService extends TradeService implements IConcreteTradeSer
         return this._tradeDriverImplementation.getEmittedEvents();
     }
 
+    async createShipment(
+        roleProof: RoleProof,
+        expirationDate: Date,
+        quantity: number,
+        weight: number,
+        price: number
+    ): Promise<void> {
+        return this._tradeDriverImplementation.createShipment(
+            roleProof,
+            expirationDate,
+            quantity,
+            weight,
+            price
+        );
+    }
+
+    async getShipmentAddress(roleProof: RoleProof): Promise<string> {
+        return this._tradeDriverImplementation.getShipmentAddress(roleProof);
+    }
+
+    async getEscrowAddress(roleProof: RoleProof): Promise<string> {
+        return this._tradeDriverImplementation.getEscrowAddress(roleProof);
+    }
+
     private get _tradeDriverImplementation(): OrderTradeDriver {
         return this._tradeDriver as OrderTradeDriver;
     }

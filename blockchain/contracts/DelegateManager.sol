@@ -52,6 +52,10 @@ contract DelegateManager is AccessControl {
         revokeRole(DELEGATOR_ROLE, delegator);
     }
 
+    function isDelegator(address delegator) public onlyAdmin view returns (bool) {
+        return hasRole(DELEGATOR_ROLE, delegator);
+    }
+
     function addDelegate(address delegate) public onlyDelegator {
         _delegates[_msgSender()].push(delegate);
     }

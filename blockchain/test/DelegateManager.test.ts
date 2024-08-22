@@ -38,6 +38,7 @@ describe('DelegateManager', () => {
 
     describe('Delegators management', () => {
         it('should revert if adding a delegate when caller is not a delegator', async () => {
+            expect(await delegateManagerContract.connect(admin).isDelegator(delegator.address)).to.be.false;
             await expect(delegateManagerContract.connect(other).addDelegate(delegate.address)).to.be.revertedWith(
                 'DelegateManager: Caller is not a delegator'
             );
@@ -45,9 +46,11 @@ describe('DelegateManager', () => {
 
         it('should add a delegator, then revoke the role', async () => {
             await delegateManagerContract.connect(admin).addDelegator(delegator.address);
+            expect(await delegateManagerContract.connect(admin).isDelegator(delegator.address)).to.be.true;
             await expect(delegateManagerContract.connect(delegator).addDelegate(delegate.address)).not.to.be.reverted;
 
             await delegateManagerContract.connect(admin).removeDelegator(delegator.address);
+            expect(await delegateManagerContract.connect(admin).isDelegator(delegator.address)).to.be.false;
             await expect(delegateManagerContract.connect(other).addDelegate(delegate.address)).to.be.revertedWith(
                 'DelegateManager: Caller is not a delegator'
             );
@@ -60,6 +63,12 @@ describe('DelegateManager', () => {
 
             await delegateManagerContract.connect(delegator).removeDelegate(delegate.address);
             expect(await delegateManagerContract.connect(delegator).isDelegate(delegate.address)).to.be.false;
+        });
+
+        it('should not be able to determine if a role is delegator if caller is not an admin', async () => {
+            await expect(delegateManagerContract.connect(other).isDelegator(delegate.address)).to.be.revertedWith(
+                'DelegateManager: Caller is not the admin'
+            );
         });
     });
 

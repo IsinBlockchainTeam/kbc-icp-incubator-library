@@ -55,11 +55,11 @@ serial([
     //     }
     // },
     // () => deploy(ContractName.DELEGATE_MANAGER, ['KBC Delegate Manager', '1.0.1', 222])
-    () =>
-        deploy(
-            ContractName.PRODUCT_CATEGORY_MANAGER,
-            ['0x037444C45ce591C7d9c598E49C5ED3AA1f8f4e3f'] // DelegateManager
-        )
+    // () =>
+    //     deploy(
+    //         ContractName.PRODUCT_CATEGORY_MANAGER,
+    //         ['0x9169B151C0C32c6Ab49Aa2A55a8a6c07aB04f1bb'] // DelegateManager
+    //     ),
     // () => deploy(ContractName.ENUMERABLE_TYPE_MANAGER, [[]], 'EnumerableUnitManager'),
     // async () => {
     //     const enums: string[] = ['BG - Bags', 'KGM - Kilograms', 'H87 - Pieces'];
@@ -69,47 +69,50 @@ serial([
     //         await tx.wait();
     //     }
     // },
-    // () => deploy(
-    //     ContractName.MATERIAL_MANAGER, [
-    //         '0x4eC8bC43bBb2103dAEf4c27cA5249BAF248CcfEe', // DelegateManager
-    //         '0x649e401eA5b4191CbBc6e6Aa66a64AFFd35b5294' // ProductCategoryManager
-    //     ],
-    // ),
-    // () => deploy(
-    //     ContractName.DOCUMENT_MANAGER, [[]],
-    // ),
+    // () =>
+    //     deploy(ContractName.MATERIAL_MANAGER, [
+    //         '0x9169B151C0C32c6Ab49Aa2A55a8a6c07aB04f1bb', // DelegateManager
+    //         '0x705321A0E87a6E952712374302E8bDe3623B60b9' // ProductCategoryManager
+    //     ])
+    // () =>
+    //     deploy(ContractName.DOCUMENT_MANAGER, [
+    //         '0x9169B151C0C32c6Ab49Aa2A55a8a6c07aB04f1bb', // DelegateManager
+    //         []
+    //     ]),
     // () =>
     //     deploy(ContractName.ESCROW_MANAGER, [
+    //         '0x9169B151C0C32c6Ab49Aa2A55a8a6c07aB04f1bb', // DelegateManager
     //         '0x30054880e4E2fA1082C1976cA5547cC3bd185c11', // ContractsOwner
     //         process.env.ESCROW_BASE_FEE || 20,
     //         process.env.ESCROW_COMMISSIONER_FEE || 1
-    //     ])
+    //     ]),
+    () =>
+        deploy(ContractName.TRADE_MANAGER, [
+            '0x9169B151C0C32c6Ab49Aa2A55a8a6c07aB04f1bb', // DelegateManager
+            '0x705321A0E87a6E952712374302E8bDe3623B60b9', // ProductCategoryManager
+            '0x7E4aaaE2258a677Cb706fb8a276e26700b92366C', // MaterialManager
+            '0xd159C2E2a170131b0dB6E0304524db4c5AFBc847', // DocumentManager
+            '0x52A45e1bfAd77E396B7c5180E499B69fA5BB93b8', // EnumerableFiatManager
+            '0x108a6ea0280500f7Ddf6434864B4124cdFd88D4C', // EnumerableUnitManager
+            '0x8AA99940F4234BEBF764515bF80fE822e1E17B12' // EscrowManager
+        ]),
     // () =>
-    //     deploy(ContractName.TRADE_MANAGER, [
-    //         '0x1B6cBA041508366A394D40410bca580bE6b69F4b', // DelegateManager
-    //         '0x1B6cBA041508366A394D40410bca580bE6b69F4b', // PRODUCT_CATEGORY_MANAGER
-    //         '0x65ac7209AE90D0CdB2B38D3a246881C101A62193', // MATERIAL_MANAGER
-    //         '0x1D45Ef71E69AaFFDef169AD29b0A798Edf9B1A89', // DOCUMENT_MANAGER
-    //         '0x52A45e1bfAd77E396B7c5180E499B69fA5BB93b8', // EnumerableFiatManager
-    //         '0x108a6ea0280500f7Ddf6434864B4124cdFd88D4C', // EnumerableUnitManager
-    //         '0x04FB04bF3597794FdA1c92a159bec4231887f49f' // ESCROW_MANAGER
+    //     deploy(ContractName.RELATIONSHIP_MANAGER, [
+    //         '0x9169B151C0C32c6Ab49Aa2A55a8a6c07aB04f1bb', // DelegateManager
+    //         ['0x30054880e4E2fA1082C1976cA5547cC3bd185c11'] // ContractsOwner
     //     ])
-    // () => deploy(ContractName.RELATIONSHIP_MANAGER, [
-    //     ['0x30054880e4E2fA1082C1976cA5547cC3bd185c11'], // ContractsOwner
-    // ]),
-    // () => deploy(
-    //     ContractName.ASSET_OPERATION_MANAGER, [
-    //         '0x1179C8F52731cc3469c854091E9c6AD3414df0D9', // MaterialManager
-    //         '0x4eC8bC43bBb2103dAEf4c27cA5249BAF248CcfEe', // EnumerableProcessTypeManager
-    //     ],
-    // ),
-    // () => deploy(
-    //     ContractName.OFFER_MANAGER, [
-    //         ['0x30054880e4E2fA1082C1976cA5547cC3bd185c11'], // DelegateManager
+    () =>
+        deploy(ContractName.ASSET_OPERATION_MANAGER, [
+            '0x037444C45ce591C7d9c598E49C5ED3AA1f8f4e3f', // DelegateManager
+            '0x7E4aaaE2258a677Cb706fb8a276e26700b92366C', // MaterialManager
+            '0xb8e699A624963AAcdfe793cE4bbCE856Dcd67eB0' // EnumerableProcessTypeManager
+        ])
+    // () =>
+    //     deploy(ContractName.OFFER_MANAGER, [
+    //         '0x9169B151C0C32c6Ab49Aa2A55a8a6c07aB04f1bb', // DelegateManager
     //         ['0x30054880e4E2fA1082C1976cA5547cC3bd185c11'], // ContractsOwner
-    //         '0x649e401eA5b4191CbBc6e6Aa66a64AFFd35b5294', // ProductCategoryManager
-    //     ],
-    // ),
+    //         '0x705321A0E87a6E952712374302E8bDe3623B60b9' // ProductCategoryManager
+    //     ])
     // () => deploy(
     //     ContractName.MY_TOKEN, [10000],
     // ),

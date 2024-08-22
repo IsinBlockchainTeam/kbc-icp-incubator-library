@@ -53,7 +53,7 @@ contract EscrowManager is AccessControl, KBCAccessControl {
         address tokenAddress
     ) public atLeastEditor(roleProof) returns (Escrow) {
         require(admin != address(0), "EscrowManager: admin is the zero address");
-    require(payee != address(0), "EscrowManager: payee is the zero address");
+        require(payee != address(0), "EscrowManager: payee is the zero address");
         require(duration != 0, "EscrowManager: duration is zero");
         require(tokenAddress != address(0), "EscrowManager: token address is the zero address");
 
@@ -62,6 +62,7 @@ contract EscrowManager is AccessControl, KBCAccessControl {
 
         Escrow newEscrow = new Escrow(address(this), payee, duration, tokenAddress, _feeRecipient, _baseFee, _percentageFee);
         _escrows[id] = newEscrow;
+        newEscrow.addAdmin(admin);
         newEscrow.addAdmin(_admin);
 
         emit EscrowRegistered(id, address(newEscrow), payee, tokenAddress, _feeRecipient);

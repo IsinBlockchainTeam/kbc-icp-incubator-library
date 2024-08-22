@@ -15,11 +15,19 @@ export class DelegateManagerService {
         return this._delegateManagerDriver.removeDelegator(delegatorAddress);
     }
 
+    async isDelegator(delegatorAddress: string): Promise<boolean> {
+        return this._delegateManagerDriver.isDelegator(delegatorAddress);
+    }
+
     async addDelegate(delegateAddress: string): Promise<void> {
         return this._delegateManagerDriver.addDelegate(delegateAddress);
     }
 
     async removeDelegate(delegateAddress: string): Promise<void> {
         return this._delegateManagerDriver.removeDelegate(delegateAddress);
+    }
+
+    async isDelegate(delegateAddress: string): Promise<boolean> {
+        return this._delegateManagerDriver.isDelegate(delegateAddress);
     }
 }
