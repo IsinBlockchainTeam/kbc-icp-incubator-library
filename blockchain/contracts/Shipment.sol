@@ -250,7 +250,7 @@ contract Shipment is AccessControl {
             _fundsStatus = FundsStatus.RELEASED;
         }
     }
-    function rejectDocument(uint256 documentId) public onlyCommissioner shipmentApproved {
+    function rejectDocument(uint256 documentId) public onlySupplierOrCommissioner shipmentApproved {
         require(_documentsInfo[documentId].exists, "ShipmentManager: Document does not exist");
         require(_documentsInfo[documentId].status == DocumentLibrary.DocumentStatus.NOT_EVALUATED, "ShipmentManager: Document already evaluated");
 
