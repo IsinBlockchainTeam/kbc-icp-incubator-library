@@ -4,9 +4,10 @@ pragma solidity ^0.8.17;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "./MaterialManager.sol";
+import "./KBCAccessControl.sol";
 import "@blockchain-lib/blockchain-common/contracts/EnumerableType.sol";
 
-contract AssetOperationManager is AccessControl {
+contract AssetOperationManager is AccessControl, KBCAccessControl {
     using Counters for Counters.Counter;
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
@@ -39,7 +40,7 @@ contract AssetOperationManager is AccessControl {
     MaterialManager private _materialManager;
     EnumerableType private _processTypeManager;
 
-    constructor(address materialManagerAddress, address processTypeManagerAddress) {
+    constructor(address delegateManagerAddress, address materialManagerAddress, address processTypeManagerAddress) KBCAccessControl(delegateManagerAddress) {
         _setupRole(ADMIN_ROLE, _msgSender());
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
         grantRole(ADMIN_ROLE, _msgSender());
@@ -48,56 +49,82 @@ contract AssetOperationManager is AccessControl {
         _processTypeManager = EnumerableType(processTypeManagerAddress);
     }
 
-    function getAssetOperationsCounter() public view returns (uint256) {
+    function getAssetOperationsCounter(RoleProof memory roleProof) public view atLeastViewer(roleProof) returns (uint256) {
         return _counter.current();
     }
 
-    function getAssetOperationExists(uint256 id) public view returns (bool) {
+    function getAssetOperationExists(RoleProof memory roleProof, uint256 id) public view atLeastViewer(roleProof) returns (bool) {
         return _assetOperations[id].exists;
     }
 
-    function getAssetOperationIdsOfCreator(address creator) public view returns (uint256[] memory) {
+    function getAssetOperationIdsOfCreator(RoleProof memory roleProof, address creator) public view atLeastViewer(roleProof) returns (uint256[] memory) {
         return _assetOperationIdsOfOwner[creator];
     }
 
-    function getAssetOperation(uint256 id) public view returns (AssetOperation memory) {
-        require(getAssetOperationExists(id), "AssetOperationManager: Asset operation does not exist");
+    function getAssetOperation(RoleProof memory roleProof, uint256 id) public view atLeastViewer(roleProof) returns (AssetOperation memory) {
+        require(getAssetOperationExists(roleProof, id), "AssetOperationManager: Asset operation does not exist");
         return _assetOperations[id];
     }
 
-    function getAssetOperationType(uint256 id) public view returns (AssetOperationType) {
-        require(getAssetOperationExists(id), "AssetOperationManager: Asset operation does not exist");
+    function getAssetOperationType(RoleProof memory roleProof, uint256 id) public view atLeastViewer(roleProof) returns (AssetOperationType) {
+        require(getAssetOperationExists(roleProof, id), "AssetOperationManager: Asset operation does not exist");
         return _assetOperations[id].inputMaterialIds.length == 1 ? AssetOperationType.CONSOLIDATION : AssetOperationType.TRANSFORMATION;
     }
 
-    function registerAssetOperation(string memory name, uint256[] memory inputMaterialsIds, uint256 outputMaterialId, string memory latitude, string memory longitude, string[] memory processTypes) public {
-        require(_materialManager.getMaterialExists(outputMaterialId), "AssetOperationManager: Output material does not exist");
+    function registerAssetOperation(
+        RoleProof memory roleProof,
+        string memory name,
+        uint256[] memory inputMaterialsIds,
+        uint256 outputMaterialId,
+        string memory latitude,
+        string memory longitude,
+        string[] memory processTypes
+    ) public atLeastEditor(roleProof) {
+        require(_materialManager.getMaterialExists(roleProof, outputMaterialId), "AssetOperationManager: Output material does not exist");
         require(inputMaterialsIds.length > 0, "AssetOperationManager: inputMaterialsIds array must specify at least one material");
         require(processTypes.length > 0, "AssetOperationManager: At least one process type must be specified");
-        for(uint256 i = 0; i < inputMaterialsIds.length; i++) {
-            require(_materialManager.getMaterialExists(inputMaterialsIds[i]), "AssetOperationManager: Input material does not exist");
+        for (uint256 i = 0; i < inputMaterialsIds.length; i++) {
+            require(_materialManager.getMaterialExists(roleProof, inputMaterialsIds[i]), "AssetOperationManager: Input material does not exist");
         }
-        for(uint256 i = 0; i < processTypes.length; i++) {
+        for (uint256 i = 0; i < processTypes.length; i++) {
             require(_processTypeManager.contains(processTypes[i]), "AssetOperationManager: Process type does not exist");
         }
 
         uint256 assetOperationId = _counter.current() + 1;
         _counter.increment();
-        AssetOperation memory newAssetOperation = AssetOperation(assetOperationId, name, inputMaterialsIds, outputMaterialId, latitude, longitude, processTypes, true);
+        AssetOperation memory newAssetOperation = AssetOperation(
+            assetOperationId,
+            name,
+            inputMaterialsIds,
+            outputMaterialId,
+            latitude,
+            longitude,
+            processTypes,
+            true
+        );
         _assetOperations[assetOperationId] = newAssetOperation;
         _assetOperationIdsOfOwner[_msgSender()].push(assetOperationId);
         emit AssetOperationRegistered(assetOperationId, name, outputMaterialId);
     }
 
-    function updateAssetOperation(uint256 id, string memory name, uint256[] memory inputMaterialsIds, uint256 outputMaterialId, string memory latitude, string memory longitude, string[] memory processTypes) public {
+    function updateAssetOperation(
+        RoleProof memory roleProof,
+        uint256 id,
+        string memory name,
+        uint256[] memory inputMaterialsIds,
+        uint256 outputMaterialId,
+        string memory latitude,
+        string memory longitude,
+        string[] memory processTypes
+    ) public atLeastEditor(roleProof) {
         require(_assetOperations[id].exists, "AssetOperationManager: Asset operation does not exist");
-        require(_materialManager.getMaterialExists(outputMaterialId), "AssetOperationManager: Output material does not exist");
+        require(_materialManager.getMaterialExists(roleProof, outputMaterialId), "AssetOperationManager: Output material does not exist");
         require(inputMaterialsIds.length > 0, "AssetOperationManager: inputMaterialsIds array must specify at least one material");
         require(processTypes.length > 0, "AssetOperationManager: At least one process type must be specified");
-        for(uint256 i = 0; i < inputMaterialsIds.length; i++) {
-            require(_materialManager.getMaterialExists(inputMaterialsIds[i]), "AssetOperationManager: Input material does not exist");
+        for (uint256 i = 0; i < inputMaterialsIds.length; i++) {
+            require(_materialManager.getMaterialExists(roleProof, inputMaterialsIds[i]), "AssetOperationManager: Input material does not exist");
         }
-        for(uint256 i = 0; i < processTypes.length; i++) {
+        for (uint256 i = 0; i < processTypes.length; i++) {
             require(_processTypeManager.contains(processTypes[i]), "AssetOperationManager: Process type does not exist");
         }
 
@@ -109,6 +136,7 @@ contract AssetOperationManager is AccessControl {
         _assetOperations[id].processTypes = processTypes;
         emit AssetOperationUpdated(id);
     }
+
 
     // ROLES
     function addAdmin(address admin) public onlyAdmin {

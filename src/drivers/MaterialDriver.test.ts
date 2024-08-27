@@ -9,11 +9,17 @@ import {
     ProductCategoryManager__factory
 } from '../smart-contracts';
 import { Material } from '../entities/Material';
+import { RoleProof } from '../types/RoleProof';
 
 describe('MaterialDriver', () => {
     let materialDriver: MaterialDriver;
     const companyAddress: string = Wallet.createRandom().address;
     const contractAddress: string = Wallet.createRandom().address;
+
+    const roleProof: RoleProof = {
+        signedProof: 'signedProof',
+        delegator: 'delegator'
+    };
 
     let mockedSigner: Signer;
 
@@ -108,11 +114,12 @@ describe('MaterialDriver', () => {
                 }
             ]
         });
-        await materialDriver.registerMaterial(productCategoryStruct.id.toNumber());
+        await materialDriver.registerMaterial(roleProof, productCategoryStruct.id.toNumber());
 
         expect(mockedContract.registerMaterial).toHaveBeenCalledTimes(1);
         expect(mockedContract.registerMaterial).toHaveBeenNthCalledWith(
             1,
+            roleProof,
             productCategoryStruct.id.toNumber()
         );
 
@@ -124,64 +131,71 @@ describe('MaterialDriver', () => {
             events: undefined
         });
         await expect(
-            materialDriver.registerMaterial(productCategoryStruct.id.toNumber())
+            materialDriver.registerMaterial(roleProof, productCategoryStruct.id.toNumber())
         ).rejects.toThrow('Error during material registration, no events found');
     });
 
     it('should correctly update a Material', async () => {
-        await materialDriver.updateMaterial(1, 10);
+        await materialDriver.updateMaterial(roleProof, 1, 10);
 
         expect(mockedContract.updateMaterial).toHaveBeenCalledTimes(1);
-        expect(mockedContract.updateMaterial).toHaveBeenNthCalledWith(1, 1, 10);
+        expect(mockedContract.updateMaterial).toHaveBeenNthCalledWith(1, roleProof, 1, 10);
 
         expect(mockedWait).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly retrieve a Material counter', async () => {
-        const response: number = await materialDriver.getMaterialsCounter();
+        const response: number = await materialDriver.getMaterialsCounter(roleProof);
 
         expect(response).toEqual(1);
 
         expect(mockedContract.getMaterialsCounter).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getMaterialsCounter).toHaveBeenNthCalledWith(1);
+        expect(mockedContract.getMaterialsCounter).toHaveBeenNthCalledWith(1, roleProof);
         expect(mockedToNumber).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly retrieve Material ids of creator', async () => {
-        const response: Material[] = await materialDriver.getMaterialsOfCreator(companyAddress);
+        const response: Material[] = await materialDriver.getMaterialsOfCreator(
+            roleProof,
+            companyAddress
+        );
 
         expect(response).toEqual([
             EntityBuilder.buildMaterial(mockedMaterialStructOutput, productCategoryStruct)
         ]);
 
         expect(mockedContract.getMaterialIdsOfCreator).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getMaterialIdsOfCreator).toHaveBeenNthCalledWith(1, companyAddress);
+        expect(mockedContract.getMaterialIdsOfCreator).toHaveBeenNthCalledWith(
+            1,
+            roleProof,
+            companyAddress
+        );
     });
 
     it('should check if a Material exists', async () => {
-        const response: boolean = await materialDriver.getMaterialExists(1);
+        const response: boolean = await materialDriver.getMaterialExists(roleProof, 1);
 
         expect(response).toEqual(true);
 
         expect(mockedContract.getMaterialExists).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getMaterialExists).toHaveBeenNthCalledWith(1, 1);
+        expect(mockedContract.getMaterialExists).toHaveBeenNthCalledWith(1, roleProof, 1);
     });
 
     it('should correctly retrieve a Material', async () => {
-        const response: Material = await materialDriver.getMaterial(1);
+        const response: Material = await materialDriver.getMaterial(roleProof, 1);
 
         expect(response).toEqual(mockedMaterial);
 
         expect(mockedGetMaterial).toHaveBeenCalledTimes(1);
-        expect(mockedGetMaterial).toHaveBeenNthCalledWith(1, 1);
+        expect(mockedGetMaterial).toHaveBeenNthCalledWith(1, roleProof, 1);
     });
 
     it('should correctly retrieve all Materials', async () => {
-        const response: Material[] = await materialDriver.getMaterials();
+        const response: Material[] = await materialDriver.getMaterials(roleProof);
 
         expect(response).toEqual([mockedMaterial]);
 
         expect(mockedContract.getMaterialsCounter).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getMaterialsCounter).toHaveBeenNthCalledWith(1);
+        expect(mockedContract.getMaterialsCounter).toHaveBeenNthCalledWith(1, roleProof);
     });
 });

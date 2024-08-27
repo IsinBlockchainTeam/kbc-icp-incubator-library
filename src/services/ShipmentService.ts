@@ -3,6 +3,7 @@ import { ShipmentDriver } from '../drivers/ShipmentDriver';
 import { DocumentInfo, DocumentType, Shipment, ShipmentPhase } from '../entities/Shipment';
 import { DocumentDriver } from '../drivers/DocumentDriver';
 import { ICPFileDriver } from '../drivers/ICPFileDriver';
+import { RoleProof } from '../types/RoleProof';
 
 export type ShipmentDocument = {
     id: number;
@@ -33,51 +34,59 @@ export class ShipmentService {
         this._icpFileDriver = icpFileDriver;
     }
 
-    async getShipment(): Promise<Shipment> {
-        return this._shipmentManagerDriver.getShipment();
+    async getShipment(roleProof: RoleProof): Promise<Shipment> {
+        return this._shipmentManagerDriver.getShipment(roleProof);
     }
 
-    async getPhase(): Promise<ShipmentPhase> {
-        return this._shipmentManagerDriver.getPhase();
+    async getPhase(roleProof: RoleProof): Promise<ShipmentPhase> {
+        return this._shipmentManagerDriver.getPhase(roleProof);
     }
 
-    async getDocumentInfo(documentId: number): Promise<DocumentInfo> {
-        return this._shipmentManagerDriver.getDocumentInfo(documentId);
+    async getDocumentInfo(roleProof: RoleProof, documentId: number): Promise<DocumentInfo> {
+        return this._shipmentManagerDriver.getDocumentInfo(roleProof, documentId);
     }
 
-    async getDocumentsIdsByType(documentType: number): Promise<number[]> {
-        return this._shipmentManagerDriver.getDocumentsIdsByType(documentType);
+    async getDocumentsIdsByType(roleProof: RoleProof, documentType: number): Promise<number[]> {
+        return this._shipmentManagerDriver.getDocumentsIdsByType(roleProof, documentType);
     }
 
-    async getAllDocumentIds(): Promise<number[]> {
-        return this._shipmentManagerDriver.getAllDocumentIds();
+    async getAllDocumentIds(roleProof: RoleProof): Promise<number[]> {
+      return this._shipmentManagerDriver.getAllDocumentIds(roleProof);
     }
 
     async updateShipment(
+        roleProof: RoleProof,
         expirationDate: Date,
         quantity: number,
         weight: number,
         price: number
     ): Promise<void> {
-        return this._shipmentManagerDriver.updateShipment(expirationDate, quantity, weight, price);
+        return this._shipmentManagerDriver.updateShipment(
+            roleProof,
+            expirationDate,
+            quantity,
+            weight,
+            price
+        );
     }
 
-    async approveShipment(): Promise<void> {
-        return this._shipmentManagerDriver.approveShipment();
+    async approveShipment(roleProof: RoleProof): Promise<void> {
+        return this._shipmentManagerDriver.approveShipment(roleProof);
     }
 
-    async depositFunds(amount: number): Promise<void> {
-        return this._shipmentManagerDriver.depositFunds(amount);
+    async depositFunds(roleProof: RoleProof, amount: number): Promise<void> {
+        return this._shipmentManagerDriver.depositFunds(roleProof, amount);
     }
 
     async addDocument(
+        roleProof: RoleProof,
         documentType: DocumentType,
         documentReferenceId: string,
         fileContent: Uint8Array,
         resourceSpec: ICPResourceSpec,
         delegatedOrganizationIds: number[] = []
     ): Promise<void> {
-        const shipmentExternalUrl = (await this.getShipment()).externalUrl;
+        const shipmentExternalUrl = (await this.getShipment(roleProof)).externalUrl;
         const fileName = FileHelpers.removeFileExtension(resourceSpec.name);
         const spec = { ...resourceSpec };
         spec.name = `${shipmentExternalUrl}/files/${spec.name}`;
@@ -98,15 +107,16 @@ export class ShipmentService {
             delegatedOrganizationIds
         );
         return this._shipmentManagerDriver.addDocument(
+            roleProof,
             documentType,
             spec.name,
             contentHash.toString()
         );
     }
 
-    async getDocument(documentId: number): Promise<ShipmentDocument> {
+    async getDocument(roleProof: RoleProof, documentId: number): Promise<ShipmentDocument> {
         try {
-            const documentInfo = await this._documentDriver.getDocumentById(documentId);
+            const documentInfo = await this._documentDriver.getDocumentById(roleProof, documentId);
             const path = documentInfo.externalUrl.split('/').slice(0, -1).join('/');
             const metadataName = FileHelpers.removeFileExtension(
                 documentInfo.externalUrl.split(`${path}/`)[1]
@@ -131,19 +141,19 @@ export class ShipmentService {
         }
     }
 
-    async approveDocument(documentId: number): Promise<void> {
-        return this._shipmentManagerDriver.approveDocument(documentId);
+    async approveDocument(roleProof: RoleProof, documentId: number): Promise<void> {
+        return this._shipmentManagerDriver.approveDocument(roleProof, documentId);
     }
 
-    async rejectDocument(documentId: number): Promise<void> {
-        return this._shipmentManagerDriver.rejectDocument(documentId);
+    async rejectDocument(roleProof: RoleProof, documentId: number): Promise<void> {
+        return this._shipmentManagerDriver.rejectDocument(roleProof, documentId);
     }
 
-    async confirmShipment(): Promise<void> {
-        return this._shipmentManagerDriver.confirmShipment();
+    async confirmShipment(roleProof: RoleProof): Promise<void> {
+        return this._shipmentManagerDriver.confirmShipment(roleProof);
     }
 
-    async startShipmentArbitration(): Promise<void> {
-        return this._shipmentManagerDriver.startShipmentArbitration();
+    async startShipmentArbitration(roleProof: RoleProof): Promise<void> {
+        return this._shipmentManagerDriver.startShipmentArbitration(roleProof);
     }
 }

@@ -4,6 +4,7 @@ import { ProductCategoryDriver } from './ProductCategoryDriver';
 import { ProductCategoryManager, ProductCategoryManager__factory } from '../smart-contracts';
 import { EntityBuilder } from '../utils/EntityBuilder';
 import { ProductCategory } from '../entities/ProductCategory';
+import { RoleProof } from '../types/RoleProof';
 
 describe('ProductCategoryDriver', () => {
     let productCategoryDriver: ProductCategoryDriver;
@@ -11,6 +12,11 @@ describe('ProductCategoryDriver', () => {
     const name: string = 'name';
     const quality: number = 1;
     const description: string = 'description';
+
+    const roleProof: RoleProof = {
+        signedProof: 'signedProof',
+        delegator: 'delegator'
+    };
 
     const mockedProductCategoryStructOutput: ProductCategoryManager.ProductCategoryStructOutput = {
         name,
@@ -74,11 +80,12 @@ describe('ProductCategoryDriver', () => {
     });
 
     it('should correctly register a product category', async () => {
-        await productCategoryDriver.registerProductCategory(name, quality, description);
+        await productCategoryDriver.registerProductCategory(roleProof, name, quality, description);
 
         expect(mockedContract.registerProductCategory).toHaveBeenCalledTimes(1);
         expect(mockedContract.registerProductCategory).toHaveBeenNthCalledWith(
             1,
+            roleProof,
             name,
             quality,
             description
@@ -92,35 +99,38 @@ describe('ProductCategoryDriver', () => {
             events: undefined
         });
         await expect(
-            productCategoryDriver.registerProductCategory(name, quality, description)
+            productCategoryDriver.registerProductCategory(roleProof, name, quality, description)
         ).rejects.toThrow('Error during product category registration, no events found');
     });
 
     it('should correctly update a product category', async () => {
-        await productCategoryDriver.updateProductCategory(1, 'new', 20, 'updated');
+        await productCategoryDriver.updateProductCategory(roleProof, 1, 'new', 20, 'updated');
 
         expect(mockedWriteFunction).toHaveBeenCalledTimes(1);
-        expect(mockedWriteFunction).toHaveBeenNthCalledWith(1, 1, 'new', 20, 'updated');
+        expect(mockedWriteFunction).toHaveBeenNthCalledWith(1, roleProof, 1, 'new', 20, 'updated');
 
         expect(mockedWait).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly get the product category counter', async () => {
-        const counter: number = await productCategoryDriver.getProductCategoryCounter();
+        const counter: number = await productCategoryDriver.getProductCategoryCounter(roleProof);
 
         expect(mockedGetProductCategoriesCounter).toHaveBeenCalledTimes(1);
         expect(counter).toEqual(2);
     });
 
     it('should correctly get the product category exists', async () => {
-        const exists: boolean = await productCategoryDriver.getProductCategoryExists(1);
+        const exists: boolean = await productCategoryDriver.getProductCategoryExists(roleProof, 1);
 
         expect(mockedGetProductCategoryExists).toHaveBeenCalledTimes(1);
         expect(exists).toEqual(true);
     });
 
     it('should correctly get the product category', async () => {
-        const productCategory: ProductCategory = await productCategoryDriver.getProductCategory(1);
+        const productCategory: ProductCategory = await productCategoryDriver.getProductCategory(
+            roleProof,
+            1
+        );
 
         expect(mockedGetProductCategory).toHaveBeenCalledTimes(1);
         expect(productCategory).toEqual(mockedProductCategory);
@@ -133,7 +143,7 @@ describe('ProductCategoryDriver', () => {
 
     it('should correctly get the product categories', async () => {
         const productCategories: ProductCategory[] =
-            await productCategoryDriver.getProductCategories();
+            await productCategoryDriver.getProductCategories(roleProof);
 
         expect(mockedGetProductCategoriesCounter).toHaveBeenCalledTimes(1);
         expect(mockedGetProductCategory).toHaveBeenCalledTimes(2);

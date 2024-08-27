@@ -13,6 +13,7 @@ import { OrderLine, OrderLinePrice, OrderTrade } from '../entities/OrderTrade';
 import { BasicTradeService } from './BasicTradeService';
 import { OrderTradeService } from './OrderTradeService';
 import { NegotiationStatus } from '../types/NegotiationStatus';
+import { RoleProof } from '../types/RoleProof';
 
 jest.mock('./TradeManagerService');
 jest.mock('./AssetOperationService');
@@ -197,6 +198,11 @@ describe('GraphService', () => {
         })
     );
 
+    const roleProof: RoleProof = {
+        signedProof: 'signedProof',
+        delegator: 'delegator'
+    };
+
     beforeAll(() => {
         graphService = new GraphService(
             createMock<Signer>(),
@@ -208,7 +214,7 @@ describe('GraphService', () => {
     afterEach(() => jest.clearAllMocks());
 
     it('should compute a graph with transformations', async () => {
-        const result = await graphService.computeGraph(4, true);
+        const result = await graphService.computeGraph(roleProof, 4, true);
 
         expect(result.nodes).toEqual(
             expect.arrayContaining([assetOperations[1], assetOperations[0]])
@@ -224,14 +230,21 @@ describe('GraphService', () => {
         );
 
         expect(mockedTradeManagerService.getTrades).toHaveBeenCalledTimes(1);
-        expect(mockedTradeManagerService.getTrades).toHaveBeenNthCalledWith(1);
+        expect(mockedTradeManagerService.getTrades).toHaveBeenNthCalledWith(1, roleProof);
 
         expect(mockedAssetOperationService.getAssetOperations).toHaveBeenCalledTimes(1);
-        expect(mockedAssetOperationService.getAssetOperations).toHaveBeenNthCalledWith(1);
+        expect(mockedAssetOperationService.getAssetOperations).toHaveBeenNthCalledWith(
+            1,
+            roleProof
+        );
     });
 
     it('should compute a graph with transformations and consolidations', async () => {
-        const result = await graphService.computeGraph(assetOperations[4].outputMaterial.id, true);
+        const result = await graphService.computeGraph(
+            roleProof,
+            assetOperations[4].outputMaterial.id,
+            true
+        );
 
         expect(result.nodes).toEqual(
             expect.arrayContaining([
@@ -258,14 +271,21 @@ describe('GraphService', () => {
         );
 
         expect(mockedTradeManagerService.getTrades).toHaveBeenCalledTimes(1);
-        expect(mockedTradeManagerService.getTrades).toHaveBeenNthCalledWith(1);
+        expect(mockedTradeManagerService.getTrades).toHaveBeenNthCalledWith(1, roleProof);
 
         expect(mockedAssetOperationService.getAssetOperations).toHaveBeenCalledTimes(1);
-        expect(mockedAssetOperationService.getAssetOperations).toHaveBeenNthCalledWith(1);
+        expect(mockedAssetOperationService.getAssetOperations).toHaveBeenNthCalledWith(
+            1,
+            roleProof
+        );
     });
 
     it('should compute a graph with a consolidation based on a pure material', async () => {
-        const result = await graphService.computeGraph(assetOperations[5].outputMaterial.id, true);
+        const result = await graphService.computeGraph(
+            roleProof,
+            assetOperations[5].outputMaterial.id,
+            true
+        );
 
         expect(result).toEqual({
             nodes: [assetOperations[5]],
@@ -274,7 +294,7 @@ describe('GraphService', () => {
     });
 
     it('should compute a graph and return when the same node is already in the graph', async () => {
-        const result = await graphService.computeGraph(7, true);
+        const result = await graphService.computeGraph(roleProof, 7, true);
 
         expect(result.nodes).toEqual(expect.arrayContaining([assetOperations[3]]));
         expect(result.edges).toEqual(
@@ -289,7 +309,7 @@ describe('GraphService', () => {
     });
 
     it('should compute an empty graph when the material is not found', async () => {
-        const result = await graphService.computeGraph(42, true);
+        const result = await graphService.computeGraph(roleProof, 42, true);
 
         expect(result).toEqual({
             nodes: [],

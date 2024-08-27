@@ -1,6 +1,7 @@
 import { createMock } from 'ts-auto-mock';
 import RelationshipService from './RelationshipService';
 import { RelationshipDriver } from '../drivers/RelationshipDriver';
+import { RoleProof } from '../types/RoleProof';
 
 describe('RelationshipService', () => {
     const companyA = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8';
@@ -18,6 +19,11 @@ describe('RelationshipService', () => {
 
     const relationshipService = new RelationshipService(mockedRelationshipDriver);
 
+    const roleProof: RoleProof = {
+        signedProof: 'signedProof',
+        delegator: 'delegator'
+    };
+
     afterAll(() => {
         jest.restoreAllMocks();
     });
@@ -27,38 +33,40 @@ describe('RelationshipService', () => {
             serviceFunctionName: 'registerRelationship',
             serviceFunction: () =>
                 relationshipService.registerRelationship(
+                    roleProof,
                     companyA,
                     companyB,
                     now,
                     new Date('2030-10-10')
                 ),
             expectedMockedFunction: mockedRelationshipDriver.registerRelationship,
-            expectedMockedFunctionArgs: [companyA, companyB, now, new Date('2030-10-10')]
+            expectedMockedFunctionArgs: [roleProof, companyA, companyB, now, new Date('2030-10-10')]
         },
         {
             serviceFunctionName: 'registerRelationship',
             serviceFunction: () =>
-                relationshipService.registerRelationship(companyA, companyB, now),
+                relationshipService.registerRelationship(roleProof, companyA, companyB, now),
             expectedMockedFunction: mockedRelationshipDriver.registerRelationship,
-            expectedMockedFunctionArgs: [companyA, companyB, now, undefined]
+            expectedMockedFunctionArgs: [roleProof, companyA, companyB, now, undefined]
         },
         {
             serviceFunctionName: 'getRelationshipCounter',
-            serviceFunction: () => relationshipService.getRelationshipCounter(),
+            serviceFunction: () => relationshipService.getRelationshipCounter(roleProof),
             expectedMockedFunction: mockedRelationshipDriver.getRelationshipCounter,
-            expectedMockedFunctionArgs: []
+            expectedMockedFunctionArgs: [roleProof]
         },
         {
             serviceFunctionName: 'getRelationshipInfo',
-            serviceFunction: () => relationshipService.getRelationshipInfo(1),
+            serviceFunction: () => relationshipService.getRelationshipInfo(roleProof, 1),
             expectedMockedFunction: mockedRelationshipDriver.getRelationshipInfo,
-            expectedMockedFunctionArgs: [1]
+            expectedMockedFunctionArgs: [roleProof, 1]
         },
         {
             serviceFunctionName: 'getRelationshipIdsByCompany',
-            serviceFunction: () => relationshipService.getRelationshipIdsByCompany(companyA),
+            serviceFunction: () =>
+                relationshipService.getRelationshipIdsByCompany(roleProof, companyA),
             expectedMockedFunction: mockedRelationshipDriver.getRelationshipIdsByCompany,
-            expectedMockedFunctionArgs: [companyA]
+            expectedMockedFunctionArgs: [roleProof, companyA]
         },
         {
             serviceFunctionName: 'addAdmin',

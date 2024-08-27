@@ -14,11 +14,17 @@ import { AssetOperationDriver } from './AssetOperationDriver';
 import { AssetOperationType } from '../types/AssetOperationType';
 import { ProductCategory } from '../entities/ProductCategory';
 import { Material } from '../entities/Material';
+import { RoleProof } from '../types/RoleProof';
 
 describe('AssetOperationDriver', () => {
     let assetOperationDriver: AssetOperationDriver;
     const companyAddress: string = Wallet.createRandom().address;
     const contractAddress: string = Wallet.createRandom().address;
+
+    const roleProof: RoleProof = {
+        signedProof: 'signedProof',
+        delegator: 'delegator'
+    };
 
     const materialStruct: MaterialManager.MaterialStructOutput = {
         id: BigNumber.from(1),
@@ -159,6 +165,7 @@ describe('AssetOperationDriver', () => {
             ]
         });
         await assetOperationDriver.registerAssetOperation(
+            roleProof,
             'test',
             [1, 2],
             3,
@@ -170,6 +177,7 @@ describe('AssetOperationDriver', () => {
         expect(mockedContract.registerAssetOperation).toHaveBeenCalledTimes(1);
         expect(mockedContract.registerAssetOperation).toHaveBeenNthCalledWith(
             1,
+            roleProof,
             'test',
             [1, 2],
             3,
@@ -187,6 +195,7 @@ describe('AssetOperationDriver', () => {
         });
         await expect(
             assetOperationDriver.registerAssetOperation(
+                roleProof,
                 'test',
                 [1, 2],
                 3,
@@ -199,6 +208,7 @@ describe('AssetOperationDriver', () => {
 
     it('should correctly update an AssetOperation', async () => {
         await assetOperationDriver.updateAssetOperation(
+            roleProof,
             1,
             'update',
             [1, 2],
@@ -211,6 +221,7 @@ describe('AssetOperationDriver', () => {
         expect(mockedContract.updateAssetOperation).toHaveBeenCalledTimes(1);
         expect(mockedContract.updateAssetOperation).toHaveBeenNthCalledWith(
             1,
+            roleProof,
             1,
             'update',
             [1, 2],
@@ -224,98 +235,107 @@ describe('AssetOperationDriver', () => {
     });
 
     it('should correctly retrieve AssetOperation counter', async () => {
-        const response: number = await assetOperationDriver.getAssetOperationsCounter();
+        const response: number = await assetOperationDriver.getAssetOperationsCounter(roleProof);
 
         expect(response).toEqual(1);
 
         expect(mockedContract.getAssetOperationsCounter).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getAssetOperationsCounter).toHaveBeenNthCalledWith(1);
+        expect(mockedContract.getAssetOperationsCounter).toHaveBeenNthCalledWith(1, roleProof);
         expect(mockedToNumber).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly retrieve AssetOperations of creator', async () => {
-        const response: AssetOperation[] =
-            await assetOperationDriver.getAssetOperationsOfCreator(companyAddress);
+        const response: AssetOperation[] = await assetOperationDriver.getAssetOperationsOfCreator(
+            roleProof,
+            companyAddress
+        );
 
         expect(response).toEqual([mockedAssetOperation]);
 
         expect(mockedContract.getAssetOperationIdsOfCreator).toHaveBeenCalledTimes(1);
         expect(mockedContract.getAssetOperationIdsOfCreator).toHaveBeenNthCalledWith(
             1,
+            roleProof,
             companyAddress
         );
     });
 
     it('should correctly retrieve a AssetOperation', async () => {
-        const response: AssetOperation = await assetOperationDriver.getAssetOperation(1);
+        const response: AssetOperation = await assetOperationDriver.getAssetOperation(roleProof, 1);
 
         expect(response).toEqual(mockedAssetOperation);
 
         expect(mockedGetAssetOperation).toHaveBeenCalledTimes(1);
-        expect(mockedGetAssetOperation).toHaveBeenNthCalledWith(1, 1);
+        expect(mockedGetAssetOperation).toHaveBeenNthCalledWith(1, roleProof, 1);
     });
 
     it('should correctly retrieve all AssetOperations', async () => {
-        const response: AssetOperation[] = await assetOperationDriver.getAssetOperations();
+        const response: AssetOperation[] = await assetOperationDriver.getAssetOperations(roleProof);
 
         expect(response).toEqual([mockedAssetOperation]);
 
         expect(mockedGetAssetOperationCounter).toHaveBeenCalledTimes(1);
-        expect(mockedGetAssetOperationCounter).toHaveBeenNthCalledWith(1);
+        expect(mockedGetAssetOperationCounter).toHaveBeenNthCalledWith(1, roleProof);
 
         expect(mockedGetAssetOperation).toHaveBeenCalledTimes(1);
-        expect(mockedGetAssetOperation).toHaveBeenNthCalledWith(1, 1);
+        expect(mockedGetAssetOperation).toHaveBeenNthCalledWith(1, roleProof, 1);
     });
 
     it('should correctly retrieve all AssetOperations by output material', async () => {
         const firstResponse: AssetOperation[] =
-            await assetOperationDriver.getAssetOperationsByOutputMaterial(3);
+            await assetOperationDriver.getAssetOperationsByOutputMaterial(roleProof, 3);
         const secondResponse: AssetOperation[] =
-            await assetOperationDriver.getAssetOperationsByOutputMaterial(42);
+            await assetOperationDriver.getAssetOperationsByOutputMaterial(roleProof, 42);
 
         expect(firstResponse).toEqual([mockedAssetOperation]);
         expect(secondResponse).toEqual([]);
 
         expect(mockedGetAssetOperationCounter).toHaveBeenCalledTimes(2);
-        expect(mockedGetAssetOperationCounter).toHaveBeenNthCalledWith(1);
-        expect(mockedGetAssetOperationCounter).toHaveBeenNthCalledWith(2);
+        expect(mockedGetAssetOperationCounter).toHaveBeenNthCalledWith(1, roleProof);
+        expect(mockedGetAssetOperationCounter).toHaveBeenNthCalledWith(2, roleProof);
 
         expect(mockedGetAssetOperation).toHaveBeenCalledTimes(2);
-        expect(mockedGetAssetOperation).toHaveBeenNthCalledWith(1, 1);
-        expect(mockedGetAssetOperation).toHaveBeenNthCalledWith(2, 1);
+        expect(mockedGetAssetOperation).toHaveBeenNthCalledWith(1, roleProof, 1);
+        expect(mockedGetAssetOperation).toHaveBeenNthCalledWith(2, roleProof, 1);
     });
 
     it('should check if an AssetOperation exists', async () => {
-        const response: boolean = await assetOperationDriver.getAssetOperationExists(1);
+        const response: boolean = await assetOperationDriver.getAssetOperationExists(roleProof, 1);
 
         expect(response).toEqual(true);
 
         expect(mockedGetAssetOperationExists).toHaveBeenCalledTimes(1);
-        expect(mockedGetAssetOperationExists).toHaveBeenNthCalledWith(1, 1);
+        expect(mockedGetAssetOperationExists).toHaveBeenNthCalledWith(1, roleProof, 1);
     });
 
     it('should get AssetOperation type - CASE CONSOLIDATION', async () => {
-        const response: AssetOperationType = await assetOperationDriver.getAssetOperationType(1);
+        const response: AssetOperationType = await assetOperationDriver.getAssetOperationType(
+            roleProof,
+            1
+        );
 
         expect(response).toEqual(AssetOperationType.CONSOLIDATION);
 
         expect(mockedGetAssetOperationType).toHaveBeenCalledTimes(1);
-        expect(mockedGetAssetOperationType).toHaveBeenNthCalledWith(1, 1);
+        expect(mockedGetAssetOperationType).toHaveBeenNthCalledWith(1, roleProof, 1);
     });
 
     it('should get AssetOperation type - CASE TRANSFORMATION', async () => {
         mockedGetAssetOperationType.mockReturnValueOnce(1);
-        const response: AssetOperationType = await assetOperationDriver.getAssetOperationType(1);
+        const response: AssetOperationType = await assetOperationDriver.getAssetOperationType(
+            roleProof,
+            1
+        );
 
         expect(response).toEqual(AssetOperationType.TRANSFORMATION);
 
         expect(mockedGetAssetOperationType).toHaveBeenCalledTimes(1);
-        expect(mockedGetAssetOperationType).toHaveBeenNthCalledWith(1, 1);
+        expect(mockedGetAssetOperationType).toHaveBeenNthCalledWith(1, roleProof, 1);
     });
 
     it('should get AssetOperation type - CASE ERROR', async () => {
         mockedGetAssetOperationType.mockReturnValueOnce(10);
-        await expect(assetOperationDriver.getAssetOperationType(1)).rejects.toThrow(
+        await expect(assetOperationDriver.getAssetOperationType(roleProof, 1)).rejects.toThrow(
             'AssetOperationDriver: an invalid value "10" for "AssetOperationType" was returned by the contract'
         );
     });

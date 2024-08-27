@@ -13,10 +13,16 @@ import {
 } from '../smart-contracts';
 import { EntityBuilder } from '../utils/EntityBuilder';
 import { Line, LineRequest } from '../entities/Trade';
+import { RoleProof } from '../types/RoleProof';
 
 describe('BasicTradeDriver', () => {
     let basicTradeDriver: BasicTradeDriver;
     const contractAddress: string = Wallet.createRandom().address;
+
+    const roleProof: RoleProof = {
+        signedProof: 'signedProof',
+        delegator: 'delegator'
+    };
 
     const tradeId: number = 1;
     const supplier: string = Wallet.createRandom().address;
@@ -143,7 +149,7 @@ describe('BasicTradeDriver', () => {
     });
 
     it('should correctly retrieve the basic trade', async () => {
-        const result = await basicTradeDriver.getTrade();
+        const result = await basicTradeDriver.getTrade(roleProof);
 
         expect(mockedGetMaterial).toHaveBeenCalledTimes(1);
 
@@ -158,22 +164,24 @@ describe('BasicTradeDriver', () => {
         expect(result.name).toEqual(name);
 
         expect(mockedContract.getTrade).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getTrade).toHaveBeenNthCalledWith(1, { blockTag: undefined });
+        expect(mockedContract.getTrade).toHaveBeenNthCalledWith(1, roleProof, {
+            blockTag: undefined
+        });
         expect(mockedGetTrade).toHaveBeenCalledTimes(1);
         expect(mockedContract.getLineCounter).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getLineCounter).toHaveBeenNthCalledWith(1);
+        expect(mockedContract.getLineCounter).toHaveBeenNthCalledWith(1, roleProof);
         expect(mockedGetLineCounter).toHaveBeenCalledTimes(1);
     });
 
     it('should call getLine the number of time specified by the counter', async () => {
         mockedGetLineCounter.mockResolvedValueOnce(BigNumber.from(10));
 
-        await basicTradeDriver.getLines();
+        await basicTradeDriver.getLines(roleProof);
         expect(mockedContract.getLine).toHaveBeenCalledTimes(10);
     });
 
     it('should correctly retrieve a line', async () => {
-        const result = await basicTradeDriver.getLine(line.id.toNumber());
+        const result = await basicTradeDriver.getLine(roleProof, line.id.toNumber());
 
         expect(result.id).toEqual(line.id.toNumber());
         expect(result.material).toEqual(
@@ -184,7 +192,7 @@ describe('BasicTradeDriver', () => {
         );
 
         expect(mockedContract.getLine).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getLine).toHaveBeenNthCalledWith(1, line.id.toNumber(), {
+        expect(mockedContract.getLine).toHaveBeenNthCalledWith(1, roleProof, line.id.toNumber(), {
             blockTag: undefined
         });
         expect(mockedGetLine).toHaveBeenCalledTimes(1);
@@ -205,8 +213,8 @@ describe('BasicTradeDriver', () => {
             quantity,
             unit
         );
-        const tradeLineId = await basicTradeDriver.addLine(newLine);
-        const result = await basicTradeDriver.getLine(tradeLineId);
+        const tradeLineId = await basicTradeDriver.addLine(roleProof, newLine);
+        const result = await basicTradeDriver.getLine(roleProof, tradeLineId);
 
         expect(result).toEqual(
             new Line(
@@ -220,13 +228,16 @@ describe('BasicTradeDriver', () => {
         expect(mockedContract.addLine).toHaveBeenCalledTimes(1);
         expect(mockedContract.addLine).toHaveBeenNthCalledWith(
             1,
+            roleProof,
             newLine.productCategoryId,
             newLine.quantity,
             newLine.unit
         );
         expect(mockedWait).toHaveBeenCalledTimes(1);
         expect(mockedContract.getLine).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getLine).toHaveBeenNthCalledWith(1, line.id, { blockTag: undefined });
+        expect(mockedContract.getLine).toHaveBeenNthCalledWith(1, roleProof, line.id, {
+            blockTag: undefined
+        });
         expect(mockedGetLine).toHaveBeenCalledTimes(1);
     });
 
@@ -244,11 +255,12 @@ describe('BasicTradeDriver', () => {
             productCategoryStruct,
             materialStruct
         );
-        await basicTradeDriver.updateLine(updatedLine);
+        await basicTradeDriver.updateLine(roleProof, updatedLine);
 
         expect(mockedContract.updateLine).toHaveBeenCalledTimes(1);
         expect(mockedContract.updateLine).toHaveBeenNthCalledWith(
             1,
+            roleProof,
             updatedLine.id,
             updatedLine.productCategory.id,
             updatedLine.quantity,
@@ -258,10 +270,15 @@ describe('BasicTradeDriver', () => {
     });
 
     it('should assign a material to a line', async () => {
-        await basicTradeDriver.assignMaterial(line.id.toNumber(), materialStruct.id.toNumber());
+        await basicTradeDriver.assignMaterial(
+            roleProof,
+            line.id.toNumber(),
+            materialStruct.id.toNumber()
+        );
         expect(mockedContract.assignMaterial).toHaveBeenCalledTimes(1);
         expect(mockedContract.assignMaterial).toHaveBeenNthCalledWith(
             1,
+            roleProof,
             line.id.toNumber(),
             materialStruct.id.toNumber()
         );
@@ -269,10 +286,10 @@ describe('BasicTradeDriver', () => {
     });
 
     it('should correctly set the new name', async () => {
-        await basicTradeDriver.setName('new name');
+        await basicTradeDriver.setName(roleProof, 'new name');
 
         expect(mockedContract.setName).toHaveBeenCalledTimes(1);
-        expect(mockedContract.setName).toHaveBeenNthCalledWith(1, 'new name');
+        expect(mockedContract.setName).toHaveBeenNthCalledWith(1, roleProof, 'new name');
         expect(mockedWait).toHaveBeenCalledTimes(1);
     });
 });

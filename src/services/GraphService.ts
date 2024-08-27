@@ -4,6 +4,7 @@ import { AssetOperation } from '../entities/AssetOperation';
 import { TradeManagerService } from './TradeManagerService';
 import { AssetOperationService } from './AssetOperationService';
 import { AssetOperationType } from '../types/AssetOperationType';
+import { RoleProof } from '../types/RoleProof';
 
 export type Node = AssetOperation;
 
@@ -176,23 +177,27 @@ export class GraphService {
         return partialGraphData;
     }
 
-    private async _loadData() {
-        const assetOperations = (await this._assetOperationService.getAssetOperations()).sort(
-            (a, b) => b.id - a.id
-        );
+    private async _loadData(roleProof: RoleProof) {
+        const assetOperations = (
+            await this._assetOperationService.getAssetOperations(roleProof)
+        ).sort((a, b) => b.id - a.id);
         this._assetOperationMap = new Map<number, AssetOperation[]>();
         for (const assetOperation of assetOperations) {
             this._assetOperationMap.get(assetOperation.outputMaterial.id)?.push(assetOperation) ||
                 this._assetOperationMap.set(assetOperation.outputMaterial.id, [assetOperation]);
         }
         // this._assetOperations = await this._assetOperationService.getAssetOperations();
-        this._trades = (await this._tradeManagerService.getTrades()).sort(
+        this._trades = (await this._tradeManagerService.getTrades(roleProof)).sort(
             (a, b) => b.tradeId - a.tradeId
         );
     }
 
-    public async computeGraph(materialId: number, refreshData: boolean): Promise<GraphData> {
-        refreshData && (await this._loadData());
+    public async computeGraph(
+        roleProof: RoleProof,
+        materialId: number,
+        refreshData: boolean
+    ): Promise<GraphData> {
+        refreshData && (await this._loadData(roleProof));
         return this._computeGraph(materialId);
     }
 }

@@ -3,8 +3,9 @@ pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "./KBCAccessControl.sol";
 
-contract RelationshipManager is AccessControl {
+contract RelationshipManager is AccessControl, KBCAccessControl {
     using Counters for Counters.Counter;
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
@@ -32,7 +33,7 @@ contract RelationshipManager is AccessControl {
     // company => relationship ids
     mapping(address => uint256[]) private companyRelationships;
 
-    constructor(address[] memory admins) {
+    constructor(address delegateManagerAddress, address[] memory admins) KBCAccessControl(delegateManagerAddress) {
         _setupRole(ADMIN_ROLE, msg.sender);
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
 
@@ -41,7 +42,13 @@ contract RelationshipManager is AccessControl {
         }
     }
 
-    function registerRelationship(address companyA, address companyB, uint256 validFrom, uint256 validUntil) public {
+    function registerRelationship(
+        RoleProof memory roleProof,
+        address companyA,
+        address companyB,
+        uint256 validFrom,
+        uint256 validUntil
+    ) public atLeastEditor(roleProof) {
         require(companyA == msg.sender || companyB == msg.sender, "Sender is not one of the two entities involved in the relationship");
         require(companyA != companyB, "Fields 'companyA' and 'companyB' must be different");
 
@@ -62,17 +69,17 @@ contract RelationshipManager is AccessControl {
         emit RelationshipRegistered(id, companyA, companyB);
     }
 
-    function getRelationshipCounter() public view returns (uint256 counter) {
+    function getRelationshipCounter(RoleProof memory roleProof) public view atLeastViewer(roleProof) returns (uint256 counter) {
         return relationshipCounter.current();
     }
 
-    function getRelationshipInfo(uint256 relationshipId) public view returns (Relationship memory) {
+    function getRelationshipInfo(RoleProof memory roleProof, uint256 relationshipId) public view atLeastViewer(roleProof) returns (Relationship memory) {
         require(relationships[relationshipId].exists, "Relationship does not exist");
 
-        return (relationships[relationshipId]);
+        return relationships[relationshipId];
     }
 
-    function getRelationshipIdsByCompany(address company) public view returns (uint256[] memory) {
+    function getRelationshipIdsByCompany(RoleProof memory roleProof, address company) public view atLeastViewer(roleProof) returns (uint256[] memory) {
         return companyRelationships[company];
     }
 

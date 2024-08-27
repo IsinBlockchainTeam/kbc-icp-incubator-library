@@ -3,8 +3,9 @@ pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "./KBCAccessControl.sol";
 
-contract ProductCategoryManager is AccessControl {
+contract ProductCategoryManager is AccessControl, KBCAccessControl {
     using Counters for Counters.Counter;
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
@@ -28,32 +29,32 @@ contract ProductCategoryManager is AccessControl {
     Counters.Counter private _counter;
     mapping(uint256 => ProductCategory) private productCategories;
 
-    constructor() {
+    constructor(address delegateManagerAddress) KBCAccessControl(delegateManagerAddress) {
         _setupRole(ADMIN_ROLE, _msgSender());
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
         grantRole(ADMIN_ROLE, _msgSender());
     }
 
-    function getProductCategoriesCounter() public view returns (uint256) {
+    function getProductCategoriesCounter(RoleProof memory roleProof) public view atLeastViewer(roleProof) returns (uint256) {
         return _counter.current();
     }
 
-    function getProductCategoryExists(uint256 id) public view returns (bool) {
+    function getProductCategoryExists(RoleProof memory roleProof, uint256 id) public view atLeastViewer(roleProof) returns (bool) {
         return productCategories[id].exists;
     }
 
-    function getProductCategory(uint256 id) public view returns (ProductCategory memory) {
+    function getProductCategory(RoleProof memory roleProof, uint256 id) public view atLeastViewer(roleProof) returns (ProductCategory memory) {
         return productCategories[id];
     }
 
-    function registerProductCategory(string memory name, uint8 quality, string memory description) public {
+    function registerProductCategory(RoleProof memory roleProof, string memory name, uint8 quality, string memory description) public atLeastEditor(roleProof) {
         uint256 productCategoryId = _counter.current() + 1;
         _counter.increment();
         productCategories[productCategoryId] = ProductCategory(productCategoryId, name, quality, description, true);
         emit ProductCategoryRegistered(productCategoryId, name, quality);
     }
 
-    function updateProductCategory(uint256 id, string memory name, uint8 quality, string memory description) public {
+    function updateProductCategory(RoleProof memory roleProof, uint256 id, string memory name, uint8 quality, string memory description) public atLeastEditor(roleProof) {
         require(productCategories[id].exists, "ProductCategoryManager: Product category does not exist");
         productCategories[id].name = name;
         productCategories[id].quality = quality;

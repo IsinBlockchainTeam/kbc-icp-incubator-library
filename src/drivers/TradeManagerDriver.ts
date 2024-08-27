@@ -6,6 +6,7 @@ import { BasicTradeDriver } from './BasicTradeDriver';
 import { OrderTradeDriver } from './OrderTradeDriver';
 import { Line, Trade } from '../entities/Trade';
 import { IConcreteTradeDriverInterface } from './IConcreteTradeDriver.interface';
+import { RoleProof } from '../types/RoleProof';
 
 export class TradeManagerDriver {
     private _contract: TradeManager;
@@ -29,6 +30,7 @@ export class TradeManagerDriver {
     }
 
     async registerBasicTrade(
+        roleProof: RoleProof,
         supplier: string,
         customer: string,
         commissioner: string,
@@ -44,6 +46,7 @@ export class TradeManagerDriver {
             throw new Error('Not an address');
         }
         const tx = await this._contract.registerBasicTrade(
+            roleProof,
             supplier,
             customer,
             commissioner,
@@ -63,6 +66,7 @@ export class TradeManagerDriver {
     }
 
     async registerOrderTrade(
+        roleProof: RoleProof,
         supplier: string,
         customer: string,
         commissioner: string,
@@ -86,6 +90,7 @@ export class TradeManagerDriver {
             throw new Error('Not an address');
         }
         const tx = await this._contract.registerOrderTrade(
+            roleProof,
             supplier,
             customer,
             commissioner,
@@ -110,55 +115,55 @@ export class TradeManagerDriver {
         return [eventArgs?.id.toNumber(), eventArgs?.contractAddress, transactionHash];
     }
 
-    async getTradeCounter(): Promise<number> {
-        return (await this._contract.getTradeCounter()).toNumber();
+    async getTradeCounter(roleProof: RoleProof): Promise<number> {
+        return (await this._contract.getTradeCounter(roleProof)).toNumber();
     }
 
-    async getTrades(): Promise<Trade[]> {
-        const tradeCounter: number = await this.getTradeCounter();
+    async getTrades(roleProof: RoleProof): Promise<Trade[]> {
+        const tradeCounter: number = await this.getTradeCounter(roleProof);
 
         const tradesPromises: Promise<Trade>[] = Array.from(
             { length: tradeCounter },
             async (_, i) => {
                 const index = i + 1;
-                const tradeType: TradeType = await this.getTradeType(index);
+                const tradeType: TradeType = await this.getTradeType(roleProof, index);
                 const tradeDriver: IConcreteTradeDriverInterface =
                     tradeType === TradeType.BASIC
                         ? new BasicTradeDriver(
                               this._contract.signer,
-                              await this._contract.getTrade(index),
+                              await this._contract.getTrade(roleProof, index),
                               this._materialManagerAddress,
                               this._productCategoryManagerAddress
                           )
                         : new OrderTradeDriver(
                               this._contract.signer,
-                              await this._contract.getTrade(index),
+                              await this._contract.getTrade(roleProof, index),
                               this._materialManagerAddress,
                               this._productCategoryManagerAddress
                           );
-                return tradeDriver.getTrade();
+                return tradeDriver.getTrade(roleProof);
             }
         );
 
         return Promise.all(tradesPromises);
     }
 
-    async getTradeType(id: number): Promise<TradeType> {
-        const result = await this._contract.getTradeType(id);
+    async getTradeType(roleProof: RoleProof, id: number): Promise<TradeType> {
+        const result = await this._contract.getTradeType(roleProof, id);
         return getTradeTypeByIndex(result);
     }
 
-    async getTradesAndTypes(): Promise<Map<string, TradeType>> {
-        const tradeCounter: number = await this.getTradeCounter();
+    async getTradesAndTypes(roleProof: RoleProof): Promise<Map<string, TradeType>> {
+        const tradeCounter: number = await this.getTradeCounter(roleProof);
 
         const tradesPromises: Promise<[string, TradeType]>[] = Array.from(
             { length: tradeCounter },
             async (_, i) => {
                 const index = i + 1;
-                return [await this._contract.getTrade(index), await this.getTradeType(index)] as [
-                    string,
-                    TradeType
-                ];
+                return [
+                    await this._contract.getTrade(roleProof, index),
+                    await this.getTradeType(roleProof, index)
+                ] as [string, TradeType];
             }
         );
 
@@ -167,24 +172,24 @@ export class TradeManagerDriver {
         return new Map<string, TradeType>(trades);
     }
 
-    async getTrade(id: number): Promise<string> {
-        return this._contract.getTrade(id);
+    async getTrade(roleProof: RoleProof, id: number): Promise<string> {
+        return this._contract.getTrade(roleProof, id);
     }
 
-    async getTradesByMaterial(materialId: number): Promise<Trade[]> {
-        const trades: Trade[] = await this.getTrades();
+    async getTradesByMaterial(roleProof: RoleProof, materialId: number): Promise<Trade[]> {
+        const trades: Trade[] = await this.getTrades(roleProof);
         return trades.filter((trade: Trade) =>
             trade.lines.some((line: Line) => line.material!.id === materialId)
         );
     }
 
-    async getTradeIdsOfSupplier(commissioner: string): Promise<number[]> {
-        const tradesId = await this._contract.getTradeIdsOfSupplier(commissioner);
+    async getTradeIdsOfSupplier(roleProof: RoleProof, commissioner: string): Promise<number[]> {
+        const tradesId = await this._contract.getTradeIdsOfSupplier(roleProof, commissioner);
         return tradesId.map((id: BigNumber) => id.toNumber());
     }
 
-    async getTradeIdsOfCommissioner(commissioner: string): Promise<number[]> {
-        const tradesId = await this._contract.getTradeIdsOfCommissioner(commissioner);
+    async getTradeIdsOfCommissioner(roleProof: RoleProof, commissioner: string): Promise<number[]> {
+        const tradesId = await this._contract.getTradeIdsOfCommissioner(roleProof, commissioner);
         return tradesId.map((id: BigNumber) => id.toNumber());
     }
 }

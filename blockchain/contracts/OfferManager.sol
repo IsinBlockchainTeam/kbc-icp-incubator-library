@@ -5,8 +5,9 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@blockchain-lib/blockchain-common/contracts/EnumerableType.sol";
 import "./ProductCategoryManager.sol";
+import "./KBCAccessControl.sol";
 
-contract OfferManager is AccessControl {
+contract OfferManager is AccessControl, KBCAccessControl {
     using Counters for Counters.Counter;
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
@@ -41,7 +42,7 @@ contract OfferManager is AccessControl {
 
     ProductCategoryManager private productCategoryManager;
 
-    constructor(address[] memory admins, address productCategoryAddress) {
+    constructor(address delegateManagerAddress, address[] memory admins, address productCategoryAddress) KBCAccessControl(delegateManagerAddress) {
         _setupRole(ADMIN_ROLE, msg.sender);
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
 
@@ -52,7 +53,7 @@ contract OfferManager is AccessControl {
         productCategoryManager = ProductCategoryManager(productCategoryAddress);
     }
 
-    function registerSupplier(address addr, string memory name) public {
+    function registerSupplier(RoleProof memory roleProof, address addr, string memory name) public atLeastEditor(roleProof) {
         require(bytes(suppliersNames[addr]).length == 0, "Offer's supplier already registered");
 
         suppliersNames[addr] = name;
@@ -60,8 +61,12 @@ contract OfferManager is AccessControl {
         emit OfferSupplierRegistered(addr, name);
     }
 
-    function registerOffer(address owner, uint256 productCategoryId) public {
-        require(productCategoryManager.getProductCategoryExists(productCategoryId), "OfferManager: Product category does not exist");
+    function registerOffer(
+        RoleProof memory roleProof,
+        address owner,
+        uint256 productCategoryId
+    ) public atLeastEditor(roleProof) {
+        require(productCategoryManager.getProductCategoryExists(roleProof, productCategoryId), "OfferManager: Product category does not exist");
         require(bytes(suppliersNames[owner]).length != 0, "OfferManager: Offer's supplier not registered");
         uint256 offerId = offersIdCounter.current() + 1;
         offersIdCounter.increment();
@@ -77,26 +82,39 @@ contract OfferManager is AccessControl {
         emit OfferRegistered(offerId, owner);
     }
 
-    function getLastId() public view returns (uint256) {
+    function getLastId(RoleProof memory roleProof) public view atLeastViewer(roleProof) returns (uint256) {
         return offersIdCounter.current();
     }
 
-    function getOfferIdsByCompany(address owner) public view returns (uint256[] memory) {
+    function getOfferIdsByCompany(
+        RoleProof memory roleProof,
+        address owner
+    ) public view atLeastViewer(roleProof) returns (uint256[] memory) {
         return offerIds[owner];
     }
 
-    function getSupplierName(address addr) public view returns (string memory) {
+    function getSupplierName(
+        RoleProof memory roleProof,
+        address addr
+    ) public view atLeastViewer(roleProof) returns (string memory) {
         return suppliersNames[addr];
     }
 
-    function getOffer(uint256 offerId) public view returns (Offer memory) {
+    function getOffer(
+        RoleProof memory roleProof,
+        uint256 offerId
+    ) public view atLeastViewer(roleProof) returns (Offer memory) {
         Offer storage offer = offers[offerId];
         require(offer.exists, "Offer does not exist");
 
         return offer;
     }
 
-    function updateSupplier(address addr, string memory newName) public {
+    function updateSupplier(
+        RoleProof memory roleProof,
+        address addr,
+        string memory newName
+    ) public atLeastEditor(roleProof) {
         require(bytes(suppliersNames[addr]).length != 0, "Offer's supplier not registered");
 
         suppliersNames[addr] = newName;
@@ -104,8 +122,12 @@ contract OfferManager is AccessControl {
         emit OfferSupplierUpdated(addr, newName);
     }
 
-    function updateOffer(uint256 offerId, uint256 productCategoryId) public {
-        require(productCategoryManager.getProductCategoryExists(productCategoryId), "OfferManager: Product category does not exist");
+    function updateOffer(
+        RoleProof memory roleProof,
+        uint256 offerId,
+        uint256 productCategoryId
+    ) public atLeastEditor(roleProof) {
+        require(productCategoryManager.getProductCategoryExists(roleProof, productCategoryId), "OfferManager: Product category does not exist");
         Offer storage offer = offers[offerId];
         require(offer.exists, "Offer does not exist");
 
@@ -114,7 +136,10 @@ contract OfferManager is AccessControl {
         emit OfferUpdated(offerId, offer.owner);
     }
 
-    function deleteSupplier(address addr) public {
+    function deleteSupplier(
+        RoleProof memory roleProof,
+        address addr
+    ) public atLeastEditor(roleProof) {
         require(bytes(suppliersNames[addr]).length != 0, "Offer's supplier not registered");
         require(offerIds[addr].length == 0, "A supplier cannot be deleted if it still has active offers");
 
@@ -123,7 +148,10 @@ contract OfferManager is AccessControl {
         emit OfferSupplierDeleted(addr);
     }
 
-    function deleteOffer(uint256 offerId) public {
+    function deleteOffer(
+        RoleProof memory roleProof,
+        uint256 offerId
+    ) public atLeastEditor(roleProof) {
         Offer memory offer = offers[offerId];
         require(offer.exists, "Offer does not exist");
 
@@ -141,6 +169,7 @@ contract OfferManager is AccessControl {
 
         emit OfferDeleted(offerId, offer.owner);
     }
+
 
     // ROLES
     function addAdmin(address admin) public onlyAdmin {

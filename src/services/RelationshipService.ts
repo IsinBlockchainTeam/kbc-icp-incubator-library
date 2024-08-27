@@ -1,5 +1,6 @@
 import { RelationshipDriver } from '../drivers/RelationshipDriver';
 import { Relationship } from '../entities/Relationship';
+import { RoleProof } from '../types/RoleProof';
 
 export class RelationshipService {
     private _relationshipDriver: RelationshipDriver;
@@ -9,12 +10,14 @@ export class RelationshipService {
     }
 
     async registerRelationship(
+        roleProof: RoleProof,
         companyAAddress: string,
         companyBAddress: string,
         validFrom: Date,
         validUntil?: Date
     ): Promise<void> {
         await this._relationshipDriver.registerRelationship(
+            roleProof,
             companyAAddress,
             companyBAddress,
             validFrom,
@@ -22,16 +25,19 @@ export class RelationshipService {
         );
     }
 
-    async getRelationshipCounter(): Promise<number> {
-        return this._relationshipDriver.getRelationshipCounter();
+    async getRelationshipCounter(roleProof: RoleProof): Promise<number> {
+        return this._relationshipDriver.getRelationshipCounter(roleProof);
     }
 
-    async getRelationshipInfo(id: number): Promise<Relationship> {
-        return this._relationshipDriver.getRelationshipInfo(id);
+    async getRelationshipInfo(roleProof: RoleProof, id: number): Promise<Relationship> {
+        return this._relationshipDriver.getRelationshipInfo(roleProof, id);
     }
 
-    async getRelationshipIdsByCompany(companyAddress: string): Promise<number[]> {
-        return this._relationshipDriver.getRelationshipIdsByCompany(companyAddress);
+    async getRelationshipIdsByCompany(
+        roleProof: RoleProof,
+        companyAddress: string
+    ): Promise<number[]> {
+        return this._relationshipDriver.getRelationshipIdsByCompany(roleProof, companyAddress);
     }
 
     async addAdmin(address: string): Promise<void> {

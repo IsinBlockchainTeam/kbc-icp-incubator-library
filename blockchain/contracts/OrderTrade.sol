@@ -11,6 +11,7 @@ contract OrderTrade is Trade {
     using Counters for Counters.Counter;
 
     enum NegotiationStatus {INITIALIZED, PENDING, CONFIRMED}
+    enum OrderStatus { CONTRACTING, PRODUCTION, PAYED, EXPORTED, SHIPPED, COMPLETED }
 
     event OrderLineAdded(uint256 orderLineId);
     event OrderLineUpdated(uint256 orderLineId);
@@ -58,12 +59,12 @@ contract OrderTrade is Trade {
     EscrowManager private _escrowManager;
     Shipment private _shipment;
 
-    constructor(uint256 tradeId, address productCategoryAddress, address materialManagerAddress, address documentManagerAddress,
+    constructor(RoleProof memory roleProof, uint256 tradeId, address delegateManagerAddress,  address productCategoryAddress, address materialManagerAddress, address documentManagerAddress,
         address unitManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl,
         string memory metadataHash, uint256 paymentDeadline, uint256 documentDeliveryDeadline, address arbiter,
         uint256 shippingDeadline, uint256 deliveryDeadline, uint256 agreedAmount, address tokenAddress,
         address fiatManagerAddress, address escrowManagerAddress)
-    Trade(tradeId, productCategoryAddress, materialManagerAddress, documentManagerAddress, unitManagerAddress, supplier,
+    Trade(roleProof, tradeId, delegateManagerAddress, productCategoryAddress, materialManagerAddress, documentManagerAddress, unitManagerAddress, supplier,
     customer, commissioner, externalUrl, metadataHash) {
         require(escrowManagerAddress != address(0), "TradeManager: escrow manager address is the zero address");
 
@@ -84,24 +85,24 @@ contract OrderTrade is Trade {
         _hasOrderExpired = false;
     }
 
-    function getTrade() public view returns (uint256, address, address, address, string memory, uint256[] memory, bool, bool, uint256, uint256, address, uint256, uint256, NegotiationStatus, uint256, address, Escrow) {
+    function getTrade(RoleProof memory roleProof) public view atLeastViewer(roleProof) returns (uint256, address, address, address, string memory, uint256[] memory, bool, bool, uint256, uint256, address, uint256, uint256, NegotiationStatus, uint256, address, Escrow) {
         (uint256 tradeId, address supplier, address customer, address commissioner, string memory externalUrl, uint256[] memory lineIds) = _getTrade();
         return (tradeId, supplier, customer, commissioner, externalUrl, lineIds, _hasSupplierSigned, _hasCommissionerSigned, _paymentDeadline, _documentDeliveryDeadline, _arbiter, _shippingDeadline, _deliveryDeadline, getNegotiationStatus(), _agreedAmount, _tokenAddress, _escrow);
     }
 
-    function getTradeType() public override pure returns (TradeType) {
+    function getTradeType(RoleProof memory roleProof) public override view atLeastViewer(roleProof) returns (TradeType) {
         return TradeType.ORDER;
     }
 
-    function getLine(uint256 id) public view returns (Line memory, OrderLine memory) {
-        Line memory line = _getLine(id);
+    function getLine(RoleProof memory roleProof, uint256 id) public view atLeastViewer(roleProof) returns (Line memory, OrderLine memory) {
+        Line memory line = _getLine(roleProof, id);
         return (line, _orderLines[id]);
     }
 
-    function addLine(uint256 productCategoryId, uint256 quantity, string memory unit, OrderLinePrice memory price) public onlyAdminOrContractPart onlyOrdersInNegotiation returns(uint256) {
+    function addLine(RoleProof memory roleProof, uint256 productCategoryId, uint256 quantity, string memory unit, OrderLinePrice memory price) public onlyContractPart onlyOrdersInNegotiation atLeastEditor(roleProof) returns(uint256) {
         require(_fiatManager.contains(price.fiat), "OrderTrade: Fiat has not been registered");
 
-        uint256 tradeLineId = _addLine(productCategoryId, quantity, unit);
+        uint256 tradeLineId = _addLine(roleProof, productCategoryId, quantity, unit);
         _orderLines[tradeLineId] = OrderLine(price);
 
         emit OrderLineAdded(tradeLineId);
@@ -109,18 +110,18 @@ contract OrderTrade is Trade {
         return tradeLineId;
     }
 
-    function updateLine(uint256 id, uint256 productCategoryId, uint256 quantity, string memory unit, OrderLinePrice memory price) public onlyAdminOrContractPart onlyOrdersInNegotiation {
+    function updateLine(RoleProof memory roleProof, uint256 id, uint256 productCategoryId, uint256 quantity, string memory unit, OrderLinePrice memory price) public onlyContractPart onlyOrdersInNegotiation atLeastEditor(roleProof) {
         require(_fiatManager.contains(price.fiat), "OrderTrade: Fiat has not been registered");
 
-        _updateLine(id, productCategoryId, quantity, unit);
+        _updateLine(roleProof, id, productCategoryId, quantity, unit);
         _orderLines[id] = OrderLine(price);
 
         emit OrderLineUpdated(id);
         _updateSignatures(_msgSender());
     }
 
-    function assignMaterial(uint256 lineId, uint256 materialId) public onlyAdminOrContractPart {
-        _assignMaterial(lineId, materialId);
+    function assignMaterial(RoleProof memory roleProof, uint256 lineId, uint256 materialId) public onlyContractPart atLeastEditor(roleProof) {
+        _assignMaterial(roleProof, lineId, materialId);
         emit MaterialAssigned(lineId);
     }
 
@@ -134,37 +135,37 @@ contract OrderTrade is Trade {
         }
     }
 
-    function updatePaymentDeadline(uint256 paymentDeadline) public onlyAdminOrContractPart onlyOrdersInNegotiation {
+    function updatePaymentDeadline(RoleProof memory roleProof, uint256 paymentDeadline) public onlyContractPart onlyOrdersInNegotiation atLeastEditor(roleProof) {
         _paymentDeadline = paymentDeadline;
         _updateSignatures(_msgSender());
     }
 
-    function updateDocumentDeliveryDeadline(uint256 documentDeliveryDeadline) public onlyAdminOrContractPart onlyOrdersInNegotiation {
+    function updateDocumentDeliveryDeadline(RoleProof memory roleProof, uint256 documentDeliveryDeadline) public onlyContractPart onlyOrdersInNegotiation atLeastEditor(roleProof) {
         _documentDeliveryDeadline = documentDeliveryDeadline;
         _updateSignatures(_msgSender());
     }
 
-    function updateArbiter(address arbiter) public onlyAdminOrContractPart onlyOrdersInNegotiation {
+    function updateArbiter(RoleProof memory roleProof, address arbiter) public onlyContractPart onlyOrdersInNegotiation atLeastEditor(roleProof) {
         _arbiter = arbiter;
         _updateSignatures(_msgSender());
     }
 
-    function updateShippingDeadline(uint256 shippingDeadline) public onlyAdminOrContractPart onlyOrdersInNegotiation {
+    function updateShippingDeadline(RoleProof memory roleProof, uint256 shippingDeadline) public onlyContractPart onlyOrdersInNegotiation atLeastEditor(roleProof) {
         _shippingDeadline = shippingDeadline;
         _updateSignatures(_msgSender());
     }
 
-    function updateDeliveryDeadline(uint256 deliveryDeadline) public onlyAdminOrContractPart onlyOrdersInNegotiation {
+    function updateDeliveryDeadline(RoleProof memory roleProof, uint256 deliveryDeadline) public onlyContractPart onlyOrdersInNegotiation atLeastEditor(roleProof) {
         _deliveryDeadline = deliveryDeadline;
         _updateSignatures(_msgSender());
     }
 
-    function updateAgreedAmount(uint256 agreedAmount) public onlyAdminOrContractPart onlyOrdersInNegotiation {
+    function updateAgreedAmount(RoleProof memory roleProof, uint256 agreedAmount) public onlyContractPart onlyOrdersInNegotiation atLeastEditor(roleProof) {
         _agreedAmount = agreedAmount;
         _updateSignatures(_msgSender());
     }
 
-    function updateTokenAddress(address tokenAddress) public onlyAdminOrContractPart onlyOrdersInNegotiation {
+    function updateTokenAddress(RoleProof memory roleProof, address tokenAddress) public onlyContractPart onlyOrdersInNegotiation atLeastEditor(roleProof) {
         _tokenAddress = tokenAddress;
         _updateSignatures(_msgSender());
     }
@@ -190,7 +191,7 @@ contract OrderTrade is Trade {
         }
     }
 
-    function getWhoSigned() public view returns (address[] memory) {
+    function getWhoSigned(RoleProof memory roleProof) public view atLeastViewer(roleProof) returns (address[] memory) {
         address[] memory signers = new address[](2);
         if (_hasSupplierSigned) {
             signers[0] = _supplier;
@@ -201,7 +202,7 @@ contract OrderTrade is Trade {
         return signers;
     }
 
-    function confirmOrder() public onlyContractPart onlyOrdersInNegotiation {
+    function confirmOrder(RoleProof memory roleProof) public onlyContractPart onlyOrdersInNegotiation atLeastSigner(roleProof) {
         if (_msgSender() == _supplier) {
             _hasSupplierSigned = true;
         } else {
@@ -229,12 +230,12 @@ contract OrderTrade is Trade {
         }
     }
 
-    function createShipment(uint256 expirationDate, uint256 quantity, uint256 weight, uint256 price) public {
+    function createShipment(RoleProof memory roleProof, uint256 expirationDate, uint256 quantity, uint256 weight, uint256 price) public atLeastEditor(roleProof) {
         require(_hasSupplierSigned && _hasCommissionerSigned, "OrderTrade: The order has not been confirmed yet");
         require(_msgSender() == _supplier, "OrderTrade: Only the supplier can create the shipment");
         require(_shipment == Shipment(address(0)), "OrderTrade: Shipment already created");
 
-        _escrow = _escrowManager.registerEscrow(address(this), _supplier, _paymentDeadline - block.timestamp, _tokenAddress);
+        _escrow = _escrowManager.registerEscrow(roleProof, address(this), _supplier, _paymentDeadline - block.timestamp, _tokenAddress);
         DocumentLibrary.DocumentType[] memory landTransportationRequiredDocuments = new DocumentLibrary.DocumentType[](3);
         landTransportationRequiredDocuments[0] = DocumentLibrary.DocumentType.INSURANCE_CERTIFICATE;
         landTransportationRequiredDocuments[1] = DocumentLibrary.DocumentType.BOOKING_CONFIRMATION;
@@ -245,6 +246,8 @@ contract OrderTrade is Trade {
         seaTransportationRequiredDocuments[2] = DocumentLibrary.DocumentType.PHYTOSANITARY_CERTIFICATE;
         seaTransportationRequiredDocuments[3] = DocumentLibrary.DocumentType.SINGLE_EXPORT_DECLARATION;
         _shipment = new Shipment(
+            roleProof,
+            address(_delegateManager),
             expirationDate,
             quantity,
             weight,
@@ -259,11 +262,11 @@ contract OrderTrade is Trade {
         );
         _escrow.addAdmin(address(_shipment));
     }
-    function getShipment() public view returns (Shipment) {
+    function getShipment(RoleProof memory roleProof) public view atLeastViewer(roleProof) returns (Shipment) {
         return _shipment;
     }
 
-    function getEscrow() public view returns (Escrow) {
+    function getEscrow(RoleProof memory roleProof) public view atLeastViewer(roleProof) returns (Escrow) {
         return _escrow;
     }
 }

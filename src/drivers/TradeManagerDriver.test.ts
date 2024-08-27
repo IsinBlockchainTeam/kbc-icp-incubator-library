@@ -19,6 +19,7 @@ import { TradeType } from '../types/TradeType';
 import * as utilsModule from '../utils/utils';
 import { BasicTrade } from '../entities/BasicTrade';
 import { Trade } from '../entities/Trade';
+import { RoleProof } from '../types/RoleProof';
 
 describe('TradeManagerDriver', () => {
     let tradeManagerDriver: TradeManagerDriver;
@@ -37,6 +38,11 @@ describe('TradeManagerDriver', () => {
     const agreedAmount: number = 5;
     const tokenAddress: string = Wallet.createRandom().address;
     const mockedContractAddress: string = Wallet.createRandom().address;
+
+    const roleProof: RoleProof = {
+        signedProof: 'signedProof',
+        delegator: 'delegator'
+    };
 
     let mockedSigner: Signer;
 
@@ -162,6 +168,7 @@ describe('TradeManagerDriver', () => {
 
     it('should correctly register a basic trade', async () => {
         const [tradeId, tradeAddress, txHash] = await tradeManagerDriver.registerBasicTrade(
+            roleProof,
             supplier,
             customer,
             commissioner,
@@ -176,6 +183,7 @@ describe('TradeManagerDriver', () => {
         expect(mockedContract.registerBasicTrade).toHaveBeenCalledTimes(1);
         expect(mockedContract.registerBasicTrade).toHaveBeenNthCalledWith(
             1,
+            roleProof,
             supplier,
             customer,
             commissioner,
@@ -193,6 +201,7 @@ describe('TradeManagerDriver', () => {
 
         await expect(
             tradeManagerDriver.registerBasicTrade(
+                roleProof,
                 supplier,
                 customer,
                 commissioner,
@@ -206,6 +215,7 @@ describe('TradeManagerDriver', () => {
     it('should correctly register a basic trade - FAIL(Not an address)', async () => {
         await expect(
             tradeManagerDriver.registerBasicTrade(
+                roleProof,
                 'not an address',
                 customer,
                 commissioner,
@@ -221,6 +231,7 @@ describe('TradeManagerDriver', () => {
 
     it('should correctly register an order trade', async () => {
         const [tradeId, tradeAddress, txHash] = await tradeManagerDriver.registerOrderTrade(
+            roleProof,
             supplier,
             customer,
             commissioner,
@@ -241,6 +252,7 @@ describe('TradeManagerDriver', () => {
         expect(mockedContract.registerOrderTrade).toHaveBeenCalledTimes(1);
         expect(mockedContract.registerOrderTrade).toHaveBeenNthCalledWith(
             1,
+            roleProof,
             supplier,
             customer,
             commissioner,
@@ -264,6 +276,7 @@ describe('TradeManagerDriver', () => {
 
         await expect(
             tradeManagerDriver.registerOrderTrade(
+                roleProof,
                 supplier,
                 customer,
                 commissioner,
@@ -283,6 +296,7 @@ describe('TradeManagerDriver', () => {
     it('should correctly register an order trade - FAIL(Not an address)', async () => {
         await expect(
             tradeManagerDriver.registerOrderTrade(
+                roleProof,
                 'not an address',
                 customer,
                 commissioner,
@@ -303,79 +317,91 @@ describe('TradeManagerDriver', () => {
     });
 
     it('should correctly get trades', async () => {
-        const response: Trade[] = await tradeManagerDriver.getTrades();
+        const response: Trade[] = await tradeManagerDriver.getTrades(roleProof);
 
         expect(response).toEqual([
             new BasicTrade(0, supplier, customer, commissioner, externalUrl, [], name)
         ]);
 
         expect(mockedContract.getTradeCounter).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getTradeCounter).toHaveBeenNthCalledWith(1);
+        expect(mockedContract.getTradeCounter).toHaveBeenNthCalledWith(1, roleProof);
         expect(mockedGetTradeCounter).toHaveBeenCalledTimes(1);
         expect(mockedContract.getTrade).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getTrade).toHaveBeenNthCalledWith(1, 1);
+        expect(mockedContract.getTrade).toHaveBeenNthCalledWith(1, roleProof, 1);
         expect(mockedGetTrade).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly get trades and types', async () => {
-        const response: Map<string, TradeType> = await tradeManagerDriver.getTradesAndTypes();
+        const response: Map<string, TradeType> =
+            await tradeManagerDriver.getTradesAndTypes(roleProof);
         const expected: Map<string, TradeType> = new Map<string, TradeType>();
         expected.set(mockedContractAddress, TradeType.BASIC);
 
         expect(response).toEqual(expected);
 
         expect(mockedContract.getTradeCounter).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getTradeCounter).toHaveBeenNthCalledWith(1);
+        expect(mockedContract.getTradeCounter).toHaveBeenNthCalledWith(1, roleProof);
         expect(mockedGetTradeCounter).toHaveBeenCalledTimes(1);
         expect(mockedContract.getTradeType).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getTradeType).toHaveBeenNthCalledWith(1, 1);
+        expect(mockedContract.getTradeType).toHaveBeenNthCalledWith(1, roleProof, 1);
         expect(mockedGetTradeType).toHaveBeenCalledTimes(1);
         expect(getTradeTypeByIndexSpy).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly get a trade', async () => {
-        const response = await tradeManagerDriver.getTrade(0);
+        const response = await tradeManagerDriver.getTrade(roleProof, 0);
 
         expect(response).toEqual(mockedContractAddress);
 
         expect(mockedContract.getTrade).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getTrade).toHaveBeenNthCalledWith(1, 0);
+        expect(mockedContract.getTrade).toHaveBeenNthCalledWith(1, roleProof, 0);
         expect(mockedGetTrade).toHaveBeenCalledTimes(1);
     });
 
     it('should get trades by material', async () => {
-        const response = await tradeManagerDriver.getTradesByMaterial(42);
+        const response = await tradeManagerDriver.getTradesByMaterial(roleProof, 42);
 
         expect(response).toEqual([]);
     });
 
     it('should correctly get a trade type', async () => {
-        const response = await tradeManagerDriver.getTradeType(1);
+        const response = await tradeManagerDriver.getTradeType(roleProof, 1);
 
         expect(response).toEqual(TradeType.BASIC);
 
         expect(mockedContract.getTradeType).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getTradeType).toHaveBeenNthCalledWith(1, 1);
+        expect(mockedContract.getTradeType).toHaveBeenNthCalledWith(1, roleProof, 1);
         expect(mockedGetTradeType);
     });
 
     it('should correctly get trade ids of supplier', async () => {
-        const response = await tradeManagerDriver.getTradeIdsOfSupplier(supplier);
+        const response = await tradeManagerDriver.getTradeIdsOfSupplier(roleProof, supplier);
 
         expect(response).toEqual([0]);
 
         expect(mockedContract.getTradeIdsOfCommissioner).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getTradeIdsOfCommissioner).toHaveBeenNthCalledWith(1, supplier);
+        expect(mockedContract.getTradeIdsOfCommissioner).toHaveBeenNthCalledWith(
+            1,
+            roleProof,
+            supplier
+        );
         expect(mockedGetTradeIdsOfEntity).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly get trade ids of commissioner', async () => {
-        const response = await tradeManagerDriver.getTradeIdsOfCommissioner(commissioner);
+        const response = await tradeManagerDriver.getTradeIdsOfCommissioner(
+            roleProof,
+            commissioner
+        );
 
         expect(response).toEqual([0]);
 
         expect(mockedContract.getTradeIdsOfCommissioner).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getTradeIdsOfCommissioner).toHaveBeenNthCalledWith(1, commissioner);
+        expect(mockedContract.getTradeIdsOfCommissioner).toHaveBeenNthCalledWith(
+            1,
+            roleProof,
+            commissioner
+        );
         expect(mockedGetTradeIdsOfEntity).toHaveBeenCalledTimes(1);
     });
 });
