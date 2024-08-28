@@ -8,6 +8,7 @@ import { ICPFileDriver } from '../drivers/ICPFileDriver';
 import { Material } from '../entities/Material';
 import { ProductCategory } from '../entities/ProductCategory';
 import { OrderTrade } from '../entities/OrderTrade';
+import { RoleProof } from '../types/RoleProof';
 
 describe('BasicTradeService', () => {
     const externalUrl = 'externalUrl';
@@ -40,6 +41,11 @@ describe('BasicTradeService', () => {
         mockedIcpFileDriver
     );
 
+    const roleProof: RoleProof = {
+        signedProof: 'signedProof',
+        delegator: 'delegator'
+    };
+
     afterAll(() => {
         jest.restoreAllMocks();
     });
@@ -47,46 +53,53 @@ describe('BasicTradeService', () => {
     it.each([
         {
             serviceFunctionName: 'getTrade',
-            serviceFunction: () => basicTradeService.getTrade(),
+            serviceFunction: () => basicTradeService.getTrade(roleProof),
             expectedMockedFunction: mockedBasicTradeDriver.getTrade,
-            expectedMockedFunctionArgs: [undefined]
+            expectedMockedFunctionArgs: [roleProof, undefined]
         },
         {
             serviceFunctionName: 'getLines',
-            serviceFunction: () => basicTradeService.getLines(),
+            serviceFunction: () => basicTradeService.getLines(roleProof),
             expectedMockedFunction: mockedBasicTradeDriver.getLines,
-            expectedMockedFunctionArgs: []
+            expectedMockedFunctionArgs: [roleProof]
         },
         {
             serviceFunctionName: 'getLine',
-            serviceFunction: () => basicTradeService.getLine(1),
+            serviceFunction: () => basicTradeService.getLine(roleProof, 1),
             expectedMockedFunction: mockedBasicTradeDriver.getLine,
-            expectedMockedFunctionArgs: [1, undefined]
+            expectedMockedFunctionArgs: [roleProof, 1, undefined]
         },
         {
             serviceFunctionName: 'addLine',
-            serviceFunction: () => basicTradeService.addLine(new LineRequest(1, 20, units[0])),
+            serviceFunction: () =>
+                basicTradeService.addLine(roleProof, new LineRequest(1, 20, units[0])),
             expectedMockedFunction: mockedBasicTradeDriver.addLine,
-            expectedMockedFunctionArgs: [new LineRequest(1, 20, units[0])]
+            expectedMockedFunctionArgs: [roleProof, new LineRequest(1, 20, units[0])]
         },
         {
             serviceFunctionName: 'updateLine',
             serviceFunction: () =>
-                basicTradeService.updateLine(new Line(1, material, productCategory, 100, units[1])),
+                basicTradeService.updateLine(
+                    roleProof,
+                    new Line(1, material, productCategory, 100, units[1])
+                ),
             expectedMockedFunction: mockedBasicTradeDriver.updateLine,
-            expectedMockedFunctionArgs: [new Line(1, material, productCategory, 100, units[1])]
+            expectedMockedFunctionArgs: [
+                roleProof,
+                new Line(1, material, productCategory, 100, units[1])
+            ]
         },
         {
             serviceFunctionName: 'assignMaterial',
-            serviceFunction: () => basicTradeService.assignMaterial(1, 1),
+            serviceFunction: () => basicTradeService.assignMaterial(roleProof, 1, 1),
             expectedMockedFunction: mockedBasicTradeDriver.assignMaterial,
-            expectedMockedFunctionArgs: [1, 1]
+            expectedMockedFunctionArgs: [roleProof, 1, 1]
         },
         {
             serviceFunctionName: 'setName',
-            serviceFunction: () => basicTradeService.setName('name'),
+            serviceFunction: () => basicTradeService.setName(roleProof, 'name'),
             expectedMockedFunction: mockedBasicTradeDriver.setName,
-            expectedMockedFunctionArgs: ['name']
+            expectedMockedFunctionArgs: [roleProof, 'name']
         }
     ])(
         'should call driver $serviceFunctionName',
@@ -111,7 +124,7 @@ describe('BasicTradeService', () => {
                 })
             )
         );
-        await basicTradeService.getCompleteTrade();
+        await basicTradeService.getCompleteTrade(roleProof);
 
         expect(mockedBasicTradeDriver.getTrade).toHaveBeenCalledTimes(1);
         expect(mockedIcpFileDriver.read).toHaveBeenCalledTimes(1);
@@ -123,7 +136,7 @@ describe('BasicTradeService', () => {
 
     it('should throw error if try to get complete basic trade retrieved from external storage, without passing storage drivers to constructor', async () => {
         basicTradeService = new BasicTradeService(mockedBasicTradeDriver);
-        const fn = async () => basicTradeService.getCompleteTrade();
+        const fn = async () => basicTradeService.getCompleteTrade(roleProof);
         await expect(fn).rejects.toThrow(
             new Error('BasicTradeService: ICPFileDriver has not been set')
         );

@@ -4,11 +4,10 @@ import DocumentService from './DocumentService';
 import { DocumentDriver } from '../drivers/DocumentDriver';
 import { DocumentInfo, DocumentType } from '../entities/DocumentInfo';
 import { ICPFileDriver } from '../drivers/ICPFileDriver';
+import { RoleProof } from '../types/RoleProof';
 
 describe('DocumentService', () => {
     const owner = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8';
-    const transactionId = 2;
-    const documentId = 1;
     const rawDocument = {
         name: 'Document name',
         documentType: DocumentType.BILL_OF_LADING,
@@ -16,7 +15,6 @@ describe('DocumentService', () => {
         contentHash: 'contentHash',
         uploadedBy: owner
     };
-    const transactionType = 'trade';
 
     const mockedDocumentDriver = createMock<DocumentDriver>({
         registerDocument: jest.fn(),
@@ -34,6 +32,11 @@ describe('DocumentService', () => {
 
     let documentService = new DocumentService(mockedDocumentDriver, mockedIcpFileDriver);
 
+    const roleProof: RoleProof = {
+        signedProof: 'signedProof',
+        delegator: 'delegator'
+    };
+
     afterAll(() => {
         jest.restoreAllMocks();
     });
@@ -43,12 +46,14 @@ describe('DocumentService', () => {
             serviceFunctionName: 'registerDocument',
             serviceFunction: () =>
                 documentService.registerDocument(
+                    roleProof,
                     rawDocument.externalUrl,
                     rawDocument.contentHash,
                     rawDocument.uploadedBy
                 ),
             expectedMockedFunction: mockedDocumentDriver.registerDocument,
             expectedMockedFunctionArgs: [
+                roleProof,
                 rawDocument.externalUrl,
                 rawDocument.contentHash,
                 rawDocument.uploadedBy
@@ -58,6 +63,7 @@ describe('DocumentService', () => {
             serviceFunctionName: 'updateDocument',
             serviceFunction: () =>
                 documentService.updateDocument(
+                    roleProof,
                     1,
                     rawDocument.externalUrl,
                     rawDocument.contentHash,
@@ -65,6 +71,7 @@ describe('DocumentService', () => {
                 ),
             expectedMockedFunction: mockedDocumentDriver.updateDocument,
             expectedMockedFunctionArgs: [
+                roleProof,
                 1,
                 rawDocument.externalUrl,
                 rawDocument.contentHash,
@@ -73,15 +80,15 @@ describe('DocumentService', () => {
         },
         {
             serviceFunctionName: 'getDocumentsCounter',
-            serviceFunction: () => documentService.getDocumentsCounter(),
+            serviceFunction: () => documentService.getDocumentsCounter(roleProof),
             expectedMockedFunction: mockedDocumentDriver.getDocumentsCounter,
-            expectedMockedFunctionArgs: []
+            expectedMockedFunctionArgs: [roleProof]
         },
         {
             serviceFunctionName: 'getDocumentInfoById',
-            serviceFunction: () => documentService.getDocumentInfoById(3),
+            serviceFunction: () => documentService.getDocumentInfoById(roleProof, 3),
             expectedMockedFunction: mockedDocumentDriver.getDocumentById,
-            expectedMockedFunctionArgs: [3]
+            expectedMockedFunctionArgs: [roleProof, 3]
         },
         {
             serviceFunctionName: 'addAdmin',

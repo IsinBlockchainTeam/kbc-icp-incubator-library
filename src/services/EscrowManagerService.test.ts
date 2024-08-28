@@ -3,6 +3,7 @@ import { EscrowManagerService } from './EscrowManagerService';
 import { EscrowManagerDriver } from '../drivers/EscrowManagerDriver';
 import { Escrow } from '../entities/Escrow';
 import { EscrowStatus } from '../types/EscrowStatus';
+import { RoleProof } from '../types/RoleProof';
 
 describe('EscrowManagerService', () => {
     let escrowManagerService: EscrowManagerService;
@@ -17,9 +18,10 @@ describe('EscrowManagerService', () => {
         getEscrow: jest.fn(),
         updateFeeRecipient: jest.fn(),
         updateBaseFee: jest.fn(),
-        updatePercentageFee: jest.fn(),
+        updatePercentageFee: jest.fn()
     };
 
+    const admin = 'admin';
     const escrow = new Escrow(
         'payee',
         1000,
@@ -28,8 +30,13 @@ describe('EscrowManagerService', () => {
         EscrowStatus.ACTIVE,
         'feeRecipient',
         0,
-        20,
+        20
     );
+
+    const roleProof: RoleProof = {
+        signedProof: 'signedProof',
+        delegator: 'delegator'
+    };
 
     beforeAll(() => {
         mockedEscrowManagerDriver = createMock<EscrowManagerDriver>(mockedInstance);
@@ -44,12 +51,16 @@ describe('EscrowManagerService', () => {
             serviceFunctionName: 'registerEscrow',
             serviceFunction: () =>
                 escrowManagerService.registerEscrow(
+                    roleProof,
+                    admin,
                     escrow.payee,
                     escrow.duration,
                     escrow.tokenAddress
                 ),
             expectedMockedFunction: mockedInstance.registerEscrow,
             expectedMockedFunctionArgs: [
+                roleProof,
+                admin,
                 escrow.payee,
                 escrow.duration,
                 escrow.tokenAddress
@@ -57,9 +68,9 @@ describe('EscrowManagerService', () => {
         },
         {
             serviceFunctionName: 'getFeeRecipient',
-            serviceFunction: () => escrowManagerService.getFeeRecipient(),
+            serviceFunction: () => escrowManagerService.getFeeRecipient(roleProof),
             expectedMockedFunction: mockedInstance.getFeeRecipient,
-            expectedMockedFunctionArgs: []
+            expectedMockedFunctionArgs: [roleProof]
         },
         {
             serviceFunctionName: 'updateFeeRecipient',
@@ -69,9 +80,9 @@ describe('EscrowManagerService', () => {
         },
         {
             serviceFunctionName: 'getBaseFee',
-            serviceFunction: () => escrowManagerService.getBaseFee(),
+            serviceFunction: () => escrowManagerService.getBaseFee(roleProof),
             expectedMockedFunction: mockedInstance.getBaseFee,
-            expectedMockedFunctionArgs: []
+            expectedMockedFunctionArgs: [roleProof]
         },
         {
             serviceFunctionName: 'updateBaseFee',
@@ -81,9 +92,9 @@ describe('EscrowManagerService', () => {
         },
         {
             serviceFunctionName: 'getPercentageFee',
-            serviceFunction: () => escrowManagerService.getPercentageFee(),
+            serviceFunction: () => escrowManagerService.getPercentageFee(roleProof),
             expectedMockedFunction: mockedInstance.getPercentageFee,
-            expectedMockedFunctionArgs: []
+            expectedMockedFunctionArgs: [roleProof]
         },
         {
             serviceFunctionName: 'updatePercentageFee',
@@ -93,15 +104,15 @@ describe('EscrowManagerService', () => {
         },
         {
             serviceFunctionName: 'getEscrow',
-            serviceFunction: () => escrowManagerService.getEscrow(1),
+            serviceFunction: () => escrowManagerService.getEscrow(roleProof, 1),
             expectedMockedFunction: mockedInstance.getEscrow,
-            expectedMockedFunctionArgs: [1]
+            expectedMockedFunctionArgs: [roleProof, 1]
         },
         {
             serviceFunctionName: 'getEscrowCounter',
-            serviceFunction: () => escrowManagerService.getEscrowCounter(),
+            serviceFunction: () => escrowManagerService.getEscrowCounter(roleProof),
             expectedMockedFunction: mockedInstance.getEscrowCounter,
-            expectedMockedFunctionArgs: []
+            expectedMockedFunctionArgs: [roleProof]
         }
     ])(
         'service should call driver $serviceFunctionName',

@@ -2,15 +2,22 @@ import { BigNumber, Signer, Wallet } from 'ethers';
 import { createMock } from 'ts-auto-mock';
 import { EscrowManagerDriver } from './EscrowManagerDriver';
 import { EscrowManager, EscrowManager__factory } from '../smart-contracts';
+import { RoleProof } from '../types/RoleProof';
 
 describe('EscrowManagerDriver', () => {
     let escrowManagerDriver: EscrowManagerDriver;
+    const admin: string = Wallet.createRandom().address;
     const payee: string = Wallet.createRandom().address;
     const contractAddress: string = Wallet.createRandom().address;
     const escrowAddress: string = Wallet.createRandom().address;
     const feeRecipient: string = Wallet.createRandom().address;
     const baseFee: number = 20;
     const percentageFee: number = 1;
+
+    const roleProof: RoleProof = {
+        signedProof: 'signedProof',
+        delegator: 'delegator'
+    };
 
     let mockedSigner: Signer;
 
@@ -44,7 +51,7 @@ describe('EscrowManagerDriver', () => {
         getPercentageFee: mockedGetPercentageFee,
         updatePercentageFee: mockedWriteFunction,
         getEscrow: mockedGetEscrow,
-        getEscrowCounter: mockedGetEscrowCounter,
+        getEscrowCounter: mockedGetEscrowCounter
     });
 
     beforeAll(() => {
@@ -73,19 +80,49 @@ describe('EscrowManagerDriver', () => {
             ],
             transactionHash: 'transactionHash'
         });
-        const resp = await escrowManagerDriver.registerEscrow(payee, 1000, contractAddress);
+        const resp = await escrowManagerDriver.registerEscrow(
+            roleProof,
+            admin,
+            payee,
+            1000,
+            contractAddress
+        );
         expect(resp).toEqual([1, escrowAddress, 'transactionHash']);
-        expect(mockedContract.registerEscrow)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.registerEscrow)
-            .toHaveBeenNthCalledWith(1, payee, 1000, contractAddress);
+        expect(mockedContract.registerEscrow).toHaveBeenCalledTimes(1);
+        expect(mockedContract.registerEscrow).toHaveBeenNthCalledWith(
+            1,
+            roleProof,
+            admin,
+            payee,
+            1000,
+            contractAddress
+        );
 
-        expect(mockedWait)
-            .toHaveBeenCalledTimes(1);
+        expect(mockedWait).toHaveBeenCalledTimes(1);
     });
-    it('should correctly register a new Escrow - FAIL(Not an address)', async () => {
+    it('should correctly register a new Escrow - admin - FAIL(Not an address)', async () => {
         await expect(
-            escrowManagerDriver.registerEscrow('notAnAddress',1000, contractAddress)
+            escrowManagerDriver.registerEscrow(
+                roleProof,
+                'notAnAddress',
+                payee,
+                1000,
+                contractAddress
+            )
+        ).rejects.toThrow(new Error('Not an address'));
+
+        expect(mockedContract.registerEscrow).toHaveBeenCalledTimes(0);
+        expect(mockedWait).toHaveBeenCalledTimes(0);
+    });
+    it('should correctly register a new Escrow - payee - FAIL(Not an address)', async () => {
+        await expect(
+            escrowManagerDriver.registerEscrow(
+                roleProof,
+                admin,
+                'notAnAddress',
+                1000,
+                contractAddress
+            )
         ).rejects.toThrow(new Error('Not an address'));
 
         expect(mockedContract.registerEscrow).toHaveBeenCalledTimes(0);
@@ -97,7 +134,7 @@ describe('EscrowManagerDriver', () => {
             transactionHash: 'transactionHash'
         });
         await expect(
-            escrowManagerDriver.registerEscrow(payee,1000, contractAddress)
+            escrowManagerDriver.registerEscrow(roleProof, admin, payee, 1000, contractAddress)
         ).rejects.toThrow(new Error('Error during escrow registration, no events found'));
     });
     it('should correctly register a new Escrow - FAIL(Error during escrow registration, escrow not registered)', async () => {
@@ -114,42 +151,42 @@ describe('EscrowManagerDriver', () => {
             transactionHash: 'transactionHash'
         });
         await expect(
-            escrowManagerDriver.registerEscrow(payee,1000, contractAddress)
+            escrowManagerDriver.registerEscrow(roleProof, admin, payee, 1000, contractAddress)
         ).rejects.toThrow(new Error('Error during escrow registration, escrow not registered'));
     });
     it('should correctly retrieve escrow counter', async () => {
-        const response = await escrowManagerDriver.getEscrowCounter();
+        const response = await escrowManagerDriver.getEscrowCounter(roleProof);
 
         expect(response).toEqual(1);
 
         expect(mockedContract.getEscrowCounter).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getEscrowCounter).toHaveBeenNthCalledWith(1);
+        expect(mockedContract.getEscrowCounter).toHaveBeenNthCalledWith(1, roleProof);
     });
     it('should correctly retrieve fee recipient', async () => {
-        const response = await escrowManagerDriver.getFeeRecipient();
+        const response = await escrowManagerDriver.getFeeRecipient(roleProof);
 
         expect(response).toEqual(feeRecipient);
 
         expect(mockedContract.getFeeRecipient).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getFeeRecipient).toHaveBeenNthCalledWith(1);
+        expect(mockedContract.getFeeRecipient).toHaveBeenNthCalledWith(1, roleProof);
         expect(mockedGetFeeRecipient).toHaveBeenCalledTimes(1);
     });
     it('should correctly retrieve base fee', async () => {
-        const response = await escrowManagerDriver.getBaseFee();
+        const response = await escrowManagerDriver.getBaseFee(roleProof);
 
         expect(response).toEqual(baseFee);
 
         expect(mockedContract.getBaseFee).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getBaseFee).toHaveBeenNthCalledWith(1);
+        expect(mockedContract.getBaseFee).toHaveBeenNthCalledWith(1, roleProof);
         expect(mockedGetBaseFee).toHaveBeenCalledTimes(1);
     });
     it('should correctly retrieve percentage fee', async () => {
-        const response = await escrowManagerDriver.getPercentageFee();
+        const response = await escrowManagerDriver.getPercentageFee(roleProof);
 
         expect(response).toEqual(percentageFee);
 
         expect(mockedContract.getPercentageFee).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getPercentageFee).toHaveBeenNthCalledWith(1);
+        expect(mockedContract.getPercentageFee).toHaveBeenNthCalledWith(1, roleProof);
         expect(mockedGetPercentageFee).toHaveBeenCalledTimes(1);
     });
     it('should correctly update fee recipient', async () => {
@@ -195,12 +232,12 @@ describe('EscrowManagerDriver', () => {
         expect(mockedWait).toHaveBeenCalledTimes(0);
     });
     it('should correctly retrieve an Escrow', async () => {
-        const response = await escrowManagerDriver.getEscrow(1);
+        const response = await escrowManagerDriver.getEscrow(roleProof, 1);
 
         expect(response).toEqual(escrowAddress);
 
         expect(mockedContract.getEscrow).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getEscrow).toHaveBeenNthCalledWith(1, 1);
+        expect(mockedContract.getEscrow).toHaveBeenNthCalledWith(1, roleProof, 1);
         expect(mockedGetEscrow).toHaveBeenCalledTimes(1);
     });
 });

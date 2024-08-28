@@ -5,6 +5,7 @@ import { TradeType } from '../types/TradeType';
 import { ICPFileDriver } from '../drivers/ICPFileDriver';
 import { DocumentDriver } from '../drivers/DocumentDriver';
 import { DocumentMetadata, DocumentStatus, TransactionLine } from '../entities/Document';
+import { RoleProof } from '../types/RoleProof';
 
 export class TradeService {
     protected _tradeDriver: TradeDriver;
@@ -23,19 +24,20 @@ export class TradeService {
         if (storageMetadataDriver) this._icpFileDriver = storageMetadataDriver;
     }
 
-    async getLineCounter(): Promise<number> {
-        return this._tradeDriver.getLineCounter();
+    async getLineCounter(roleProof: RoleProof): Promise<number> {
+        return this._tradeDriver.getLineCounter(roleProof);
     }
 
-    async getTradeType(): Promise<TradeType> {
-        return this._tradeDriver.getTradeType();
+    async getTradeType(roleProof: RoleProof): Promise<TradeType> {
+        return this._tradeDriver.getTradeType(roleProof);
     }
 
-    async getLineExists(id: number): Promise<boolean> {
-        return this._tradeDriver.getLineExists(id);
+    async getLineExists(roleProof: RoleProof, id: number): Promise<boolean> {
+        return this._tradeDriver.getLineExists(roleProof, id);
     }
 
     async addDocument(
+        roleProof: RoleProof,
         documentType: DocumentType,
         fileContent: Uint8Array,
         externalUrl: string,
@@ -69,49 +71,52 @@ export class TradeService {
             delegatedOrganizationIds
         );
         return this._tradeDriver.addDocument(
+            roleProof,
             documentType,
             resourceSpec.name,
             contentHash.toString()
         );
     }
 
-    async validateDocument(documentId: number, status: DocumentStatus): Promise<void> {
+    async validateDocument(
+        roleProof: RoleProof,
+        documentId: number,
+        status: DocumentStatus
+    ): Promise<void> {
         if (status === DocumentStatus.NOT_EVALUATED)
             throw new Error('Cannot validate document with status NOT_EVALUATED');
-        return this._tradeDriver.validateDocument(documentId, status);
+        return this._tradeDriver.validateDocument(roleProof, documentId, status);
     }
 
-    async getAllDocumentIds(): Promise<number[]> {
-        return this._tradeDriver.getAllDocumentIds();
+    async getAllDocumentIds(roleProof: RoleProof): Promise<number[]> {
+        return this._tradeDriver.getAllDocumentIds(roleProof);
     }
 
-    async getAllDocuments(): Promise<DocumentInfo[]> {
+    async getAllDocuments(roleProof: RoleProof): Promise<DocumentInfo[]> {
         if (!this._documentDriver)
             throw new Error('Cannot perform this operation without a document driver');
-        const ids = await this.getAllDocumentIds();
-        return Promise.all(ids.map((id) => this._documentDriver!.getDocumentById(id)));
+        const ids = await this.getAllDocumentIds(roleProof);
+        return Promise.all(ids.map((id) => this._documentDriver!.getDocumentById(roleProof, id)));
     }
 
-    async getDocumentIdsByType(documentType: DocumentType): Promise<number[]> {
-        return this._tradeDriver.getDocumentIdsByType(documentType);
+    async getDocumentIdsByType(
+        roleProof: RoleProof,
+        documentType: DocumentType
+    ): Promise<number[]> {
+        return this._tradeDriver.getDocumentIdsByType(roleProof, documentType);
     }
 
-    async getDocumentsByType(documentType: DocumentType): Promise<DocumentInfo[]> {
+    async getDocumentsByType(
+        roleProof: RoleProof,
+        documentType: DocumentType
+    ): Promise<DocumentInfo[]> {
         if (!this._documentDriver)
             throw new Error('Cannot perform this operation without a document driver');
-        const ids = await this.getDocumentIdsByType(documentType);
-        return Promise.all(ids.map((id) => this._documentDriver!.getDocumentById(id)));
+        const ids = await this.getDocumentIdsByType(roleProof, documentType);
+        return Promise.all(ids.map((id) => this._documentDriver!.getDocumentById(roleProof, id)));
     }
 
-    async getDocumentStatus(documentId: number): Promise<DocumentStatus> {
-        return this._tradeDriver.getDocumentStatus(documentId);
-    }
-
-    async addAdmin(account: string): Promise<void> {
-        return this._tradeDriver.addAdmin(account);
-    }
-
-    async removeAdmin(account: string): Promise<void> {
-        return this._tradeDriver.removeAdmin(account);
+    async getDocumentStatus(roleProof: RoleProof, documentId: number): Promise<DocumentStatus> {
+        return this._tradeDriver.getDocumentStatus(roleProof, documentId);
     }
 }

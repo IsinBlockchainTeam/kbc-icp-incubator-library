@@ -10,6 +10,7 @@ import {
 import { EntityBuilder } from '../utils/EntityBuilder';
 import { AssetOperation } from '../entities/AssetOperation';
 import { AssetOperationType } from '../types/AssetOperationType';
+import { RoleProof } from '../types/RoleProof';
 
 export class AssetOperationDriver {
     private _assetOperationContract: AssetOperationManager;
@@ -38,31 +39,36 @@ export class AssetOperationDriver {
         ).connect(signer);
     }
 
-    async getAssetOperationsCounter(): Promise<number> {
-        const counter = await this._assetOperationContract.getAssetOperationsCounter();
+    async getAssetOperationsCounter(roleProof: RoleProof): Promise<number> {
+        const counter = await this._assetOperationContract.getAssetOperationsCounter(roleProof);
         return counter.toNumber();
     }
 
-    async getAssetOperationExists(id: number): Promise<boolean> {
-        return this._assetOperationContract.getAssetOperationExists(id);
+    async getAssetOperationExists(roleProof: RoleProof, id: number): Promise<boolean> {
+        return this._assetOperationContract.getAssetOperationExists(roleProof, id);
     }
 
-    async getAssetOperation(id: number): Promise<AssetOperation> {
-        const assetOperation = await this._assetOperationContract.getAssetOperation(id);
+    async getAssetOperation(roleProof: RoleProof, id: number): Promise<AssetOperation> {
+        const assetOperation = await this._assetOperationContract.getAssetOperation(roleProof, id);
         const inputMaterials = await Promise.all(
             assetOperation.inputMaterialIds.map((materialId: BigNumber) =>
-                this._materialContract.getMaterial(materialId)
+                this._materialContract.getMaterial(roleProof, materialId)
             )
         );
         const inputProductCategories = await Promise.all(
             inputMaterials.map((material) =>
-                this._productCategoryContract.getProductCategory(material.productCategoryId)
+                this._productCategoryContract.getProductCategory(
+                    roleProof,
+                    material.productCategoryId
+                )
             )
         );
         const outputMaterial = await this._materialContract.getMaterial(
+            roleProof,
             assetOperation.outputMaterialId
         );
         const outputProductCategories = await this._productCategoryContract.getProductCategory(
+            roleProof,
             outputMaterial.productCategoryId
         );
 
@@ -75,19 +81,22 @@ export class AssetOperationDriver {
         );
     }
 
-    async getAssetOperations(): Promise<AssetOperation[]> {
-        const counter: number = await this.getAssetOperationsCounter();
+    async getAssetOperations(roleProof: RoleProof): Promise<AssetOperation[]> {
+        const counter: number = await this.getAssetOperationsCounter(roleProof);
 
         const promises = [];
         for (let i = 1; i <= counter; i++) {
-            promises.push(this.getAssetOperation(i));
+            promises.push(this.getAssetOperation(roleProof, i));
         }
 
         return Promise.all(promises);
     }
 
-    async getAssetOperationType(id: number): Promise<AssetOperationType> {
-        const result: number = await this._assetOperationContract.getAssetOperationType(id);
+    async getAssetOperationType(roleProof: RoleProof, id: number): Promise<AssetOperationType> {
+        const result: number = await this._assetOperationContract.getAssetOperationType(
+            roleProof,
+            id
+        );
         switch (result) {
             case 0:
                 return AssetOperationType.CONSOLIDATION;
@@ -100,24 +109,31 @@ export class AssetOperationDriver {
         }
     }
 
-    async getAssetOperationsOfCreator(creator: string): Promise<AssetOperation[]> {
+    async getAssetOperationsOfCreator(
+        roleProof: RoleProof,
+        creator: string
+    ): Promise<AssetOperation[]> {
         const ids: number[] = (
-            await this._assetOperationContract.getAssetOperationIdsOfCreator(creator)
+            await this._assetOperationContract.getAssetOperationIdsOfCreator(roleProof, creator)
         ).map((id: BigNumber) => id.toNumber());
 
-        const promises = ids.map((id: number) => this.getAssetOperation(id));
+        const promises = ids.map((id: number) => this.getAssetOperation(roleProof, id));
 
         return Promise.all(promises);
     }
 
-    async getAssetOperationsByOutputMaterial(materialId: number): Promise<AssetOperation[]> {
-        const assetOperations: AssetOperation[] = await this.getAssetOperations();
+    async getAssetOperationsByOutputMaterial(
+        roleProof: RoleProof,
+        materialId: number
+    ): Promise<AssetOperation[]> {
+        const assetOperations: AssetOperation[] = await this.getAssetOperations(roleProof);
         return assetOperations.filter(
             (assetOperation: AssetOperation) => assetOperation.outputMaterial.id === materialId
         );
     }
 
     async registerAssetOperation(
+        roleProof: RoleProof,
         name: string,
         inputMaterialsIds: number[],
         outputMaterialId: number,
@@ -126,6 +142,7 @@ export class AssetOperationDriver {
         processTypes: string[]
     ): Promise<number> {
         const tx: any = await this._assetOperationContract.registerAssetOperation(
+            roleProof,
             name,
             inputMaterialsIds,
             outputMaterialId,
@@ -144,6 +161,7 @@ export class AssetOperationDriver {
     }
 
     async updateAssetOperation(
+        roleProof: RoleProof,
         id: number,
         name: string,
         inputMaterialsIds: number[],
@@ -153,6 +171,7 @@ export class AssetOperationDriver {
         processTypes: string[]
     ): Promise<void> {
         const tx = await this._assetOperationContract.updateAssetOperation(
+            roleProof,
             id,
             name,
             inputMaterialsIds,

@@ -4,9 +4,15 @@ import { DocumentManager, DocumentManager__factory } from '../smart-contracts';
 import { DocumentDriver } from './DocumentDriver';
 import { DocumentInfo, DocumentType } from '../entities/DocumentInfo';
 import { EntityBuilder } from '../utils/EntityBuilder';
+import { RoleProof } from '../types/RoleProof';
 
 describe('DocumentDriver', () => {
     let documentDriver: DocumentDriver;
+
+    const roleProof: RoleProof = {
+        signedProof: 'signedProof',
+        delegator: 'delegator'
+    };
 
     const testAddress = '0x6C9E9ADB5F57952434A4148b401502d9c6C70318';
     const errorMessage = 'testError';
@@ -71,6 +77,7 @@ describe('DocumentDriver', () => {
     describe('registerDocument', () => {
         it('should call and wait for register document', async () => {
             await documentDriver.registerDocument(
+                roleProof,
                 rawDocument.externalUrl,
                 rawDocument.contentHash,
                 await mockedSigner.getAddress()
@@ -79,6 +86,7 @@ describe('DocumentDriver', () => {
             expect(mockedContract.registerDocument).toHaveBeenCalledTimes(1);
             expect(mockedContract.registerDocument).toHaveBeenNthCalledWith(
                 1,
+                roleProof,
                 rawDocument.externalUrl,
                 rawDocument.contentHash,
                 await mockedSigner.getAddress()
@@ -91,6 +99,7 @@ describe('DocumentDriver', () => {
 
             const fn = async () =>
                 documentDriver.registerDocument(
+                    roleProof,
                     rawDocument.externalUrl,
                     rawDocument.contentHash,
                     await mockedSigner.getAddress()
@@ -102,6 +111,7 @@ describe('DocumentDriver', () => {
     describe('updateDocument', () => {
         it('should call and wait for update document', async () => {
             await documentDriver.updateDocument(
+                roleProof,
                 3,
                 rawDocument.externalUrl,
                 rawDocument.contentHash,
@@ -111,6 +121,7 @@ describe('DocumentDriver', () => {
             expect(mockedContract.updateDocument).toHaveBeenCalledTimes(1);
             expect(mockedContract.updateDocument).toHaveBeenNthCalledWith(
                 1,
+                roleProof,
                 3,
                 rawDocument.externalUrl,
                 rawDocument.contentHash,
@@ -124,6 +135,7 @@ describe('DocumentDriver', () => {
 
             const fn = async () =>
                 documentDriver.updateDocument(
+                    roleProof,
                     3,
                     rawDocument.externalUrl,
                     rawDocument.contentHash,
@@ -135,7 +147,7 @@ describe('DocumentDriver', () => {
 
     describe('getDocumentsCounter', () => {
         it('should get the document counter', async () => {
-            await documentDriver.getDocumentsCounter();
+            await documentDriver.getDocumentsCounter(roleProof);
             expect(mockedContract.getDocumentsCounter).toHaveBeenCalledTimes(1);
         });
 
@@ -144,7 +156,7 @@ describe('DocumentDriver', () => {
                 .fn()
                 .mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => documentDriver.getDocumentsCounter();
+            const fn = async () => documentDriver.getDocumentsCounter(roleProof);
             await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
     });
@@ -153,18 +165,18 @@ describe('DocumentDriver', () => {
         it('should retrieve document by id', async () => {
             mockedContract.getDocumentById = jest.fn().mockResolvedValue(mockedDocument);
 
-            const resp = await documentDriver.getDocumentById(3);
+            const resp = await documentDriver.getDocumentById(roleProof, 3);
 
             expect(resp).toEqual(mockedDocument);
 
             expect(mockedContract.getDocumentById).toHaveBeenCalledTimes(1);
-            expect(mockedContract.getDocumentById).toHaveBeenNthCalledWith(1, 3);
+            expect(mockedContract.getDocumentById).toHaveBeenNthCalledWith(1, roleProof, 3);
         });
 
         it('should retrieve documents by id - transaction fails', async () => {
             mockedContract.getDocumentById = jest.fn().mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => documentDriver.getDocumentById(3);
+            const fn = async () => documentDriver.getDocumentById(roleProof, 3);
             await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
     });

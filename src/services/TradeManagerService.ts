@@ -7,6 +7,7 @@ import { ICPFileDriver } from '../drivers/ICPFileDriver';
 import { URLStructure } from '../types/URLStructure';
 import { URL_SEGMENTS } from '../constants/ICP';
 import { BasicTradeMetadata } from '../entities/BasicTrade';
+import { RoleProof } from '../types/RoleProof';
 
 export interface TradeManagerServiceArgs {
     tradeManagerDriver: TradeManagerDriver;
@@ -29,6 +30,7 @@ export class TradeManagerService {
     }
 
     async registerBasicTrade(
+        roleProof: RoleProof,
         supplier: string,
         customer: string,
         commissioner: string,
@@ -40,6 +42,7 @@ export class TradeManagerService {
         return this.registerTrade(
             (externalUrl: string, fileHash: string) =>
                 this._tradeManagerDriver.registerBasicTrade(
+                    roleProof,
                     supplier,
                     customer,
                     commissioner,
@@ -54,6 +57,7 @@ export class TradeManagerService {
     }
 
     async registerOrderTrade(
+        roleProof: RoleProof,
         supplier: string,
         customer: string,
         commissioner: string,
@@ -71,6 +75,7 @@ export class TradeManagerService {
         return this.registerTrade(
             (externalUrl: string, fileHash: string) =>
                 this._tradeManagerDriver.registerOrderTrade(
+                    roleProof,
                     supplier,
                     customer,
                     commissioner,
@@ -90,36 +95,36 @@ export class TradeManagerService {
         );
     }
 
-    async getTradeCounter(): Promise<number> {
-        return this._tradeManagerDriver.getTradeCounter();
+    async getTradeCounter(roleProof: RoleProof): Promise<number> {
+        return this._tradeManagerDriver.getTradeCounter(roleProof);
     }
 
-    async getTrades(): Promise<Trade[]> {
-        return this._tradeManagerDriver.getTrades();
+    async getTrades(roleProof: RoleProof): Promise<Trade[]> {
+        return this._tradeManagerDriver.getTrades(roleProof);
     }
 
-    async getTradeType(id: number): Promise<TradeType> {
-        return this._tradeManagerDriver.getTradeType(id);
+    async getTradeType(roleProof: RoleProof, id: number): Promise<TradeType> {
+        return this._tradeManagerDriver.getTradeType(roleProof, id);
     }
 
-    async getTradesAndTypes(): Promise<Map<string, TradeType>> {
-        return this._tradeManagerDriver.getTradesAndTypes();
+    async getTradesAndTypes(roleProof: RoleProof): Promise<Map<string, TradeType>> {
+        return this._tradeManagerDriver.getTradesAndTypes(roleProof);
     }
 
-    async getTrade(id: number): Promise<string> {
-        return this._tradeManagerDriver.getTrade(id);
+    async getTrade(roleProof: RoleProof, id: number): Promise<string> {
+        return this._tradeManagerDriver.getTrade(roleProof, id);
     }
 
-    async getTradesByMaterial(materialId: number): Promise<Trade[]> {
-        return this._tradeManagerDriver.getTradesByMaterial(materialId);
+    async getTradesByMaterial(roleProof: RoleProof, materialId: number): Promise<Trade[]> {
+        return this._tradeManagerDriver.getTradesByMaterial(roleProof, materialId);
     }
 
-    async getTradeIdsOfSupplier(supplier: string): Promise<number[]> {
-        return this._tradeManagerDriver.getTradeIdsOfSupplier(supplier);
+    async getTradeIdsOfSupplier(roleProof: RoleProof, supplier: string): Promise<number[]> {
+        return this._tradeManagerDriver.getTradeIdsOfSupplier(roleProof, supplier);
     }
 
-    async getTradeIdsOfCommissioner(commissioner: string): Promise<number[]> {
-        return this._tradeManagerDriver.getTradeIdsOfCommissioner(commissioner);
+    async getTradeIdsOfCommissioner(roleProof: RoleProof, commissioner: string): Promise<number[]> {
+        return this._tradeManagerDriver.getTradeIdsOfCommissioner(roleProof, commissioner);
     }
 
     private async registerTrade(

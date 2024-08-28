@@ -46,23 +46,13 @@ describe('ERC1056', () => {
         [identity, identity2, delegate, delegate2, delegate3, badBoy] = await ethers.getSigners();
     });
 
-    const privateKey = arrayify(
-        '0xa285ab66393c5fdda46d6fbad9e27fafd438254ab72ad5acb681a0e9f20f5d7b'
-    );
+    const privateKey = arrayify('0xa285ab66393c5fdda46d6fbad9e27fafd438254ab72ad5acb681a0e9f20f5d7b');
     const signerAddress = '0x2036C6CD85692F0Fb2C26E6c6B2ECed9e4478Dfd';
 
-    const privateKey2 = arrayify(
-        '0xa285ab66393c5fdda46d6fbad9e27fafd438254ab72ad5acb681a0e9f20f5d7a'
-    );
+    const privateKey2 = arrayify('0xa285ab66393c5fdda46d6fbad9e27fafd438254ab72ad5acb681a0e9f20f5d7a');
     const signerAddress2 = '0xEA91e58E9Fa466786726F0a947e8583c7c5B3185';
 
-    async function signData(
-        identity: string,
-        signerAddress: string,
-        privateKeyBytes: Uint8Array,
-        dataBytes: Uint8Array,
-        nonce?: number
-    ) {
+    async function signData(identity: string, signerAddress: string, privateKeyBytes: Uint8Array, dataBytes: Uint8Array, nonce?: number) {
         const _nonce = nonce || (await didReg.nonce(signerAddress));
         const paddedNonce = zeroPad(arrayify(_nonce), 32);
         const dataToSign = hexConcat(['0x1900', didReg.address, paddedNonce, identity, dataBytes]);
@@ -94,9 +84,7 @@ describe('ERC1056', () => {
             describe('as current owner', () => {
                 let tx: ContractTransaction;
                 before(async () => {
-                    tx = await didReg
-                        .connect(identity)
-                        .changeOwner(identity.address, delegate.address);
+                    tx = await didReg.connect(identity).changeOwner(identity.address, delegate.address);
                 });
                 it('should change owner mapping', async () => {
                     const owner = await didReg.owners(identity.address);
@@ -120,9 +108,7 @@ describe('ERC1056', () => {
                 let previousChange: number;
                 before(async () => {
                     previousChange = (await didReg.changed(identity.address)).toNumber();
-                    tx = await didReg
-                        .connect(delegate)
-                        .changeOwner(identity.address, delegate2.address);
+                    tx = await didReg.connect(delegate).changeOwner(identity.address, delegate2.address);
                 });
                 it('should change owner mapping', async () => {
                     const owner = await didReg.owners(identity.address);
@@ -143,17 +129,13 @@ describe('ERC1056', () => {
 
             describe('as original owner', () => {
                 it('should fail', async () => {
-                    await expect(
-                        didReg.connect(identity).changeOwner(identity.address, identity.address)
-                    ).to.be.rejectedWith(/bad_actor/);
+                    await expect(didReg.connect(identity).changeOwner(identity.address, identity.address)).to.be.rejectedWith(/bad_actor/);
                 });
             });
 
             describe('as attacker', () => {
                 it('should fail', async () => {
-                    await expect(
-                        didReg.connect(badBoy).changeOwner(identity.address, badBoy.address)
-                    ).to.be.rejectedWith(/bad_actor/);
+                    await expect(didReg.connect(badBoy).changeOwner(identity.address, badBoy.address)).to.be.rejectedWith(/bad_actor/);
                 });
             });
         });
@@ -163,15 +145,8 @@ describe('ERC1056', () => {
 
             describe('as current owner', () => {
                 before(async () => {
-                    const sig = await signData(
-                        signerAddress,
-                        signerAddress,
-                        privateKey,
-                        concat([toUtf8Bytes('changeOwner'), signerAddress2])
-                    );
-                    tx = await didReg
-                        .connect(badBoy)
-                        .changeOwnerSigned(signerAddress, sig.v, sig.r, sig.s, signerAddress2);
+                    const sig = await signData(signerAddress, signerAddress, privateKey, concat([toUtf8Bytes('changeOwner'), signerAddress2]));
+                    tx = await didReg.connect(badBoy).changeOwnerSigned(signerAddress, sig.v, sig.r, sig.s, signerAddress2);
                 });
                 it('should change owner mapping', async () => {
                     const owner2: string = await didReg.owners(signerAddress);
@@ -192,17 +167,10 @@ describe('ERC1056', () => {
 
             describe('as original owner', () => {
                 it('should fail', async () => {
-                    const sig = await signData(
-                        signerAddress,
-                        signerAddress,
-                        privateKey,
-                        concat([toUtf8Bytes('changeOwner'), signerAddress])
+                    const sig = await signData(signerAddress, signerAddress, privateKey, concat([toUtf8Bytes('changeOwner'), signerAddress]));
+                    await expect(didReg.connect(badBoy).changeOwnerSigned(signerAddress, sig.v, sig.r, sig.s, signerAddress)).to.be.rejectedWith(
+                        /bad_signature/
                     );
-                    await expect(
-                        didReg
-                            .connect(badBoy)
-                            .changeOwnerSigned(signerAddress, sig.v, sig.r, sig.s, signerAddress)
-                    ).to.be.rejectedWith(/bad_signature/);
                 });
             });
 
@@ -210,18 +178,10 @@ describe('ERC1056', () => {
                 it('should fail', async () => {
                     const currentNonce = (await didReg.nonce(signerAddress2)).toNumber();
                     expect(currentNonce).to.equal(0);
-                    const sig = await signData(
-                        signerAddress,
-                        signerAddress2,
-                        privateKey2,
-                        concat([toUtf8Bytes('changeOwner'), signerAddress2]),
-                        1
+                    const sig = await signData(signerAddress, signerAddress2, privateKey2, concat([toUtf8Bytes('changeOwner'), signerAddress2]), 1);
+                    await expect(didReg.connect(badBoy).changeOwnerSigned(signerAddress, sig.v, sig.r, sig.s, signerAddress2)).to.be.rejectedWith(
+                        /bad_signature/
                     );
-                    await expect(
-                        didReg
-                            .connect(badBoy)
-                            .changeOwnerSigned(signerAddress, sig.v, sig.r, sig.s, signerAddress2)
-                    ).to.be.rejectedWith(/bad_signature/);
                 });
             });
         });
@@ -230,11 +190,7 @@ describe('ERC1056', () => {
     describe('addDelegate()', () => {
         describe('using msg.sender', () => {
             it('validDelegate should be false', async () => {
-                const valid = await didReg.validDelegate(
-                    identity.address,
-                    formatBytes32String('attestor'),
-                    delegate3.address
-                );
+                const valid = await didReg.validDelegate(identity.address, formatBytes32String('attestor'), delegate3.address);
                 expect(valid).to.equal(false); // we have not yet assigned delegate correctly
             });
 
@@ -244,22 +200,11 @@ describe('ERC1056', () => {
                 let previousChange: number;
                 before(async () => {
                     previousChange = (await didReg.changed(identity.address)).toNumber();
-                    tx = await didReg
-                        .connect(delegate2)
-                        .addDelegate(
-                            identity.address,
-                            formatBytes32String('attestor'),
-                            delegate3.address,
-                            86400
-                        );
+                    tx = await didReg.connect(delegate2).addDelegate(identity.address, formatBytes32String('attestor'), delegate3.address, 86400);
                     block = await ethers.provider.getBlock((await tx.wait()).blockNumber);
                 });
                 it('validDelegate should be true', async () => {
-                    const valid = await didReg.validDelegate(
-                        identity.address,
-                        formatBytes32String('attestor'),
-                        delegate3.address
-                    );
+                    const valid = await didReg.validDelegate(identity.address, formatBytes32String('attestor'), delegate3.address);
                     expect(valid).to.equal(true); // assigned delegate correctly
                 });
                 it('should sets changed to transaction block', async () => {
@@ -282,14 +227,7 @@ describe('ERC1056', () => {
                     const currentOwnerAddress = await didReg.owners(identity.address);
                     expect(currentOwnerAddress).not.to.equal(identity.address);
                     await expect(
-                        didReg
-                            .connect(identity)
-                            .addDelegate(
-                                identity.address,
-                                formatBytes32String('attestor'),
-                                badBoy.address,
-                                86400
-                            )
+                        didReg.connect(identity).addDelegate(identity.address, formatBytes32String('attestor'), badBoy.address, 86400)
                     ).to.be.rejectedWith(/bad_actor/);
                 });
             });
@@ -297,14 +235,7 @@ describe('ERC1056', () => {
             describe('as attacker', () => {
                 it('should fail', async () => {
                     await expect(
-                        didReg
-                            .connect(badBoy)
-                            .addDelegate(
-                                identity.address,
-                                formatBytes32String('attestor'),
-                                badBoy.address,
-                                86400
-                            )
+                        didReg.connect(badBoy).addDelegate(identity.address, formatBytes32String('attestor'), badBoy.address, 86400)
                     ).to.be.rejectedWith(/bad_actor/);
                 });
             });
@@ -321,32 +252,15 @@ describe('ERC1056', () => {
                         signerAddress,
                         signerAddress2,
                         privateKey2,
-                        concat([
-                            toUtf8Bytes('addDelegate'),
-                            formatBytes32String('attestor'),
-                            delegate.address,
-                            zeroPad(hexlify(86400), 32)
-                        ])
+                        concat([toUtf8Bytes('addDelegate'), formatBytes32String('attestor'), delegate.address, zeroPad(hexlify(86400), 32)])
                     );
                     tx = await didReg
                         .connect(badBoy)
-                        .addDelegateSigned(
-                            signerAddress,
-                            sig.v,
-                            sig.r,
-                            sig.s,
-                            formatBytes32String('attestor'),
-                            delegate.address,
-                            86400
-                        );
+                        .addDelegateSigned(signerAddress, sig.v, sig.r, sig.s, formatBytes32String('attestor'), delegate.address, 86400);
                     block = await ethers.provider.getBlock((await tx.wait()).blockNumber);
                 });
                 it('validDelegate should be true', async () => {
-                    const valid = await didReg.validDelegate(
-                        signerAddress,
-                        formatBytes32String('attestor'),
-                        delegate.address
-                    );
+                    const valid = await didReg.validDelegate(signerAddress, formatBytes32String('attestor'), delegate.address);
                     expect(valid).to.equal(true); // assigned delegate correctly
                 });
                 it('should sets changed to transaction block', async () => {
@@ -370,25 +284,12 @@ describe('ERC1056', () => {
                         signerAddress,
                         signerAddress,
                         privateKey,
-                        concat([
-                            toUtf8Bytes('addDelegate'),
-                            formatBytes32String('attestor'),
-                            delegate.address,
-                            zeroPad(hexlify(86400), 32)
-                        ])
+                        concat([toUtf8Bytes('addDelegate'), formatBytes32String('attestor'), delegate.address, zeroPad(hexlify(86400), 32)])
                     );
                     await expect(
                         didReg
                             .connect(badBoy)
-                            .addDelegateSigned(
-                                signerAddress,
-                                sig.v,
-                                sig.r,
-                                sig.s,
-                                formatBytes32String('attestor'),
-                                delegate.address,
-                                86400
-                            )
+                            .addDelegateSigned(signerAddress, sig.v, sig.r, sig.s, formatBytes32String('attestor'), delegate.address, 86400)
                     ).to.be.rejectedWith(/bad_signature/);
                 });
             });
@@ -401,26 +302,13 @@ describe('ERC1056', () => {
                         signerAddress,
                         signerAddress2,
                         privateKey2,
-                        concat([
-                            toUtf8Bytes('addDelegate'),
-                            formatBytes32String('attestor'),
-                            delegate.address,
-                            zeroPad(hexlify(86400), 32)
-                        ]),
+                        concat([toUtf8Bytes('addDelegate'), formatBytes32String('attestor'), delegate.address, zeroPad(hexlify(86400), 32)]),
                         2
                     );
                     await expect(
                         didReg
                             .connect(badBoy)
-                            .addDelegateSigned(
-                                signerAddress,
-                                sig.v,
-                                sig.r,
-                                sig.s,
-                                formatBytes32String('attestor'),
-                                delegate.address,
-                                86400
-                            )
+                            .addDelegateSigned(signerAddress, sig.v, sig.r, sig.s, formatBytes32String('attestor'), delegate.address, 86400)
                     ).to.be.rejectedWith(/bad_signature/);
                 });
             });
@@ -430,11 +318,7 @@ describe('ERC1056', () => {
     describe('revokeDelegate()', () => {
         describe('using msg.sender', () => {
             it('validDelegate should be true', async () => {
-                const valid = await didReg.validDelegate(
-                    identity.address,
-                    formatBytes32String('attestor'),
-                    delegate3.address
-                );
+                const valid = await didReg.validDelegate(identity.address, formatBytes32String('attestor'), delegate3.address);
                 expect(valid).to.equal(true); // not yet revoked
             });
 
@@ -443,20 +327,10 @@ describe('ERC1056', () => {
                 let previousChange: number;
                 before(async () => {
                     previousChange = (await didReg.changed(identity.address)).toNumber();
-                    tx = await didReg
-                        .connect(delegate2)
-                        .revokeDelegate(
-                            identity.address,
-                            formatBytes32String('attestor'),
-                            delegate3.address
-                        );
+                    tx = await didReg.connect(delegate2).revokeDelegate(identity.address, formatBytes32String('attestor'), delegate3.address);
                 });
                 it('validDelegate should be false', async () => {
-                    const valid = await didReg.validDelegate(
-                        identity.address,
-                        formatBytes32String('attestor'),
-                        delegate3.address
-                    );
+                    const valid = await didReg.validDelegate(identity.address, formatBytes32String('attestor'), delegate3.address);
                     expect(valid).to.equal(false); // revoked correctly
                 });
                 it('should sets changed to transaction block', async () => {
@@ -469,9 +343,7 @@ describe('ERC1056', () => {
                     expect(event.args.identity).to.equal(identity.address);
                     expect(parseBytes32String(event.args.delegateType)).to.equal('attestor');
                     expect(event.args.delegate).to.equal(delegate3.address);
-                    expect(event.args.validTo.toNumber()).to.be.lessThanOrEqual(
-                        (await ethers.provider.getBlock(tx.blockNumber)).timestamp
-                    );
+                    expect(event.args.validTo.toNumber()).to.be.lessThanOrEqual((await ethers.provider.getBlock(tx.blockNumber)).timestamp);
                     expect(event.args.previousChange.toNumber()).to.equal(previousChange);
                 });
             });
@@ -481,13 +353,7 @@ describe('ERC1056', () => {
                     const currentOwnerAddress = await didReg.owners(identity.address);
                     expect(currentOwnerAddress).not.to.equal(identity.address);
                     await expect(
-                        didReg
-                            .connect(identity)
-                            .revokeDelegate(
-                                identity.address,
-                                formatBytes32String('attestor'),
-                                badBoy.address
-                            )
+                        didReg.connect(identity).revokeDelegate(identity.address, formatBytes32String('attestor'), badBoy.address)
                     ).to.be.rejectedWith(/bad_actor/);
                 });
             });
@@ -495,13 +361,7 @@ describe('ERC1056', () => {
             describe('as attacker', () => {
                 it('should fail', async () => {
                     await expect(
-                        didReg
-                            .connect(badBoy)
-                            .revokeDelegate(
-                                identity.address,
-                                formatBytes32String('attestor'),
-                                badBoy.address
-                            )
+                        didReg.connect(badBoy).revokeDelegate(identity.address, formatBytes32String('attestor'), badBoy.address)
                     ).to.be.revertedWith('bad_actor');
                 });
             });
@@ -517,29 +377,14 @@ describe('ERC1056', () => {
                         signerAddress,
                         signerAddress2,
                         privateKey2,
-                        concat([
-                            toUtf8Bytes('revokeDelegate'),
-                            formatBytes32String('attestor'),
-                            delegate.address
-                        ])
+                        concat([toUtf8Bytes('revokeDelegate'), formatBytes32String('attestor'), delegate.address])
                     );
                     tx = await didReg
                         .connect(badBoy)
-                        .revokeDelegateSigned(
-                            signerAddress,
-                            sig.v,
-                            sig.r,
-                            sig.s,
-                            formatBytes32String('attestor'),
-                            delegate.address
-                        );
+                        .revokeDelegateSigned(signerAddress, sig.v, sig.r, sig.s, formatBytes32String('attestor'), delegate.address);
                 });
                 it('validDelegate should be false', async () => {
-                    const valid = await didReg.validDelegate(
-                        signerAddress,
-                        formatBytes32String('attestor'),
-                        delegate.address
-                    );
+                    const valid = await didReg.validDelegate(signerAddress, formatBytes32String('attestor'), delegate.address);
                     expect(valid).to.equal(false); // revoked delegate correctly
                 });
                 it('should sets changed to transaction block', async () => {
@@ -552,9 +397,7 @@ describe('ERC1056', () => {
                     expect(event.args.identity).to.equal(signerAddress);
                     expect(parseBytes32String(event.args.delegateType)).to.equal('attestor');
                     expect(event.args.delegate).to.equal(delegate.address);
-                    expect(event.args.validTo.toNumber()).to.be.lessThanOrEqual(
-                        (await ethers.provider.getBlock(tx.blockNumber)).timestamp
-                    );
+                    expect(event.args.validTo.toNumber()).to.be.lessThanOrEqual((await ethers.provider.getBlock(tx.blockNumber)).timestamp);
                     expect(event.args.previousChange.toNumber()).to.equal(previousChange);
                 });
             });
@@ -565,23 +408,12 @@ describe('ERC1056', () => {
                         signerAddress,
                         signerAddress,
                         privateKey,
-                        concat([
-                            toUtf8Bytes('revokeDelegate'),
-                            formatBytes32String('attestor'),
-                            delegate.address
-                        ])
+                        concat([toUtf8Bytes('revokeDelegate'), formatBytes32String('attestor'), delegate.address])
                     );
                     await expect(
                         didReg
                             .connect(badBoy)
-                            .revokeDelegateSigned(
-                                signerAddress,
-                                sig.v,
-                                sig.r,
-                                sig.s,
-                                formatBytes32String('attestor'),
-                                delegate.address
-                            )
+                            .revokeDelegateSigned(signerAddress, sig.v, sig.r, sig.s, formatBytes32String('attestor'), delegate.address)
                     ).to.be.rejectedWith(/bad_signature/);
                 });
             });
@@ -594,24 +426,13 @@ describe('ERC1056', () => {
                         signerAddress,
                         signerAddress2,
                         privateKey2,
-                        concat([
-                            toUtf8Bytes('revokeDelegate'),
-                            formatBytes32String('attestor'),
-                            delegate.address
-                        ]),
+                        concat([toUtf8Bytes('revokeDelegate'), formatBytes32String('attestor'), delegate.address]),
                         1
                     );
                     await expect(
                         didReg
                             .connect(badBoy)
-                            .revokeDelegateSigned(
-                                signerAddress,
-                                sig.v,
-                                sig.r,
-                                sig.s,
-                                formatBytes32String('attestor'),
-                                delegate.address
-                            )
+                            .revokeDelegateSigned(signerAddress, sig.v, sig.r, sig.s, formatBytes32String('attestor'), delegate.address)
                     ).to.be.rejectedWith(/bad_signature/);
                 });
             });
@@ -627,17 +448,10 @@ describe('ERC1056', () => {
                 before(async () => {
                     previousChange = (await didReg.changed(identity.address)).toNumber();
                     const currentOwnerAddress = await didReg.owners(identity.address);
-                    const signer = (await ethers.getSigners()).find(
-                        (signer: SignerWithAddress) => signer.address === currentOwnerAddress
-                    );
+                    const signer = (await ethers.getSigners()).find((signer: SignerWithAddress) => signer.address === currentOwnerAddress);
                     tx = await didReg
                         .connect(signer)
-                        .setAttribute(
-                            identity.address,
-                            formatBytes32String('encryptionKey'),
-                            toUtf8Bytes('mykey'),
-                            86400
-                        );
+                        .setAttribute(identity.address, formatBytes32String('encryptionKey'), toUtf8Bytes('mykey'), 86400);
                     block = await ethers.provider.getBlock((await tx.wait()).blockNumber);
                 });
                 it('should sets changed to transaction block', async () => {
@@ -660,14 +474,7 @@ describe('ERC1056', () => {
                     const currentOwnerAddress = await didReg.owners(identity.address);
                     expect(currentOwnerAddress).not.to.equal(identity.address);
                     await expect(
-                        didReg
-                            .connect(identity)
-                            .setAttribute(
-                                identity.address,
-                                formatBytes32String('encryptionKey'),
-                                toUtf8Bytes('mykey'),
-                                86400
-                            )
+                        didReg.connect(identity).setAttribute(identity.address, formatBytes32String('encryptionKey'), toUtf8Bytes('mykey'), 86400)
                     ).to.be.rejectedWith(/bad_actor/);
                 });
             });
@@ -675,14 +482,7 @@ describe('ERC1056', () => {
             describe('as attacker', () => {
                 it('should fail', async () => {
                     await expect(
-                        didReg
-                            .connect(badBoy)
-                            .setAttribute(
-                                identity.address,
-                                formatBytes32String('encryptionKey'),
-                                toUtf8Bytes('mykey'),
-                                86400
-                            )
+                        didReg.connect(badBoy).setAttribute(identity.address, formatBytes32String('encryptionKey'), toUtf8Bytes('mykey'), 86400)
                     ).to.be.rejectedWith(/bad_actor/);
                 });
             });
@@ -699,24 +499,11 @@ describe('ERC1056', () => {
                         signerAddress,
                         signerAddress2,
                         privateKey2,
-                        concat([
-                            toUtf8Bytes('setAttribute'),
-                            formatBytes32String('encryptionKey'),
-                            toUtf8Bytes('mykey'),
-                            zeroPad(hexlify(86400), 32)
-                        ])
+                        concat([toUtf8Bytes('setAttribute'), formatBytes32String('encryptionKey'), toUtf8Bytes('mykey'), zeroPad(hexlify(86400), 32)])
                     );
                     tx = await didReg
                         .connect(badBoy)
-                        .setAttributeSigned(
-                            signerAddress,
-                            sig.v,
-                            sig.r,
-                            sig.s,
-                            formatBytes32String('encryptionKey'),
-                            toUtf8Bytes('mykey'),
-                            86400
-                        );
+                        .setAttributeSigned(signerAddress, sig.v, sig.r, sig.s, formatBytes32String('encryptionKey'), toUtf8Bytes('mykey'), 86400);
                     block = await ethers.provider.getBlock((await tx.wait()).blockNumber);
                 });
                 it('should sets changed to transaction block', async () => {
@@ -740,25 +527,12 @@ describe('ERC1056', () => {
                         signerAddress,
                         signerAddress,
                         privateKey,
-                        concat([
-                            toUtf8Bytes('setAttribute'),
-                            formatBytes32String('encryptionKey'),
-                            toUtf8Bytes('mykey'),
-                            zeroPad(hexlify(86400), 32)
-                        ])
+                        concat([toUtf8Bytes('setAttribute'), formatBytes32String('encryptionKey'), toUtf8Bytes('mykey'), zeroPad(hexlify(86400), 32)])
                     );
                     await expect(
                         didReg
                             .connect(badBoy)
-                            .setAttributeSigned(
-                                signerAddress,
-                                sig.v,
-                                sig.r,
-                                sig.s,
-                                formatBytes32String('encryptionKey'),
-                                toUtf8Bytes('mykey'),
-                                86400
-                            )
+                            .setAttributeSigned(signerAddress, sig.v, sig.r, sig.s, formatBytes32String('encryptionKey'), toUtf8Bytes('mykey'), 86400)
                     ).to.be.rejectedWith(/bad_signature/);
                 });
             });
@@ -782,15 +556,7 @@ describe('ERC1056', () => {
                     await expect(
                         didReg
                             .connect(badBoy)
-                            .setAttributeSigned(
-                                signerAddress,
-                                sig.v,
-                                sig.r,
-                                sig.s,
-                                formatBytes32String('encryptionKey'),
-                                toUtf8Bytes('mykey'),
-                                86400
-                            )
+                            .setAttributeSigned(signerAddress, sig.v, sig.r, sig.s, formatBytes32String('encryptionKey'), toUtf8Bytes('mykey'), 86400)
                     ).to.be.rejectedWith(/bad_signature/);
                 });
             });
@@ -805,16 +571,8 @@ describe('ERC1056', () => {
                 before(async () => {
                     previousChange = (await didReg.changed(identity.address)).toNumber();
                     const currentOwnerAddress = await didReg.owners(identity.address);
-                    const signer = (await ethers.getSigners()).find(
-                        (signer: SignerWithAddress) => signer.address === currentOwnerAddress
-                    );
-                    tx = await didReg
-                        .connect(signer)
-                        .revokeAttribute(
-                            identity.address,
-                            formatBytes32String('encryptionKey'),
-                            toUtf8Bytes('mykey')
-                        );
+                    const signer = (await ethers.getSigners()).find((signer: SignerWithAddress) => signer.address === currentOwnerAddress);
+                    tx = await didReg.connect(signer).revokeAttribute(identity.address, formatBytes32String('encryptionKey'), toUtf8Bytes('mykey'));
                 });
                 it('should sets changed to transaction block', async () => {
                     const latest = await didReg.changed(identity.address);
@@ -836,13 +594,7 @@ describe('ERC1056', () => {
                     const currentOwnerAddress = await didReg.owners(identity.address);
                     expect(currentOwnerAddress).not.to.equal(identity.address);
                     await expect(
-                        didReg
-                            .connect(identity)
-                            .revokeAttribute(
-                                identity.address,
-                                formatBytes32String('encryptionKey'),
-                                toUtf8Bytes('mykey')
-                            )
+                        didReg.connect(identity).revokeAttribute(identity.address, formatBytes32String('encryptionKey'), toUtf8Bytes('mykey'))
                     ).to.be.rejectedWith(/bad_actor/);
                 });
             });
@@ -850,13 +602,7 @@ describe('ERC1056', () => {
             describe('as attacker', () => {
                 it('should fail', async () => {
                     await expect(
-                        didReg
-                            .connect(badBoy)
-                            .revokeAttribute(
-                                identity.address,
-                                formatBytes32String('encryptionKey'),
-                                toUtf8Bytes('mykey')
-                            )
+                        didReg.connect(badBoy).revokeAttribute(identity.address, formatBytes32String('encryptionKey'), toUtf8Bytes('mykey'))
                     ).to.be.rejectedWith(/bad_actor/);
                 });
             });
@@ -872,22 +618,11 @@ describe('ERC1056', () => {
                         signerAddress,
                         signerAddress2,
                         privateKey2,
-                        concat([
-                            toUtf8Bytes('revokeAttribute'),
-                            formatBytes32String('encryptionKey'),
-                            toUtf8Bytes('mykey')
-                        ])
+                        concat([toUtf8Bytes('revokeAttribute'), formatBytes32String('encryptionKey'), toUtf8Bytes('mykey')])
                     );
                     tx = await didReg
                         .connect(badBoy)
-                        .revokeAttributeSigned(
-                            signerAddress,
-                            sig.v,
-                            sig.r,
-                            sig.s,
-                            formatBytes32String('encryptionKey'),
-                            toUtf8Bytes('mykey')
-                        );
+                        .revokeAttributeSigned(signerAddress, sig.v, sig.r, sig.s, formatBytes32String('encryptionKey'), toUtf8Bytes('mykey'));
                 });
                 it('should sets changed to transaction block', async () => {
                     const latest = await didReg.changed(signerAddress);
@@ -910,23 +645,12 @@ describe('ERC1056', () => {
                         signerAddress,
                         signerAddress,
                         privateKey,
-                        concat([
-                            toUtf8Bytes('revokeAttribute'),
-                            formatBytes32String('encryptionKey'),
-                            toUtf8Bytes('mykey')
-                        ])
+                        concat([toUtf8Bytes('revokeAttribute'), formatBytes32String('encryptionKey'), toUtf8Bytes('mykey')])
                     );
                     await expect(
                         didReg
                             .connect(badBoy)
-                            .revokeAttributeSigned(
-                                signerAddress,
-                                sig.v,
-                                sig.r,
-                                sig.s,
-                                formatBytes32String('encryptionKey'),
-                                toUtf8Bytes('mykey')
-                            )
+                            .revokeAttributeSigned(signerAddress, sig.v, sig.r, sig.s, formatBytes32String('encryptionKey'), toUtf8Bytes('mykey'))
                     ).to.be.rejectedWith(/bad_signature/);
                 });
             });
@@ -939,24 +663,13 @@ describe('ERC1056', () => {
                         signerAddress,
                         signerAddress2,
                         privateKey2,
-                        concat([
-                            toUtf8Bytes('revokeAttribute'),
-                            formatBytes32String('encryptionKey'),
-                            toUtf8Bytes('mykey')
-                        ]),
+                        concat([toUtf8Bytes('revokeAttribute'), formatBytes32String('encryptionKey'), toUtf8Bytes('mykey')]),
                         1
                     );
                     await expect(
                         didReg
                             .connect(badBoy)
-                            .revokeAttributeSigned(
-                                signerAddress,
-                                sig.v,
-                                sig.r,
-                                sig.s,
-                                formatBytes32String('encryptionKey'),
-                                toUtf8Bytes('mykey')
-                            )
+                            .revokeAttributeSigned(signerAddress, sig.v, sig.r, sig.s, formatBytes32String('encryptionKey'), toUtf8Bytes('mykey'))
                     ).to.be.rejectedWith(/bad_signature/);
                 });
             });

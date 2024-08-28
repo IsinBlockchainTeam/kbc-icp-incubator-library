@@ -1,5 +1,6 @@
 import { Event, Signer, utils } from 'ethers';
 import { EscrowManager, EscrowManager__factory } from '../smart-contracts';
+import { RoleProof } from '../types/RoleProof';
 
 export class EscrowManagerDriver {
     private _contract: EscrowManager;
@@ -11,18 +12,26 @@ export class EscrowManagerDriver {
         ).connect(signer);
     }
 
-    async getEscrowCounter(): Promise<number> {
-        return (await this._contract.getEscrowCounter()).toNumber();
+    async getEscrowCounter(roleProof: RoleProof): Promise<number> {
+        return (await this._contract.getEscrowCounter(roleProof)).toNumber();
     }
 
-    async registerEscrow(payee: string, duration: number, tokenAddress: string): Promise<[number, string, string]> {
-        if (
-            !utils.isAddress(payee) ||
-            !utils.isAddress(tokenAddress)
-        ) {
+    async registerEscrow(
+        roleProof: RoleProof,
+        admin: string,
+        payee: string,
+        duration: number,
+        tokenAddress: string
+    ): Promise<[number, string, string]> {
+        if (!utils.isAddress(admin) || !utils.isAddress(payee) || !utils.isAddress(tokenAddress)) {
             throw new Error('Not an address');
         }
+        if (duration <= 0) {
+            throw new Error('Duration must be greater than 0');
+        }
         const tx = await this._contract.registerEscrow(
+            roleProof,
+            admin,
             payee,
             duration,
             tokenAddress
@@ -39,17 +48,20 @@ export class EscrowManagerDriver {
         return [eventArgs.id.toNumber(), eventArgs.escrowAddress, transactionHash];
     }
 
-    async getFeeRecipient(): Promise<string> {
-        return this._contract.getFeeRecipient();
+    async getFeeRecipient(roleProof: RoleProof): Promise<string> {
+        return this._contract.getFeeRecipient(roleProof);
     }
-    async getBaseFee(): Promise<number> {
-        return (await this._contract.getBaseFee()).toNumber();
+
+    async getBaseFee(roleProof: RoleProof): Promise<number> {
+        return (await this._contract.getBaseFee(roleProof)).toNumber();
     }
-    async getPercentageFee(): Promise<number> {
-        return (await this._contract.getPercentageFee()).toNumber();
+
+    async getPercentageFee(roleProof: RoleProof): Promise<number> {
+        return (await this._contract.getPercentageFee(roleProof)).toNumber();
     }
-    async getEscrow(id: number): Promise<string> {
-        return this._contract.getEscrow(id);
+
+    async getEscrow(roleProof: RoleProof, id: number): Promise<string> {
+        return this._contract.getEscrow(roleProof, id);
     }
 
     async updateFeeRecipient(newFeeRecipient: string): Promise<void> {
@@ -59,6 +71,7 @@ export class EscrowManagerDriver {
         const tx = await this._contract.updateFeeRecipient(newFeeRecipient);
         await tx.wait();
     }
+
     async updateBaseFee(newBaseFee: number): Promise<void> {
         if (newBaseFee < 0) {
             throw new Error('Base fee must be greater than 0');
@@ -66,11 +79,28 @@ export class EscrowManagerDriver {
         const tx = await this._contract.updateBaseFee(newBaseFee);
         await tx.wait();
     }
+
     async updatePercentageFee(newPercentageFee: number): Promise<void> {
         if (newPercentageFee < 0 || newPercentageFee > 100) {
             throw new Error('Percentage fee must be between 0 and 100');
         }
         const tx = await this._contract.updatePercentageFee(newPercentageFee);
+        await tx.wait();
+    }
+
+    async addAdmin(admin: string): Promise<void> {
+        if (!utils.isAddress(admin)) {
+            throw new Error('Not an address');
+        }
+        const tx = await this._contract.addAdmin(admin);
+        await tx.wait();
+    }
+
+    async removeAdmin(admin: string): Promise<void> {
+        if (!utils.isAddress(admin)) {
+            throw new Error('Not an address');
+        }
+        const tx = await this._contract.removeAdmin(admin);
         await tx.wait();
     }
 }

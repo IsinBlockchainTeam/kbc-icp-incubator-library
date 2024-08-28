@@ -1,9 +1,10 @@
-import { Signer, utils } from 'ethers';
+import { Signer } from 'ethers';
 import { Trade as TradeContract, Trade__factory } from '../smart-contracts';
 import { DocumentType } from '../entities/DocumentInfo';
 import { TradeType } from '../types/TradeType';
 import { getTradeTypeByIndex } from '../utils/utils';
 import { DocumentStatus } from '../entities/Document';
+import { RoleProof } from '../types/RoleProof';
 
 export class TradeDriver {
     protected _contract: TradeContract;
@@ -12,54 +13,73 @@ export class TradeDriver {
         this._contract = Trade__factory.connect(tradeAddress, signer.provider!).connect(signer);
     }
 
-    async getLineCounter(): Promise<number> {
-        const counter = await this._contract.getLineCounter();
+    async getLineCounter(roleProof: RoleProof): Promise<number> {
+        const counter = await this._contract.getLineCounter(roleProof);
         return counter.toNumber();
     }
 
-    async getTradeType(): Promise<TradeType> {
-        return getTradeTypeByIndex(await this._contract.getTradeType());
+    async getTradeType(roleProof: RoleProof): Promise<TradeType> {
+        return getTradeTypeByIndex(await this._contract.getTradeType(roleProof));
     }
 
-    async getLineExists(id: number): Promise<boolean> {
-        return this._contract.getLineExists(id);
+    async getLineExists(roleProof: RoleProof, id: number): Promise<boolean> {
+        return this._contract.getLineExists(roleProof, id);
     }
 
     async addDocument(
+        roleProof: RoleProof,
         documentType: DocumentType,
         externalUrl: string,
         contentHash: string
     ): Promise<void> {
-        const tx = await this._contract.addDocument(documentType, externalUrl, contentHash);
+        const tx = await this._contract.addDocument(
+            roleProof,
+            documentType,
+            externalUrl,
+            contentHash
+        );
         await tx.wait();
     }
 
     async updateDocument(
+        roleProof: RoleProof,
         documentId: number,
         externalUrl: string,
         contentHash: string
     ): Promise<void> {
-        const tx = await this._contract.updateDocument(documentId, externalUrl, contentHash);
+        const tx = await this._contract.updateDocument(
+            roleProof,
+            documentId,
+            externalUrl,
+            contentHash
+        );
         await tx.wait();
     }
 
-    async validateDocument(documentId: number, status: DocumentStatus): Promise<void> {
-        const tx = await this._contract.validateDocument(documentId, status);
+    async validateDocument(
+        roleProof: RoleProof,
+        documentId: number,
+        status: DocumentStatus
+    ): Promise<void> {
+        const tx = await this._contract.validateDocument(roleProof, documentId, status);
         await tx.wait();
     }
 
-    async getAllDocumentIds(): Promise<number[]> {
-        const ids = await this._contract.getAllDocumentIds();
+    async getAllDocumentIds(roleProof: RoleProof): Promise<number[]> {
+        const ids = await this._contract.getAllDocumentIds(roleProof);
         return ids.map((id) => id.toNumber());
     }
 
-    async getDocumentIdsByType(documentType: DocumentType): Promise<number[]> {
-        const ids = await this._contract.getDocumentIdsByType(documentType);
+    async getDocumentIdsByType(
+        roleProof: RoleProof,
+        documentType: DocumentType
+    ): Promise<number[]> {
+        const ids = await this._contract.getDocumentIdsByType(roleProof, documentType);
         return ids.map((id) => id.toNumber());
     }
 
-    async getDocumentStatus(documentId: number): Promise<DocumentStatus> {
-        const result = await this._contract.getDocumentStatus(documentId);
+    async getDocumentStatus(roleProof: RoleProof, documentId: number): Promise<DocumentStatus> {
+        const result = await this._contract.getDocumentStatus(roleProof, documentId);
         switch (result) {
             case 0:
                 return DocumentStatus.NOT_EVALUATED;
@@ -70,17 +90,5 @@ export class TradeDriver {
             default:
                 throw new Error('Invalid document status');
         }
-    }
-
-    async addAdmin(account: string): Promise<void> {
-        if (!utils.isAddress(account)) throw new Error('Not an address');
-        const tx = await this._contract.addAdmin(account);
-        await tx.wait();
-    }
-
-    async removeAdmin(account: string): Promise<void> {
-        if (!utils.isAddress(account)) throw new Error('Not an address');
-        const tx = await this._contract.removeAdmin(account);
-        await tx.wait();
     }
 }

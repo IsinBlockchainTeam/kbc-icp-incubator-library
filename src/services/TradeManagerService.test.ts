@@ -8,6 +8,7 @@ import { NegotiationStatus } from '../types/NegotiationStatus';
 import { URLStructure } from '../types/URLStructure';
 import { ICPFileDriver } from '../drivers/ICPFileDriver';
 import { URL_SEGMENTS } from '../constants/ICP';
+import { RoleProof } from '../types/RoleProof';
 
 describe('TradeManagerService', () => {
     let tradeManagerService: TradeManagerService;
@@ -75,6 +76,11 @@ describe('TradeManagerService', () => {
     };
     const delegatedOrganizationIds: number[] = [1, 2];
 
+    const roleProof: RoleProof = {
+        signedProof: 'signedProof',
+        delegator: 'delegator'
+    };
+
     describe('Without storage driver', () => {
         beforeAll(() => {
             mockedTradeManagerDriver = createMock<TradeManagerDriver>(mockedInstance);
@@ -89,53 +95,58 @@ describe('TradeManagerService', () => {
         it.each([
             {
                 serviceFunctionName: 'getTradeCounter',
-                serviceFunction: () => tradeManagerService.getTradeCounter(),
+                serviceFunction: () => tradeManagerService.getTradeCounter(roleProof),
                 expectedMockedFunction: mockedInstance.getTradeCounter,
-                expectedMockedFunctionArgs: []
+                expectedMockedFunctionArgs: [roleProof]
             },
             {
                 serviceFunctionName: 'getTrades',
-                serviceFunction: () => tradeManagerService.getTrades(),
+                serviceFunction: () => tradeManagerService.getTrades(roleProof),
                 expectedMockedFunction: mockedInstance.getTrades,
-                expectedMockedFunctionArgs: []
+                expectedMockedFunctionArgs: [roleProof]
             },
             {
                 serviceFunctionName: 'getTradesAndTypes',
-                serviceFunction: () => tradeManagerService.getTradesAndTypes(),
+                serviceFunction: () => tradeManagerService.getTradesAndTypes(roleProof),
                 expectedMockedFunction: mockedInstance.getTradesAndTypes,
-                expectedMockedFunctionArgs: []
+                expectedMockedFunctionArgs: [roleProof]
             },
             {
                 serviceFunctionName: 'getTrade',
-                serviceFunction: () => tradeManagerService.getTrade(basicTrade.tradeId),
+                serviceFunction: () => tradeManagerService.getTrade(roleProof, basicTrade.tradeId),
                 expectedMockedFunction: mockedInstance.getTrade,
-                expectedMockedFunctionArgs: [basicTrade.tradeId]
+                expectedMockedFunctionArgs: [roleProof, basicTrade.tradeId]
             },
             {
                 serviceFunctionName: 'getTradeType',
-                serviceFunction: () => tradeManagerService.getTradeType(basicTrade.tradeId),
+                serviceFunction: () =>
+                    tradeManagerService.getTradeType(roleProof, basicTrade.tradeId),
                 expectedMockedFunction: mockedInstance.getTradeType,
-                expectedMockedFunctionArgs: [basicTrade.tradeId]
+                expectedMockedFunctionArgs: [roleProof, basicTrade.tradeId]
             },
             {
                 serviceFunctionName: 'getTradesByMaterial',
-                serviceFunction: () => tradeManagerService.getTradesByMaterial(basicTrade.tradeId),
+                serviceFunction: () =>
+                    tradeManagerService.getTradesByMaterial(roleProof, basicTrade.tradeId),
                 expectedMockedFunction: mockedInstance.getTradesByMaterial,
-                expectedMockedFunctionArgs: [basicTrade.tradeId]
+                expectedMockedFunctionArgs: [roleProof, basicTrade.tradeId]
             },
             {
                 serviceFunctionName: 'getTradeIdsOfSupplier',
                 serviceFunction: () =>
-                    tradeManagerService.getTradeIdsOfSupplier(basicTrade.supplier),
+                    tradeManagerService.getTradeIdsOfSupplier(roleProof, basicTrade.supplier),
                 expectedMockedFunction: mockedInstance.getTradeIdsOfSupplier,
-                expectedMockedFunctionArgs: [basicTrade.supplier]
+                expectedMockedFunctionArgs: [roleProof, basicTrade.supplier]
             },
             {
                 serviceFunctionName: 'getTradeIdsOfCommissioner',
                 serviceFunction: () =>
-                    tradeManagerService.getTradeIdsOfCommissioner(basicTrade.commissioner),
+                    tradeManagerService.getTradeIdsOfCommissioner(
+                        roleProof,
+                        basicTrade.commissioner
+                    ),
                 expectedMockedFunction: mockedInstance.getTradeIdsOfCommissioner,
-                expectedMockedFunctionArgs: [basicTrade.commissioner]
+                expectedMockedFunctionArgs: [roleProof, basicTrade.commissioner]
             }
         ])(
             'service should call driver $serviceFunctionName',
@@ -164,6 +175,7 @@ describe('TradeManagerService', () => {
                 serviceFunctionName: 'registerBasicTrade',
                 serviceFunction: () =>
                     tradeManagerService.registerBasicTrade(
+                        roleProof,
                         basicTrade.supplier,
                         basicTrade.customer,
                         basicTrade.commissioner,
@@ -190,6 +202,7 @@ describe('TradeManagerService', () => {
                 serviceFunctionName: 'registerOrderTrade',
                 serviceFunction: () =>
                     tradeManagerService.registerOrderTrade(
+                        roleProof,
                         orderTrade.supplier,
                         orderTrade.customer,
                         orderTrade.commissioner,
@@ -236,6 +249,7 @@ describe('TradeManagerService', () => {
 
         await expect(
             tradeManagerService.registerBasicTrade(
+                roleProof,
                 basicTrade.supplier,
                 basicTrade.customer,
                 basicTrade.commissioner,
@@ -248,6 +262,7 @@ describe('TradeManagerService', () => {
 
         await expect(
             tradeManagerService.registerOrderTrade(
+                roleProof,
                 orderTrade.supplier,
                 orderTrade.customer,
                 orderTrade.commissioner,

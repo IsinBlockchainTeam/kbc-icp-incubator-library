@@ -4,6 +4,7 @@ import { Signer, utils } from 'ethers';
 import { RelationshipManager, RelationshipManager__factory } from '../smart-contracts';
 import { Relationship } from '../entities/Relationship';
 import { EntityBuilder } from '../utils/EntityBuilder';
+import { RoleProof } from '../types/RoleProof';
 
 export class RelationshipDriver {
     private _contract: RelationshipManager;
@@ -16,6 +17,7 @@ export class RelationshipDriver {
     }
 
     async registerRelationship(
+        roleProof: RoleProof,
         companyAAddress: string,
         companyBAddress: string,
         validFrom: Date,
@@ -24,6 +26,7 @@ export class RelationshipDriver {
         if (!utils.isAddress(companyAAddress)) throw new Error('Company A not an address');
         if (!utils.isAddress(companyBAddress)) throw new Error('Company B not an address');
         const tx = await this._contract.registerRelationship(
+            roleProof,
             companyAAddress,
             companyBAddress,
             validFrom.getTime(),
@@ -32,18 +35,21 @@ export class RelationshipDriver {
         await tx.wait();
     }
 
-    async getRelationshipCounter(): Promise<number> {
-        const counter = await this._contract.getRelationshipCounter();
+    async getRelationshipCounter(roleProof: RoleProof): Promise<number> {
+        const counter = await this._contract.getRelationshipCounter(roleProof);
         return counter.toNumber();
     }
 
-    async getRelationshipInfo(id: number): Promise<Relationship> {
-        const relationship = await this._contract.getRelationshipInfo(id);
+    async getRelationshipInfo(roleProof: RoleProof, id: number): Promise<Relationship> {
+        const relationship = await this._contract.getRelationshipInfo(roleProof, id);
         return EntityBuilder.buildRelationship(relationship);
     }
 
-    async getRelationshipIdsByCompany(companyAddress: string): Promise<number[]> {
-        const ids = await this._contract.getRelationshipIdsByCompany(companyAddress);
+    async getRelationshipIdsByCompany(
+        roleProof: RoleProof,
+        companyAddress: string
+    ): Promise<number[]> {
+        const ids = await this._contract.getRelationshipIdsByCompany(roleProof, companyAddress);
         return ids.map((id) => id.toNumber());
     }
 

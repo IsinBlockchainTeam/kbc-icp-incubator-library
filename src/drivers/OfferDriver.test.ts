@@ -11,9 +11,15 @@ import {
 } from '../smart-contracts';
 import { EntityBuilder } from '../utils/EntityBuilder';
 import { Offer } from '../entities/Offer';
+import { RoleProof } from '../types/RoleProof';
 
 describe('OfferDriver', () => {
     let offerDriver: OfferDriver;
+
+    const roleProof: RoleProof = {
+        signedProof: 'signedProof',
+        delegator: 'delegator'
+    };
 
     const companyNames = ['Company 1', 'Company 2'];
     const testAddress = '0x6C9E9ADB5F57952434A4148b401502d9c6C70318';
@@ -129,11 +135,12 @@ describe('OfferDriver', () => {
 
     describe('registerSupplier', () => {
         it('should call and wait for register a supplier', async () => {
-            await offerDriver.registerSupplier(companyOwner.address, companyNames[0]);
+            await offerDriver.registerSupplier(roleProof, companyOwner.address, companyNames[0]);
 
             expect(mockedRegisterSupplier).toHaveBeenCalledTimes(1);
             expect(mockedRegisterSupplier).toHaveBeenNthCalledWith(
                 1,
+                roleProof,
                 companyOwner.address,
                 companyNames[0]
             );
@@ -142,6 +149,7 @@ describe('OfferDriver', () => {
             expect(mockedContract.registerSupplier).toHaveBeenCalledTimes(1);
             expect(mockedContract.registerSupplier).toHaveBeenNthCalledWith(
                 1,
+                roleProof,
                 companyOwner.address,
                 companyNames[0]
             );
@@ -151,27 +159,34 @@ describe('OfferDriver', () => {
             mockedRegisterSupplier.mockRejectedValueOnce(new Error(errorMessage));
 
             const fn = async () =>
-                offerDriver.registerSupplier(companyOwner.address, companyNames[0]);
+                offerDriver.registerSupplier(roleProof, companyOwner.address, companyNames[0]);
             await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
 
         it('should call and wait for register a supplier - fails for companyOwner address', async () => {
-            const fn = async () => offerDriver.registerSupplier('0xaddress', companyNames[0]);
+            const fn = async () =>
+                offerDriver.registerSupplier(roleProof, '0xaddress', companyNames[0]);
             await expect(fn).rejects.toThrow(new Error('Not an address'));
         });
     });
 
     describe('registerOffer', () => {
         it('should call and wait for register an offer', async () => {
-            await offerDriver.registerOffer(companyOwner.address, 1);
+            await offerDriver.registerOffer(roleProof, companyOwner.address, 1);
 
             expect(mockedRegisterOffer).toHaveBeenCalledTimes(1);
-            expect(mockedRegisterOffer).toHaveBeenNthCalledWith(1, companyOwner.address, 1);
+            expect(mockedRegisterOffer).toHaveBeenNthCalledWith(
+                1,
+                roleProof,
+                companyOwner.address,
+                1
+            );
             expect(mockedWait).toHaveBeenCalledTimes(1);
 
             expect(mockedContract.registerOffer).toHaveBeenCalledTimes(1);
             expect(mockedContract.registerOffer).toHaveBeenNthCalledWith(
                 1,
+                roleProof,
                 companyOwner.address,
                 1
             );
@@ -180,26 +195,26 @@ describe('OfferDriver', () => {
         it('should call and wait for register an offer - transaction fails', async () => {
             mockedRegisterOffer.mockRejectedValueOnce(new Error(errorMessage));
 
-            const fn = async () => offerDriver.registerOffer(companyOwner.address, 1);
+            const fn = async () => offerDriver.registerOffer(roleProof, companyOwner.address, 1);
             await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
 
         it('should call and wait for register an offer - fails for companyOwner address', async () => {
-            const fn = async () => offerDriver.registerOffer('0xaddress', 1);
+            const fn = async () => offerDriver.registerOffer(roleProof, '0xaddress', 1);
             await expect(fn).rejects.toThrow(new Error('Not an address'));
         });
     });
 
     describe('getLastId', () => {
         it('should get the last id', async () => {
-            await offerDriver.getLastId();
+            await offerDriver.getLastId(roleProof);
             expect(mockedContract.getLastId).toHaveBeenCalledTimes(1);
         });
 
         it('should get the last id - transaction fails', async () => {
             mockedContract.getLastId = jest.fn().mockRejectedValueOnce(new Error(errorMessage));
 
-            const fn = async () => offerDriver.getLastId();
+            const fn = async () => offerDriver.getLastId(roleProof);
             await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
     });
@@ -207,11 +222,12 @@ describe('OfferDriver', () => {
     describe('getOfferIdsByCompany', () => {
         it('should get the offers id by company', async () => {
             mockedContract.getOfferIdsByCompany = jest.fn().mockResolvedValue([BigNumber.from(1)]);
-            await offerDriver.getOfferIdsByCompany(companyOwner.address);
+            await offerDriver.getOfferIdsByCompany(roleProof, companyOwner.address);
 
             expect(mockedContract.getOfferIdsByCompany).toHaveBeenCalledTimes(1);
             expect(mockedContract.getOfferIdsByCompany).toHaveBeenNthCalledWith(
                 1,
+                roleProof,
                 companyOwner.address
             );
         });
@@ -221,12 +237,13 @@ describe('OfferDriver', () => {
                 .fn()
                 .mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => offerDriver.getOfferIdsByCompany(companyOwner.address);
+            const fn = async () =>
+                offerDriver.getOfferIdsByCompany(roleProof, companyOwner.address);
             await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
 
         it('should get the offers id by company - FAIL(Not an address)', async () => {
-            await expect(offerDriver.getOfferIdsByCompany('0xaddress')).rejects.toThrow(
+            await expect(offerDriver.getOfferIdsByCompany(roleProof, '0xaddress')).rejects.toThrow(
                 new Error('Not an address')
             );
         });
@@ -235,12 +252,13 @@ describe('OfferDriver', () => {
     describe('getSupplierName', () => {
         it('should get the supplier name', async () => {
             mockedContract.getSupplierName = jest.fn().mockResolvedValue(companyNames[0]);
-            const resp = await offerDriver.getSupplierName(companyOwner.address);
+            const resp = await offerDriver.getSupplierName(roleProof, companyOwner.address);
 
             expect(resp).toEqual(companyNames[0]);
             expect(mockedContract.getSupplierName).toHaveBeenCalledTimes(1);
             expect(mockedContract.getSupplierName).toHaveBeenNthCalledWith(
                 1,
+                roleProof,
                 companyOwner.address,
                 { blockTag: undefined }
             );
@@ -249,12 +267,12 @@ describe('OfferDriver', () => {
         it('should get the supplier name - transaction fails', async () => {
             mockedContract.getSupplierName = jest.fn().mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => offerDriver.getSupplierName(companyOwner.address);
+            const fn = async () => offerDriver.getSupplierName(roleProof, companyOwner.address);
             await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
 
         it('should get the supplier name - FAIL(Not an address)', async () => {
-            await expect(offerDriver.getSupplierName('0xaddress')).rejects.toThrow(
+            await expect(offerDriver.getSupplierName(roleProof, '0xaddress')).rejects.toThrow(
                 new Error('Not an address')
             );
         });
@@ -264,38 +282,43 @@ describe('OfferDriver', () => {
         it('should retrieve an offer', async () => {
             mockedContract.getOffer = jest.fn().mockResolvedValue('rawOffer');
 
-            const resp = await offerDriver.getOffer(1);
+            const resp = await offerDriver.getOffer(roleProof, 1);
 
             expect(buildOfferSpy).toHaveBeenCalledTimes(1);
             expect(buildOfferSpy).toHaveBeenNthCalledWith(1, 'rawOffer', productCategoryStruct);
             expect(resp).toEqual(mockedOffer);
 
             expect(mockedContract.getOffer).toHaveBeenCalledTimes(1);
-            expect(mockedContract.getOffer).toHaveBeenNthCalledWith(1, 1, { blockTag: undefined });
+            expect(mockedContract.getOffer).toHaveBeenNthCalledWith(1, roleProof, 1, {
+                blockTag: undefined
+            });
         });
 
         it('should retrieve an offer with block number', async () => {
-            await offerDriver.getOffer(1, 15);
+            await offerDriver.getOffer(roleProof, 1, 15);
 
             expect(mockedContract.getOffer).toHaveBeenCalledTimes(1);
-            expect(mockedContract.getOffer).toHaveBeenNthCalledWith(1, 1, { blockTag: 15 });
+            expect(mockedContract.getOffer).toHaveBeenNthCalledWith(1, roleProof, 1, {
+                blockTag: 15
+            });
         });
 
         it('should retrieve a offer - transaction fails', async () => {
             mockedContract.getOffer = jest.fn().mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => offerDriver.getOffer(1);
+            const fn = async () => offerDriver.getOffer(roleProof, 1);
             await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
     });
 
     describe('updateSupplier', () => {
         it('should update a supplier', async () => {
-            await offerDriver.updateSupplier(companyOwner.address, companyNames[1]);
+            await offerDriver.updateSupplier(roleProof, companyOwner.address, companyNames[1]);
 
             expect(mockedContract.updateSupplier).toHaveBeenCalledTimes(1);
             expect(mockedContract.updateSupplier).toHaveBeenNthCalledWith(
                 1,
+                roleProof,
                 companyOwner.address,
                 companyNames[1]
             );
@@ -306,63 +329,68 @@ describe('OfferDriver', () => {
             mockedContract.updateSupplier = jest.fn().mockRejectedValue(new Error(errorMessage));
 
             const fn = async () =>
-                offerDriver.updateSupplier(companyOwner.address, companyNames[1]);
+                offerDriver.updateSupplier(roleProof, companyOwner.address, companyNames[1]);
             await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
 
         it('should update a supplier - fails for companyOwner address', async () => {
-            const fn = async () => offerDriver.updateSupplier('0xaddress', companyNames[1]);
+            const fn = async () =>
+                offerDriver.updateSupplier(roleProof, '0xaddress', companyNames[1]);
             await expect(fn).rejects.toThrow(new Error('Not an address'));
         });
     });
 
     describe('updateOffer', () => {
         it('should update an offer', async () => {
-            await offerDriver.updateOffer(1, 2);
+            await offerDriver.updateOffer(roleProof, 1, 2);
 
             expect(mockedContract.updateOffer).toHaveBeenCalledTimes(1);
-            expect(mockedContract.updateOffer).toHaveBeenNthCalledWith(1, 1, 2);
+            expect(mockedContract.updateOffer).toHaveBeenNthCalledWith(1, roleProof, 1, 2);
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 
         it('should update an offer - transaction fails', async () => {
             mockedContract.updateOffer = jest.fn().mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => offerDriver.updateOffer(1, 2);
+            const fn = async () => offerDriver.updateOffer(roleProof, 1, 2);
             await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
     });
 
     describe('deleteSupplier', () => {
         it('should delete a supplier', async () => {
-            await offerDriver.deleteSupplier(companyOwner.address);
+            await offerDriver.deleteSupplier(roleProof, companyOwner.address);
 
             expect(mockedContract.deleteSupplier).toHaveBeenCalledTimes(1);
-            expect(mockedContract.deleteSupplier).toHaveBeenNthCalledWith(1, companyOwner.address);
+            expect(mockedContract.deleteSupplier).toHaveBeenNthCalledWith(
+                1,
+                roleProof,
+                companyOwner.address
+            );
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 
         it('should delete a supplier - transaction fails', async () => {
             mockedContract.deleteSupplier = jest.fn().mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => offerDriver.deleteSupplier(companyOwner.address);
+            const fn = async () => offerDriver.deleteSupplier(roleProof, companyOwner.address);
             await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
     });
 
     describe('deleteOffer', () => {
         it('should delete an offer', async () => {
-            await offerDriver.deleteOffer(1);
+            await offerDriver.deleteOffer(roleProof, 1);
 
             expect(mockedContract.deleteOffer).toHaveBeenCalledTimes(1);
-            expect(mockedContract.deleteOffer).toHaveBeenNthCalledWith(1, 1);
+            expect(mockedContract.deleteOffer).toHaveBeenNthCalledWith(1, roleProof, 1);
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 
         it('should delete an offer - transaction fails', async () => {
             mockedContract.deleteOffer = jest.fn().mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => offerDriver.deleteOffer(1);
+            const fn = async () => offerDriver.deleteOffer(roleProof, 1);
             await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
     });
