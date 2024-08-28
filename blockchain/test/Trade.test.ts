@@ -1,19 +1,26 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import chai, { expect } from 'chai';
 import { FakeContract, smock } from '@defi-wonderland/smock';
-import { BigNumber, Contract, Signer, Wallet } from 'ethers';
+import { BigNumber, Contract } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { ethers } from 'hardhat';
 import { ContractName } from '../utils/constants';
 import { MaterialManager } from '../typechain-types';
+import { KBCAccessControl } from '../typechain-types/contracts/MaterialManager';
 
 describe('Trade.sol', () => {
     chai.use(smock.matchers);
+    let delegateManagerContractFake: FakeContract;
     let productCategoryManagerContractFake: FakeContract;
     let materialManagerContractFake: FakeContract;
     let documentManagerContractFake: FakeContract;
     let unitManagerContractFake: FakeContract;
     const documentTypes = [0, 1, 2];
+
+    const roleProof: KBCAccessControl.RoleProofStruct = {
+        signedProof: '0x',
+        delegator: ''
+    };
 
     // these contracts are used as implementation of the trade, when used as parent class
     let basicTradeContract: Contract;
@@ -32,9 +39,6 @@ describe('Trade.sol', () => {
     const shippingDeadline = new Date(documentDeliveryDeadline.getDate() + 1);
     const deliveryDeadline = new Date(shippingDeadline.getDate() + 1);
     const name: string = 'Test Trade';
-    const units: string[] = ['kg', 'g', 'l', 'm3', 'm2', 'm'];
-    const productCategoryIds: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-    const materialIds: number[] = [1, 2, 3, 4, 5, 6];
 
     const materialStruct: MaterialManager.MaterialStructOutput = {
         id: BigNumber.from(1),
@@ -43,21 +47,26 @@ describe('Trade.sol', () => {
 
     before(async () => {
         [admin, supplier, customer, arbiter, commissioner] = await ethers.getSigners();
-        productCategoryManagerContractFake = await smock.fake(ContractName.PRODUCT_CATEGORY_MANAGER);
-        productCategoryManagerContractFake.getProductCategoryExists.returns((value: number) => productCategoryIds.includes(value));
-        materialManagerContractFake = await smock.fake(ContractName.MATERIAL_MANAGER);
-        materialManagerContractFake.getMaterialExists.returns((value: number) => materialIds.includes(value));
-        materialManagerContractFake.getMaterial.returns(materialStruct);
-        documentManagerContractFake = await smock.fake(ContractName.DOCUMENT_MANAGER);
-        unitManagerContractFake = await smock.fake(ContractName.ENUMERABLE_TYPE_MANAGER);
-        unitManagerContractFake.contains.returns((value: string) => units.includes(value));
+        roleProof.delegator = admin.address;
     });
 
     beforeEach(async () => {
+        delegateManagerContractFake = await smock.fake(ContractName.DELEGATE_MANAGER);
+        delegateManagerContractFake.hasValidRole.returns(true);
+        productCategoryManagerContractFake = await smock.fake(ContractName.PRODUCT_CATEGORY_MANAGER);
+        productCategoryManagerContractFake.getProductCategoryExists.returns(true);
+        materialManagerContractFake = await smock.fake(ContractName.MATERIAL_MANAGER);
+        materialManagerContractFake.getMaterialExists.returns(true);
+        materialManagerContractFake.getMaterial.returns(materialStruct);
+        documentManagerContractFake = await smock.fake(ContractName.DOCUMENT_MANAGER);
+        unitManagerContractFake = await smock.fake(ContractName.ENUMERABLE_TYPE_MANAGER);
+        unitManagerContractFake.contains.returns(true);
         const BasicTrade = await ethers.getContractFactory('BasicTrade');
         const OrderTrade = await ethers.getContractFactory('OrderTrade');
         basicTradeContract = await BasicTrade.deploy(
+            roleProof,
             1,
+            delegateManagerContractFake.address,
             productCategoryManagerContractFake.address,
             materialManagerContractFake.address,
             documentManagerContractFake.address,
@@ -71,7 +80,9 @@ describe('Trade.sol', () => {
         );
         await basicTradeContract.deployed();
         orderTradeContract = await OrderTrade.deploy(
+            roleProof,
             1,
+            delegateManagerContractFake.address,
             productCategoryManagerContractFake.address,
             materialManagerContractFake.address,
             documentManagerContractFake.address,
@@ -95,8 +106,8 @@ describe('Trade.sol', () => {
     });
 
     it('should get the trade type', async () => {
-        expect(await basicTradeContract.getTradeType()).to.equal(0);
-        expect(await orderTradeContract.getTradeType()).to.equal(1);
+        expect(await basicTradeContract.getTradeType(roleProof)).to.equal(0);
+        expect(await orderTradeContract.getTradeType(roleProof)).to.equal(1);
     });
 
     describe('Documents', () => {
@@ -106,15 +117,21 @@ describe('Trade.sol', () => {
         });
 
         it('should add a document', async () => {
-            await basicTradeContract.connect(supplier).addDocument(documentTypes[1], 'https://www.test.com', 'content_hash');
+            await basicTradeContract.connect(supplier).addDocument(roleProof, documentTypes[1], 'https://www.test.com', 'content_hash');
             expect(documentManagerContractFake.registerDocument).to.have.callCount(1);
-            expect(documentManagerContractFake.registerDocument).to.have.calledWith('https://www.test.com', 'content_hash', supplier.address);
+            expect(documentManagerContractFake.registerDocument).to.have.calledWith(
+                roleProof,
+                'https://www.test.com',
+                'content_hash',
+                supplier.address
+            );
         });
 
         it('should update a document', async () => {
-            await basicTradeContract.connect(supplier).updateDocument(1, 'https://www.test-updated.com', 'content_hash-updated');
+            await basicTradeContract.connect(supplier).updateDocument(roleProof, 1, 'https://www.test-updated.com', 'content_hash-updated');
             expect(documentManagerContractFake.updateDocument).to.have.callCount(1);
             expect(documentManagerContractFake.updateDocument).to.have.calledWith(
+                roleProof,
                 BigNumber.from(1),
                 'https://www.test-updated.com',
                 'content_hash-updated',
@@ -138,43 +155,35 @@ describe('Trade.sol', () => {
         // });
 
         it('should get document ids by type', async () => {
-            await basicTradeContract.addDocument(documentTypes[1], 'https://www.test.com', 'content_hash');
-            expect(await basicTradeContract.getDocumentIdsByType(documentTypes[1])).to.deep.equal([BigNumber.from(1)]);
+            await basicTradeContract.connect(supplier).addDocument(roleProof, documentTypes[1], 'https://www.test.com', 'content_hash');
+            expect(await basicTradeContract.getDocumentIdsByType(roleProof, documentTypes[1])).to.deep.equal([BigNumber.from(1)]);
         });
 
         it('should get document ids', async () => {
-            await basicTradeContract.addDocument(documentTypes[1], 'https://www.test.com', 'content_hash');
-            expect(await basicTradeContract.getAllDocumentIds()).to.deep.equal([BigNumber.from(1), BigNumber.from(1)]);
+            await basicTradeContract.connect(supplier).addDocument(roleProof, documentTypes[1], 'https://www.test.com', 'content_hash');
+            expect(await basicTradeContract.getAllDocumentIds(roleProof)).to.deep.equal([BigNumber.from(0), BigNumber.from(1)]);
         });
 
         it('should validate document', async () => {
-            await basicTradeContract.addDocument(documentTypes[1], 'https://www.test.com', 'content_hash');
-            const documentIds = await basicTradeContract.getAllDocumentIds();
-            await basicTradeContract.validateDocument(documentIds[documentIds.length - 1], 1);
+            await basicTradeContract.connect(supplier).addDocument(roleProof, documentTypes[1], 'https://www.test.com', 'content_hash');
+            const documentIds = await basicTradeContract.getAllDocumentIds(roleProof);
+            await basicTradeContract.validateDocument(roleProof, documentIds[documentIds.length - 1], 1);
 
-            expect(await basicTradeContract.getDocumentStatus(documentIds[documentIds.length - 1])).to.equal(1);
+            expect(await basicTradeContract.getDocumentStatus(roleProof, documentIds[documentIds.length - 1])).to.equal(1);
         });
 
         it('should validate document - FAIL (Trade: Document does not exist)', async () => {
-            await expect(basicTradeContract.validateDocument(40, 1)).to.be.revertedWith('Trade: Document does not exist');
+            await expect(basicTradeContract.connect(supplier).validateDocument(roleProof, 40, 1)).to.be.revertedWith(
+                'Trade: Document does not exist'
+            );
         });
 
         it('should validate document - FAIL (Trade: Document status must be different from NOT_EVALUATED)', async () => {
-            await basicTradeContract.addDocument(documentTypes[1], 'https://www.test.com', 'content_hash');
-            const documentIds = await basicTradeContract.getAllDocumentIds();
-            await expect(basicTradeContract.validateDocument(documentIds[documentIds.length - 1], 0)).to.be.revertedWith(
+            await basicTradeContract.connect(supplier).addDocument(roleProof, documentTypes[1], 'https://www.test.com', 'content_hash');
+            const documentIds = await basicTradeContract.getAllDocumentIds(roleProof);
+            await expect(basicTradeContract.validateDocument(roleProof, documentIds[documentIds.length - 1], 0)).to.be.revertedWith(
                 'Trade: Document status must be different from NOT_EVALUATED'
             );
-        });
-    });
-
-    describe('Admins', () => {
-        it('should add an admin and later remove it', async () => {
-            await basicTradeContract.connect(admin).addAdmin(supplier.address);
-            await expect(basicTradeContract.connect(supplier).addAdmin(customer.address)).to.not.be.reverted;
-
-            await basicTradeContract.connect(admin).removeAdmin(supplier.address);
-            await expect(basicTradeContract.connect(supplier).addAdmin(commissioner.address)).to.be.revertedWith('Trade: Caller is not an admin');
         });
     });
 });

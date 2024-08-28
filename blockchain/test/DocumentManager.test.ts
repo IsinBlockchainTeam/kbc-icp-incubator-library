@@ -6,6 +6,7 @@ import { BigNumber, Contract } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { ContractName } from '../utils/constants';
+import { KBCAccessControl } from '../typechain-types/contracts/MaterialManager';
 
 chai.use(smock.matchers);
 
@@ -27,12 +28,20 @@ describe('DocumentManager', () => {
         contentHash: 'contentHash2'
     };
 
+    let delegateManagerContractFake: FakeContract;
+    const roleProof: KBCAccessControl.RoleProofStruct = {
+        signedProof: '0x',
+        delegator: ''
+    };
+
     beforeEach(async () => {
         [owner, sender, admin, tradeManager, otherAccount] = await ethers.getSigners();
 
+        roleProof.delegator = admin.address;
+        delegateManagerContractFake = await smock.fake(ContractName.DELEGATE_MANAGER);
+        delegateManagerContractFake.hasValidRole.returns(true);
         const DocumentManager = await ethers.getContractFactory(ContractName.DOCUMENT_MANAGER);
-
-        documentManagerContract = await DocumentManager.deploy([]);
+        documentManagerContract = await DocumentManager.deploy(delegateManagerContractFake.address, []);
         await documentManagerContract.deployed();
 
         await documentManagerContract.connect(owner).addTradeManager(tradeManager.address);
@@ -40,12 +49,14 @@ describe('DocumentManager', () => {
 
     describe('registerDocument, getDocumentById, getDocumentsCounter', () => {
         it('should register a document (as trade manager contract) and retrieve it', async () => {
-            await documentManagerContract.connect(tradeManager).registerDocument(rawDocument.externalUrl, rawDocument.contentHash, sender.address);
+            await documentManagerContract
+                .connect(tradeManager)
+                .registerDocument(roleProof, rawDocument.externalUrl, rawDocument.contentHash, sender.address);
 
-            documentCounterId = await documentManagerContract.connect(sender).getDocumentsCounter();
+            documentCounterId = await documentManagerContract.connect(sender).getDocumentsCounter(roleProof);
             expect(documentCounterId).to.equal(1);
 
-            const savedDocument = await documentManagerContract.connect(sender).getDocumentById(documentCounterId);
+            const savedDocument = await documentManagerContract.connect(sender).getDocumentById(roleProof, documentCounterId);
             expect(savedDocument.id).to.equal(documentCounterId);
             expect(savedDocument.externalUrl).to.equal(rawDocument.externalUrl);
             expect(savedDocument.contentHash).to.equal(rawDocument.contentHash);
@@ -53,8 +64,10 @@ describe('DocumentManager', () => {
         });
 
         it('should emit DocumentRegistered event', async () => {
-            documentCounterId = await documentManagerContract.connect(sender).getDocumentsCounter();
-            await expect(documentManagerContract.connect(owner).registerDocument(rawDocument.externalUrl, rawDocument.contentHash, sender.address))
+            documentCounterId = await documentManagerContract.connect(sender).getDocumentsCounter(roleProof);
+            await expect(
+                documentManagerContract.connect(owner).registerDocument(roleProof, rawDocument.externalUrl, rawDocument.contentHash, sender.address)
+            )
                 .to.emit(documentManagerContract, 'DocumentRegistered')
                 .withArgs(documentCounterId.toNumber() + 1, rawDocument.contentHash);
         });
@@ -62,12 +75,14 @@ describe('DocumentManager', () => {
 
     describe('updateDocument', () => {
         it('should update a document', async () => {
-            await documentManagerContract.connect(sender).registerDocument(rawDocument.externalUrl, rawDocument.contentHash, sender.address);
-            documentCounterId = await documentManagerContract.connect(sender).getDocumentsCounter();
             await documentManagerContract
                 .connect(sender)
-                .updateDocument(documentCounterId, rawDocument2.externalUrl, rawDocument2.contentHash, sender.address);
-            const savedDocument = await documentManagerContract.connect(tradeManager).getDocumentById(documentCounterId);
+                .registerDocument(roleProof, rawDocument.externalUrl, rawDocument.contentHash, sender.address);
+            documentCounterId = await documentManagerContract.connect(sender).getDocumentsCounter(roleProof);
+            await documentManagerContract
+                .connect(sender)
+                .updateDocument(roleProof, documentCounterId, rawDocument2.externalUrl, rawDocument2.contentHash, sender.address);
+            const savedDocument = await documentManagerContract.connect(tradeManager).getDocumentById(roleProof, documentCounterId);
 
             expect(savedDocument.id).to.equal(documentCounterId);
             expect(savedDocument.externalUrl).to.equal(rawDocument2.externalUrl);
@@ -76,42 +91,52 @@ describe('DocumentManager', () => {
         });
 
         it('should emit DocumentUpdated event', async () => {
-            await documentManagerContract.connect(sender).registerDocument(rawDocument.externalUrl, rawDocument.contentHash, sender.address);
-            documentCounterId = await documentManagerContract.connect(sender).getDocumentsCounter();
+            await documentManagerContract
+                .connect(sender)
+                .registerDocument(roleProof, rawDocument.externalUrl, rawDocument.contentHash, sender.address);
+            documentCounterId = await documentManagerContract.connect(sender).getDocumentsCounter(roleProof);
             await expect(
                 documentManagerContract
                     .connect(sender)
-                    .updateDocument(documentCounterId, rawDocument.externalUrl, rawDocument.contentHash, sender.address)
+                    .updateDocument(roleProof, documentCounterId, rawDocument.externalUrl, rawDocument.contentHash, sender.address)
             )
                 .to.emit(documentManagerContract, 'DocumentUpdated')
                 .withArgs(documentCounterId.toNumber(), rawDocument.contentHash);
         });
 
         it('should update a document - FAIL(DocumentManager: Document does not exist)', async () => {
-            await documentManagerContract.connect(sender).registerDocument(rawDocument.externalUrl, rawDocument.contentHash, sender.address);
-            documentCounterId = await documentManagerContract.connect(sender).getDocumentsCounter();
+            await documentManagerContract
+                .connect(sender)
+                .registerDocument(roleProof, rawDocument.externalUrl, rawDocument.contentHash, sender.address);
+            documentCounterId = await documentManagerContract.connect(sender).getDocumentsCounter(roleProof);
             await expect(
-                documentManagerContract.connect(sender).updateDocument(50, rawDocument2.externalUrl, rawDocument2.contentHash, sender.address)
+                documentManagerContract
+                    .connect(sender)
+                    .updateDocument(roleProof, 50, rawDocument2.externalUrl, rawDocument2.contentHash, sender.address)
             ).to.be.revertedWith('DocumentManager: Document does not exist');
         });
 
         it("should update a document - FAIL(DocumentManager: Can't update the uploader)", async () => {
-            await documentManagerContract.connect(sender).registerDocument(rawDocument.externalUrl, rawDocument.contentHash, sender.address);
-            documentCounterId = await documentManagerContract.connect(sender).getDocumentsCounter();
+            await documentManagerContract
+                .connect(sender)
+                .registerDocument(roleProof, rawDocument.externalUrl, rawDocument.contentHash, sender.address);
+            documentCounterId = await documentManagerContract.connect(sender).getDocumentsCounter(roleProof);
             await expect(
                 documentManagerContract
                     .connect(sender)
-                    .updateDocument(documentCounterId, rawDocument2.externalUrl, rawDocument2.contentHash, otherAccount.address)
+                    .updateDocument(roleProof, documentCounterId, rawDocument2.externalUrl, rawDocument2.contentHash, otherAccount.address)
             ).to.be.revertedWith("DocumentManager: Can't update the uploader");
         });
 
         it('should update a document - FAIL(DocumentManager: Caller is not the uploader)', async () => {
-            await documentManagerContract.connect(sender).registerDocument(rawDocument.externalUrl, rawDocument.contentHash, sender.address);
-            documentCounterId = await documentManagerContract.connect(sender).getDocumentsCounter();
+            await documentManagerContract
+                .connect(sender)
+                .registerDocument(roleProof, rawDocument.externalUrl, rawDocument.contentHash, sender.address);
+            documentCounterId = await documentManagerContract.connect(sender).getDocumentsCounter(roleProof);
             await expect(
                 documentManagerContract
                     .connect(otherAccount)
-                    .updateDocument(documentCounterId, rawDocument2.externalUrl, rawDocument2.contentHash, sender.address)
+                    .updateDocument(roleProof, documentCounterId, rawDocument2.externalUrl, rawDocument2.contentHash, sender.address)
             ).to.be.revertedWith('DocumentManager: Caller is not the uploader');
         });
     });

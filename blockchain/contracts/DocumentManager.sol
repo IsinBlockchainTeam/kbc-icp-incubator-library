@@ -5,8 +5,9 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@blockchain-lib/blockchain-common/contracts/EnumerableType.sol";
 import "hardhat/console.sol";
+import "./KBCAccessControl.sol";
 
-contract DocumentManager is AccessControl {
+contract DocumentManager is AccessControl, KBCAccessControl {
     using Counters for Counters.Counter;
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
@@ -33,7 +34,7 @@ contract DocumentManager is AccessControl {
     // document id => document
     mapping(uint256 => Document) private documents;
 
-    constructor(address[] memory admins) {
+    constructor(address delegateManagerAddress, address[] memory admins) KBCAccessControl(delegateManagerAddress) {
         _setupRole(ADMIN_ROLE, msg.sender);
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
         _setRoleAdmin(TRADE_MANAGER_ROLE, ADMIN_ROLE);
@@ -43,7 +44,12 @@ contract DocumentManager is AccessControl {
         }
     }
 
-    function registerDocument(string memory externalUrl, string memory contentHash, address uploadedBy) public returns (uint256) {
+    function registerDocument(
+        RoleProof memory roleProof,
+        string memory externalUrl,
+        string memory contentHash,
+        address uploadedBy
+    ) public atLeastEditor(roleProof) returns (uint256) {
         uint256 documentId = documentCounter.current() + 1;
         documentCounter.increment();
 
@@ -53,7 +59,13 @@ contract DocumentManager is AccessControl {
         return documentId;
     }
 
-    function updateDocument(uint256 documentId, string memory externalUrl, string memory contentHash, address uploadedBy) public {
+    function updateDocument(
+        RoleProof memory roleProof,
+        uint256 documentId,
+        string memory externalUrl,
+        string memory contentHash,
+        address uploadedBy
+    ) public atLeastEditor(roleProof) {
         require(documents[documentId].exists, "DocumentManager: Document does not exist");
         require(documents[documentId].uploadedBy == uploadedBy, "DocumentManager: Can't update the uploader");
         // if the caller is not a smart contract and the document was not uploaded by the caller. If the caller is a wallet, it must be the uploader
@@ -64,13 +76,17 @@ contract DocumentManager is AccessControl {
         emit DocumentUpdated(documentId, contentHash);
     }
 
-    function getDocumentById(uint256 documentId) public view returns (Document memory) {
+    function getDocumentById(
+        RoleProof memory roleProof,
+        uint256 documentId
+    ) public view atLeastViewer(roleProof) returns (Document memory) {
         return documents[documentId];
     }
 
-    function getDocumentsCounter() public view returns (uint256 counter) {
+    function getDocumentsCounter(RoleProof memory roleProof) public view atLeastViewer(roleProof) returns (uint256 counter) {
         return documentCounter.current();
     }
+
 
     // ROLES
     function addAdmin(address admin) public onlyAdmin {
