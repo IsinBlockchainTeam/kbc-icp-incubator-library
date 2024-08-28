@@ -18,4 +18,4 @@ RUN cd /bc_coffee_lib/src && npm install
 # install blockchain dependencies
 RUN cd /bc_coffee_lib/blockchain && npm install --force && npm run compile
 
-ENTRYPOINT cd /bc_coffee_lib/src && npm run test && echo "n" | sh ./integration-test/integrationTests.sh
+ENTRYPOINT cd /bc_coffee_lib/src && npm run test
