@@ -103,7 +103,8 @@ serial([
             contractMap.get(ContractName.PRODUCT_CATEGORY_MANAGER)!.address
         ]),
     () => deploy(ContractName.MY_TOKEN, [10000]),
-    () => deploy(ContractName.ETHEREUM_DID_REGISTRY, [])
+    () => deploy(ContractName.ETHEREUM_DID_REGISTRY, []),
+    () => deploy(ContractName.REVOCATION_REGISTRY, [])
 ]).catch((error: any) => {
     console.error(error);
     process.exitCode = 1;

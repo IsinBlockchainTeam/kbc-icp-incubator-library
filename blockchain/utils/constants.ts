@@ -14,6 +14,7 @@ export enum ContractName {
     ESCROW = 'Escrow',
     MY_TOKEN = 'MyToken',
     ETHEREUM_DID_REGISTRY = 'EthereumDIDRegistry',
+    REVOCATION_REGISTRY = 'RevocationRegistry',
     DELEGATE_MANAGER = 'DelegateManager'
 }
 

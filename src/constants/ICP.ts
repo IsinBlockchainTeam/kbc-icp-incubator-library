@@ -1,8 +1,10 @@
 /*
-Path structure is the following (<local_replica/mainnet>):
+Path structure is the following (<mainnet/local_replica>):
 <http/https>://
     <canister-id>.<localhost:4943/ic0.app>/
     organization/<organization_id>/
+    // TODO: add the next line reference change
+    // transactions/<order_address>/
     transactions/<transaction_id>/
     files/<file_name>
 

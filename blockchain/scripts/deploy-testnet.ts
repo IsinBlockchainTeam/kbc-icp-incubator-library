@@ -86,27 +86,27 @@ serial([
     //         process.env.ESCROW_BASE_FEE || 20,
     //         process.env.ESCROW_COMMISSIONER_FEE || 1
     //     ]),
-    () =>
-        deploy(ContractName.TRADE_MANAGER, [
-            '0x9169B151C0C32c6Ab49Aa2A55a8a6c07aB04f1bb', // DelegateManager
-            '0x705321A0E87a6E952712374302E8bDe3623B60b9', // ProductCategoryManager
-            '0x7E4aaaE2258a677Cb706fb8a276e26700b92366C', // MaterialManager
-            '0xd159C2E2a170131b0dB6E0304524db4c5AFBc847', // DocumentManager
-            '0x52A45e1bfAd77E396B7c5180E499B69fA5BB93b8', // EnumerableFiatManager
-            '0x108a6ea0280500f7Ddf6434864B4124cdFd88D4C', // EnumerableUnitManager
-            '0x8AA99940F4234BEBF764515bF80fE822e1E17B12' // EscrowManager
-        ]),
+    // () =>
+    //     deploy(ContractName.TRADE_MANAGER, [
+    //         '0x9169B151C0C32c6Ab49Aa2A55a8a6c07aB04f1bb', // DelegateManager
+    //         '0x705321A0E87a6E952712374302E8bDe3623B60b9', // ProductCategoryManager
+    //         '0x7E4aaaE2258a677Cb706fb8a276e26700b92366C', // MaterialManager
+    //         '0xd159C2E2a170131b0dB6E0304524db4c5AFBc847', // DocumentManager
+    //         '0x52A45e1bfAd77E396B7c5180E499B69fA5BB93b8', // EnumerableFiatManager
+    //         '0x108a6ea0280500f7Ddf6434864B4124cdFd88D4C', // EnumerableUnitManager
+    //         '0x8AA99940F4234BEBF764515bF80fE822e1E17B12' // EscrowManager
+    //     ]),
     // () =>
     //     deploy(ContractName.RELATIONSHIP_MANAGER, [
     //         '0x9169B151C0C32c6Ab49Aa2A55a8a6c07aB04f1bb', // DelegateManager
     //         ['0x30054880e4E2fA1082C1976cA5547cC3bd185c11'] // ContractsOwner
     //     ])
-    () =>
-        deploy(ContractName.ASSET_OPERATION_MANAGER, [
-            '0x037444C45ce591C7d9c598E49C5ED3AA1f8f4e3f', // DelegateManager
-            '0x7E4aaaE2258a677Cb706fb8a276e26700b92366C', // MaterialManager
-            '0xb8e699A624963AAcdfe793cE4bbCE856Dcd67eB0' // EnumerableProcessTypeManager
-        ])
+    // () =>
+    //     deploy(ContractName.ASSET_OPERATION_MANAGER, [
+    //         '0x037444C45ce591C7d9c598E49C5ED3AA1f8f4e3f', // DelegateManager
+    //         '0x7E4aaaE2258a677Cb706fb8a276e26700b92366C', // MaterialManager
+    //         '0xb8e699A624963AAcdfe793cE4bbCE856Dcd67eB0' // EnumerableProcessTypeManager
+    //     ])
     // () =>
     //     deploy(ContractName.OFFER_MANAGER, [
     //         '0x9169B151C0C32c6Ab49Aa2A55a8a6c07aB04f1bb', // DelegateManager
@@ -116,9 +116,8 @@ serial([
     // () => deploy(
     //     ContractName.MY_TOKEN, [10000],
     // ),
-    // () => deploy(
-    //     ContractName.ETHEREUM_DID_REGISTRY, [],
-    // ),
+    // () => deploy(ContractName.ETHEREUM_DID_REGISTRY, []),
+    () => deploy(ContractName.REVOCATION_REGISTRY, [])
     // () => deploy(
     //     ContractName.ESCROW, [
     //         '0x30054880e4E2fA1082C1976cA5547cC3bd185c11', // ContractsOwner

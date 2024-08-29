@@ -68,9 +68,22 @@ export { EscrowService } from './services/EscrowService';
 export { TokenDriver } from './drivers/TokenDriver';
 export { TokenService } from './services/TokenService';
 
-export { Shipment, ShipmentPhase, DocumentStatus as ShipmentDocumentStatus, DocumentInfo as ShipmentDocumentInfo, DocumentType as ShipmentDocumentType, ShipmentEvaluationStatus, FundsStatus} from './entities/Shipment';
+export {
+    Shipment,
+    ShipmentPhase,
+    DocumentStatus as ShipmentDocumentStatus,
+    DocumentInfo as ShipmentDocumentInfo,
+    DocumentType as ShipmentDocumentType,
+    ShipmentEvaluationStatus,
+    FundsStatus
+} from './entities/Shipment';
 export { ShipmentDriver } from './drivers/ShipmentDriver';
 export { ShipmentService, ShipmentDocument } from './services/ShipmentService';
+
+export { RevocationDriver } from './drivers/RevocationDriver';
+export { CredentialRevocationDriver } from './drivers/CredentialRevocationDriver';
+export { CredentialRevocationService } from './services/CredentialRevocationService';
+export { RevocationStatus } from './types/RevocationStatus';
 
 export type { ISolidStorageMetadataDriver } from './drivers/ISolidStorageMetadataDriver';
 export type { ISolidStorageDocumentDriver } from './drivers/ISolidStorageDocumentDriver';
