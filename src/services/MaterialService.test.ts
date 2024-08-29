@@ -1,6 +1,7 @@
 import { createMock } from 'ts-auto-mock';
 import { MaterialService } from './MaterialService';
 import { MaterialDriver } from '../drivers/MaterialDriver';
+import { RoleProof } from '../types/RoleProof';
 
 describe('MaterialService', () => {
     const mockedMaterialDriver: MaterialDriver = createMock<MaterialDriver>({
@@ -10,12 +11,15 @@ describe('MaterialService', () => {
         getMaterials: jest.fn(),
         getMaterialsOfCreator: jest.fn(),
         registerMaterial: jest.fn(),
-        updateMaterial: jest.fn(),
+        updateMaterial: jest.fn()
     });
 
-    const materialService = new MaterialService(
-        mockedMaterialDriver,
-    );
+    const materialService = new MaterialService(mockedMaterialDriver);
+
+    const roleProof: RoleProof = {
+        signedProof: 'signedProof',
+        delegator: 'delegator'
+    };
 
     afterAll(() => {
         jest.restoreAllMocks();
@@ -24,50 +28,56 @@ describe('MaterialService', () => {
     it.each([
         {
             serviceFunctionName: 'getMaterialsCounter',
-            serviceFunction: () => materialService.getMaterialsCounter(),
+            serviceFunction: () => materialService.getMaterialsCounter(roleProof),
             expectedMockedFunction: mockedMaterialDriver.getMaterialsCounter,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: [roleProof]
         },
         {
             serviceFunctionName: 'getMaterialExists',
-            serviceFunction: () => materialService.getMaterialExists(1),
+            serviceFunction: () => materialService.getMaterialExists(roleProof, 1),
             expectedMockedFunction: mockedMaterialDriver.getMaterialExists,
-            expectedMockedFunctionArgs: [1],
+            expectedMockedFunctionArgs: [roleProof, 1]
         },
         {
             serviceFunctionName: 'getMaterial',
-            serviceFunction: () => materialService.getMaterial(1),
+            serviceFunction: () => materialService.getMaterial(roleProof, 1),
             expectedMockedFunction: mockedMaterialDriver.getMaterial,
-            expectedMockedFunctionArgs: [1],
+            expectedMockedFunctionArgs: [roleProof, 1]
         },
         {
             serviceFunctionName: 'getMaterials',
-            serviceFunction: () => materialService.getMaterials(),
+            serviceFunction: () => materialService.getMaterials(roleProof),
             expectedMockedFunction: mockedMaterialDriver.getMaterials,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: [roleProof]
         },
         {
             serviceFunctionName: 'getMaterialsOfCreator',
-            serviceFunction: () => materialService.getMaterialsOfCreator('creator'),
+            serviceFunction: () => materialService.getMaterialsOfCreator(roleProof, 'creator'),
             expectedMockedFunction: mockedMaterialDriver.getMaterialsOfCreator,
-            expectedMockedFunctionArgs: ['creator'],
+            expectedMockedFunctionArgs: [roleProof, 'creator']
         },
         {
             serviceFunctionName: 'registerMaterial',
-            serviceFunction: () => materialService.registerMaterial(1),
+            serviceFunction: () => materialService.registerMaterial(roleProof, 1),
             expectedMockedFunction: mockedMaterialDriver.registerMaterial,
-            expectedMockedFunctionArgs: [1],
+            expectedMockedFunctionArgs: [roleProof, 1]
         },
         {
             serviceFunctionName: 'updateMaterial',
-            serviceFunction: () => materialService.updateMaterial(1, 2),
+            serviceFunction: () => materialService.updateMaterial(roleProof, 1, 2),
             expectedMockedFunction: mockedMaterialDriver.updateMaterial,
-            expectedMockedFunctionArgs: [1, 2],
+            expectedMockedFunctionArgs: [roleProof, 1, 2]
         }
-    ])('service should call driver $serviceFunctionName', async ({ serviceFunction, expectedMockedFunction, expectedMockedFunctionArgs }) => {
-        await serviceFunction();
+    ])(
+        'service should call driver $serviceFunctionName',
+        async ({ serviceFunction, expectedMockedFunction, expectedMockedFunctionArgs }) => {
+            await serviceFunction();
 
-        expect(expectedMockedFunction).toHaveBeenCalledTimes(1);
-        expect(expectedMockedFunction).toHaveBeenNthCalledWith(1, ...expectedMockedFunctionArgs);
-    });
+            expect(expectedMockedFunction).toHaveBeenCalledTimes(1);
+            expect(expectedMockedFunction).toHaveBeenNthCalledWith(
+                1,
+                ...expectedMockedFunctionArgs
+            );
+        }
+    );
 });

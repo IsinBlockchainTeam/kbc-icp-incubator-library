@@ -1,6 +1,7 @@
-import {ProductCategoryDriver} from "../drivers/ProductCategoryDriver";
-import {createMock} from "ts-auto-mock";
-import {ProductCategoryService} from "./ProductCategoryService";
+import { createMock } from 'ts-auto-mock';
+import { ProductCategoryDriver } from '../drivers/ProductCategoryDriver';
+import { ProductCategoryService } from './ProductCategoryService';
+import { RoleProof } from '../types/RoleProof';
 
 describe('ProductCategoryService', () => {
     const mockedProductCategoryDriver: ProductCategoryDriver = createMock<ProductCategoryDriver>({
@@ -9,12 +10,15 @@ describe('ProductCategoryService', () => {
         getProductCategory: jest.fn(),
         getProductCategories: jest.fn(),
         registerProductCategory: jest.fn(),
-        updateProductCategory: jest.fn(),
+        updateProductCategory: jest.fn()
     });
 
-    const productCategoryService = new ProductCategoryService(
-        mockedProductCategoryDriver,
-    );
+    const productCategoryService = new ProductCategoryService(mockedProductCategoryDriver);
+
+    const roleProof: RoleProof = {
+        signedProof: 'signedProof',
+        delegator: 'delegator'
+    };
 
     afterAll(() => {
         jest.restoreAllMocks();
@@ -23,44 +27,58 @@ describe('ProductCategoryService', () => {
     it.each([
         {
             serviceFunctionName: 'getProductCategoryCounter',
-            serviceFunction: () => productCategoryService.getProductCategoryCounter(),
+            serviceFunction: () => productCategoryService.getProductCategoryCounter(roleProof),
             expectedMockedFunction: mockedProductCategoryDriver.getProductCategoryCounter,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: [roleProof]
         },
         {
             serviceFunctionName: 'getProductCategoryExists',
-            serviceFunction: () => productCategoryService.getProductCategoryExists(1),
+            serviceFunction: () => productCategoryService.getProductCategoryExists(roleProof, 1),
             expectedMockedFunction: mockedProductCategoryDriver.getProductCategoryExists,
-            expectedMockedFunctionArgs: [1],
+            expectedMockedFunctionArgs: [roleProof, 1]
         },
         {
             serviceFunctionName: 'getProductCategory',
-            serviceFunction: () => productCategoryService.getProductCategory(1),
+            serviceFunction: () => productCategoryService.getProductCategory(roleProof, 1),
             expectedMockedFunction: mockedProductCategoryDriver.getProductCategory,
-            expectedMockedFunctionArgs: [1],
+            expectedMockedFunctionArgs: [roleProof, 1]
         },
         {
             serviceFunctionName: 'getProductCategories',
-            serviceFunction: () => productCategoryService.getProductCategories(),
+            serviceFunction: () => productCategoryService.getProductCategories(roleProof),
             expectedMockedFunction: mockedProductCategoryDriver.getProductCategories,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: [roleProof]
         },
         {
             serviceFunctionName: 'registerProductCategory',
-            serviceFunction: () => productCategoryService.registerProductCategory('name', 1, 'description'),
+            serviceFunction: () =>
+                productCategoryService.registerProductCategory(roleProof, 'name', 1, 'description'),
             expectedMockedFunction: mockedProductCategoryDriver.registerProductCategory,
-            expectedMockedFunctionArgs: ['name', 1, 'description'],
+            expectedMockedFunctionArgs: [roleProof, 'name', 1, 'description']
         },
         {
             serviceFunctionName: 'updateProductCategory',
-            serviceFunction: () => productCategoryService.updateProductCategory(1, 'name', 1, 'description'),
+            serviceFunction: () =>
+                productCategoryService.updateProductCategory(
+                    roleProof,
+                    1,
+                    'name',
+                    1,
+                    'description'
+                ),
             expectedMockedFunction: mockedProductCategoryDriver.updateProductCategory,
-            expectedMockedFunctionArgs: [1, 'name', 1, 'description'],
-        },
-    ])('service should call driver $serviceFunctionName', async ({serviceFunction, expectedMockedFunction, expectedMockedFunctionArgs}) => {
-        await serviceFunction();
+            expectedMockedFunctionArgs: [roleProof, 1, 'name', 1, 'description']
+        }
+    ])(
+        'service should call driver $serviceFunctionName',
+        async ({ serviceFunction, expectedMockedFunction, expectedMockedFunctionArgs }) => {
+            await serviceFunction();
 
-        expect(expectedMockedFunction).toHaveBeenCalledTimes(1);
-        expect(expectedMockedFunction).toHaveBeenNthCalledWith(1, ...expectedMockedFunctionArgs);
-    });
+            expect(expectedMockedFunction).toHaveBeenCalledTimes(1);
+            expect(expectedMockedFunction).toHaveBeenNthCalledWith(
+                1,
+                ...expectedMockedFunctionArgs
+            );
+        }
+    );
 });

@@ -15,6 +15,6 @@
 babel.config.js
 hardhat.config.js
 jest.config.js
-ts-config.ts
+ts-ethereum.ts
 tsconfig.json
 

@@ -20,6 +20,8 @@ describe('Material', () => {
 
     it('should correctly set the productCategory', () => {
         material.productCategory = new ProductCategory(1, 'name2', 90, 'description2');
-        expect(material.productCategory).toEqual(new ProductCategory(1, 'name2', 90, 'description2'));
+        expect(material.productCategory).toEqual(
+            new ProductCategory(1, 'name2', 90, 'description2')
+        );
     });
 });

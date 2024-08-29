@@ -1,77 +1,92 @@
-import { StorageACR } from '@blockchain-lib/common/types/storage';
+import { FileHelpers } from '@blockchain-lib/common';
 import { TradeService } from './TradeService';
-import {
-    OrderTradeDriver,
-    OrderTradeEvents,
-} from '../drivers/OrderTradeDriver';
+import { OrderTradeDriver, OrderTradeEvents } from '../drivers/OrderTradeDriver';
 import { NegotiationStatus } from '../types/NegotiationStatus';
-import { OrderLine,
+import {
+    OrderLine,
     OrderLineRequest,
-    OrderTradeInfo } from '../entities/OrderTradeInfo';
+    OrderTrade,
+    OrderTradeMetadata
+} from '../entities/OrderTrade';
 import { IConcreteTradeService } from './IConcreteTradeService';
-import { DocumentSpec } from '../drivers/IStorageDocumentDriver';
-import { MetadataSpec } from '../drivers/IStorageMetadataDriver';
-import { OrderTrade } from '../entities/OrderTrade';
-import { StorageOperationType } from '../types/StorageOperationType';
+import { RoleProof } from '../types/RoleProof';
 
-export class OrderTradeService<MS extends MetadataSpec, DS extends DocumentSpec, ACR extends StorageACR> extends TradeService<MS, DS, ACR> implements IConcreteTradeService {
-    async getTrade(blockNumber?: number): Promise<OrderTradeInfo> {
-        return this._tradeDriverImplementation.getTrade(blockNumber);
+export class OrderTradeService extends TradeService implements IConcreteTradeService {
+    async getTrade(roleProof: RoleProof, blockNumber?: number): Promise<OrderTrade> {
+        return this._tradeDriverImplementation.getTrade(roleProof, blockNumber);
     }
 
-    async getCompleteTrade(metadataSpec: MS, blockNumber?: number): Promise<OrderTrade> {
-        if (!this._storageMetadataDriver) throw new Error('Storage metadata driver is not available');
-        const orderTradeInfo = await this.getTrade(blockNumber);
-        try {
-            const { incoterms, shipper, shippingPort, deliveryPort } = await this._storageMetadataDriver.read(StorageOperationType.TRANSACTION, metadataSpec);
-            return new OrderTrade(orderTradeInfo, incoterms, shipper, shippingPort, deliveryPort);
-        } catch (e: any) {
-            throw new Error(`Error while retrieve order trade from external storage: ${e.message}`);
-        }
+    async getCompleteTrade(roleProof: RoleProof, blockNumber?: number): Promise<OrderTrade> {
+        if (!this._icpFileDriver)
+            throw new Error('OrderTradeService: ICPFileDriver has not been set');
+
+        const trade = await this._tradeDriverImplementation.getTrade(roleProof, blockNumber);
+        const bytes = await this._icpFileDriver.read(`${trade.externalUrl}/files/metadata.json`);
+        trade.metadata = FileHelpers.getObjectFromBytes(bytes) as OrderTradeMetadata;
+        return trade;
     }
 
-    async getLines(): Promise<OrderLine[]> {
-        return this._tradeDriverImplementation.getLines();
+    async getLines(roleProof: RoleProof): Promise<OrderLine[]> {
+        return this._tradeDriverImplementation.getLines(roleProof);
     }
 
-    async getLine(id: number, blockNumber?: number): Promise<OrderLine> {
-        return this._tradeDriverImplementation.getLine(id, blockNumber);
+    async getLine(roleProof: RoleProof, id: number, blockNumber?: number): Promise<OrderLine> {
+        return this._tradeDriverImplementation.getLine(roleProof, id, blockNumber);
     }
 
-    async addLine(line: OrderLineRequest): Promise<OrderLine> {
-        return this._tradeDriverImplementation.addLine(line);
+    async addLine(roleProof: RoleProof, line: OrderLineRequest): Promise<number> {
+        return this._tradeDriverImplementation.addLine(roleProof, line);
     }
 
-    async updateLine(line: OrderLine): Promise<OrderLine> {
-        return this._tradeDriverImplementation.updateLine(line);
+    async updateLine(roleProof: RoleProof, line: OrderLine): Promise<void> {
+        return this._tradeDriverImplementation.updateLine(roleProof, line);
     }
 
-    async assignMaterial(lineId: number, materialId: number): Promise<void> {
-        return this._tradeDriverImplementation.assignMaterial(lineId, materialId);
+    async assignMaterial(roleProof: RoleProof, lineId: number, materialId: number): Promise<void> {
+        return this._tradeDriverImplementation.assignMaterial(roleProof, lineId, materialId);
     }
 
     async getNegotiationStatus(): Promise<NegotiationStatus> {
         return this._tradeDriverImplementation.getNegotiationStatus();
     }
 
-    async updatePaymentDeadline(paymentDeadline: number): Promise<void> {
-        return this._tradeDriverImplementation.updatePaymentDeadline(paymentDeadline);
+    // TODO: understand if still needed
+    // async getOrderStatus(): Promise<OrderStatus> {
+    //     return this._tradeDriverImplementation.getOrderStatus();
+    // }
+
+    async updatePaymentDeadline(roleProof: RoleProof, paymentDeadline: number): Promise<void> {
+        return this._tradeDriverImplementation.updatePaymentDeadline(roleProof, paymentDeadline);
     }
 
-    async updateDocumentDeliveryDeadline(documentDeliveryDeadline: number): Promise<void> {
-        return this._tradeDriverImplementation.updateDocumentDeliveryDeadline(documentDeliveryDeadline);
+    async updateDocumentDeliveryDeadline(
+        roleProof: RoleProof,
+        documentDeliveryDeadline: number
+    ): Promise<void> {
+        return this._tradeDriverImplementation.updateDocumentDeliveryDeadline(
+            roleProof,
+            documentDeliveryDeadline
+        );
     }
 
-    async updateArbiter(arbiter: string): Promise<void> {
-        return this._tradeDriverImplementation.updateArbiter(arbiter);
+    async updateArbiter(roleProof: RoleProof, arbiter: string): Promise<void> {
+        return this._tradeDriverImplementation.updateArbiter(roleProof, arbiter);
     }
 
-    async updateShippingDeadline(shippingDeadline: number): Promise<void> {
-        return this._tradeDriverImplementation.updateShippingDeadline(shippingDeadline);
+    async updateShippingDeadline(roleProof: RoleProof, shippingDeadline: number): Promise<void> {
+        return this._tradeDriverImplementation.updateShippingDeadline(roleProof, shippingDeadline);
     }
 
-    async updateDeliveryDeadline(deliveryDeadline: number): Promise<void> {
-        return this._tradeDriverImplementation.updateDeliveryDeadline(deliveryDeadline);
+    async updateDeliveryDeadline(roleProof: RoleProof, deliveryDeadline: number): Promise<void> {
+        return this._tradeDriverImplementation.updateDeliveryDeadline(roleProof, deliveryDeadline);
+    }
+
+    async updateAgreedAmount(roleProof: RoleProof, agreedAmount: number): Promise<void> {
+        return this._tradeDriverImplementation.updateAgreedAmount(roleProof, agreedAmount);
+    }
+
+    async updateTokenAddress(roleProof: RoleProof, tokenAddress: string): Promise<void> {
+        return this._tradeDriverImplementation.updateTokenAddress(roleProof, tokenAddress);
     }
 
     async haveDeadlinesExpired(): Promise<boolean> {
@@ -82,12 +97,40 @@ export class OrderTradeService<MS extends MetadataSpec, DS extends DocumentSpec,
         return this._tradeDriverImplementation.enforceDeadlines();
     }
 
-    async confirmOrder(): Promise<void> {
-        return this._tradeDriverImplementation.confirmOrder();
+    async getWhoSigned(roleProof: RoleProof): Promise<string[]> {
+        return this._tradeDriverImplementation.getWhoSigned(roleProof);
+    }
+
+    async confirmOrder(roleProof: RoleProof): Promise<void> {
+        return this._tradeDriverImplementation.confirmOrder(roleProof);
     }
 
     async getEmittedEvents(): Promise<Map<OrderTradeEvents, number[]>> {
         return this._tradeDriverImplementation.getEmittedEvents();
+    }
+
+    async createShipment(
+        roleProof: RoleProof,
+        expirationDate: Date,
+        quantity: number,
+        weight: number,
+        price: number
+    ): Promise<void> {
+        return this._tradeDriverImplementation.createShipment(
+            roleProof,
+            expirationDate,
+            quantity,
+            weight,
+            price
+        );
+    }
+
+    async getShipmentAddress(roleProof: RoleProof): Promise<string | undefined> {
+        return this._tradeDriverImplementation.getShipmentAddress(roleProof);
+    }
+
+    async getEscrowAddress(roleProof: RoleProof): Promise<string | undefined> {
+        return this._tradeDriverImplementation.getEscrowAddress(roleProof);
     }
 
     private get _tradeDriverImplementation(): OrderTradeDriver {

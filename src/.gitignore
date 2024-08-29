@@ -4,3 +4,4 @@
 .env
 ../.npmrc
 package-lock.json
+.npmrc

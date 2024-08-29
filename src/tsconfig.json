@@ -3,10 +3,10 @@
     "compilerOptions": {
         "strictNullChecks": true,
         "module": "commonjs",
-        "target": "ESNext",
+        "target": "es6",
         "noImplicitAny": true,
         "outDir": "dist",
-        // "sourceMap": true,
+        // "sourceMap": true,Ok
         "inlineSourceMap": true,
         "esModuleInterop": true,
         "declaration": true, // This tells TypeScript to emit an .d.ts definitions file along with your compiled JavaScript,
@@ -16,15 +16,9 @@
                 "cacheBetweenTests": false
             }
         ],
-        "types": [
-            "jest",
-            "node",
-            "@types/jest"
-        ]
+        "types": ["jest", "node", "@types/jest"]
     },
-    "include": [
-        "**/*",
-    ],
+    "include": ["**/*", "./dfx_output/storage/*.ts"],
     "exclude": [
         "node_modules",
         "dist",

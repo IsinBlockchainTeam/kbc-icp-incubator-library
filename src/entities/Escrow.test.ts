@@ -1,46 +1,35 @@
-import {Escrow} from "./Escrow";
-import {EscrowStatus} from "../types/EscrowStatus";
+import { Escrow } from './Escrow';
+import { EscrowStatus } from '../types/EscrowStatus';
 
 describe('Escrow', () => {
     let escrow: Escrow;
-
-    const payers: string[] = ['payer1', 'payer2'];
-
     beforeAll(() => {
-        escrow = new Escrow('payee', 'purchaser', payers, 1000, 0, 1000, EscrowStatus.ACTIVE, 'tokenAddress', 'commissioner', 20, 1);
+        escrow = new Escrow(
+            'payee',
+            0,
+            1000,
+            'tokenAddress',
+            EscrowStatus.ACTIVE,
+            'feeRecipient',
+            20,
+            1
+        );
     });
 
     it('should correctly initialize a new Escrow', () => {
         expect(escrow.payee).toEqual('payee');
-        expect(escrow.purchaser).toEqual('purchaser');
-        expect(escrow.payers).toEqual(payers);
-        expect(escrow.agreedAmount).toEqual(1000);
         expect(escrow.deployedAt).toEqual(0);
         expect(escrow.duration).toEqual(1000);
         expect(escrow.state).toEqual(EscrowStatus.ACTIVE);
         expect(escrow.tokenAddress).toEqual('tokenAddress');
-        expect(escrow.commissioner).toEqual('commissioner');
+        expect(escrow.feeRecipient).toEqual('feeRecipient');
+        expect(escrow.baseFee).toEqual(20);
+        expect(escrow.percentageFee).toEqual(1);
     });
 
     it('should correctly set the payee', () => {
         escrow.payee = 'payee2';
         expect(escrow.payee).toEqual('payee2');
-    });
-
-    it('should correctly set the purchaser', () => {
-        escrow.purchaser = 'purchaser2';
-        expect(escrow.purchaser).toEqual('purchaser2');
-    });
-
-    it('should correctly set the payers', () => {
-        const newPayers: string[] = ['payer3', 'payer4'];
-        escrow.payers = newPayers;
-        expect(escrow.payers).toEqual(newPayers);
-    });
-
-    it('should correctly set the agreed amount', () => {
-        escrow.agreedAmount = 1001;
-        expect(escrow.agreedAmount).toEqual(1001);
     });
 
     it('should correctly set the deployedAt', () => {
@@ -54,8 +43,8 @@ describe('Escrow', () => {
     });
 
     it('should correctly set the state', () => {
-        escrow.state = EscrowStatus.CLOSED;
-        expect(escrow.state).toEqual(EscrowStatus.CLOSED);
+        escrow.state = EscrowStatus.REFUNDING;
+        expect(escrow.state).toEqual(EscrowStatus.REFUNDING);
     });
 
     it('should correctly set the tokenAddress', () => {
@@ -63,18 +52,18 @@ describe('Escrow', () => {
         expect(escrow.tokenAddress).toEqual('tokenAddress2');
     });
 
-    it('should correctly set the commissioner', () => {
-        escrow.commissioner = 'commissioner2';
-        expect(escrow.commissioner).toEqual('commissioner2');
+    it('should correctly set the fee recipient', () => {
+        escrow.feeRecipient = 'feeRecipient2';
+        expect(escrow.feeRecipient).toEqual('feeRecipient2');
     });
 
     it('should correctly set the base fee', () => {
         escrow.baseFee = 21;
         expect(escrow.baseFee).toEqual(21);
-    })
+    });
 
     it('should correctly set the percentage fee', () => {
         escrow.percentageFee = 2;
         expect(escrow.percentageFee).toEqual(2);
-    })
+    });
 });

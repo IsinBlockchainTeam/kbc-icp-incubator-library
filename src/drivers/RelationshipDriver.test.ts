@@ -4,9 +4,15 @@ import { RelationshipManager, RelationshipManager__factory } from '../smart-cont
 import { RelationshipDriver } from './RelationshipDriver';
 import { Relationship } from '../entities/Relationship';
 import { EntityBuilder } from '../utils/EntityBuilder';
+import { RoleProof } from '../types/RoleProof';
 
 describe('RelationshipDriver', () => {
     let relationshipDriver: RelationshipDriver;
+
+    const roleProof: RoleProof = {
+        signedProof: 'signedProof',
+        delegator: 'delegator'
+    };
 
     const testAddress = '0x6C9E9ADB5F57952434A4148b401502d9c6C70318';
     const errorMessage = 'testError';
@@ -29,14 +35,16 @@ describe('RelationshipDriver', () => {
 
     beforeAll(() => {
         mockedWriteFunction.mockResolvedValue({
-            wait: mockedWait,
+            wait: mockedWait
         });
         mockedReadFunction.mockResolvedValue({
-            toNumber: jest.fn(),
+            toNumber: jest.fn()
         });
-        mockedRegisterRelationship.mockReturnValue(Promise.resolve({
-            wait: mockedWait.mockReturnValue({ events: [{ event: 'RelationshipRegistered' }] }),
-        }));
+        mockedRegisterRelationship.mockReturnValue(
+            Promise.resolve({
+                wait: mockedWait.mockReturnValue({ events: [{ event: 'RelationshipRegistered' }] })
+            })
+        );
         mockedDecodeEventLog.mockReturnValue({ id: BigNumber.from(0) });
 
         mockedContract = createMock<RelationshipManager>({
@@ -46,23 +54,22 @@ describe('RelationshipDriver', () => {
             getRelationshipIdsByCompany: mockedReadFunction,
             addAdmin: mockedWriteFunction,
             removeAdmin: mockedWriteFunction,
-            interface: { decodeEventLog: mockedDecodeEventLog },
+            interface: { decodeEventLog: mockedDecodeEventLog }
         });
 
         mockedRelationshipConnect.mockReturnValue(mockedContract);
         const mockedRelationshipManager = createMock<RelationshipManager>({
-            connect: mockedRelationshipConnect,
+            connect: mockedRelationshipConnect
         });
-        jest.spyOn(RelationshipManager__factory, 'connect').mockReturnValue(mockedRelationshipManager);
+        jest.spyOn(RelationshipManager__factory, 'connect').mockReturnValue(
+            mockedRelationshipManager
+        );
 
         const buildRelationshipSpy = jest.spyOn(EntityBuilder, 'buildRelationship');
         buildRelationshipSpy.mockReturnValue(mockedRelationship);
 
         mockedSigner = createMock<Signer>();
-        relationshipDriver = new RelationshipDriver(
-            mockedSigner,
-            testAddress,
-        );
+        relationshipDriver = new RelationshipDriver(mockedSigner, testAddress);
     });
 
     afterAll(() => {
@@ -71,29 +78,42 @@ describe('RelationshipDriver', () => {
 
     describe('registerRelationship', () => {
         it('should call and wait for register relationship', async () => {
-            await relationshipDriver.registerRelationship(companyA.address, companyB.address, now, new Date('2030-10-10'));
+            await relationshipDriver.registerRelationship(
+                roleProof,
+                companyA.address,
+                companyB.address,
+                now,
+                new Date('2030-10-10')
+            );
 
             expect(mockedRegisterRelationship).toHaveBeenCalledTimes(1);
             expect(mockedRegisterRelationship).toHaveBeenNthCalledWith(
                 1,
+                roleProof,
                 companyA.address,
                 companyB.address,
                 now.getTime(),
-                new Date('2030-10-10').getTime(),
+                new Date('2030-10-10').getTime()
             );
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 
         it('should call and wait for register relationship without validUntil date', async () => {
-            await relationshipDriver.registerRelationship(companyA.address, companyB.address, now);
+            await relationshipDriver.registerRelationship(
+                roleProof,
+                companyA.address,
+                companyB.address,
+                now
+            );
 
             expect(mockedRegisterRelationship).toHaveBeenCalledTimes(1);
             expect(mockedRegisterRelationship).toHaveBeenNthCalledWith(
                 1,
+                roleProof,
                 companyA.address,
                 companyB.address,
                 now.getTime(),
-                0,
+                0
             );
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
@@ -101,31 +121,51 @@ describe('RelationshipDriver', () => {
         it('should call and wait for register relationship - transaction fails', async () => {
             mockedRegisterRelationship.mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => relationshipDriver.registerRelationship(companyA.address, companyB.address, now);
+            const fn = async () =>
+                relationshipDriver.registerRelationship(
+                    roleProof,
+                    companyA.address,
+                    companyB.address,
+                    now
+                );
             await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
 
         it('should call and wait for register relationship - FAIL (Company A not an address)', async () => {
-            const fn = async () => relationshipDriver.registerRelationship('0xaddress', companyB.address, now);
+            const fn = async () =>
+                relationshipDriver.registerRelationship(
+                    roleProof,
+                    '0xaddress',
+                    companyB.address,
+                    now
+                );
             await expect(fn).rejects.toThrow(new Error('Company A not an address'));
         });
 
         it('should call and wait for register relationship - FAIL (Company B not an address)', async () => {
-            const fn = async () => relationshipDriver.registerRelationship(companyA.address, '0xaddress', now);
+            const fn = async () =>
+                relationshipDriver.registerRelationship(
+                    roleProof,
+                    companyA.address,
+                    '0xaddress',
+                    now
+                );
             await expect(fn).rejects.toThrow(new Error('Company B not an address'));
         });
     });
 
     describe('getRelationshipCounter', () => {
         it('should get the relationship counter ids', async () => {
-            await relationshipDriver.getRelationshipCounter();
+            await relationshipDriver.getRelationshipCounter(roleProof);
             expect(mockedContract.getRelationshipCounter).toHaveBeenCalledTimes(1);
         });
 
         it('should get the relationship counter ids - transaction fails', async () => {
-            mockedContract.getRelationshipCounter = jest.fn().mockRejectedValue(new Error(errorMessage));
+            mockedContract.getRelationshipCounter = jest
+                .fn()
+                .mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => relationshipDriver.getRelationshipCounter();
+            const fn = async () => relationshipDriver.getRelationshipCounter(roleProof);
             await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
     });
@@ -134,39 +174,50 @@ describe('RelationshipDriver', () => {
         it('should retrieve relationship', async () => {
             mockedContract.getRelationshipInfo = jest.fn().mockResolvedValue(mockedRelationship);
 
-            const resp = await relationshipDriver.getRelationshipInfo(1);
+            const resp = await relationshipDriver.getRelationshipInfo(roleProof, 1);
 
             expect(resp).toEqual(mockedRelationship);
 
             expect(mockedContract.getRelationshipInfo).toHaveBeenCalledTimes(1);
-            expect(mockedContract.getRelationshipInfo).toHaveBeenNthCalledWith(
-                1,
-                1,
-            );
+            expect(mockedContract.getRelationshipInfo).toHaveBeenNthCalledWith(1, roleProof, 1);
         });
 
         it('should retrieve relationship - transaction fails', async () => {
-            mockedContract.getRelationshipInfo = jest.fn().mockRejectedValue(new Error(errorMessage));
+            mockedContract.getRelationshipInfo = jest
+                .fn()
+                .mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => relationshipDriver.getRelationshipInfo(1);
+            const fn = async () => relationshipDriver.getRelationshipInfo(roleProof, 1);
             await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
     });
 
     describe('getRelationshipIdsByCompany', () => {
         it('should retrieve relationship ids by company address', async () => {
-            mockedContract.getRelationshipIdsByCompany = jest.fn().mockResolvedValue([{ toNumber: () => 1 }, { toNumber: () => 2 }]);
+            mockedContract.getRelationshipIdsByCompany = jest
+                .fn()
+                .mockResolvedValue([{ toNumber: () => 1 }, { toNumber: () => 2 }]);
 
-            const resp = await relationshipDriver.getRelationshipIdsByCompany(companyB.address);
+            const resp = await relationshipDriver.getRelationshipIdsByCompany(
+                roleProof,
+                companyB.address
+            );
             expect(resp).toEqual([1, 2]);
             expect(mockedContract.getRelationshipIdsByCompany).toHaveBeenCalledTimes(1);
-            expect(mockedContract.getRelationshipIdsByCompany).toHaveBeenNthCalledWith(1, companyB.address);
+            expect(mockedContract.getRelationshipIdsByCompany).toHaveBeenNthCalledWith(
+                1,
+                roleProof,
+                companyB.address
+            );
         });
 
         it('should retrieve relationship ids by company address - transaction fails', async () => {
-            mockedContract.getRelationshipIdsByCompany = jest.fn().mockRejectedValue(new Error(errorMessage));
+            mockedContract.getRelationshipIdsByCompany = jest
+                .fn()
+                .mockRejectedValue(new Error(errorMessage));
 
-            const fn = async () => relationshipDriver.getRelationshipIdsByCompany(companyB.address);
+            const fn = async () =>
+                relationshipDriver.getRelationshipIdsByCompany(roleProof, companyB.address);
             await expect(fn).rejects.toThrow(new Error(errorMessage));
         });
     });
@@ -177,10 +228,7 @@ describe('RelationshipDriver', () => {
             await relationshipDriver.addAdmin(address);
 
             expect(mockedContract.addAdmin).toHaveBeenCalledTimes(1);
-            expect(mockedContract.addAdmin).toHaveBeenNthCalledWith(
-                1,
-                address,
-            );
+            expect(mockedContract.addAdmin).toHaveBeenNthCalledWith(1, address);
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 
@@ -206,10 +254,7 @@ describe('RelationshipDriver', () => {
             await relationshipDriver.removeAdmin(address);
 
             expect(mockedContract.removeAdmin).toHaveBeenCalledTimes(1);
-            expect(mockedContract.removeAdmin).toHaveBeenNthCalledWith(
-                1,
-                address,
-            );
+            expect(mockedContract.removeAdmin).toHaveBeenNthCalledWith(1, address);
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
 

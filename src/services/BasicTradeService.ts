@@ -1,39 +1,48 @@
-import { StorageACR } from '@blockchain-lib/common/types/storage';
+import { FileHelpers } from '@blockchain-lib/common';
 import { TradeService } from './TradeService';
 import { BasicTradeDriver } from '../drivers/BasicTradeDriver';
 import { IConcreteTradeService } from './IConcreteTradeService';
-import { BasicTrade } from '../entities/BasicTrade';
+import { BasicTrade, BasicTradeMetadata } from '../entities/BasicTrade';
 import { Line, LineRequest } from '../entities/Trade';
-import { DocumentSpec } from '../drivers/IStorageDocumentDriver';
-import { MetadataSpec } from '../drivers/IStorageMetadataDriver';
+import { RoleProof } from '../types/RoleProof';
 
-export class BasicTradeService<MS extends MetadataSpec, DS extends DocumentSpec, ACR extends StorageACR> extends TradeService<MS, DS, ACR> implements IConcreteTradeService {
-    async getTrade(blockNumber?: number): Promise<BasicTrade> {
-        return this._tradeDriverImplementation.getTrade(blockNumber);
+export class BasicTradeService extends TradeService implements IConcreteTradeService {
+    async getTrade(roleProof: RoleProof, blockNumber?: number): Promise<BasicTrade> {
+        return this._tradeDriverImplementation.getTrade(roleProof, blockNumber);
     }
 
-    async getLines(): Promise<Line[]> {
-        return this._tradeDriverImplementation.getLines();
+    async getCompleteTrade(roleProof: RoleProof, blockNumber?: number): Promise<BasicTrade> {
+        if (!this._icpFileDriver)
+            throw new Error('BasicTradeService: ICPFileDriver has not been set');
+
+        const trade = await this._tradeDriverImplementation.getTrade(roleProof, blockNumber);
+        const bytes = await this._icpFileDriver.read(`${trade.externalUrl}/files/metadata.json`);
+        trade.metadata = FileHelpers.getObjectFromBytes(bytes) as BasicTradeMetadata;
+        return trade;
     }
 
-    async getLine(id: number, blockNumber?: number): Promise<Line> {
-        return this._tradeDriverImplementation.getLine(id, blockNumber);
+    async getLines(roleProof: RoleProof): Promise<Line[]> {
+        return this._tradeDriverImplementation.getLines(roleProof);
     }
 
-    async addLine(line: LineRequest): Promise<Line> {
-        return this._tradeDriverImplementation.addLine(line);
+    async getLine(roleProof: RoleProof, id: number, blockNumber?: number): Promise<Line> {
+        return this._tradeDriverImplementation.getLine(roleProof, id, blockNumber);
     }
 
-    async updateLine(line: Line): Promise<Line> {
-        return this._tradeDriverImplementation.updateLine(line);
+    async addLine(roleProof: RoleProof, line: LineRequest): Promise<number> {
+        return this._tradeDriverImplementation.addLine(roleProof, line);
     }
 
-    async assignMaterial(lineId: number, materialId: number): Promise<void> {
-        return this._tradeDriverImplementation.assignMaterial(lineId, materialId);
+    async updateLine(roleProof: RoleProof, line: Line): Promise<void> {
+        return this._tradeDriverImplementation.updateLine(roleProof, line);
     }
 
-    async setName(name: string): Promise<void> {
-        return this._tradeDriverImplementation.setName(name);
+    async assignMaterial(roleProof: RoleProof, lineId: number, materialId: number): Promise<void> {
+        return this._tradeDriverImplementation.assignMaterial(roleProof, lineId, materialId);
+    }
+
+    async setName(roleProof: RoleProof, name: string): Promise<void> {
+        return this._tradeDriverImplementation.setName(roleProof, name);
     }
 
     private get _tradeDriverImplementation(): BasicTradeDriver {

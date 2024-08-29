@@ -3,6 +3,7 @@ export enum ContractName {
     TRADE_MANAGER = 'TradeManager',
     BASIC_TRADE = 'BasicTrade',
     ORDER_TRADE = 'OrderTrade',
+    SHIPMENT_MANAGER = 'ShipmentManager',
     ASSET_OPERATION_MANAGER = 'AssetOperationManager',
     PRODUCT_CATEGORY_MANAGER = 'ProductCategoryManager',
     CERTIFICATE_MANAGER = 'CertificateManager',
@@ -13,12 +14,14 @@ export enum ContractName {
     ESCROW_MANAGER = 'EscrowManager',
     ESCROW = 'Escrow',
     MY_TOKEN = 'MyToken',
+    ETHEREUM_DID_REGISTRY = 'EthereumDIDRegistry',
+    DELEGATE_MANAGER = 'DelegateManager'
 }
 
 export enum FIAT {
     USD = 'USD',
     EUR = 'EUR',
-    CHF = 'CHF',
+    CHF = 'CHF'
 }
 
 export enum PRODUCT_CATEGORY {

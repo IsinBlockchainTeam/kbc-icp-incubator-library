@@ -4,14 +4,22 @@ import { MaterialDriver } from './MaterialDriver';
 import { EntityBuilder } from '../utils/EntityBuilder';
 import {
     MaterialManager,
-    MaterialManager__factory, ProductCategoryManager, ProductCategoryManager__factory,
+    MaterialManager__factory,
+    ProductCategoryManager,
+    ProductCategoryManager__factory
 } from '../smart-contracts';
 import { Material } from '../entities/Material';
+import { RoleProof } from '../types/RoleProof';
 
 describe('MaterialDriver', () => {
     let materialDriver: MaterialDriver;
     const companyAddress: string = Wallet.createRandom().address;
     const contractAddress: string = Wallet.createRandom().address;
+
+    const roleProof: RoleProof = {
+        signedProof: 'signedProof',
+        delegator: 'delegator'
+    };
 
     let mockedSigner: Signer;
 
@@ -20,7 +28,7 @@ describe('MaterialDriver', () => {
         name: 'category1',
         quality: 85,
         description: 'description',
-        exists: true,
+        exists: true
     } as ProductCategoryManager.ProductCategoryStructOutput;
 
     const mockedMaterialManagerConnect = jest.fn();
@@ -39,10 +47,10 @@ describe('MaterialDriver', () => {
     const mockedGetProductCategory = jest.fn();
 
     mockedWriteFunction.mockResolvedValue({
-        wait: mockedWait,
+        wait: mockedWait
     });
     mockedReadFunction.mockResolvedValue({
-        toNumber: mockedToNumber,
+        toNumber: mockedToNumber
     });
     mockedGetMaterial.mockReturnValue(Promise.resolve(mockedMaterialStructOutput));
     mockedGetMaterialExists.mockReturnValue(true);
@@ -56,11 +64,11 @@ describe('MaterialDriver', () => {
         getMaterial: mockedGetMaterial,
         getMaterialIdsOfCreator: mockedGetMaterialIdsOfCreator,
         registerMaterial: mockedWriteFunction,
-        updateMaterial: mockedWriteFunction,
+        updateMaterial: mockedWriteFunction
     });
 
     const mockedProductCategoryContract = createMock<ProductCategoryManager>({
-        getProductCategory: mockedGetProductCategory,
+        getProductCategory: mockedGetProductCategory
     });
 
     beforeAll(() => {
@@ -68,23 +76,27 @@ describe('MaterialDriver', () => {
 
         mockedMaterialManagerConnect.mockReturnValue(mockedContract);
         const mockedMaterialManager = createMock<MaterialManager>({
-            connect: mockedMaterialManagerConnect,
+            connect: mockedMaterialManagerConnect
         });
         mockedProductCategoryManagerConnect.mockReturnValue(mockedProductCategoryContract);
         const mockedProductCategoryManagerContract = createMock<ProductCategoryManager>({
-            connect: mockedProductCategoryManagerConnect,
+            connect: mockedProductCategoryManagerConnect
         });
 
-        jest.spyOn(MaterialManager__factory, 'connect')
-            .mockReturnValue(mockedMaterialManager);
-        jest.spyOn(ProductCategoryManager__factory, 'connect')
-            .mockReturnValue(mockedProductCategoryManagerContract);
+        jest.spyOn(MaterialManager__factory, 'connect').mockReturnValue(mockedMaterialManager);
+        jest.spyOn(ProductCategoryManager__factory, 'connect').mockReturnValue(
+            mockedProductCategoryManagerContract
+        );
 
         const buildMaterialSpy = jest.spyOn(EntityBuilder, 'buildMaterial');
         buildMaterialSpy.mockReturnValue(mockedMaterial);
 
         mockedSigner = createMock<Signer>();
-        materialDriver = new MaterialDriver(mockedSigner, contractAddress, Wallet.createRandom().address);
+        materialDriver = new MaterialDriver(
+            mockedSigner,
+            contractAddress,
+            Wallet.createRandom().address
+        );
     });
 
     afterAll(() => {
@@ -93,80 +105,97 @@ describe('MaterialDriver', () => {
 
     it('should correctly register a new Material', async () => {
         mockedWait.mockResolvedValueOnce({
-            events: [{
-                event: 'MaterialRegistered',
-                args: {
-                    id: BigNumber.from(productCategoryStruct.id),
-                },
-            }],
+            events: [
+                {
+                    event: 'MaterialRegistered',
+                    args: {
+                        id: BigNumber.from(productCategoryStruct.id)
+                    }
+                }
+            ]
         });
-        await materialDriver.registerMaterial(productCategoryStruct.id.toNumber());
+        await materialDriver.registerMaterial(roleProof, productCategoryStruct.id.toNumber());
 
         expect(mockedContract.registerMaterial).toHaveBeenCalledTimes(1);
-        expect(mockedContract.registerMaterial).toHaveBeenNthCalledWith(1, productCategoryStruct.id.toNumber());
+        expect(mockedContract.registerMaterial).toHaveBeenNthCalledWith(
+            1,
+            roleProof,
+            productCategoryStruct.id.toNumber()
+        );
 
         expect(mockedWait).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly register a new Material - FAIL(Error during material registration, no events found)', async () => {
         mockedWait.mockResolvedValueOnce({
-            events: undefined,
+            events: undefined
         });
-        await expect(materialDriver.registerMaterial(productCategoryStruct.id.toNumber())).rejects.toThrow('Error during material registration, no events found');
+        await expect(
+            materialDriver.registerMaterial(roleProof, productCategoryStruct.id.toNumber())
+        ).rejects.toThrow('Error during material registration, no events found');
     });
 
     it('should correctly update a Material', async () => {
-        await materialDriver.updateMaterial(1, 10);
+        await materialDriver.updateMaterial(roleProof, 1, 10);
 
         expect(mockedContract.updateMaterial).toHaveBeenCalledTimes(1);
-        expect(mockedContract.updateMaterial).toHaveBeenNthCalledWith(1, 1, 10);
+        expect(mockedContract.updateMaterial).toHaveBeenNthCalledWith(1, roleProof, 1, 10);
 
         expect(mockedWait).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly retrieve a Material counter', async () => {
-        const response: number = await materialDriver.getMaterialsCounter();
+        const response: number = await materialDriver.getMaterialsCounter(roleProof);
 
         expect(response).toEqual(1);
 
         expect(mockedContract.getMaterialsCounter).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getMaterialsCounter).toHaveBeenNthCalledWith(1);
+        expect(mockedContract.getMaterialsCounter).toHaveBeenNthCalledWith(1, roleProof);
         expect(mockedToNumber).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly retrieve Material ids of creator', async () => {
-        const response: Material[] = await materialDriver.getMaterialsOfCreator(companyAddress);
+        const response: Material[] = await materialDriver.getMaterialsOfCreator(
+            roleProof,
+            companyAddress
+        );
 
-        expect(response).toEqual([EntityBuilder.buildMaterial(mockedMaterialStructOutput, productCategoryStruct)]);
+        expect(response).toEqual([
+            EntityBuilder.buildMaterial(mockedMaterialStructOutput, productCategoryStruct)
+        ]);
 
         expect(mockedContract.getMaterialIdsOfCreator).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getMaterialIdsOfCreator).toHaveBeenNthCalledWith(1, companyAddress);
+        expect(mockedContract.getMaterialIdsOfCreator).toHaveBeenNthCalledWith(
+            1,
+            roleProof,
+            companyAddress
+        );
     });
 
     it('should check if a Material exists', async () => {
-        const response: boolean = await materialDriver.getMaterialExists(1);
+        const response: boolean = await materialDriver.getMaterialExists(roleProof, 1);
 
         expect(response).toEqual(true);
 
         expect(mockedContract.getMaterialExists).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getMaterialExists).toHaveBeenNthCalledWith(1, 1);
+        expect(mockedContract.getMaterialExists).toHaveBeenNthCalledWith(1, roleProof, 1);
     });
 
     it('should correctly retrieve a Material', async () => {
-        const response: Material = await materialDriver.getMaterial(1);
+        const response: Material = await materialDriver.getMaterial(roleProof, 1);
 
         expect(response).toEqual(mockedMaterial);
 
         expect(mockedGetMaterial).toHaveBeenCalledTimes(1);
-        expect(mockedGetMaterial).toHaveBeenNthCalledWith(1, 1);
+        expect(mockedGetMaterial).toHaveBeenNthCalledWith(1, roleProof, 1);
     });
 
     it('should correctly retrieve all Materials', async () => {
-        const response: Material[] = await materialDriver.getMaterials();
+        const response: Material[] = await materialDriver.getMaterials(roleProof);
 
         expect(response).toEqual([mockedMaterial]);
 
         expect(mockedContract.getMaterialsCounter).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getMaterialsCounter).toHaveBeenNthCalledWith(1);
+        expect(mockedContract.getMaterialsCounter).toHaveBeenNthCalledWith(1, roleProof);
     });
 });

@@ -8,8 +8,16 @@ dotenv.config({ path: '../.env' });
 
 const contractMap = new Map<string, Contract>();
 
-const serial = (funcs: Function[]) => funcs.reduce((promise: Promise<any>, func: Function) => promise.then((result: any) => func()
-    .then(Array.prototype.concat.bind(result))), Promise.resolve([]));
+const serial = (funcs: Function[]) =>
+    funcs.reduce(
+        (promise: Promise<any>, func: Function) => promise.then((result: any) => func().then(Array.prototype.concat.bind(result))),
+        Promise.resolve([])
+    );
+
+async function getAttachedContract(contractName: string, contractAddress: string): Promise<Contract> {
+    const ContractFactory = await ethers.getContractFactory(contractName);
+    return ContractFactory.attach(contractAddress);
+}
 
 async function deploy(contractName: string, contractArgs?: any[], contractAliasName?: string): Promise<void> {
     const ContractFactory = await ethers.getContractFactory(contractName);
@@ -28,8 +36,7 @@ serial([
     async () => {
         const enums: string[] = ['USD', 'EUR', 'CHF'];
         for (let i = 0; i < enums.length; i++) {
-            const tx = await contractMap.get('EnumerableFiatManager')
-                ?.add(enums[i]);
+            const tx = await contractMap.get('EnumerableFiatManager')?.add(enums[i]);
             await tx.wait();
         }
     },
@@ -37,8 +44,7 @@ serial([
     async () => {
         const enums: string[] = ['33 - Collecting', '38 - Harvesting'];
         for (let i = 0; i < enums.length; i++) {
-            const tx = await contractMap.get('EnumerableProcessTypeManager')
-                ?.add(enums[i]);
+            const tx = await contractMap.get('EnumerableProcessTypeManager')?.add(enums[i]);
             await tx.wait();
         }
     },
@@ -46,66 +52,65 @@ serial([
     async () => {
         const enums: string[] = ['Chemical use assessment', 'Environment assessment', 'Origin assessment', 'Quality assessment', 'Swiss Decode'];
         for (let i = 0; i < enums.length; i++) {
-            const tx = await contractMap.get('EnumerableAssessmentStandardManager')
-                ?.add(enums[i]);
+            const tx = await contractMap.get('EnumerableAssessmentStandardManager')?.add(enums[i]);
             await tx.wait();
         }
     },
-    () => deploy(
-        ContractName.PRODUCT_CATEGORY_MANAGER, [],
-    ),
-    () => deploy(
-        ContractName.MATERIAL_MANAGER, [
-            contractMap.get(ContractName.PRODUCT_CATEGORY_MANAGER)!.address,
-        ],
-    ),
-    () => deploy(
-        ContractName.DOCUMENT_MANAGER, [
-            [process.env.SUPPLIER_ADMIN || ''],
-        ],
-    ),
-    () => deploy(
-        ContractName.ESCROW_MANAGER, [
+    () => deploy(ContractName.ENUMERABLE_TYPE_MANAGER, [[]], 'EnumerableUnitManager'),
+    async () => {
+        const enums: string[] = ['BG - Bags', 'KGM - Kilograms', 'H87 - Pieces'];
+        for (let i = 0; i < enums.length; i++) {
+            const tx = await contractMap.get('EnumerableUnitManager')?.add(enums[i]);
+            await tx.wait();
+        }
+    },
+    () => deploy(ContractName.DELEGATE_MANAGER, ['KBC Delegate Manager', '1.0.1', 31337]),
+    () => deploy(ContractName.PRODUCT_CATEGORY_MANAGER, [contractMap.get(ContractName.DELEGATE_MANAGER)!.address]),
+    () =>
+        deploy(ContractName.MATERIAL_MANAGER, [
+            contractMap.get(ContractName.DELEGATE_MANAGER)!.address,
+            contractMap.get(ContractName.PRODUCT_CATEGORY_MANAGER)!.address
+        ]),
+    () => deploy(ContractName.DOCUMENT_MANAGER, [contractMap.get(ContractName.DELEGATE_MANAGER)!.address, [process.env.SUPPLIER_ADMIN || '']]),
+    () =>
+        deploy(ContractName.ESCROW_MANAGER, [
+            contractMap.get(ContractName.DELEGATE_MANAGER)!.address,
             process.env.COMMISSIONER_ADMIN || '',
             process.env.ESCROW_BASE_FEE || 20,
-            process.env.ESCROW_COMMISSIONER_FEE || 1,
-        ],
-    ),
-    () => deploy(
-        ContractName.TRADE_MANAGER, [
+            process.env.ESCROW_COMMISSIONER_FEE || 1
+        ]),
+    () =>
+        deploy(ContractName.TRADE_MANAGER, [
+            contractMap.get(ContractName.DELEGATE_MANAGER)!.address,
             contractMap.get(ContractName.PRODUCT_CATEGORY_MANAGER)!.address,
             contractMap.get(ContractName.MATERIAL_MANAGER)!.address,
             contractMap.get(ContractName.DOCUMENT_MANAGER)!.address,
             contractMap.get('EnumerableFiatManager')!.address,
-            contractMap.get(ContractName.ESCROW_MANAGER)!.address,
-        ],
-    ),
-    () => deploy(ContractName.RELATIONSHIP_MANAGER, [
-        [process.env.SUPPLIER_ADMIN || ''],
-    ]),
-    () => deploy(
-        ContractName.ASSET_OPERATION_MANAGER, [
+            contractMap.get('EnumerableUnitManager')!.address,
+            contractMap.get(ContractName.ESCROW_MANAGER)!.address
+        ]),
+    () => deploy(ContractName.RELATIONSHIP_MANAGER, [contractMap.get(ContractName.DELEGATE_MANAGER)!.address, [process.env.SUPPLIER_ADMIN || '']]),
+    () =>
+        deploy(ContractName.ASSET_OPERATION_MANAGER, [
+            contractMap.get(ContractName.DELEGATE_MANAGER)!.address,
             contractMap.get(ContractName.MATERIAL_MANAGER)!.address,
-            contractMap.get('EnumerableProcessTypeManager')!.address,
-        ],
-    ),
-    () => deploy(
-        ContractName.OFFER_MANAGER, [
+            contractMap.get('EnumerableProcessTypeManager')!.address
+        ]),
+    () =>
+        deploy(ContractName.OFFER_MANAGER, [
+            contractMap.get(ContractName.DELEGATE_MANAGER)!.address,
             [process.env.SUPPLIER_ADMIN || ''],
-            contractMap.get(ContractName.PRODUCT_CATEGORY_MANAGER)!.address,
-        ],
-    ),
+            contractMap.get(ContractName.PRODUCT_CATEGORY_MANAGER)!.address
+        ]),
+    () => deploy(ContractName.MY_TOKEN, [10000]),
+    () => deploy(ContractName.ETHEREUM_DID_REGISTRY, []),
     () => deploy(
-        ContractName.MY_TOKEN, [10000],
+      ContractName.CERTIFICATE_MANAGER, [
+        contractMap.get('EnumerableProcessTypeManager')!.address,
+        contractMap.get('EnumerableAssessmentStandardManager')!.address,
+      ],
     ),
-    () => deploy(
-        ContractName.CERTIFICATE_MANAGER, [
-            contractMap.get('EnumerableProcessTypeManager')!.address,
-            contractMap.get('EnumerableAssessmentStandardManager')!.address,
-        ],
-    ),
-])
-    .catch((error: any) => {
-        console.error(error);
-        process.exitCode = 1;
-    });
+]).catch((error: any) => {
+    console.error(error);
+    process.exitCode = 1;
+});

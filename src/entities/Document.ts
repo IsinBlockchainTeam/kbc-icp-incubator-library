@@ -1,8 +1,25 @@
-import { DocumentInfo } from './DocumentInfo';
+import { DocumentInfo, DocumentType } from './DocumentInfo';
 
-export type TransactionLine = {id: number, quantity?: number}
+export type TransactionLine = { id: number; quantity?: number };
+
+export enum DocumentStatus {
+    NOT_EVALUATED,
+    APPROVED,
+    NOT_APPROVED
+}
+
+export interface DocumentMetadata {
+    fileName: string;
+    documentType: DocumentType;
+    date: Date;
+    transactionLines: TransactionLine[];
+    quantity?: number;
+}
+
 export class Document extends DocumentInfo {
     private _filename: string;
+
+    private _documentType: DocumentType;
 
     private _date: Date;
 
@@ -12,12 +29,27 @@ export class Document extends DocumentInfo {
 
     private _content: Uint8Array;
 
-    constructor(documentInfo: DocumentInfo, filename: string, date: Date, content: Uint8Array, transactionLines?: TransactionLine[]) {
-        super(documentInfo.id, documentInfo.externalUrl, documentInfo.contentHash);
+    constructor(
+        documentInfo: DocumentInfo,
+        filename: string,
+        documentType: DocumentType,
+        date: Date,
+        content: Uint8Array,
+        transactionLines?: TransactionLine[],
+        quantity?: number
+    ) {
+        super(
+            documentInfo.id,
+            documentInfo.externalUrl,
+            documentInfo.contentHash,
+            documentInfo.uploadedBy
+        );
         this._filename = filename;
+        this._documentType = documentType;
         this._date = date;
         this._content = content;
         this._transactionLines = transactionLines;
+        this._quantity = quantity;
     }
 
     get filename(): string {
@@ -34,6 +66,14 @@ export class Document extends DocumentInfo {
 
     set content(value: Uint8Array) {
         this._content = value;
+    }
+
+    get documentType(): DocumentType {
+        return this._documentType;
+    }
+
+    set documentType(value: DocumentType) {
+        this._documentType = value;
     }
 
     get date(): Date {

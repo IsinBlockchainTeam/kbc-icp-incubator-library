@@ -2,16 +2,21 @@ import { BigNumber, Signer, Wallet } from 'ethers';
 import { createMock } from 'ts-auto-mock';
 import { TradeDriver } from './TradeDriver';
 import { Trade as TradeContract, Trade__factory } from '../smart-contracts';
-import { TradeStatus } from '../types/TradeStatus';
 import { DocumentType } from '../entities/DocumentInfo';
 import { TradeType } from '../types/TradeType';
+import { DocumentStatus } from '../entities/Document';
+import { RoleProof } from '../types/RoleProof';
 
 describe('TradeDriver', () => {
     let tradeDriver: TradeDriver;
     const contractAddress: string = Wallet.createRandom().address;
 
+    const roleProof: RoleProof = {
+        signedProof: 'signedProof',
+        delegator: 'delegator'
+    };
+
     const lineIds: BigNumber[] = [BigNumber.from(1)];
-    const newAdmin: string = Wallet.createRandom().address;
 
     let mockedSigner: Signer;
 
@@ -22,37 +27,35 @@ describe('TradeDriver', () => {
     const mockedGetLineCounter = jest.fn();
     const mockedGetTradeType = jest.fn();
     const mockedGetLineExists = jest.fn();
-    const mockedGetTradeStatus = jest.fn();
-    const mockedgetAllDocumentIds = jest.fn();
-    const mockedgetAllDocumentIdsByType = jest.fn();
+    const mockedGetAllDocumentIds = jest.fn();
+    const mockedGetAllDocumentIdsByType = jest.fn();
+    const mockedGetDocumentStatus = jest.fn();
 
     mockedWriteFunction.mockResolvedValue({
-        wait: mockedWait,
+        wait: mockedWait
     });
     mockedGetLineCounter.mockReturnValue(BigNumber.from(lineIds.length));
     mockedGetTradeType.mockResolvedValue(TradeType.BASIC);
     mockedGetLineExists.mockResolvedValue(true);
-    mockedGetTradeStatus.mockResolvedValue(TradeStatus.SHIPPED);
 
     const mockedContract = createMock<TradeContract>({
         getLineCounter: mockedGetLineCounter,
         getTradeType: mockedGetTradeType,
         getLineExists: mockedGetLineExists,
-        getTradeStatus: mockedGetTradeStatus,
         addDocument: mockedWriteFunction,
-        getAllDocumentIds: mockedgetAllDocumentIds,
-        getDocumentIdsByType: mockedgetAllDocumentIdsByType,
-        addAdmin: mockedWriteFunction,
-        removeAdmin: mockedWriteFunction,
+        updateDocument: mockedWriteFunction,
+        validateDocument: mockedWriteFunction,
+        getAllDocumentIds: mockedGetAllDocumentIds,
+        getDocumentIdsByType: mockedGetAllDocumentIdsByType,
+        getDocumentStatus: mockedGetDocumentStatus
     });
 
     beforeAll(() => {
         mockedTradeConnect.mockReturnValue(mockedContract);
         const mockedTradeContract: TradeContract = createMock<TradeContract>({
-            connect: mockedTradeConnect,
+            connect: mockedTradeConnect
         });
-        jest.spyOn(Trade__factory, 'connect')
-            .mockReturnValue(mockedTradeContract);
+        jest.spyOn(Trade__factory, 'connect').mockReturnValue(mockedTradeContract);
 
         mockedSigner = createMock<Signer>();
         tradeDriver = new TradeDriver(mockedSigner, contractAddress);
@@ -63,164 +66,141 @@ describe('TradeDriver', () => {
     });
 
     it('should correctly retrieve trade counter', async () => {
-        expect(await tradeDriver.getLineCounter())
-            .toEqual(1);
+        expect(await tradeDriver.getLineCounter(roleProof)).toEqual(1);
 
-        expect(mockedContract.getLineCounter)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.getLineCounter)
-            .toHaveBeenNthCalledWith(1);
+        expect(mockedContract.getLineCounter).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getLineCounter).toHaveBeenNthCalledWith(1, roleProof);
     });
 
     it('should correctly retrieve trade type - BASIC', async () => {
-        expect(await tradeDriver.getTradeType())
-            .toEqual(TradeType.BASIC);
+        expect(await tradeDriver.getTradeType(roleProof)).toEqual(TradeType.BASIC);
     });
 
     it('should correctly retrieve trade type - ORDER', async () => {
         mockedGetTradeType.mockResolvedValueOnce(TradeType.ORDER);
 
-        expect(await tradeDriver.getTradeType())
-            .toEqual(TradeType.ORDER);
+        expect(await tradeDriver.getTradeType(roleProof)).toEqual(TradeType.ORDER);
     });
 
     it('should correctly retrieve trade type - FAIL(Utils: an invalid value "..." for "TradeType" was returned by the contract)', async () => {
         mockedGetTradeType.mockResolvedValueOnce(42);
-        await expect(tradeDriver.getTradeType())
-            .rejects
-            .toThrow(new Error('Utils: an invalid value "42" for "TradeType" was returned by the contract'));
+        await expect(tradeDriver.getTradeType(roleProof)).rejects.toThrow(
+            new Error('Utils: an invalid value "42" for "TradeType" was returned by the contract')
+        );
     });
 
     it('should correctly retrieve line exists', async () => {
-        const response = await tradeDriver.getLineExists(lineIds[0].toNumber());
+        const response = await tradeDriver.getLineExists(roleProof, lineIds[0].toNumber());
 
-        expect(response)
-            .toEqual(true);
+        expect(response).toEqual(true);
 
-        expect(mockedContract.getLineExists)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.getLineExists)
-            .toHaveBeenNthCalledWith(1, lineIds[0].toNumber());
-        expect(mockedGetLineExists)
-            .toHaveBeenCalledTimes(1);
-    });
-
-    it('should correctly retrieve the trade status  - SHIPPED', async () => {
-        const response = await tradeDriver.getTradeStatus();
-
-        expect(response)
-            .toEqual(TradeStatus.SHIPPED);
-
-        expect(mockedContract.getTradeStatus)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.getTradeStatus)
-            .toHaveBeenNthCalledWith(1);
-        expect(mockedGetTradeStatus)
-            .toHaveBeenCalledTimes(1);
-    });
-
-    it('should correctly retrieve the trade status - ON_BOARD', async () => {
-        mockedGetTradeStatus.mockReturnValue(Promise.resolve(TradeStatus.ON_BOARD));
-        const response = await tradeDriver.getTradeStatus();
-
-        expect(response)
-            .toEqual(TradeStatus.ON_BOARD);
-
-        expect(mockedContract.getTradeStatus)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.getTradeStatus)
-            .toHaveBeenNthCalledWith(1);
-        expect(mockedGetTradeStatus)
-            .toHaveBeenCalledTimes(1);
-    });
-
-    it('should correctly retrieve the trade status - CONTRACTING', async () => {
-        mockedGetTradeStatus.mockReturnValue(Promise.resolve(TradeStatus.CONTRACTING));
-        const response = await tradeDriver.getTradeStatus();
-
-        expect(response)
-            .toEqual(TradeStatus.CONTRACTING);
-
-        expect(mockedContract.getTradeStatus)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.getTradeStatus)
-            .toHaveBeenNthCalledWith(1);
-        expect(mockedGetTradeStatus)
-            .toHaveBeenCalledTimes(1);
-    });
-
-    it('should correctly retrieve the trade status - FAIL(TradeDriver: an invalid value "..." for "TradeStatus" was returned by the contract)', async () => {
-        mockedGetTradeStatus.mockReturnValue(Promise.resolve(42));
-        await expect(tradeDriver.getTradeStatus())
-            .rejects
-            .toThrow(new Error('TradeDriver: an invalid value "42" for "TradeStatus" was returned by the contract'));
-
-        expect(mockedContract.getTradeStatus)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.getTradeStatus)
-            .toHaveBeenNthCalledWith(1);
-        expect(mockedGetTradeStatus)
-            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.getLineExists).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getLineExists).toHaveBeenNthCalledWith(
+            1,
+            roleProof,
+            lineIds[0].toNumber()
+        );
+        expect(mockedGetLineExists).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly add a document', async () => {
-        await tradeDriver.addDocument(DocumentType.BILL_OF_LADING, 'https://test.com', 'contentHash');
+        await tradeDriver.addDocument(
+            roleProof,
+            DocumentType.BILL_OF_LADING,
+            'https://test.com',
+            'contentHash'
+        );
 
-        expect(mockedContract.addDocument)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.addDocument)
-            .toHaveBeenNthCalledWith(1, DocumentType.BILL_OF_LADING, 'https://test.com', 'contentHash');
-        expect(mockedWait)
-            .toHaveBeenCalledTimes(1);
+        expect(mockedContract.addDocument).toHaveBeenCalledTimes(1);
+        expect(mockedContract.addDocument).toHaveBeenNthCalledWith(
+            1,
+            roleProof,
+            DocumentType.BILL_OF_LADING,
+            'https://test.com',
+            'contentHash'
+        );
+        expect(mockedWait).toHaveBeenCalledTimes(1);
+    });
+
+    it('should correctly update a document', async () => {
+        await tradeDriver.updateDocument(roleProof, 1, 'https://test.com', 'contentHash');
+
+        expect(mockedContract.updateDocument).toHaveBeenCalledTimes(1);
+        expect(mockedContract.updateDocument).toHaveBeenNthCalledWith(
+            1,
+            roleProof,
+            1,
+            'https://test.com',
+            'contentHash'
+        );
+        expect(mockedWait).toHaveBeenCalledTimes(1);
+    });
+
+    it('should correctly validate a document', async () => {
+        await tradeDriver.validateDocument(roleProof, 1, DocumentStatus.APPROVED);
+
+        expect(mockedContract.validateDocument).toHaveBeenCalledTimes(1);
+        expect(mockedContract.validateDocument).toHaveBeenNthCalledWith(
+            1,
+            roleProof,
+            1,
+            DocumentStatus.APPROVED
+        );
+        expect(mockedWait).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly retrieve document ids by type', async () => {
         const documentIds: number[] = [1, 2, 3];
 
-        mockedgetAllDocumentIdsByType.mockResolvedValueOnce(documentIds.map((id) => BigNumber.from(id)));
+        mockedGetAllDocumentIdsByType.mockResolvedValueOnce(
+            documentIds.map((id) => BigNumber.from(id))
+        );
 
-        const response = await tradeDriver.getDocumentIdsByType(DocumentType.BILL_OF_LADING);
+        const response = await tradeDriver.getDocumentIdsByType(
+            roleProof,
+            DocumentType.BILL_OF_LADING
+        );
         expect(response).toEqual(documentIds);
 
-        expect(mockedContract.getDocumentIdsByType)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.getDocumentIdsByType)
-            .toHaveBeenNthCalledWith(1, DocumentType.BILL_OF_LADING);
+        expect(mockedContract.getDocumentIdsByType).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getDocumentIdsByType).toHaveBeenNthCalledWith(
+            1,
+            roleProof,
+            DocumentType.BILL_OF_LADING
+        );
     });
 
     it('should correctly retrieve document ids', async () => {
         const documentIds: number[] = [1, 2, 3];
 
-        mockedgetAllDocumentIds.mockResolvedValueOnce(documentIds.map((id) => BigNumber.from(id)));
+        mockedGetAllDocumentIds.mockResolvedValueOnce(documentIds.map((id) => BigNumber.from(id)));
 
-        const response = await tradeDriver.getAllDocumentIds();
+        const response = await tradeDriver.getAllDocumentIds(roleProof);
         expect(response).toEqual(documentIds);
 
-        expect(mockedContract.getAllDocumentIds)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.getAllDocumentIds)
-            .toHaveBeenNthCalledWith(1);
+        expect(mockedContract.getAllDocumentIds).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getAllDocumentIds).toHaveBeenNthCalledWith(1, roleProof);
     });
 
-    it('should correctly add an admin', async () => {
-        await tradeDriver.addAdmin(newAdmin);
+    it('should get document status', async () => {
+        mockedGetDocumentStatus.mockResolvedValueOnce(DocumentStatus.NOT_EVALUATED);
+        expect(await tradeDriver.getDocumentStatus(roleProof, 1)).toEqual(
+            DocumentStatus.NOT_EVALUATED
+        );
 
-        expect(mockedContract.addAdmin)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.addAdmin)
-            .toHaveBeenNthCalledWith(1, newAdmin);
-        expect(mockedWait)
-            .toHaveBeenCalledTimes(1);
-    });
+        mockedGetDocumentStatus.mockResolvedValueOnce(DocumentStatus.NOT_APPROVED);
+        expect(await tradeDriver.getDocumentStatus(roleProof, 1)).toEqual(
+            DocumentStatus.NOT_APPROVED
+        );
 
-    it('should correctly remove an admin', async () => {
-        await tradeDriver.removeAdmin(newAdmin);
+        mockedGetDocumentStatus.mockResolvedValueOnce(DocumentStatus.APPROVED);
+        expect(await tradeDriver.getDocumentStatus(roleProof, 1)).toEqual(DocumentStatus.APPROVED);
 
-        expect(mockedContract.removeAdmin)
-            .toHaveBeenCalledTimes(1);
-        expect(mockedContract.removeAdmin)
-            .toHaveBeenNthCalledWith(1, newAdmin);
-        expect(mockedWait)
-            .toHaveBeenCalledTimes(1);
+        mockedGetDocumentStatus.mockResolvedValueOnce(40);
+        await expect(tradeDriver.getDocumentStatus(roleProof, 1)).rejects.toThrow(
+            new Error('Invalid document status')
+        );
+
+        expect(mockedContract.getDocumentStatus).toHaveBeenCalledTimes(4);
     });
 });

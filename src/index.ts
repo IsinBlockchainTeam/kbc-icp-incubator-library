@@ -1,10 +1,14 @@
-export { ExternalProvider } from '@ethersproject/providers';
+export type { ExternalProvider } from '@ethersproject/providers';
 export { Signer } from 'ethers';
 export { SignerUtils } from './utils/SignerUtils';
 
 export { Relationship } from './entities/Relationship';
 export { RelationshipDriver } from './drivers/RelationshipDriver';
 export { RelationshipService } from './services/RelationshipService';
+
+export { RoleProof } from './types/RoleProof';
+export { DelegateManagerDriver } from './drivers/DelegateManagerDriver';
+export { DelegateManagerService } from './services/DelegateManagerService';
 
 export { Material } from './entities/Material';
 export { MaterialDriver } from './drivers/MaterialDriver';
@@ -19,29 +23,36 @@ export { AssetOperationType } from './types/AssetOperationType';
 export { AssetOperationDriver } from './drivers/AssetOperationDriver';
 export { AssetOperationService } from './services/AssetOperationService';
 
-export { Trade } from './entities/Trade';
-export { Line } from './entities/Trade';
-export { LineRequest } from './entities/Trade';
-export { OrderLineRequest } from './entities/OrderTradeInfo';
-export { BasicTrade } from './entities/BasicTrade';
-export { OrderTradeInfo } from './entities/OrderTradeInfo';
-export { OrderTrade } from './entities/OrderTrade';
-export { OrderLine } from './entities/OrderTradeInfo';
-export { OrderLinePrice } from './entities/OrderTradeInfo';
-export { TradeStatus } from './types/TradeStatus';
+export { Trade, Line, LineRequest } from './entities/Trade';
+export { BasicTrade, type BasicTradeMetadata } from './entities/BasicTrade';
+export {
+    OrderTrade,
+    OrderLine,
+    OrderLinePrice,
+    OrderLineRequest,
+    type OrderTradeMetadata
+} from './entities/OrderTrade';
+export { NegotiationStatus } from './types/NegotiationStatus';
 export { TradeType } from './types/TradeType';
 export { TradeManagerDriver } from './drivers/TradeManagerDriver';
 export { TradeManagerService } from './services/TradeManagerService';
+export type { TradeManagerServiceArgs } from './services/TradeManagerService';
 export { TradeDriver } from './drivers/TradeDriver';
 export { TradeService } from './services/TradeService';
 export { BasicTradeDriver } from './drivers/BasicTradeDriver';
 export { BasicTradeService } from './services/BasicTradeService';
-export { OrderTradeDriver } from './drivers/OrderTradeDriver';
+export { OrderTradeDriver, OrderTradeEvents } from './drivers/OrderTradeDriver';
 export { OrderTradeService } from './services/OrderTradeService';
-export { IConcreteTradeService } from './services/IConcreteTradeService';
+export type { IConcreteTradeService } from './services/IConcreteTradeService';
+export type { URLStructure } from './types/URLStructure';
 
 export { DocumentInfo, DocumentType } from './entities/DocumentInfo';
-export { Document, TransactionLine } from './entities/Document';
+export {
+    Document,
+    DocumentMetadata,
+    DocumentStatus,
+    type TransactionLine
+} from './entities/Document';
 export { DocumentDriver } from './drivers/DocumentDriver';
 export { DocumentService } from './services/DocumentService';
 
@@ -54,10 +65,22 @@ export { EscrowManagerDriver } from './drivers/EscrowManagerDriver';
 export { EscrowManagerService } from './services/EscrowManagerService';
 export { EscrowDriver } from './drivers/EscrowDriver';
 export { EscrowService } from './services/EscrowService';
+export { TokenDriver } from './drivers/TokenDriver';
+export { TokenService } from './services/TokenService';
 
-export { IStorageMetadataDriver } from './drivers/IStorageMetadataDriver';
-export { IStorageDocumentDriver } from './drivers/IStorageDocumentDriver';
-export { SolidMetadataDriver, SolidMetadataSpec } from './drivers/SolidMetadataDriver';
-export { SolidDocumentDriver, SolidDocumentSpec } from './drivers/SolidDocumentDriver';
+export { Shipment, ShipmentPhase, DocumentStatus as ShipmentDocumentStatus, DocumentInfo as ShipmentDocumentInfo, DocumentType as ShipmentDocumentType, ShipmentEvaluationStatus, FundsStatus} from './entities/Shipment';
+export { ShipmentDriver } from './drivers/ShipmentDriver';
+export { ShipmentService, ShipmentDocument } from './services/ShipmentService';
 
-export { GraphService, GraphData } from './services/GraphService';
+export type { ISolidStorageMetadataDriver } from './drivers/ISolidStorageMetadataDriver';
+export type { ISolidStorageDocumentDriver } from './drivers/ISolidStorageDocumentDriver';
+export { SolidMetadataDriver, type SolidMetadataSpec } from './drivers/SolidMetadataDriver';
+export { SolidDocumentDriver, type SolidDocumentSpec } from './drivers/SolidDocumentDriver';
+
+export { ICPFileDriver } from './drivers/ICPFileDriver';
+
+export { GraphService, type GraphData } from './services/GraphService';
+
+export { serial } from './utils/utils';
+export { URL_SEGMENTS } from './constants/ICP';
+export { URL_SEGMENT_INDEXES } from './constants/ICP';

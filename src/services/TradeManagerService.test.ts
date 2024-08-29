@@ -1,22 +1,26 @@
 import { createMock } from 'ts-auto-mock';
-import { SolidStorageACR } from '@blockchain-lib/common';
+import { FileHelpers } from '@blockchain-lib/common';
 import { TradeManagerService } from './TradeManagerService';
 import { TradeManagerDriver } from '../drivers/TradeManagerDriver';
-import { BasicTrade } from '../entities/BasicTrade';
-
-import { OrderTradeInfo } from '../entities/OrderTradeInfo';
-import { IStorageMetadataDriver } from '../drivers/IStorageMetadataDriver';
-import { SolidMetadataSpec } from '../drivers/SolidMetadataDriver';
-import { StorageOperationType } from '../types/StorageOperationType';
+import { BasicTrade, BasicTradeMetadata } from '../entities/BasicTrade';
+import { OrderTrade, OrderTradeMetadata } from '../entities/OrderTrade';
+import { NegotiationStatus } from '../types/NegotiationStatus';
+import { URLStructure } from '../types/URLStructure';
+import { ICPFileDriver } from '../drivers/ICPFileDriver';
+import { URL_SEGMENTS } from '../constants/ICP';
+import { RoleProof } from '../types/RoleProof';
 
 describe('TradeManagerService', () => {
-    let tradeManagerService: TradeManagerService<SolidMetadataSpec, SolidStorageACR>;
+    let tradeManagerService: TradeManagerService;
 
     let mockedTradeManagerDriver: TradeManagerDriver;
-    let mockedStorageMetadataDriver: IStorageMetadataDriver<SolidMetadataSpec, SolidStorageACR>;
     const mockedInstance = {
-        registerBasicTrade: jest.fn(),
-        registerOrderTrade: jest.fn(),
+        registerBasicTrade: jest
+            .fn()
+            .mockResolvedValue([1, '0xcontract_address', 'transaction_hash']),
+        registerOrderTrade: jest
+            .fn()
+            .mockResolvedValue([1, '0xcontract_address', 'transaction_hash']),
         getTradeCounter: jest.fn(),
         getTrades: jest.fn(),
         getTradesAndTypes: jest.fn(),
@@ -24,26 +28,144 @@ describe('TradeManagerService', () => {
         getTradesByMaterial: jest.fn(),
         getTradeType: jest.fn(),
         getTradeIdsOfSupplier: jest.fn(),
-        getTradeIdsOfCommissioner: jest.fn(),
+        getTradeIdsOfCommissioner: jest.fn()
     };
-    const mockedStorageMetadataInstance = {
-        create: jest.fn(),
-    };
+    const mockedIcpFileDriver: ICPFileDriver = createMock<ICPFileDriver>({
+        create: jest.fn()
+    });
 
-    const basicTrade: BasicTrade = new BasicTrade(1, 'supplier', 'customer', 'commissioner', 'externalUrl', [], 'name');
-    const orderTrade: OrderTradeInfo = new OrderTradeInfo(1, 'supplier', 'customer', 'commissioner', 'externalUrl', [], true, false, 1000, 2000, 'arbiter', 3000, 4000, 'tokenAddress');
+    const basicTrade: BasicTrade = new BasicTrade(
+        1,
+        'supplier',
+        'customer',
+        'commissioner',
+        'externalUrl',
+        [],
+        'name'
+    );
+    const orderTrade: OrderTrade = new OrderTrade(
+        1,
+        'supplier',
+        'customer',
+        'commissioner',
+        'externalUrl',
+        [],
+        true,
+        false,
+        1000,
+        2000,
+        'arbiter',
+        3000,
+        4000,
+        NegotiationStatus.PENDING,
+        300,
+        'tokenAddress'
+    );
     const agreedAmount: number = 1000;
     const tokenAddress: string = 'tokenAddress';
-    const metadata = { metadata: 'metadata' };
-    const metadataSpec = {
-        bcResourceId: 'bcResourceId',
+    const basicTradeMetadata: BasicTradeMetadata = { issueDate: new Date() };
+    const orderTradeMetadata: OrderTradeMetadata = {
+        incoterms: 'incoterms',
+        shipper: 'shipper',
+        shippingPort: 'shippingPort',
+        deliveryPort: 'deliveryPort'
+    };
+    const urlStructure: URLStructure = {
+        prefix: 'prefix',
+        organizationId: 1
+    };
+    const delegatedOrganizationIds: number[] = [1, 2];
+
+    const roleProof: RoleProof = {
+        signedProof: 'signedProof',
+        delegator: 'delegator'
     };
 
-    describe('Without storage metadata driver', () => {
+    describe('Without storage driver', () => {
         beforeAll(() => {
             mockedTradeManagerDriver = createMock<TradeManagerDriver>(mockedInstance);
 
-            tradeManagerService = new TradeManagerService(mockedTradeManagerDriver);
+            tradeManagerService = new TradeManagerService({
+                tradeManagerDriver: mockedTradeManagerDriver
+            });
+        });
+
+        afterAll(() => jest.restoreAllMocks());
+
+        it.each([
+            {
+                serviceFunctionName: 'getTradeCounter',
+                serviceFunction: () => tradeManagerService.getTradeCounter(roleProof),
+                expectedMockedFunction: mockedInstance.getTradeCounter,
+                expectedMockedFunctionArgs: [roleProof]
+            },
+            {
+                serviceFunctionName: 'getTrades',
+                serviceFunction: () => tradeManagerService.getTrades(roleProof),
+                expectedMockedFunction: mockedInstance.getTrades,
+                expectedMockedFunctionArgs: [roleProof]
+            },
+            {
+                serviceFunctionName: 'getTradesAndTypes',
+                serviceFunction: () => tradeManagerService.getTradesAndTypes(roleProof),
+                expectedMockedFunction: mockedInstance.getTradesAndTypes,
+                expectedMockedFunctionArgs: [roleProof]
+            },
+            {
+                serviceFunctionName: 'getTrade',
+                serviceFunction: () => tradeManagerService.getTrade(roleProof, basicTrade.tradeId),
+                expectedMockedFunction: mockedInstance.getTrade,
+                expectedMockedFunctionArgs: [roleProof, basicTrade.tradeId]
+            },
+            {
+                serviceFunctionName: 'getTradeType',
+                serviceFunction: () =>
+                    tradeManagerService.getTradeType(roleProof, basicTrade.tradeId),
+                expectedMockedFunction: mockedInstance.getTradeType,
+                expectedMockedFunctionArgs: [roleProof, basicTrade.tradeId]
+            },
+            {
+                serviceFunctionName: 'getTradesByMaterial',
+                serviceFunction: () =>
+                    tradeManagerService.getTradesByMaterial(roleProof, basicTrade.tradeId),
+                expectedMockedFunction: mockedInstance.getTradesByMaterial,
+                expectedMockedFunctionArgs: [roleProof, basicTrade.tradeId]
+            },
+            {
+                serviceFunctionName: 'getTradeIdsOfSupplier',
+                serviceFunction: () =>
+                    tradeManagerService.getTradeIdsOfSupplier(roleProof, basicTrade.supplier),
+                expectedMockedFunction: mockedInstance.getTradeIdsOfSupplier,
+                expectedMockedFunctionArgs: [roleProof, basicTrade.supplier]
+            },
+            {
+                serviceFunctionName: 'getTradeIdsOfCommissioner',
+                serviceFunction: () =>
+                    tradeManagerService.getTradeIdsOfCommissioner(
+                        roleProof,
+                        basicTrade.commissioner
+                    ),
+                expectedMockedFunction: mockedInstance.getTradeIdsOfCommissioner,
+                expectedMockedFunctionArgs: [roleProof, basicTrade.commissioner]
+            }
+        ])(
+            'service should call driver $serviceFunctionName',
+            async ({ serviceFunction, expectedMockedFunction, expectedMockedFunctionArgs }) => {
+                await serviceFunction();
+
+                expect(expectedMockedFunction).toHaveBeenCalledTimes(1);
+                expect(expectedMockedFunction).toHaveBeenCalledWith(...expectedMockedFunctionArgs);
+            }
+        );
+    });
+
+    describe('With storage driver', () => {
+        beforeAll(() => {
+            mockedTradeManagerDriver = createMock<TradeManagerDriver>(mockedInstance);
+            tradeManagerService = new TradeManagerService({
+                tradeManagerDriver: mockedTradeManagerDriver,
+                icpFileDriver: mockedIcpFileDriver
+            });
         });
 
         afterAll(() => jest.restoreAllMocks());
@@ -51,112 +173,110 @@ describe('TradeManagerService', () => {
         it.each([
             {
                 serviceFunctionName: 'registerBasicTrade',
-                serviceFunction: () => tradeManagerService.registerBasicTrade(basicTrade.supplier, basicTrade.customer, basicTrade.commissioner, basicTrade.name),
-                expectedMockedFunction: mockedInstance.registerBasicTrade,
-                expectedMockedFunctionArgs: [basicTrade.supplier, basicTrade.customer, basicTrade.commissioner, '', basicTrade.name],
+                serviceFunction: () =>
+                    tradeManagerService.registerBasicTrade(
+                        roleProof,
+                        basicTrade.supplier,
+                        basicTrade.customer,
+                        basicTrade.commissioner,
+                        basicTrade.name,
+                        basicTradeMetadata,
+                        urlStructure,
+                        delegatedOrganizationIds
+                    ),
+                expectedMockedFunction: mockedIcpFileDriver.create,
+                expectedMockedFunctionArgs: [
+                    FileHelpers.getBytesFromObject(basicTradeMetadata),
+                    {
+                        name: `${
+                            FileHelpers.ensureTrailingSlash(urlStructure.prefix) +
+                            URL_SEGMENTS.ORGANIZATION +
+                            urlStructure.organizationId
+                        }/${URL_SEGMENTS.TRANSACTION}${1}/${URL_SEGMENTS.FILE}metadata.json`,
+                        type: 'application/json'
+                    },
+                    delegatedOrganizationIds
+                ]
             },
             {
                 serviceFunctionName: 'registerOrderTrade',
-                serviceFunction: () => tradeManagerService.registerOrderTrade(orderTrade.supplier, orderTrade.customer, orderTrade.commissioner, orderTrade.paymentDeadline, orderTrade.documentDeliveryDeadline, orderTrade.arbiter, orderTrade.shippingDeadline, orderTrade.deliveryDeadline, agreedAmount, tokenAddress),
-                expectedMockedFunction: mockedInstance.registerOrderTrade,
-                expectedMockedFunctionArgs: [orderTrade.supplier, orderTrade.customer, orderTrade.commissioner, '', orderTrade.paymentDeadline, orderTrade.documentDeliveryDeadline, orderTrade.arbiter, orderTrade.shippingDeadline, orderTrade.deliveryDeadline, agreedAmount, tokenAddress],
-            },
-            {
-                serviceFunctionName: 'getTradeCounter',
-                serviceFunction: () => tradeManagerService.getTradeCounter(),
-                expectedMockedFunction: mockedInstance.getTradeCounter,
-                expectedMockedFunctionArgs: [],
-            },
-            {
-                serviceFunctionName: 'getTrades',
-                serviceFunction: () => tradeManagerService.getTrades(),
-                expectedMockedFunction: mockedInstance.getTrades,
-                expectedMockedFunctionArgs: [],
-            },
-            {
-                serviceFunctionName: 'getTradesAndTypes',
-                serviceFunction: () => tradeManagerService.getTradesAndTypes(),
-                expectedMockedFunction: mockedInstance.getTradesAndTypes,
-                expectedMockedFunctionArgs: [],
-            },
-            {
-                serviceFunctionName: 'getTrade',
-                serviceFunction: () => tradeManagerService.getTrade(basicTrade.tradeId),
-                expectedMockedFunction: mockedInstance.getTrade,
-                expectedMockedFunctionArgs: [basicTrade.tradeId],
-            },
-            {
-                serviceFunctionName: 'getTradeType',
-                serviceFunction: () => tradeManagerService.getTradeType(basicTrade.tradeId),
-                expectedMockedFunction: mockedInstance.getTradeType,
-                expectedMockedFunctionArgs: [basicTrade.tradeId],
-            },
-            {
-                serviceFunctionName: 'getTradesByMaterial',
-                serviceFunction: () => tradeManagerService.getTradesByMaterial(basicTrade.tradeId),
-                expectedMockedFunction: mockedInstance.getTradesByMaterial,
-                expectedMockedFunctionArgs: [basicTrade.tradeId],
-            },
-            {
-                serviceFunctionName: 'getTradeIdsOfSupplier',
-                serviceFunction: () => tradeManagerService.getTradeIdsOfSupplier(basicTrade.supplier),
-                expectedMockedFunction: mockedInstance.getTradeIdsOfSupplier,
-                expectedMockedFunctionArgs: [basicTrade.supplier],
-            },
-            {
-                serviceFunctionName: 'getTradeIdsOfCommissioner',
-                serviceFunction: () => tradeManagerService.getTradeIdsOfCommissioner(basicTrade.commissioner),
-                expectedMockedFunction: mockedInstance.getTradeIdsOfCommissioner,
-                expectedMockedFunctionArgs: [basicTrade.commissioner],
-            },
-        ])('service should call driver $serviceFunctionName', async ({
-            serviceFunction,
-            expectedMockedFunction,
-            expectedMockedFunctionArgs,
-        }) => {
-            await serviceFunction();
+                serviceFunction: () =>
+                    tradeManagerService.registerOrderTrade(
+                        roleProof,
+                        orderTrade.supplier,
+                        orderTrade.customer,
+                        orderTrade.commissioner,
+                        orderTrade.paymentDeadline,
+                        orderTrade.documentDeliveryDeadline,
+                        orderTrade.arbiter,
+                        orderTrade.shippingDeadline,
+                        orderTrade.deliveryDeadline,
+                        agreedAmount,
+                        tokenAddress,
+                        orderTradeMetadata,
+                        urlStructure,
+                        delegatedOrganizationIds
+                    ),
+                expectedMockedFunction: mockedIcpFileDriver.create,
+                expectedMockedFunctionArgs: [
+                    FileHelpers.getBytesFromObject(orderTradeMetadata),
+                    {
+                        name: `${
+                            FileHelpers.ensureTrailingSlash(urlStructure.prefix) +
+                            URL_SEGMENTS.ORGANIZATION +
+                            urlStructure.organizationId
+                        }/${URL_SEGMENTS.TRANSACTION}${1}/${URL_SEGMENTS.FILE}metadata.json`,
+                        type: 'application/json'
+                    },
+                    delegatedOrganizationIds
+                ]
+            }
+        ])(
+            'service should call driver $serviceFunctionName',
+            async ({ serviceFunction, expectedMockedFunction, expectedMockedFunctionArgs }) => {
+                await serviceFunction();
 
-            expect(expectedMockedFunction)
-                .toHaveBeenCalledTimes(1);
-            expect(expectedMockedFunction)
-                .toHaveBeenCalledWith(...expectedMockedFunctionArgs);
-        });
+                expect(expectedMockedFunction).toHaveBeenCalledTimes(1);
+                expect(expectedMockedFunction).toHaveBeenCalledWith(...expectedMockedFunctionArgs);
+            }
+        );
     });
 
-    describe('With storage metadata driver', () => {
-        beforeAll(() => {
-            mockedTradeManagerDriver = createMock<TradeManagerDriver>(mockedInstance);
-            mockedStorageMetadataDriver = createMock<IStorageMetadataDriver<SolidMetadataSpec, SolidStorageACR>>(mockedStorageMetadataInstance);
-
-            tradeManagerService = new TradeManagerService(mockedTradeManagerDriver, mockedStorageMetadataDriver);
+    it('should fail to register a trade without storage driver', async () => {
+        tradeManagerService = new TradeManagerService({
+            tradeManagerDriver: mockedTradeManagerDriver
         });
 
-        afterAll(() => jest.restoreAllMocks());
+        await expect(
+            tradeManagerService.registerBasicTrade(
+                roleProof,
+                basicTrade.supplier,
+                basicTrade.customer,
+                basicTrade.commissioner,
+                basicTrade.name,
+                basicTradeMetadata,
+                urlStructure,
+                delegatedOrganizationIds
+            )
+        ).rejects.toThrow(new Error('TradeManagerService: ICPFileDriver has not been set'));
 
-        it.each([
-            {
-                serviceFunctionName: 'registerBasicTrade - with ACL rules',
-                serviceFunction: () => tradeManagerService.registerBasicTrade(basicTrade.supplier, basicTrade.customer, basicTrade.commissioner, basicTrade.name, { spec: metadataSpec, value: metadata, aclRules: [] }),
-                expectedMockedFunction: mockedStorageMetadataInstance.create,
-                expectedMockedFunctionArgs: [StorageOperationType.TRANSACTION, metadata, [], metadataSpec],
-            },
-            {
-                serviceFunctionName: 'registerOrderTrade - without ACL rules',
-                serviceFunction: () => tradeManagerService.registerOrderTrade(orderTrade.supplier, orderTrade.customer, orderTrade.commissioner, orderTrade.paymentDeadline, orderTrade.documentDeliveryDeadline, orderTrade.arbiter, orderTrade.shippingDeadline, orderTrade.deliveryDeadline, agreedAmount, tokenAddress, { spec: metadataSpec, value: metadata }),
-                expectedMockedFunction: mockedStorageMetadataInstance.create,
-                expectedMockedFunctionArgs: [StorageOperationType.TRANSACTION, metadata, undefined, metadataSpec],
-            },
-        ])('service should call driver $serviceFunctionName', async ({
-            serviceFunction,
-            expectedMockedFunction,
-            expectedMockedFunctionArgs,
-        }) => {
-            await serviceFunction();
-
-            expect(expectedMockedFunction)
-                .toHaveBeenCalledTimes(1);
-            expect(expectedMockedFunction)
-                .toHaveBeenCalledWith(...expectedMockedFunctionArgs);
-        });
+        await expect(
+            tradeManagerService.registerOrderTrade(
+                roleProof,
+                orderTrade.supplier,
+                orderTrade.customer,
+                orderTrade.commissioner,
+                orderTrade.paymentDeadline,
+                orderTrade.documentDeliveryDeadline,
+                orderTrade.arbiter,
+                orderTrade.shippingDeadline,
+                orderTrade.deliveryDeadline,
+                agreedAmount,
+                tokenAddress,
+                orderTradeMetadata,
+                urlStructure,
+                delegatedOrganizationIds
+            )
+        ).rejects.toThrow(new Error('TradeManagerService: ICPFileDriver has not been set'));
     });
 });

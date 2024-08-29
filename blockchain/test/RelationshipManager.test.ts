@@ -5,36 +5,49 @@ import { expect } from 'chai';
 import { BigNumber, Contract } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { ContractName } from '../utils/constants';
-
-let relationshipManagerContract: Contract;
-let owner: SignerWithAddress;
-let admin: SignerWithAddress;
-let companyA: SignerWithAddress;
-let companyB: SignerWithAddress;
-let otherAccount: SignerWithAddress;
-let relationshipCounterId: BigNumber;
+import { KBCAccessControl } from '../typechain-types/contracts/MaterialManager';
+import { FakeContract, smock } from '@defi-wonderland/smock';
 
 describe('RelationshipManager', () => {
+    let relationshipManagerContract: Contract;
+    let delegateManagerContractFake: FakeContract;
+    let owner: SignerWithAddress;
+    let admin: SignerWithAddress;
+    let companyA: SignerWithAddress;
+    let companyB: SignerWithAddress;
+    let otherAccount: SignerWithAddress;
+    let relationshipCounterId: BigNumber;
+
     const rawRelationship = {
         validFrom: new Date().getTime(),
-        validUntil: new Date('2030-10-10').getTime(),
+        validUntil: new Date('2030-10-10').getTime()
+    };
+
+    const roleProof: KBCAccessControl.RoleProofStruct = {
+        signedProof: '0x',
+        delegator: ''
     };
 
     beforeEach(async () => {
         [owner, admin, companyA, companyB, otherAccount] = await ethers.getSigners();
 
+        roleProof.delegator = owner.address;
+        delegateManagerContractFake = await smock.fake(ContractName.DELEGATE_MANAGER);
+        delegateManagerContractFake.hasValidRole.returns(true);
         const RelationshipManager = await ethers.getContractFactory(ContractName.RELATIONSHIP_MANAGER);
 
-        relationshipManagerContract = await RelationshipManager.deploy([admin.address]);
+        relationshipManagerContract = await RelationshipManager.deploy(delegateManagerContractFake.address, [admin.address]);
         await relationshipManagerContract.deployed();
     });
 
     describe('registerRelationship', () => {
         it('should register a relationship', async () => {
-            await relationshipManagerContract.connect(companyB).registerRelationship(companyA.address, companyB.address, rawRelationship.validFrom, rawRelationship.validUntil);
-            relationshipCounterId = await relationshipManagerContract.connect(companyB).getRelationshipCounter();
+            await relationshipManagerContract
+                .connect(companyB)
+                .registerRelationship(roleProof, companyA.address, companyB.address, rawRelationship.validFrom, rawRelationship.validUntil);
+            relationshipCounterId = await relationshipManagerContract.connect(companyB).getRelationshipCounter(roleProof);
 
-            const savedRelationship = await relationshipManagerContract.connect(companyB).getRelationshipInfo(relationshipCounterId);
+            const savedRelationship = await relationshipManagerContract.connect(companyB).getRelationshipInfo(roleProof, relationshipCounterId);
             expect(savedRelationship.companyA).to.equal(companyA.address);
             expect(savedRelationship.companyB).to.equal(companyB.address);
             expect(savedRelationship.validFrom).to.equal(rawRelationship.validFrom);
@@ -42,18 +55,28 @@ describe('RelationshipManager', () => {
         });
 
         it('should register a relationship - FAIL (Sender is not one of the two entities involved in the relationship)', async () => {
-            await expect(relationshipManagerContract.connect(otherAccount).registerRelationship(companyA.address, companyB.address, rawRelationship.validFrom, rawRelationship.validUntil))
-                .to.be.revertedWith('Sender is not one of the two entities involved in the relationship');
+            await expect(
+                relationshipManagerContract
+                    .connect(otherAccount)
+                    .registerRelationship(roleProof, companyA.address, companyB.address, rawRelationship.validFrom, rawRelationship.validUntil)
+            ).to.be.revertedWith('Sender is not one of the two entities involved in the relationship');
         });
 
         it("should register a relationship - FAIL (Fields 'companyA' and 'companyB' must be different)", async () => {
-            await expect(relationshipManagerContract.connect(companyA).registerRelationship(companyA.address, companyA.address, rawRelationship.validFrom, rawRelationship.validUntil))
-                .to.be.revertedWith("Fields 'companyA' and 'companyB' must be different");
+            await expect(
+                relationshipManagerContract
+                    .connect(companyA)
+                    .registerRelationship(roleProof, companyA.address, companyA.address, rawRelationship.validFrom, rawRelationship.validUntil)
+            ).to.be.revertedWith("Fields 'companyA' and 'companyB' must be different");
         });
 
         it('should emit RelationshipRegistered event', async () => {
-            relationshipCounterId = await relationshipManagerContract.connect(companyB).getRelationshipCounter();
-            await expect(relationshipManagerContract.connect(companyB).registerRelationship(companyA.address, companyB.address, rawRelationship.validFrom, rawRelationship.validUntil))
+            relationshipCounterId = await relationshipManagerContract.connect(companyB).getRelationshipCounter(roleProof);
+            await expect(
+                relationshipManagerContract
+                    .connect(companyB)
+                    .registerRelationship(roleProof, companyA.address, companyB.address, rawRelationship.validFrom, rawRelationship.validUntil)
+            )
                 .to.emit(relationshipManagerContract, 'RelationshipRegistered')
                 .withArgs(relationshipCounterId.toNumber() + 1, companyA.address, companyB.address);
         });
@@ -61,20 +84,24 @@ describe('RelationshipManager', () => {
 
     describe('getRelationshipIdsByCompany', () => {
         it('should retrieve saved relationship ids by same company address', async () => {
-            await relationshipManagerContract.connect(companyB).registerRelationship(companyA.address, companyB.address, rawRelationship.validFrom, rawRelationship.validUntil);
-            await relationshipManagerContract.connect(companyB).registerRelationship(otherAccount.address, companyB.address, rawRelationship.validFrom, rawRelationship.validUntil);
-            relationshipCounterId = await relationshipManagerContract.connect(companyB).getRelationshipCounter();
+            await relationshipManagerContract
+                .connect(companyB)
+                .registerRelationship(roleProof, companyA.address, companyB.address, rawRelationship.validFrom, rawRelationship.validUntil);
+            await relationshipManagerContract
+                .connect(companyB)
+                .registerRelationship(roleProof, otherAccount.address, companyB.address, rawRelationship.validFrom, rawRelationship.validUntil);
+            relationshipCounterId = await relationshipManagerContract.connect(companyB).getRelationshipCounter(roleProof);
 
-            const relationshipIds = await relationshipManagerContract.connect(companyB).getRelationshipIdsByCompany(companyB.address);
+            const relationshipIds = await relationshipManagerContract.connect(companyB).getRelationshipIdsByCompany(roleProof, companyB.address);
             expect(relationshipIds.length).to.equal(relationshipCounterId.toNumber());
 
-            let savedRelationship = await relationshipManagerContract.connect(companyB).getRelationshipInfo(relationshipIds[0]);
+            let savedRelationship = await relationshipManagerContract.connect(companyB).getRelationshipInfo(roleProof, relationshipIds[0]);
             expect(savedRelationship.companyA).to.equal(companyA.address);
             expect(savedRelationship.companyB).to.equal(companyB.address);
             expect(savedRelationship.validFrom).to.equal(rawRelationship.validFrom);
             expect(savedRelationship.validUntil).to.equal(rawRelationship.validUntil);
 
-            savedRelationship = await relationshipManagerContract.connect(companyB).getRelationshipInfo(relationshipIds[1]);
+            savedRelationship = await relationshipManagerContract.connect(companyB).getRelationshipInfo(roleProof, relationshipIds[1]);
             expect(savedRelationship.companyA).to.equal(otherAccount.address);
             expect(savedRelationship.companyB).to.equal(companyB.address);
             expect(savedRelationship.validFrom).to.equal(rawRelationship.validFrom);

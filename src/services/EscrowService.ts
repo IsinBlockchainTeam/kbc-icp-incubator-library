@@ -1,6 +1,4 @@
-import { EscrowDriver } from "../drivers/EscrowDriver";
-import { EscrowStatus } from "../types/EscrowStatus";
-import { Escrow } from "../smart-contracts";
+import { EscrowDriver } from '../drivers/EscrowDriver';
 
 export class EscrowService {
     private _escrowDriver: EscrowDriver;
@@ -17,20 +15,8 @@ export class EscrowService {
         return this._escrowDriver.getPayee();
     }
 
-    async getPurchaser(): Promise<string> {
-        return this._escrowDriver.getPurchaser();
-    }
-
     async getPayers(): Promise<string[]> {
         return this._escrowDriver.getPayers();
-    }
-
-    async getPayer(address: string): Promise<Escrow.PayerStructOutput> {
-        return this._escrowDriver.getPayer(address);
-    }
-
-    async getAgreedAmount(): Promise<number> {
-        return this._escrowDriver.getAgreedAmount();
     }
 
     async getDeployedAt(): Promise<number> {
@@ -41,91 +27,111 @@ export class EscrowService {
         return this._escrowDriver.getDuration();
     }
 
-    async getState(): Promise<EscrowStatus> {
-        return this._escrowDriver.getState();
-    }
-
-    async getDepositAmount(): Promise<number> {
-        return this._escrowDriver.getDepositAmount();
+    async getDeadline(): Promise<number> {
+        return this._escrowDriver.getDeadline();
     }
 
     async getTokenAddress(): Promise<string> {
         return this._escrowDriver.getTokenAddress();
     }
 
-    async getCommissioner(): Promise<string> {
-        return this._escrowDriver.getCommissioner();
+    async getFeeRecipient(): Promise<string> {
+        return this._escrowDriver.getFeeRecipient();
     }
 
     async getBaseFee(): Promise<number> {
         return this._escrowDriver.getBaseFee();
     }
 
-    async updateBaseFee(newBaseFee: number): Promise<void> {
-        await this._escrowDriver.updateBaseFee(newBaseFee);
-    }
-
     async getPercentageFee(): Promise<number> {
         return this._escrowDriver.getPercentageFee();
+    }
+
+    async getFees(amount: number): Promise<number> {
+        return this._escrowDriver.getFees(amount);
+    }
+
+    async getTotalDepositedAmount(): Promise<number> {
+        return this._escrowDriver.getTotalDepositedAmount();
+    }
+
+    async getDepositedAmount(payer: string): Promise<number> {
+        return this._escrowDriver.getDepositedAmount(payer);
+    }
+
+    async getLockedAmount(): Promise<number> {
+        return this._escrowDriver.getLockedAmount();
+    }
+
+    async getReleasableAmount(): Promise<number> {
+        return this._escrowDriver.getReleasableAmount();
+    }
+
+    async getReleasedAmount(): Promise<number> {
+        return this._escrowDriver.getReleasedAmount();
+    }
+
+    async getTotalRefundableAmount(): Promise<number> {
+        return this._escrowDriver.getTotalRefundableAmount();
+    }
+
+    async getRefundedAmount(payer: string): Promise<number> {
+        return this._escrowDriver.getRefundedAmount(payer);
+    }
+
+    async getTotalRefundedAmount(): Promise<number> {
+        return this._escrowDriver.getTotalRefundedAmount();
+    }
+
+    async getBalance(): Promise<number> {
+        return this._escrowDriver.getBalance();
+    }
+
+    async getWithdrawableAmount(payer: string): Promise<number> {
+        return this._escrowDriver.getWithdrawableAmount(payer);
+    }
+
+    async getRefundableAmount(amount: number, payer: string): Promise<number> {
+        return this._escrowDriver.getRefundableAmount(amount, payer);
+    }
+
+    async updateFeeRecipient(newFeeRecipient: string): Promise<void> {
+        await this._escrowDriver.updateFeeRecipient(newFeeRecipient);
+    }
+
+    async updateBaseFee(newBaseFee: number): Promise<void> {
+        await this._escrowDriver.updateBaseFee(newBaseFee);
     }
 
     async updatePercentageFee(newPercentageFee: number): Promise<void> {
         await this._escrowDriver.updatePercentageFee(newPercentageFee);
     }
 
-    async updateCommissioner(newCommissioner: string): Promise<void> {
-        await this._escrowDriver.updateCommissioner(newCommissioner);
+    async isExpired(): Promise<boolean> {
+        return this._escrowDriver.isExpired();
     }
 
-    async getDeadline(): Promise<number> {
-        return this._escrowDriver.getDeadline();
+    async lockFunds(amount: number): Promise<void> {
+        await this._escrowDriver.lockFunds(amount);
     }
 
-    async hasExpired(): Promise<boolean> {
-        return this._escrowDriver.hasExpired();
+    async releaseFunds(amount: number): Promise<void> {
+        await this._escrowDriver.releaseFunds(amount);
     }
 
-    async withdrawalAllowed(): Promise<boolean> {
-        return this._escrowDriver.withdrawalAllowed();
+    async deposit(amount: number, payer: string): Promise<void> {
+        await this._escrowDriver.deposit(amount, payer);
     }
 
-    async refundAllowed(): Promise<boolean> {
-        return this._escrowDriver.refundAllowed();
+    async withdraw(amount: number): Promise<void> {
+        await this._escrowDriver.withdraw(amount);
     }
 
-    async addDelegate(delegate: string): Promise<void> {
-        await this._escrowDriver.addDelegate(delegate);
+    async addAdmin(admin: string): Promise<void> {
+        await this._escrowDriver.addAdmin(admin);
     }
 
-    async removeDelegate(delegate: string): Promise<void> {
-        await this._escrowDriver.removeDelegate(delegate);
-    }
-
-    async deposit(amount: number): Promise<void> {
-        await this._escrowDriver.deposit(amount);
-    }
-
-    async lock(): Promise<void> {
-        await this._escrowDriver.lock();
-    }
-
-    async close(): Promise<void> {
-        await this._escrowDriver.close();
-    }
-
-    async enableRefund(): Promise<void> {
-        await this._escrowDriver.enableRefund();
-    }
-
-    async enableRefundForExpiredEscrow(): Promise<void> {
-        await this._escrowDriver.enableRefundForExpiredEscrow();
-    }
-
-    async withdraw(): Promise<void> {
-        await this._escrowDriver.withdraw();
-    }
-
-    async refund(): Promise<void> {
-        await this._escrowDriver.refund();
+    async removeAdmin(admin: string): Promise<void> {
+        await this._escrowDriver.removeAdmin(admin);
     }
 }

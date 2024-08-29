@@ -2,10 +2,27 @@ import { Material } from './Material';
 import { ProductCategory } from './ProductCategory';
 
 export class LineRequest {
+    private _id?: number;
+
     private _productCategoryId: number;
 
-    constructor(productCategory: number) {
+    private _quantity: number;
+
+    private _unit: string;
+
+    constructor(productCategory: number, quantity: number, unit: string, oldId?: number) {
         this._productCategoryId = productCategory;
+        this._quantity = quantity;
+        this._unit = unit;
+        this._id = oldId;
+    }
+
+    get id(): number | undefined {
+        return this._id;
+    }
+
+    set id(value: number | undefined) {
+        this._id = value;
     }
 
     get productCategoryId(): number {
@@ -14,6 +31,22 @@ export class LineRequest {
 
     set productCategoryId(value: number) {
         this._productCategoryId = value;
+    }
+
+    get quantity(): number {
+        return this._quantity;
+    }
+
+    set quantity(value: number) {
+        this._quantity = value;
+    }
+
+    get unit(): string {
+        return this._unit;
+    }
+
+    set unit(value: string) {
+        this._unit = value;
     }
 }
 
@@ -24,10 +57,22 @@ export class Line {
 
     private _productCategory: ProductCategory;
 
-    constructor(id: number, material: Material | undefined, productCategory: ProductCategory) {
+    private _quantity: number;
+
+    private _unit: string;
+
+    constructor(
+        id: number,
+        material: Material | undefined,
+        productCategory: ProductCategory,
+        quantity: number,
+        unit: string
+    ) {
         this._id = id;
         this._material = material;
         this._productCategory = productCategory;
+        this._quantity = quantity;
+        this._unit = unit;
     }
 
     get id(): number {
@@ -53,6 +98,22 @@ export class Line {
     set productCategory(value: ProductCategory) {
         this._productCategory = value;
     }
+
+    get quantity(): number {
+        return this._quantity;
+    }
+
+    set quantity(value: number) {
+        this._quantity = value;
+    }
+
+    get unit(): string {
+        return this._unit;
+    }
+
+    set unit(value: string) {
+        this._unit = value;
+    }
 }
 
 export abstract class Trade {
@@ -68,7 +129,14 @@ export abstract class Trade {
 
     protected _lines: Line[];
 
-    protected constructor(tradeId: number, supplier: string, customer: string, commissioner: string, externalUrl: string, lines: Line[]) {
+    protected constructor(
+        tradeId: number,
+        supplier: string,
+        customer: string,
+        commissioner: string,
+        externalUrl: string,
+        lines: Line[]
+    ) {
         this._tradeId = tradeId;
         this._supplier = supplier;
         this._customer = customer;

@@ -1,49 +1,92 @@
-import { StorageACR } from '@blockchain-lib/common';
+import { FileHelpers } from '@blockchain-lib/common';
 import { DocumentDriver } from '../drivers/DocumentDriver';
 import { DocumentInfo } from '../entities/DocumentInfo';
-import { Document } from '../entities/Document';
-import { DocumentSpec, IStorageDocumentDriver } from '../drivers/IStorageDocumentDriver';
-import { IStorageMetadataDriver, MetadataSpec } from '../drivers/IStorageMetadataDriver';
-import { StorageOperationType } from '../types/StorageOperationType';
+import { Document, DocumentMetadata } from '../entities/Document';
+import { ICPFileDriver } from '../drivers/ICPFileDriver';
+import { RoleProof } from '../types/RoleProof';
 
-export class DocumentService<MS extends MetadataSpec, DS extends DocumentSpec, ACR extends StorageACR> {
+export class DocumentService {
     private _documentDriver: DocumentDriver;
 
-    private readonly _storageDocumentDriver?: IStorageDocumentDriver<DS>;
+    private readonly _icpFileDriver: ICPFileDriver;
 
-    private readonly _storageMetadataDriver?: IStorageMetadataDriver<MS, ACR>;
-
-    constructor(args: {documentDriver: DocumentDriver, storageMetadataDriver?: IStorageMetadataDriver<MS, ACR>, storageDocumentDriver?: IStorageDocumentDriver<DS>}) {
-        this._documentDriver = args.documentDriver;
-        this._storageMetadataDriver = args.storageMetadataDriver;
-        this._storageDocumentDriver = args.storageDocumentDriver;
+    constructor(documentDriver: DocumentDriver, icpFileDriver: ICPFileDriver) {
+        this._documentDriver = documentDriver;
+        this._icpFileDriver = icpFileDriver;
     }
 
-    async registerDocument(externalUrl: string, contentHash: string): Promise<number> {
-        return this._documentDriver.registerDocument(externalUrl, contentHash);
+    async registerDocument(
+        roleProof: RoleProof,
+        externalUrl: string,
+        contentHash: string,
+        uploadedBy: string
+    ): Promise<void> {
+        return this._documentDriver.registerDocument(
+            roleProof,
+            externalUrl,
+            contentHash,
+            uploadedBy
+        );
     }
 
-    async getDocumentsCounter(): Promise<number> {
-        return this._documentDriver.getDocumentsCounter();
+    async updateDocument(
+        roleProof: RoleProof,
+        documentId: number,
+        externalUrl: string,
+        contentHash: string,
+        uploadedBy: string
+    ): Promise<void> {
+        return this._documentDriver.updateDocument(
+            roleProof,
+            documentId,
+            externalUrl,
+            contentHash,
+            uploadedBy
+        );
     }
 
-    async getDocumentInfoById(id: number): Promise<DocumentInfo> {
-        return this._documentDriver.getDocumentById(id);
+    async getDocumentsCounter(roleProof: RoleProof): Promise<number> {
+        return this._documentDriver.getDocumentsCounter(roleProof);
     }
 
-    // TODO: questo metodo ipoteticamente diventerà "getTradeDocument" e l'entità ritornata sarà "TradeDocument" (specifica per il trade)
-    // questo per fare in modo che se si vogliano salvare dei metadati su altre tipologie di documenti (es. certificati) si possa fare
-    async getCompleteDocument(documentInfo: DocumentInfo, metadataSpec: MS, documentSpec: DS): Promise<Document | undefined> {
-        if (!this._storageDocumentDriver) throw new Error('Storage document driver is not available');
-        if (!this._storageMetadataDriver) throw new Error('Storage metadata driver is not available');
+    async getDocumentInfoById(roleProof: RoleProof, id: number): Promise<DocumentInfo> {
+        return this._documentDriver.getDocumentById(roleProof, id);
+    }
+
+  // TODO: questo metodo ipoteticamente diventerà "getTradeDocument" e l'entità ritornata sarà "TradeDocument" (specifica per il trade)
+  // questo per fare in modo che se si vogliano salvare dei metadati su altre tipologie di documenti (es. certificati) si possa fare
+  async getCompleteDocument(documentInfo: DocumentInfo): Promise<Document> {
         try {
-            const { filename, date, lines } = await this._storageMetadataDriver.read(StorageOperationType.TRANSACTION_DOCUMENT, metadataSpec);
-            const fileContent = await this._storageDocumentDriver.read(StorageOperationType.TRANSACTION_DOCUMENT, documentSpec);
-            if (fileContent) return new Document(documentInfo, filename, new Date(date), fileContent, lines);
+            const path = documentInfo.externalUrl.split('/').slice(0, -1).join('/');
+            const metadataName = FileHelpers.removeFileExtension(
+                documentInfo.externalUrl.split(`${path}/`)[1]
+            );
+
+            const documentMetadata: DocumentMetadata = FileHelpers.getObjectFromBytes(
+                await this._icpFileDriver.read(`${path}/${metadataName}-metadata.json`)
+            ) as DocumentMetadata;
+            const fileName = documentMetadata.fileName;
+            const documentType = documentMetadata.documentType;
+            const date = documentMetadata.date;
+            const transactionLines = documentMetadata.transactionLines;
+            const quantity = documentMetadata.quantity;
+            if (!fileName || !documentType || !date) throw new Error('Missing fields');
+
+            const fileContent = await this._icpFileDriver.read(documentInfo.externalUrl);
+            return new Document(
+                documentInfo,
+                fileName,
+                documentType,
+                new Date(date),
+                fileContent,
+                transactionLines,
+                quantity
+            );
         } catch (e: any) {
-            throw new Error(`Error while retrieve document file from external storage: ${e.message}`);
+            throw new Error(
+                `Error while retrieving document file from external storage: ${e.message}`
+            );
         }
-        return undefined;
     }
 
     async addAdmin(address: string): Promise<void> {

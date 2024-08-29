@@ -6,77 +6,137 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { ethers } from 'hardhat';
 import { ContractName } from '../utils/constants';
 import { MaterialManager } from '../typechain-types';
+import { KBCAccessControl } from '../typechain-types/contracts/MaterialManager';
 
 describe('Trade.sol', () => {
     chai.use(smock.matchers);
+    let delegateManagerContractFake: FakeContract;
     let productCategoryManagerContractFake: FakeContract;
     let materialManagerContractFake: FakeContract;
     let documentManagerContractFake: FakeContract;
-    const documentTypes = [1];
+    let unitManagerContractFake: FakeContract;
+    const documentTypes = [0, 1, 2];
 
+    const roleProof: KBCAccessControl.RoleProofStruct = {
+        signedProof: '0x',
+        delegator: ''
+    };
+
+    // these contracts are used as implementation of the trade, when used as parent class
     let basicTradeContract: Contract;
-    let admin: SignerWithAddress, supplier: SignerWithAddress,
-        customer: SignerWithAddress, commissioner: SignerWithAddress;
+    let orderTradeContract: Contract;
+
+    let admin: SignerWithAddress,
+        supplier: SignerWithAddress,
+        customer: SignerWithAddress,
+        arbiter: SignerWithAddress,
+        commissioner: SignerWithAddress;
     const externalUrl: string = 'https://www.test.com';
+    const metadataHash: string = 'metadata_hash';
+    const now = new Date();
+    const paymentDeadline = new Date(now.getDate() + 1);
+    const documentDeliveryDeadline = new Date(paymentDeadline.getDate() + 1);
+    const shippingDeadline = new Date(documentDeliveryDeadline.getDate() + 1);
+    const deliveryDeadline = new Date(shippingDeadline.getDate() + 1);
     const name: string = 'Test Trade';
 
     const materialStruct: MaterialManager.MaterialStructOutput = {
         id: BigNumber.from(1),
-        productCategoryId: BigNumber.from(1),
+        productCategoryId: BigNumber.from(1)
     } as MaterialManager.MaterialStructOutput;
 
     before(async () => {
-        [admin, supplier, customer, commissioner] = await ethers.getSigners();
-        productCategoryManagerContractFake = await smock.fake(ContractName.PRODUCT_CATEGORY_MANAGER);
-        productCategoryManagerContractFake.getProductCategoryExists.returns((value: number) => value <= 10);
-        materialManagerContractFake = await smock.fake(ContractName.MATERIAL_MANAGER);
-        materialManagerContractFake.getMaterialExists.returns((value: number) => value <= 10);
-        materialManagerContractFake.getMaterial.returns(materialStruct);
-        documentManagerContractFake = await smock.fake(ContractName.DOCUMENT_MANAGER);
+        [admin, supplier, customer, arbiter, commissioner] = await ethers.getSigners();
+        roleProof.delegator = admin.address;
     });
 
     beforeEach(async () => {
+        delegateManagerContractFake = await smock.fake(ContractName.DELEGATE_MANAGER);
+        delegateManagerContractFake.hasValidRole.returns(true);
+        productCategoryManagerContractFake = await smock.fake(ContractName.PRODUCT_CATEGORY_MANAGER);
+        productCategoryManagerContractFake.getProductCategoryExists.returns(true);
+        materialManagerContractFake = await smock.fake(ContractName.MATERIAL_MANAGER);
+        materialManagerContractFake.getMaterialExists.returns(true);
+        materialManagerContractFake.getMaterial.returns(materialStruct);
+        documentManagerContractFake = await smock.fake(ContractName.DOCUMENT_MANAGER);
+        unitManagerContractFake = await smock.fake(ContractName.ENUMERABLE_TYPE_MANAGER);
+        unitManagerContractFake.contains.returns(true);
         const BasicTrade = await ethers.getContractFactory('BasicTrade');
-        basicTradeContract = await BasicTrade.deploy(1, productCategoryManagerContractFake.address, materialManagerContractFake.address,
-            documentManagerContractFake.address, supplier.address, customer.address, commissioner.address, externalUrl, name);
+        const OrderTrade = await ethers.getContractFactory('OrderTrade');
+        basicTradeContract = await BasicTrade.deploy(
+            roleProof,
+            1,
+            delegateManagerContractFake.address,
+            productCategoryManagerContractFake.address,
+            materialManagerContractFake.address,
+            documentManagerContractFake.address,
+            unitManagerContractFake.address,
+            supplier.address,
+            customer.address,
+            commissioner.address,
+            externalUrl,
+            metadataHash,
+            name
+        );
         await basicTradeContract.deployed();
+        orderTradeContract = await OrderTrade.deploy(
+            roleProof,
+            1,
+            delegateManagerContractFake.address,
+            productCategoryManagerContractFake.address,
+            materialManagerContractFake.address,
+            documentManagerContractFake.address,
+            unitManagerContractFake.address,
+            supplier.address,
+            customer.address,
+            commissioner.address,
+            externalUrl,
+            metadataHash,
+            paymentDeadline.getTime(),
+            documentDeliveryDeadline.getTime(),
+            arbiter.address,
+            shippingDeadline.getTime(),
+            deliveryDeadline.getTime(),
+            500,
+            ethers.Wallet.createRandom().address,
+            ethers.Wallet.createRandom().address,
+            ethers.Wallet.createRandom().address
+        );
+        await orderTradeContract.deployed();
     });
 
-    describe('Trade status', () => {
-        // it('should compute the trade status - FAIL (Trade: There are no documents related to this trade)', async () => {
-        //     documentManagerContractFake.getDocumentsCounter.returns(0);
-        //     await expect(basicTradeContract.connect(supplier).getTradeStatus()).to.be.revertedWith('Trade: There are no documents related to this trade');
-        // });
-
-        it('should compute the trade status - CONTRACTING', async () => {
-            documentManagerContractFake.getDocumentsCounter.returns(0);
-            expect(await basicTradeContract.connect(supplier)
-                .getTradeStatus())
-                .to
-                .equal(3);
-        });
-
-        it('should compute the trade status - FAIL (Trade: There are no documents with correct document type)', async () => {
-            documentManagerContractFake.getDocumentsCounter.returns(2);
-            await expect(basicTradeContract.connect(customer)
-                .getTradeStatus())
-                .to
-                .be
-                .revertedWith('Trade: There are no documents with correct document type');
-        });
+    it('should get the trade type', async () => {
+        expect(await basicTradeContract.getTradeType(roleProof)).to.equal(0);
+        expect(await orderTradeContract.getTradeType(roleProof)).to.equal(1);
     });
 
     describe('Documents', () => {
+        beforeEach(() => {
+            documentManagerContractFake.registerDocument.reset();
+            documentManagerContractFake.registerDocument.returns(1);
+        });
+
         it('should add a document', async () => {
-            await basicTradeContract.addDocument(documentTypes[0], 'https://www.test.com', 'content_hash');
-            expect(documentManagerContractFake.registerDocument)
-                .to
-                .have
-                .callCount(1);
-            expect(documentManagerContractFake.registerDocument)
-                .to
-                .have
-                .calledWith('https://www.test.com', 'content_hash');
+            await basicTradeContract.connect(supplier).addDocument(roleProof, documentTypes[1], 'https://www.test.com', 'content_hash');
+            expect(documentManagerContractFake.registerDocument).to.have.callCount(1);
+            expect(documentManagerContractFake.registerDocument).to.have.calledWith(
+                roleProof,
+                'https://www.test.com',
+                'content_hash',
+                supplier.address
+            );
+        });
+
+        it('should update a document', async () => {
+            await basicTradeContract.connect(supplier).updateDocument(roleProof, 1, 'https://www.test-updated.com', 'content_hash-updated');
+            expect(documentManagerContractFake.updateDocument).to.have.callCount(1);
+            expect(documentManagerContractFake.updateDocument).to.have.calledWith(
+                roleProof,
+                BigNumber.from(1),
+                'https://www.test-updated.com',
+                'content_hash-updated',
+                supplier.address
+            );
         });
 
         // it("should add a document - FAIL (Trade: Line doesn't exist)", async () => {
@@ -95,33 +155,35 @@ describe('Trade.sol', () => {
         // });
 
         it('should get document ids by type', async () => {
-            documentManagerContractFake.registerDocument.returns(1);
-
-            await basicTradeContract.addDocument(documentTypes[0], 'https://www.test.com', 'content_hash');
-            expect(await basicTradeContract.getDocumentIdsByType(documentTypes[0]))
-                .to
-                .deep
-                .equal([BigNumber.from(1)]);
+            await basicTradeContract.connect(supplier).addDocument(roleProof, documentTypes[1], 'https://www.test.com', 'content_hash');
+            expect(await basicTradeContract.getDocumentIdsByType(roleProof, documentTypes[1])).to.deep.equal([BigNumber.from(1)]);
         });
 
         it('should get document ids', async () => {
-            documentManagerContractFake.registerDocument.returns(1);
-
-            await basicTradeContract.addDocument(documentTypes[0], 'https://www.test.com', 'content_hash');
-            expect(await basicTradeContract.getAllDocumentIds())
-                .to
-                .deep
-                .equal([BigNumber.from(1)]);
+            await basicTradeContract.connect(supplier).addDocument(roleProof, documentTypes[1], 'https://www.test.com', 'content_hash');
+            expect(await basicTradeContract.getAllDocumentIds(roleProof)).to.deep.equal([BigNumber.from(0), BigNumber.from(1)]);
         });
-    });
 
-    describe('Admins', () => {
-        it('should add an admin and later remove it', async () => {
-            await basicTradeContract.connect(admin).addAdmin(supplier.address);
-            await expect(basicTradeContract.connect(supplier).addAdmin(customer.address)).to.not.be.reverted;
+        it('should validate document', async () => {
+            await basicTradeContract.connect(supplier).addDocument(roleProof, documentTypes[1], 'https://www.test.com', 'content_hash');
+            const documentIds = await basicTradeContract.getAllDocumentIds(roleProof);
+            await basicTradeContract.validateDocument(roleProof, documentIds[documentIds.length - 1], 1);
 
-            await basicTradeContract.connect(admin).removeAdmin(supplier.address);
-            await expect(basicTradeContract.connect(supplier).addAdmin(commissioner.address)).to.be.revertedWith('Trade: Caller is not an admin');
+            expect(await basicTradeContract.getDocumentStatus(roleProof, documentIds[documentIds.length - 1])).to.equal(1);
+        });
+
+        it('should validate document - FAIL (Trade: Document does not exist)', async () => {
+            await expect(basicTradeContract.connect(supplier).validateDocument(roleProof, 40, 1)).to.be.revertedWith(
+                'Trade: Document does not exist'
+            );
+        });
+
+        it('should validate document - FAIL (Trade: Document status must be different from NOT_EVALUATED)', async () => {
+            await basicTradeContract.connect(supplier).addDocument(roleProof, documentTypes[1], 'https://www.test.com', 'content_hash');
+            const documentIds = await basicTradeContract.getAllDocumentIds(roleProof);
+            await expect(basicTradeContract.validateDocument(roleProof, documentIds[documentIds.length - 1], 0)).to.be.revertedWith(
+                'Trade: Document status must be different from NOT_EVALUATED'
+            );
         });
     });
 });

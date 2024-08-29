@@ -9,6 +9,7 @@ import {
 } from '../smart-contracts';
 import { Offer } from '../entities/Offer';
 import { EntityBuilder } from '../utils/EntityBuilder';
+import { RoleProof } from '../types/RoleProof';
 
 export class OfferDriver {
     private _offerManagerContract: OfferManager;
@@ -18,127 +19,129 @@ export class OfferDriver {
     constructor(
         signer: Signer,
         offerManagerAddress: string,
-        productCategoryManagerAddress: string,
+        productCategoryManagerAddress: string
     ) {
-        this._offerManagerContract = OfferManager__factory
-            .connect(offerManagerAddress, signer.provider!)
-            .connect(signer);
-        this._productCategoryManagerContract = ProductCategoryManager__factory
-            .connect(productCategoryManagerAddress, signer.provider!)
-            .connect(signer);
+        this._offerManagerContract = OfferManager__factory.connect(
+            offerManagerAddress,
+            signer.provider!
+        ).connect(signer);
+        this._productCategoryManagerContract = ProductCategoryManager__factory.connect(
+            productCategoryManagerAddress,
+            signer.provider!
+        ).connect(signer);
     }
 
-    async registerSupplier(companyAddress: string, name: string): Promise<void> {
+    async registerSupplier(
+        roleProof: RoleProof,
+        companyAddress: string,
+        name: string
+    ): Promise<void> {
         if (!utils.isAddress(companyAddress)) throw new Error('Not an address');
-
-        try {
-            const tx = await this._offerManagerContract.registerSupplier(companyAddress, name);
-            await tx.wait();
-        } catch (e: any) {
-            throw new Error(e.message);
-        }
+        const tx = await this._offerManagerContract.registerSupplier(
+            roleProof,
+            companyAddress,
+            name
+        );
+        await tx.wait();
     }
 
-    async registerOffer(companyAddress: string, productCategoryId: number): Promise<void> {
+    async registerOffer(
+        roleProof: RoleProof,
+        companyAddress: string,
+        productCategoryId: number
+    ): Promise<void> {
         if (!utils.isAddress(companyAddress)) throw new Error('Not an address');
-
-        try {
-            const tx = await this._offerManagerContract.registerOffer(companyAddress, productCategoryId);
-            await tx.wait();
-        } catch (e: any) {
-            throw new Error(e.message);
-        }
+        const tx = await this._offerManagerContract.registerOffer(
+            roleProof,
+            companyAddress,
+            productCategoryId
+        );
+        await tx.wait();
     }
 
-    async getLastId(): Promise<number> {
-        const counter = await this._offerManagerContract.getLastId();
+    async getLastId(roleProof: RoleProof): Promise<number> {
+        const counter = await this._offerManagerContract.getLastId(roleProof);
         return counter.toNumber();
     }
 
-    async getOfferIdsByCompany(companyAddress: string): Promise<number[]> {
+    async getOfferIdsByCompany(roleProof: RoleProof, companyAddress: string): Promise<number[]> {
         if (!utils.isAddress(companyAddress)) throw new Error('Not an address');
 
-        const ids = await this._offerManagerContract.getOfferIdsByCompany(companyAddress);
+        const ids = await this._offerManagerContract.getOfferIdsByCompany(
+            roleProof,
+            companyAddress
+        );
         return ids.map((id) => id.toNumber());
     }
 
-    async getSupplierName(companyAddress: string, blockNumber?: number): Promise<string> {
+    async getSupplierName(
+        roleProof: RoleProof,
+        companyAddress: string,
+        blockNumber?: number
+    ): Promise<string> {
         if (!utils.isAddress(companyAddress)) throw new Error('Not an address');
-
-        try {
-            return await this._offerManagerContract.getSupplierName(companyAddress, { blockTag: blockNumber });
-        } catch (e: any) {
-            throw new Error(e.message);
-        }
+        return this._offerManagerContract.getSupplierName(roleProof, companyAddress, {
+            blockTag: blockNumber
+        });
     }
 
-    async getOffer(offerId: number, blockNumber?: number): Promise<Offer> {
-        try {
-            const rawOffer = await this._offerManagerContract.getOffer(offerId, { blockTag: blockNumber });
-            const rawProductCategory = await this._productCategoryManagerContract.getProductCategory(rawOffer.productCategoryId);
-            return EntityBuilder.buildOffer(rawOffer, rawProductCategory);
-        } catch (e: any) {
-            throw new Error(e.message);
-        }
+    async getOffer(roleProof: RoleProof, offerId: number, blockNumber?: number): Promise<Offer> {
+        const rawOffer = await this._offerManagerContract.getOffer(roleProof, offerId, {
+            blockTag: blockNumber
+        });
+        const rawProductCategory = await this._productCategoryManagerContract.getProductCategory(
+            roleProof,
+            rawOffer.productCategoryId
+        );
+        return EntityBuilder.buildOffer(rawOffer, rawProductCategory);
     }
 
-    async updateSupplier(companyAddress: string, newName: string): Promise<void> {
+    async updateSupplier(
+        roleProof: RoleProof,
+        companyAddress: string,
+        newName: string
+    ): Promise<void> {
         if (!utils.isAddress(companyAddress)) throw new Error('Not an address');
-
-        try {
-            const tx = await this._offerManagerContract.updateSupplier(companyAddress, newName);
-            await tx.wait();
-        } catch (e: any) {
-            throw new Error(e.message);
-        }
+        const tx = await this._offerManagerContract.updateSupplier(
+            roleProof,
+            companyAddress,
+            newName
+        );
+        await tx.wait();
     }
 
-    async updateOffer(offerId: number, productCategoryId: number): Promise<void> {
-        try {
-            const tx = await this._offerManagerContract.updateOffer(offerId, productCategoryId);
-            await tx.wait();
-        } catch (e: any) {
-            throw new Error(e.message);
-        }
+    async updateOffer(
+        roleProof: RoleProof,
+        offerId: number,
+        productCategoryId: number
+    ): Promise<void> {
+        const tx = await this._offerManagerContract.updateOffer(
+            roleProof,
+            offerId,
+            productCategoryId
+        );
+        await tx.wait();
     }
 
-    async deleteSupplier(companyAddress: string): Promise<void> {
-        try {
-            const tx = await this._offerManagerContract.deleteSupplier(companyAddress);
-            await tx.wait();
-        } catch (e: any) {
-            throw new Error(e.message);
-        }
+    async deleteSupplier(roleProof: RoleProof, companyAddress: string): Promise<void> {
+        const tx = await this._offerManagerContract.deleteSupplier(roleProof, companyAddress);
+        await tx.wait();
     }
 
-    async deleteOffer(offerId: number): Promise<void> {
-        try {
-            const tx = await this._offerManagerContract.deleteOffer(offerId);
-            await tx.wait();
-        } catch (e: any) {
-            throw new Error(e.message);
-        }
+    async deleteOffer(roleProof: RoleProof, offerId: number): Promise<void> {
+        const tx = await this._offerManagerContract.deleteOffer(roleProof, offerId);
+        await tx.wait();
     }
 
     async addAdmin(address: string): Promise<void> {
         if (!utils.isAddress(address)) throw new Error('Not an address');
-
-        try {
-            const tx = await this._offerManagerContract.addAdmin(address);
-            await tx.wait();
-        } catch (e: any) {
-            throw new Error(e.message);
-        }
+        const tx = await this._offerManagerContract.addAdmin(address);
+        await tx.wait();
     }
 
     async removeAdmin(address: string): Promise<void> {
         if (!utils.isAddress(address)) throw new Error('Not an address');
-
-        try {
-            const tx = await this._offerManagerContract.removeAdmin(address);
-            await tx.wait();
-        } catch (e: any) {
-            throw new Error(e.message);
-        }
+        const tx = await this._offerManagerContract.removeAdmin(address);
+        await tx.wait();
     }
 }

@@ -1,4 +1,5 @@
 import { EscrowManagerDriver } from '../drivers/EscrowManagerDriver';
+import { RoleProof } from '../types/RoleProof';
 
 export class EscrowManagerService {
     private _escrowManagerDriver: EscrowManagerDriver;
@@ -7,43 +8,59 @@ export class EscrowManagerService {
         this._escrowManagerDriver = supplyChainDriver;
     }
 
-    async getEscrowCounter(): Promise<number> {
-        return this._escrowManagerDriver.getEscrowCounter();
+    async getEscrowCounter(roleProof: RoleProof): Promise<number> {
+        return this._escrowManagerDriver.getEscrowCounter(roleProof);
     }
 
-    async registerEscrow(payee: string, purchaser: string, agreedAmount: number, duration: number, tokenAddress: string): Promise<void> {
-        await this._escrowManagerDriver.registerEscrow(payee, purchaser, agreedAmount, duration, tokenAddress);
+    async registerEscrow(
+        roleProof: RoleProof,
+        admin: string,
+        payee: string,
+        duration: number,
+        tokenAddress: string
+    ): Promise<[number, string, string]> {
+        return this._escrowManagerDriver.registerEscrow(
+            roleProof,
+            admin,
+            payee,
+            duration,
+            tokenAddress
+        );
     }
 
-    async getCommissioner(): Promise<string> {
-        return this._escrowManagerDriver.getCommissioner();
+    async getFeeRecipient(roleProof: RoleProof): Promise<string> {
+        return this._escrowManagerDriver.getFeeRecipient(roleProof);
     }
 
-    async updateCommissioner(newCommissioner: string): Promise<void> {
-        await this._escrowManagerDriver.updateCommissioner(newCommissioner);
+    async getBaseFee(roleProof: RoleProof): Promise<number> {
+        return this._escrowManagerDriver.getBaseFee(roleProof);
     }
 
-    async getBaseFee(): Promise<number> {
-        return this._escrowManagerDriver.getBaseFee();
+    async getPercentageFee(roleProof: RoleProof): Promise<number> {
+        return this._escrowManagerDriver.getPercentageFee(roleProof);
+    }
+
+    async getEscrow(roleProof: RoleProof, id: number): Promise<string> {
+        return this._escrowManagerDriver.getEscrow(roleProof, id);
+    }
+
+    async updateFeeRecipient(newFeeRecipient: string): Promise<void> {
+        await this._escrowManagerDriver.updateFeeRecipient(newFeeRecipient);
     }
 
     async updateBaseFee(newBaseFee: number): Promise<void> {
         await this._escrowManagerDriver.updateBaseFee(newBaseFee);
     }
 
-    async getPercentageFee(): Promise<number> {
-        return this._escrowManagerDriver.getPercentageFee();
-    }
-
     async updatePercentageFee(newPercentageFee: number): Promise<void> {
         await this._escrowManagerDriver.updatePercentageFee(newPercentageFee);
     }
 
-    async getEscrow(id: number): Promise<string> {
-        return this._escrowManagerDriver.getEscrow(id);
+    async addAdmin(admin: string): Promise<void> {
+        await this._escrowManagerDriver.addAdmin(admin);
     }
 
-    async getEscrowIdsOfPurchaser(purchaser: string): Promise<number[]> {
-        return this._escrowManagerDriver.getEscrowIdsOfPurchaser(purchaser);
+    async removeAdmin(admin: string): Promise<void> {
+        await this._escrowManagerDriver.removeAdmin(admin);
     }
 }

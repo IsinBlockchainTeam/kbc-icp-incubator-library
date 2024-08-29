@@ -1,23 +1,22 @@
 import { createMock } from 'ts-auto-mock';
-import { SolidStorageACR } from '@blockchain-lib/common';
+import { TextEncoder } from 'util';
 import { OrderTradeDriver } from '../drivers/OrderTradeDriver';
+import { OrderLine, OrderLinePrice, OrderLineRequest, OrderTrade } from '../entities/OrderTrade';
 import { OrderTradeService } from './OrderTradeService';
-import {
-    OrderLine,
-    OrderLinePrice,
-    OrderLineRequest, OrderTradeInfo,
-} from '../entities/OrderTradeInfo';
-import { Material } from '../entities/Material';
+import { DocumentDriver } from '../drivers/DocumentDriver';
+import { ICPFileDriver } from '../drivers/ICPFileDriver';
 import { ProductCategory } from '../entities/ProductCategory';
-import { IStorageMetadataDriver } from '../drivers/IStorageMetadataDriver';
-import { IStorageDocumentDriver } from '../drivers/IStorageDocumentDriver';
-import { SolidMetadataSpec } from '../drivers/SolidMetadataDriver';
-import { SolidDocumentSpec } from '../drivers/SolidDocumentDriver';
-import { StorageOperationType } from '../types/StorageOperationType';
+import { Material } from '../entities/Material';
+import { RoleProof } from '../types/RoleProof';
 
 describe('OrderTradeService', () => {
+    const externalUrl = 'externalUrl';
     const mockedOrderTradeDriver: OrderTradeDriver = createMock<OrderTradeDriver>({
-        getTrade: jest.fn().mockResolvedValue(createMock<OrderTradeInfo>()),
+        getTrade: jest.fn().mockResolvedValue(
+            createMock<OrderTrade>({
+                externalUrl
+            })
+        ),
         getLines: jest.fn(),
         getLine: jest.fn(),
         addLine: jest.fn(),
@@ -32,21 +31,29 @@ describe('OrderTradeService', () => {
         haveDeadlinesExpired: jest.fn(),
         enforceDeadlines: jest.fn(),
         confirmOrder: jest.fn(),
-        getEmittedEvents: jest.fn(),
+        getEmittedEvents: jest.fn()
     });
-    const mockedStorageMetadataDriver = createMock<IStorageMetadataDriver<SolidMetadataSpec, SolidStorageACR>>({
-        create: jest.fn(),
+    const mockedDocumentDriver: DocumentDriver = createMock<DocumentDriver>({
+        getDocumentById: jest.fn()
     });
-    const metadataSpec: SolidMetadataSpec = {
-        entireResourceUrl: 'metadataExternalUrl',
-    };
-    const mockedStorageDocumentDriver = createMock<IStorageDocumentDriver<SolidDocumentSpec>>({
-        create: jest.fn(),
+    const mockedIcpFileDriver: ICPFileDriver = createMock<ICPFileDriver>({
+        create: jest.fn()
     });
+    const units = ['kg', 'g', 'l', 'm'];
+    const productCategory = new ProductCategory(1, 'category', 85, 'description');
+    const material = new Material(1, productCategory);
+    const orderLinePrice = new OrderLinePrice(10, 'usd');
 
-    let orderTradeService = new OrderTradeService({
-        tradeDriver: mockedOrderTradeDriver,
-    });
+    let orderTradeService = new OrderTradeService(
+        mockedOrderTradeDriver,
+        mockedDocumentDriver,
+        mockedIcpFileDriver
+    );
+
+    const roleProof: RoleProof = {
+        signedProof: 'signedProof',
+        delegator: 'delegator'
+    };
 
     afterAll(() => {
         jest.restoreAllMocks();
@@ -55,143 +62,173 @@ describe('OrderTradeService', () => {
     it.each([
         {
             serviceFunctionName: 'getTrade',
-            serviceFunction: () => orderTradeService.getTrade(),
+            serviceFunction: () => orderTradeService.getTrade(roleProof),
             expectedMockedFunction: mockedOrderTradeDriver.getTrade,
-            expectedMockedFunctionArgs: [undefined],
+            expectedMockedFunctionArgs: [roleProof, undefined]
         },
         {
             serviceFunctionName: 'getLines',
-            serviceFunction: () => orderTradeService.getLines(),
+            serviceFunction: () => orderTradeService.getLines(roleProof),
             expectedMockedFunction: mockedOrderTradeDriver.getLines,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: [roleProof]
         },
         {
             serviceFunctionName: 'getLine',
-            serviceFunction: () => orderTradeService.getLine(1),
+            serviceFunction: () => orderTradeService.getLine(roleProof, 1),
             expectedMockedFunction: mockedOrderTradeDriver.getLine,
-            expectedMockedFunctionArgs: [1, undefined],
+            expectedMockedFunctionArgs: [roleProof, 1, undefined]
         },
         {
             serviceFunctionName: 'addLine',
-            serviceFunction: () => orderTradeService.addLine(new OrderLineRequest(1, 10, new OrderLinePrice(10.2, 'CHF'))),
+            serviceFunction: () =>
+                orderTradeService.addLine(
+                    roleProof,
+                    new OrderLineRequest(1, 10, units[0], orderLinePrice)
+                ),
             expectedMockedFunction: mockedOrderTradeDriver.addLine,
-            expectedMockedFunctionArgs: [new OrderLineRequest(1, 10, new OrderLinePrice(10.2, 'CHF'))],
+            expectedMockedFunctionArgs: [
+                roleProof,
+                new OrderLineRequest(1, 10, units[0], orderLinePrice)
+            ]
         },
         {
             serviceFunctionName: 'updateLine',
-            serviceFunction: () => orderTradeService.updateLine(new OrderLine(1, new Material(1, new ProductCategory(2, 'test', 10, 'description')), new ProductCategory(2, 'test', 10, 'description'), 10, new OrderLinePrice(10.2, 'CHF'))),
+            serviceFunction: () =>
+                orderTradeService.updateLine(
+                    roleProof,
+                    new OrderLine(1, material, productCategory, 10, units[1], orderLinePrice)
+                ),
             expectedMockedFunction: mockedOrderTradeDriver.updateLine,
-            expectedMockedFunctionArgs: [new OrderLine(1, new Material(1, new ProductCategory(2, 'test', 10, 'description')), new ProductCategory(2, 'test', 10, 'description'), 10, new OrderLinePrice(10.2, 'CHF'))],
+            expectedMockedFunctionArgs: [
+                roleProof,
+                new OrderLine(1, material, productCategory, 10, units[1], orderLinePrice)
+            ]
         },
         {
             serviceFunctionName: 'assignMaterial',
-            serviceFunction: () => orderTradeService.assignMaterial(1, 1),
+            serviceFunction: () => orderTradeService.assignMaterial(roleProof, 1, 1),
             expectedMockedFunction: mockedOrderTradeDriver.assignMaterial,
-            expectedMockedFunctionArgs: [1, 1],
+            expectedMockedFunctionArgs: [roleProof, 1, 1]
         },
         {
             serviceFunctionName: 'getNegotiationStatus',
             serviceFunction: () => orderTradeService.getNegotiationStatus(),
             expectedMockedFunction: mockedOrderTradeDriver.getNegotiationStatus,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: []
         },
         {
             serviceFunctionName: 'updatePaymentDeadline',
-            serviceFunction: () => orderTradeService.updatePaymentDeadline(1),
+            serviceFunction: () => orderTradeService.updatePaymentDeadline(roleProof, 1),
             expectedMockedFunction: mockedOrderTradeDriver.updatePaymentDeadline,
-            expectedMockedFunctionArgs: [1],
+            expectedMockedFunctionArgs: [roleProof, 1]
         },
         {
             serviceFunctionName: 'updateDocumentDeliveryDeadline',
-            serviceFunction: () => orderTradeService.updateDocumentDeliveryDeadline(1),
+            serviceFunction: () => orderTradeService.updateDocumentDeliveryDeadline(roleProof, 1),
             expectedMockedFunction: mockedOrderTradeDriver.updateDocumentDeliveryDeadline,
-            expectedMockedFunctionArgs: [1],
+            expectedMockedFunctionArgs: [roleProof, 1]
         },
         {
             serviceFunctionName: 'updateArbiter',
-            serviceFunction: () => orderTradeService.updateArbiter('new arbiter'),
+            serviceFunction: () => orderTradeService.updateArbiter(roleProof, 'new arbiter'),
             expectedMockedFunction: mockedOrderTradeDriver.updateArbiter,
-            expectedMockedFunctionArgs: ['new arbiter'],
+            expectedMockedFunctionArgs: [roleProof, 'new arbiter']
         },
         {
             serviceFunctionName: 'updateShippingDeadline',
-            serviceFunction: () => orderTradeService.updateShippingDeadline(1),
+            serviceFunction: () => orderTradeService.updateShippingDeadline(roleProof, 1),
             expectedMockedFunction: mockedOrderTradeDriver.updateShippingDeadline,
-            expectedMockedFunctionArgs: [1],
+            expectedMockedFunctionArgs: [roleProof, 1]
         },
         {
             serviceFunctionName: 'updateDeliveryDeadline',
-            serviceFunction: () => orderTradeService.updateDeliveryDeadline(1),
+            serviceFunction: () => orderTradeService.updateDeliveryDeadline(roleProof, 1),
             expectedMockedFunction: mockedOrderTradeDriver.updateDeliveryDeadline,
-            expectedMockedFunctionArgs: [1],
+            expectedMockedFunctionArgs: [roleProof, 1]
+        },
+        {
+            serviceFunctionName: 'updateAgreedAmount',
+            serviceFunction: () => orderTradeService.updateAgreedAmount(roleProof, 200),
+            expectedMockedFunction: mockedOrderTradeDriver.updateAgreedAmount,
+            expectedMockedFunctionArgs: [roleProof, 200]
+        },
+        {
+            serviceFunctionName: 'updateTokenAddress',
+            serviceFunction: () => orderTradeService.updateTokenAddress(roleProof, 'token'),
+            expectedMockedFunction: mockedOrderTradeDriver.updateTokenAddress,
+            expectedMockedFunctionArgs: [roleProof, 'token']
         },
         {
             serviceFunctionName: 'haveDeadlinesExpired',
             serviceFunction: () => orderTradeService.haveDeadlinesExpired(),
             expectedMockedFunction: mockedOrderTradeDriver.haveDeadlinesExpired,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: []
         },
         {
             serviceFunctionName: 'enforceDeadlines',
             serviceFunction: () => orderTradeService.enforceDeadlines(),
             expectedMockedFunction: mockedOrderTradeDriver.enforceDeadlines,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: []
         },
         {
             serviceFunctionName: 'confirmOrder',
-            serviceFunction: () => orderTradeService.confirmOrder(),
+            serviceFunction: () => orderTradeService.confirmOrder(roleProof),
             expectedMockedFunction: mockedOrderTradeDriver.confirmOrder,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: [roleProof]
+        },
+        {
+            serviceFunctionName: 'getWhoSigned',
+            serviceFunction: () => orderTradeService.getWhoSigned(roleProof),
+            expectedMockedFunction: mockedOrderTradeDriver.getWhoSigned,
+            expectedMockedFunctionArgs: [roleProof]
         },
         {
             serviceFunctionName: 'getEmittedEvents',
             serviceFunction: () => orderTradeService.getEmittedEvents(),
             expectedMockedFunction: mockedOrderTradeDriver.getEmittedEvents,
-            expectedMockedFunctionArgs: [],
-        },
-    ])('should call driver $serviceFunctionName', async ({
-        serviceFunction,
-        expectedMockedFunction,
-        expectedMockedFunctionArgs,
-    }) => {
-        await serviceFunction();
+            expectedMockedFunctionArgs: []
+        }
+    ])(
+        'should call driver $serviceFunctionName',
+        async ({ serviceFunction, expectedMockedFunction, expectedMockedFunctionArgs }) => {
+            await serviceFunction();
 
-        expect(expectedMockedFunction)
-            .toHaveBeenCalledTimes(1);
-        expect(expectedMockedFunction)
-            .toHaveBeenCalledWith(...expectedMockedFunctionArgs);
-    });
+            expect(expectedMockedFunction).toHaveBeenCalledTimes(1);
+            expect(expectedMockedFunction).toHaveBeenCalledWith(...expectedMockedFunctionArgs);
+        }
+    );
 
     it('should get complete order trade from external storage', async () => {
-        orderTradeService = new OrderTradeService({
-            tradeDriver: mockedOrderTradeDriver,
-            storageDocumentDriver: mockedStorageDocumentDriver,
-            storageMetadataDriver: mockedStorageMetadataDriver,
-        });
-        mockedStorageMetadataDriver.read = jest.fn().mockResolvedValue({ incoterms: 'FOB', shipper: 'shipper', shippingPort: 'port', deliveryPort: 'port' });
-        await orderTradeService.getCompleteTrade(metadataSpec);
+        orderTradeService = new OrderTradeService(
+            mockedOrderTradeDriver,
+            mockedDocumentDriver,
+            mockedIcpFileDriver
+        );
+        mockedIcpFileDriver.read = jest.fn().mockResolvedValue(
+            new TextEncoder().encode(
+                JSON.stringify({
+                    incoterms: 'FOB',
+                    shipper: 'shipper',
+                    shippingPort: 'port',
+                    deliveryPort: 'port'
+                })
+            )
+        );
+        await orderTradeService.getCompleteTrade(roleProof);
 
-        expect(mockedStorageMetadataDriver.read).toHaveBeenCalledTimes(1);
-        expect(mockedStorageMetadataDriver.read).toHaveBeenNthCalledWith(1, StorageOperationType.TRANSACTION, metadataSpec);
-    });
-
-    it('should get complete order trade retrieved from external storage - FAIL', async () => {
-        orderTradeService = new OrderTradeService({
-            tradeDriver: mockedOrderTradeDriver,
-            storageDocumentDriver: mockedStorageDocumentDriver,
-            storageMetadataDriver: mockedStorageMetadataDriver,
-        });
-        mockedStorageMetadataDriver.read = jest.fn().mockRejectedValueOnce(new Error('error'));
-
-        const fn = async () => orderTradeService.getCompleteTrade(metadataSpec);
-        await expect(fn).rejects.toThrow(new Error('Error while retrieve order trade from external storage: error'));
+        expect(mockedOrderTradeDriver.getTrade).toHaveBeenCalledTimes(1);
+        expect(mockedIcpFileDriver.read).toHaveBeenCalledTimes(1);
+        expect(mockedIcpFileDriver.read).toHaveBeenNthCalledWith(
+            1,
+            `${externalUrl}/files/metadata.json`
+        );
     });
 
     it('should throw error if try to get complete order trade retrieved from external storage, without passing storage drivers to constructor', async () => {
-        orderTradeService = new OrderTradeService({
-            tradeDriver: mockedOrderTradeDriver,
-        });
-        const fn = async () => orderTradeService.getCompleteTrade(metadataSpec);
-        await expect(fn).rejects.toThrow(new Error('Storage metadata driver is not available'));
+        orderTradeService = new OrderTradeService(mockedOrderTradeDriver);
+        const fn = async () => orderTradeService.getCompleteTrade(roleProof);
+        await expect(fn).rejects.toThrow(
+            new Error('OrderTradeService: ICPFileDriver has not been set')
+        );
     });
 });

@@ -1,12 +1,10 @@
 import { BigNumber, Signer, Wallet } from 'ethers';
 import { createMock } from 'ts-auto-mock';
 import { ProductCategoryDriver } from './ProductCategoryDriver';
-import {
-    ProductCategoryManager,
-    ProductCategoryManager__factory,
-} from '../smart-contracts';
+import { ProductCategoryManager, ProductCategoryManager__factory } from '../smart-contracts';
 import { EntityBuilder } from '../utils/EntityBuilder';
 import { ProductCategory } from '../entities/ProductCategory';
+import { RoleProof } from '../types/RoleProof';
 
 describe('ProductCategoryDriver', () => {
     let productCategoryDriver: ProductCategoryDriver;
@@ -15,11 +13,16 @@ describe('ProductCategoryDriver', () => {
     const quality: number = 1;
     const description: string = 'description';
 
+    const roleProof: RoleProof = {
+        signedProof: 'signedProof',
+        delegator: 'delegator'
+    };
+
     const mockedProductCategoryStructOutput: ProductCategoryManager.ProductCategoryStructOutput = {
         name,
         quality,
         description,
-        exists: true,
+        exists: true
     } as ProductCategoryManager.ProductCategoryStructOutput;
     const mockedProductCategory: ProductCategory = createMock<ProductCategory>();
 
@@ -35,9 +38,9 @@ describe('ProductCategoryDriver', () => {
         {
             event: 'ProductCategoryRegistered',
             args: {
-                id: BigNumber.from(1),
-            },
-        },
+                id: BigNumber.from(1)
+            }
+        }
     ];
     mockedWait.mockReturnValue({ events: mockedEvents });
     mockedWriteFunction.mockReturnValue({ wait: mockedWait });
@@ -51,20 +54,25 @@ describe('ProductCategoryDriver', () => {
         getProductCategoryExists: mockedGetProductCategoryExists,
         getProductCategory: mockedGetProductCategory,
         registerProductCategory: mockedWriteFunction,
-        updateProductCategory: mockedWriteFunction,
+        updateProductCategory: mockedWriteFunction
     });
 
     beforeAll(() => {
         mockedProductCategoryManagerConnect.mockReturnValue(mockedContract);
         const mockedProductCategoryManager = createMock<ProductCategoryManager>({
-            connect: mockedProductCategoryManagerConnect,
+            connect: mockedProductCategoryManagerConnect
         });
-        jest.spyOn(ProductCategoryManager__factory, 'connect').mockReturnValue(mockedProductCategoryManager);
+        jest.spyOn(ProductCategoryManager__factory, 'connect').mockReturnValue(
+            mockedProductCategoryManager
+        );
         const buildProductCategorySpy = jest.spyOn(EntityBuilder, 'buildProductCategory');
         buildProductCategorySpy.mockReturnValue(mockedProductCategory);
 
         mockedSigner = createMock<Signer>();
-        productCategoryDriver = new ProductCategoryDriver(mockedSigner, Wallet.createRandom().address);
+        productCategoryDriver = new ProductCategoryDriver(
+            mockedSigner,
+            Wallet.createRandom().address
+        );
     });
 
     afterAll(() => {
@@ -72,61 +80,82 @@ describe('ProductCategoryDriver', () => {
     });
 
     it('should correctly register a product category', async () => {
-        await productCategoryDriver.registerProductCategory(name, quality, description);
+        await productCategoryDriver.registerProductCategory(roleProof, name, quality, description);
 
         expect(mockedContract.registerProductCategory).toHaveBeenCalledTimes(1);
-        expect(mockedContract.registerProductCategory).toHaveBeenNthCalledWith(1, name, quality, description);
+        expect(mockedContract.registerProductCategory).toHaveBeenNthCalledWith(
+            1,
+            roleProof,
+            name,
+            quality,
+            description
+        );
 
         expect(mockedWait).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly register a product category - FAIL(Error during product category registration, no events found)', async () => {
         mockedWait.mockResolvedValueOnce({
-            events: undefined,
+            events: undefined
         });
-        await expect(productCategoryDriver.registerProductCategory(name, quality, description)).rejects.toThrow('Error during product category registration, no events found');
+        await expect(
+            productCategoryDriver.registerProductCategory(roleProof, name, quality, description)
+        ).rejects.toThrow('Error during product category registration, no events found');
     });
 
     it('should correctly update a product category', async () => {
-        await productCategoryDriver.updateProductCategory(1, 'new', 20, 'updated');
+        await productCategoryDriver.updateProductCategory(roleProof, 1, 'new', 20, 'updated');
 
         expect(mockedWriteFunction).toHaveBeenCalledTimes(1);
-        expect(mockedWriteFunction).toHaveBeenNthCalledWith(1, 1, 'new', 20, 'updated');
+        expect(mockedWriteFunction).toHaveBeenNthCalledWith(1, roleProof, 1, 'new', 20, 'updated');
 
         expect(mockedWait).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly get the product category counter', async () => {
-        const counter: number = await productCategoryDriver.getProductCategoryCounter();
+        const counter: number = await productCategoryDriver.getProductCategoryCounter(roleProof);
 
         expect(mockedGetProductCategoriesCounter).toHaveBeenCalledTimes(1);
         expect(counter).toEqual(2);
     });
 
     it('should correctly get the product category exists', async () => {
-        const exists: boolean = await productCategoryDriver.getProductCategoryExists(1);
+        const exists: boolean = await productCategoryDriver.getProductCategoryExists(roleProof, 1);
 
         expect(mockedGetProductCategoryExists).toHaveBeenCalledTimes(1);
         expect(exists).toEqual(true);
     });
 
     it('should correctly get the product category', async () => {
-        const productCategory: ProductCategory = await productCategoryDriver.getProductCategory(1);
+        const productCategory: ProductCategory = await productCategoryDriver.getProductCategory(
+            roleProof,
+            1
+        );
 
         expect(mockedGetProductCategory).toHaveBeenCalledTimes(1);
         expect(productCategory).toEqual(mockedProductCategory);
         expect(EntityBuilder.buildProductCategory).toHaveBeenCalledTimes(1);
-        expect(EntityBuilder.buildProductCategory).toHaveBeenNthCalledWith(1, mockedProductCategoryStructOutput);
+        expect(EntityBuilder.buildProductCategory).toHaveBeenNthCalledWith(
+            1,
+            mockedProductCategoryStructOutput
+        );
     });
 
     it('should correctly get the product categories', async () => {
-        const productCategories: ProductCategory[] = await productCategoryDriver.getProductCategories();
+        const productCategories: ProductCategory[] =
+            await productCategoryDriver.getProductCategories(roleProof);
 
         expect(mockedGetProductCategoriesCounter).toHaveBeenCalledTimes(1);
         expect(mockedGetProductCategory).toHaveBeenCalledTimes(2);
         expect(productCategories).toEqual([mockedProductCategory, mockedProductCategory]);
         expect(EntityBuilder.buildProductCategory).toHaveBeenCalledTimes(2);
-        expect(EntityBuilder.buildProductCategory).toHaveBeenNthCalledWith(1, mockedProductCategoryStructOutput);
-        expect(EntityBuilder.buildProductCategory).toHaveBeenNthCalledWith(2, mockedProductCategoryStructOutput);
+        expect(EntityBuilder.buildProductCategory).toHaveBeenNthCalledWith(
+            1,
+            mockedProductCategoryStructOutput
+        );
+        expect(EntityBuilder.buildProductCategory).toHaveBeenNthCalledWith(
+            2,
+            mockedProductCategoryStructOutput
+        );
     });
 });

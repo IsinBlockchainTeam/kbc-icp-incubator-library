@@ -1,59 +1,59 @@
+import { FileHelpers, ICPResourceSpec } from '@blockchain-lib/common';
 import { createMock } from 'ts-auto-mock';
-import { SolidStorageACR } from '@blockchain-lib/common';
-import { TradeDriver } from '../drivers/TradeDriver';
 import { TradeService } from './TradeService';
 import { DocumentType } from '../entities/DocumentInfo';
-import { IStorageMetadataDriver } from '../drivers/IStorageMetadataDriver';
-import { IStorageDocumentDriver } from '../drivers/IStorageDocumentDriver';
-import { SolidDocumentSpec } from '../drivers/SolidDocumentDriver';
-import { SolidMetadataSpec } from '../drivers/SolidMetadataDriver';
-import { StorageOperationType } from '../types/StorageOperationType';
-import { computeHashFromBuffer } from '../utils/utils';
+import { DocumentStatus, TransactionLine } from '../entities/Document';
+import { ICPFileDriver } from '../drivers/ICPFileDriver';
 import { DocumentDriver } from '../drivers/DocumentDriver';
+import { TradeDriver } from '../drivers/TradeDriver';
+import { RoleProof } from '../types/RoleProof';
 
 describe('TradeService', () => {
-    const mockedgetAllDocumentIds = jest.fn();
-    const mockedgetAllDocumentIdsByType = jest.fn();
+    const mockedGetAllDocumentIds = jest.fn();
+    const mockedGetAllDocumentIdsByType = jest.fn();
     const mockedGetDocumentById = jest.fn();
-
-    const mockedTradeDriver: TradeDriver = createMock<TradeDriver>({
+    const mockedTradeDriver = createMock<TradeDriver>({
         getLineCounter: jest.fn(),
         getTradeType: jest.fn(),
         getLineExists: jest.fn(),
-        getTradeStatus: jest.fn(),
         addDocument: jest.fn(),
-        getAllDocumentIds: mockedgetAllDocumentIds,
-        getDocumentIdsByType: mockedgetAllDocumentIdsByType,
-        addAdmin: jest.fn(),
-        removeAdmin: jest.fn(),
+        validateDocument: jest.fn(),
+        getAllDocumentIds: mockedGetAllDocumentIds,
+        getDocumentIdsByType: mockedGetAllDocumentIdsByType
     });
-    const mockedDocumentDriver: DocumentDriver = createMock<DocumentDriver>({
+    const mockedDocumentDriver = createMock<DocumentDriver>({
         registerDocument: jest.fn(),
+        updateDocument: jest.fn(),
         getDocumentsCounter: jest.fn(),
         getDocumentById: mockedGetDocumentById,
         addAdmin: jest.fn(),
         removeAdmin: jest.fn(),
+        addTradeManager: jest.fn(),
+        removeTradeManager: jest.fn()
     });
-    const documentExternalUrl = 'doc_externalUrl';
-    const mockedStorageMetadataDriver = createMock<IStorageMetadataDriver<SolidMetadataSpec, SolidStorageACR>>({
-        create: jest.fn(),
-    });
-    const mockedStorageDocumentDriver = createMock<IStorageDocumentDriver<SolidDocumentSpec>>({
-        create: jest.fn().mockResolvedValue(documentExternalUrl),
+    const mockedIcpFileDriver: ICPFileDriver = createMock<ICPFileDriver>({
+        create: jest.fn()
     });
 
-    const documentBuffer = new Uint8Array([1, 2, 3, 4, 5]);
-    const documentSpec: SolidDocumentSpec = {
-        filename: 'filename',
-        bcResourceId: 'bcResourceId',
+    const externalUrl = 'externalUrl';
+    const resourceSpec: ICPResourceSpec = {
+        name: 'resourceName.pdf',
+        type: 'resourceType'
     };
-    const metadata = { metadata: 'metadata content' };
-    const metadataSpec: SolidMetadataSpec = {
-        resourceName: 'resourceName',
-        bcResourceId: 'bcResourceId',
+    const delegatedOrganizationIds = [1, 2];
+    const transactionLines: TransactionLine[] = [{ id: 1, quantity: 1 }];
+    const quantity = 250;
+
+    let tradeService: TradeService;
+
+    const roleProof: RoleProof = {
+        signedProof: 'signedProof',
+        delegator: 'delegator'
     };
 
-    let tradeService: TradeService<SolidMetadataSpec, SolidDocumentSpec, SolidStorageACR>;
+    beforeAll(() => {
+        jest.useFakeTimers().setSystemTime(new Date());
+    });
 
     afterAll(() => {
         jest.restoreAllMocks();
@@ -62,120 +62,137 @@ describe('TradeService', () => {
     it.each([
         {
             serviceFunctionName: 'getLineCounter',
-            serviceFunction: () => tradeService.getLineCounter(),
+            serviceFunction: () => tradeService.getLineCounter(roleProof),
             expectedMockedFunction: mockedTradeDriver.getLineCounter,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: [roleProof]
         },
         {
             serviceFunctionName: 'getTradeType',
-            serviceFunction: () => tradeService.getTradeType(),
+            serviceFunction: () => tradeService.getTradeType(roleProof),
             expectedMockedFunction: mockedTradeDriver.getTradeType,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: [roleProof]
         },
         {
             serviceFunctionName: 'getLineExists',
-            serviceFunction: () => tradeService.getLineExists(1),
+            serviceFunction: () => tradeService.getLineExists(roleProof, 1),
             expectedMockedFunction: mockedTradeDriver.getLineExists,
-            expectedMockedFunctionArgs: [1],
+            expectedMockedFunctionArgs: [roleProof, 1]
         },
         {
-            serviceFunctionName: 'getTradeStatus',
-            serviceFunction: () => tradeService.getTradeStatus(),
-            expectedMockedFunction: mockedTradeDriver.getTradeStatus,
-            expectedMockedFunctionArgs: [],
-        },
-        {
-            storageDrivers: { metadata: true, document: true },
-            serviceFunctionName: 'addDocument with metadata and storage drivers',
-            serviceFunction: () => tradeService.addDocument(DocumentType.DELIVERY_NOTE, { spec: documentSpec, fileBuffer: documentBuffer }, { spec: metadataSpec, value: metadata }),
-            expectedMockedFunction: mockedTradeDriver.addDocument,
-            expectedMockedFunctionArgs: [DocumentType.DELIVERY_NOTE, documentExternalUrl, computeHashFromBuffer(documentBuffer)],
-        },
-        {
-            serviceFunctionName: 'addDocument without metadata and storage drivers',
-            serviceFunction: () => tradeService.addDocument(DocumentType.DELIVERY_NOTE),
-            expectedMockedFunction: mockedTradeDriver.addDocument,
-            expectedMockedFunctionArgs: [DocumentType.DELIVERY_NOTE, '', ''],
-        },
-        {
-            storageDrivers: { metadata: true },
-            serviceFunctionName: 'add document - create (metadata driver)',
-            serviceFunction: () => tradeService.addDocument(DocumentType.DELIVERY_NOTE, undefined, { spec: metadataSpec, value: metadata }),
-            expectedMockedFunction: mockedStorageMetadataDriver.create,
-            expectedMockedFunctionArgs: [StorageOperationType.TRANSACTION_DOCUMENT, metadata, [], metadataSpec],
-        },
-        {
-            storageDrivers: { document: true },
-            serviceFunctionName: 'add document - create (document driver)',
-            serviceFunction: () => tradeService.addDocument(DocumentType.DELIVERY_NOTE, { spec: documentSpec, fileBuffer: documentBuffer }),
-            expectedMockedFunction: mockedStorageDocumentDriver.create,
-            expectedMockedFunctionArgs: [StorageOperationType.TRANSACTION_DOCUMENT, documentBuffer, documentSpec],
+            serviceFunctionName: 'validateDocument',
+            serviceFunction: () =>
+                tradeService.validateDocument(roleProof, 1, DocumentStatus.APPROVED),
+            expectedMockedFunction: mockedTradeDriver.validateDocument,
+            expectedMockedFunctionArgs: [roleProof, 1, DocumentStatus.APPROVED]
         },
         {
             serviceFunctionName: 'getAllDocumentIds',
-            serviceFunction: () => tradeService.getAllDocumentIds(),
+            serviceFunction: () => tradeService.getAllDocumentIds(roleProof),
             expectedMockedFunction: mockedTradeDriver.getAllDocumentIds,
-            expectedMockedFunctionArgs: [],
+            expectedMockedFunctionArgs: [roleProof]
         },
         {
             serviceFunctionName: 'getAllDocumentIdsByType',
-            serviceFunction: () => tradeService.getDocumentIdsByType(DocumentType.DELIVERY_NOTE),
+            serviceFunction: () =>
+                tradeService.getDocumentIdsByType(roleProof, DocumentType.DELIVERY_NOTE),
             expectedMockedFunction: mockedTradeDriver.getDocumentIdsByType,
-            expectedMockedFunctionArgs: [DocumentType.DELIVERY_NOTE],
-        },
-        {
-            serviceFunctionName: 'addAdmin',
-            serviceFunction: () => tradeService.addAdmin('testAddress'),
-            expectedMockedFunction: mockedTradeDriver.addAdmin,
-            expectedMockedFunctionArgs: ['testAddress'],
-        },
-        {
-            serviceFunctionName: 'removeAdmin',
-            serviceFunction: () => tradeService.removeAdmin('testAddress'),
-            expectedMockedFunction: mockedTradeDriver.removeAdmin,
-            expectedMockedFunctionArgs: ['testAddress'],
-        },
-    ])('should call driver $serviceFunctionName', async ({ serviceFunction, expectedMockedFunction, expectedMockedFunctionArgs, storageDrivers }) => {
-        tradeService = new TradeService({
-            tradeDriver: mockedTradeDriver,
-            storageMetadataDriver: storageDrivers?.metadata ? mockedStorageMetadataDriver : undefined,
-            storageDocumentDriver: storageDrivers?.document ? mockedStorageDocumentDriver : undefined,
-        });
-        await serviceFunction();
+            expectedMockedFunctionArgs: [roleProof, DocumentType.DELIVERY_NOTE]
+        }
+    ])(
+        'should call driver $serviceFunctionName',
+        async ({ serviceFunction, expectedMockedFunction, expectedMockedFunctionArgs }) => {
+            tradeService = new TradeService(
+                mockedTradeDriver,
+                mockedDocumentDriver,
+                mockedIcpFileDriver
+            );
+            await serviceFunction();
 
-        expect(expectedMockedFunction).toHaveBeenCalledTimes(1);
-        expect(expectedMockedFunction).toHaveBeenNthCalledWith(1, ...expectedMockedFunctionArgs);
+            expect(expectedMockedFunction).toHaveBeenCalledTimes(1);
+            expect(expectedMockedFunction).toHaveBeenNthCalledWith(
+                1,
+                ...expectedMockedFunctionArgs
+            );
+        }
+    );
+
+    describe('addDocument', () => {
+        it('should add a document', async () => {
+            tradeService = new TradeService(
+                mockedTradeDriver,
+                mockedDocumentDriver,
+                mockedIcpFileDriver
+            );
+            await tradeService.addDocument(
+                roleProof,
+                DocumentType.DELIVERY_NOTE,
+                new Uint8Array([1, 2, 3]),
+                externalUrl,
+                resourceSpec,
+                delegatedOrganizationIds,
+                transactionLines,
+                quantity
+            );
+
+            expect(mockedIcpFileDriver.create).toHaveBeenCalledTimes(2);
+            expect(mockedIcpFileDriver.create).toHaveBeenNthCalledWith(
+                1,
+                new Uint8Array([1, 2, 3]),
+                resourceSpec,
+                delegatedOrganizationIds
+            );
+            expect(mockedIcpFileDriver.create).toHaveBeenNthCalledWith(
+                2,
+                FileHelpers.getBytesFromObject({
+                    fileName: resourceSpec.name,
+                    documentType: DocumentType.DELIVERY_NOTE,
+                    date: new Date(),
+                    transactionLines,
+                    quantity
+                }),
+                {
+                    name: `${FileHelpers.removeFileExtension(resourceSpec.name)}-metadata.json`,
+                    type: 'application/json'
+                },
+                delegatedOrganizationIds
+            );
+
+            expect(mockedTradeDriver.addDocument).toHaveBeenCalledTimes(1);
+            expect(mockedTradeDriver.addDocument).toHaveBeenCalledWith(
+                roleProof,
+                DocumentType.DELIVERY_NOTE,
+                resourceSpec.name,
+                FileHelpers.getHash(new Uint8Array([1, 2, 3])).toString()
+            );
+        });
     });
 
     describe('getDocuments', () => {
         it('should get all documents of a trade', async () => {
             const documentIds = [1, 2];
             const documentInfo = { id: 1, externalUrl: 'url', contentHash: 'hash' };
-            mockedgetAllDocumentIds.mockResolvedValue(documentIds);
+            mockedGetAllDocumentIds.mockResolvedValue(documentIds);
             mockedGetDocumentById.mockResolvedValue(documentInfo);
 
-            tradeService = new TradeService({
-                tradeDriver: mockedTradeDriver,
-                documentDriver: mockedDocumentDriver,
-            });
+            tradeService = new TradeService(mockedTradeDriver, mockedDocumentDriver);
 
-            const result = await tradeService.getAllDocuments();
+            const result = await tradeService.getAllDocuments(roleProof);
             expect(result).toEqual([documentInfo, documentInfo]);
 
-            expect(mockedgetAllDocumentIds).toHaveBeenCalledTimes(1);
+            expect(mockedGetAllDocumentIds).toHaveBeenCalledTimes(1);
 
             expect(mockedGetDocumentById).toHaveBeenCalledTimes(documentIds.length);
             documentIds.forEach((id, index) => {
-                expect(mockedGetDocumentById).toHaveBeenNthCalledWith(index + 1, id);
+                expect(mockedGetDocumentById).toHaveBeenNthCalledWith(index + 1, roleProof, id);
             });
         });
 
         it('should throw an error if the document driver is not available', async () => {
-            tradeService = new TradeService({
-                tradeDriver: mockedTradeDriver,
-            });
+            tradeService = new TradeService(mockedTradeDriver);
 
-            await expect(tradeService.getAllDocuments()).rejects.toThrow('Cannot perform this operation without a document driver');
+            await expect(tradeService.getAllDocuments(roleProof)).rejects.toThrow(
+                'Cannot perform this operation without a document driver'
+            );
         });
     });
 
@@ -183,32 +200,36 @@ describe('TradeService', () => {
         it('should get documents by document type', async () => {
             const documentIds = [1, 2];
             const documentInfo = { id: 1, externalUrl: 'url', contentHash: 'hash' };
-            mockedgetAllDocumentIdsByType.mockResolvedValue(documentIds);
+            mockedGetAllDocumentIdsByType.mockResolvedValue(documentIds);
             mockedGetDocumentById.mockResolvedValue(documentInfo);
 
-            tradeService = new TradeService({
-                tradeDriver: mockedTradeDriver,
-                documentDriver: mockedDocumentDriver,
-            });
+            tradeService = new TradeService(mockedTradeDriver, mockedDocumentDriver);
 
-            const result = await tradeService.getDocumentsByType(DocumentType.DELIVERY_NOTE);
+            const result = await tradeService.getDocumentsByType(
+                roleProof,
+                DocumentType.DELIVERY_NOTE
+            );
             expect(result).toEqual([documentInfo, documentInfo]);
 
-            expect(mockedgetAllDocumentIdsByType).toHaveBeenCalledTimes(1);
-            expect(mockedgetAllDocumentIdsByType).toHaveBeenNthCalledWith(1, DocumentType.DELIVERY_NOTE);
+            expect(mockedGetAllDocumentIdsByType).toHaveBeenCalledTimes(1);
+            expect(mockedGetAllDocumentIdsByType).toHaveBeenNthCalledWith(
+                1,
+                roleProof,
+                DocumentType.DELIVERY_NOTE
+            );
 
             expect(mockedGetDocumentById).toHaveBeenCalledTimes(documentIds.length);
             documentIds.forEach((id, index) => {
-                expect(mockedGetDocumentById).toHaveBeenNthCalledWith(index + 1, id);
+                expect(mockedGetDocumentById).toHaveBeenNthCalledWith(index + 1, roleProof, id);
             });
         });
 
         it('should throw an error if the document driver is not available', async () => {
-            tradeService = new TradeService({
-                tradeDriver: mockedTradeDriver,
-            });
+            tradeService = new TradeService(mockedTradeDriver);
 
-            await expect(tradeService.getDocumentsByType(DocumentType.DELIVERY_NOTE)).rejects.toThrow('Cannot perform this operation without a document driver');
+            await expect(
+                tradeService.getDocumentsByType(roleProof, DocumentType.DELIVERY_NOTE)
+            ).rejects.toThrow('Cannot perform this operation without a document driver');
         });
     });
 });

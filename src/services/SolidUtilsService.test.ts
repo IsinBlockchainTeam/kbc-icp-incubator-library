@@ -14,7 +14,12 @@ describe('SolidUtilsService', () => {
         const id = 'id';
         const type = StorageOperationType.TRANSACTION;
 
-        const result = SolidUtilsService.defineRelativeResourcePath(serverBaseUrl, podName, type, id);
+        const result = SolidUtilsService.defineRelativeResourcePath(
+            serverBaseUrl,
+            podName,
+            type,
+            id
+        );
 
         expect(mockedComposeWebId).toHaveBeenCalledWith([serverBaseUrl, podName]);
         expect(result).toBe(`${podUrl}/transactions/${id}/`);
@@ -24,7 +29,12 @@ describe('SolidUtilsService', () => {
         const id = 'id';
         const type = StorageOperationType.TRANSACTION_DOCUMENT;
 
-        const result = SolidUtilsService.defineRelativeResourcePath(serverBaseUrl, podName, type, id);
+        const result = SolidUtilsService.defineRelativeResourcePath(
+            serverBaseUrl,
+            podName,
+            type,
+            id
+        );
 
         expect(mockedComposeWebId).toHaveBeenCalledWith([serverBaseUrl, podName]);
         expect(result).toBe(`${podUrl}/transactions/${id}/documents/`);
@@ -34,7 +44,12 @@ describe('SolidUtilsService', () => {
         const id = 'id';
         const type = StorageOperationType.CERTIFICATION_DOCUMENT;
 
-        const result = SolidUtilsService.defineRelativeResourcePath(serverBaseUrl, podName, type, id);
+        const result = SolidUtilsService.defineRelativeResourcePath(
+            serverBaseUrl,
+            podName,
+            type,
+            id
+        );
 
         expect(mockedComposeWebId).toHaveBeenCalledWith([serverBaseUrl, podName]);
         expect(result).toBe(`${podUrl}/transactions/${id}/certifications/`);
