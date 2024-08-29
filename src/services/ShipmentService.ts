@@ -15,6 +15,7 @@ export type ShipmentDocumentMetadata = {
     fileName: string;
     documentType: DocumentType;
     date: Date;
+    documentReferenceId: string;
 };
 export class ShipmentService {
     private _shipmentManagerDriver: ShipmentDriver;
@@ -49,6 +50,10 @@ export class ShipmentService {
         return this._shipmentManagerDriver.getDocumentsIdsByType(roleProof, documentType);
     }
 
+    async getAllDocumentIds(roleProof: RoleProof): Promise<number[]> {
+      return this._shipmentManagerDriver.getAllDocumentIds(roleProof);
+    }
+
     async updateShipment(
         roleProof: RoleProof,
         expirationDate: Date,
@@ -76,6 +81,7 @@ export class ShipmentService {
     async addDocument(
         roleProof: RoleProof,
         documentType: DocumentType,
+        documentReferenceId: string,
         fileContent: Uint8Array,
         resourceSpec: ICPResourceSpec,
         delegatedOrganizationIds: number[] = []
@@ -88,6 +94,7 @@ export class ShipmentService {
         await this._icpFileDriver.create(fileContent, spec, delegatedOrganizationIds);
         const documentMetadata: ShipmentDocumentMetadata = {
             fileName: spec.name,
+            documentReferenceId,
             documentType,
             date: new Date()
         };

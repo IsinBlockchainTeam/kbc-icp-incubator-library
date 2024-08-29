@@ -277,11 +277,13 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
         await tx.wait();
     }
 
-    async getShipmentAddress(roleProof: RoleProof): Promise<string> {
-        return this._actual.getShipment(roleProof);
+    async getShipmentAddress(roleProof: RoleProof): Promise<string | undefined> {
+      const result = await this._actual.getShipment(roleProof);
+      return result === zeroAddress ? undefined : result;
     }
 
-    async getEscrowAddress(roleProof: RoleProof): Promise<string> {
-        return this._actual.getEscrow(roleProof);
+    async getEscrowAddress(roleProof: RoleProof): Promise<string | undefined> {
+      const result = await this._actual.getEscrow(roleProof);
+      return result === zeroAddress ? undefined : result;
     }
 }

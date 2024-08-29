@@ -125,11 +125,11 @@ export class OrderTradeService extends TradeService implements IConcreteTradeSer
         );
     }
 
-    async getShipmentAddress(roleProof: RoleProof): Promise<string> {
+    async getShipmentAddress(roleProof: RoleProof): Promise<string | undefined> {
         return this._tradeDriverImplementation.getShipmentAddress(roleProof);
     }
 
-    async getEscrowAddress(roleProof: RoleProof): Promise<string> {
+    async getEscrowAddress(roleProof: RoleProof): Promise<string | undefined> {
         return this._tradeDriverImplementation.getEscrowAddress(roleProof);
     }
 

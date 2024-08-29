@@ -53,6 +53,11 @@ export class ShipmentDriver {
         );
     }
 
+  async getAllDocumentIds(roleProof: RoleProof): Promise<number[]> {
+    const ids = await this._contract.getAllDocumentIds(roleProof);
+    return ids.map((id) => id.toNumber());
+  }
+
     async updateShipment(
         roleProof: RoleProof,
         expirationDate: Date,

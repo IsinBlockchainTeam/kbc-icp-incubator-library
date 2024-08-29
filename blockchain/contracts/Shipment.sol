@@ -188,6 +188,9 @@ contract Shipment is AccessControl, KBCAccessControl {
             filteredDocumentsIds[i] = documentsIdsTemp[i];
         }
     }
+    function getAllDocumentIds(RoleProof memory roleProof) public view atLeastViewer(roleProof) returns (uint256[] memory) {
+        return _documentsIds;
+    }
 
     // Functions
     function updateShipment(RoleProof memory roleProof, uint256 expirationDate, uint256 quantity, uint256 weight, uint256 price) public onlySupplier atLeastEditor(roleProof) {
@@ -250,7 +253,7 @@ contract Shipment is AccessControl, KBCAccessControl {
             _fundsStatus = FundsStatus.RELEASED;
         }
     }
-    function rejectDocument(RoleProof memory roleProof, uint256 documentId) public onlyCommissioner shipmentApproved atLeastEditor(roleProof) {
+    function rejectDocument(RoleProof memory roleProof, uint256 documentId) public onlySupplierOrCommissioner shipmentApproved atLeastEditor(roleProof) {
         require(_documentsInfo[documentId].exists, "ShipmentManager: Document does not exist");
         require(_documentsInfo[documentId].status == DocumentLibrary.DocumentStatus.NOT_EVALUATED, "ShipmentManager: Document already evaluated");
 
