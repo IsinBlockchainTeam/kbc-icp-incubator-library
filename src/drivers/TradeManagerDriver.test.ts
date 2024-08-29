@@ -39,10 +39,7 @@ describe('TradeManagerDriver', () => {
     const tokenAddress: string = Wallet.createRandom().address;
     const mockedContractAddress: string = Wallet.createRandom().address;
 
-    const roleProof: RoleProof = {
-        signedProof: 'signedProof',
-        delegator: 'delegator'
-    };
+    const roleProof: RoleProof = createMock<RoleProof>();
 
     let mockedSigner: Signer;
 

@@ -14,10 +14,7 @@ describe('EscrowManagerDriver', () => {
     const baseFee: number = 20;
     const percentageFee: number = 1;
 
-    const roleProof: RoleProof = {
-        signedProof: 'signedProof',
-        delegator: 'delegator'
-    };
+    const roleProof: RoleProof = createMock<RoleProof>();
 
     let mockedSigner: Signer;
 

@@ -1,5 +1,5 @@
 import { CredentialRevocationDriver } from '../drivers/CredentialRevocationDriver';
-import { RevocationStatus } from '../types/RevocationStatus';
+import { CredentialStatus } from '../types/CredentialStatus';
 
 export class CredentialRevocationService {
     private _driver: CredentialRevocationDriver;
@@ -12,7 +12,7 @@ export class CredentialRevocationService {
         return this._driver.revoke(jwt);
     }
 
-    async revoked(jwt: string): Promise<RevocationStatus> {
+    async revoked(jwt: string): Promise<CredentialStatus> {
         return this._driver.revoked(jwt);
     }
 }

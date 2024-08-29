@@ -5,8 +5,7 @@ import { BigNumber, Contract } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { ContractName } from '../utils/constants';
-import { KBCAccessControl } from '../typechain-types/contracts/MaterialManager';
-import RoleProofStruct = KBCAccessControl.RoleProofStruct;
+import { RoleProofStruct } from '../typechain-types/contracts/DelegateManager';
 
 describe('AssetOperationManager', () => {
     let assertOperationManagerContract: Contract;
@@ -16,9 +15,10 @@ describe('AssetOperationManager', () => {
     const processTypes = ['33 - Collecting', '38 - Harvesting'];
     let admin: SignerWithAddress, other: SignerWithAddress;
 
-    const roleProof: KBCAccessControl.RoleProofStruct = {
+    const roleProof: RoleProofStruct = {
         signedProof: '0x',
-        delegator: ''
+        delegator: '',
+        jwtHash: ethers.utils.formatBytes32String('jwtHash')
     };
 
     beforeEach(async () => {

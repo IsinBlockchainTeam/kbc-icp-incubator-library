@@ -6,7 +6,7 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { ethers } from 'hardhat';
 import { ContractName } from '../utils/constants';
 import { MaterialManager } from '../typechain-types';
-import { KBCAccessControl } from '../typechain-types/contracts/MaterialManager';
+import { RoleProofStruct } from '../typechain-types/contracts/DelegateManager';
 
 describe('Trade.sol', () => {
     chai.use(smock.matchers);
@@ -17,9 +17,10 @@ describe('Trade.sol', () => {
     let unitManagerContractFake: FakeContract;
     const documentTypes = [0, 1, 2];
 
-    const roleProof: KBCAccessControl.RoleProofStruct = {
+    const roleProof: RoleProofStruct = {
         signedProof: '0x',
-        delegator: ''
+        delegator: '',
+        jwtHash: ethers.utils.formatBytes32String('jwtHash')
     };
 
     // these contracts are used as implementation of the trade, when used as parent class

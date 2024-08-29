@@ -50,10 +50,7 @@ describe('OrderTradeService', () => {
         mockedIcpFileDriver
     );
 
-    const roleProof: RoleProof = {
-        signedProof: 'signedProof',
-        delegator: 'delegator'
-    };
+    const roleProof: RoleProof = createMock<RoleProof>();
 
     afterAll(() => {
         jest.restoreAllMocks();

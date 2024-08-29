@@ -198,10 +198,7 @@ describe('GraphService', () => {
         })
     );
 
-    const roleProof: RoleProof = {
-        signedProof: 'signedProof',
-        delegator: 'delegator'
-    };
+    const roleProof: RoleProof = createMock<RoleProof>();
 
     beforeAll(() => {
         graphService = new GraphService(

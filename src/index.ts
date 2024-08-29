@@ -80,10 +80,9 @@ export {
 export { ShipmentDriver } from './drivers/ShipmentDriver';
 export { ShipmentService, ShipmentDocument } from './services/ShipmentService';
 
-export { RevocationDriver } from './drivers/RevocationDriver';
 export { CredentialRevocationDriver } from './drivers/CredentialRevocationDriver';
 export { CredentialRevocationService } from './services/CredentialRevocationService';
-export { RevocationStatus } from './types/RevocationStatus';
+export { CredentialStatus } from './types/CredentialStatus';
 
 export type { ISolidStorageMetadataDriver } from './drivers/ISolidStorageMetadataDriver';
 export type { ISolidStorageDocumentDriver } from './drivers/ISolidStorageDocumentDriver';

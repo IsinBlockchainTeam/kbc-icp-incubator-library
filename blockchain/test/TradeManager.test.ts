@@ -5,8 +5,8 @@ import { expect } from 'chai';
 import { ethers } from 'hardhat';
 import { ContractName } from '../utils/constants';
 import { Trade } from '../typechain-types';
-import { KBCAccessControl } from '../typechain-types/contracts/MaterialManager';
 import { FakeContract, smock } from '@defi-wonderland/smock';
+import { RoleProofStruct } from '../typechain-types/contracts/DelegateManager';
 
 describe('TradeManager.sol', () => {
     let tradeManagerContract: Contract;
@@ -23,9 +23,10 @@ describe('TradeManager.sol', () => {
     const unitManagerAddress: string = Wallet.createRandom().address;
     const escrowManagerAddress: string = Wallet.createRandom().address;
 
-    const roleProof: KBCAccessControl.RoleProofStruct = {
+    const roleProof: RoleProofStruct = {
         signedProof: '0x',
-        delegator: ''
+        delegator: '',
+        jwtHash: ethers.utils.formatBytes32String('jwtHash')
     };
 
     const externalUrl: string = 'https://test.com';

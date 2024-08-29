@@ -8,7 +8,7 @@ import "./RevocationRegistry.sol";
 struct RoleProof {
     bytes signedProof;
     address delegator;
-    bytes32 delegateCredentialHash;
+    bytes32 jwtHash;
 }
 
 contract DelegateManager is AccessControl {
@@ -21,7 +21,7 @@ contract DelegateManager is AccessControl {
     bytes32 public immutable domainSeparator;
 
     // The EIP-712 type hash for the RoleDelegation struct
-    bytes32 public constant ROLE_DELEGATION_TYPEHASH = keccak256("RoleDelegation(address delegateAddress,string role,bytes32 delegateCredentialHash)");
+    bytes32 public constant ROLE_DELEGATION_TYPEHASH = keccak256("RoleDelegation(address delegateAddress,string role,bytes32 jwtHash)");
 
     RevocationRegistry private _revocationRegistry;
 
@@ -96,7 +96,7 @@ contract DelegateManager is AccessControl {
 
     function hasValidRole(RoleProof memory roleProof, string memory role) public view returns (bool) {
         address delegate = tx.origin;
-        bytes32 structHash = keccak256(abi.encode(ROLE_DELEGATION_TYPEHASH, delegate, keccak256(bytes(role)), roleProof.delegateCredentialHash));
+        bytes32 structHash = keccak256(abi.encode(ROLE_DELEGATION_TYPEHASH, delegate, keccak256(bytes(role)), roleProof.jwtHash));
         bytes32 hash = keccak256(abi.encodePacked("\x19\x01", domainSeparator, structHash));
         address signer = hash.recover(roleProof.signedProof);
 
@@ -118,7 +118,7 @@ contract DelegateManager is AccessControl {
 //        return false;
 
         // If the credential has been revoked, the delegate is not valid
-        if(_revocationRegistry.revoked(signer, roleProof.delegateCredentialHash) != 0) {
+        if(_revocationRegistry.revoked(signer, roleProof.jwtHash) != 0) {
             return false;
         }
 

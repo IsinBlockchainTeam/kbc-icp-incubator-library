@@ -3,11 +3,13 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { ethers } from 'hardhat';
 import { ContractName } from '../utils/constants';
 import { expect } from 'chai';
-import { KBCAccessControl } from '../typechain-types/contracts/BasicTrade';
+import { RoleProofStruct } from '../typechain-types/contracts/DelegateManager';
+import { FakeContract, smock } from '@defi-wonderland/smock';
 
 describe('KBCAccessControl', () => {
     let kbcAccessControlContract: Contract;
     let delegateManagerContract: Contract;
+    let revocationRegistryContractFake: FakeContract;
     let admin: SignerWithAddress, delegator: SignerWithAddress, delegate: SignerWithAddress, other: SignerWithAddress;
 
     const domain = {
@@ -19,7 +21,8 @@ describe('KBCAccessControl', () => {
     const types = {
         RoleDelegation: [
             { name: 'delegateAddress', type: 'address' },
-            { name: 'role', type: 'string' }
+            { name: 'role', type: 'string' },
+            { name: 'jwtHash', type: 'bytes32' }
         ]
     };
 
@@ -29,18 +32,21 @@ describe('KBCAccessControl', () => {
         SIGNER = 'Signer'
     }
 
+    const credentialHash = ethers.utils.formatBytes32String('test');
+
     const checkRole = async (neededRole: ROLES, actualRole: ROLES) => {
         await delegateManagerContract.connect(admin).addDelegator(delegator.address);
-        await delegateManagerContract.connect(delegator).addDelegate(delegate.address);
 
         const message = {
             delegateAddress: delegate.address,
-            role: actualRole
+            role: actualRole,
+            jwtHash: credentialHash
         };
         const signature = await delegator._signTypedData(domain, types, message);
-        const roleProof: KBCAccessControl.RoleProofStruct = {
+        const roleProof: RoleProofStruct = {
             signedProof: signature,
-            delegator: delegator.address
+            delegator: delegator.address,
+            jwtHash: credentialHash
         };
         switch (neededRole) {
             case ROLES.VIEWER:
@@ -57,8 +63,10 @@ describe('KBCAccessControl', () => {
     });
 
     beforeEach(async () => {
+        revocationRegistryContractFake = await smock.fake(ContractName.REVOCATION_REGISTRY);
+        revocationRegistryContractFake.revoked.returns(0);
         const DelegateManager = await ethers.getContractFactory(ContractName.DELEGATE_MANAGER);
-        delegateManagerContract = await DelegateManager.deploy(domain.name, domain.version, domain.chainId);
+        delegateManagerContract = await DelegateManager.deploy(domain.name, domain.version, domain.chainId, revocationRegistryContractFake.address);
         const KBCAccessControl = await ethers.getContractFactory('KBCAccessControlTester');
         kbcAccessControlContract = await KBCAccessControl.deploy(delegateManagerContract.address);
         await kbcAccessControlContract.deployed();

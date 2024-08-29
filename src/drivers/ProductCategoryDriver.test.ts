@@ -13,10 +13,7 @@ describe('ProductCategoryDriver', () => {
     const quality: number = 1;
     const description: string = 'description';
 
-    const roleProof: RoleProof = {
-        signedProof: 'signedProof',
-        delegator: 'delegator'
-    };
+    const roleProof: RoleProof = createMock<RoleProof>();
 
     const mockedProductCategoryStructOutput: ProductCategoryManager.ProductCategoryStructOutput = {
         name,

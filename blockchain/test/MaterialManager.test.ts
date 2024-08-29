@@ -6,7 +6,7 @@ import { BigNumber, Contract } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { ContractName } from '../utils/constants';
-import { KBCAccessControl } from '../typechain-types/contracts/MaterialManager';
+import { RoleProofStruct } from '../typechain-types/contracts/DelegateManager';
 
 describe('MaterialManager', () => {
     let materialManagerContract: Contract;
@@ -14,9 +14,10 @@ describe('MaterialManager', () => {
     let productCategoryManagerFake: FakeContract;
     let delegateManagerContractFake: FakeContract;
 
-    const roleProof: KBCAccessControl.RoleProofStruct = {
+    const roleProof: RoleProofStruct = {
         signedProof: '0x',
-        delegator: ''
+        delegator: '',
+        jwtHash: ethers.utils.formatBytes32String('jwtHash')
     };
 
     beforeEach(async () => {

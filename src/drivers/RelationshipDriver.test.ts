@@ -9,10 +9,7 @@ import { RoleProof } from '../types/RoleProof';
 describe('RelationshipDriver', () => {
     let relationshipDriver: RelationshipDriver;
 
-    const roleProof: RoleProof = {
-        signedProof: 'signedProof',
-        delegator: 'delegator'
-    };
+    const roleProof: RoleProof = createMock<RoleProof>();
 
     const testAddress = '0x6C9E9ADB5F57952434A4148b401502d9c6C70318';
     const errorMessage = 'testError';

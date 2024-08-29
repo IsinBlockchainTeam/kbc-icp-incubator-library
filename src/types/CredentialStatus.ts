@@ -1,4 +1,4 @@
-export type RevocationStatus = ValidStatus | RevokedStatus;
+export type CredentialStatus = ValidStatus | RevokedStatus;
 
 export type ValidStatus = {
     revoked: false;

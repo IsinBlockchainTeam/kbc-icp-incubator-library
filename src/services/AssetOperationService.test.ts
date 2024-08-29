@@ -18,10 +18,7 @@ describe('AssetOperationService', () => {
 
     const assetOperationService = new AssetOperationService(mockedAssetOperationDriver);
 
-    const roleProof: RoleProof = {
-        signedProof: 'signedProof',
-        delegator: 'delegator'
-    };
+    const roleProof: RoleProof = createMock<RoleProof>();
 
     afterAll(() => {
         jest.restoreAllMocks();

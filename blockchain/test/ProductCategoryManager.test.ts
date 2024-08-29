@@ -4,17 +4,18 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { ethers } from 'hardhat';
 import { expect } from 'chai';
 import { FakeContract, smock } from '@defi-wonderland/smock';
-import { KBCAccessControl } from '../typechain-types/contracts/MaterialManager';
 import { ContractName } from '../utils/constants';
+import { RoleProofStruct } from '../typechain-types/contracts/DelegateManager';
 
 describe('ProductCategoryManager', () => {
     let productCategoryManagerContract: Contract;
     let admin: SignerWithAddress, other: SignerWithAddress;
     let delegateManagerContractFake: FakeContract;
 
-    const roleProof: KBCAccessControl.RoleProofStruct = {
+    const roleProof: RoleProofStruct = {
         signedProof: '0x',
-        delegator: ''
+        delegator: '',
+        jwtHash: ethers.utils.formatBytes32String('jwtHash')
     };
 
     beforeEach(async () => {

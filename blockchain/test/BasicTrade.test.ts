@@ -6,7 +6,7 @@ import chai, { expect } from 'chai';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { ContractName } from '../utils/constants';
 import { MaterialManager } from '../typechain-types';
-import { KBCAccessControl } from '../typechain-types/contracts/MaterialManager';
+import { RoleProofStruct } from '../typechain-types/contracts/DelegateManager';
 
 describe('BasicTrade.sol', () => {
     chai.use(smock.matchers);
@@ -16,9 +16,10 @@ describe('BasicTrade.sol', () => {
     let enumerableUnitManagerContractFake: FakeContract;
     let delegateManagerContractFake: FakeContract;
 
-    const roleProof: KBCAccessControl.RoleProofStruct = {
+    const roleProof: RoleProofStruct = {
         signedProof: '0x',
-        delegator: ''
+        delegator: '',
+        jwtHash: ethers.utils.formatBytes32String('jwtHash')
     };
 
     let basicTradeContract: Contract;

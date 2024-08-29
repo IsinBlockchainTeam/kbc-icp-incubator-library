@@ -76,10 +76,7 @@ describe('TradeManagerService', () => {
     };
     const delegatedOrganizationIds: number[] = [1, 2];
 
-    const roleProof: RoleProof = {
-        signedProof: 'signedProof',
-        delegator: 'delegator'
-    };
+    const roleProof: RoleProof = createMock<RoleProof>();
 
     describe('Without storage driver', () => {
         beforeAll(() => {

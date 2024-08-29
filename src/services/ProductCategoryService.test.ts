@@ -15,10 +15,7 @@ describe('ProductCategoryService', () => {
 
     const productCategoryService = new ProductCategoryService(mockedProductCategoryDriver);
 
-    const roleProof: RoleProof = {
-        signedProof: 'signedProof',
-        delegator: 'delegator'
-    };
+    const roleProof: RoleProof = createMock<RoleProof>();
 
     afterAll(() => {
         jest.restoreAllMocks();

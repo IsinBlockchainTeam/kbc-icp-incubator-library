@@ -33,10 +33,7 @@ describe('EscrowManagerService', () => {
         20
     );
 
-    const roleProof: RoleProof = {
-        signedProof: 'signedProof',
-        delegator: 'delegator'
-    };
+    const roleProof: RoleProof = createMock<RoleProof>();
 
     beforeAll(() => {
         mockedEscrowManagerDriver = createMock<EscrowManagerDriver>(mockedInstance);

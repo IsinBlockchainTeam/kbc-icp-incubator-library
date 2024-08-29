@@ -3,9 +3,9 @@ import { Contract, Event } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { ethers } from 'hardhat';
 import { expect } from 'chai';
-import { KBCAccessControl } from '../typechain-types/contracts/MaterialManager';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { ContractName } from '../utils/constants';
+import { RoleProofStruct } from '../typechain-types/contracts/DelegateManager';
 
 describe('EscrowManager.sol', () => {
     let escrowManagerContract: Contract;
@@ -17,9 +17,10 @@ describe('EscrowManager.sol', () => {
     const baseFee: number = 20;
     const percentageFee: number = 1;
 
-    const roleProof: KBCAccessControl.RoleProofStruct = {
+    const roleProof: RoleProofStruct = {
         signedProof: '0x',
-        delegator: ''
+        delegator: '',
+        jwtHash: ethers.utils.formatBytes32String('jwtHash')
     };
 
     beforeEach(async () => {
