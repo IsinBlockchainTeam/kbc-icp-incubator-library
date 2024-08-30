@@ -12,6 +12,10 @@ export class DelegateManagerDriver {
         ).connect(signer);
     }
 
+    async getRevocationRegistryAddress(): Promise<string> {
+        return this._delegateManagerContract.getRevocationRegistry();
+    }
+
     async addDelegator(delegatorAddress: string): Promise<void> {
         const tx = await this._delegateManagerContract.addDelegator(delegatorAddress);
         await tx.wait();

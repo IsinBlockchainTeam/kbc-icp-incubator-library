@@ -5,6 +5,7 @@ import { RoleProof } from '../types/RoleProof';
 
 describe('DelegateManagerService', () => {
     const mockedDelegateManagerDriver = createMock<DelegateManagerDriver>({
+        getRevocationRegistryAddress: jest.fn(),
         addDelegator: jest.fn(),
         removeDelegator: jest.fn(),
         isDelegator: jest.fn(),
@@ -18,6 +19,12 @@ describe('DelegateManagerService', () => {
     beforeEach(() => jest.clearAllMocks());
 
     it.each([
+        {
+            serviceFunctionName: 'getRevocationRegistryAddress',
+            serviceFunction: () => delegatorService.getRevocationRegistryAddress(),
+            expectedMockedFunction: mockedDelegateManagerDriver.getRevocationRegistryAddress,
+            expectedMockedFunctionArgs: []
+        },
         {
             serviceFunctionName: 'addDelegator',
             serviceFunction: () => delegatorService.addDelegator('delegatorAddress'),

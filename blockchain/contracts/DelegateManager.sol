@@ -57,6 +57,10 @@ contract DelegateManager is AccessControl {
         _;
     }
 
+    function getRevocationRegistry() public view returns (RevocationRegistry) {
+        return _revocationRegistry;
+    }
+
     function addDelegator(address delegator) public onlyAdmin {
         grantRole(DELEGATOR_ROLE, delegator);
     }

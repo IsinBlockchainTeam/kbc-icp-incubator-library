@@ -65,7 +65,7 @@ serial([
     () =>
         deploy(
             ContractName.PRODUCT_CATEGORY_MANAGER,
-            ['0xcc532211B2019a41c996dFF910e66242339Ae27A'] // DelegateManager
+            ['0x3Ff0ad86d0C8A8cA2f61e1ADe53aCA15f181285d'] // DelegateManager
         )
     // () => deploy(ContractName.ENUMERABLE_TYPE_MANAGER, [[]], 'EnumerableUnitManager'),
     // async () => {

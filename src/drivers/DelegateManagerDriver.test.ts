@@ -12,15 +12,18 @@ describe('DelegateManagerDriver', () => {
     const mockedWait = jest.fn();
 
     const mockedWriteFunction = jest.fn();
+    const mockedGetRevocationRegistry = jest.fn();
     const mockedIsDelegator = jest.fn();
     const mockedHasValidRole = jest.fn();
 
     mockedWriteFunction.mockReturnValue({ wait: mockedWait });
+    mockedGetRevocationRegistry.mockReturnValue('revocationRegistryAddress');
     mockedIsDelegator.mockReturnValue(true);
     mockedHasValidRole.mockReturnValue(true);
 
     const mockedContract = createMock<DelegateManager>({
         connect: mockedDelegateManagerConnect,
+        getRevocationRegistry: mockedGetRevocationRegistry,
         addDelegator: mockedWriteFunction,
         removeDelegator: mockedWriteFunction,
         isDelegator: mockedIsDelegator,
@@ -40,6 +43,14 @@ describe('DelegateManagerDriver', () => {
             mockedSigner,
             Wallet.createRandom().address
         );
+    });
+
+    it('should get revocation registry address', async () => {
+        const revocationRegistryAddress =
+            await delegateManagerDriver.getRevocationRegistryAddress();
+
+        expect(mockedGetRevocationRegistry).toHaveBeenCalledTimes(1);
+        expect(revocationRegistryAddress).toBe('revocationRegistryAddress');
     });
 
     it('should add delegator', async () => {

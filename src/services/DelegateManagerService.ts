@@ -8,6 +8,10 @@ export class DelegateManagerService {
         this._delegateManagerDriver = delegateManagerDriver;
     }
 
+    async getRevocationRegistryAddress(): Promise<string> {
+        return this._delegateManagerDriver.getRevocationRegistryAddress();
+    }
+
     async addDelegator(delegatorAddress: string): Promise<void> {
         return this._delegateManagerDriver.addDelegator(delegatorAddress);
     }

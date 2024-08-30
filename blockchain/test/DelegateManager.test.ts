@@ -82,6 +82,10 @@ describe('DelegateManager', () => {
             };
         };
 
+        it('should return revocation registry address', async () => {
+            expect(await delegateManagerContract.getRevocationRegistry()).to.equal(revocationRegistryContractFake.address);
+        });
+
         it('should return true when caller is a delegate with a valid proof', async () => {
             const roleProof = await createRoleProof(delegate.address, 'Role1', credentialHash);
 
