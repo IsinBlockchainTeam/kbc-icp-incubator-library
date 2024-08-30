@@ -26,7 +26,12 @@ describe('TradeManager.sol', () => {
     const roleProof: RoleProofStruct = {
         signedProof: '0x',
         delegator: '',
-        delegateCredentialIdHash: ethers.utils.formatBytes32String('delegateCredentialIdHash')
+        delegateCredentialIdHash: ethers.utils.formatBytes32String('delegateCredentialIdHash'),
+        membershipProof: {
+            signedProof: '0x',
+            delegatorCredentialIdHash: ethers.utils.formatBytes32String('delegatorCredentialIdHash'),
+            issuer: ''
+        }
     };
 
     const externalUrl: string = 'https://test.com';
@@ -58,6 +63,7 @@ describe('TradeManager.sol', () => {
         await ethers.provider.send('evm_mine', [Date.now() + 10]);
         [admin, supplier, customer, commissioner, arbiter] = await ethers.getSigners();
         roleProof.delegator = admin.address;
+        roleProof.membershipProof.issuer = admin.address;
         // const EscrowManager = await ethers.getContractFactory(ContractName.ESCROW_MANAGER);
         // escrowManagerContract = await EscrowManager.deploy(Wallet.createRandom().address, 10, 1);
         // await escrowManagerContract.deployed();

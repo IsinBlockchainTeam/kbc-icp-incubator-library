@@ -20,7 +20,12 @@ describe('Trade.sol', () => {
     const roleProof: RoleProofStruct = {
         signedProof: '0x',
         delegator: '',
-        delegateCredentialIdHash: ethers.utils.formatBytes32String('delegateCredentialIdHash')
+        delegateCredentialIdHash: ethers.utils.formatBytes32String('delegateCredentialIdHash'),
+        membershipProof: {
+            signedProof: '0x',
+            delegatorCredentialIdHash: ethers.utils.formatBytes32String('delegatorCredentialIdHash'),
+            issuer: ''
+        }
     };
 
     // these contracts are used as implementation of the trade, when used as parent class
@@ -49,6 +54,7 @@ describe('Trade.sol', () => {
     before(async () => {
         [admin, supplier, customer, arbiter, commissioner] = await ethers.getSigners();
         roleProof.delegator = admin.address;
+        roleProof.membershipProof.issuer = admin.address;
     });
 
     beforeEach(async () => {

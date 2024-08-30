@@ -16,20 +16,6 @@ export class DelegateManagerDriver {
         return this._delegateManagerContract.getRevocationRegistry();
     }
 
-    async addDelegator(delegatorAddress: string): Promise<void> {
-        const tx = await this._delegateManagerContract.addDelegator(delegatorAddress);
-        await tx.wait();
-    }
-
-    async removeDelegator(delegatorAddress: string): Promise<void> {
-        const tx = await this._delegateManagerContract.removeDelegator(delegatorAddress);
-        await tx.wait();
-    }
-
-    async isDelegator(delegatorAddress: string): Promise<boolean> {
-        return this._delegateManagerContract.isDelegator(delegatorAddress);
-    }
-
     async hasValidRole(roleProof: RoleProof, role: string): Promise<boolean> {
         return this._delegateManagerContract.hasValidRole(roleProof, role);
     }

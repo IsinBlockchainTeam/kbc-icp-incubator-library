@@ -4,12 +4,12 @@ import { ContractName } from '../utils/constants';
 import { expect } from 'chai';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { FakeContract, smock } from '@defi-wonderland/smock';
-import { DelegateManager, RoleProofStruct } from '../typechain-types/contracts/DelegateManager';
+import { MembershipProofStruct, RoleProofStruct } from '../typechain-types/contracts/DelegateManager';
 
 describe('DelegateManager', () => {
     let delegateManagerContract: Contract;
     let revocationRegistryContractFake: FakeContract;
-    let admin: SignerWithAddress, delegator: SignerWithAddress, delegate: SignerWithAddress, other: SignerWithAddress;
+    let issuer: SignerWithAddress, delegator: SignerWithAddress, delegate: SignerWithAddress, other: SignerWithAddress;
 
     const domain = {
         name: 'Test Delegate Manager',
@@ -17,7 +17,13 @@ describe('DelegateManager', () => {
         chainId: 31337,
         verifyingContract: ''
     };
-    const types = {
+    const membershipTypes = {
+        Membership: [
+            { name: 'delegatorAddress', type: 'address' },
+            { name: 'delegatorCredentialIdHash', type: 'bytes32' }
+        ]
+    };
+    const roleTypes = {
         RoleDelegation: [
             { name: 'delegateAddress', type: 'address' },
             { name: 'role', type: 'string' },
@@ -26,7 +32,7 @@ describe('DelegateManager', () => {
     };
 
     before(async () => {
-        [admin, delegator, delegate, other] = await ethers.getSigners();
+        [issuer, delegator, delegate, other] = await ethers.getSigners();
     });
 
     beforeEach(async () => {
@@ -42,35 +48,33 @@ describe('DelegateManager', () => {
         expect(delegateManagerContract.address).to.properAddress;
     });
 
-    describe('Delegators management', () => {
-        it('should revert if adding a delegate when caller is not a delegator', async () => {
-            expect(await delegateManagerContract.connect(admin).isDelegator(delegator.address)).to.be.false;
-        });
-
-        it('should add a delegator, then revoke the role', async () => {
-            await delegateManagerContract.connect(admin).addDelegator(delegator.address);
-            expect(await delegateManagerContract.connect(admin).isDelegator(delegator.address)).to.be.true;
-
-            await delegateManagerContract.connect(admin).removeDelegator(delegator.address);
-            expect(await delegateManagerContract.connect(admin).isDelegator(delegator.address)).to.be.false;
-        });
-
-        it('should not be able to determine if a role is delegator if caller is not an admin', async () => {
-            await expect(delegateManagerContract.connect(other).isDelegator(delegate.address)).to.be.revertedWith(
-                'DelegateManager: Caller is not the admin'
-            );
-        });
+    it('should return revocation registry address', async () => {
+        expect(await delegateManagerContract.getRevocationRegistry()).to.equal(revocationRegistryContractFake.address);
     });
 
     describe('hasValidRole', () => {
-        const credentialHash = ethers.utils.formatBytes32String('test');
+        const delegatorCredentialIdHash = ethers.utils.formatBytes32String('delegator-credential-id-hash');
+        const delegateCredentialIdHash = ethers.utils.formatBytes32String('delegate-credential-id-hash');
 
-        beforeEach(async () => {
-            await delegateManagerContract.connect(admin).addDelegator(delegator.address);
-        });
+        const createMembershipProof = async (delegatorAddress: string, delegatorCredentialIdHash: string): Promise<MembershipProofStruct> => {
+            const signature = await issuer._signTypedData(domain, membershipTypes, {
+                delegatorAddress,
+                delegatorCredentialIdHash
+            });
+            return {
+                signedProof: signature,
+                delegatorCredentialIdHash,
+                issuer: issuer.address
+            };
+        };
 
-        const createRoleProof = async (delegateAddress: string, role: string, delegateCredentialIdHash: string): Promise<RoleProofStruct> => {
-            const signature = await delegator._signTypedData(domain, types, {
+        const createRoleProof = async (
+            delegateAddress: string,
+            role: string,
+            delegateCredentialIdHash: string,
+            membershipProof: MembershipProofStruct
+        ): Promise<RoleProofStruct> => {
+            const signature = await delegator._signTypedData(domain, roleTypes, {
                 delegateAddress,
                 role,
                 delegateCredentialIdHash
@@ -78,72 +82,118 @@ describe('DelegateManager', () => {
             return {
                 signedProof: signature,
                 delegator: delegator.address,
-                delegateCredentialIdHash
+                delegateCredentialIdHash,
+                membershipProof: membershipProof
             };
         };
 
-        it('should return revocation registry address', async () => {
-            expect(await delegateManagerContract.getRevocationRegistry()).to.equal(revocationRegistryContractFake.address);
-        });
-
-        it('should return true when caller is a delegate with a valid proof', async () => {
-            const roleProof = await createRoleProof(delegate.address, 'Role1', credentialHash);
+        it('should return true when caller is a delegate with a valid proof from a valid delegator', async () => {
+            const membershipProof = await createMembershipProof(delegator.address, delegatorCredentialIdHash);
+            const roleProof = await createRoleProof(delegate.address, 'Role1', delegateCredentialIdHash, membershipProof);
 
             expect(await delegateManagerContract.connect(delegate).hasValidRole(roleProof, 'Role1')).to.be.true;
         });
 
-        it('should return false if delegate address is different from the one in the signature', async () => {
-            const roleProof = await createRoleProof(other.address, 'Role1', credentialHash);
+        describe('role proof failure cases', () => {
+            let membershipProof: MembershipProofStruct;
 
-            expect(await delegateManagerContract.connect(delegate).hasValidRole(roleProof, 'Role1')).to.be.false;
-        });
-
-        it('should return false if claimed role is different from the one in the signature', async () => {
-            const roleProof = await createRoleProof(other.address, 'Role42', credentialHash);
-
-            expect(await delegateManagerContract.connect(delegate).hasValidRole(roleProof, 'Role1')).to.be.false;
-        });
-
-        it('should return false if claimed jwt hash is different from the one in the signature', async () => {
-            const roleProof = await createRoleProof(other.address, 'Role1', ethers.utils.formatBytes32String('different'));
-
-            expect(await delegateManagerContract.connect(delegate).hasValidRole(roleProof, 'Role1')).to.be.false;
-        });
-
-        it('should return false if signer is not the delegator', async () => {
-            const signature = await other._signTypedData(domain, types, {
-                delegateAddress: delegate.address,
-                role: 'Role1',
-                delegateCredentialIdHash: credentialHash
+            before(async () => {
+                membershipProof = await createMembershipProof(delegator.address, delegatorCredentialIdHash);
             });
-            const roleProof: RoleProofStruct = {
-                signedProof: signature,
-                delegator: other.address,
-                delegateCredentialIdHash: credentialHash
-            };
 
-            expect(await delegateManagerContract.connect(delegate).hasValidRole(roleProof, 'Role1')).to.be.false;
+            it('should return false if delegate address is different from the one in the signature', async () => {
+                const roleProof = await createRoleProof(other.address, 'Role1', delegateCredentialIdHash, membershipProof);
+
+                expect(await delegateManagerContract.connect(delegate).hasValidRole(roleProof, 'Role1')).to.be.false;
+            });
+
+            it('should return false if claimed role is different from the one in the signature', async () => {
+                const roleProof = await createRoleProof(other.address, 'Role42', delegateCredentialIdHash, membershipProof);
+
+                expect(await delegateManagerContract.connect(delegate).hasValidRole(roleProof, 'Role1')).to.be.false;
+            });
+
+            it('should return false if claimed delegateCredentialIdHash hash is different from the one in the signature', async () => {
+                const roleProof = await createRoleProof(other.address, 'Role1', ethers.utils.formatBytes32String('different'), membershipProof);
+
+                expect(await delegateManagerContract.connect(delegate).hasValidRole(roleProof, 'Role1')).to.be.false;
+            });
+
+            it('should return false if signer is not the delegator', async () => {
+                const signature = await other._signTypedData(domain, roleTypes, {
+                    delegateAddress: delegate.address,
+                    role: 'Role1',
+                    delegateCredentialIdHash: delegateCredentialIdHash
+                });
+                const roleProof: RoleProofStruct = {
+                    signedProof: signature,
+                    delegator: other.address,
+                    delegateCredentialIdHash: delegateCredentialIdHash,
+                    membershipProof
+                };
+
+                expect(await delegateManagerContract.connect(delegate).hasValidRole(roleProof, 'Role1')).to.be.false;
+            });
+
+            it('should return false if caller is not the delegate', async () => {
+                const roleProof = await createRoleProof(delegate.address, 'Role1', delegateCredentialIdHash, membershipProof);
+
+                expect(await delegateManagerContract.connect(other).hasValidRole(roleProof, 'Role1')).to.be.false;
+            });
+
+            it("should return false if delegate's credential was revoked", async () => {
+                revocationRegistryContractFake.revoked.returns(42);
+                const roleProof = await createRoleProof(other.address, 'Role1', delegateCredentialIdHash, membershipProof);
+
+                expect(await delegateManagerContract.connect(delegate).hasValidRole(roleProof, 'Role1')).to.be.false;
+            });
         });
 
-        it('should return false if delegator is not a valid delegator', async () => {
-            await delegateManagerContract.connect(admin).removeDelegator(delegator.address);
-            expect(await delegateManagerContract.connect(admin).isDelegator(delegator.address)).to.be.false;
-            const roleProof = await createRoleProof(other.address, 'Role1', credentialHash);
+        describe('membership proof failure cases', () => {
+            it('should return false if member address is different from the one in the signature', async () => {
+                const membershipProof = await createMembershipProof(other.address, delegatorCredentialIdHash);
+                const roleProof = await createRoleProof(delegate.address, 'Role1', delegateCredentialIdHash, membershipProof);
 
-            expect(await delegateManagerContract.connect(delegate).hasValidRole(roleProof, 'Role1')).to.be.false;
-        });
+                expect(await delegateManagerContract.connect(delegate).hasValidRole(roleProof, 'Role1')).to.be.false;
+            });
 
-        it('should return false if caller is not the delegate', async () => {
-            const roleProof = await createRoleProof(delegate.address, 'Role1', credentialHash);
+            it('should return false if memberCredentialIdHash is different from the one in the signature', async () => {
+                const signature = await other._signTypedData(domain, membershipTypes, {
+                    delegatorAddress: delegator.address,
+                    delegatorCredentialIdHash: ethers.utils.formatBytes32String('different')
+                });
+                const membershipProof: MembershipProofStruct = {
+                    signedProof: signature,
+                    delegatorCredentialIdHash: delegatorCredentialIdHash,
+                    issuer: issuer.address
+                };
+                const roleProof = await createRoleProof(delegate.address, 'Role1', delegateCredentialIdHash, membershipProof);
 
-            expect(await delegateManagerContract.connect(other).hasValidRole(roleProof, 'Role1')).to.be.false;
-        });
+                expect(await delegateManagerContract.connect(delegate).hasValidRole(roleProof, 'Role1')).to.be.false;
+            });
 
-        it("should return false if delegate's credential was revoked", async () => {
-            revocationRegistryContractFake.revoked.returns(42);
-            const roleProof = await createRoleProof(other.address, 'Role1', credentialHash);
+            it('should return false if signer is not the issuer', async () => {
+                const signature = await other._signTypedData(domain, membershipTypes, {
+                    delegatorAddress: delegator.address,
+                    delegatorCredentialIdHash: delegatorCredentialIdHash
+                });
+                const membershipProof: MembershipProofStruct = {
+                    signedProof: signature,
+                    delegatorCredentialIdHash: delegatorCredentialIdHash,
+                    issuer: issuer.address
+                };
+                const roleProof = await createRoleProof(delegate.address, 'Role1', delegateCredentialIdHash, membershipProof);
 
-            expect(await delegateManagerContract.connect(delegate).hasValidRole(roleProof, 'Role1')).to.be.false;
+                expect(await delegateManagerContract.connect(delegate).hasValidRole(roleProof, 'Role1')).to.be.false;
+            });
+
+            it('should return false if membership credential was revoked', async () => {
+                revocationRegistryContractFake.revoked.returns(42);
+                const membershipProof = await createMembershipProof(delegator.address, delegatorCredentialIdHash);
+                const roleProof = await createRoleProof(delegate.address, 'Role1', delegateCredentialIdHash, membershipProof);
+
+                expect(await delegateManagerContract.connect(delegate).hasValidRole(roleProof, 'Role1')).to.be.false;
+            });
         });
     });
 });

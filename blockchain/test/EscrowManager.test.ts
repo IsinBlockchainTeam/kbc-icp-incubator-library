@@ -20,13 +20,19 @@ describe('EscrowManager.sol', () => {
     const roleProof: RoleProofStruct = {
         signedProof: '0x',
         delegator: '',
-        delegateCredentialIdHash: ethers.utils.formatBytes32String('delegateCredentialIdHash')
+        delegateCredentialIdHash: ethers.utils.formatBytes32String('delegateCredentialIdHash'),
+        membershipProof: {
+            signedProof: '0x',
+            delegatorCredentialIdHash: ethers.utils.formatBytes32String('delegatorCredentialIdHash'),
+            issuer: ''
+        }
     };
 
     beforeEach(async () => {
         [admin, payee, payer1, other, feeRecipient] = await ethers.getSigners();
 
         roleProof.delegator = admin.address;
+        roleProof.membershipProof.issuer = admin.address;
         delegateManagerContractFake = await smock.fake(ContractName.DELEGATE_MANAGER);
         delegateManagerContractFake.hasValidRole.returns(true);
         const EscrowManager = await ethers.getContractFactory('EscrowManager');

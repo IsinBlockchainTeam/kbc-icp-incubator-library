@@ -6,9 +6,6 @@ import { RoleProof } from '../types/RoleProof';
 describe('DelegateManagerService', () => {
     const mockedDelegateManagerDriver = createMock<DelegateManagerDriver>({
         getRevocationRegistryAddress: jest.fn(),
-        addDelegator: jest.fn(),
-        removeDelegator: jest.fn(),
-        isDelegator: jest.fn(),
         hasValidRole: jest.fn()
     });
 
@@ -24,24 +21,6 @@ describe('DelegateManagerService', () => {
             serviceFunction: () => delegatorService.getRevocationRegistryAddress(),
             expectedMockedFunction: mockedDelegateManagerDriver.getRevocationRegistryAddress,
             expectedMockedFunctionArgs: []
-        },
-        {
-            serviceFunctionName: 'addDelegator',
-            serviceFunction: () => delegatorService.addDelegator('delegatorAddress'),
-            expectedMockedFunction: mockedDelegateManagerDriver.addDelegator,
-            expectedMockedFunctionArgs: ['delegatorAddress']
-        },
-        {
-            serviceFunctionName: 'removeDelegator',
-            serviceFunction: () => delegatorService.removeDelegator('delegatorAddress'),
-            expectedMockedFunction: mockedDelegateManagerDriver.removeDelegator,
-            expectedMockedFunctionArgs: ['delegatorAddress']
-        },
-        {
-            serviceFunctionName: 'isDelegator',
-            serviceFunction: () => delegatorService.isDelegator('delegatorAddress'),
-            expectedMockedFunction: mockedDelegateManagerDriver.isDelegator,
-            expectedMockedFunctionArgs: ['delegatorAddress']
         },
         {
             serviceFunctionName: 'hasValidRole',

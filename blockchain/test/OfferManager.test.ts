@@ -17,13 +17,19 @@ describe('OfferManager', () => {
     const roleProof: RoleProofStruct = {
         signedProof: '0x',
         delegator: '',
-        delegateCredentialIdHash: ethers.utils.formatBytes32String('delegateCredentialIdHash')
+        delegateCredentialIdHash: ethers.utils.formatBytes32String('delegateCredentialIdHash'),
+        membershipProof: {
+            signedProof: '0x',
+            delegatorCredentialIdHash: ethers.utils.formatBytes32String('delegatorCredentialIdHash'),
+            issuer: ''
+        }
     };
 
     beforeEach(async () => {
         [owner, admin, company1] = await ethers.getSigners();
 
         roleProof.delegator = owner.address;
+        roleProof.membershipProof.issuer = owner.address;
         delegateManagerContractFake = await smock.fake(ContractName.DELEGATE_MANAGER);
         delegateManagerContractFake.hasValidRole.returns(true);
         productCategoryManagerFake = await smock.fake(ContractName.PRODUCT_CATEGORY_MANAGER);

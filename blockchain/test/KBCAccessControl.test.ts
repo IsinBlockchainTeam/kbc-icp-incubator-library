@@ -3,14 +3,14 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { ethers } from 'hardhat';
 import { ContractName } from '../utils/constants';
 import { expect } from 'chai';
-import { RoleProofStruct } from '../typechain-types/contracts/DelegateManager';
+import { MembershipProofStruct, RoleProofStruct } from '../typechain-types/contracts/DelegateManager';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 
 describe('KBCAccessControl', () => {
     let kbcAccessControlContract: Contract;
     let delegateManagerContract: Contract;
     let revocationRegistryContractFake: FakeContract;
-    let admin: SignerWithAddress, delegator: SignerWithAddress, delegate: SignerWithAddress, other: SignerWithAddress;
+    let issuer: SignerWithAddress, delegator: SignerWithAddress, delegate: SignerWithAddress, other: SignerWithAddress;
 
     const domain = {
         name: 'Test Delegate Manager',
@@ -18,7 +18,13 @@ describe('KBCAccessControl', () => {
         chainId: 31337,
         verifyingContract: ''
     };
-    const types = {
+    const membershipTypes = {
+        Membership: [
+            { name: 'delegatorAddress', type: 'address' },
+            { name: 'delegatorCredentialIdHash', type: 'bytes32' }
+        ]
+    };
+    const roleTypes = {
         RoleDelegation: [
             { name: 'delegateAddress', type: 'address' },
             { name: 'role', type: 'string' },
@@ -32,21 +38,30 @@ describe('KBCAccessControl', () => {
         SIGNER = 'Signer'
     }
 
-    const credentialHash = ethers.utils.formatBytes32String('test');
+    const delegatorCredentialIdHash = ethers.utils.formatBytes32String('delegator-credential-id-hash');
+    const delegateCredentialIdHash = ethers.utils.formatBytes32String('delegate-credential-id-hash');
 
     const checkRole = async (neededRole: ROLES, actualRole: ROLES) => {
-        await delegateManagerContract.connect(admin).addDelegator(delegator.address);
+        const membershipSignature = await issuer._signTypedData(domain, membershipTypes, {
+            delegatorAddress: delegator.address,
+            delegatorCredentialIdHash: delegatorCredentialIdHash
+        });
+        const membershipProof: MembershipProofStruct = {
+            signedProof: membershipSignature,
+            delegatorCredentialIdHash: delegatorCredentialIdHash,
+            issuer: issuer.address
+        };
 
-        const message = {
+        const roleSignature = await delegator._signTypedData(domain, roleTypes, {
             delegateAddress: delegate.address,
             role: actualRole,
-            delegateCredentialIdHash: credentialHash
-        };
-        const signature = await delegator._signTypedData(domain, types, message);
+            delegateCredentialIdHash: delegateCredentialIdHash
+        });
         const roleProof: RoleProofStruct = {
-            signedProof: signature,
+            signedProof: roleSignature,
             delegator: delegator.address,
-            delegateCredentialIdHash: credentialHash
+            delegateCredentialIdHash: delegateCredentialIdHash,
+            membershipProof
         };
         switch (neededRole) {
             case ROLES.VIEWER:
@@ -59,7 +74,7 @@ describe('KBCAccessControl', () => {
     };
 
     before(async () => {
-        [admin, delegator, delegate, other] = await ethers.getSigners();
+        [issuer, delegator, delegate, other] = await ethers.getSigners();
     });
 
     beforeEach(async () => {
