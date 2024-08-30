@@ -1,13 +1,11 @@
 import { CredentialRevocationDriver, METHOD_NAME } from './CredentialRevocationDriver';
-import { BigNumber, BytesLike, Signer, Wallet } from 'ethers';
-import { RoleProof } from '../types/RoleProof';
+import { BigNumber, BytesLike, Signer } from 'ethers';
 import { createMock } from 'ts-auto-mock';
 import { RevocationRegistry, RevocationRegistry__factory } from '../smart-contracts';
 import { jwtDecode } from 'jwt-decode';
 import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 
 jest.mock('jwt-decode');
-jest.mock('ethers/lib/utils');
 
 describe('CredentialRevocationDriver', () => {
     let driver: CredentialRevocationDriver;
@@ -45,20 +43,28 @@ describe('CredentialRevocationDriver', () => {
         jest.clearAllMocks();
         mockRevoked.mockReturnValue(BigNumber.from(0));
         (jwtDecode as jest.Mock).mockReturnValue({
+            id: '123',
             credentialStatus: {
                 id: 'hardhat:' + mockedContract.address,
                 type: METHOD_NAME
             },
             iss: 'did:ethr:dev:0x123'
         });
-        (toUtf8Bytes as jest.Mock).mockReturnValue('bytes' as BytesLike);
-        (keccak256 as jest.Mock).mockReturnValue('hash');
+        mockWait.mockReturnValue({
+            events: [
+                {
+                    event: 'Revoked',
+                    args: ['0x123', '0x456']
+                }
+            ]
+        });
     });
 
     describe('revoke', () => {
         it('should revoke a credential', async () => {
-            await driver.revoke('jwt');
+            const result = await driver.revoke('jwt');
 
+            expect(result).toBe('0x456');
             expect(jwtDecode).toHaveBeenCalledTimes(1);
             expect(jwtDecode).toHaveBeenCalledWith('jwt');
             expect(RevocationRegistry__factory.connect).toHaveBeenCalledTimes(1);
@@ -67,13 +73,18 @@ describe('CredentialRevocationDriver', () => {
                 mockedSigner.provider!
             );
             expect(mockedRevocationRegistryConnect).toHaveBeenCalledTimes(1);
-            expect(toUtf8Bytes).toHaveBeenCalledTimes(1);
-            expect(toUtf8Bytes).toHaveBeenCalledWith('jwt');
-            expect(keccak256).toHaveBeenCalledTimes(1);
-            expect(keccak256).toHaveBeenCalledWith('bytes');
             expect(mockRevoke).toHaveBeenCalledTimes(1);
-            expect(mockRevoke).toHaveBeenCalledWith('hash');
+            expect(mockRevoke).toHaveBeenCalledWith('123');
             expect(mockWait).toHaveBeenCalledTimes(1);
+        });
+
+        it('should throw an error if no events are found', async () => {
+            mockWait.mockReturnValueOnce({
+                events: null
+            });
+            await expect(driver.revoke('jwt')).rejects.toThrow(
+                'Error during credential revocation, no events found'
+            );
         });
     });
 
@@ -90,10 +101,6 @@ describe('CredentialRevocationDriver', () => {
                 mockedSigner.provider!
             );
             expect(mockedRevocationRegistryConnect).toHaveBeenCalledTimes(1);
-            expect(toUtf8Bytes).toHaveBeenCalledTimes(1);
-            expect(toUtf8Bytes).toHaveBeenCalledWith('jwt');
-            expect(keccak256).toHaveBeenCalledTimes(1);
-            expect(keccak256).toHaveBeenCalledWith('bytes');
             expect(mockRevoked).toHaveBeenCalledTimes(1);
         });
 
@@ -110,6 +117,7 @@ describe('CredentialRevocationDriver', () => {
         it('should use statusEntry from vc if credentialStatus is missing', async () => {
             (jwtDecode as jest.Mock).mockReturnValue({
                 vc: {
+                    id: '123',
                     credentialStatus: {
                         id: 'hardhat:' + mockedContract.address,
                         type: METHOD_NAME
@@ -150,6 +158,49 @@ describe('CredentialRevocationDriver', () => {
             });
             await expect(driver.revoke('jwt')).rejects.toThrow(
                 'Credential not revocable: malformed "id" field in "credentialStatus" entry'
+            );
+        });
+    });
+
+    describe('getCredentialId', () => {
+        it.each([
+            {
+                id: 1
+            },
+            {
+                vc: { id: 1 }
+            },
+            {
+                jti: 1
+            },
+            {
+                vc: { jti: 1 }
+            }
+        ])('should get credential id from jwt', async (jwt) => {
+            (jwtDecode as jest.Mock).mockReturnValue({
+                ...jwt,
+                credentialStatus: {
+                    id: 'hardhat:' + mockedContract.address,
+                    type: METHOD_NAME
+                },
+                iss: 'did:ethr:dev:0x123'
+            });
+            await driver.revoke(JSON.stringify(jwt));
+
+            expect(mockRevoke).toHaveBeenCalledTimes(1);
+            expect(mockRevoke).toHaveBeenCalledWith(1);
+        });
+
+        it('should throw error when credentialId is not found', async () => {
+            (jwtDecode as jest.Mock).mockReturnValue({
+                credentialStatus: {
+                    id: 'hardhat:' + mockedContract.address,
+                    type: METHOD_NAME
+                },
+                iss: 'did:ethr:dev:0x123'
+            });
+            await expect(driver.revoke('jwt')).rejects.toThrow(
+                'Credential not revocable: credential is missing "id" property'
             );
         });
     });

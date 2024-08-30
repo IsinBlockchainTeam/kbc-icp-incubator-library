@@ -61,4 +61,10 @@ describe('RevocationRegistry', () => {
         expect(await revocationRegistryContract.revoked(signer1.address, digest2)).not.to.equal(0);
         expect(await revocationRegistryContract.revoked(signer2.address, digest2)).to.equal(0);
     });
+
+    it('should revoke', async () => {
+        const jwt = '0x36004afc64c313d312f3e7d4acbbee78b9a17f842d2cb4032b4ed0b7d713790f';
+        await revocationRegistryContract.connect(signer1).revoke(jwt);
+        expect(await revocationRegistryContract.revoked(signer1.address, jwt)).not.to.equal(0);
+    });
 });

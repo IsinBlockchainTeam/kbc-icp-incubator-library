@@ -54,12 +54,19 @@ serial([
     //         await tx.wait();
     //     }
     // },
-    // () => deploy(ContractName.DELEGATE_MANAGER, ['KBC Delegate Manager', '1.0.1', 222])
+    // () => deploy(ContractName.REVOCATION_REGISTRY, [])
     // () =>
-    //     deploy(
-    //         ContractName.PRODUCT_CATEGORY_MANAGER,
-    //         ['0x9169B151C0C32c6Ab49Aa2A55a8a6c07aB04f1bb'] // DelegateManager
-    //     ),
+    //     deploy(ContractName.DELEGATE_MANAGER, [
+    //         'KBC Delegate Manager',
+    //         '1.0.1',
+    //         222,
+    //         '0xF3082fe94088724aFA92c23052a35dcC65A9FB88' // RevocationRegistry
+    //     ])
+    () =>
+        deploy(
+            ContractName.PRODUCT_CATEGORY_MANAGER,
+            ['0xcc532211B2019a41c996dFF910e66242339Ae27A'] // DelegateManager
+        )
     // () => deploy(ContractName.ENUMERABLE_TYPE_MANAGER, [[]], 'EnumerableUnitManager'),
     // async () => {
     //     const enums: string[] = ['BG - Bags', 'KGM - Kilograms', 'H87 - Pieces'];
@@ -71,8 +78,8 @@ serial([
     // },
     // () =>
     //     deploy(ContractName.MATERIAL_MANAGER, [
-    //         '0x9169B151C0C32c6Ab49Aa2A55a8a6c07aB04f1bb', // DelegateManager
-    //         '0x705321A0E87a6E952712374302E8bDe3623B60b9' // ProductCategoryManager
+    //         '0x015413b099806c9a8B7C6d9b8D6Aaa9EAd3d5A7A', // DelegateManager
+    //         '0x00A06eCE165D5Dee726c5E156A1073B6ecAE504D' // ProductCategoryManager
     //     ])
     // () =>
     //     deploy(ContractName.DOCUMENT_MANAGER, [
@@ -116,8 +123,7 @@ serial([
     // () => deploy(
     //     ContractName.MY_TOKEN, [10000],
     // ),
-    // () => deploy(ContractName.ETHEREUM_DID_REGISTRY, []),
-    () => deploy(ContractName.REVOCATION_REGISTRY, [])
+    // () => deploy(ContractName.ETHEREUM_DID_REGISTRY, [])
     // () => deploy(
     //     ContractName.ESCROW, [
     //         '0x30054880e4E2fA1082C1976cA5547cC3bd185c11', // ContractsOwner

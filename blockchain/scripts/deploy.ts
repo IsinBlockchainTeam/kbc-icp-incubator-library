@@ -64,7 +64,8 @@ serial([
             await tx.wait();
         }
     },
-    () => deploy(ContractName.DELEGATE_MANAGER, ['KBC Delegate Manager', '1.0.1', 31337]),
+    () => deploy(ContractName.REVOCATION_REGISTRY, []),
+    () => deploy(ContractName.DELEGATE_MANAGER, ['KBC Delegate Manager', '1.0.1', 31337, contractMap.get(ContractName.REVOCATION_REGISTRY)!.address]),
     () => deploy(ContractName.PRODUCT_CATEGORY_MANAGER, [contractMap.get(ContractName.DELEGATE_MANAGER)!.address]),
     () =>
         deploy(ContractName.MATERIAL_MANAGER, [

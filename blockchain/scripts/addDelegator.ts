@@ -16,4 +16,4 @@ const addDelegator = async (delegatorAddress: string, delegateManagerAddress: st
     console.log(`Delegator ${delegatorAddress} added to DelegateManager ${delegateManagerAddress}`);
 };
 
-addDelegator('0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123', '0x037444C45ce591C7d9c598E49C5ED3AA1f8f4e3f');
+addDelegator('0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123', '0xcc532211B2019a41c996dFF910e66242339Ae27A');

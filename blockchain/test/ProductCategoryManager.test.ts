@@ -15,7 +15,7 @@ describe('ProductCategoryManager', () => {
     const roleProof: RoleProofStruct = {
         signedProof: '0x',
         delegator: '',
-        jwtHash: ethers.utils.formatBytes32String('jwtHash')
+        delegateCredentialIdHash: ethers.utils.formatBytes32String('delegateCredentialIdHash')
     };
 
     beforeEach(async () => {

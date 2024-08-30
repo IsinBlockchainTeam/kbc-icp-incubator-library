@@ -8,7 +8,7 @@ import "./RevocationRegistry.sol";
 struct RoleProof {
     bytes signedProof;
     address delegator;
-    bytes32 jwtHash;
+    bytes32 delegateCredentialIdHash;
 }
 
 contract DelegateManager is AccessControl {
@@ -21,7 +21,7 @@ contract DelegateManager is AccessControl {
     bytes32 public immutable domainSeparator;
 
     // The EIP-712 type hash for the RoleDelegation struct
-    bytes32 public constant ROLE_DELEGATION_TYPEHASH = keccak256("RoleDelegation(address delegateAddress,string role,bytes32 jwtHash)");
+    bytes32 public constant ROLE_DELEGATION_TYPEHASH = keccak256("RoleDelegation(address delegateAddress,string role,bytes32 delegateCredentialIdHash)");
 
     RevocationRegistry private _revocationRegistry;
 
@@ -69,34 +69,9 @@ contract DelegateManager is AccessControl {
         return hasRole(DELEGATOR_ROLE, delegator);
     }
 
-//    function addDelegate(address delegate) public onlyDelegator {
-//        _delegates[_msgSender()].push(delegate);
-//    }
-//
-//    function removeDelegate(address delegate) public onlyDelegator {
-//        address[] storage delegates = _delegates[_msgSender()];
-//        for (uint i = 0; i < delegates.length; i++) {
-//            if (delegates[i] == delegate) {
-//                delegates[i] = delegates[delegates.length - 1];
-//                delegates.pop();
-//                break;
-//            }
-//        }
-//    }
-//
-//    function isDelegate(address delegate) public view returns (bool) {
-//        address[] storage delegates = _delegates[_msgSender()];
-//        for (uint i = 0; i < delegates.length; i++) {
-//            if (delegates[i] == delegate) {
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
-
     function hasValidRole(RoleProof memory roleProof, string memory role) public view returns (bool) {
         address delegate = tx.origin;
-        bytes32 structHash = keccak256(abi.encode(ROLE_DELEGATION_TYPEHASH, delegate, keccak256(bytes(role)), roleProof.jwtHash));
+        bytes32 structHash = keccak256(abi.encode(ROLE_DELEGATION_TYPEHASH, delegate, keccak256(bytes(role)), roleProof.delegateCredentialIdHash));
         bytes32 hash = keccak256(abi.encodePacked("\x19\x01", domainSeparator, structHash));
         address signer = hash.recover(roleProof.signedProof);
 
@@ -108,17 +83,9 @@ contract DelegateManager is AccessControl {
         if(!hasRole(DELEGATOR_ROLE, roleProof.delegator)) {
             return false;
         }
-//        address[] storage delegates = _delegates[signer];
-//        for (uint i = 0; i < delegates.length; i++) {
-//            if (delegates[i] == delegate) {
-//                return true;
-//            }
-//        }
-//        // If the delegate is not part of the delegator's delegates, they are not a valid delegate
-//        return false;
 
         // If the credential has been revoked, the delegate is not valid
-        if(_revocationRegistry.revoked(signer, roleProof.jwtHash) != 0) {
+        if(_revocationRegistry.revoked(signer, roleProof.delegateCredentialIdHash) != 0) {
             return false;
         }
 

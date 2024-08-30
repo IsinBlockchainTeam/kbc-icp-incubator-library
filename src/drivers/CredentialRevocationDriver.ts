@@ -1,7 +1,6 @@
-import { BigNumber, Signer } from 'ethers';
+import { BigNumber, Event, Signer } from 'ethers';
 import { jwtDecode } from 'jwt-decode';
 import { RevocationRegistry__factory } from '../smart-contracts';
-import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 import { CredentialStatus } from '../types/CredentialStatus';
 
 export interface StatusEntry {
@@ -24,6 +23,17 @@ export class CredentialRevocationDriver {
 
     constructor(signer: Signer) {
         this.signer = signer;
+    }
+
+    private getCredentialId(jwt: JWTDecodedExtended): string {
+        let credentialId = jwt.id;
+        if (!credentialId && jwt.vc) credentialId = jwt.vc.id;
+        if (!credentialId) credentialId = jwt.jti;
+        if (!credentialId && jwt.vc) credentialId = jwt.vc.jti;
+        if (!credentialId)
+            throw new Error('Credential not revocable: credential is missing "id" property');
+
+        return credentialId;
     }
 
     private async getRevocationRegistry(jwt: JWTDecodedExtended) {
@@ -54,13 +64,18 @@ export class CredentialRevocationDriver {
         );
     }
 
-    async revoke(jwt: string): Promise<void> {
+    async revoke(jwt: string): Promise<string> {
         const decoded = jwtDecode(jwt) as JWTDecodedExtended;
         const revocationRegistry = await this.getRevocationRegistry(decoded);
-        const hash = keccak256(toUtf8Bytes(jwt));
+        const id = this.getCredentialId(decoded);
 
-        const tx = await revocationRegistry.revoke(hash);
-        await tx.wait();
+        const tx: any = await revocationRegistry.revoke(id);
+        const { events } = await tx.wait();
+
+        if (!events) {
+            throw new Error('Error during credential revocation, no events found');
+        }
+        return events.find((event: Event) => event.event === 'Revoked').args[1];
     }
 
     async revoked(jwt: string): Promise<CredentialStatus> {
@@ -68,9 +83,10 @@ export class CredentialRevocationDriver {
         const revocationRegistry = await this.getRevocationRegistry(decoded);
         const issuerDid = decoded.iss;
         const issuer = issuerDid.split(':')[issuerDid.split(':').length - 1];
-        const hash = keccak256(toUtf8Bytes(jwt));
+        const id = this.getCredentialId(decoded);
+        // const hash = keccak256(toUtf8Bytes(id));
 
-        const result: BigNumber = await revocationRegistry.revoked(issuer, hash);
+        const result: BigNumber = await revocationRegistry.revoked(issuer, id);
         const blockNumber = result.toNumber();
         return blockNumber === 0 ? { revoked: false } : { revoked: true, blockNumber };
     }

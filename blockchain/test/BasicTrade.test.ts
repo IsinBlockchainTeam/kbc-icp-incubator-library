@@ -19,7 +19,7 @@ describe('BasicTrade.sol', () => {
     const roleProof: RoleProofStruct = {
         signedProof: '0x',
         delegator: '',
-        jwtHash: ethers.utils.formatBytes32String('jwtHash')
+        delegateCredentialIdHash: ethers.utils.formatBytes32String('delegateCredentialIdHash')
     };
 
     let basicTradeContract: Contract;

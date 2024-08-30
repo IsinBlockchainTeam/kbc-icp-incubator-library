@@ -22,7 +22,7 @@ describe('KBCAccessControl', () => {
         RoleDelegation: [
             { name: 'delegateAddress', type: 'address' },
             { name: 'role', type: 'string' },
-            { name: 'jwtHash', type: 'bytes32' }
+            { name: 'delegateCredentialIdHash', type: 'bytes32' }
         ]
     };
 
@@ -40,13 +40,13 @@ describe('KBCAccessControl', () => {
         const message = {
             delegateAddress: delegate.address,
             role: actualRole,
-            jwtHash: credentialHash
+            delegateCredentialIdHash: credentialHash
         };
         const signature = await delegator._signTypedData(domain, types, message);
         const roleProof: RoleProofStruct = {
             signedProof: signature,
             delegator: delegator.address,
-            jwtHash: credentialHash
+            delegateCredentialIdHash: credentialHash
         };
         switch (neededRole) {
             case ROLES.VIEWER:

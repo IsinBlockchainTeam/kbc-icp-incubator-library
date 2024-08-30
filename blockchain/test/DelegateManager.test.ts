@@ -21,7 +21,7 @@ describe('DelegateManager', () => {
         RoleDelegation: [
             { name: 'delegateAddress', type: 'address' },
             { name: 'role', type: 'string' },
-            { name: 'jwtHash', type: 'bytes32' }
+            { name: 'delegateCredentialIdHash', type: 'bytes32' }
         ]
     };
 
@@ -69,16 +69,16 @@ describe('DelegateManager', () => {
             await delegateManagerContract.connect(admin).addDelegator(delegator.address);
         });
 
-        const createRoleProof = async (delegateAddress: string, role: string, delegateCredentialHash: string): Promise<RoleProofStruct> => {
+        const createRoleProof = async (delegateAddress: string, role: string, delegateCredentialIdHash: string): Promise<RoleProofStruct> => {
             const signature = await delegator._signTypedData(domain, types, {
                 delegateAddress,
                 role,
-                jwtHash: credentialHash
+                delegateCredentialIdHash
             });
             return {
                 signedProof: signature,
                 delegator: delegator.address,
-                jwtHash: credentialHash
+                delegateCredentialIdHash
             };
         };
 
@@ -110,12 +110,12 @@ describe('DelegateManager', () => {
             const signature = await other._signTypedData(domain, types, {
                 delegateAddress: delegate.address,
                 role: 'Role1',
-                jwtHash: credentialHash
+                delegateCredentialIdHash: credentialHash
             });
             const roleProof: RoleProofStruct = {
                 signedProof: signature,
                 delegator: other.address,
-                jwtHash: credentialHash
+                delegateCredentialIdHash: credentialHash
             };
 
             expect(await delegateManagerContract.connect(delegate).hasValidRole(roleProof, 'Role1')).to.be.false;

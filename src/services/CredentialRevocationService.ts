@@ -8,7 +8,7 @@ export class CredentialRevocationService {
         this._driver = driver;
     }
 
-    async revoke(jwt: string): Promise<void> {
+    async revoke(jwt: string): Promise<string> {
         return this._driver.revoke(jwt);
     }
 
