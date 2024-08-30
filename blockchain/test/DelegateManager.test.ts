@@ -194,6 +194,21 @@ describe('DelegateManager', () => {
 
                 expect(await delegateManagerContract.connect(delegate).hasValidRole(roleProof, 'Role1')).to.be.false;
             });
+
+            it('should fail if issuer is not the contract owner', async () => {
+                const signature = await other._signTypedData(domain, membershipTypes, {
+                    delegatorAddress: delegator.address,
+                    delegatorCredentialIdHash: delegatorCredentialIdHash
+                });
+                const membershipProof: MembershipProofStruct = {
+                    signedProof: signature,
+                    delegatorCredentialIdHash: delegatorCredentialIdHash,
+                    issuer: other.address
+                };
+                const roleProof = await createRoleProof(delegate.address, 'Role1', delegateCredentialIdHash, membershipProof);
+
+                expect(await delegateManagerContract.connect(delegate).hasValidRole(roleProof, 'Role1')).to.be.false;
+            });
         });
     });
 });

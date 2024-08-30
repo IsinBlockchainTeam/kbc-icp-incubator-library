@@ -47,9 +47,12 @@ contract DelegateManager {
 
     mapping(address => address[]) private _delegates;
 
+    address private _owner;
+
     constructor(string memory name, string memory version, uint256 chainId, address revocationRegistryAddress) {
         require(revocationRegistryAddress != address(0), "DelegateManager: RevocationRegistry address is the zero address");
 
+        _owner = msg.sender;
         domainSeparator = keccak256(
             abi.encode(
                 keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
@@ -92,6 +95,10 @@ contract DelegateManager {
         }
         // If the delegator credential has been revoked, the delegator is not valid and therefore the delegate too
         if(_revocationRegistry.revoked(membershipSigner, membershipProof.delegatorCredentialIdHash) != 0) {
+            return false;
+        }
+        // If the issuer is not the owner, the delegate is not authorized
+        if(membershipProof.issuer != _owner) {
             return false;
         }
 
