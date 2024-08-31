@@ -21,14 +21,16 @@ describe('KBCAccessControl', () => {
     const membershipTypes = {
         Membership: [
             { name: 'delegatorAddress', type: 'address' },
-            { name: 'delegatorCredentialIdHash', type: 'bytes32' }
+            { name: 'delegatorCredentialIdHash', type: 'bytes32' },
+            { name: 'delegatorCredentialExpiryDate', type: 'uint256' }
         ]
     };
     const roleTypes = {
         RoleDelegation: [
             { name: 'delegateAddress', type: 'address' },
             { name: 'role', type: 'string' },
-            { name: 'delegateCredentialIdHash', type: 'bytes32' }
+            { name: 'delegateCredentialIdHash', type: 'bytes32' },
+            { name: 'delegateCredentialExpiryDate', type: 'uint256' }
         ]
     };
 
@@ -40,27 +42,32 @@ describe('KBCAccessControl', () => {
 
     const delegatorCredentialIdHash = ethers.utils.formatBytes32String('delegator-credential-id-hash');
     const delegateCredentialIdHash = ethers.utils.formatBytes32String('delegate-credential-id-hash');
+    const TOMORROW = Math.floor(new Date(new Date().getTime() + 1000 * 60 * 60 * 24).getTime() / 1000);
 
     const checkRole = async (neededRole: ROLES, actualRole: ROLES) => {
         const membershipSignature = await issuer._signTypedData(domain, membershipTypes, {
             delegatorAddress: delegator.address,
-            delegatorCredentialIdHash: delegatorCredentialIdHash
+            delegatorCredentialIdHash: delegatorCredentialIdHash,
+            delegatorCredentialExpiryDate: TOMORROW
         });
         const membershipProof: MembershipProofStruct = {
             signedProof: membershipSignature,
             delegatorCredentialIdHash: delegatorCredentialIdHash,
+            delegatorCredentialExpiryDate: TOMORROW,
             issuer: issuer.address
         };
 
         const roleSignature = await delegator._signTypedData(domain, roleTypes, {
             delegateAddress: delegate.address,
             role: actualRole,
-            delegateCredentialIdHash: delegateCredentialIdHash
+            delegateCredentialIdHash: delegateCredentialIdHash,
+            delegateCredentialExpiryDate: TOMORROW
         });
         const roleProof: RoleProofStruct = {
             signedProof: roleSignature,
             delegator: delegator.address,
             delegateCredentialIdHash: delegateCredentialIdHash,
+            delegateCredentialExpiryDate: TOMORROW,
             membershipProof
         };
         switch (neededRole) {

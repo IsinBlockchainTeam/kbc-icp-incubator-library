@@ -21,9 +21,11 @@ describe('EscrowManager.sol', () => {
         signedProof: '0x',
         delegator: '',
         delegateCredentialIdHash: ethers.utils.formatBytes32String('delegateCredentialIdHash'),
+        delegateCredentialExpiryDate: 0,
         membershipProof: {
             signedProof: '0x',
             delegatorCredentialIdHash: ethers.utils.formatBytes32String('delegatorCredentialIdHash'),
+            delegatorCredentialExpiryDate: 0,
             issuer: ''
         }
     };
