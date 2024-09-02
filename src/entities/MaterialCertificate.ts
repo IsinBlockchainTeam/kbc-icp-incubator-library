@@ -1,12 +1,32 @@
-import { Certificate } from './Certificate';
+import { BaseCertificate, CertificationType, DocumentEvaluationStatus } from './Certificate';
 
-export class MaterialCertificate extends Certificate {
+export class MaterialCertificate extends BaseCertificate {
     private _tradeId: number;
 
     private _lineId: number;
 
-    constructor(id: number, issuer: string, assessmentStandard: string, documentId: number, issueDate: Date, tradeId: number, lineId: number) {
-        super(id, issuer, assessmentStandard, documentId, issueDate);
+    constructor(
+        id: number,
+        issuer: string,
+        consigneeCompany: string,
+        assessmentStandard: string,
+        documentId: number,
+        evaluationStatus: DocumentEvaluationStatus,
+        certificateType: CertificationType,
+        issueDate: Date,
+        tradeId: number,
+        lineId: number
+    ) {
+        super(
+            id,
+            issuer,
+            consigneeCompany,
+            assessmentStandard,
+            documentId,
+            evaluationStatus,
+            certificateType,
+            issueDate
+        );
         this._tradeId = tradeId;
         this._lineId = lineId;
     }

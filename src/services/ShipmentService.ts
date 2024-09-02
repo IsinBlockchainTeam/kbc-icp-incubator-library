@@ -4,6 +4,7 @@ import { DocumentInfo, DocumentType, Shipment, ShipmentPhase } from '../entities
 import { DocumentDriver } from '../drivers/DocumentDriver';
 import { ICPFileDriver } from '../drivers/ICPFileDriver';
 import { RoleProof } from '../types/RoleProof';
+import { URL_SEGMENTS } from '../constants/ICP';
 
 export type ShipmentDocument = {
     id: number;
@@ -51,7 +52,7 @@ export class ShipmentService {
     }
 
     async getAllDocumentIds(roleProof: RoleProof): Promise<number[]> {
-      return this._shipmentManagerDriver.getAllDocumentIds(roleProof);
+        return this._shipmentManagerDriver.getAllDocumentIds(roleProof);
     }
 
     async updateShipment(
@@ -89,7 +90,7 @@ export class ShipmentService {
         const shipmentExternalUrl = (await this.getShipment(roleProof)).externalUrl;
         const fileName = FileHelpers.removeFileExtension(resourceSpec.name);
         const spec = { ...resourceSpec };
-        spec.name = `${shipmentExternalUrl}/files/${spec.name}`;
+        spec.name = `${shipmentExternalUrl}/${URL_SEGMENTS.FILE}${spec.name}`;
         const contentHash = FileHelpers.getHash(fileContent);
         await this._icpFileDriver.create(fileContent, spec, delegatedOrganizationIds);
         const documentMetadata: ShipmentDocumentMetadata = {
@@ -101,7 +102,7 @@ export class ShipmentService {
         await this._icpFileDriver.create(
             FileHelpers.getBytesFromObject(documentMetadata),
             {
-                name: `${shipmentExternalUrl}/files/${fileName}-metadata.json`,
+                name: `${shipmentExternalUrl}/${URL_SEGMENTS.FILE}/${fileName}-metadata.json`,
                 type: 'application/json'
             },
             delegatedOrganizationIds

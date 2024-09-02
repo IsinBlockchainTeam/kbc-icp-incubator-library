@@ -1,25 +1,34 @@
-import { Certificate } from './Certificate';
+import { BaseCertificate, CertificationType, DocumentEvaluationStatus } from './Certificate';
 
-export class CompanyCertificate extends Certificate {
-    private _company: string;
-
+export class CompanyCertificate extends BaseCertificate {
     private _validFrom: Date;
 
     private _validUntil: Date;
 
-    constructor(id: number, issuer: string, company: string, assessmentStandard: string, documentId: number, issueDate: Date, validFrom: Date, validUntil: Date) {
-        super(id, issuer, assessmentStandard, documentId, issueDate);
-        this._company = company;
+    constructor(
+        id: number,
+        issuer: string,
+        consigneeCompany: string,
+        assessmentStandard: string,
+        documentId: number,
+        evaluationStatus: DocumentEvaluationStatus,
+        certificateType: CertificationType,
+        issueDate: Date,
+        validFrom: Date,
+        validUntil: Date
+    ) {
+        super(
+            id,
+            issuer,
+            consigneeCompany,
+            assessmentStandard,
+            documentId,
+            evaluationStatus,
+            certificateType,
+            issueDate
+        );
         this._validFrom = validFrom;
         this._validUntil = validUntil;
-    }
-
-    get company(): string {
-        return this._company;
-    }
-
-    set company(value: string) {
-        this._company = value;
     }
 
     get validFrom(): Date {

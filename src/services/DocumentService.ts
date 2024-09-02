@@ -53,9 +53,7 @@ export class DocumentService {
         return this._documentDriver.getDocumentById(roleProof, id);
     }
 
-  // TODO: questo metodo ipoteticamente diventerà "getTradeDocument" e l'entità ritornata sarà "TradeDocument" (specifica per il trade)
-  // questo per fare in modo che se si vogliano salvare dei metadati su altre tipologie di documenti (es. certificati) si possa fare
-  async getCompleteDocument(documentInfo: DocumentInfo): Promise<Document> {
+    async getCompleteDocument(documentInfo: DocumentInfo): Promise<Document> {
         try {
             const path = documentInfo.externalUrl.split('/').slice(0, -1).join('/');
             const metadataName = FileHelpers.removeFileExtension(

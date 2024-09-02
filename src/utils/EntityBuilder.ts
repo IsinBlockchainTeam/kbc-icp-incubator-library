@@ -7,7 +7,9 @@ import {
     OfferManager,
     OrderTrade,
     RelationshipManager,
-    AssetOperationManager, ProductCategoryManager, CertificateManager,
+    AssetOperationManager,
+    ProductCategoryManager,
+    CertificateManager
 } from '../smart-contracts';
 import { Relationship } from '../entities/Relationship';
 import { DocumentInfo } from '../entities/DocumentInfo';
@@ -18,6 +20,7 @@ import { ProductCategory } from '../entities/ProductCategory';
 import { CompanyCertificate } from '../entities/CompanyCertificate';
 import { ScopeCertificate } from '../entities/ScopeCertificate';
 import { MaterialCertificate } from '../entities/MaterialCertificate';
+import { BaseCertificate } from '../entities/Certificate';
 
 export class EntityBuilder {
     static buildProductCategory(
@@ -152,20 +155,70 @@ export class EntityBuilder {
         );
     }
 
-    static buildCompanyCertificate(bcCompanyCertificate: CertificateManager.CompanyCertificateStructOutput): CompanyCertificate {
-        return new CompanyCertificate(bcCompanyCertificate.baseInfo.id.toNumber(), bcCompanyCertificate.baseInfo.issuer, bcCompanyCertificate.company,
-            bcCompanyCertificate.baseInfo.assessmentStandard, bcCompanyCertificate.baseInfo.documentId.toNumber(), new Date(bcCompanyCertificate.baseInfo.issueDate.toNumber()),
-            new Date(bcCompanyCertificate.validFrom.toNumber()), new Date(bcCompanyCertificate.validUntil.toNumber()));
+    static buildBaseCertificate(
+        bcBaseCertificate: CertificateManager.BaseInfoStructOutput
+    ): BaseCertificate {
+        return new BaseCertificate(
+            bcBaseCertificate.id.toNumber(),
+            bcBaseCertificate.issuer,
+            bcBaseCertificate.consigneeCompany,
+            bcBaseCertificate.assessmentStandard,
+            bcBaseCertificate.documentId.toNumber(),
+            bcBaseCertificate.evaluationStatus,
+            bcBaseCertificate.certificateType,
+            new Date(bcBaseCertificate.issueDate.toNumber())
+        );
     }
 
-    static buildScopeCertificate(bcScopeCertificate: CertificateManager.ScopeCertificateStructOutput): ScopeCertificate {
-        return new ScopeCertificate(bcScopeCertificate.baseInfo.id.toNumber(), bcScopeCertificate.baseInfo.issuer, bcScopeCertificate.baseInfo.assessmentStandard,
-            bcScopeCertificate.baseInfo.documentId.toNumber(), new Date(bcScopeCertificate.baseInfo.issueDate.toNumber()),
-            bcScopeCertificate.company, bcScopeCertificate.processTypes, new Date(bcScopeCertificate.validFrom.toNumber()), new Date(bcScopeCertificate.validUntil.toNumber()));
+    static buildCompanyCertificate(
+        bcCompanyCertificate: CertificateManager.CompanyCertificateStructOutput
+    ): CompanyCertificate {
+        return new CompanyCertificate(
+            bcCompanyCertificate.baseInfo.id.toNumber(),
+            bcCompanyCertificate.baseInfo.issuer,
+            bcCompanyCertificate.baseInfo.consigneeCompany,
+            bcCompanyCertificate.baseInfo.assessmentStandard,
+            bcCompanyCertificate.baseInfo.documentId.toNumber(),
+            bcCompanyCertificate.baseInfo.evaluationStatus,
+            bcCompanyCertificate.baseInfo.certificateType,
+            new Date(bcCompanyCertificate.baseInfo.issueDate.toNumber()),
+            new Date(bcCompanyCertificate.validFrom.toNumber()),
+            new Date(bcCompanyCertificate.validUntil.toNumber())
+        );
     }
 
-    static buildMaterialCertificate(bcMaterialCertificate: CertificateManager.MaterialCertificateStructOutput): MaterialCertificate {
-        return new MaterialCertificate(bcMaterialCertificate.baseInfo.id.toNumber(), bcMaterialCertificate.baseInfo.issuer, bcMaterialCertificate.baseInfo.assessmentStandard,
-            bcMaterialCertificate.baseInfo.documentId.toNumber(), new Date(bcMaterialCertificate.baseInfo.issueDate.toNumber()), bcMaterialCertificate.tradeId.toNumber(), bcMaterialCertificate.lineId.toNumber());
+    static buildScopeCertificate(
+        bcScopeCertificate: CertificateManager.ScopeCertificateStructOutput
+    ): ScopeCertificate {
+        return new ScopeCertificate(
+            bcScopeCertificate.baseInfo.id.toNumber(),
+            bcScopeCertificate.baseInfo.issuer,
+            bcScopeCertificate.baseInfo.consigneeCompany,
+            bcScopeCertificate.baseInfo.assessmentStandard,
+            bcScopeCertificate.baseInfo.documentId.toNumber(),
+            bcScopeCertificate.baseInfo.evaluationStatus,
+            bcScopeCertificate.baseInfo.certificateType,
+            new Date(bcScopeCertificate.baseInfo.issueDate.toNumber()),
+            bcScopeCertificate.processTypes,
+            new Date(bcScopeCertificate.validFrom.toNumber()),
+            new Date(bcScopeCertificate.validUntil.toNumber())
+        );
+    }
+
+    static buildMaterialCertificate(
+        bcMaterialCertificate: CertificateManager.MaterialCertificateStructOutput
+    ): MaterialCertificate {
+        return new MaterialCertificate(
+            bcMaterialCertificate.baseInfo.id.toNumber(),
+            bcMaterialCertificate.baseInfo.issuer,
+            bcMaterialCertificate.baseInfo.consigneeCompany,
+            bcMaterialCertificate.baseInfo.assessmentStandard,
+            bcMaterialCertificate.baseInfo.documentId.toNumber(),
+            bcMaterialCertificate.baseInfo.evaluationStatus,
+            bcMaterialCertificate.baseInfo.certificateType,
+            new Date(bcMaterialCertificate.baseInfo.issueDate.toNumber()),
+            bcMaterialCertificate.tradeId.toNumber(),
+            bcMaterialCertificate.lineId.toNumber()
+        );
     }
 }

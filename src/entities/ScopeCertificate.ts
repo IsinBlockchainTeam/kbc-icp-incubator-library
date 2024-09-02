@@ -1,28 +1,38 @@
-import { Certificate } from './Certificate';
+import { BaseCertificate, CertificationType, DocumentEvaluationStatus } from './Certificate';
 
-export class ScopeCertificate extends Certificate {
-    private _company: string;
-
+export class ScopeCertificate extends BaseCertificate {
     private _processTypes: string[];
 
     private _validFrom: Date;
 
     private _validUntil: Date;
 
-    constructor(id: number, issuer: string, assessmentStandard: string, documentId: number, issueDate: Date, company: string, processTypes: string[], validFrom: Date, validUntil: Date) {
-        super(id, issuer, assessmentStandard, documentId, issueDate);
-        this._company = company;
+    constructor(
+        id: number,
+        issuer: string,
+        consigneeCompany: string,
+        assessmentStandard: string,
+        documentId: number,
+        evaluationStatus: DocumentEvaluationStatus,
+        certificateType: CertificationType,
+        issueDate: Date,
+        processTypes: string[],
+        validFrom: Date,
+        validUntil: Date
+    ) {
+        super(
+            id,
+            issuer,
+            consigneeCompany,
+            assessmentStandard,
+            documentId,
+            evaluationStatus,
+            certificateType,
+            issueDate
+        );
         this._processTypes = processTypes;
         this._validFrom = validFrom;
         this._validUntil = validUntil;
-    }
-
-    get company(): string {
-        return this._company;
-    }
-
-    set company(value: string) {
-        this._company = value;
     }
 
     get processTypes(): string[] {
