@@ -1,9 +1,7 @@
 import { BaseCertificate, CertificationType, DocumentEvaluationStatus } from './Certificate';
 
 export class MaterialCertificate extends BaseCertificate {
-    private _tradeId: number;
-
-    private _lineId: number;
+    private _materialId: number;
 
     constructor(
         id: number,
@@ -14,8 +12,7 @@ export class MaterialCertificate extends BaseCertificate {
         evaluationStatus: DocumentEvaluationStatus,
         certificateType: CertificationType,
         issueDate: Date,
-        tradeId: number,
-        lineId: number
+        materialId: number
     ) {
         super(
             id,
@@ -27,23 +24,14 @@ export class MaterialCertificate extends BaseCertificate {
             certificateType,
             issueDate
         );
-        this._tradeId = tradeId;
-        this._lineId = lineId;
+        this._materialId = materialId;
     }
 
-    get tradeId(): number {
-        return this._tradeId;
+    get materialId(): number {
+        return this._materialId;
     }
 
-    set tradeId(value: number) {
-        this._tradeId = value;
-    }
-
-    get lineId(): number {
-        return this._lineId;
-    }
-
-    set lineId(value: number) {
-        this._lineId = value;
+    set materialId(value: number) {
+        this._materialId = value;
     }
 }

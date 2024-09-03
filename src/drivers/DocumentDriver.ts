@@ -21,21 +21,21 @@ export class DocumentDriver {
         externalUrl: string,
         contentHash: string,
         uploadedBy: string
-    ): Promise<void> {
-      try {
-        const tx: any = await this._contract.registerDocument(
-          roleProof,
-          externalUrl,
-          contentHash,
-          uploadedBy
-        );
-        const receipt = await tx.wait();
-        const id = receipt.events.find((event: Event) => event.event === 'DocumentRegistered').args[0];
-        return id.toNumber();
-      }
-      catch(e: any) {
-        throw new Error(e.message);
-      }
+    ): Promise<number> {
+        try {
+            const tx: any = await this._contract.registerDocument(
+                roleProof,
+                externalUrl,
+                contentHash,
+                uploadedBy
+            );
+            const receipt = await tx.wait();
+            const id = receipt.events.find((event: Event) => event.event === 'DocumentRegistered')
+                .args[0];
+            return id.toNumber();
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
     }
 
     async updateDocument(

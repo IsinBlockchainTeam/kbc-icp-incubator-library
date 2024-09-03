@@ -4,28 +4,23 @@ import { CompanyCertificate } from '../entities/CompanyCertificate';
 import { ScopeCertificate } from '../entities/ScopeCertificate';
 import { MaterialCertificate } from '../entities/MaterialCertificate';
 import { RoleProof } from '../types/RoleProof';
-import {
-    BaseCertificate,
-    CertificationType,
-    DocumentEvaluationStatus,
-    DocumentType
-} from '../entities/Certificate';
+import { BaseCertificate, DocumentEvaluationStatus, DocumentType } from '../entities/Certificate';
 import { DocumentDriver } from '../drivers/DocumentDriver';
 import { ICPFileDriver } from '../drivers/ICPFileDriver';
-import { ShipmentDocumentMetadata } from './ShipmentService';
 import { URL_SEGMENTS } from '../constants/ICP';
 import { URLStructure } from '../types/URLStructure';
 
-export type CertificateDocumentMetadata = {
+type CertificateDocumentMetadata = {
     fileName: string;
+    documentType: DocumentType;
     documentReferenceId: string;
 };
+
 export type CertificateDocument = {
-    id: number;
     fileName: string;
     documentType: DocumentType;
     fileContent: Uint8Array;
-    metadata?: CertificateDocumentMetadata;
+    documentReferenceId: string;
 };
 
 export class CertificateManagerService {
@@ -50,7 +45,6 @@ export class CertificateManagerService {
         issuer: string,
         consigneeCompany: string,
         assessmentStandard: string,
-        documentId: number,
         issueDate: Date,
         validFrom: Date,
         validUntil: Date,
@@ -59,7 +53,15 @@ export class CertificateManagerService {
         resourceSpec: ICPResourceSpec,
         delegatedOrganizationIds: number[] = []
     ): Promise<void> {
-        return this._certificateManagerDriver.registerCompanyCertificate(
+        const documentId = await this._addDocument(
+            roleProof,
+            URL_SEGMENTS.CERTIFICATION.COMPANY,
+            certificateDocument,
+            urlStructure,
+            resourceSpec,
+            delegatedOrganizationIds
+        );
+        await this._certificateManagerDriver.registerCompanyCertificate(
             roleProof,
             issuer,
             consigneeCompany,
@@ -76,13 +78,24 @@ export class CertificateManagerService {
         issuer: string,
         consigneeCompany: string,
         assessmentStandard: string,
-        documentId: number,
         issueDate: Date,
         validFrom: Date,
         validUntil: Date,
-        processTypes: string[]
+        processTypes: string[],
+        certificateDocument: CertificateDocument,
+        urlStructure: URLStructure,
+        resourceSpec: ICPResourceSpec,
+        delegatedOrganizationIds: number[] = []
     ): Promise<void> {
-        return this._certificateManagerDriver.registerScopeCertificate(
+        const documentId = await this._addDocument(
+            roleProof,
+            URL_SEGMENTS.CERTIFICATION.SCOPE,
+            certificateDocument,
+            urlStructure,
+            resourceSpec,
+            delegatedOrganizationIds
+        );
+        await this._certificateManagerDriver.registerScopeCertificate(
             roleProof,
             issuer,
             consigneeCompany,
@@ -100,20 +113,29 @@ export class CertificateManagerService {
         issuer: string,
         consigneeCompany: string,
         assessmentStandard: string,
-        documentId: number,
         issueDate: Date,
-        tradeId: number,
-        lineId: number
+        materialId: number,
+        certificateDocument: CertificateDocument,
+        urlStructure: URLStructure,
+        resourceSpec: ICPResourceSpec,
+        delegatedOrganizationIds: number[] = []
     ): Promise<void> {
-        return this._certificateManagerDriver.registerMaterialCertificate(
+        const documentId = await this._addDocument(
+            roleProof,
+            `${URL_SEGMENTS.CERTIFICATION.MATERIAL}/${materialId}`,
+            certificateDocument,
+            urlStructure,
+            resourceSpec,
+            delegatedOrganizationIds
+        );
+        await this._certificateManagerDriver.registerMaterialCertificate(
             roleProof,
             issuer,
             consigneeCompany,
             assessmentStandard,
             documentId,
             issueDate,
-            tradeId,
-            lineId
+            materialId
         );
     }
 
@@ -158,13 +180,13 @@ export class CertificateManagerService {
 
     async getMaterialCertificates(
         roleProof: RoleProof,
-        tradeId: number,
-        tradeLineId: number
+        consigneeCompany: string,
+        materialId: number
     ): Promise<MaterialCertificate[]> {
         return this._certificateManagerDriver.getMaterialCertificates(
             roleProof,
-            tradeId,
-            tradeLineId
+            consigneeCompany,
+            materialId
         );
     }
 
@@ -173,18 +195,6 @@ export class CertificateManagerService {
         certificateId: number
     ): Promise<MaterialCertificate> {
         return this._certificateManagerDriver.getMaterialCertificate(roleProof, certificateId);
-    }
-
-    async getDocumentIdsByConsigneeCompanyAndCertificationType(
-        roleProof: RoleProof,
-        consigneeCompany: string,
-        certificationType: number
-    ): Promise<number[]> {
-        return this._certificateManagerDriver.getDocumentIdsByConsigneeCompanyAndCertificationType(
-            roleProof,
-            consigneeCompany,
-            certificationType
-        );
     }
 
     async evaluateDocument(
@@ -208,45 +218,6 @@ export class CertificateManagerService {
         return this._certificateManagerDriver.getBaseCertificateInfoById(roleProof, certificateId);
     }
 
-    async _addDocument(
-        certificationType: CertificationType,
-        certificateDocument: CertificateDocument,
-        urlStructure: URLStructure,
-        resourceSpec: ICPResourceSpec,
-        delegatedOrganizationIds: number[] = []
-    ): Promise<void> {
-        const certTypePath = new Map<CertificationType, string>([
-            [CertificationType.COMPANY, 'company'],
-            [CertificationType.SCOPE, 'processType'],
-            [CertificationType.MATERIAL, 'material']
-        ]);
-        const baseExternalUrl = `${
-            FileHelpers.ensureTrailingSlash(urlStructure.prefix) +
-            URL_SEGMENTS.ORGANIZATION +
-            urlStructure.organizationId
-        }/${URL_SEGMENTS.CERTIFICATION}${URL_SEGMENTS.FILE}`;
-        await this._icpFileDriver.create(
-            certificateDocument.fileContent,
-            { ...resourceSpec, name: `${baseExternalUrl}${resourceSpec.name}` },
-            delegatedOrganizationIds
-        );
-        if (certificateDocument.metadata)
-            await this._icpFileDriver.create(
-                FileHelpers.getBytesFromObject(certificateDocument.metadata),
-                {
-                    name: `${baseExternalUrl}${FileHelpers.removeFileExtension(resourceSpec.name)}-metadata.json`,
-                    type: 'application/json'
-                },
-                delegatedOrganizationIds
-            );
-        return this._documentDriver.registerDocument(
-            roleProof,
-            documentType,
-            spec.name,
-            contentHash.toString()
-        );
-    }
-
     async getDocument(roleProof: RoleProof, documentId: number): Promise<CertificateDocument> {
         try {
             const documentInfo = await this._documentDriver.getDocumentById(roleProof, documentId);
@@ -256,16 +227,14 @@ export class CertificateManagerService {
             );
             const documentMetadata: CertificateDocumentMetadata = FileHelpers.getObjectFromBytes(
                 await this._icpFileDriver.read(`${path}/${metadataName}-metadata.json`)
-            ) as ShipmentDocumentMetadata;
-            const fileName = documentMetadata.fileName;
-            const documentType = documentMetadata.documentType;
+            ) as CertificateDocumentMetadata;
 
             const fileContent = await this._icpFileDriver.read(documentInfo.externalUrl);
             return {
-                id: documentInfo.id,
-                fileName,
-                documentType,
-                fileContent
+                fileName: documentMetadata.fileName,
+                documentType: documentMetadata.documentType,
+                fileContent,
+                documentReferenceId: documentMetadata.documentReferenceId
             };
         } catch (e: any) {
             throw new Error(
@@ -274,11 +243,88 @@ export class CertificateManagerService {
         }
     }
 
+    async updateDocument(
+        roleProof: RoleProof,
+        documentId: number,
+        certificateDocument: CertificateDocument,
+        resourceSpec: ICPResourceSpec,
+        delegatedOrganizationIds: number[] = []
+    ): Promise<void> {
+        const documentInfo = await this._documentDriver.getDocumentById(roleProof, documentId);
+        const path = documentInfo.externalUrl.split('/').slice(0, -1).join('/');
+        const externalUrl = await this._addDocumentToExtStorage(
+            path,
+            certificateDocument,
+            resourceSpec,
+            delegatedOrganizationIds
+        );
+        await this._certificateManagerDriver.updateDocument(
+            roleProof,
+            documentId,
+            externalUrl,
+            FileHelpers.getHash(certificateDocument.fileContent).toString()
+        );
+    }
+
     async addAdmin(address: string): Promise<void> {
         return this._certificateManagerDriver.addAdmin(address);
     }
 
     async removeAdmin(address: string): Promise<void> {
         return this._certificateManagerDriver.removeAdmin(address);
+    }
+
+    async _addDocumentToExtStorage(
+        baseExternalUrl: string,
+        certificateDocument: CertificateDocument,
+        resourceSpec: ICPResourceSpec,
+        delegatedOrganizationIds: number[] = []
+    ): Promise<string> {
+        await this._icpFileDriver.create(
+            certificateDocument.fileContent,
+            { ...resourceSpec, name: `${baseExternalUrl}${resourceSpec.name}` },
+            delegatedOrganizationIds
+        );
+        const metadata: CertificateDocumentMetadata = {
+            fileName: certificateDocument.fileName,
+            documentType: certificateDocument.documentType,
+            documentReferenceId: certificateDocument.documentReferenceId
+        };
+        await this._icpFileDriver.create(
+            FileHelpers.getBytesFromObject(metadata),
+            {
+                name: `${baseExternalUrl}${FileHelpers.removeFileExtension(resourceSpec.name)}-metadata.json`,
+                type: 'application/json'
+            },
+            delegatedOrganizationIds
+        );
+        return `${baseExternalUrl}${resourceSpec.name}`;
+    }
+
+    async _addDocument(
+        roleProof: RoleProof,
+        relativePath: string,
+        certificateDocument: CertificateDocument,
+        urlStructure: URLStructure,
+        resourceSpec: ICPResourceSpec,
+        delegatedOrganizationIds: number[] = []
+    ): Promise<number> {
+        const baseExternalUrl = `${
+            FileHelpers.ensureTrailingSlash(urlStructure.prefix) +
+            URL_SEGMENTS.ORGANIZATION +
+            urlStructure.organizationId
+        }/${URL_SEGMENTS.CERTIFICATION.BASE}${URL_SEGMENTS.FILE}${relativePath}`;
+        const externalUrl = await this._addDocumentToExtStorage(
+            baseExternalUrl,
+            certificateDocument,
+            resourceSpec,
+            delegatedOrganizationIds
+        );
+        return this._certificateManagerDriver.addDocument(
+            roleProof,
+            certificateDocument.documentType,
+            externalUrl,
+            FileHelpers.getHash(certificateDocument.fileContent).toString()
+        );
     }
 }

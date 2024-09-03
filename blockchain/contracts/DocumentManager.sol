@@ -67,12 +67,15 @@ contract DocumentManager is AccessControl, KBCAccessControl {
         address uploadedBy
     ) public atLeastEditor(roleProof) {
         require(documents[documentId].exists, "DocumentManager: Document does not exist");
-        require(documents[documentId].uploadedBy == uploadedBy, "DocumentManager: Can't update the uploader");
+//        require(documents[documentId].uploadedBy == uploadedBy, "DocumentManager: Can't update the uploader");
         // if the caller is not a smart contract and the document was not uploaded by the caller. If the caller is a wallet, it must be the uploader
-        require(_msgSender() == tx.origin && documents[documentId].uploadedBy == tx.origin, "DocumentManager: Caller is not the uploader");
+//        TODO: if it is necessary uncomment, otherwise remove. With this line a company cannot update a document if a certifier has updated it before
+//        require(_msgSender() == tx.origin && documents[documentId].uploadedBy == tx.origin, "DocumentManager: Caller is not the uploader");
 
         documents[documentId].externalUrl = externalUrl;
         documents[documentId].contentHash = contentHash;
+        documents[documentId].uploadedBy = uploadedBy;
+
         emit DocumentUpdated(documentId, contentHash);
     }
 

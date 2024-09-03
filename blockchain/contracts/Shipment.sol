@@ -232,7 +232,7 @@ contract Shipment is AccessControl, KBCAccessControl {
     }
     function updateDocument(RoleProof memory roleProof, uint256 documentId, string memory externalUrl, string memory contentHash) public onlySupplierOrCommissioner shipmentApproved atLeastEditor(roleProof) {
         require(_documentsInfo[documentId].exists, "ShipmentManager: Document does not exist");
-        require(_documentsInfo[documentId].uploader == _msgSender(), "ShipmentManager: Caller is not the uploader");
+//        require(_documentsInfo[documentId].uploader == _msgSender(), "ShipmentManager: Caller is not the uploader");
         require(_documentsInfo[documentId].status != DocumentLibrary.DocumentStatus.APPROVED, "ShipmentManager: Document already approved");
 
         _documentManager.updateDocument(roleProof, documentId, externalUrl, contentHash, _msgSender());

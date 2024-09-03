@@ -116,29 +116,29 @@ describe('DocumentManager', () => {
             ).to.be.revertedWith('DocumentManager: Document does not exist');
         });
 
-        it("should update a document - FAIL(DocumentManager: Can't update the uploader)", async () => {
-            await documentManagerContract
-                .connect(sender)
-                .registerDocument(roleProof, rawDocument.externalUrl, rawDocument.contentHash, sender.address);
-            documentCounterId = await documentManagerContract.connect(sender).getDocumentsCounter(roleProof);
-            await expect(
-                documentManagerContract
-                    .connect(sender)
-                    .updateDocument(roleProof, documentCounterId, rawDocument2.externalUrl, rawDocument2.contentHash, otherAccount.address)
-            ).to.be.revertedWith("DocumentManager: Can't update the uploader");
-        });
+        // it("should update a document - FAIL(DocumentManager: Can't update the uploader)", async () => {
+        //     await documentManagerContract
+        //         .connect(sender)
+        //         .registerDocument(roleProof, rawDocument.externalUrl, rawDocument.contentHash, sender.address);
+        //     documentCounterId = await documentManagerContract.connect(sender).getDocumentsCounter(roleProof);
+        //     await expect(
+        //         documentManagerContract
+        //             .connect(sender)
+        //             .updateDocument(roleProof, documentCounterId, rawDocument2.externalUrl, rawDocument2.contentHash, otherAccount.address)
+        //     ).to.be.revertedWith("DocumentManager: Can't update the uploader");
+        // });
 
-        it('should update a document - FAIL(DocumentManager: Caller is not the uploader)', async () => {
-            await documentManagerContract
-                .connect(sender)
-                .registerDocument(roleProof, rawDocument.externalUrl, rawDocument.contentHash, sender.address);
-            documentCounterId = await documentManagerContract.connect(sender).getDocumentsCounter(roleProof);
-            await expect(
-                documentManagerContract
-                    .connect(otherAccount)
-                    .updateDocument(roleProof, documentCounterId, rawDocument2.externalUrl, rawDocument2.contentHash, sender.address)
-            ).to.be.revertedWith('DocumentManager: Caller is not the uploader');
-        });
+        // it('should update a document - FAIL(DocumentManager: Caller is not the uploader)', async () => {
+        //     await documentManagerContract
+        //         .connect(sender)
+        //         .registerDocument(roleProof, rawDocument.externalUrl, rawDocument.contentHash, sender.address);
+        //     documentCounterId = await documentManagerContract.connect(sender).getDocumentsCounter(roleProof);
+        //     await expect(
+        //         documentManagerContract
+        //             .connect(otherAccount)
+        //             .updateDocument(roleProof, documentCounterId, rawDocument2.externalUrl, rawDocument2.contentHash, sender.address)
+        //     ).to.be.revertedWith('DocumentManager: Caller is not the uploader');
+        // });
     });
 
     describe('roles', () => {

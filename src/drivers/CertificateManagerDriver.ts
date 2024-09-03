@@ -5,12 +5,7 @@ import { EntityBuilder } from '../utils/EntityBuilder';
 import { ScopeCertificate } from '../entities/ScopeCertificate';
 import { MaterialCertificate } from '../entities/MaterialCertificate';
 import { RoleProof } from '../types/RoleProof';
-import {
-    BaseCertificate,
-    CertificationType,
-    DocumentEvaluationStatus,
-    DocumentType
-} from '../entities/Certificate';
+import { BaseCertificate, DocumentEvaluationStatus, DocumentType } from '../entities/Certificate';
 
 export class CertificateManagerDriver {
     private _actual: CertificateManager;
@@ -91,8 +86,7 @@ export class CertificateManagerDriver {
         assessmentStandard: string,
         documentId: number,
         issueDate: Date,
-        tradeId: number,
-        lineId: number
+        materialId: number
     ): Promise<number> {
         const tx = await this._actual.registerMaterialCertificate(
             roleProof,
@@ -101,8 +95,7 @@ export class CertificateManagerDriver {
             assessmentStandard,
             documentId,
             issueDate.getTime(),
-            tradeId,
-            lineId
+            materialId
         );
         const { events } = await tx.wait();
         if (!events)
@@ -166,13 +159,13 @@ export class CertificateManagerDriver {
 
     async getMaterialCertificates(
         roleProof: RoleProof,
-        tradeId: number,
-        tradeLineId: number
+        consigneeCompany: string,
+        materialId: number
     ): Promise<MaterialCertificate[]> {
         const certificates = await this._actual.getMaterialCertificates(
             roleProof,
-            tradeId,
-            tradeLineId
+            consigneeCompany,
+            materialId
         );
         return certificates.map((certificate) =>
             EntityBuilder.buildMaterialCertificate(certificate)
@@ -208,16 +201,12 @@ export class CertificateManagerDriver {
 
     async addDocument(
         roleProof: RoleProof,
-        consigneeCompany: string,
-        certificationType: CertificationType,
         documentType: DocumentType,
         externalUrl: string,
         contentHash: string
     ): Promise<number> {
         const tx = await this._actual.addDocument(
             roleProof,
-            consigneeCompany,
-            certificationType,
             documentType,
             externalUrl,
             contentHash

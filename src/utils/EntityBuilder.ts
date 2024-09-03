@@ -217,8 +217,7 @@ export class EntityBuilder {
             bcMaterialCertificate.baseInfo.evaluationStatus,
             bcMaterialCertificate.baseInfo.certificateType,
             new Date(bcMaterialCertificate.baseInfo.issueDate.toNumber()),
-            bcMaterialCertificate.tradeId.toNumber(),
-            bcMaterialCertificate.lineId.toNumber()
+            bcMaterialCertificate.materialId.toNumber()
         );
     }
 }

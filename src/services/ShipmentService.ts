@@ -91,7 +91,7 @@ export class ShipmentService {
         const fileName = FileHelpers.removeFileExtension(resourceSpec.name);
         const spec = { ...resourceSpec };
         spec.name = `${shipmentExternalUrl}/${URL_SEGMENTS.FILE}${spec.name}`;
-        const contentHash = FileHelpers.getHash(fileContent);
+        const contentHash = FileHelpers.getHash(fileContent).toString();
         await this._icpFileDriver.create(fileContent, spec, delegatedOrganizationIds);
         const documentMetadata: ShipmentDocumentMetadata = {
             fileName: spec.name,
@@ -111,7 +111,7 @@ export class ShipmentService {
             roleProof,
             documentType,
             spec.name,
-            contentHash.toString()
+            contentHash
         );
     }
 

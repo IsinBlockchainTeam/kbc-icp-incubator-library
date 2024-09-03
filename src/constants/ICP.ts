@@ -18,7 +18,12 @@ export const URL_SEGMENTS = {
     MAINNET: 'ic0.app/',
     ORGANIZATION: 'organizations/',
     TRANSACTION: 'transactions/',
-    CERTIFICATION: 'certifications/',
+    CERTIFICATION: {
+        BASE: 'certifications/',
+        COMPANY: 'company/',
+        SCOPE: 'scope/',
+        MATERIAL: 'materials/'
+    },
     FILE: 'files/'
 };
 

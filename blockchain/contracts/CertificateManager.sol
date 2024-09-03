@@ -38,7 +38,7 @@ contract CertificateManager is AccessControl, KBCAccessControl {
 //    TODO: verificare se questa dichiarazione è corretta oppure se bisogna emettere un evento per singolo process type
     event ScopeCertificateRegistered(uint256 indexed id, address indexed consigneeCompany, string[] processType);
     event MaterialCertificateRegistered(uint256 indexed id, address indexed consigneeCompany, uint256 materialId);
-    event DocumentAdded(uint256 documentId);
+    event DocumentAdded(uint256 id);
 
     modifier onlyAdmin() {
         require(hasRole(ADMIN_ROLE, _msgSender()), "MaterialManager: Caller is not the admin");
@@ -197,6 +197,8 @@ contract CertificateManager is AccessControl, KBCAccessControl {
         return _allMaterialCertificates[certificateId];
     }
 
+
+
     function evaluateDocument(RoleProof memory roleProof, uint256 certificationId, uint256 documentId, DocumentLibrary.DocumentEvaluationStatus evaluation) public atLeastEditor(roleProof) {
         require(_allCertificates[certificationId].exists, "CertificateManager: Certificate does not exist");
         require(_allCertificates[certificationId].documentId == documentId, "CertificateManager: Document does not match the certificate");
@@ -205,7 +207,7 @@ contract CertificateManager is AccessControl, KBCAccessControl {
         _allCertificates[certificationId].evaluationStatus = evaluation;
     }
 
-    function addDocument(RoleProof memory roleProof, address consigneeCompany, KBCCertificationLibrary.CertificationType certificationType, DocumentLibrary.DocumentType documentType, string memory externalUrl, string memory contentHash) public atLeastEditor(roleProof) {
+    function addDocument(RoleProof memory roleProof, DocumentLibrary.DocumentType documentType, string memory externalUrl, string memory contentHash) public atLeastEditor(roleProof) {
         uint256 documentId = _documentManager.registerDocument(roleProof, externalUrl, contentHash, _msgSender());
         _documents[documentId] = DocumentLibrary.DocumentInfo(documentId, documentType, DocumentLibrary.DocumentEvaluationStatus.NOT_EVALUATED, _msgSender(), true);
         emit DocumentAdded(documentId);

@@ -20,7 +20,7 @@ export class DocumentService {
         externalUrl: string,
         contentHash: string,
         uploadedBy: string
-    ): Promise<void> {
+    ): Promise<number> {
         return this._documentDriver.registerDocument(
             roleProof,
             externalUrl,
