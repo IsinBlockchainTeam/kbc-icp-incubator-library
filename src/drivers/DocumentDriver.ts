@@ -9,7 +9,10 @@ import { RoleProof } from '../types/RoleProof';
 export class DocumentDriver {
     private _contract: DocumentManager;
 
+    private _signer: Signer;
+
     constructor(signer: Signer, documentAddress: string) {
+        this._signer = signer;
         this._contract = DocumentManager__factory.connect(
             documentAddress,
             signer.provider!
@@ -19,15 +22,14 @@ export class DocumentDriver {
     async registerDocument(
         roleProof: RoleProof,
         externalUrl: string,
-        contentHash: string,
-        uploadedBy: string
+        contentHash: string
     ): Promise<number> {
         try {
             const tx: any = await this._contract.registerDocument(
                 roleProof,
                 externalUrl,
                 contentHash,
-                uploadedBy
+                this._signer.getAddress()
             );
             const receipt = await tx.wait();
             const id = receipt.events.find((event: Event) => event.event === 'DocumentRegistered')

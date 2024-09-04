@@ -79,8 +79,7 @@ describe('DocumentDriver', () => {
             await documentDriver.registerDocument(
                 roleProof,
                 rawDocument.externalUrl,
-                rawDocument.contentHash,
-                await mockedSigner.getAddress()
+                rawDocument.contentHash
             );
 
             expect(mockedContract.registerDocument).toHaveBeenCalledTimes(1);
@@ -101,8 +100,7 @@ describe('DocumentDriver', () => {
                 documentDriver.registerDocument(
                     roleProof,
                     rawDocument.externalUrl,
-                    rawDocument.contentHash,
-                    await mockedSigner.getAddress()
+                    rawDocument.contentHash
                 );
             await expect(fn).rejects.toThrow(new Error(errorMessage));
         });

@@ -82,9 +82,9 @@ export { ShipmentService, ShipmentDocument } from './services/ShipmentService';
 
 export {
     BaseCertificate,
-    CertificationType,
+    CertificateType,
     DocumentEvaluationStatus,
-    DocumentType as CertificationDocumentType
+    DocumentType as CertificateDocumentType
 } from './entities/Certificate';
 export { CompanyCertificate } from './entities/CompanyCertificate';
 export { ScopeCertificate } from './entities/ScopeCertificate';

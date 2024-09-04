@@ -48,15 +48,13 @@ describe('DocumentService', () => {
                 documentService.registerDocument(
                     roleProof,
                     rawDocument.externalUrl,
-                    rawDocument.contentHash,
-                    rawDocument.uploadedBy
+                    rawDocument.contentHash
                 ),
             expectedMockedFunction: mockedDocumentDriver.registerDocument,
             expectedMockedFunctionArgs: [
                 roleProof,
                 rawDocument.externalUrl,
-                rawDocument.contentHash,
-                rawDocument.uploadedBy
+                rawDocument.contentHash
             ]
         },
         {

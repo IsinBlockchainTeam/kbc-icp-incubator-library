@@ -1,4 +1,9 @@
-import { BaseCertificate, CertificationType, DocumentEvaluationStatus } from './Certificate';
+import {
+    BaseCertificate,
+    CertificateDocumentInfo,
+    CertificateType,
+    DocumentEvaluationStatus
+} from './Certificate';
 
 export class MaterialCertificate extends BaseCertificate {
     private _materialId: number;
@@ -8,9 +13,9 @@ export class MaterialCertificate extends BaseCertificate {
         issuer: string,
         consigneeCompany: string,
         assessmentStandard: string,
-        documentId: number,
+        document: CertificateDocumentInfo,
         evaluationStatus: DocumentEvaluationStatus,
-        certificateType: CertificationType,
+        certificateType: CertificateType,
         issueDate: Date,
         materialId: number
     ) {
@@ -19,7 +24,7 @@ export class MaterialCertificate extends BaseCertificate {
             issuer,
             consigneeCompany,
             assessmentStandard,
-            documentId,
+            document,
             evaluationStatus,
             certificateType,
             issueDate

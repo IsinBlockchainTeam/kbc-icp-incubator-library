@@ -20,7 +20,8 @@ import { ProductCategory } from '../entities/ProductCategory';
 import { CompanyCertificate } from '../entities/CompanyCertificate';
 import { ScopeCertificate } from '../entities/ScopeCertificate';
 import { MaterialCertificate } from '../entities/MaterialCertificate';
-import { BaseCertificate } from '../entities/Certificate';
+import { BaseCertificate, CertificateDocumentInfo } from '../entities/Certificate';
+import { DocumentLibrary } from '../smart-contracts/contracts/CertificateManager';
 
 export class EntityBuilder {
     static buildProductCategory(
@@ -163,7 +164,7 @@ export class EntityBuilder {
             bcBaseCertificate.issuer,
             bcBaseCertificate.consigneeCompany,
             bcBaseCertificate.assessmentStandard,
-            bcBaseCertificate.documentId.toNumber(),
+            this._buildCertificateDocumentInfo(bcBaseCertificate.document),
             bcBaseCertificate.evaluationStatus,
             bcBaseCertificate.certificateType,
             new Date(bcBaseCertificate.issueDate.toNumber())
@@ -178,7 +179,7 @@ export class EntityBuilder {
             bcCompanyCertificate.baseInfo.issuer,
             bcCompanyCertificate.baseInfo.consigneeCompany,
             bcCompanyCertificate.baseInfo.assessmentStandard,
-            bcCompanyCertificate.baseInfo.documentId.toNumber(),
+            this._buildCertificateDocumentInfo(bcCompanyCertificate.baseInfo.document),
             bcCompanyCertificate.baseInfo.evaluationStatus,
             bcCompanyCertificate.baseInfo.certificateType,
             new Date(bcCompanyCertificate.baseInfo.issueDate.toNumber()),
@@ -195,7 +196,7 @@ export class EntityBuilder {
             bcScopeCertificate.baseInfo.issuer,
             bcScopeCertificate.baseInfo.consigneeCompany,
             bcScopeCertificate.baseInfo.assessmentStandard,
-            bcScopeCertificate.baseInfo.documentId.toNumber(),
+            this._buildCertificateDocumentInfo(bcScopeCertificate.baseInfo.document),
             bcScopeCertificate.baseInfo.evaluationStatus,
             bcScopeCertificate.baseInfo.certificateType,
             new Date(bcScopeCertificate.baseInfo.issueDate.toNumber()),
@@ -213,11 +214,20 @@ export class EntityBuilder {
             bcMaterialCertificate.baseInfo.issuer,
             bcMaterialCertificate.baseInfo.consigneeCompany,
             bcMaterialCertificate.baseInfo.assessmentStandard,
-            bcMaterialCertificate.baseInfo.documentId.toNumber(),
+            this._buildCertificateDocumentInfo(bcMaterialCertificate.baseInfo.document),
             bcMaterialCertificate.baseInfo.evaluationStatus,
             bcMaterialCertificate.baseInfo.certificateType,
             new Date(bcMaterialCertificate.baseInfo.issueDate.toNumber()),
             bcMaterialCertificate.materialId.toNumber()
         );
+    }
+
+    static _buildCertificateDocumentInfo(
+        bcDocumentInfo: DocumentLibrary.DocumentInfoStructOutput
+    ): CertificateDocumentInfo {
+        return {
+            id: bcDocumentInfo.id.toNumber(),
+            documentType: bcDocumentInfo.documentType
+        };
     }
 }

@@ -1,4 +1,4 @@
-export enum CertificationType {
+export enum CertificateType {
     COMPANY,
     SCOPE,
     MATERIAL
@@ -18,6 +18,11 @@ export enum DocumentEvaluationStatus {
     NOT_APPROVED
 }
 
+export type CertificateDocumentInfo = {
+    id: number;
+    documentType: DocumentType;
+};
+
 export class BaseCertificate {
     private _id: number;
 
@@ -27,11 +32,11 @@ export class BaseCertificate {
 
     private _assessmentStandard: string;
 
-    private _documentId: number;
+    private _document: CertificateDocumentInfo;
 
     private _evaluationStatus: DocumentEvaluationStatus;
 
-    private _certificateType: CertificationType;
+    private _certificateType: CertificateType;
 
     private _issueDate: Date;
 
@@ -40,16 +45,16 @@ export class BaseCertificate {
         issuer: string,
         consigneeCompany: string,
         assessmentStandard: string,
-        documentId: number,
+        document: CertificateDocumentInfo,
         evaluationStatus: DocumentEvaluationStatus,
-        certificateType: CertificationType,
+        certificateType: CertificateType,
         issueDate: Date
     ) {
         this._id = id;
         this._issuer = issuer;
         this._consigneeCompany = consigneeCompany;
         this._assessmentStandard = assessmentStandard;
-        this._documentId = documentId;
+        this._document = document;
         this._evaluationStatus = evaluationStatus;
         this._certificateType = certificateType;
         this._issueDate = issueDate;
@@ -87,12 +92,12 @@ export class BaseCertificate {
         this._assessmentStandard = value;
     }
 
-    get documentId(): number {
-        return this._documentId;
+    get document(): CertificateDocumentInfo {
+        return this._document;
     }
 
-    set documentId(value: number) {
-        this._documentId = value;
+    set document(value: CertificateDocumentInfo) {
+        this._document = value;
     }
 
     get evaluationStatus(): DocumentEvaluationStatus {
@@ -103,11 +108,11 @@ export class BaseCertificate {
         this._evaluationStatus = value;
     }
 
-    get certificateType(): CertificationType {
+    get certificateType(): CertificateType {
         return this._certificateType;
     }
 
-    set certificateType(value: CertificationType) {
+    set certificateType(value: CertificateType) {
         this._certificateType = value;
     }
 

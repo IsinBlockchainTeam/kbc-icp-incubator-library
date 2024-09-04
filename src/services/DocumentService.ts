@@ -18,15 +18,9 @@ export class DocumentService {
     async registerDocument(
         roleProof: RoleProof,
         externalUrl: string,
-        contentHash: string,
-        uploadedBy: string
+        contentHash: string
     ): Promise<number> {
-        return this._documentDriver.registerDocument(
-            roleProof,
-            externalUrl,
-            contentHash,
-            uploadedBy
-        );
+        return this._documentDriver.registerDocument(roleProof, externalUrl, contentHash);
     }
 
     async updateDocument(

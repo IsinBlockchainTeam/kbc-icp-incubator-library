@@ -5,7 +5,11 @@ import { EntityBuilder } from '../utils/EntityBuilder';
 import { ScopeCertificate } from '../entities/ScopeCertificate';
 import { MaterialCertificate } from '../entities/MaterialCertificate';
 import { RoleProof } from '../types/RoleProof';
-import { BaseCertificate, DocumentEvaluationStatus, DocumentType } from '../entities/Certificate';
+import {
+    BaseCertificate,
+    CertificateDocumentInfo,
+    DocumentEvaluationStatus
+} from '../entities/Certificate';
 
 export class CertificateManagerDriver {
     private _actual: CertificateManager;
@@ -22,7 +26,7 @@ export class CertificateManagerDriver {
         issuer: string,
         consigneeCompany: string,
         assessmentStandard: string,
-        documentId: number,
+        document: CertificateDocumentInfo,
         issueDate: Date,
         validFrom: Date,
         validUntil: Date
@@ -32,7 +36,7 @@ export class CertificateManagerDriver {
             issuer,
             consigneeCompany,
             assessmentStandard,
-            documentId,
+            document,
             issueDate.getTime(),
             validFrom.getTime(),
             validUntil.getTime()
@@ -52,7 +56,7 @@ export class CertificateManagerDriver {
         issuer: string,
         consigneeCompany: string,
         assessmentStandard: string,
-        documentId: number,
+        document: CertificateDocumentInfo,
         issueDate: Date,
         validFrom: Date,
         validUntil: Date,
@@ -63,7 +67,7 @@ export class CertificateManagerDriver {
             issuer,
             consigneeCompany,
             assessmentStandard,
-            documentId,
+            document,
             issueDate.getTime(),
             validFrom.getTime(),
             validUntil.getTime(),
@@ -84,7 +88,7 @@ export class CertificateManagerDriver {
         issuer: string,
         consigneeCompany: string,
         assessmentStandard: string,
-        documentId: number,
+        document: CertificateDocumentInfo,
         issueDate: Date,
         materialId: number
     ): Promise<number> {
@@ -93,7 +97,7 @@ export class CertificateManagerDriver {
             issuer,
             consigneeCompany,
             assessmentStandard,
-            documentId,
+            document,
             issueDate.getTime(),
             materialId
         );
@@ -180,16 +184,85 @@ export class CertificateManagerDriver {
         return EntityBuilder.buildMaterialCertificate(certificate);
     }
 
+    async updateCompanyCertificate(
+        roleProof: RoleProof,
+        certificateId: number,
+        assessmentStandard: string,
+        issueDate: Date,
+        validFrom: Date,
+        validUntil: Date
+    ): Promise<void> {
+        try {
+            const tx = await this._actual.updateCompanyCertificate(
+                roleProof,
+                certificateId,
+                assessmentStandard,
+                issueDate.getTime(),
+                validFrom.getTime(),
+                validUntil.getTime()
+            );
+            await tx.wait();
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
+    }
+
+    async updateScopeCertificate(
+        roleProof: RoleProof,
+        certificateId: number,
+        assessmentStandard: string,
+        issueDate: Date,
+        validFrom: Date,
+        validUntil: Date,
+        processTypes: string[]
+    ): Promise<void> {
+        try {
+            const tx = await this._actual.updateScopeCertificate(
+                roleProof,
+                certificateId,
+                assessmentStandard,
+                issueDate.getTime(),
+                validFrom.getTime(),
+                validUntil.getTime(),
+                processTypes
+            );
+            await tx.wait();
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
+    }
+
+    async updateMaterialCertificate(
+        roleProof: RoleProof,
+        certificateId: number,
+        assessmentStandard: string,
+        issueDate: Date,
+        materialId: number
+    ): Promise<void> {
+        try {
+            const tx = await this._actual.updateMaterialCertificate(
+                roleProof,
+                certificateId,
+                assessmentStandard,
+                issueDate.getTime(),
+                materialId
+            );
+            await tx.wait();
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
+    }
+
     async evaluateDocument(
         roleProof: RoleProof,
-        certificationId: number,
+        certificateId: number,
         documentId: number,
         evaluationStatus: DocumentEvaluationStatus
     ): Promise<void> {
         try {
             const tx = await this._actual.evaluateDocument(
                 roleProof,
-                certificationId,
+                certificateId,
                 documentId,
                 evaluationStatus
             );
@@ -199,33 +272,16 @@ export class CertificateManagerDriver {
         }
     }
 
-    async addDocument(
-        roleProof: RoleProof,
-        documentType: DocumentType,
-        externalUrl: string,
-        contentHash: string
-    ): Promise<number> {
-        const tx = await this._actual.addDocument(
-            roleProof,
-            documentType,
-            externalUrl,
-            contentHash
-        );
-        const { events } = await tx.wait();
-        if (!events) throw new Error('Error during document registration, no events found');
-
-        const eventArgs = events.find((event) => event.event === 'DocumentAdded')?.args;
-        return eventArgs?.id.toNumber();
-    }
-
     async updateDocument(
         roleProof: RoleProof,
+        certificationId: number,
         documentId: number,
         externalUrl: string,
         contentHash: string
     ): Promise<void> {
         const tx = await this._actual.updateDocument(
             roleProof,
+            certificationId,
             documentId,
             externalUrl,
             contentHash
@@ -235,13 +291,13 @@ export class CertificateManagerDriver {
 
     async getBaseCertificateInfoById(
         roleProof: RoleProof,
-        certificationId: number
+        certificateId: number
     ): Promise<BaseCertificate> {
-        const certificationInfo = await this._actual.getBaseCertificationInfoById(
+        const certificateInfo = await this._actual.getBaseCertificateInfoById(
             roleProof,
-            certificationId
+            certificateId
         );
-        return EntityBuilder.buildBaseCertificate(certificationInfo);
+        return EntityBuilder.buildBaseCertificate(certificateInfo);
     }
 
     async addAdmin(address: string): Promise<void> {
