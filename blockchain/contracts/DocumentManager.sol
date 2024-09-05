@@ -90,6 +90,9 @@ contract DocumentManager is AccessControl, KBCAccessControl {
         return documentCounter.current();
     }
 
+    function getDocumentExists(RoleProof memory roleProof, uint256 documentId) public view atLeastViewer(roleProof) returns (bool) {
+        return documents[documentId].exists;
+    }
 
     // ROLES
     function addAdmin(address admin) public onlyAdmin {

@@ -109,7 +109,8 @@ serial([
             contractMap.get(ContractName.DELEGATE_MANAGER)!.address,
             contractMap.get('EnumerableProcessTypeManager')!.address,
             contractMap.get('EnumerableAssessmentStandardManager')!.address,
-            contractMap.get(ContractName.DOCUMENT_MANAGER)!.address
+            contractMap.get(ContractName.DOCUMENT_MANAGER)!.address,
+            contractMap.get(ContractName.MATERIAL_MANAGER)!.address
         ])
 ]).catch((error: any) => {
     console.error(error);

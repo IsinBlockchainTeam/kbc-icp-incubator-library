@@ -7,6 +7,7 @@ import "@blockchain-lib/blockchain-common/contracts/EnumerableType.sol";
 import "./KBCAccessControl.sol";
 import "./DocumentManager.sol";
 import "../libraries/KBCCertificateLibrary.sol";
+import "./MaterialManager.sol";
 
 library DocumentLibrary {
     enum DocumentType {
@@ -100,8 +101,9 @@ contract CertificateManager is AccessControl, KBCAccessControl {
     EnumerableType private _processTypeManager;
     EnumerableType private _assessmentStandardManager;
     DocumentManager private _documentManager;
+    MaterialManager private _materialManager;
 
-    constructor(address delegateManagerAddress, address processTypeManagerAddress, address assessmentStandardManagerAddress, address documentManagerAddress) KBCAccessControl(delegateManagerAddress) {
+    constructor(address delegateManagerAddress, address processTypeManagerAddress, address assessmentStandardManagerAddress, address documentManagerAddress, address materialManagerAddress) KBCAccessControl(delegateManagerAddress) {
         _setupRole(ADMIN_ROLE, _msgSender());
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
         grantRole(ADMIN_ROLE, _msgSender());
@@ -109,6 +111,7 @@ contract CertificateManager is AccessControl, KBCAccessControl {
         _processTypeManager = EnumerableType(processTypeManagerAddress);
         _assessmentStandardManager = EnumerableType(assessmentStandardManagerAddress);
         _documentManager = DocumentManager(documentManagerAddress);
+        _materialManager = MaterialManager(materialManagerAddress);
     }
 
     function registerCompanyCertificate(RoleProof memory roleProof, address issuer, address consigneeCompany, string memory assessmentStandard, DocumentLibrary.DocumentInfo memory document, uint256 issueDate, uint256 validFrom, uint256 validUntil) public atLeastEditor(roleProof) {
@@ -135,6 +138,7 @@ contract CertificateManager is AccessControl, KBCAccessControl {
     }
 
     function registerMaterialCertificate(RoleProof memory roleProof, address issuer, address consigneeCompany, string memory assessmentStandard, DocumentLibrary.DocumentInfo memory document, uint256 issueDate, uint256 materialId) public atLeastEditor(roleProof) {
+        require(_materialManager.getMaterialExists(roleProof, materialId), "CertificateManager: Material does not exist");
         (BaseInfo memory baseInfo, uint256 certificateId) = _computeBaseInfo(roleProof, issuer, consigneeCompany, assessmentStandard, document, CertificateType.MATERIAL, issueDate);
         _allMaterialCertificates[certificateId] = MaterialCertificate(baseInfo, materialId);
         _materialCertificates[consigneeCompany][materialId].push(certificateId);
@@ -213,6 +217,7 @@ contract CertificateManager is AccessControl, KBCAccessControl {
 
     function updateMaterialCertificate(RoleProof memory roleProof, uint256 certificateId, string memory assessmentStandard, uint256 issueDate, uint256 materialId) public atLeastEditor(roleProof) {
         require(_allMaterialCertificates[certificateId].baseInfo.exists, "CertificateManager: Material certificate does not exist");
+        require(_materialManager.getMaterialExists(roleProof, materialId), "CertificateManager: Material does not exist");
         require(_allMaterialCertificates[certificateId].baseInfo.evaluationStatus == DocumentLibrary.DocumentEvaluationStatus.NOT_EVALUATED, "CertificateManager: Certificate has already been evaluated");
         _allMaterialCertificates[certificateId].baseInfo.assessmentStandard = assessmentStandard;
         _allMaterialCertificates[certificateId].baseInfo.issueDate = issueDate;
@@ -239,7 +244,7 @@ contract CertificateManager is AccessControl, KBCAccessControl {
 
     function _computeBaseInfo(RoleProof memory roleProof, address issuer, address consigneeCompany, string memory assessmentStandard, DocumentLibrary.DocumentInfo memory document, CertificateType certificateType, uint256 issueDate) private returns (BaseInfo memory, uint256) {
         require(_assessmentStandardManager.contains(assessmentStandard), "CertificateManager: Assessment standard does not exist");
-        require(_documentManager.getDocumentById(roleProof, document.id).exists, "CertificateManager: Document does not exist");
+        require(_documentManager.getDocumentExists(roleProof, document.id), "CertificateManager: Document does not exist");
 
         uint256 certificateId = _counter.current() + 1;
         _counter.increment();

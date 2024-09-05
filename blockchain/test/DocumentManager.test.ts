@@ -47,7 +47,7 @@ describe('DocumentManager', () => {
         await documentManagerContract.connect(owner).addTradeManager(tradeManager.address);
     });
 
-    describe('registerDocument, getDocumentById, getDocumentsCounter', () => {
+    describe('registerDocument, getDocumentById, getDocumentsCounter, getDocumentExists', () => {
         it('should register a document (as trade manager contract) and retrieve it', async () => {
             await documentManagerContract
                 .connect(tradeManager)
@@ -56,6 +56,7 @@ describe('DocumentManager', () => {
             documentCounterId = await documentManagerContract.connect(sender).getDocumentsCounter(roleProof);
             expect(documentCounterId).to.equal(1);
 
+            expect(await documentManagerContract.connect(tradeManager).getDocumentExists(roleProof, documentCounterId)).to.be.true;
             const savedDocument = await documentManagerContract.connect(sender).getDocumentById(roleProof, documentCounterId);
             expect(savedDocument.id).to.equal(documentCounterId);
             expect(savedDocument.externalUrl).to.equal(rawDocument.externalUrl);

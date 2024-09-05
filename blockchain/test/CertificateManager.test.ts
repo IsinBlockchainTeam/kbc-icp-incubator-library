@@ -5,19 +5,35 @@ import { FakeContract, smock } from '@defi-wonderland/smock';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
 import { ContractName } from '../utils/constants';
+import { KBCAccessControl } from '../typechain-types/contracts/MaterialManager';
 
 describe('CertificateManager', () => {
     let certificateManagerContract: Contract;
     let processTypeManagerContractFake: FakeContract;
     let assessmentStandardManagerContractFake: FakeContract;
+    let delegateManagerContractFake: FakeContract;
+    let documentManagerContractFake: FakeContract;
+    let materialManagerContractFake: FakeContract;
     const processTypes = ['33 - Collecting', '38 - Harvesting'];
     const assessmentStandards = ['Chemical use assessment', 'Environment assessment', 'Origin assessment'];
 
-    let admin: SignerWithAddress, other: SignerWithAddress, issuer: SignerWithAddress;
-    const issueDate = new Date().getTime(), validFrom = new Date().getTime(), validUntil = new Date().getTime();
+    let owner: SignerWithAddress, admin: SignerWithAddress, consignee: SignerWithAddress, issuer: SignerWithAddress;
+    const roleProof: KBCAccessControl.RoleProofStruct = {
+        signedProof: '0x',
+        delegator: ''
+    };
+    const issueDate = new Date().getTime(),
+        validFrom = new Date().getTime(),
+        validUntil = new Date().getTime();
+
+    before(async () => {
+        [owner, admin, consignee, issuer] = await ethers.getSigners();
+        roleProof.delegator = owner.address;
+    });
 
     beforeEach(async () => {
-        [admin, other, issuer] = await ethers.getSigners();
+        delegateManagerContractFake = await smock.fake(ContractName.DELEGATE_MANAGER);
+        delegateManagerContractFake.hasValidRole.returns(true);
 
         processTypeManagerContractFake = await smock.fake(ContractName.ENUMERABLE_TYPE_MANAGER);
         processTypeManagerContractFake.contains.returns((value: string) => processTypes.includes(value[0]));
@@ -25,83 +41,529 @@ describe('CertificateManager', () => {
         assessmentStandardManagerContractFake = await smock.fake(ContractName.ENUMERABLE_TYPE_MANAGER);
         assessmentStandardManagerContractFake.contains.returns((value: string) => assessmentStandards.includes(value[0]));
 
+        documentManagerContractFake = await smock.fake(ContractName.DOCUMENT_MANAGER);
+        documentManagerContractFake.getDocumentExists.returns((args: any[]) => args[1].toNumber() !== 0);
+
+        materialManagerContractFake = await smock.fake(ContractName.MATERIAL_MANAGER);
+        materialManagerContractFake.getMaterialExists.returns((args: any[]) => args[1].toNumber() !== 0);
+
         const CertificateManager = await ethers.getContractFactory(ContractName.CERTIFICATE_MANAGER);
-        certificateManagerContract = await CertificateManager.deploy(processTypeManagerContractFake.address, assessmentStandardManagerContractFake.address);
+        certificateManagerContract = await CertificateManager.deploy(
+            delegateManagerContractFake.address,
+            processTypeManagerContractFake.address,
+            assessmentStandardManagerContractFake.address,
+            documentManagerContractFake.address,
+            materialManagerContractFake.address
+        );
         await certificateManagerContract.deployed();
     });
 
     describe('Company certificate', () => {
-        it('should register a company certificate', async () => {
-            const tx = await certificateManagerContract.connect(other).registerCompanyCertificate(issuer.address, other.address, assessmentStandards[0], 1, issueDate, validFrom, validUntil);
-            await tx.wait();
+        describe('Register', () => {
+            it('should register and get a company certificate', async () => {
+                const tx = await certificateManagerContract
+                    .connect(consignee)
+                    .registerCompanyCertificate(
+                        roleProof,
+                        issuer.address,
+                        consignee.address,
+                        assessmentStandards[0],
+                        { id: 1, documentType: 0 },
+                        issueDate,
+                        validFrom,
+                        validUntil
+                    );
+                await tx.wait();
 
-            const certificates = await certificateManagerContract.getCompanyCertificates(other.address);
-            expect(certificates.length).to.be.equal(1);
-            expect(certificates[0].baseInfo.issuer).to.be.equal(issuer.address);
-            expect(certificates[0].company).to.be.equal(other.address);
-            expect(certificates[0].baseInfo.assessmentStandard).to.be.equal(assessmentStandards[0]);
-            expect(certificates[0].baseInfo.documentId).to.be.equal(1);
-            expect(certificates[0].baseInfo.issueDate).to.be.equal(issueDate);
-            expect(certificates[0].validFrom).to.be.equal(validFrom);
-            expect(certificates[0].validUntil).to.be.equal(validUntil);
+                const certificates = await certificateManagerContract.getCompanyCertificates(roleProof, consignee.address);
+                expect(certificates.length).to.be.equal(1);
+                expect(certificates[0].baseInfo.issuer).to.be.equal(issuer.address);
+                expect(certificates[0].baseInfo.consigneeCompany).to.be.equal(consignee.address);
+                expect(certificates[0].baseInfo.assessmentStandard).to.be.equal(assessmentStandards[0]);
+                expect(certificates[0].baseInfo.document.id).to.be.equal(1);
+                expect(certificates[0].baseInfo.document.documentType).to.be.equal(0);
+                expect(certificates[0].baseInfo.evaluationStatus).to.be.equal(0);
+                expect(certificates[0].baseInfo.certificateType).to.be.equal(0);
+                expect(certificates[0].baseInfo.issueDate).to.be.equal(issueDate);
+                expect(certificates[0].validFrom).to.be.equal(validFrom);
+                expect(certificates[0].validUntil).to.be.equal(validUntil);
+
+                const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+                expect(certificateIds.length).to.be.equal(1);
+                const certificate = await certificateManagerContract.getCompanyCertificate(roleProof, certificateIds[0]);
+                expect(certificate).to.deep.equal(certificates[0]);
+            });
+
+            it('should register and get a company certificate - FAIL (CertificateManager: Assessment standard does not exist)', async () => {
+                await expect(
+                    certificateManagerContract
+                        .connect(consignee)
+                        .registerCompanyCertificate(
+                            roleProof,
+                            issuer.address,
+                            consignee.address,
+                            'custom standard',
+                            { id: 1, documentType: 0 },
+                            issueDate,
+                            validFrom,
+                            validUntil
+                        )
+                ).to.be.revertedWith('CertificateManager: Assessment standard does not exist');
+            });
+
+            it('should register and get a company certificate - FAIL (CertificateManager: Document does not exist)', async () => {
+                await expect(
+                    certificateManagerContract
+                        .connect(consignee)
+                        .registerCompanyCertificate(
+                            roleProof,
+                            issuer.address,
+                            consignee.address,
+                            assessmentStandards[0],
+                            { id: 0, documentType: 0 },
+                            issueDate,
+                            validFrom,
+                            validUntil
+                        )
+                ).to.be.revertedWith('CertificateManager: Document does not exist');
+            });
         });
 
-        it('should register a company certificate - FAIL (CertificateManager: Assessment standard does not exist)', async () => {
-            await expect(certificateManagerContract.connect(other).registerCompanyCertificate(issuer.address, other.address, 'standard 1', 1, issueDate, validFrom, validUntil))
-                .to.be.revertedWith('CertificateManager: Assessment standard does not exist');
+        describe('Update', () => {
+            it('should update a company certificate', async () => {
+                const tx = await certificateManagerContract
+                    .connect(consignee)
+                    .registerCompanyCertificate(
+                        roleProof,
+                        issuer.address,
+                        consignee.address,
+                        assessmentStandards[0],
+                        { id: 1, documentType: 0 },
+                        issueDate,
+                        validFrom,
+                        validUntil
+                    );
+                await tx.wait();
+
+                const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+                expect(certificateIds.length).to.be.equal(1);
+
+                const updateTx = await certificateManagerContract
+                    .connect(consignee)
+                    .updateCompanyCertificate(
+                        roleProof,
+                        certificateIds[0],
+                        assessmentStandards[1],
+                        issueDate,
+                        new Date(new Date(validFrom).getDate() + 1).getTime(),
+                        new Date(new Date(validUntil).getDate() + 1).getTime()
+                    );
+                await updateTx.wait();
+
+                const updatedCertificate = await certificateManagerContract.getCompanyCertificate(roleProof, certificateIds[0]);
+                expect(updatedCertificate.baseInfo.assessmentStandard).to.be.equal(assessmentStandards[1]);
+                expect(updatedCertificate.baseInfo.issueDate).to.be.equal(issueDate);
+                expect(updatedCertificate.validFrom).to.be.equal(new Date(validFrom).getDate() + 1);
+                expect(updatedCertificate.validUntil).to.be.equal(new Date(validUntil).getDate() + 1);
+            });
+
+            it('should update a company certificate - FAIL (CertificateManager: Company certificate does not exist)', async () => {
+                await expect(
+                    certificateManagerContract
+                        .connect(consignee)
+                        .updateCompanyCertificate(roleProof, 15, assessmentStandards[1], issueDate, validFrom, validUntil)
+                ).to.be.revertedWith('CertificateManager: Company certificate does not exist');
+            });
+
+            it('should update a company certificate - FAIL (CertificateManager: Certificate has already been evaluated)', async () => {
+                const tx = await certificateManagerContract
+                    .connect(consignee)
+                    .registerCompanyCertificate(
+                        roleProof,
+                        issuer.address,
+                        consignee.address,
+                        assessmentStandards[0],
+                        { id: 1, documentType: 0 },
+                        issueDate,
+                        validFrom,
+                        validUntil
+                    );
+                await tx.wait();
+
+                const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+                expect(certificateIds.length).to.be.equal(1);
+
+                await certificateManagerContract.evaluateDocument(roleProof, certificateIds[0], 1, 2);
+                await expect(
+                    certificateManagerContract
+                        .connect(consignee)
+                        .updateCompanyCertificate(roleProof, certificateIds[0], assessmentStandards[1], issueDate, validFrom, validUntil)
+                ).to.be.revertedWith('CertificateManager: Certificate has already been evaluated');
+            });
         });
     });
 
     describe('Scope certificate', () => {
-        it('should register a scope certificate', async () => {
-            const tx = await certificateManagerContract.connect(other).registerScopeCertificate(issuer.address, other.address, assessmentStandards[1], 1, issueDate, validFrom, validUntil, processTypes);
-            await tx.wait();
+        describe('Register', () => {
+            it('should register and get a scope certificate', async () => {
+                const tx = await certificateManagerContract
+                    .connect(consignee)
+                    .registerScopeCertificate(
+                        roleProof,
+                        issuer.address,
+                        consignee.address,
+                        assessmentStandards[1],
+                        { id: 2, documentType: 1 },
+                        issueDate,
+                        validFrom,
+                        validUntil,
+                        processTypes
+                    );
+                await tx.wait();
 
-            const certificatesProcessType1 = await certificateManagerContract.getScopeCertificates(other.address, processTypes[0]);
-            expect(certificatesProcessType1.length).to.be.equal(1);
-            expect(certificatesProcessType1[0].baseInfo.issuer).to.be.equal(issuer.address);
-            expect(certificatesProcessType1[0].company).to.be.equal(other.address);
-            expect(certificatesProcessType1[0].baseInfo.assessmentStandard).to.be.equal(assessmentStandards[1]);
-            expect(certificatesProcessType1[0].baseInfo.documentId).to.be.equal(1);
-            expect(certificatesProcessType1[0].baseInfo.issueDate).to.be.equal(issueDate);
-            expect(certificatesProcessType1[0].validFrom).to.be.equal(validFrom);
-            expect(certificatesProcessType1[0].validUntil).to.be.equal(validUntil);
-            expect(certificatesProcessType1[0].processTypes).to.be.deep.equal(processTypes);
+                const certificatesProcessType1 = await certificateManagerContract.getScopeCertificates(roleProof, consignee.address, processTypes[0]);
+                expect(certificatesProcessType1.length).to.be.equal(1);
+                expect(certificatesProcessType1[0].baseInfo.issuer).to.be.equal(issuer.address);
+                expect(certificatesProcessType1[0].baseInfo.consigneeCompany).to.be.equal(consignee.address);
+                expect(certificatesProcessType1[0].baseInfo.assessmentStandard).to.be.equal(assessmentStandards[1]);
+                expect(certificatesProcessType1[0].baseInfo.document.id).to.be.equal(2);
+                expect(certificatesProcessType1[0].baseInfo.document.documentType).to.be.equal(1);
+                expect(certificatesProcessType1[0].baseInfo.evaluationStatus).to.be.equal(0);
+                expect(certificatesProcessType1[0].baseInfo.certificateType).to.be.equal(1);
+                expect(certificatesProcessType1[0].baseInfo.issueDate).to.be.equal(issueDate);
+                expect(certificatesProcessType1[0].validFrom).to.be.equal(validFrom);
+                expect(certificatesProcessType1[0].validUntil).to.be.equal(validUntil);
+                expect(certificatesProcessType1[0].processTypes).to.be.deep.equal(processTypes);
 
-            const certificatesProcessType2 = await certificateManagerContract.getScopeCertificates(other.address, processTypes[1]);
-            expect(certificatesProcessType2.length).to.be.equal(1);
-            expect(certificatesProcessType2[0]).to.deep.equal(certificatesProcessType1[0]);
+                const certificatesProcessType2 = await certificateManagerContract.getScopeCertificates(roleProof, consignee.address, processTypes[1]);
+                expect(certificatesProcessType2.length).to.be.equal(1);
+                expect(certificatesProcessType2[0]).to.deep.equal(certificatesProcessType1[0]);
+
+                const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+                expect(certificateIds.length).to.be.equal(1);
+                const certificate = await certificateManagerContract.getScopeCertificate(roleProof, certificateIds[0]);
+                expect(certificate).to.deep.equal(certificatesProcessType1[0]);
+                expect(certificate).to.deep.equal(certificatesProcessType2[0]);
+            });
+
+            it('should register and get a scope certificate - FAIL (CertificateManager: Assessment standard does not exist)', async () => {
+                await expect(
+                    certificateManagerContract
+                        .connect(consignee)
+                        .registerScopeCertificate(
+                            roleProof,
+                            issuer.address,
+                            consignee.address,
+                            'custom standard',
+                            { id: 2, documentType: 1 },
+                            issueDate,
+                            validFrom,
+                            validUntil,
+                            processTypes
+                        )
+                ).to.be.revertedWith('CertificateManager: Assessment standard does not exist');
+            });
+
+            it('should register and get a scope certificate - FAIL (CertificateManager: Document does not exist)', async () => {
+                await expect(
+                    certificateManagerContract
+                        .connect(consignee)
+                        .registerScopeCertificate(
+                            roleProof,
+                            issuer.address,
+                            consignee.address,
+                            assessmentStandards[1],
+                            { id: 0, documentType: 1 },
+                            issueDate,
+                            validFrom,
+                            validUntil,
+                            processTypes
+                        )
+                ).to.be.revertedWith('CertificateManager: Document does not exist');
+            });
+
+            it('should register and get a scope certificate - FAIL (CertificateManager: Process type does not exist)', async () => {
+                await expect(
+                    certificateManagerContract
+                        .connect(consignee)
+                        .registerScopeCertificate(
+                            roleProof,
+                            issuer.address,
+                            consignee.address,
+                            assessmentStandards[1],
+                            { id: 1, documentType: 1 },
+                            issueDate,
+                            validFrom,
+                            validUntil,
+                            ['custom process type']
+                        )
+                ).to.be.revertedWith('CertificateManager: Process type does not exist');
+            });
         });
 
-        it('should register a scope certificate - FAIL (CertificateManager: Assessment standard does not exist)', async () => {
-            await expect(certificateManagerContract.connect(other).registerScopeCertificate(issuer.address, other.address, 'standard 2', 1, issueDate, validFrom, validUntil, processTypes))
-                .to.be.revertedWith('CertificateManager: Assessment standard does not exist');
-        });
+        describe('Update', () => {
+            it('should update a scope certificate', async () => {
+                const tx = await certificateManagerContract
+                    .connect(consignee)
+                    .registerScopeCertificate(
+                        roleProof,
+                        issuer.address,
+                        consignee.address,
+                        assessmentStandards[1],
+                        { id: 2, documentType: 1 },
+                        issueDate,
+                        validFrom,
+                        validUntil,
+                        processTypes
+                    );
+                await tx.wait();
 
-        it('should register a scope certificate - FAIL (CertificateManager: Process type does not exist)', async () => {
-            await expect(certificateManagerContract.connect(other).registerScopeCertificate(issuer.address, other.address, assessmentStandards[1], 1, issueDate, validFrom, validUntil, ['process type 1']))
-                .to.be.revertedWith('CertificateManager: Process type does not exist');
+                const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+                expect(certificateIds.length).to.be.equal(1);
+
+                const updateTx = await certificateManagerContract
+                    .connect(consignee)
+                    .updateScopeCertificate(
+                        roleProof,
+                        certificateIds[0],
+                        assessmentStandards[1],
+                        issueDate,
+                        new Date(new Date(validFrom).getDate() + 1).getTime(),
+                        new Date(new Date(validUntil).getDate() + 1).getTime(),
+                        [processTypes[0]]
+                    );
+                await updateTx.wait();
+
+                const updatedCertificate = await certificateManagerContract.getScopeCertificate(roleProof, certificateIds[0]);
+                expect(updatedCertificate.baseInfo.assessmentStandard).to.be.equal(assessmentStandards[1]);
+                expect(updatedCertificate.baseInfo.issueDate).to.be.equal(issueDate);
+                expect(updatedCertificate.validFrom).to.be.equal(new Date(validFrom).getDate() + 1);
+                expect(updatedCertificate.validUntil).to.be.equal(new Date(validUntil).getDate() + 1);
+                expect(updatedCertificate.processTypes).to.be.deep.equal([processTypes[0]]);
+            });
+
+            it('should update a scope certificate - FAIL (CertificateManager: Scope certificate does not exist)', async () => {
+                await expect(
+                    certificateManagerContract
+                        .connect(consignee)
+                        .updateScopeCertificate(
+                            roleProof,
+                            15,
+                            assessmentStandards[1],
+                            issueDate,
+                            new Date(new Date(validFrom).getDate() + 1).getTime(),
+                            new Date(new Date(validUntil).getDate() + 1).getTime(),
+                            [processTypes[0]]
+                        )
+                ).to.be.revertedWith('CertificateManager: Scope certificate does not exist');
+            });
+
+            it('should update a scope certificate - FAIL (CertificateManager: Certificate has already been evaluated)', async () => {
+                const tx = await certificateManagerContract
+                    .connect(consignee)
+                    .registerScopeCertificate(
+                        roleProof,
+                        issuer.address,
+                        consignee.address,
+                        assessmentStandards[1],
+                        { id: 2, documentType: 1 },
+                        issueDate,
+                        validFrom,
+                        validUntil,
+                        processTypes
+                    );
+                await tx.wait();
+
+                const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+                expect(certificateIds.length).to.be.equal(1);
+
+                await certificateManagerContract.evaluateDocument(roleProof, certificateIds[0], 2, 1);
+                await expect(
+                    certificateManagerContract
+                        .connect(consignee)
+                        .updateScopeCertificate(
+                            roleProof,
+                            certificateIds[0],
+                            assessmentStandards[1],
+                            issueDate,
+                            new Date(new Date(validFrom).getDate() + 1).getTime(),
+                            new Date(new Date(validUntil).getDate() + 1).getTime(),
+                            [processTypes[0]]
+                        )
+                ).to.be.revertedWith('CertificateManager: Certificate has already been evaluated');
+            });
+
+            it('should update a scope certificate - FAIL (CertificateManager: Process type does not exist)', async () => {
+                const tx = await certificateManagerContract
+                    .connect(consignee)
+                    .registerScopeCertificate(
+                        roleProof,
+                        issuer.address,
+                        consignee.address,
+                        assessmentStandards[1],
+                        { id: 2, documentType: 1 },
+                        issueDate,
+                        validFrom,
+                        validUntil,
+                        processTypes
+                    );
+                await tx.wait();
+
+                const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+                expect(certificateIds.length).to.be.equal(1);
+
+                await expect(
+                    certificateManagerContract
+                        .connect(consignee)
+                        .updateScopeCertificate(
+                            roleProof,
+                            certificateIds[0],
+                            assessmentStandards[1],
+                            issueDate,
+                            new Date(new Date(validFrom).getDate() + 1).getTime(),
+                            new Date(new Date(validUntil).getDate() + 1).getTime(),
+                            [...processTypes, 'custom process type']
+                        )
+                ).to.be.revertedWith('CertificateManager: Process type does not exist');
+            });
         });
     });
 
     describe('Material certificate', () => {
-        it('should register a material certificate', async () => {
-            const tx = await certificateManagerContract.connect(other).registerMaterialCertificate(issuer.address, assessmentStandards[2], 1, issueDate, 2, 3);
-            await tx.wait();
+        describe('Register', () => {
+            it('should register and get a material certificate', async () => {
+                const tx = await certificateManagerContract
+                    .connect(consignee)
+                    .registerMaterialCertificate(
+                        roleProof,
+                        issuer.address,
+                        consignee.address,
+                        assessmentStandards[2],
+                        { id: 2, documentType: 1 },
+                        issueDate,
+                        3
+                    );
+                await tx.wait();
 
-            const certificates = await certificateManagerContract.getMaterialCertificates(2, 3);
-            expect(certificates.length).to.be.equal(1);
-            expect(certificates[0].baseInfo.issuer).to.be.equal(issuer.address);
-            expect(certificates[0].baseInfo.assessmentStandard).to.be.equal(assessmentStandards[2]);
-            expect(certificates[0].baseInfo.documentId).to.be.equal(1);
-            expect(certificates[0].baseInfo.issueDate).to.be.equal(issueDate);
-            expect(certificates[0].tradeId).to.be.equal(2);
-            expect(certificates[0].lineId).to.be.equal(3);
+                const certificates = await certificateManagerContract.getMaterialCertificates(roleProof, consignee.address, 3);
+                expect(certificates.length).to.be.equal(1);
+                expect(certificates[0].baseInfo.issuer).to.be.equal(issuer.address);
+                expect(certificates[0].baseInfo.consigneeCompany).to.be.equal(consignee.address);
+                expect(certificates[0].baseInfo.assessmentStandard).to.be.equal(assessmentStandards[2]);
+                expect(certificates[0].baseInfo.document.id).to.be.equal(2);
+                expect(certificates[0].baseInfo.document.documentType).to.be.equal(1);
+                expect(certificates[0].baseInfo.evaluationStatus).to.be.equal(0);
+                expect(certificates[0].baseInfo.certificateType).to.be.equal(2);
+                expect(certificates[0].baseInfo.issueDate).to.be.equal(issueDate);
+                expect(certificates[0].materialId).to.be.equal(3);
+
+                const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+                expect(certificateIds.length).to.be.equal(1);
+                const certificate = await certificateManagerContract.getMaterialCertificate(roleProof, certificateIds[0]);
+                expect(certificate).to.deep.equal(certificates[0]);
+            });
+
+            it('should register and get a material certificate - FAIL (CertificateManager: Material does not exist)', async () => {
+                await expect(
+                    certificateManagerContract
+                        .connect(consignee)
+                        .registerMaterialCertificate(
+                            roleProof,
+                            issuer.address,
+                            consignee.address,
+                            assessmentStandards[0],
+                            { id: 2, documentType: 1 },
+                            issueDate,
+                            0
+                        )
+                ).to.be.revertedWith('CertificateManager: Material does not exist');
+            });
+
+            it('should register and get a material certificate - FAIL (CertificateManager: Assessment standard does not exist)', async () => {
+                await expect(
+                    certificateManagerContract
+                        .connect(consignee)
+                        .registerMaterialCertificate(
+                            roleProof,
+                            issuer.address,
+                            consignee.address,
+                            'custom standard',
+                            { id: 2, documentType: 1 },
+                            issueDate,
+                            3
+                        )
+                ).to.be.revertedWith('CertificateManager: Assessment standard does not exist');
+            });
+
+            it('should register and get a material certificate - FAIL (CertificateManager: Document does not exist)', async () => {
+                await expect(
+                    certificateManagerContract
+                        .connect(consignee)
+                        .registerMaterialCertificate(
+                            roleProof,
+                            issuer.address,
+                            consignee.address,
+                            assessmentStandards[0],
+                            { id: 0, documentType: 1 },
+                            issueDate,
+                            3
+                        )
+                ).to.be.revertedWith('CertificateManager: Document does not exist');
+            });
         });
 
-        it('should register a material certificate - FAIL (CertificateManager: Assessment standard does not exist)', async () => {
-            await expect(certificateManagerContract.connect(other).registerMaterialCertificate(issuer.address, 'standard 3', 1, issueDate, validFrom, validUntil))
-                .to.be.revertedWith('CertificateManager: Assessment standard does not exist');
+        describe('Update', () => {
+            it('should update a material certificate', async () => {
+                const tx = await certificateManagerContract
+                    .connect(consignee)
+                    .registerMaterialCertificate(
+                        roleProof,
+                        issuer.address,
+                        consignee.address,
+                        assessmentStandards[2],
+                        { id: 2, documentType: 1 },
+                        issueDate,
+                        3
+                    );
+                await tx.wait();
+
+                const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+                expect(certificateIds.length).to.be.equal(1);
+
+                const updateTx = await certificateManagerContract
+                    .connect(consignee)
+                    .updateMaterialCertificate(roleProof, certificateIds[0], assessmentStandards[1], issueDate, 4);
+                await updateTx.wait();
+
+                const updatedCertificate = await certificateManagerContract.getMaterialCertificate(roleProof, certificateIds[0]);
+                expect(updatedCertificate.baseInfo.assessmentStandard).to.be.equal(assessmentStandards[1]);
+                expect(updatedCertificate.baseInfo.issueDate).to.be.equal(issueDate);
+                expect(updatedCertificate.materialId).to.be.equal(4);
+            });
+
+            it('should update a material certificate - FAIL (CertificateManager: Material does not exist)', async () => {
+                const tx = await certificateManagerContract
+                    .connect(consignee)
+                    .registerMaterialCertificate(
+                        roleProof,
+                        issuer.address,
+                        consignee.address,
+                        assessmentStandards[2],
+                        { id: 2, documentType: 1 },
+                        issueDate,
+                        3
+                    );
+                await tx.wait();
+
+                const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+                expect(certificateIds.length).to.be.equal(1);
+
+                await expect(
+                    certificateManagerContract
+                        .connect(consignee)
+                        .updateMaterialCertificate(roleProof, certificateIds[0], assessmentStandards[1], issueDate, 0)
+                ).to.be.revertedWith('CertificateManager: Material does not exist');
+            });
         });
     });
 });
