@@ -566,4 +566,29 @@ describe('CertificateManager', () => {
             });
         });
     });
+
+    describe('Base certificate', () => {
+        it('should get a base certificate by id', async () => {
+            const tx = await certificateManagerContract
+                .connect(consignee)
+                .registerCompanyCertificate(
+                    roleProof,
+                    issuer.address,
+                    consignee.address,
+                    assessmentStandards[0],
+                    { id: 1, documentType: 0 },
+                    issueDate,
+                    validFrom,
+                    validUntil
+                );
+            await tx.wait();
+
+            const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+            expect(certificateIds.length).to.be.equal(1);
+
+            const certificate = await certificateManagerContract.getCompanyCertificate(roleProof, certificateIds[0]);
+            const baseInfo = await certificateManagerContract.getBaseCertificateInfoById(roleProof, certificateIds[0]);
+            expect(certificate.baseInfo).to.deep.equal(baseInfo);
+        });
+    });
 });

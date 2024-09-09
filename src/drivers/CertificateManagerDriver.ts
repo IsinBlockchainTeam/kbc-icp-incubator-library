@@ -1,4 +1,4 @@
-import { Signer, utils } from 'ethers';
+import { Event, Signer, utils } from 'ethers';
 import { CertificateManager, CertificateManager__factory } from '../smart-contracts';
 import { CompanyCertificate } from '../entities/CompanyCertificate';
 import { EntityBuilder } from '../utils/EntityBuilder';
@@ -31,7 +31,7 @@ export class CertificateManagerDriver {
         validFrom: Date,
         validUntil: Date
     ): Promise<number> {
-        const tx = await this._actual.registerCompanyCertificate(
+        const tx: any = await this._actual.registerCompanyCertificate(
             roleProof,
             issuer,
             consigneeCompany,
@@ -45,10 +45,8 @@ export class CertificateManagerDriver {
         if (!events)
             throw new Error('Error during company certificate registration, no events found');
 
-        const eventArgs = events.find(
-            (event) => event.event === 'CompanyCertificateRegistered'
-        )?.args;
-        return eventArgs?.id.toNumber();
+        return events.find((event: Event) => event.event === 'CompanyCertificateRegistered')
+            .args[0];
     }
 
     async registerScopeCertificate(
@@ -62,7 +60,7 @@ export class CertificateManagerDriver {
         validUntil: Date,
         processTypes: string[]
     ): Promise<number> {
-        const tx = await this._actual.registerScopeCertificate(
+        const tx: any = await this._actual.registerScopeCertificate(
             roleProof,
             issuer,
             consigneeCompany,
@@ -77,10 +75,7 @@ export class CertificateManagerDriver {
         if (!events)
             throw new Error('Error during scope certificate registration, no events found');
 
-        const eventArgs = events.find(
-            (event) => event.event === 'ScopeCertificateRegistered'
-        )?.args;
-        return eventArgs?.id.toNumber();
+        return events.find((event: Event) => event.event === 'ScopeCertificateRegistered').args[0];
     }
 
     async registerMaterialCertificate(
@@ -92,7 +87,7 @@ export class CertificateManagerDriver {
         issueDate: Date,
         materialId: number
     ): Promise<number> {
-        const tx = await this._actual.registerMaterialCertificate(
+        const tx: any = await this._actual.registerMaterialCertificate(
             roleProof,
             issuer,
             consigneeCompany,
@@ -105,10 +100,8 @@ export class CertificateManagerDriver {
         if (!events)
             throw new Error('Error during material certificate registration, no events found');
 
-        const eventArgs = events.find(
-            (event) => event.event === 'MaterialCertificateRegistered'
-        )?.args;
-        return eventArgs?.id.toNumber();
+        return events.find((event: Event) => event.event === 'MaterialCertificateRegistered')
+            .args[0];
     }
 
     async getCertificateIdsByConsigneeCompany(
@@ -279,14 +272,18 @@ export class CertificateManagerDriver {
         externalUrl: string,
         contentHash: string
     ): Promise<void> {
-        const tx = await this._actual.updateDocument(
-            roleProof,
-            certificationId,
-            documentId,
-            externalUrl,
-            contentHash
-        );
-        await tx.wait();
+        try {
+            const tx = await this._actual.updateDocument(
+                roleProof,
+                certificationId,
+                documentId,
+                externalUrl,
+                contentHash
+            );
+            await tx.wait();
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
     }
 
     async getBaseCertificateInfoById(
