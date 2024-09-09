@@ -127,7 +127,7 @@ export class CertificateManagerService {
     ): Promise<void> {
         const document = await this._addDocument(
             roleProof,
-            `${URL_SEGMENTS.CERTIFICATION.MATERIAL}/${materialId}`,
+            `${URL_SEGMENTS.CERTIFICATION.MATERIAL}${materialId}/`,
             certificateDocument,
             urlStructure,
             resourceSpec,
@@ -313,7 +313,7 @@ export class CertificateManagerService {
         const documentInfo = await this._documentDriver.getDocumentById(roleProof, documentId);
         const path = documentInfo.externalUrl.split('/').slice(0, -1).join('/');
         const externalUrl = await this._addDocumentToExtStorage(
-            path,
+            `${path}/`,
             certificateDocument,
             resourceSpec,
             delegatedOrganizationIds
