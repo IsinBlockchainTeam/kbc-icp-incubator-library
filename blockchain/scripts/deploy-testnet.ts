@@ -2,6 +2,7 @@
 import { ethers } from 'hardhat';
 import * as dotenv from 'dotenv';
 import { Contract } from 'ethers';
+import {Libraries} from "@nomiclabs/hardhat-ethers/types";
 import { ContractName } from '../utils/constants';
 
 dotenv.config({ path: '../.env' });
@@ -12,8 +13,12 @@ const serial = (funcs: Function[]) =>
         Promise.resolve([])
     );
 
-async function deploy(contractName: string, contractArgs?: any[], contractAliasName?: string): Promise<void> {
-    const ContractFactory = await ethers.getContractFactory(contractName);
+async function deploy(contractName: string, contractArgs?: any[], contractAliasName?: string, libraries?: Libraries): Promise<void> {
+    const ContractFactory = await ethers.getContractFactory(contractName,
+        {
+            libraries
+        }
+    );
     const contract = await ContractFactory.deploy(...(contractArgs || []));
     await contract.deployed();
     console.log(`New ${contractAliasName || contractName} contract deployed, address ${contract.address}`);
@@ -83,9 +88,11 @@ serial([
     //     deploy(ContractName.ESCROW_MANAGER, [
     //         '0x9169B151C0C32c6Ab49Aa2A55a8a6c07aB04f1bb', // DelegateManager
     //         '0x30054880e4E2fA1082C1976cA5547cC3bd185c11', // ContractsOwner
-    //         process.env.ESCROW_BASE_FEE || 20,
-    //         process.env.ESCROW_COMMISSIONER_FEE || 1
+    //         2, // baseFee
+    //         0 // percentageFee
     //     ]),
+    // () =>
+    //     deploy(ContractName.KBC_SHIPMENT_LIBRARY),
     () =>
         deploy(ContractName.TRADE_MANAGER, [
             '0x9169B151C0C32c6Ab49Aa2A55a8a6c07aB04f1bb', // DelegateManager
@@ -94,19 +101,21 @@ serial([
             '0xd159C2E2a170131b0dB6E0304524db4c5AFBc847', // DocumentManager
             '0x52A45e1bfAd77E396B7c5180E499B69fA5BB93b8', // EnumerableFiatManager
             '0x108a6ea0280500f7Ddf6434864B4124cdFd88D4C', // EnumerableUnitManager
-            '0x8AA99940F4234BEBF764515bF80fE822e1E17B12' // EscrowManager
-        ]),
+            '0x62432762F297188fF967a8aC6cCEa48eE3bC9c86' // EscrowManager
+        ], undefined, {
+            KBCShipmentLibrary: '0xc79ad82de984f893148bEE79B33E7085AcFd3c02' // KBC_SHIPMENT_LIBRARY
+        }),
     // () =>
     //     deploy(ContractName.RELATIONSHIP_MANAGER, [
     //         '0x9169B151C0C32c6Ab49Aa2A55a8a6c07aB04f1bb', // DelegateManager
     //         ['0x30054880e4E2fA1082C1976cA5547cC3bd185c11'] // ContractsOwner
     //     ])
-    () =>
-        deploy(ContractName.ASSET_OPERATION_MANAGER, [
-            '0x037444C45ce591C7d9c598E49C5ED3AA1f8f4e3f', // DelegateManager
-            '0x7E4aaaE2258a677Cb706fb8a276e26700b92366C', // MaterialManager
-            '0xb8e699A624963AAcdfe793cE4bbCE856Dcd67eB0' // EnumerableProcessTypeManager
-        ])
+    // () =>
+    //     deploy(ContractName.ASSET_OPERATION_MANAGER, [
+    //         '0x9169B151C0C32c6Ab49Aa2A55a8a6c07aB04f1bb', // DelegateManager
+    //         '0x7E4aaaE2258a677Cb706fb8a276e26700b92366C', // MaterialManager
+    //         '0xb8e699A624963AAcdfe793cE4bbCE856Dcd67eB0' // EnumerableProcessTypeManager
+    //     ])
     // () =>
     //     deploy(ContractName.OFFER_MANAGER, [
     //         '0x9169B151C0C32c6Ab49Aa2A55a8a6c07aB04f1bb', // DelegateManager
@@ -114,7 +123,7 @@ serial([
     //         '0x705321A0E87a6E952712374302E8bDe3623B60b9' // ProductCategoryManager
     //     ])
     // () => deploy(
-    //     ContractName.MY_TOKEN, [10000],
+    //     ContractName.MY_TOKEN, [100000],
     // ),
     // () => deploy(
     //     ContractName.ETHEREUM_DID_REGISTRY, [],
@@ -130,9 +139,11 @@ serial([
     //         process.env.ESCROW_COMMISSIONER_FEE || 1
     //     ])
     // async () => {
-    //     const contract = await getAttachedContract(ContractName.MY_TOKEN, '0x4D559cDf9e7C2C2D51a8a0e0dD5DA583caC673BF');
-    //     const tx = await contract.transfer('0xa1f48005f183780092E0E277B282dC1934AE3308', 50);
+    //     const contract = await getAttachedContract(ContractName.MY_TOKEN, '0xA0BF1413F37870D386999A316696C4e4e77FC611');
+    //     const tx = await contract.transfer('0xa1f48005f183780092E0E277B282dC1934AE3308', 500);
     //     await tx.wait();
+    //     const tx2 = await contract.transfer('0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123', 500);
+    //     await tx2.wait();
     // }
 ]).catch((error: any) => {
     console.error(error);

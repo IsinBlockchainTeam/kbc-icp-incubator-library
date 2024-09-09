@@ -31,6 +31,7 @@ describe('Trade.sol', () => {
         customer: SignerWithAddress,
         arbiter: SignerWithAddress,
         commissioner: SignerWithAddress;
+    let KBCShipmentLibraryFake: FakeContract;
     const externalUrl: string = 'https://www.test.com';
     const metadataHash: string = 'metadata_hash';
     const now = new Date();
@@ -61,8 +62,13 @@ describe('Trade.sol', () => {
         documentManagerContractFake = await smock.fake(ContractName.DOCUMENT_MANAGER);
         unitManagerContractFake = await smock.fake(ContractName.ENUMERABLE_TYPE_MANAGER);
         unitManagerContractFake.contains.returns(true);
+        KBCShipmentLibraryFake = await smock.fake(ContractName.KBC_SHIPMENT_LIBRARY);
         const BasicTrade = await ethers.getContractFactory('BasicTrade');
-        const OrderTrade = await ethers.getContractFactory('OrderTrade');
+        const OrderTrade = await ethers.getContractFactory('OrderTrade', {
+            libraries: {
+                KBCShipmentLibrary: KBCShipmentLibraryFake.address
+            }
+        });
         basicTradeContract = await BasicTrade.deploy(
             roleProof,
             1,

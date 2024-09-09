@@ -34,7 +34,6 @@ describe('OrderTrade', () => {
             NegotiationStatus.INITIALIZED,
             500,
             'tokenAddress',
-            'escrow',
             {
                 incoterms: 'incoterms',
                 shipper: 'shipper',
@@ -70,7 +69,6 @@ describe('OrderTrade', () => {
         expect(orderTrade.negotiationStatus).toEqual(NegotiationStatus.INITIALIZED);
         expect(orderTrade.agreedAmount).toEqual(500);
         expect(orderTrade.tokenAddress).toEqual('tokenAddress');
-        expect(orderTrade.escrow).toEqual('escrow');
         expect(orderTrade.metadata?.incoterms).toEqual('incoterms');
         expect(orderTrade.metadata?.shipper).toEqual('shipper');
         expect(orderTrade.metadata?.shippingPort).toEqual('shippingPort');
@@ -125,11 +123,6 @@ describe('OrderTrade', () => {
     it('should correctly set tokenAddress', () => {
         orderTrade.tokenAddress = 'newTokenAddress';
         expect(orderTrade.tokenAddress).toEqual('newTokenAddress');
-    });
-
-    it('should correctly set escrow', () => {
-        orderTrade.escrow = 'newEscrow';
-        expect(orderTrade.escrow).toEqual('newEscrow');
     });
 
     it('should correctly set metadata', () => {

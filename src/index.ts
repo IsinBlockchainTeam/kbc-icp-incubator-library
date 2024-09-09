@@ -6,7 +6,7 @@ export { Relationship } from './entities/Relationship';
 export { RelationshipDriver } from './drivers/RelationshipDriver';
 export { RelationshipService } from './services/RelationshipService';
 
-export { RoleProof } from './types/RoleProof';
+export { type RoleProof } from './types/RoleProof';
 export { DelegateManagerDriver } from './drivers/DelegateManagerDriver';
 export { DelegateManagerService } from './services/DelegateManagerService';
 
@@ -49,7 +49,7 @@ export type { URLStructure } from './types/URLStructure';
 export { DocumentInfo, DocumentType } from './entities/DocumentInfo';
 export {
     Document,
-    DocumentMetadata,
+    type DocumentMetadata,
     DocumentStatus,
     type TransactionLine
 } from './entities/Document';
@@ -68,9 +68,9 @@ export { EscrowService } from './services/EscrowService';
 export { TokenDriver } from './drivers/TokenDriver';
 export { TokenService } from './services/TokenService';
 
-export { Shipment, ShipmentPhase, DocumentStatus as ShipmentDocumentStatus, DocumentInfo as ShipmentDocumentInfo, DocumentType as ShipmentDocumentType, ShipmentEvaluationStatus, FundsStatus} from './entities/Shipment';
+export { Shipment, Phase as ShipmentPhase, DocumentEvaluationStatus as ShipmentDocumentEvaluationStatus, DocumentInfo as ShipmentDocumentInfo, DocumentType as ShipmentDocumentType, EvaluationStatus as ShipmentEvaluationStatus, FundsStatus} from './entities/Shipment';
 export { ShipmentDriver } from './drivers/ShipmentDriver';
-export { ShipmentService, ShipmentDocument } from './services/ShipmentService';
+export { ShipmentService, type ShipmentDocument, type ShipmentPhaseDocument } from './services/ShipmentService';
 
 export type { ISolidStorageMetadataDriver } from './drivers/ISolidStorageMetadataDriver';
 export type { ISolidStorageDocumentDriver } from './drivers/ISolidStorageDocumentDriver';

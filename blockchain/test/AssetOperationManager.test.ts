@@ -6,7 +6,6 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { ContractName } from '../utils/constants';
 import { KBCAccessControl } from '../typechain-types/contracts/MaterialManager';
-import RoleProofStruct = KBCAccessControl.RoleProofStruct;
 
 describe('AssetOperationManager', () => {
     let assertOperationManagerContract: Contract;

@@ -99,8 +99,6 @@ export class OrderTrade extends Trade {
 
     private _tokenAddress: string;
 
-    private _escrow?: string;
-
     private _metadata: OrderTradeMetadata | undefined;
 
     constructor(
@@ -120,7 +118,6 @@ export class OrderTrade extends Trade {
         negotiationStatus: NegotiationStatus,
         agreedAmount: number,
         tokenAddress: string,
-        escrow?: string,
         metadata?: OrderTradeMetadata
     ) {
         super(tradeId, supplier, customer, commissioner, externalUrl, lines);
@@ -135,7 +132,6 @@ export class OrderTrade extends Trade {
         this._agreedAmount = agreedAmount;
         this._tokenAddress = tokenAddress;
 
-        if (escrow) this._escrow = escrow;
         if (metadata) this._metadata = metadata;
     }
 
@@ -217,14 +213,6 @@ export class OrderTrade extends Trade {
 
     set tokenAddress(value: string) {
         this._tokenAddress = value;
-    }
-
-    get escrow(): string | undefined {
-        return this._escrow;
-    }
-
-    set escrow(value: string | undefined) {
-        this._escrow = value;
     }
 
     get metadata(): OrderTradeMetadata | undefined {

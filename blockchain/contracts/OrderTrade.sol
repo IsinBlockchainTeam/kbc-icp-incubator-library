@@ -3,8 +3,8 @@ pragma solidity ^0.8.17;
 
 import "./Trade.sol";
 import "./Escrow.sol";
-import "hardhat/console.sol";
 import "./EscrowManager.sol";
+import "./KBCShipmentLibrary.sol";
 import "./Shipment.sol";
 
 contract OrderTrade is Trade {
@@ -57,7 +57,7 @@ contract OrderTrade is Trade {
 
     EnumerableType private _fiatManager;
     EscrowManager private _escrowManager;
-    Shipment private _shipment;
+    address private _shipmentAddress;
 
     constructor(RoleProof memory roleProof, uint256 tradeId, address delegateManagerAddress,  address productCategoryAddress, address materialManagerAddress, address documentManagerAddress,
         address unitManagerAddress, address supplier, address customer, address commissioner, string memory externalUrl,
@@ -85,9 +85,9 @@ contract OrderTrade is Trade {
         _hasOrderExpired = false;
     }
 
-    function getTrade(RoleProof memory roleProof) public view atLeastViewer(roleProof) returns (uint256, address, address, address, string memory, uint256[] memory, bool, bool, uint256, uint256, address, uint256, uint256, NegotiationStatus, uint256, address, Escrow) {
+    function getTrade(RoleProof memory roleProof) public view atLeastViewer(roleProof) returns (uint256, address, address, address, string memory, uint256[] memory, bool, bool, uint256, uint256, address, uint256, uint256, NegotiationStatus, uint256, address) {
         (uint256 tradeId, address supplier, address customer, address commissioner, string memory externalUrl, uint256[] memory lineIds) = _getTrade();
-        return (tradeId, supplier, customer, commissioner, externalUrl, lineIds, _hasSupplierSigned, _hasCommissionerSigned, _paymentDeadline, _documentDeliveryDeadline, _arbiter, _shippingDeadline, _deliveryDeadline, getNegotiationStatus(), _agreedAmount, _tokenAddress, _escrow);
+        return (tradeId, supplier, customer, commissioner, externalUrl, lineIds, _hasSupplierSigned, _hasCommissionerSigned, _paymentDeadline, _documentDeliveryDeadline, _arbiter, _shippingDeadline, _deliveryDeadline, getNegotiationStatus(), _agreedAmount, _tokenAddress);
     }
 
     function getTradeType(RoleProof memory roleProof) public override view atLeastViewer(roleProof) returns (TradeType) {
@@ -212,6 +212,7 @@ contract OrderTrade is Trade {
 
         if (_hasSupplierSigned && _hasCommissionerSigned) {
             emit OrderConfirmed();
+            _createShipment(roleProof);
         }
     }
 
@@ -230,38 +231,18 @@ contract OrderTrade is Trade {
         }
     }
 
-    function createShipment(RoleProof memory roleProof, uint256 expirationDate, uint256 quantity, uint256 weight, uint256 price) public atLeastEditor(roleProof) {
+    function _createShipment(RoleProof memory roleProof) private {
         require(_hasSupplierSigned && _hasCommissionerSigned, "OrderTrade: The order has not been confirmed yet");
-        require(_msgSender() == _supplier, "OrderTrade: Only the supplier can create the shipment");
-        require(_shipment == Shipment(address(0)), "OrderTrade: Shipment already created");
+        require(_shipmentAddress == address(0), "OrderTrade: Shipment already created");
 
         _escrow = _escrowManager.registerEscrow(roleProof, address(this), _supplier, _paymentDeadline - block.timestamp, _tokenAddress);
-        DocumentLibrary.DocumentType[] memory phase1RequiredDocument = new DocumentLibrary.DocumentType[](1);
-        phase1RequiredDocument[0] = DocumentLibrary.DocumentType.PRE_SHIPMENT_SAMPLE;
-        DocumentLibrary.DocumentType[] memory phase2RequiredDocument = new DocumentLibrary.DocumentType[](2);
-        phase2RequiredDocument[0] = DocumentLibrary.DocumentType.SHIPPING_INSTRUCTIONS;
-        phase2RequiredDocument[1] = DocumentLibrary.DocumentType.SHIPPING_NOTE;
-        DocumentLibrary.DocumentType[] memory phase3RequiredDocument = new DocumentLibrary.DocumentType[](5);
-        phase3RequiredDocument[0] = DocumentLibrary.DocumentType.BOOKING_CONFIRMATION;
-        phase3RequiredDocument[1] = DocumentLibrary.DocumentType.CARGO_COLLECTION_ORDER;
-        phase3RequiredDocument[2] = DocumentLibrary.DocumentType.EXPORT_INVOICE;
-        phase3RequiredDocument[3] = DocumentLibrary.DocumentType.TRANSPORT_CONTRACT;
-        phase3RequiredDocument[4] = DocumentLibrary.DocumentType.TO_BE_FREED_SINGLE_EXPORT_DECLARATION;
-        DocumentLibrary.DocumentType[] memory phase4RequiredDocument = new DocumentLibrary.DocumentType[](7);
-        phase4RequiredDocument[0] = DocumentLibrary.DocumentType.EXPORT_CONFIRMATION;
-        phase4RequiredDocument[1] = DocumentLibrary.DocumentType.FREED_SINGLE_EXPORT_DECLARATION;
-        phase4RequiredDocument[2] = DocumentLibrary.DocumentType.CONTAINER_PROOF_OF_DELIVERY;
-        phase4RequiredDocument[3] = DocumentLibrary.DocumentType.PHYTOSANITARY_CERTIFICATE;
-        phase4RequiredDocument[4] = DocumentLibrary.DocumentType.BILL_OF_LADING;
-        phase4RequiredDocument[5] = DocumentLibrary.DocumentType.ORIGIN_CERTIFICATE_ICO;
-        phase4RequiredDocument[6] = DocumentLibrary.DocumentType.WEIGHT_CERTIFICATE;
-        DocumentLibrary.DocumentType[] memory phase5RequiredDocument = new DocumentLibrary.DocumentType[](0);
+
         // TODO: sampleApprovalRequired true if sample is required
-        _shipment = new Shipment(roleProof, address(_delegateManager), _supplier, _commissioner, _externalUrl, address(_escrow), address(_documentManager), true, phase1RequiredDocument, phase2RequiredDocument, phase3RequiredDocument, phase4RequiredDocument, phase5RequiredDocument);
-        _escrow.addAdmin(address(_shipment));
+        _shipmentAddress = address(new Shipment(roleProof, address(_delegateManager), _supplier, _commissioner, _externalUrl, address(_escrow), address(_documentManager), true));
+        _escrow.addAdmin(_shipmentAddress);
     }
-    function getShipment(RoleProof memory roleProof) public view atLeastViewer(roleProof) returns (Shipment) {
-        return _shipment;
+    function getShipment(RoleProof memory roleProof) public view atLeastViewer(roleProof) returns (address) {
+        return _shipmentAddress;
     }
 
     function getEscrow(RoleProof memory roleProof) public view atLeastViewer(roleProof) returns (Escrow) {

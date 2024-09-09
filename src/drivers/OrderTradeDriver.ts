@@ -76,8 +76,7 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
             result[12].toNumber(),
             getNegotiationStatusByIndex(result[13]),
             result[14].toNumber(),
-            result[15],
-            result[16] === zeroAddress ? undefined : result[16]
+            result[15]
         );
     }
 
@@ -255,26 +254,6 @@ export class OrderTradeDriver extends TradeDriver implements IConcreteTradeDrive
             decimals: BigNumber.from(_decimals),
             fiat: price.fiat
         } as OrderTradeContract.OrderLinePriceStructOutput;
-    }
-
-    async createShipment(
-        roleProof: RoleProof,
-        expirationDate: Date,
-        quantity: number,
-        weight: number,
-        price: number
-    ): Promise<void> {
-        if (quantity < 0 || weight < 0 || price < 0) {
-            throw new Error('Invalid arguments');
-        }
-        const tx = await this._actual.createShipment(
-            roleProof,
-            expirationDate.getTime(),
-            quantity,
-            weight,
-            price
-        );
-        await tx.wait();
     }
 
     async getShipmentAddress(roleProof: RoleProof): Promise<string | undefined> {

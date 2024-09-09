@@ -16,6 +16,7 @@ import { NegotiationStatus } from '../types/NegotiationStatus';
 import { EntityBuilder } from '../utils/EntityBuilder';
 import { OrderLine, OrderLineRequest } from '../entities/OrderTrade';
 import { RoleProof } from '../types/RoleProof';
+import {zeroAddress} from "../utils/constants";
 
 describe('OrderTradeDriver', () => {
     let orderTradeDriver: OrderTradeDriver;
@@ -72,6 +73,7 @@ describe('OrderTradeDriver', () => {
     const deliveryDeadline: number = 400;
     const agreedAmount: number = 1000;
     const tokenAddress: string = Wallet.createRandom().address;
+    const shipment: string = Wallet.createRandom().address;
     const escrow: string = Wallet.createRandom().address;
     // const metadata: OrderTradeMetadata = {
     //     incoterms: 'incoterms',
@@ -97,6 +99,9 @@ describe('OrderTradeDriver', () => {
     const mockedGetNegotiationStatus = jest.fn();
     const mockedHaveDeadlinesExpired = jest.fn();
     const mockedGetWhoSigned = jest.fn();
+
+    const mockedGetShipment = jest.fn();
+    const mockedGetEscrow = jest.fn();
 
     const mockedDecodeEventLog = jest.fn();
     const mockedQueryFilter = jest.fn();
@@ -139,8 +144,7 @@ describe('OrderTradeDriver', () => {
         BigNumber.from(deliveryDeadline),
         NegotiationStatus.PENDING,
         BigNumber.from(agreedAmount),
-        tokenAddress,
-        escrow
+        tokenAddress
     ]);
     mockedGetLineCounter.mockResolvedValue(BigNumber.from(1));
     mockedGetLine.mockResolvedValue([line, orderLine]);
@@ -149,6 +153,8 @@ describe('OrderTradeDriver', () => {
     mockedHaveDeadlinesExpired.mockReturnValue(false);
     mockedGetWhoSigned.mockResolvedValue([supplier, commissioner]);
     mockedQueryFilter.mockResolvedValue([{ event: 'eventName' }]);
+    mockedGetShipment.mockResolvedValue(shipment);
+    mockedGetEscrow.mockResolvedValue(escrow);
 
     const mockedContract = createMock<OrderTradeContract>({
         getTrade: mockedGetTrade,
@@ -169,6 +175,8 @@ describe('OrderTradeDriver', () => {
         enforceDeadlines: mockedWriteFunction,
         getWhoSigned: mockedGetWhoSigned,
         confirmOrder: mockedWriteFunction,
+        getShipment: mockedGetShipment,
+        getEscrow: mockedGetEscrow,
 
         interface: { decodeEventLog: mockedDecodeEventLog },
         queryFilter: mockedQueryFilter,
@@ -246,7 +254,6 @@ describe('OrderTradeDriver', () => {
         expect(result.negotiationStatus).toEqual(NegotiationStatus.PENDING);
         expect(result.agreedAmount).toEqual(agreedAmount);
         expect(result.tokenAddress).toEqual(tokenAddress);
-        expect(result.escrow).toEqual(escrow);
 
         expect(mockedContract.getTrade).toHaveBeenCalledTimes(1);
         expect(mockedContract.getTrade).toHaveBeenNthCalledWith(1, roleProof, {
@@ -550,5 +557,28 @@ describe('OrderTradeDriver', () => {
 
         expect(mockedEventFilter.OrderExpired).toHaveBeenCalledTimes(1);
         expect(mockedEventFilter.OrderExpired).toHaveBeenNthCalledWith(1);
+    });
+
+    it('should correctly retrieve shipment address', async () => {
+        mockedGetShipment.mockResolvedValueOnce(shipment);
+        let shipmentAddress = await orderTradeDriver.getShipmentAddress(roleProof);
+
+        expect(shipmentAddress).toEqual(shipment);
+
+        mockedGetShipment.mockResolvedValueOnce(zeroAddress);
+        shipmentAddress = await orderTradeDriver.getShipmentAddress(roleProof);
+
+        expect(shipmentAddress).toBeUndefined();
+    });
+    it('should correctly retrieve escrow address', async () => {
+        mockedGetEscrow.mockResolvedValueOnce(escrow);
+        let escrowAddress = await orderTradeDriver.getEscrowAddress(roleProof);
+
+        expect(escrowAddress).toEqual(escrow);
+
+        mockedGetEscrow.mockResolvedValueOnce(zeroAddress);
+        escrowAddress = await orderTradeDriver.getEscrowAddress(roleProof);
+
+        expect(escrowAddress).toBeUndefined();
     });
 });

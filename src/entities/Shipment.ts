@@ -1,14 +1,25 @@
 export enum DocumentType {
-    INSURANCE_CERTIFICATE,
-    BOOKING_CONFIRMATION,
+    SERVICE_GUIDE,
+    SENSORY_EVALUATION_ANALYSIS_REPORT,
+    SUBJECT_TO_APPROVAL_OF_SAMPLE,
+    PRE_SHIPMENT_SAMPLE,
+    SHIPPING_INSTRUCTIONS,
     SHIPPING_NOTE,
-    WEIGHT_CERTIFICATE,
-    BILL_OF_LADING,
+    BOOKING_CONFIRMATION,
+    CARGO_COLLECTION_ORDER,
+    EXPORT_INVOICE,
+    TRANSPORT_CONTRACT,
+    TO_BE_FREED_SINGLE_EXPORT_DECLARATION,
+    EXPORT_CONFIRMATION,
+    FREED_SINGLE_EXPORT_DECLARATION,
+    CONTAINER_PROOF_OF_DELIVERY,
     PHYTOSANITARY_CERTIFICATE,
-    SINGLE_EXPORT_DECLARATION,
-    OTHER
+    BILL_OF_LADING,
+    ORIGIN_CERTIFICATE_ICO,
+    WEIGHT_CERTIFICATE,
+    GENERIC
 }
-export enum DocumentStatus {
+export enum DocumentEvaluationStatus {
     NOT_EVALUATED,
     APPROVED,
     NOT_APPROVED
@@ -18,11 +29,11 @@ export class DocumentInfo {
 
     private _type: DocumentType;
 
-    private _status: DocumentStatus;
+    private _status: DocumentEvaluationStatus;
 
     private _uploader: string;
 
-    constructor(id: number, type: DocumentType, status: DocumentStatus, uploader: string) {
+    constructor(id: number, type: DocumentType, status: DocumentEvaluationStatus, uploader: string) {
         this._id = id;
         this._type = type;
         this._status = status;
@@ -45,11 +56,11 @@ export class DocumentInfo {
         this._type = value;
     }
 
-    get status(): DocumentStatus {
+    get status(): DocumentEvaluationStatus {
         return this._status;
     }
 
-    set status(value: DocumentStatus) {
+    set status(value: DocumentEvaluationStatus) {
         this._status = value;
     }
 
@@ -61,16 +72,19 @@ export class DocumentInfo {
         this._uploader = value;
     }
 }
-export enum ShipmentPhase {
-    APPROVAL,
-    LAND_TRANSPORTATION,
-    SEA_TRANSPORTATION,
-    COMPARISON
-}
-export enum ShipmentEvaluationStatus {
-    NOT_EVALUATED,
+export enum Phase {
+    PHASE_1,
+    PHASE_2,
+    PHASE_3,
+    PHASE_4,
+    PHASE_5,
     CONFIRMED,
     ARBITRATION
+}
+export enum EvaluationStatus {
+    NOT_EVALUATED,
+    APPROVED,
+    NOT_APPROVED
 }
 export enum FundsStatus {
     NOT_LOCKED,
@@ -78,119 +92,85 @@ export enum FundsStatus {
     RELEASED
 }
 export class Shipment {
-    private _approved: boolean;
+    private _supplierAddress: string;
 
-    private _expirationDate: Date;
-
-    private _quantity: number;
-
-    private _weight: number;
-
-    private _price: number;
-
-    private _evaluationStatus: ShipmentEvaluationStatus;
-
-    private _documentsIds: number[];
-
-    private _fundsStatus: FundsStatus;
+    private _commissionerAddress: string;
 
     private _externalUrl: string;
 
-    private _landTransportationRequiredDocumentsTypes: DocumentType[];
+    private _escrowAddress: string;
 
-    private _seaTransportationRequiredDocumentsTypes: DocumentType[];
+    private _documentManagerAddress: string;
 
-    constructor(
-        approved: boolean,
-        expirationDate: Date,
-        quantity: number,
-        weight: number,
-        price: number,
-        evaluationStatus: ShipmentEvaluationStatus,
-        documentsIds: number[],
-        fundsStatus: FundsStatus,
-        externalUrl: string,
-        landTransportationRequiredDocumentsTypes: DocumentType[],
-        seaTransportationRequiredDocumentsTypes: DocumentType[]
-    ) {
-        if (quantity < 0 || weight < 0 || price < 0) {
-            throw new Error('Invalid shipment data');
-        }
-        this._approved = approved;
-        this._expirationDate = expirationDate;
-        this._quantity = quantity;
-        this._weight = weight;
-        this._price = price;
-        this._evaluationStatus = evaluationStatus;
-        this._documentsIds = documentsIds;
-        this._fundsStatus = fundsStatus;
+    private _sampleEvaluationStatus: EvaluationStatus;
+
+    private _detailsEvaluationStatus: EvaluationStatus;
+
+    private _qualityEvaluationStatus: EvaluationStatus;
+
+    private _fundsStatus: FundsStatus;
+
+    private _detailsSet: boolean;
+
+    private _shipmentNumber: number;
+
+    private _expirationDate: Date;
+
+    private _fixingDate: Date;
+
+    private _targetExchange: string;
+
+    private _differentialApplied: number;
+
+    private _price: number;
+
+    private _quantity: number;
+
+    private _containersNumber: number;
+
+    private _netWeight: number;
+
+    private _grossWeight: number;
+
+
+    constructor(supplierAddress: string, commissionerAddress: string, externalUrl: string, escrowAddress: string, documentManagerAddress: string, sampleEvaluationStatus: EvaluationStatus, detailsEvaluationStatus: EvaluationStatus, qualityEvaluationStatus: EvaluationStatus, fundsStatus: FundsStatus, detailsSet: boolean, shipmentNumber: number, expirationDate: Date, fixingDate: Date, targetExchange: string, differentialApplied: number, price: number, quantity: number, containersNumber: number, netWeight: number, grossWeight: number) {
+        this._supplierAddress = supplierAddress;
+        this._commissionerAddress = commissionerAddress;
         this._externalUrl = externalUrl;
-        this._landTransportationRequiredDocumentsTypes = landTransportationRequiredDocumentsTypes;
-        this._seaTransportationRequiredDocumentsTypes = seaTransportationRequiredDocumentsTypes;
+        this._escrowAddress = escrowAddress;
+        this._documentManagerAddress = documentManagerAddress;
+        this._sampleEvaluationStatus = sampleEvaluationStatus;
+        this._detailsEvaluationStatus = detailsEvaluationStatus;
+        this._qualityEvaluationStatus = qualityEvaluationStatus;
+        this._fundsStatus = fundsStatus;
+        this._detailsSet = detailsSet;
+        this._shipmentNumber = shipmentNumber;
+        this._expirationDate = expirationDate;
+        this._fixingDate = fixingDate;
+        this._targetExchange = targetExchange;
+        this._differentialApplied = differentialApplied;
+        this._price = price;
+        this._quantity = quantity;
+        this._containersNumber = containersNumber;
+        this._netWeight = netWeight;
+        this._grossWeight = grossWeight;
     }
 
-    get approved(): boolean {
-        return this._approved;
+
+    get supplierAddress(): string {
+        return this._supplierAddress;
     }
 
-    set approved(value: boolean) {
-        this._approved = value;
+    set supplierAddress(value: string) {
+        this._supplierAddress = value;
     }
 
-    get expirationDate(): Date {
-        return this._expirationDate;
+    get commissionerAddress(): string {
+        return this._commissionerAddress;
     }
 
-    set expirationDate(value: Date) {
-        this._expirationDate = value;
-    }
-
-    get quantity(): number {
-        return this._quantity;
-    }
-
-    set quantity(value: number) {
-        this._quantity = value;
-    }
-
-    get weight(): number {
-        return this._weight;
-    }
-
-    set weight(value: number) {
-        this._weight = value;
-    }
-
-    get price(): number {
-        return this._price;
-    }
-
-    set price(value: number) {
-        this._price = value;
-    }
-
-    get evaluationStatus(): ShipmentEvaluationStatus {
-        return this._evaluationStatus;
-    }
-
-    set evaluationStatus(value: ShipmentEvaluationStatus) {
-        this._evaluationStatus = value;
-    }
-
-    get documentsIds(): number[] {
-        return this._documentsIds;
-    }
-
-    set documentsIds(value: number[]) {
-        this._documentsIds = value;
-    }
-
-    get fundsStatus(): FundsStatus {
-        return this._fundsStatus;
-    }
-
-    set fundsStatus(value: FundsStatus) {
-        this._fundsStatus = value;
+    set commissionerAddress(value: string) {
+        this._commissionerAddress = value;
     }
 
     get externalUrl(): string {
@@ -201,19 +181,141 @@ export class Shipment {
         this._externalUrl = value;
     }
 
-    get landTransportationRequiredDocumentsTypes(): DocumentType[] {
-        return this._landTransportationRequiredDocumentsTypes;
+    get escrowAddress(): string {
+        return this._escrowAddress;
     }
 
-    set landTransportationRequiredDocumentsTypes(value: DocumentType[]) {
-        this._landTransportationRequiredDocumentsTypes = value;
+    set escrowAddress(value: string) {
+        this._escrowAddress = value;
     }
 
-    get seaTransportationRequiredDocumentsTypes(): DocumentType[] {
-        return this._seaTransportationRequiredDocumentsTypes;
+    get documentManagerAddress(): string {
+        return this._documentManagerAddress;
     }
 
-    set seaTransportationRequiredDocumentsTypes(value: DocumentType[]) {
-        this._seaTransportationRequiredDocumentsTypes = value;
+    set documentManagerAddress(value: string) {
+        this._documentManagerAddress = value;
     }
+
+    get sampleEvaluationStatus(): EvaluationStatus {
+        return this._sampleEvaluationStatus;
+    }
+
+    set sampleEvaluationStatus(value: EvaluationStatus) {
+        this._sampleEvaluationStatus = value;
+    }
+
+    get detailsEvaluationStatus(): EvaluationStatus {
+        return this._detailsEvaluationStatus;
+    }
+
+    set detailsEvaluationStatus(value: EvaluationStatus) {
+        this._detailsEvaluationStatus = value;
+    }
+
+    get qualityEvaluationStatus(): EvaluationStatus {
+        return this._qualityEvaluationStatus;
+    }
+
+    set qualityEvaluationStatus(value: EvaluationStatus) {
+        this._qualityEvaluationStatus = value;
+    }
+
+    get fundsStatus(): FundsStatus {
+        return this._fundsStatus;
+    }
+
+    set fundsStatus(value: FundsStatus) {
+        this._fundsStatus = value;
+    }
+
+    get detailsSet(): boolean {
+        return this._detailsSet;
+    }
+
+    set detailsSet(value: boolean) {
+        this._detailsSet = value;
+    }
+
+    get shipmentNumber(): number {
+        return this._shipmentNumber;
+    }
+
+    set shipmentNumber(value: number) {
+        this._shipmentNumber = value;
+    }
+
+    get expirationDate(): Date {
+        return this._expirationDate;
+    }
+
+    set expirationDate(value: Date) {
+        this._expirationDate = value;
+    }
+
+    get fixingDate(): Date {
+        return this._fixingDate;
+    }
+
+    set fixingDate(value: Date) {
+        this._fixingDate = value;
+    }
+
+    get targetExchange(): string {
+        return this._targetExchange;
+    }
+
+    set targetExchange(value: string) {
+        this._targetExchange = value;
+    }
+
+    get differentialApplied(): number {
+        return this._differentialApplied;
+    }
+
+    set differentialApplied(value: number) {
+        this._differentialApplied = value;
+    }
+
+    get price(): number {
+        return this._price;
+    }
+
+    set price(value: number) {
+        this._price = value;
+    }
+
+    get quantity(): number {
+        return this._quantity;
+    }
+
+    set quantity(value: number) {
+        this._quantity = value;
+    }
+
+    get containersNumber(): number {
+        return this._containersNumber;
+    }
+
+    set containersNumber(value: number) {
+        this._containersNumber = value;
+    }
+
+    get netWeight(): number {
+        return this._netWeight;
+    }
+
+    set netWeight(value: number) {
+        this._netWeight = value;
+    }
+
+    get grossWeight(): number {
+        return this._grossWeight;
+    }
+
+    set grossWeight(value: number) {
+        this._grossWeight = value;
+    }
+
+
 }

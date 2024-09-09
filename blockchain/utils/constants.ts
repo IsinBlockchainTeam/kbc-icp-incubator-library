@@ -1,5 +1,6 @@
 export enum ContractName {
     ENUMERABLE_TYPE_MANAGER = 'EnumerableType',
+    KBC_SHIPMENT_LIBRARY = 'KBCShipmentLibrary',
     TRADE_MANAGER = 'TradeManager',
     BASIC_TRADE = 'BasicTrade',
     ORDER_TRADE = 'OrderTrade',

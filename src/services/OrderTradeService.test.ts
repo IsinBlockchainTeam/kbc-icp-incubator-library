@@ -31,7 +31,9 @@ describe('OrderTradeService', () => {
         haveDeadlinesExpired: jest.fn(),
         enforceDeadlines: jest.fn(),
         confirmOrder: jest.fn(),
-        getEmittedEvents: jest.fn()
+        getEmittedEvents: jest.fn(),
+        getShipmentAddress: jest.fn(),
+        getEscrowAddress: jest.fn()
     });
     const mockedDocumentDriver: DocumentDriver = createMock<DocumentDriver>({
         getDocumentById: jest.fn()
@@ -187,6 +189,18 @@ describe('OrderTradeService', () => {
             serviceFunction: () => orderTradeService.getEmittedEvents(),
             expectedMockedFunction: mockedOrderTradeDriver.getEmittedEvents,
             expectedMockedFunctionArgs: []
+        },
+        {
+            serviceFunctionName: 'getShipmentAddress',
+            serviceFunction: () => orderTradeService.getShipmentAddress(roleProof),
+            expectedMockedFunction: mockedOrderTradeDriver.getShipmentAddress,
+            expectedMockedFunctionArgs: [roleProof]
+        },
+        {
+            serviceFunctionName: 'getEscrowAddress',
+            serviceFunction: () => orderTradeService.getEscrowAddress(roleProof),
+            expectedMockedFunction: mockedOrderTradeDriver.getEscrowAddress,
+            expectedMockedFunctionArgs: [roleProof]
         }
     ])(
         'should call driver $serviceFunctionName',

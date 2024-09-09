@@ -51,7 +51,9 @@ describe('EscrowManagerDriver', () => {
         getPercentageFee: mockedGetPercentageFee,
         updatePercentageFee: mockedWriteFunction,
         getEscrow: mockedGetEscrow,
-        getEscrowCounter: mockedGetEscrowCounter
+        getEscrowCounter: mockedGetEscrowCounter,
+        addAdmin: mockedWriteFunction,
+        removeAdmin: mockedWriteFunction
     });
 
     beforeAll(() => {
@@ -74,7 +76,7 @@ describe('EscrowManagerDriver', () => {
                     event: 'EscrowRegistered',
                     args: {
                         id: BigNumber.from(1),
-                        escrowAddress: escrowAddress
+                        escrowAddress
                     }
                 }
             ],
@@ -128,6 +130,20 @@ describe('EscrowManagerDriver', () => {
         expect(mockedContract.registerEscrow).toHaveBeenCalledTimes(0);
         expect(mockedWait).toHaveBeenCalledTimes(0);
     });
+    it('should correctly register a new Escrow - FAIL(Duration below 0)', async () => {
+        await expect(
+            escrowManagerDriver.registerEscrow(
+                roleProof,
+                admin,
+                payee,
+                -1,
+                contractAddress
+            )
+        ).rejects.toThrow(new Error('Duration must be greater than 0'));
+
+        expect(mockedContract.registerEscrow).toHaveBeenCalledTimes(0);
+        expect(mockedWait).toHaveBeenCalledTimes(0);
+    });
     it('should correctly register a new Escrow - FAIL(Error during escrow registration, no events found)', async () => {
         mockedWait.mockResolvedValueOnce({
             events: null,
@@ -144,7 +160,7 @@ describe('EscrowManagerDriver', () => {
                     event: 'OtherEvent',
                     args: {
                         id: BigNumber.from(1),
-                        escrowAddress: escrowAddress
+                        escrowAddress
                     }
                 }
             ],
@@ -239,5 +255,27 @@ describe('EscrowManagerDriver', () => {
         expect(mockedContract.getEscrow).toHaveBeenCalledTimes(1);
         expect(mockedContract.getEscrow).toHaveBeenNthCalledWith(1, roleProof, 1);
         expect(mockedGetEscrow).toHaveBeenCalledTimes(1);
+    });
+    it('should correctly add an admin', async () => {
+        await escrowManagerDriver.addAdmin(admin);
+
+        expect(mockedContract.addAdmin).toHaveBeenCalledTimes(1);
+        expect(mockedContract.addAdmin).toHaveBeenNthCalledWith(1, admin);
+        expect(mockedWait).toHaveBeenCalledTimes(1);
+
+        await expect(escrowManagerDriver.addAdmin('notAnAddress')).rejects.toThrow(
+            new Error('Not an address')
+        );
+    });
+    it('should correctly remove an admin', async () => {
+        await escrowManagerDriver.removeAdmin(admin);
+
+        expect(mockedContract.removeAdmin).toHaveBeenCalledTimes(1);
+        expect(mockedContract.removeAdmin).toHaveBeenNthCalledWith(1, admin);
+        expect(mockedWait).toHaveBeenCalledTimes(1);
+
+        await expect(escrowManagerDriver.removeAdmin('notAnAddress')).rejects.toThrow(
+            new Error('Not an address')
+        );
     });
 });

@@ -14,6 +14,7 @@ describe('OrderTrade.sol', () => {
     let productCategoryManagerContractFake: FakeContract;
     let materialManagerContractFake: FakeContract;
     let enumerableFiatManagerContractFake: FakeContract;
+    let KBCShipmentLibraryFake: FakeContract;
     const fiats: string[] = ['fiat1', 'fiat2'];
     let documentManagerContractFake: FakeContract;
     let escrowManagerContractFake: FakeContract;
@@ -48,7 +49,11 @@ describe('OrderTrade.sol', () => {
     } as MaterialManager.MaterialStructOutput;
 
     const _createOrderTrade = async (deadline?: number): Promise<void> => {
-        const OrderTrade = await ethers.getContractFactory('OrderTrade');
+        const OrderTrade = await ethers.getContractFactory('OrderTrade', {
+            libraries: {
+                KBCShipmentLibrary: KBCShipmentLibraryFake.address
+            }
+        });
         orderTradeContract = await OrderTrade.deploy(
             roleProof,
             1,
@@ -98,6 +103,7 @@ describe('OrderTrade.sol', () => {
         escrowManagerContractFake = await smock.fake(ContractName.ESCROW_MANAGER);
         escrowFakeContract = await smock.fake(ContractName.ESCROW);
         escrowManagerContractFake.registerEscrow.returns(escrowFakeContract.address);
+        KBCShipmentLibraryFake = await smock.fake(ContractName.KBC_SHIPMENT_LIBRARY);
         await _createOrderTrade();
     });
 
@@ -147,6 +153,14 @@ describe('OrderTrade.sol', () => {
             expect(await orderTradeContract.getWhoSigned(roleProof)).to.deep.equal([supplier.address, ethers.constants.AddressZero]);
             await orderTradeContract.connect(commissioner).confirmOrder(roleProof);
             expect(await orderTradeContract.getWhoSigned(roleProof)).to.deep.equal([supplier.address, commissioner.address]);
+        });
+
+        it('should get shipment address', async () => {
+            expect(await orderTradeContract.getShipment(roleProof)).to.equal(ethers.constants.AddressZero);
+        });
+
+        it('should get escrow address', async () => {
+            expect(await orderTradeContract.getEscrow(roleProof)).to.equal(ethers.constants.AddressZero);
         });
     });
 
@@ -391,6 +405,11 @@ describe('OrderTrade.sol', () => {
 
     describe('Order confirmation', () => {
         it('should confirm an order', async () => {
+            let shipmentAddress = await orderTradeContract.getShipment(roleProof);
+            expect(shipmentAddress).to.equal(ethers.constants.AddressZero);
+            let escrowAddress = await orderTradeContract.getEscrow(roleProof);
+            expect(escrowAddress).to.equal(ethers.constants.AddressZero);
+
             const supplierTx = await orderTradeContract.connect(supplier).confirmOrder(roleProof);
             const supplierReceipt = await supplierTx.wait();
             const commissionerTx = await orderTradeContract.connect(commissioner).confirmOrder(roleProof);
@@ -403,6 +422,11 @@ describe('OrderTrade.sol', () => {
             expect(commissionerReceipt.events.find((event: Event) => event.event === 'OrderConfirmed')).to.not.be.undefined;
             expect(hasSupplierSigned).to.equal(true);
             expect(hasCommissionerSigned).to.equal(true);
+
+            shipmentAddress = await orderTradeContract.getShipment(roleProof);
+            expect(shipmentAddress).to.not.equal(ethers.constants.AddressZero);
+            escrowAddress = await orderTradeContract.getEscrow(roleProof);
+            expect(escrowAddress).to.not.equal(ethers.constants.AddressZero);
         });
 
         it('should remove confirmation when a constraint is updated by the other party', async () => {

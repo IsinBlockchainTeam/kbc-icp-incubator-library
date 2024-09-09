@@ -4,6 +4,7 @@ pragma solidity ^0.8.17;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./DocumentManager.sol";
 import "./Escrow.sol";
+import "./KBCShipmentLibrary.sol";
 
 library DocumentLibrary {
     enum DocumentType {
@@ -63,6 +64,8 @@ contract Shipment is AccessControl, KBCAccessControl {
     // TODO: date by witch the 4th phase should be completed
     uint256 private _expirationDate;
     uint256 private _fixingDate;
+    string private _targetExchange;
+    uint256 private _differentialApplied;
     uint256 private _price;
     uint256 private _quantity;
     uint256 private _containersNumber;
@@ -73,12 +76,6 @@ contract Shipment is AccessControl, KBCAccessControl {
     mapping(DocumentLibrary.DocumentType => uint256[]) private _documentsIdsByType;
     mapping(uint256 => DocumentLibrary.DocumentInfo) private _documentsInfoById;
 
-    DocumentLibrary.DocumentType[] private _phase1RequiredDocuments;
-    DocumentLibrary.DocumentType[] private _phase2RequiredDocuments;
-    DocumentLibrary.DocumentType[] private _phase3RequiredDocuments;
-    DocumentLibrary.DocumentType[] private _phase4RequiredDocuments;
-    DocumentLibrary.DocumentType[] private _phase5RequiredDocuments;
-
     constructor(
         RoleProof memory roleProof,
         address delegateManagerAddress,
@@ -87,12 +84,7 @@ contract Shipment is AccessControl, KBCAccessControl {
         string memory externalUrl,
         address escrow,
         address documentManager,
-        bool sampleApprovalRequired,
-        DocumentLibrary.DocumentType[] memory phase1RequiredDocuments,
-        DocumentLibrary.DocumentType[] memory phase2RequiredDocuments,
-        DocumentLibrary.DocumentType[] memory phase3RequiredDocuments,
-        DocumentLibrary.DocumentType[] memory phase4RequiredDocuments,
-        DocumentLibrary.DocumentType[] memory phase5RequiredDocuments
+        bool sampleApprovalRequired
     ) KBCAccessControl(delegateManagerAddress) {
         require(_isAtLeastEditor(roleProof), "KBCAccessControl: Caller doesn't have role 'Editor' or higher");
         _supplier = supplier;
@@ -108,12 +100,6 @@ contract Shipment is AccessControl, KBCAccessControl {
 
         _sampleEvaluationRequired = sampleApprovalRequired;
         _detailsSet = false;
-
-        _phase1RequiredDocuments = phase1RequiredDocuments;
-        _phase2RequiredDocuments = phase2RequiredDocuments;
-        _phase3RequiredDocuments = phase3RequiredDocuments;
-        _phase4RequiredDocuments = phase4RequiredDocuments;
-        _phase5RequiredDocuments = phase5RequiredDocuments;
     }
 
     // Modifiers
@@ -131,8 +117,8 @@ contract Shipment is AccessControl, KBCAccessControl {
     }
 
     // Getters
-    function getShipment(RoleProof memory roleProof) public view atLeastViewer(roleProof) returns (address supplier, address commissioner, string memory externalUrl, Escrow escrow, DocumentManager documentManager, EvaluationStatus sampleEvaluationStatus, EvaluationStatus detailsEvaluationStatus, EvaluationStatus qualityEvaluationStatus, FundsStatus fundsStatus, bool detailsSet, uint256 shipmentNumber, uint256 expirationDate, uint256 fixingDate, uint256 price, uint256 quantity, uint256 containersNumber, uint256 netWeight, uint256 grossWeight, DocumentLibrary.DocumentType[] memory phase1RequiredDocuments, DocumentLibrary.DocumentType[] memory phase2RequiredDocuments, DocumentLibrary.DocumentType[] memory phase3RequiredDocuments, DocumentLibrary.DocumentType[] memory phase4RequiredDocuments, DocumentLibrary.DocumentType[] memory phase5RequiredDocuments) {
-        return (_supplier, _commissioner, _externalUrl, _escrow, _documentManager, _sampleEvaluationStatus, _detailsEvaluationStatus, _qualityEvaluationStatus, _fundsStatus, _detailsSet, _shipmentNumber, _expirationDate, _fixingDate, _price, _quantity, _containersNumber, _netWeight, _grossWeight, _phase1RequiredDocuments, _phase2RequiredDocuments, _phase3RequiredDocuments, _phase4RequiredDocuments, _phase5RequiredDocuments);
+    function getShipment(RoleProof memory roleProof) public view atLeastViewer(roleProof) returns (address supplier, address commissioner, string memory externalUrl, Escrow escrow, DocumentManager documentManager, EvaluationStatus sampleEvaluationStatus, EvaluationStatus detailsEvaluationStatus, EvaluationStatus qualityEvaluationStatus, FundsStatus fundsStatus, bool detailsSet, uint256 shipmentNumber, uint256 expirationDate, uint256 fixingDate, string memory targetExchange, uint256 differentialApplied, uint256 price, uint256 quantity, uint256 containersNumber, uint256 netWeight, uint256 grossWeight) {
+        return (_supplier, _commissioner, _externalUrl, _escrow, _documentManager, _sampleEvaluationStatus, _detailsEvaluationStatus, _qualityEvaluationStatus, _fundsStatus, _detailsSet, _shipmentNumber, _expirationDate, _fixingDate, _targetExchange, _differentialApplied, _price, _quantity, _containersNumber, _netWeight, _grossWeight);
     }
     function _areDocumentsUploadedAndApproved(RoleProof memory roleProof, DocumentLibrary.DocumentType[] memory requiredDocuments) private view returns (bool) {
         for(uint256 i = 0; i < requiredDocuments.length; i++) {
@@ -146,25 +132,25 @@ contract Shipment is AccessControl, KBCAccessControl {
         return true;
     }
     function getPhase(RoleProof memory roleProof) public view atLeastViewer(roleProof) returns (Phase) {
-        if(!_areDocumentsUploadedAndApproved(roleProof, _phase1RequiredDocuments))
+        if(!_areDocumentsUploadedAndApproved(roleProof, KBCShipmentLibrary.getPhase1RequiredDocuments()))
             return Phase.PHASE_1;
         if(_sampleEvaluationRequired && _sampleEvaluationStatus != EvaluationStatus.APPROVED)
             return Phase.PHASE_1;
 
-        if(!_areDocumentsUploadedAndApproved(roleProof, _phase2RequiredDocuments))
+        if(!_areDocumentsUploadedAndApproved(roleProof, KBCShipmentLibrary.getPhase2RequiredDocuments()))
             return Phase.PHASE_2;
         if(_detailsEvaluationStatus != EvaluationStatus.APPROVED)
             return Phase.PHASE_2;
 
-        if(!_areDocumentsUploadedAndApproved(roleProof, _phase3RequiredDocuments))
+        if(!_areDocumentsUploadedAndApproved(roleProof, KBCShipmentLibrary.getPhase3RequiredDocuments()))
             return Phase.PHASE_3;
         if(_fundsStatus == FundsStatus.NOT_LOCKED)
             return Phase.PHASE_3;
 
-        if(!_areDocumentsUploadedAndApproved(roleProof, _phase4RequiredDocuments))
+        if(!_areDocumentsUploadedAndApproved(roleProof, KBCShipmentLibrary.getPhase4RequiredDocuments()))
             return Phase.PHASE_4;
 
-        if(!_areDocumentsUploadedAndApproved(roleProof, _phase5RequiredDocuments))
+        if(!_areDocumentsUploadedAndApproved(roleProof, KBCShipmentLibrary.getPhase5RequiredDocuments()))
             return Phase.PHASE_5;
         if(_qualityEvaluationStatus == EvaluationStatus.NOT_EVALUATED)
             return Phase.PHASE_5;
@@ -182,13 +168,15 @@ contract Shipment is AccessControl, KBCAccessControl {
     }
 
     // Setters
-    function setDetails(RoleProof memory roleProof, uint256 shipmentNumber, uint256 expirationDate, uint256 fixingDate, uint256 price, uint256 quantity, uint256 containersNumber, uint256 netWeight, uint256 grossWeight) public onlySupplier atLeastEditor(roleProof) {
+    function setDetails(RoleProof memory roleProof, uint256 shipmentNumber, uint256 expirationDate, uint256 fixingDate, string memory targetExchange, uint256 differentialApplied, uint256 price, uint256 quantity, uint256 containersNumber, uint256 netWeight, uint256 grossWeight) public onlySupplier atLeastEditor(roleProof) {
         require(getPhase(roleProof) == Phase.PHASE_2, "Shipment: Shipment in wrong phase");
         require(_detailsEvaluationStatus != EvaluationStatus.APPROVED, "Shipment: Details already approved");
 
         _shipmentNumber = shipmentNumber;
         _expirationDate = expirationDate;
         _fixingDate = fixingDate;
+        _targetExchange = targetExchange;
+        _differentialApplied = differentialApplied;
         _price = price;
         _quantity = quantity;
         _containersNumber = containersNumber;
@@ -229,7 +217,7 @@ contract Shipment is AccessControl, KBCAccessControl {
         }
     }
     function addDocument(RoleProof memory roleProof, DocumentLibrary.DocumentType documentType, string memory externalUrl, string memory contentHash) public onlySupplierOrCommissioner atLeastEditor(roleProof) {
-        require(documentType == DocumentLibrary.DocumentType.GENERIC || _documentsIdsByType[documentType].length == 0, "Shipment: Document of this type already uploaded");
+        require(documentType == DocumentLibrary.DocumentType.GENERIC || _documentsIdsByType[documentType].length == 0 || _documentsInfoById[_documentsIdsByType[documentType][0]].status != DocumentLibrary.DocumentEvaluationStatus.APPROVED, "Shipment: Document of this type already approved");
         uint256 documentId = _documentManager.registerDocument(roleProof, externalUrl, contentHash, _msgSender());
         _documentsIdsByType[documentType].push(documentId);
         _documentsInfoById[documentId] = DocumentLibrary.DocumentInfo(documentId, documentType, DocumentLibrary.DocumentEvaluationStatus.NOT_EVALUATED, _msgSender(), true);
@@ -245,7 +233,7 @@ contract Shipment is AccessControl, KBCAccessControl {
     function evaluateDocument(RoleProof memory roleProof, uint256 documentId, DocumentLibrary.DocumentEvaluationStatus documentEvaluationStatus) public onlySupplierOrCommissioner atLeastEditor(roleProof) {
         require(_documentsInfoById[documentId].exists, "Shipment: Document does not exist");
         require(_documentsInfoById[documentId].uploader != _msgSender(), "Shipment: Caller is the uploader");
-        require(_documentsInfoById[documentId].status == DocumentLibrary.DocumentEvaluationStatus.NOT_EVALUATED, "Shipment: Document already evaluated");
+        require(_documentsInfoById[documentId].status != DocumentLibrary.DocumentEvaluationStatus.APPROVED, "Shipment: Document already approved");
 
         _documentsInfoById[documentId].status = documentEvaluationStatus;
 
@@ -254,5 +242,36 @@ contract Shipment is AccessControl, KBCAccessControl {
             _escrow.releaseFunds(_price);
             _fundsStatus = FundsStatus.RELEASED;
         }
+    }
+
+    function getUploadableDocuments(Phase phase) public view returns (DocumentLibrary.DocumentType[] memory) {
+        if(phase == Phase.PHASE_1) {
+            return KBCShipmentLibrary.getPhase1Documents();
+        }
+        if(phase == Phase.PHASE_2) {
+            return KBCShipmentLibrary.getPhase2Documents();
+        }
+        if(phase == Phase.PHASE_3) {
+            return KBCShipmentLibrary.getPhase3Documents();
+        }
+        if(phase == Phase.PHASE_4) {
+            return KBCShipmentLibrary.getPhase4Documents();
+        }
+        return KBCShipmentLibrary.getPhase5Documents();
+    }
+    function getRequiredDocuments(Phase phase) public view returns (DocumentLibrary.DocumentType[] memory) {
+        if(phase == Phase.PHASE_1) {
+            return KBCShipmentLibrary.getPhase1RequiredDocuments();
+        }
+        if(phase == Phase.PHASE_2) {
+            return KBCShipmentLibrary.getPhase2RequiredDocuments();
+        }
+        if(phase == Phase.PHASE_3) {
+            return KBCShipmentLibrary.getPhase3RequiredDocuments();
+        }
+        if(phase == Phase.PHASE_4) {
+            return KBCShipmentLibrary.getPhase4RequiredDocuments();
+        }
+        return KBCShipmentLibrary.getPhase5RequiredDocuments();
     }
 }

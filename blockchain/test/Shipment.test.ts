@@ -10,19 +10,21 @@ import {KBCAccessControl} from "../typechain-types/contracts/MaterialManager";
 describe('Shipment', () => {
     chai.use(smock.matchers);
     let contract: Contract;
+    let library: Contract;
     let admin: SignerWithAddress,
         supplier: SignerWithAddress,
         commissioner: SignerWithAddress;
     let delegateManagerContractFake: FakeContract;
     let documentManagerContractFake: FakeContract;
-    let escrowFakeContract: FakeContract;
+    let escrowContractFake: FakeContract;
     const externalUrl = 'fakeUrl';
-    const phase1RequiredDocuments = [0];
-    const phase2RequiredDocuments = [1];
-    const phase3RequiredDocuments = [2];
-    const phase4RequiredDocuments = [3];
-    const phase5RequiredDocuments = [4];
     const price = 10;
+
+    const phase1RequiredDocuments: number[] = [3];
+    const phase2RequiredDocuments: number[] = [4, 5];
+    const phase3RequiredDocuments: number[] = [6];
+    const phase4RequiredDocuments: number[] = [14, 15, 16];
+    const phase5RequiredDocuments: number[] = [];
 
     const roleProof: KBCAccessControl.RoleProofStruct = {
         signedProof: '0x',
@@ -36,23 +38,24 @@ describe('Shipment', () => {
         delegateManagerContractFake = await smock.fake(ContractName.DELEGATE_MANAGER);
         delegateManagerContractFake.hasValidRole.returns(true);
         documentManagerContractFake = await smock.fake(ContractName.DOCUMENT_MANAGER);
-        escrowFakeContract = await smock.fake(ContractName.ESCROW);
+        escrowContractFake = await smock.fake(ContractName.ESCROW);
 
-        const ShipmentContractFactory = await ethers.getContractFactory(ContractName.SHIPMENT);
+        const KBCShipmentLibraryFake = await ethers.getContractFactory(ContractName.KBC_SHIPMENT_LIBRARY);
+        library = await KBCShipmentLibraryFake.deploy();
+        const ShipmentContractFactory = await ethers.getContractFactory(ContractName.SHIPMENT, {
+            libraries: {
+                KBCShipmentLibrary: library.address
+            }
+        });
         contract = await ShipmentContractFactory.deploy(
             roleProof,
             delegateManagerContractFake.address,
             supplier.address,
             commissioner.address,
             externalUrl,
-            escrowFakeContract.address,
+            escrowContractFake.address,
             documentManagerContractFake.address,
-            true,
-            phase1RequiredDocuments,
-            phase2RequiredDocuments,
-            phase3RequiredDocuments,
-            phase4RequiredDocuments,
-            phase5RequiredDocuments
+            true
         );
         await contract.deployed();
     });
@@ -63,11 +66,13 @@ describe('Shipment', () => {
             0,
             1,
             2,
-            price,
+            'exchange',
             3,
+            price,
             4,
             5,
             6,
+            7,
         );
         return tx.wait();
     }
@@ -117,7 +122,7 @@ describe('Shipment', () => {
             expect(document.uploader).to.equal(supplier.address);
             expect(document.exists).to.equal(true);
         });
-        it('Should approve document', async () => {
+        it('should approve document', async () => {
             const documentType = 0;
             const extUrl = 'url';
             const contextHash = 'hash';
@@ -137,7 +142,31 @@ describe('Shipment', () => {
             await addDocument(documentType, extUrl, contextHash);
             await approveDocument(0);
 
-            await expect(approveDocument(0)).to.be.revertedWith('Shipment: Document already evaluated');
+            await expect(approveDocument(0)).to.be.revertedWith('Shipment: Document already approved');
+        });
+        it('should retrieve uploadable documents', async () => {
+            let documentIds = await contract.getUploadableDocuments(0);
+            expect(documentIds).to.deep.equal([0, 1, 2, 3]);
+            documentIds = await contract.getUploadableDocuments(1);
+            expect(documentIds).to.deep.equal([4, 5]);
+            documentIds = await contract.getUploadableDocuments(2);
+            expect(documentIds).to.deep.equal([6, 7, 8, 9, 10]);
+            documentIds = await contract.getUploadableDocuments(3);
+            expect(documentIds).to.deep.equal([11, 12, 13, 14, 15, 16, 17]);
+            documentIds = await contract.getUploadableDocuments(4);
+            expect(documentIds).to.deep.equal([]);
+        });
+        it('should retrieve required documents', async () => {
+            let documentIds = await contract.getRequiredDocuments(0);
+            expect(documentIds).to.deep.equal([3]);
+            documentIds = await contract.getRequiredDocuments(1);
+            expect(documentIds).to.deep.equal([4, 5]);
+            documentIds = await contract.getRequiredDocuments(2);
+            expect(documentIds).to.deep.equal([6]);
+            documentIds = await contract.getRequiredDocuments(3);
+            expect(documentIds).to.deep.equal([14, 15, 16]);
+            documentIds = await contract.getRequiredDocuments(4);
+            expect(documentIds).to.deep.equal([]);
         });
     });
     describe('PHASE_1', () => {
@@ -150,7 +179,7 @@ describe('Shipment', () => {
             expect(shipment.supplier).to.equal(supplier.address);
             expect(shipment.commissioner).to.equal(commissioner.address);
             expect(shipment.externalUrl).to.equal(externalUrl);
-            expect(shipment.escrow).to.equal(escrowFakeContract.address);
+            expect(shipment.escrow).to.equal(escrowContractFake.address);
             expect(shipment.documentManager).to.equal(documentManagerContractFake.address);
             expect(shipment.sampleEvaluationStatus).to.equal(0);
             expect(shipment.detailsEvaluationStatus).to.equal(0);
@@ -160,16 +189,12 @@ describe('Shipment', () => {
             expect(shipment.shipmentNumber).to.equal(0);
             expect(shipment.expirationDate).to.equal(0);
             expect(shipment.fixingDate).to.equal(0);
+            expect(shipment.differentialApplied).to.equal(0);
             expect(shipment.price).to.equal(0);
             expect(shipment.quantity).to.equal(0);
             expect(shipment.containersNumber).to.equal(0);
             expect(shipment.netWeight).to.equal(0);
             expect(shipment.grossWeight).to.equal(0);
-            expect(shipment.phase1RequiredDocuments).to.deep.equal(phase1RequiredDocuments);
-            expect(shipment.phase2RequiredDocuments).to.deep.equal(phase2RequiredDocuments);
-            expect(shipment.phase3RequiredDocuments).to.deep.equal(phase3RequiredDocuments);
-            expect(shipment.phase4RequiredDocuments).to.deep.equal(phase4RequiredDocuments);
-            expect(shipment.phase5RequiredDocuments).to.deep.equal(phase5RequiredDocuments);
         });
         it('should be able to approve sample', async () => {
             await approveSample();
@@ -178,6 +203,8 @@ describe('Shipment', () => {
         });
         it('should not be able to re-approve sample', async () => {
             await approveSample();
+            const phase = await contract.getPhase(roleProof);
+            expect(phase).to.equal(0);
             await expect(approveSample()).to.be.revertedWith('Shipment: Sample already approved');
         });
         it('should not be able to evaluate details', async () => {
@@ -272,14 +299,14 @@ describe('Shipment', () => {
             await expect(approveQuality()).to.be.revertedWith('Shipment: Shipment in wrong phase');
         });
         it('should be able to deposit funds', async () => {
-            escrowFakeContract.getLockedAmount.returns(0);
+            escrowContractFake.getLockedAmount.returns(0);
             await depositFunds(5);
             const shipment = await contract.getShipment(roleProof);
             expect(shipment.fundsStatus).to.equal(0);
         });
         it('should lock funds if they are enough', async () => {
-            escrowFakeContract.getLockedAmount.returns(0);
-            escrowFakeContract.getTotalDepositedAmount.returns(10);
+            escrowContractFake.getLockedAmount.returns(0);
+            escrowContractFake.getTotalDepositedAmount.returns(10);
             await depositFunds(10);
             const shipment = await contract.getShipment(roleProof);
             expect(shipment.fundsStatus).to.equal(1);
@@ -310,8 +337,8 @@ describe('Shipment', () => {
             await approveSample();
             await setDetails();
             await approveDetails();
-            escrowFakeContract.getLockedAmount.returns(0);
-            escrowFakeContract.getTotalDepositedAmount.returns(10);
+            escrowContractFake.getLockedAmount.returns(0);
+            escrowContractFake.getTotalDepositedAmount.returns(10);
             await depositFunds(10);
         });
         it('should be in the PHASE_4', async () => {
@@ -333,7 +360,7 @@ describe('Shipment', () => {
         it('should not have released funds', async () => {
             const shipment = await contract.getShipment(roleProof);
             expect(shipment.fundsStatus).to.equal(1);
-            expect(escrowFakeContract.releaseFunds).to.have.callCount(0);
+            expect(escrowContractFake.releaseFunds).to.have.callCount(0);
         });
     });
     describe('PHASE_5', () => {
@@ -361,8 +388,8 @@ describe('Shipment', () => {
             await approveSample();
             await setDetails();
             await approveDetails();
-            escrowFakeContract.getLockedAmount.returns(0);
-            escrowFakeContract.getTotalDepositedAmount.returns(10);
+            escrowContractFake.getLockedAmount.returns(0);
+            escrowContractFake.getTotalDepositedAmount.returns(10);
             await depositFunds(10);
             documentIds = [];
             for(const documentType of phase4RequiredDocuments) {
@@ -381,7 +408,7 @@ describe('Shipment', () => {
         it('should have released funds', async () => {
             const shipment = await contract.getShipment(roleProof);
             expect(shipment.fundsStatus).to.equal(2);
-            expect(escrowFakeContract.releaseFunds).to.have.callCount(1);
+            expect(escrowContractFake.releaseFunds).to.have.callCount(1);
         });
         it('should not be able to re-approve sample', async () => {
             await expect(approveSample()).to.be.revertedWith('Shipment: Shipment in wrong phase');
@@ -396,7 +423,7 @@ describe('Shipment', () => {
         });
         it('should not be able to re-approve quality', async () => {
             await approveQuality();
-            await expect(approveQuality()).to.be.revertedWith('Shipment: Quality already approved');
+            await expect(approveQuality()).to.be.revertedWith('Shipment: Shipment in wrong phase');
         });
         it('should not be able to deposit funds', async () => {
             await expect(depositFunds(10)).to.be.revertedWith('Shipment: Shipment in wrong phase');
@@ -427,8 +454,8 @@ describe('Shipment', () => {
             await approveSample();
             await setDetails();
             await approveDetails();
-            escrowFakeContract.getLockedAmount.returns(0);
-            escrowFakeContract.getTotalDepositedAmount.returns(10);
+            escrowContractFake.getLockedAmount.returns(0);
+            escrowContractFake.getTotalDepositedAmount.returns(10);
             await depositFunds(10);
             documentIds = [];
             for(const documentType of phase4RequiredDocuments) {
@@ -488,8 +515,8 @@ describe('Shipment', () => {
             await approveSample();
             await setDetails();
             await approveDetails();
-            escrowFakeContract.getLockedAmount.returns(0);
-            escrowFakeContract.getTotalDepositedAmount.returns(10);
+            escrowContractFake.getLockedAmount.returns(0);
+            escrowContractFake.getTotalDepositedAmount.returns(10);
             await depositFunds(10);
             documentIds = [];
             for(const documentType of phase4RequiredDocuments) {

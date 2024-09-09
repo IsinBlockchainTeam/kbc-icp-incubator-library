@@ -2,12 +2,19 @@ import { EscrowStatus } from '../types/EscrowStatus';
 
 export class Escrow {
     private _payee: string;
+
     private _deployedAt: number;
+
     private _duration: number;
+
     private _tokenAddress: string;
+
     private _state: EscrowStatus;
+
     private _feeRecipient: string;
+
     private _baseFee: number;
+
     private _percentageFee: number;
 
     constructor(
