@@ -115,6 +115,17 @@ export class CertificateManagerDriver {
         return certificateIds.map((certificateId) => certificateId.toNumber());
     }
 
+    async getBaseCertificatesInfoByConsigneeCompany(
+        roleProof: RoleProof,
+        consigneeCompany: string
+    ): Promise<BaseCertificate[]> {
+        const certificates = await this._actual.getBaseCertificatesInfoByConsigneeCompany(
+            roleProof,
+            consigneeCompany
+        );
+        return certificates.map((certificate) => EntityBuilder.buildBaseCertificate(certificate));
+    }
+
     async getCompanyCertificates(
         roleProof: RoleProof,
         consigneeCompany: string

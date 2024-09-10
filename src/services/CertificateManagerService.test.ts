@@ -16,6 +16,7 @@ describe('CertificateManagerService', () => {
         registerScopeCertificate: jest.fn(),
         registerMaterialCertificate: jest.fn(),
         getCertificateIdsByConsigneeCompany: jest.fn(),
+        getBaseCertificatesInfoByConsigneeCompany: jest.fn(),
         getCompanyCertificates: jest.fn(),
         getCompanyCertificate: jest.fn(),
         getScopeCertificates: jest.fn(),
@@ -175,6 +176,17 @@ describe('CertificateManagerService', () => {
                 ),
             expectedMockedFunction:
                 mockedCertificateManagerDriver.getCertificateIdsByConsigneeCompany,
+            expectedMockedFunctionArgs: [roleProof, consigneeCompany]
+        },
+        {
+            serviceFunctionName: 'getBaseCertificatesInfoByConsigneeCompany',
+            serviceFunction: () =>
+                certificateManagerService.getBaseCertificatesInfoByConsigneeCompany(
+                    roleProof,
+                    consigneeCompany
+                ),
+            expectedMockedFunction:
+                mockedCertificateManagerDriver.getBaseCertificatesInfoByConsigneeCompany,
             expectedMockedFunctionArgs: [roleProof, consigneeCompany]
         },
         {

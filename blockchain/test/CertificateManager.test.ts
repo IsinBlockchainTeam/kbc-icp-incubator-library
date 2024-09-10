@@ -17,7 +17,7 @@ describe('CertificateManager', () => {
     const processTypes = ['33 - Collecting', '38 - Harvesting'];
     const assessmentStandards = ['Chemical use assessment', 'Environment assessment', 'Origin assessment'];
 
-    let owner: SignerWithAddress, admin: SignerWithAddress, consignee: SignerWithAddress, issuer: SignerWithAddress;
+    let owner: SignerWithAddress, admin: SignerWithAddress, consignee: SignerWithAddress, issuer: SignerWithAddress, other: SignerWithAddress;
     const roleProof: KBCAccessControl.RoleProofStruct = {
         signedProof: '0x',
         delegator: ''
@@ -27,7 +27,7 @@ describe('CertificateManager', () => {
         validUntil = new Date().getTime();
 
     before(async () => {
-        [owner, admin, consignee, issuer] = await ethers.getSigners();
+        [owner, admin, consignee, issuer, other] = await ethers.getSigners();
         roleProof.delegator = owner.address;
     });
 
@@ -589,6 +589,55 @@ describe('CertificateManager', () => {
             const certificate = await certificateManagerContract.getCompanyCertificate(roleProof, certificateIds[0]);
             const baseInfo = await certificateManagerContract.getBaseCertificateInfoById(roleProof, certificateIds[0]);
             expect(certificate.baseInfo).to.deep.equal(baseInfo);
+        });
+
+        it('should get base certificates by consignee address', async () => {
+            let baseCertificates = await certificateManagerContract.getBaseCertificatesInfoByConsigneeCompany(roleProof, consignee.address);
+            expect(baseCertificates.length).to.be.equal(0);
+
+            await certificateManagerContract.registerCompanyCertificate(
+                roleProof,
+                issuer.address,
+                consignee.address,
+                assessmentStandards[0],
+                { id: 1, documentType: 0 },
+                issueDate,
+                validFrom,
+                validUntil
+            );
+            baseCertificates = await certificateManagerContract.getBaseCertificatesInfoByConsigneeCompany(roleProof, consignee.address);
+            expect(baseCertificates.length).to.be.equal(1);
+
+            await certificateManagerContract.registerScopeCertificate(
+                roleProof,
+                issuer.address,
+                consignee.address,
+                assessmentStandards[1],
+                { id: 2, documentType: 1 },
+                issueDate,
+                validFrom,
+                validUntil,
+                processTypes
+            );
+            baseCertificates = await certificateManagerContract.getBaseCertificatesInfoByConsigneeCompany(roleProof, consignee.address);
+            expect(baseCertificates.length).to.be.equal(2);
+            expect(baseCertificates[0].certificateType).to.be.equal(0);
+            expect(baseCertificates[1].certificateType).to.be.equal(1);
+
+            await certificateManagerContract.registerCompanyCertificate(
+                roleProof,
+                issuer.address,
+                other.address,
+                assessmentStandards[2],
+                { id: 3, documentType: 1 },
+                issueDate,
+                validFrom,
+                validUntil
+            );
+            expect((await certificateManagerContract.getBaseCertificatesInfoByConsigneeCompany(roleProof, consignee.address)).length).not.to.be.equal(
+                3
+            );
+            expect((await certificateManagerContract.getBaseCertificatesInfoByConsigneeCompany(roleProof, other.address)).length).to.be.equal(1);
         });
     });
 });

@@ -51,6 +51,7 @@ describe('CertificateManagerDriver', () => {
         getScopeCertificates: mockedReadFunction,
         getMaterialCertificates: mockedReadFunction,
         getCertificateIdsByConsigneeCompany: mockedReadFunction,
+        getBaseCertificatesInfoByConsigneeCompany: mockedReadFunction,
         updateCompanyCertificate: mockedWriteFunction,
         updateScopeCertificate: mockedWriteFunction,
         updateMaterialCertificate: mockedWriteFunction,
@@ -243,6 +244,38 @@ describe('CertificateManagerDriver', () => {
             consigneeCompany
         );
         expect(result).toEqual(certificateIds.map((id) => id.toNumber()));
+    });
+
+    it('should correctly get base certificates info by consignee company', async () => {
+        const certificates = [
+            {
+                id: BigNumber.from(1),
+                issuer,
+                consigneeCompany,
+                assessmentStandard,
+                document: {
+                    id: BigNumber.from(document.id),
+                    documentType: document.documentType
+                },
+                evaluationStatus: DocumentEvaluationStatus.NOT_EVALUATED,
+                certificateType: DocumentType.CERTIFICATE_OF_CONFORMITY,
+                issueDate: BigNumber.from(issueDate.getTime())
+            } as CertificateManager.BaseInfoStructOutput
+        ];
+        mockedContract.getBaseCertificatesInfoByConsigneeCompany = jest
+            .fn()
+            .mockResolvedValue(certificates);
+        const result = await certificateManagerDriver.getBaseCertificatesInfoByConsigneeCompany(
+            roleProof,
+            consigneeCompany
+        );
+        expect(mockedContract.getBaseCertificatesInfoByConsigneeCompany).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getBaseCertificatesInfoByConsigneeCompany).toHaveBeenCalledWith(
+            roleProof,
+            consigneeCompany
+        );
+        expect(result).toHaveLength(1);
+        expect(result[0]).toEqual(EntityBuilder.buildBaseCertificate(certificates[0]));
     });
 
     it('should correctly get company certificates', async () => {

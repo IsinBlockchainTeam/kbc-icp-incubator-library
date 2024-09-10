@@ -151,6 +151,15 @@ contract CertificateManager is AccessControl, KBCAccessControl {
         return _allCertificatesPerCompany[consigneeCompany];
     }
 
+    function getBaseCertificatesInfoByConsigneeCompany(RoleProof memory roleProof, address consigneeCompany) public view atLeastViewer(roleProof) returns (BaseInfo[] memory) {
+        uint256[] memory certificateIds = _allCertificatesPerCompany[consigneeCompany];
+        BaseInfo[] memory certificates = new BaseInfo[](certificateIds.length);
+        for(uint256 i = 0; i < certificateIds.length; i++) {
+            certificates[i] = _getActualCertificateById(certificateIds[i]);
+        }
+        return certificates;
+    }
+
     function getCompanyCertificates(RoleProof memory roleProof, address consigneeCompany) public view atLeastViewer(roleProof) returns (CompanyCertificate[] memory) {
         uint256[] memory certificateIds = _companyCertificates[consigneeCompany];
         CompanyCertificate[] memory certificates = new CompanyCertificate[](certificateIds.length);

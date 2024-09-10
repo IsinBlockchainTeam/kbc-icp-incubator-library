@@ -154,6 +154,16 @@ export class CertificateManagerService {
         );
     }
 
+    async getBaseCertificatesInfoByConsigneeCompany(
+        roleProof: RoleProof,
+        consigneeCompany: string
+    ): Promise<BaseCertificate[]> {
+        return this._certificateManagerDriver.getBaseCertificatesInfoByConsigneeCompany(
+            roleProof,
+            consigneeCompany
+        );
+    }
+
     async getCompanyCertificates(
         roleProof: RoleProof,
         consigneeCompany: string
