@@ -1,4 +1,5 @@
 import { DelegateManagerDriver } from '../drivers/DelegateManagerDriver';
+import { RoleProof } from '../types/RoleProof';
 
 export class DelegateManagerService {
     private _delegateManagerDriver: DelegateManagerDriver;
@@ -7,35 +8,11 @@ export class DelegateManagerService {
         this._delegateManagerDriver = delegateManagerDriver;
     }
 
-    async addDelegator(delegatorAddress: string): Promise<void> {
-        return this._delegateManagerDriver.addDelegator(delegatorAddress);
+    async getRevocationRegistryAddress(): Promise<string> {
+        return this._delegateManagerDriver.getRevocationRegistryAddress();
     }
 
-    async removeDelegator(delegatorAddress: string): Promise<void> {
-        return this._delegateManagerDriver.removeDelegator(delegatorAddress);
-    }
-
-    async isDelegator(delegatorAddress: string): Promise<boolean> {
-        return this._delegateManagerDriver.isDelegator(delegatorAddress);
-    }
-
-    async addDelegate(delegateAddress: string): Promise<void> {
-        return this._delegateManagerDriver.addDelegate(delegateAddress);
-    }
-
-    async removeDelegate(delegateAddress: string): Promise<void> {
-        return this._delegateManagerDriver.removeDelegate(delegateAddress);
-    }
-
-    async isDelegate(delegateAddress: string): Promise<boolean> {
-        return this._delegateManagerDriver.isDelegate(delegateAddress);
-    }
-
-    async hasValidRole(
-        signedProof: string,
-        role: string,
-        delegatorAddress: string
-    ): Promise<boolean> {
-        return this._delegateManagerDriver.hasValidRole(signedProof, role, delegatorAddress);
+    async hasValidRole(roleProof: RoleProof, role: string): Promise<boolean> {
+        return this._delegateManagerDriver.hasValidRole(roleProof, role);
     }
 }

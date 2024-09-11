@@ -6,7 +6,7 @@ import { Contract } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { ContractName } from '../utils/constants';
-import { KBCAccessControl } from '../typechain-types/contracts/MaterialManager';
+import { RoleProofStruct } from '../typechain-types/contracts/DelegateManager';
 
 describe('OfferManager', () => {
     let offerManagerContract: Contract;
@@ -14,15 +14,24 @@ describe('OfferManager', () => {
     let delegateManagerContractFake: FakeContract;
     let owner: SignerWithAddress, admin: SignerWithAddress, company1: SignerWithAddress;
 
-    const roleProof: KBCAccessControl.RoleProofStruct = {
+    const roleProof: RoleProofStruct = {
         signedProof: '0x',
-        delegator: ''
+        delegator: '',
+        delegateCredentialIdHash: ethers.utils.formatBytes32String('delegateCredentialIdHash'),
+        delegateCredentialExpiryDate: 0,
+        membershipProof: {
+            signedProof: '0x',
+            delegatorCredentialIdHash: ethers.utils.formatBytes32String('delegatorCredentialIdHash'),
+            delegatorCredentialExpiryDate: 0,
+            issuer: ''
+        }
     };
 
     beforeEach(async () => {
         [owner, admin, company1] = await ethers.getSigners();
 
         roleProof.delegator = owner.address;
+        roleProof.membershipProof.issuer = owner.address;
         delegateManagerContractFake = await smock.fake(ContractName.DELEGATE_MANAGER);
         delegateManagerContractFake.hasValidRole.returns(true);
         productCategoryManagerFake = await smock.fake(ContractName.PRODUCT_CATEGORY_MANAGER);

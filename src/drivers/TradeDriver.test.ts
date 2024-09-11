@@ -11,10 +11,7 @@ describe('TradeDriver', () => {
     let tradeDriver: TradeDriver;
     const contractAddress: string = Wallet.createRandom().address;
 
-    const roleProof: RoleProof = {
-        signedProof: 'signedProof',
-        delegator: 'delegator'
-    };
+    const roleProof: RoleProof = createMock<RoleProof>();
 
     const lineIds: BigNumber[] = [BigNumber.from(1)];
 

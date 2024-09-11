@@ -2,7 +2,6 @@
 import { ethers } from 'hardhat';
 import * as dotenv from 'dotenv';
 import { Contract } from 'ethers';
-import {Libraries} from "@nomiclabs/hardhat-ethers/types";
 import { ContractName } from '../utils/constants';
 
 dotenv.config({ path: '../.env' });
@@ -13,12 +12,8 @@ const serial = (funcs: Function[]) =>
         Promise.resolve([])
     );
 
-async function deploy(contractName: string, contractArgs?: any[], contractAliasName?: string, libraries?: Libraries): Promise<void> {
-    const ContractFactory = await ethers.getContractFactory(contractName,
-        {
-            libraries
-        }
-    );
+async function deploy(contractName: string, contractArgs?: any[], contractAliasName?: string): Promise<void> {
+    const ContractFactory = await ethers.getContractFactory(contractName);
     const contract = await ContractFactory.deploy(...(contractArgs || []));
     await contract.deployed();
     console.log(`New ${contractAliasName || contractName} contract deployed, address ${contract.address}`);
@@ -88,8 +83,8 @@ serial([
     //     deploy(ContractName.ESCROW_MANAGER, [
     //         '0x9169B151C0C32c6Ab49Aa2A55a8a6c07aB04f1bb', // DelegateManager
     //         '0x30054880e4E2fA1082C1976cA5547cC3bd185c11', // ContractsOwner
-    //         2, // baseFee
-    //         0 // percentageFee
+    //         process.env.ESCROW_BASE_FEE || 20,
+    //         process.env.ESCROW_COMMISSIONER_FEE || 1
     //     ]),
     // () =>
     //     deploy(ContractName.KBC_SHIPMENT_LIBRARY),
@@ -123,7 +118,7 @@ serial([
     //         '0x705321A0E87a6E952712374302E8bDe3623B60b9' // ProductCategoryManager
     //     ])
     // () => deploy(
-    //     ContractName.MY_TOKEN, [100000],
+    //     ContractName.MY_TOKEN, [10000],
     // ),
     // () => deploy(
     //     ContractName.ETHEREUM_DID_REGISTRY, [],
@@ -139,11 +134,9 @@ serial([
     //         process.env.ESCROW_COMMISSIONER_FEE || 1
     //     ])
     // async () => {
-    //     const contract = await getAttachedContract(ContractName.MY_TOKEN, '0xA0BF1413F37870D386999A316696C4e4e77FC611');
-    //     const tx = await contract.transfer('0xa1f48005f183780092E0E277B282dC1934AE3308', 500);
+    //     const contract = await getAttachedContract(ContractName.MY_TOKEN, '0x4D559cDf9e7C2C2D51a8a0e0dD5DA583caC673BF');
+    //     const tx = await contract.transfer('0xa1f48005f183780092E0E277B282dC1934AE3308', 50);
     //     await tx.wait();
-    //     const tx2 = await contract.transfer('0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123', 500);
-    //     await tx2.wait();
     // }
 ]).catch((error: any) => {
     console.error(error);

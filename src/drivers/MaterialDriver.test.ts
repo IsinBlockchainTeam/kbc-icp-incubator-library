@@ -16,10 +16,7 @@ describe('MaterialDriver', () => {
     const companyAddress: string = Wallet.createRandom().address;
     const contractAddress: string = Wallet.createRandom().address;
 
-    const roleProof: RoleProof = {
-        signedProof: 'signedProof',
-        delegator: 'delegator'
-    };
+    const roleProof: RoleProof = createMock<RoleProof>();
 
     let mockedSigner: Signer;
 

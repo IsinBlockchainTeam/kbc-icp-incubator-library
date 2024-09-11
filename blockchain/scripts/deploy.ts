@@ -2,7 +2,6 @@
 import { ethers } from 'hardhat';
 import * as dotenv from 'dotenv';
 import { Contract } from 'ethers';
-import {Libraries} from "@nomiclabs/hardhat-ethers/types";
 import { ContractName } from '../utils/constants';
 
 dotenv.config({ path: '../.env' });
@@ -20,12 +19,8 @@ async function getAttachedContract(contractName: string, contractAddress: string
     return ContractFactory.attach(contractAddress);
 }
 
-async function deploy(contractName: string, contractArgs?: any[], contractAliasName?: string, libraries?: Libraries): Promise<void> {
-    const ContractFactory = await ethers.getContractFactory(contractName,
-        {
-            libraries
-        }
-    );
+async function deploy(contractName: string, contractArgs?: any[], contractAliasName?: string): Promise<void> {
+    const ContractFactory = await ethers.getContractFactory(contractName);
     const contract = await ContractFactory.deploy(...(contractArgs || []));
     await contract.deployed();
 
@@ -69,7 +64,8 @@ serial([
             await tx.wait();
         }
     },
-    () => deploy(ContractName.DELEGATE_MANAGER, ['KBC Delegate Manager', '1.0.1', 31337]),
+    () => deploy(ContractName.REVOCATION_REGISTRY, []),
+    () => deploy(ContractName.DELEGATE_MANAGER, ['KBC Delegate Manager', '1.0.1', 31337, contractMap.get(ContractName.REVOCATION_REGISTRY)!.address]),
     () => deploy(ContractName.PRODUCT_CATEGORY_MANAGER, [contractMap.get(ContractName.DELEGATE_MANAGER)!.address]),
     () =>
         deploy(ContractName.MATERIAL_MANAGER, [
@@ -85,8 +81,6 @@ serial([
             process.env.ESCROW_COMMISSIONER_FEE || 1
         ]),
     () =>
-        deploy(ContractName.KBC_SHIPMENT_LIBRARY),
-    () =>
         deploy(ContractName.TRADE_MANAGER, [
             contractMap.get(ContractName.DELEGATE_MANAGER)!.address,
             contractMap.get(ContractName.PRODUCT_CATEGORY_MANAGER)!.address,
@@ -95,9 +89,7 @@ serial([
             contractMap.get('EnumerableFiatManager')!.address,
             contractMap.get('EnumerableUnitManager')!.address,
             contractMap.get(ContractName.ESCROW_MANAGER)!.address
-        ], undefined, {
-            KBCShipmentLibrary: contractMap.get(ContractName.KBC_SHIPMENT_LIBRARY)!.address
-        }),
+        ]),
     () => deploy(ContractName.RELATIONSHIP_MANAGER, [contractMap.get(ContractName.DELEGATE_MANAGER)!.address, [process.env.SUPPLIER_ADMIN || '']]),
     () =>
         deploy(ContractName.ASSET_OPERATION_MANAGER, [
@@ -120,7 +112,7 @@ serial([
             contractMap.get('EnumerableAssessmentStandardManager')!.address,
             contractMap.get(ContractName.DOCUMENT_MANAGER)!.address,
             contractMap.get(ContractName.MATERIAL_MANAGER)!.address
-        ])
+        ]),
 ]).catch((error: any) => {
     console.error(error);
     process.exitCode = 1;

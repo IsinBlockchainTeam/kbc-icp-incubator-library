@@ -6,11 +6,6 @@ import "./DelegateManager.sol";
 abstract contract KBCAccessControl {
     DelegateManager internal _delegateManager;
 
-    struct RoleProof {
-        bytes signedProof;
-        address delegator;
-    }
-
     constructor(address delegateManagerAddress) {
         require(delegateManagerAddress != address(0), "KBCAccessControl: delegate manager address is the zero address");
         _delegateManager = DelegateManager(delegateManagerAddress);
@@ -38,17 +33,17 @@ abstract contract KBCAccessControl {
     }
 
     function _isAtLeastViewer(RoleProof memory roleProof) internal view returns(bool) {
-        return _delegateManager.hasValidRole(roleProof.signedProof, "Viewer", roleProof.delegator)
-            || _delegateManager.hasValidRole(roleProof.signedProof, "Editor", roleProof.delegator)
-            || _delegateManager.hasValidRole(roleProof.signedProof, "Signer", roleProof.delegator);
+        return _delegateManager.hasValidRole(roleProof, "Viewer")
+            || _delegateManager.hasValidRole(roleProof, "Editor")
+            || _delegateManager.hasValidRole(roleProof, "Signer");
     }
 
     function _isAtLeastEditor(RoleProof memory roleProof) internal view returns(bool) {
-        return _delegateManager.hasValidRole(roleProof.signedProof, "Editor", roleProof.delegator)
-            || _delegateManager.hasValidRole(roleProof.signedProof, "Signer", roleProof.delegator);
+        return _delegateManager.hasValidRole(roleProof, "Editor")
+            || _delegateManager.hasValidRole(roleProof, "Signer");
     }
 
     function _isAtLeastSigner(RoleProof memory roleProof) internal view returns(bool) {
-        return _delegateManager.hasValidRole(roleProof.signedProof, "Signer", roleProof.delegator);
+        return _delegateManager.hasValidRole(roleProof, "Signer");
     }
 }

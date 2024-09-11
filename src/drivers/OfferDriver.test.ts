@@ -16,10 +16,7 @@ import { RoleProof } from '../types/RoleProof';
 describe('OfferDriver', () => {
     let offerDriver: OfferDriver;
 
-    const roleProof: RoleProof = {
-        signedProof: 'signedProof',
-        delegator: 'delegator'
-    };
+    const roleProof: RoleProof = createMock<RoleProof>();
 
     const companyNames = ['Company 1', 'Company 2'];
     const testAddress = '0x6C9E9ADB5F57952434A4148b401502d9c6C70318';

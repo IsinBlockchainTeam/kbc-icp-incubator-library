@@ -19,10 +19,7 @@ describe('RelationshipService', () => {
 
     const relationshipService = new RelationshipService(mockedRelationshipDriver);
 
-    const roleProof: RoleProof = {
-        signedProof: 'signedProof',
-        delegator: 'delegator'
-    };
+    const roleProof: RoleProof = createMock<RoleProof>();
 
     afterAll(() => {
         jest.restoreAllMocks();

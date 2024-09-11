@@ -16,10 +16,7 @@ describe('MaterialService', () => {
 
     const materialService = new MaterialService(mockedMaterialDriver);
 
-    const roleProof: RoleProof = {
-        signedProof: 'signedProof',
-        delegator: 'delegator'
-    };
+    const roleProof: RoleProof = createMock<RoleProof>();
 
     afterAll(() => {
         jest.restoreAllMocks();

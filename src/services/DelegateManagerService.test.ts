@@ -1,64 +1,32 @@
 import { createMock } from 'ts-auto-mock';
 import { DelegateManagerDriver } from '../drivers/DelegateManagerDriver';
 import { DelegateManagerService } from './DelegateManagerService';
+import { RoleProof } from '../types/RoleProof';
 
 describe('DelegateManagerService', () => {
     const mockedDelegateManagerDriver = createMock<DelegateManagerDriver>({
-        addDelegator: jest.fn(),
-        removeDelegator: jest.fn(),
-        isDelegator: jest.fn(),
-        addDelegate: jest.fn(),
-        removeDelegate: jest.fn(),
-        isDelegate: jest.fn()
+        getRevocationRegistryAddress: jest.fn(),
+        hasValidRole: jest.fn()
     });
 
     const delegatorService = new DelegateManagerService(mockedDelegateManagerDriver);
+
+    const roleProof = createMock<RoleProof>();
 
     beforeEach(() => jest.clearAllMocks());
 
     it.each([
         {
-            serviceFunctionName: 'addDelegator',
-            serviceFunction: () => delegatorService.addDelegator('delegatorAddress'),
-            expectedMockedFunction: mockedDelegateManagerDriver.addDelegator,
-            expectedMockedFunctionArgs: ['delegatorAddress']
-        },
-        {
-            serviceFunctionName: 'removeDelegator',
-            serviceFunction: () => delegatorService.removeDelegator('delegatorAddress'),
-            expectedMockedFunction: mockedDelegateManagerDriver.removeDelegator,
-            expectedMockedFunctionArgs: ['delegatorAddress']
-        },
-        {
-            serviceFunctionName: 'isDelegator',
-            serviceFunction: () => delegatorService.isDelegator('delegatorAddress'),
-            expectedMockedFunction: mockedDelegateManagerDriver.isDelegator,
-            expectedMockedFunctionArgs: ['delegatorAddress']
-        },
-        {
-            serviceFunctionName: 'addDelegate',
-            serviceFunction: () => delegatorService.addDelegate('delegateAddress'),
-            expectedMockedFunction: mockedDelegateManagerDriver.addDelegate,
-            expectedMockedFunctionArgs: ['delegateAddress']
-        },
-        {
-            serviceFunctionName: 'removeDelegate',
-            serviceFunction: () => delegatorService.removeDelegate('delegateAddress'),
-            expectedMockedFunction: mockedDelegateManagerDriver.removeDelegate,
-            expectedMockedFunctionArgs: ['delegateAddress']
-        },
-        {
-            serviceFunctionName: 'isDelegate',
-            serviceFunction: () => delegatorService.isDelegate('delegateAddress'),
-            expectedMockedFunction: mockedDelegateManagerDriver.isDelegate,
-            expectedMockedFunctionArgs: ['delegateAddress']
+            serviceFunctionName: 'getRevocationRegistryAddress',
+            serviceFunction: () => delegatorService.getRevocationRegistryAddress(),
+            expectedMockedFunction: mockedDelegateManagerDriver.getRevocationRegistryAddress,
+            expectedMockedFunctionArgs: []
         },
         {
             serviceFunctionName: 'hasValidRole',
-            serviceFunction: () =>
-                delegatorService.hasValidRole('signedProof', 'role', 'delegatorAddress'),
+            serviceFunction: () => delegatorService.hasValidRole(roleProof, 'role'),
             expectedMockedFunction: mockedDelegateManagerDriver.hasValidRole,
-            expectedMockedFunctionArgs: ['signedProof', 'role', 'delegatorAddress']
+            expectedMockedFunctionArgs: [roleProof, 'role']
         }
     ])(
         'should call driver $serviceFunctionName',

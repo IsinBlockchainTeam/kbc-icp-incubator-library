@@ -46,10 +46,7 @@ describe('TradeService', () => {
 
     let tradeService: TradeService;
 
-    const roleProof: RoleProof = {
-        signedProof: 'signedProof',
-        delegator: 'delegator'
-    };
+    const roleProof: RoleProof = createMock<RoleProof>();
 
     beforeAll(() => {
         jest.useFakeTimers().setSystemTime(new Date());

@@ -2,7 +2,7 @@
     "name": "coffee-trading-management-lib-contracts",
     "version": "1.0.0",
     "scripts": {
-        "clear": "rm -rf ./cache ./artifacts ./typechain-types ../src/smart-contracts",
+        "clear": "npx hardhat clean &&  rm -rf ./cache ./artifacts ./typechain-types ../src/smart-contracts",
         "test": "NODE_ENV=test npx hardhat test",
         "coverage": "NODE_ENV=test NODE_OPTIONS=--max_old_space_size=32000 npx hardhat coverage",
         "gasReport": "REPORT_GAS=true npx hardhat test",

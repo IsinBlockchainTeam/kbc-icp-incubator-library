@@ -19,10 +19,7 @@ describe('OfferService', () => {
 
     const offerService = new OfferService(mockedOfferDriver);
 
-    const roleProof: RoleProof = {
-        signedProof: 'signedProof',
-        delegator: 'delegator'
-    };
+    const roleProof: RoleProof = createMock<RoleProof>();
 
     afterAll(() => {
         jest.restoreAllMocks();

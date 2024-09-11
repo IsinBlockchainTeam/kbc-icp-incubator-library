@@ -22,10 +22,7 @@ describe('OrderTradeDriver', () => {
     let orderTradeDriver: OrderTradeDriver;
     const contractAddress: string = Wallet.createRandom().address;
 
-    const roleProof: RoleProof = {
-        signedProof: 'signedProof',
-        delegator: 'delegator'
-    };
+    const roleProof: RoleProof = createMock<RoleProof>();
 
     const tradeId: number = 1;
     const supplier: string = Wallet.createRandom().address;

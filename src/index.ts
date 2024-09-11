@@ -6,7 +6,7 @@ export { Relationship } from './entities/Relationship';
 export { RelationshipDriver } from './drivers/RelationshipDriver';
 export { RelationshipService } from './services/RelationshipService';
 
-export { type RoleProof } from './types/RoleProof';
+export { RoleProof } from './types/RoleProof';
 export { DelegateManagerDriver } from './drivers/DelegateManagerDriver';
 export { DelegateManagerService } from './services/DelegateManagerService';
 
@@ -49,7 +49,7 @@ export type { URLStructure } from './types/URLStructure';
 export { DocumentInfo, DocumentType } from './entities/DocumentInfo';
 export {
     Document,
-    type DocumentMetadata,
+    DocumentMetadata,
     DocumentStatus,
     type TransactionLine
 } from './entities/Document';
@@ -78,19 +78,7 @@ export {
     FundsStatus
 } from './entities/Shipment';
 export { ShipmentDriver } from './drivers/ShipmentDriver';
-export { ShipmentService, type ShipmentDocument, type ShipmentPhaseDocument } from './services/ShipmentService';
-
-export {
-    BaseCertificate,
-    CertificateType,
-    DocumentEvaluationStatus,
-    DocumentType as CertificateDocumentType
-} from './entities/Certificate';
-export { CompanyCertificate } from './entities/CompanyCertificate';
-export { ScopeCertificate } from './entities/ScopeCertificate';
-export { MaterialCertificate } from './entities/MaterialCertificate';
-export { CertificateManagerDriver } from './drivers/CertificateManagerDriver';
-export { CertificateManagerService } from './services/CertificateManagerService';
+export { ShipmentService, ShipmentDocument } from './services/ShipmentService';
 
 export type { ISolidStorageMetadataDriver } from './drivers/ISolidStorageMetadataDriver';
 export type { ISolidStorageDocumentDriver } from './drivers/ISolidStorageDocumentDriver';

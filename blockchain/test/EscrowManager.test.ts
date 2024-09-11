@@ -6,6 +6,7 @@ import { expect } from 'chai';
 import { FakeContract, smock } from '@defi-wonderland/smock';
 import { KBCAccessControl } from '../typechain-types/contracts/MaterialManager';
 import { ContractName } from '../utils/constants';
+import { RoleProofStruct } from '../typechain-types/contracts/DelegateManager';
 
 describe('EscrowManager.sol', () => {
     let escrowManagerContract: Contract;
@@ -17,15 +18,24 @@ describe('EscrowManager.sol', () => {
     const baseFee: number = 20;
     const percentageFee: number = 1;
 
-    const roleProof: KBCAccessControl.RoleProofStruct = {
+    const roleProof: RoleProofStruct = {
         signedProof: '0x',
-        delegator: ''
+        delegator: '',
+        delegateCredentialIdHash: ethers.utils.formatBytes32String('delegateCredentialIdHash'),
+        delegateCredentialExpiryDate: 0,
+        membershipProof: {
+            signedProof: '0x',
+            delegatorCredentialIdHash: ethers.utils.formatBytes32String('delegatorCredentialIdHash'),
+            delegatorCredentialExpiryDate: 0,
+            issuer: ''
+        }
     };
 
     beforeEach(async () => {
         [admin, payee, payer1, other, feeRecipient] = await ethers.getSigners();
 
         roleProof.delegator = admin.address;
+        roleProof.membershipProof.issuer = admin.address;
         delegateManagerContractFake = await smock.fake(ContractName.DELEGATE_MANAGER);
         delegateManagerContractFake.hasValidRole.returns(true);
         const EscrowManager = await ethers.getContractFactory('EscrowManager');
