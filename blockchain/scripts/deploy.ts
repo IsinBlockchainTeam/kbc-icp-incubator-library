@@ -2,6 +2,7 @@
 import { ethers } from 'hardhat';
 import * as dotenv from 'dotenv';
 import { Contract } from 'ethers';
+import {Libraries} from "@nomiclabs/hardhat-ethers/types";
 import { ContractName } from '../utils/constants';
 
 dotenv.config({ path: '../.env' });
@@ -19,8 +20,12 @@ async function getAttachedContract(contractName: string, contractAddress: string
     return ContractFactory.attach(contractAddress);
 }
 
-async function deploy(contractName: string, contractArgs?: any[], contractAliasName?: string): Promise<void> {
-    const ContractFactory = await ethers.getContractFactory(contractName);
+async function deploy(contractName: string, contractArgs?: any[], contractAliasName?: string, libraries?: Libraries): Promise<void> {
+    const ContractFactory = await ethers.getContractFactory(contractName,
+        {
+            libraries
+        }
+    );
     const contract = await ContractFactory.deploy(...(contractArgs || []));
     await contract.deployed();
 
@@ -80,6 +85,8 @@ serial([
             process.env.ESCROW_COMMISSIONER_FEE || 1
         ]),
     () =>
+        deploy(ContractName.KBC_SHIPMENT_LIBRARY),
+    () =>
         deploy(ContractName.TRADE_MANAGER, [
             contractMap.get(ContractName.DELEGATE_MANAGER)!.address,
             contractMap.get(ContractName.PRODUCT_CATEGORY_MANAGER)!.address,
@@ -88,7 +95,9 @@ serial([
             contractMap.get('EnumerableFiatManager')!.address,
             contractMap.get('EnumerableUnitManager')!.address,
             contractMap.get(ContractName.ESCROW_MANAGER)!.address
-        ]),
+        ], undefined, {
+            KBCShipmentLibrary: contractMap.get(ContractName.KBC_SHIPMENT_LIBRARY)!.address
+        }),
     () => deploy(ContractName.RELATIONSHIP_MANAGER, [contractMap.get(ContractName.DELEGATE_MANAGER)!.address, [process.env.SUPPLIER_ADMIN || '']]),
     () =>
         deploy(ContractName.ASSET_OPERATION_MANAGER, [
