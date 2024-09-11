@@ -1,11 +1,11 @@
-import {createMock} from 'ts-auto-mock';
-import {FileHelpers, ICPResourceSpec} from '@blockchain-lib/common';
-import {ShipmentService} from './ShipmentService';
-import {ShipmentDriver} from '../drivers/ShipmentDriver';
-import {DocumentDriver} from "../drivers/DocumentDriver";
-import {ICPFileDriver} from "../drivers/ICPFileDriver";
-import {RoleProof} from "../types/RoleProof";
-import {DocumentType, Phase} from "../entities/Shipment";
+import { createMock } from 'ts-auto-mock';
+import { FileHelpers, ICPResourceSpec } from '@blockchain-lib/common';
+import { ShipmentService } from './ShipmentService';
+import { ShipmentDriver } from '../drivers/ShipmentDriver';
+import { DocumentDriver } from '../drivers/DocumentDriver';
+import { ICPFileDriver } from '../drivers/ICPFileDriver';
+import { RoleProof } from '../types/RoleProof';
+import { DocumentType, Phase } from '../entities/Shipment';
 
 describe('ShipmentService', () => {
     let shipmentService: ShipmentService;
@@ -27,7 +27,7 @@ describe('ShipmentService', () => {
         evaluateDocument: jest.fn(),
         getUploadableDocuments: jest.fn(),
         getRequiredDocuments: jest.fn(),
-        addDocument: jest.fn(),
+        addDocument: jest.fn()
     };
     const documentDriverInstance = {
         getDocumentById: jest.fn()
@@ -37,17 +37,18 @@ describe('ShipmentService', () => {
         read: jest.fn()
     };
 
-    const roleProof: RoleProof = {
-        signedProof: 'signedProof',
-        delegator: 'delegator'
-    };
+    const roleProof: RoleProof = createMock<RoleProof>();
 
     beforeAll(() => {
         mockedShipmentDriver = createMock<ShipmentDriver>(shipmentDriverInstance);
         mockedDocumentDriver = createMock<DocumentDriver>(documentDriverInstance);
         icpFileDriver = createMock<ICPFileDriver>(icpFileDriverInstance);
 
-        shipmentService = new ShipmentService(mockedShipmentDriver, mockedDocumentDriver, icpFileDriver);
+        shipmentService = new ShipmentService(
+            mockedShipmentDriver,
+            mockedDocumentDriver,
+            icpFileDriver
+        );
     });
 
     afterAll(() => jest.clearAllMocks());
@@ -85,9 +86,34 @@ describe('ShipmentService', () => {
         },
         {
             serviceFunctionName: 'setDetails',
-            serviceFunction: () => shipmentService.setDetails(roleProof, 1, new Date(), new Date(), 'exchange', 1, 1, 1, 1, 1, 1),
+            serviceFunction: () =>
+                shipmentService.setDetails(
+                    roleProof,
+                    1,
+                    new Date(),
+                    new Date(),
+                    'exchange',
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1
+                ),
             expectedMockedFunction: shipmentDriverInstance.setDetails,
-            expectedMockedFunctionArgs: [roleProof, 1, expect.any(Date), expect.any(Date), 'exchange', 1, 1, 1, 1, 1, 1]
+            expectedMockedFunctionArgs: [
+                roleProof,
+                1,
+                expect.any(Date),
+                expect.any(Date),
+                'exchange',
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+            ]
         },
         {
             serviceFunctionName: 'approveSample',
@@ -142,7 +168,7 @@ describe('ShipmentService', () => {
             serviceFunction: () => shipmentService.rejectDocument(roleProof, 1),
             expectedMockedFunction: shipmentDriverInstance.evaluateDocument,
             expectedMockedFunctionArgs: [roleProof, 1, 2]
-        },
+        }
     ])(
         'should call driver $serviceFunctionName',
         async ({ serviceFunction, expectedMockedFunction, expectedMockedFunctionArgs }) => {
@@ -159,13 +185,16 @@ describe('ShipmentService', () => {
         shipmentDriverInstance.getUploadableDocuments.mockResolvedValue([0, 1]);
         shipmentDriverInstance.getRequiredDocuments.mockResolvedValue([0]);
         const result = await shipmentService.getPhaseDocuments(Phase.PHASE_1);
-        expect(result).toEqual([{
-            documentType: DocumentType.SERVICE_GUIDE,
-            required: true
-        }, {
-            documentType: DocumentType.SENSORY_EVALUATION_ANALYSIS_REPORT,
-            required: false
-        }]);
+        expect(result).toEqual([
+            {
+                documentType: DocumentType.SERVICE_GUIDE,
+                required: true
+            },
+            {
+                documentType: DocumentType.SENSORY_EVALUATION_ANALYSIS_REPORT,
+                required: false
+            }
+        ]);
         expect(shipmentDriverInstance.getUploadableDocuments).toHaveBeenCalledTimes(1);
         expect(shipmentDriverInstance.getRequiredDocuments).toHaveBeenCalledTimes(1);
     });
@@ -180,7 +209,7 @@ describe('ShipmentService', () => {
         } as ICPResourceSpec;
         const delegatedOrganizationIds = [1, 2, 3];
 
-        shipmentDriverInstance.getShipment.mockResolvedValue({externalUrl: shipmentExternalUrl});
+        shipmentDriverInstance.getShipment.mockResolvedValue({ externalUrl: shipmentExternalUrl });
         jest.spyOn(FileHelpers, 'removeFileExtension').mockReturnValue(fileName);
         jest.spyOn(FileHelpers, 'getHash').mockReturnValue(contentHash);
         jest.spyOn(FileHelpers, 'getBytesFromObject').mockReturnValue(bytesFromObject);
@@ -196,7 +225,12 @@ describe('ShipmentService', () => {
 
         expect(icpFileDriverInstance.create).toHaveBeenCalledTimes(2);
         const spec = { name: `${shipmentExternalUrl}/files/name` };
-        expect(icpFileDriverInstance.create).toHaveBeenNthCalledWith(1, fileContent, spec, delegatedOrganizationIds);
+        expect(icpFileDriverInstance.create).toHaveBeenNthCalledWith(
+            1,
+            fileContent,
+            spec,
+            delegatedOrganizationIds
+        );
         expect(icpFileDriverInstance.create).toHaveBeenNthCalledWith(
             2,
             bytesFromObject,
@@ -229,7 +263,9 @@ describe('ShipmentService', () => {
 
         documentDriverInstance.getDocumentById.mockResolvedValue(documentInfo);
         jest.spyOn(documentInfo.externalUrl.split('/'), 'slice').mockReturnValue([path]);
-        jest.spyOn(documentInfo.externalUrl.split(`${path}/`), 'slice').mockReturnValue([metadataName]);
+        jest.spyOn(documentInfo.externalUrl.split(`${path}/`), 'slice').mockReturnValue([
+            metadataName
+        ]);
         jest.spyOn(FileHelpers, 'removeFileExtension').mockReturnValue(metadataName);
         jest.spyOn(FileHelpers, 'getObjectFromBytes').mockReturnValue(documentMetadata);
         icpFileDriverInstance.read.mockResolvedValue(fileContent);
@@ -245,13 +281,20 @@ describe('ShipmentService', () => {
         expect(documentDriverInstance.getDocumentById).toHaveBeenCalledTimes(1);
         expect(documentDriverInstance.getDocumentById).toHaveBeenCalledWith(roleProof, 1);
         expect(icpFileDriverInstance.read).toHaveBeenCalledTimes(2);
-        expect(icpFileDriverInstance.read).toHaveBeenNthCalledWith(1, `${path}/${metadataName}-metadata.json`);
+        expect(icpFileDriverInstance.read).toHaveBeenNthCalledWith(
+            1,
+            `${path}/${metadataName}-metadata.json`
+        );
         expect(icpFileDriverInstance.read).toHaveBeenNthCalledWith(2, documentInfo.externalUrl);
 
         documentDriverInstance.getDocumentById.mockRejectedValueOnce(new Error('error'));
-        await expect(shipmentService.getDocument(roleProof, 1)).rejects.toThrow(new Error('Error while retrieving document file from external storage: error'));
+        await expect(shipmentService.getDocument(roleProof, 1)).rejects.toThrow(
+            new Error('Error while retrieving document file from external storage: error')
+        );
     });
     it('should throw error if try to get generic documents with wrong method', async () => {
-        await expect(shipmentService.getDocumentId(roleProof, DocumentType.GENERIC)).rejects.toThrow(new Error('Document type must be different from GENERIC'));
+        await expect(
+            shipmentService.getDocumentId(roleProof, DocumentType.GENERIC)
+        ).rejects.toThrow(new Error('Document type must be different from GENERIC'));
     });
 });

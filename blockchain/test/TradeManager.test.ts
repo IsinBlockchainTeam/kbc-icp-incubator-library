@@ -3,14 +3,15 @@ import { Contract, Wallet, Event } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
+import { FakeContract, smock } from '@defi-wonderland/smock';
 import { ContractName } from '../utils/constants';
 import { Trade } from '../typechain-types';
-import { FakeContract, smock } from '@defi-wonderland/smock';
 import { RoleProofStruct } from '../typechain-types/contracts/DelegateManager';
 
 describe('TradeManager.sol', () => {
     let tradeManagerContract: Contract;
     let delegateManagerContractFake: FakeContract;
+    let KBCShipmentLibraryFake: FakeContract;
     let admin: SignerWithAddress,
         supplier: SignerWithAddress,
         customer: SignerWithAddress,
@@ -65,6 +66,7 @@ describe('TradeManager.sol', () => {
         await ethers.provider.send('evm_mine', [Date.now() + 10]);
         [admin, supplier, customer, commissioner, arbiter] = await ethers.getSigners();
         roleProof.delegator = admin.address;
+        roleProof.membershipProof.issuer = admin.address;
         // const EscrowManager = await ethers.getContractFactory(ContractName.ESCROW_MANAGER);
         // escrowManagerContract = await EscrowManager.deploy(Wallet.createRandom().address, 10, 1);
         // await escrowManagerContract.deployed();
@@ -73,10 +75,15 @@ describe('TradeManager.sol', () => {
     beforeEach(async () => {
         delegateManagerContractFake = await smock.fake(ContractName.DELEGATE_MANAGER);
         delegateManagerContractFake.hasValidRole.returns(true);
+        KBCShipmentLibraryFake = await smock.fake(ContractName.KBC_SHIPMENT_LIBRARY);
         const DocumentManager = await ethers.getContractFactory(ContractName.DOCUMENT_MANAGER);
         documentManagerContract = await DocumentManager.deploy(delegateManagerContractFake.address, []);
         await documentManagerContract.deployed();
-        const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER);
+        const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER, {
+            libraries: {
+                KBCShipmentLibrary: KBCShipmentLibraryFake.address
+            }
+        });
         tradeManagerContract = await TradeManager.deploy(
             delegateManagerContractFake.address,
             productCategoryManagerContractAddress,
@@ -91,7 +98,11 @@ describe('TradeManager.sol', () => {
 
     describe('TradeManager creation', () => {
         it('should create a TradeManager - FAIL(TradeManager: product category manager address is the zero address)', async () => {
-            const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER);
+            const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER, {
+                libraries: {
+                    KBCShipmentLibrary: KBCShipmentLibraryFake.address
+                }
+            });
             await expect(
                 TradeManager.deploy(
                     delegateManagerContractFake.address,
@@ -106,7 +117,11 @@ describe('TradeManager.sol', () => {
         });
 
         it('should create a TradeManager - FAIL(TradeManager: material manager address is the zero address)', async () => {
-            const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER);
+            const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER, {
+                libraries: {
+                    KBCShipmentLibrary: KBCShipmentLibraryFake.address
+                }
+            });
             await expect(
                 TradeManager.deploy(
                     delegateManagerContractFake.address,
@@ -121,7 +136,11 @@ describe('TradeManager.sol', () => {
         });
 
         it('should create a TradeManager - FAIL(TradeManager: document category manager address is the zero address)', async () => {
-            const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER);
+            const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER, {
+                libraries: {
+                    KBCShipmentLibrary: KBCShipmentLibraryFake.address
+                }
+            });
             await expect(
                 TradeManager.deploy(
                     delegateManagerContractFake.address,
@@ -136,7 +155,11 @@ describe('TradeManager.sol', () => {
         });
 
         it('should create a TradeManager - FAIL(TradeManager: fiat manager address is the zero address)', async () => {
-            const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER);
+            const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER, {
+                libraries: {
+                    KBCShipmentLibrary: KBCShipmentLibraryFake.address
+                }
+            });
             await expect(
                 TradeManager.deploy(
                     delegateManagerContractFake.address,
@@ -151,7 +174,11 @@ describe('TradeManager.sol', () => {
         });
 
         it('should create a TradeManager - FAIL(TradeManager: unit manager address is the zero address)', async () => {
-            const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER);
+            const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER, {
+                libraries: {
+                    KBCShipmentLibrary: KBCShipmentLibraryFake.address
+                }
+            });
             await expect(
                 TradeManager.deploy(
                     delegateManagerContractFake.address,
@@ -166,7 +193,11 @@ describe('TradeManager.sol', () => {
         });
 
         it('should create a TradeManager - FAIL(TradeManager: escrow manager address is the zero address)', async () => {
-            const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER);
+            const TradeManager = await ethers.getContractFactory(ContractName.TRADE_MANAGER, {
+                libraries: {
+                    KBCShipmentLibrary: KBCShipmentLibraryFake.address
+                }
+            });
             await expect(
                 TradeManager.deploy(
                     delegateManagerContractFake.address,
@@ -314,8 +345,7 @@ describe('TradeManager.sol', () => {
                 _deliveryDeadline,
                 _negotiationStatus,
                 _agreedAmount,
-                _tokenAddress,
-                _escrow
+                _tokenAddress
             ] = await orderTradeContract.getTrade(roleProof);
             expect(_tradeId).to.equal(id);
             expect(_supplier).to.equal(supplier.address);
@@ -333,8 +363,6 @@ describe('TradeManager.sol', () => {
             expect(_negotiationStatus).to.equal(0);
             expect(_agreedAmount).to.equal(agreedAmount);
             expect(_tokenAddress).to.equal(tokenAddress);
-            expect(_escrow).to.not.be.undefined;
-            expect(_escrow).to.equal(ethers.constants.AddressZero);
         });
 
         it('should register an order trade - - FAIL(TradeManager: supplier is the zero address)', async () => {

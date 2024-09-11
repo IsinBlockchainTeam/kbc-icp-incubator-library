@@ -1,19 +1,17 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { ethers } from 'hardhat';
-import chai, {expect} from "chai";
-import {Contract} from "ethers";
-import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
-import {FakeContract, smock} from "@defi-wonderland/smock";
-import {ContractName} from "../utils/constants";
-import {KBCAccessControl} from "../typechain-types/contracts/MaterialManager";
+import chai, { expect } from 'chai';
+import { Contract } from 'ethers';
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import { FakeContract, smock } from '@defi-wonderland/smock';
+import { ContractName } from '../utils/constants';
+import { RoleProofStruct } from '../typechain-types/contracts/DelegateManager';
 
 describe('Shipment', () => {
     chai.use(smock.matchers);
     let contract: Contract;
     let library: Contract;
-    let admin: SignerWithAddress,
-        supplier: SignerWithAddress,
-        commissioner: SignerWithAddress;
+    let admin: SignerWithAddress, supplier: SignerWithAddress, commissioner: SignerWithAddress;
     let delegateManagerContractFake: FakeContract;
     let documentManagerContractFake: FakeContract;
     let escrowContractFake: FakeContract;
@@ -26,15 +24,24 @@ describe('Shipment', () => {
     const phase4RequiredDocuments: number[] = [14, 15, 16];
     const phase5RequiredDocuments: number[] = [];
 
-    const roleProof: KBCAccessControl.RoleProofStruct = {
+    const roleProof: RoleProofStruct = {
         signedProof: '0x',
-        delegator: ''
+        delegator: '',
+        delegateCredentialIdHash: ethers.utils.formatBytes32String('delegateCredentialIdHash'),
+        delegateCredentialExpiryDate: 0,
+        membershipProof: {
+            signedProof: '0x',
+            delegatorCredentialIdHash: ethers.utils.formatBytes32String('delegatorCredentialIdHash'),
+            delegatorCredentialExpiryDate: 0,
+            issuer: ''
+        }
     };
 
     beforeEach(async () => {
         [admin, supplier, commissioner] = await ethers.getSigners();
 
         roleProof.delegator = admin.address;
+        roleProof.membershipProof.issuer = admin.address;
         delegateManagerContractFake = await smock.fake(ContractName.DELEGATE_MANAGER);
         delegateManagerContractFake.hasValidRole.returns(true);
         documentManagerContractFake = await smock.fake(ContractName.DOCUMENT_MANAGER);
@@ -61,49 +68,37 @@ describe('Shipment', () => {
     });
 
     const setDetails = async () => {
-        const tx = await contract.connect(supplier).setDetails(
-            roleProof,
-            0,
-            1,
-            2,
-            'exchange',
-            3,
-            price,
-            4,
-            5,
-            6,
-            7,
-        );
+        const tx = await contract.connect(supplier).setDetails(roleProof, 0, 1, 2, 'exchange', 3, price, 4, 5, 6, 7);
         return tx.wait();
-    }
+    };
     const addDocument = async (documentType: number, extUrl: string, contextHash: string) => {
         const tx = await contract.connect(supplier).addDocument(roleProof, documentType, extUrl, contextHash);
         return tx.wait();
-    }
+    };
     const approveDocument = async (documentId: number) => {
         const tx = await contract.connect(commissioner).evaluateDocument(roleProof, documentId, 1);
         return tx.wait();
-    }
+    };
     const approveSample = async () => {
         const tx = await contract.connect(commissioner).evaluateSample(roleProof, 1);
         return tx.wait();
-    }
+    };
     const approveDetails = async () => {
         const tx = await contract.connect(commissioner).evaluateDetails(roleProof, 1);
         return tx.wait();
-    }
+    };
     const approveQuality = async () => {
         const tx = await contract.connect(commissioner).evaluateQuality(roleProof, 1);
         return tx.wait();
-    }
+    };
     const rejectQuality = async () => {
         const tx = await contract.connect(commissioner).evaluateQuality(roleProof, 2);
         return tx.wait();
-    }
+    };
     const depositFunds = async (amount: number) => {
         const tx = await contract.connect(commissioner).depositFunds(roleProof, amount);
         return tx.wait();
-    }
+    };
 
     describe('Phase independent', () => {
         it('should add document', async () => {
@@ -259,12 +254,12 @@ describe('Shipment', () => {
         beforeEach(async () => {
             const documentIds = [];
             let count = 0;
-            for(const documentType of phase1RequiredDocuments) {
+            for (const documentType of phase1RequiredDocuments) {
                 documentManagerContractFake.registerDocument.returns(count++);
                 await addDocument(documentType, 'url', 'hash');
-                documentIds.push(...await contract.getDocumentsIds(roleProof, documentType));
+                documentIds.push(...(await contract.getDocumentsIds(roleProof, documentType)));
             }
-            for(const documentId of documentIds) {
+            for (const documentId of documentIds) {
                 await approveDocument(documentId);
             }
             await approveSample();
@@ -306,17 +301,17 @@ describe('Shipment', () => {
         beforeEach(async () => {
             const documentIds = [];
             let count = 0;
-            for(const documentType of phase1RequiredDocuments) {
+            for (const documentType of phase1RequiredDocuments) {
                 documentManagerContractFake.registerDocument.returns(count++);
                 await addDocument(documentType, 'url', 'hash');
-                documentIds.push(...await contract.getDocumentsIds(roleProof, documentType));
+                documentIds.push(...(await contract.getDocumentsIds(roleProof, documentType)));
             }
-            for(const documentType of phase2RequiredDocuments) {
+            for (const documentType of phase2RequiredDocuments) {
                 documentManagerContractFake.registerDocument.returns(count++);
                 await addDocument(documentType, 'url', 'hash');
-                documentIds.push(...await contract.getDocumentsIds(roleProof, documentType));
+                documentIds.push(...(await contract.getDocumentsIds(roleProof, documentType)));
             }
-            for(const documentId of documentIds) {
+            for (const documentId of documentIds) {
                 await approveDocument(documentId);
             }
             await approveSample();
@@ -354,22 +349,22 @@ describe('Shipment', () => {
         beforeEach(async () => {
             const documentIds = [];
             let count = 0;
-            for(const documentType of phase1RequiredDocuments) {
+            for (const documentType of phase1RequiredDocuments) {
                 documentManagerContractFake.registerDocument.returns(count++);
                 await addDocument(documentType, 'url', 'hash');
-                documentIds.push(...await contract.getDocumentsIds(roleProof, documentType));
+                documentIds.push(...(await contract.getDocumentsIds(roleProof, documentType)));
             }
-            for(const documentType of phase2RequiredDocuments) {
+            for (const documentType of phase2RequiredDocuments) {
                 documentManagerContractFake.registerDocument.returns(count++);
                 await addDocument(documentType, 'url', 'hash');
-                documentIds.push(...await contract.getDocumentsIds(roleProof, documentType));
+                documentIds.push(...(await contract.getDocumentsIds(roleProof, documentType)));
             }
-            for(const documentType of phase3RequiredDocuments) {
+            for (const documentType of phase3RequiredDocuments) {
                 documentManagerContractFake.registerDocument.returns(count++);
                 await addDocument(documentType, 'url', 'hash');
-                documentIds.push(...await contract.getDocumentsIds(roleProof, documentType));
+                documentIds.push(...(await contract.getDocumentsIds(roleProof, documentType)));
             }
-            for(const documentId of documentIds) {
+            for (const documentId of documentIds) {
                 await approveDocument(documentId);
             }
             await approveSample();
@@ -405,22 +400,22 @@ describe('Shipment', () => {
         beforeEach(async () => {
             let documentIds = [];
             let count = 0;
-            for(const documentType of phase1RequiredDocuments) {
+            for (const documentType of phase1RequiredDocuments) {
                 documentManagerContractFake.registerDocument.returns(count++);
                 await addDocument(documentType, 'url', 'hash');
-                documentIds.push(...await contract.getDocumentsIds(roleProof, documentType));
+                documentIds.push(...(await contract.getDocumentsIds(roleProof, documentType)));
             }
-            for(const documentType of phase2RequiredDocuments) {
+            for (const documentType of phase2RequiredDocuments) {
                 documentManagerContractFake.registerDocument.returns(count++);
                 await addDocument(documentType, 'url', 'hash');
-                documentIds.push(...await contract.getDocumentsIds(roleProof, documentType));
+                documentIds.push(...(await contract.getDocumentsIds(roleProof, documentType)));
             }
-            for(const documentType of phase3RequiredDocuments) {
+            for (const documentType of phase3RequiredDocuments) {
                 documentManagerContractFake.registerDocument.returns(count++);
                 await addDocument(documentType, 'url', 'hash');
-                documentIds.push(...await contract.getDocumentsIds(roleProof, documentType));
+                documentIds.push(...(await contract.getDocumentsIds(roleProof, documentType)));
             }
-            for(const documentId of documentIds) {
+            for (const documentId of documentIds) {
                 await approveDocument(documentId);
             }
             await approveSample();
@@ -430,12 +425,12 @@ describe('Shipment', () => {
             escrowContractFake.getTotalDepositedAmount.returns(10);
             await depositFunds(10);
             documentIds = [];
-            for(const documentType of phase4RequiredDocuments) {
+            for (const documentType of phase4RequiredDocuments) {
                 documentManagerContractFake.registerDocument.returns(count++);
                 await addDocument(documentType, 'url', 'hash');
-                documentIds.push(...await contract.getDocumentsIds(roleProof, documentType));
+                documentIds.push(...(await contract.getDocumentsIds(roleProof, documentType)));
             }
-            for(const documentId of documentIds) {
+            for (const documentId of documentIds) {
                 await approveDocument(documentId);
             }
         });
@@ -471,22 +466,22 @@ describe('Shipment', () => {
         beforeEach(async () => {
             let documentIds = [];
             let count = 0;
-            for(const documentType of phase1RequiredDocuments) {
+            for (const documentType of phase1RequiredDocuments) {
                 documentManagerContractFake.registerDocument.returns(count++);
                 await addDocument(documentType, 'url', 'hash');
-                documentIds.push(...await contract.getDocumentsIds(roleProof, documentType));
+                documentIds.push(...(await contract.getDocumentsIds(roleProof, documentType)));
             }
-            for(const documentType of phase2RequiredDocuments) {
+            for (const documentType of phase2RequiredDocuments) {
                 documentManagerContractFake.registerDocument.returns(count++);
                 await addDocument(documentType, 'url', 'hash');
-                documentIds.push(...await contract.getDocumentsIds(roleProof, documentType));
+                documentIds.push(...(await contract.getDocumentsIds(roleProof, documentType)));
             }
-            for(const documentType of phase3RequiredDocuments) {
+            for (const documentType of phase3RequiredDocuments) {
                 documentManagerContractFake.registerDocument.returns(count++);
                 await addDocument(documentType, 'url', 'hash');
-                documentIds.push(...await contract.getDocumentsIds(roleProof, documentType));
+                documentIds.push(...(await contract.getDocumentsIds(roleProof, documentType)));
             }
-            for(const documentId of documentIds) {
+            for (const documentId of documentIds) {
                 await approveDocument(documentId);
             }
             await approveSample();
@@ -496,17 +491,17 @@ describe('Shipment', () => {
             escrowContractFake.getTotalDepositedAmount.returns(10);
             await depositFunds(10);
             documentIds = [];
-            for(const documentType of phase4RequiredDocuments) {
+            for (const documentType of phase4RequiredDocuments) {
                 documentManagerContractFake.registerDocument.returns(count++);
                 await addDocument(documentType, 'url', 'hash');
-                documentIds.push(...await contract.getDocumentsIds(roleProof, documentType));
+                documentIds.push(...(await contract.getDocumentsIds(roleProof, documentType)));
             }
-            for(const documentType of phase5RequiredDocuments) {
+            for (const documentType of phase5RequiredDocuments) {
                 documentManagerContractFake.registerDocument.returns(count++);
                 await addDocument(documentType, 'url', 'hash');
-                documentIds.push(...await contract.getDocumentsIds(roleProof, documentType));
+                documentIds.push(...(await contract.getDocumentsIds(roleProof, documentType)));
             }
-            for(const documentId of documentIds) {
+            for (const documentId of documentIds) {
                 await approveDocument(documentId);
             }
             await approveQuality();
@@ -532,22 +527,22 @@ describe('Shipment', () => {
         beforeEach(async () => {
             let documentIds = [];
             let count = 0;
-            for(const documentType of phase1RequiredDocuments) {
+            for (const documentType of phase1RequiredDocuments) {
                 documentManagerContractFake.registerDocument.returns(count++);
                 await addDocument(documentType, 'url', 'hash');
-                documentIds.push(...await contract.getDocumentsIds(roleProof, documentType));
+                documentIds.push(...(await contract.getDocumentsIds(roleProof, documentType)));
             }
-            for(const documentType of phase2RequiredDocuments) {
+            for (const documentType of phase2RequiredDocuments) {
                 documentManagerContractFake.registerDocument.returns(count++);
                 await addDocument(documentType, 'url', 'hash');
-                documentIds.push(...await contract.getDocumentsIds(roleProof, documentType));
+                documentIds.push(...(await contract.getDocumentsIds(roleProof, documentType)));
             }
-            for(const documentType of phase3RequiredDocuments) {
+            for (const documentType of phase3RequiredDocuments) {
                 documentManagerContractFake.registerDocument.returns(count++);
                 await addDocument(documentType, 'url', 'hash');
-                documentIds.push(...await contract.getDocumentsIds(roleProof, documentType));
+                documentIds.push(...(await contract.getDocumentsIds(roleProof, documentType)));
             }
-            for(const documentId of documentIds) {
+            for (const documentId of documentIds) {
                 await approveDocument(documentId);
             }
             await approveSample();
@@ -557,17 +552,17 @@ describe('Shipment', () => {
             escrowContractFake.getTotalDepositedAmount.returns(10);
             await depositFunds(10);
             documentIds = [];
-            for(const documentType of phase4RequiredDocuments) {
+            for (const documentType of phase4RequiredDocuments) {
                 documentManagerContractFake.registerDocument.returns(count++);
                 await addDocument(documentType, 'url', 'hash');
-                documentIds.push(...await contract.getDocumentsIds(roleProof, documentType));
+                documentIds.push(...(await contract.getDocumentsIds(roleProof, documentType)));
             }
-            for(const documentType of phase5RequiredDocuments) {
+            for (const documentType of phase5RequiredDocuments) {
                 documentManagerContractFake.registerDocument.returns(count++);
                 await addDocument(documentType, 'url', 'hash');
-                documentIds.push(...await contract.getDocumentsIds(roleProof, documentType));
+                documentIds.push(...(await contract.getDocumentsIds(roleProof, documentType)));
             }
-            for(const documentId of documentIds) {
+            for (const documentId of documentIds) {
                 await approveDocument(documentId);
             }
             await rejectQuality();

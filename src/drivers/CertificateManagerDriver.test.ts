@@ -14,10 +14,7 @@ describe('CertificateManagerDriver', () => {
     let mockedSigner: Signer;
     let certificateManagerDriver: CertificateManagerDriver;
     const contractAddress: string = Wallet.createRandom().address;
-    const roleProof: RoleProof = {
-        signedProof: 'signedProof',
-        delegator: 'delegator'
-    };
+    const roleProof: RoleProof = createMock<RoleProof>();
     const issuer: string = Wallet.createRandom().address;
     const consigneeCompany: string = Wallet.createRandom().address;
     const assessmentStandard: string = 'assessmentStandard';

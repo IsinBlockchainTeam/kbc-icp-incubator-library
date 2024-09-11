@@ -43,10 +43,7 @@ describe('CertificateManagerService', () => {
         create: jest.fn()
     });
 
-    const roleProof: RoleProof = {
-        signedProof: 'signedProof',
-        delegator: 'delegator'
-    };
+    const roleProof: RoleProof = createMock<RoleProof>();
     const issuer = Wallet.createRandom().address;
     const consigneeCompany = Wallet.createRandom().address;
     const assessmentStandard = 'ISO 9001';

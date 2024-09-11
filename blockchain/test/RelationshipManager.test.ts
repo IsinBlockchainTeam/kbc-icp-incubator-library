@@ -39,7 +39,8 @@ describe('RelationshipManager', () => {
     beforeEach(async () => {
         [owner, admin, companyA, companyB, otherAccount] = await ethers.getSigners();
 
-        roleProof.delegator = owner.address;
+        roleProof.delegator = admin.address;
+        roleProof.membershipProof.issuer = admin.address;
         delegateManagerContractFake = await smock.fake(ContractName.DELEGATE_MANAGER);
         delegateManagerContractFake.hasValidRole.returns(true);
         const RelationshipManager = await ethers.getContractFactory(ContractName.RELATIONSHIP_MANAGER);

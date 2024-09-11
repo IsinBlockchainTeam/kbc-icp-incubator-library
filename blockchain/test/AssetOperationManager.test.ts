@@ -32,6 +32,7 @@ describe('AssetOperationManager', () => {
         [admin, other] = await ethers.getSigners();
 
         roleProof.delegator = admin.address;
+        roleProof.membershipProof.issuer = admin.address;
         materialManagerContractFake = await smock.fake(ContractName.MATERIAL_MANAGER);
         materialManagerContractFake.getMaterialExists.returns(true);
         delegateManagerContractFake = await smock.fake(ContractName.DELEGATE_MANAGER);

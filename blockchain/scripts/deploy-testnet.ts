@@ -3,6 +3,7 @@ import { ethers } from 'hardhat';
 import * as dotenv from 'dotenv';
 import { Contract } from 'ethers';
 import { ContractName } from '../utils/constants';
+import { Libraries } from '@nomiclabs/hardhat-ethers/types';
 
 dotenv.config({ path: '../.env' });
 
@@ -12,8 +13,10 @@ const serial = (funcs: Function[]) =>
         Promise.resolve([])
     );
 
-async function deploy(contractName: string, contractArgs?: any[], contractAliasName?: string): Promise<void> {
-    const ContractFactory = await ethers.getContractFactory(contractName);
+async function deploy(contractName: string, contractArgs?: any[], contractAliasName?: string, libraries?: Libraries): Promise<void> {
+    const ContractFactory = await ethers.getContractFactory(contractName, {
+        libraries
+    });
     const contract = await ContractFactory.deploy(...(contractArgs || []));
     await contract.deployed();
     console.log(`New ${contractAliasName || contractName} contract deployed, address ${contract.address}`);
@@ -89,17 +92,22 @@ serial([
     // () =>
     //     deploy(ContractName.KBC_SHIPMENT_LIBRARY),
     () =>
-        deploy(ContractName.TRADE_MANAGER, [
-            '0x9169B151C0C32c6Ab49Aa2A55a8a6c07aB04f1bb', // DelegateManager
-            '0x705321A0E87a6E952712374302E8bDe3623B60b9', // ProductCategoryManager
-            '0x7E4aaaE2258a677Cb706fb8a276e26700b92366C', // MaterialManager
-            '0xd159C2E2a170131b0dB6E0304524db4c5AFBc847', // DocumentManager
-            '0x52A45e1bfAd77E396B7c5180E499B69fA5BB93b8', // EnumerableFiatManager
-            '0x108a6ea0280500f7Ddf6434864B4124cdFd88D4C', // EnumerableUnitManager
-            '0x62432762F297188fF967a8aC6cCEa48eE3bC9c86' // EscrowManager
-        ], undefined, {
-            KBCShipmentLibrary: '0xc79ad82de984f893148bEE79B33E7085AcFd3c02' // KBC_SHIPMENT_LIBRARY
-        }),
+        deploy(
+            ContractName.TRADE_MANAGER,
+            [
+                '0x9169B151C0C32c6Ab49Aa2A55a8a6c07aB04f1bb', // DelegateManager
+                '0x705321A0E87a6E952712374302E8bDe3623B60b9', // ProductCategoryManager
+                '0x7E4aaaE2258a677Cb706fb8a276e26700b92366C', // MaterialManager
+                '0xd159C2E2a170131b0dB6E0304524db4c5AFBc847', // DocumentManager
+                '0x52A45e1bfAd77E396B7c5180E499B69fA5BB93b8', // EnumerableFiatManager
+                '0x108a6ea0280500f7Ddf6434864B4124cdFd88D4C', // EnumerableUnitManager
+                '0x62432762F297188fF967a8aC6cCEa48eE3bC9c86' // EscrowManager
+            ],
+            undefined,
+            {
+                KBCShipmentLibrary: '0xc79ad82de984f893148bEE79B33E7085AcFd3c02' // KBC_SHIPMENT_LIBRARY
+            }
+        )
     // () =>
     //     deploy(ContractName.RELATIONSHIP_MANAGER, [
     //         '0x9169B151C0C32c6Ab49Aa2A55a8a6c07aB04f1bb', // DelegateManager
