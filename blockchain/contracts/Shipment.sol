@@ -219,7 +219,10 @@ contract Shipment is AccessControl, KBCAccessControl {
     function addDocument(RoleProof memory roleProof, DocumentLibrary.DocumentType documentType, string memory externalUrl, string memory contentHash) public onlySupplierOrCommissioner atLeastEditor(roleProof) {
         require(documentType == DocumentLibrary.DocumentType.GENERIC || _documentsIdsByType[documentType].length == 0 || _documentsInfoById[_documentsIdsByType[documentType][0]].status != DocumentLibrary.DocumentEvaluationStatus.APPROVED, "Shipment: Document of this type already approved");
         uint256 documentId = _documentManager.registerDocument(roleProof, externalUrl, contentHash, _msgSender());
-        _documentsIdsByType[documentType].push(documentId);
+        if(documentType == DocumentLibrary.DocumentType.GENERIC)
+            _documentsIdsByType[documentType].push(documentId);
+        else
+            _documentsIdsByType[documentType] = [documentId];
         _documentsInfoById[documentId] = DocumentLibrary.DocumentInfo(documentId, documentType, DocumentLibrary.DocumentEvaluationStatus.NOT_EVALUATED, _msgSender(), true);
     }
     function updateDocument(RoleProof memory roleProof, uint256 documentId, string memory externalUrl, string memory contentHash) public onlySupplierOrCommissioner atLeastEditor(roleProof) {

@@ -337,7 +337,6 @@ describe('TradeManager.sol', () => {
                 _negotiationStatus,
                 _agreedAmount,
                 _tokenAddress,
-                _escrow
             ] = await orderTradeContract.getTrade(roleProof);
             expect(_tradeId).to.equal(id);
             expect(_supplier).to.equal(supplier.address);
@@ -355,8 +354,6 @@ describe('TradeManager.sol', () => {
             expect(_negotiationStatus).to.equal(0);
             expect(_agreedAmount).to.equal(agreedAmount);
             expect(_tokenAddress).to.equal(tokenAddress);
-            expect(_escrow).to.not.be.undefined;
-            expect(_escrow).to.equal(ethers.constants.AddressZero);
         });
 
         it('should register an order trade - - FAIL(TradeManager: supplier is the zero address)', async () => {

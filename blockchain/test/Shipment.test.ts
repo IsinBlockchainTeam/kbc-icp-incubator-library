@@ -122,6 +122,44 @@ describe('Shipment', () => {
             expect(document.uploader).to.equal(supplier.address);
             expect(document.exists).to.equal(true);
         });
+        it('should update document', async () => {
+            const documentType = 0;
+            const extUrl = 'url';
+            const contextHash = 'hash';
+            documentManagerContractFake.registerDocument.returns(0);
+            await addDocument(documentType, 'extUrl', 'contextHash');
+
+            documentManagerContractFake.registerDocument.returns(1);
+            await addDocument(documentType, extUrl, contextHash);
+
+            expect(await contract.getDocumentsIds(roleProof, documentType)).to.deep.equal([1]);
+
+            const document = await contract.getDocumentInfo(roleProof, 1);
+            expect(document.id).to.equal(1);
+            expect(document.dType).to.equal(0);
+            expect(document.status).to.equal(0);
+            expect(document.uploader).to.equal(supplier.address);
+            expect(document.exists).to.equal(true);
+        });
+        it('should update document - GENERIC', async () => {
+            const documentType = 18;
+            const extUrl = 'url';
+            const contextHash = 'hash';
+            documentManagerContractFake.registerDocument.returns(0);
+            await addDocument(documentType, 'extUrl', 'contextHash');
+
+            documentManagerContractFake.registerDocument.returns(1);
+            await addDocument(documentType, extUrl, contextHash);
+
+            expect(await contract.getDocumentsIds(roleProof, documentType)).to.deep.equal([0, 1]);
+
+            const document = await contract.getDocumentInfo(roleProof, 0);
+            expect(document.id).to.equal(0);
+            expect(document.dType).to.equal(18);
+            expect(document.status).to.equal(0);
+            expect(document.uploader).to.equal(supplier.address);
+            expect(document.exists).to.equal(true);
+        });
         it('should approve document', async () => {
             const documentType = 0;
             const extUrl = 'url';
