@@ -1,6 +1,6 @@
 {
     "name": "@kbc-lib/coffee-trading-management-lib",
-    "version": "1.16.2",
+    "version": "1.16.4",
     "description": "",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
