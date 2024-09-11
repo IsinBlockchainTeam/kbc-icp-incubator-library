@@ -66,7 +66,9 @@ describe('DocumentDriver', () => {
         const buildDocumentSpy = jest.spyOn(EntityBuilder, 'buildDocumentInfo');
         buildDocumentSpy.mockReturnValue(mockedDocument);
 
-        mockedSigner = createMock<Signer>();
+        mockedSigner = createMock<Signer>({
+            getAddress: jest.fn().mockReturnValue(testAddress)
+        });
         documentDriver = new DocumentDriver(mockedSigner, testAddress);
     });
 
@@ -76,11 +78,13 @@ describe('DocumentDriver', () => {
 
     describe('registerDocument', () => {
         it('should call and wait for register document', async () => {
+            mockedWait.mockResolvedValue({
+                events: [{ event: 'DocumentRegistered', args: [BigNumber.from(1)] }]
+            });
             await documentDriver.registerDocument(
                 roleProof,
                 rawDocument.externalUrl,
-                rawDocument.contentHash,
-                await mockedSigner.getAddress()
+                rawDocument.contentHash
             );
 
             expect(mockedContract.registerDocument).toHaveBeenCalledTimes(1);
@@ -89,7 +93,7 @@ describe('DocumentDriver', () => {
                 roleProof,
                 rawDocument.externalUrl,
                 rawDocument.contentHash,
-                await mockedSigner.getAddress()
+                testAddress
             );
             expect(mockedWait).toHaveBeenCalledTimes(1);
         });
@@ -101,8 +105,7 @@ describe('DocumentDriver', () => {
                 documentDriver.registerDocument(
                     roleProof,
                     rawDocument.externalUrl,
-                    rawDocument.contentHash,
-                    await mockedSigner.getAddress()
+                    rawDocument.contentHash
                 );
             await expect(fn).rejects.toThrow(new Error(errorMessage));
         });

@@ -10,6 +10,7 @@ import {
 import {DocumentDriver} from '../drivers/DocumentDriver';
 import {ICPFileDriver} from '../drivers/ICPFileDriver';
 import {RoleProof} from '../types/RoleProof';
+import { URL_SEGMENTS } from '../constants/ICP';
 
 export type ShipmentPhaseDocument = {
     documentType: DocumentType;
@@ -122,8 +123,8 @@ export class ShipmentService {
         const shipmentExternalUrl = (await this.getShipment(roleProof)).externalUrl;
         const fileName = FileHelpers.removeFileExtension(resourceSpec.name);
         const spec = { ...resourceSpec };
-        spec.name = `${shipmentExternalUrl}/files/${spec.name}`;
-        const contentHash = FileHelpers.getHash(fileContent);
+        spec.name = `${shipmentExternalUrl}/${URL_SEGMENTS.FILE}${spec.name}`;
+        const contentHash = FileHelpers.getHash(fileContent).toString();
         await this._icpFileDriver.create(fileContent, spec, delegatedOrganizationIds);
         const documentMetadata: ShipmentDocumentMetadata = {
             fileName: spec.name,
@@ -134,7 +135,7 @@ export class ShipmentService {
         await this._icpFileDriver.create(
             FileHelpers.getBytesFromObject(documentMetadata),
             {
-                name: `${shipmentExternalUrl}/files/${fileName}-metadata.json`,
+                name: `${shipmentExternalUrl}/${URL_SEGMENTS.FILE}/${fileName}-metadata.json`,
                 type: 'application/json'
             },
             delegatedOrganizationIds
@@ -143,7 +144,7 @@ export class ShipmentService {
             roleProof,
             documentType,
             spec.name,
-            contentHash.toString()
+            contentHash
         );
     }
 

@@ -103,7 +103,15 @@ serial([
             contractMap.get(ContractName.PRODUCT_CATEGORY_MANAGER)!.address
         ]),
     () => deploy(ContractName.MY_TOKEN, [10000]),
-    () => deploy(ContractName.ETHEREUM_DID_REGISTRY, [])
+    () => deploy(ContractName.ETHEREUM_DID_REGISTRY, []),
+    () =>
+        deploy(ContractName.CERTIFICATE_MANAGER, [
+            contractMap.get(ContractName.DELEGATE_MANAGER)!.address,
+            contractMap.get('EnumerableProcessTypeManager')!.address,
+            contractMap.get('EnumerableAssessmentStandardManager')!.address,
+            contractMap.get(ContractName.DOCUMENT_MANAGER)!.address,
+            contractMap.get(ContractName.MATERIAL_MANAGER)!.address
+        ])
 ]).catch((error: any) => {
     console.error(error);
     process.exitCode = 1;

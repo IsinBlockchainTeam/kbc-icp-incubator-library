@@ -1,6 +1,6 @@
 /* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
-import { Signer, utils } from 'ethers';
+import { Event, Signer, utils } from 'ethers';
 import { DocumentManager, DocumentManager__factory } from '../smart-contracts';
 import { DocumentInfo } from '../entities/DocumentInfo';
 import { EntityBuilder } from '../utils/EntityBuilder';
@@ -9,7 +9,10 @@ import { RoleProof } from '../types/RoleProof';
 export class DocumentDriver {
     private _contract: DocumentManager;
 
+    private _signer: Signer;
+
     constructor(signer: Signer, documentAddress: string) {
+        this._signer = signer;
         this._contract = DocumentManager__factory.connect(
             documentAddress,
             signer.provider!
@@ -19,16 +22,22 @@ export class DocumentDriver {
     async registerDocument(
         roleProof: RoleProof,
         externalUrl: string,
-        contentHash: string,
-        uploadedBy: string
-    ): Promise<void> {
-        const tx = await this._contract.registerDocument(
-            roleProof,
-            externalUrl,
-            contentHash,
-            uploadedBy
-        );
-        await tx.wait();
+        contentHash: string
+    ): Promise<number> {
+        try {
+            const tx: any = await this._contract.registerDocument(
+                roleProof,
+                externalUrl,
+                contentHash,
+                this._signer.getAddress()
+            );
+            const receipt = await tx.wait();
+            const id = receipt.events.find((event: Event) => event.event === 'DocumentRegistered')
+                .args[0];
+            return id.toNumber();
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
     }
 
     async updateDocument(

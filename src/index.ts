@@ -68,9 +68,29 @@ export { EscrowService } from './services/EscrowService';
 export { TokenDriver } from './drivers/TokenDriver';
 export { TokenService } from './services/TokenService';
 
-export { Shipment, Phase as ShipmentPhase, DocumentEvaluationStatus as ShipmentDocumentEvaluationStatus, DocumentInfo as ShipmentDocumentInfo, DocumentType as ShipmentDocumentType, EvaluationStatus as ShipmentEvaluationStatus, FundsStatus} from './entities/Shipment';
+export {
+    Shipment,
+    Phase as ShipmentPhase,
+    DocumentEvaluationStatus as ShipmentDocumentEvaluationStatus,
+    DocumentInfo as ShipmentDocumentInfo,
+    DocumentType as ShipmentDocumentType,
+    EvaluationStatus as ShipmentEvaluationStatus,
+    FundsStatus
+} from './entities/Shipment';
 export { ShipmentDriver } from './drivers/ShipmentDriver';
 export { ShipmentService, type ShipmentDocument, type ShipmentPhaseDocument } from './services/ShipmentService';
+
+export {
+    BaseCertificate,
+    CertificateType,
+    DocumentEvaluationStatus,
+    DocumentType as CertificateDocumentType
+} from './entities/Certificate';
+export { CompanyCertificate } from './entities/CompanyCertificate';
+export { ScopeCertificate } from './entities/ScopeCertificate';
+export { MaterialCertificate } from './entities/MaterialCertificate';
+export { CertificateManagerDriver } from './drivers/CertificateManagerDriver';
+export { CertificateManagerService } from './services/CertificateManagerService';
 
 export type { ISolidStorageMetadataDriver } from './drivers/ISolidStorageMetadataDriver';
 export type { ISolidStorageDocumentDriver } from './drivers/ISolidStorageDocumentDriver';

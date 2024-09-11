@@ -8,7 +8,8 @@ import {
     OrderTrade,
     RelationshipManager,
     AssetOperationManager,
-    ProductCategoryManager
+    ProductCategoryManager,
+    CertificateManager
 } from '../smart-contracts';
 import { Relationship } from '../entities/Relationship';
 import { DocumentInfo } from '../entities/DocumentInfo';
@@ -16,6 +17,11 @@ import { Offer } from '../entities/Offer';
 import { Line } from '../entities/Trade';
 import { OrderLine, OrderLinePrice } from '../entities/OrderTrade';
 import { ProductCategory } from '../entities/ProductCategory';
+import { CompanyCertificate } from '../entities/CompanyCertificate';
+import { ScopeCertificate } from '../entities/ScopeCertificate';
+import { MaterialCertificate } from '../entities/MaterialCertificate';
+import { BaseCertificate, CertificateDocumentInfo } from '../entities/Certificate';
+import { DocumentLibrary } from '../smart-contracts/contracts/CertificateManager';
 
 export class EntityBuilder {
     static buildProductCategory(
@@ -148,5 +154,80 @@ export class EntityBuilder {
             bcLine.unit,
             price
         );
+    }
+
+    static buildBaseCertificate(
+        bcBaseCertificate: CertificateManager.BaseInfoStructOutput
+    ): BaseCertificate {
+        return new BaseCertificate(
+            bcBaseCertificate.id.toNumber(),
+            bcBaseCertificate.issuer,
+            bcBaseCertificate.consigneeCompany,
+            bcBaseCertificate.assessmentStandard,
+            this._buildCertificateDocumentInfo(bcBaseCertificate.document),
+            bcBaseCertificate.evaluationStatus,
+            bcBaseCertificate.certificateType,
+            new Date(bcBaseCertificate.issueDate.toNumber())
+        );
+    }
+
+    static buildCompanyCertificate(
+        bcCompanyCertificate: CertificateManager.CompanyCertificateStructOutput
+    ): CompanyCertificate {
+        return new CompanyCertificate(
+            bcCompanyCertificate.baseInfo.id.toNumber(),
+            bcCompanyCertificate.baseInfo.issuer,
+            bcCompanyCertificate.baseInfo.consigneeCompany,
+            bcCompanyCertificate.baseInfo.assessmentStandard,
+            this._buildCertificateDocumentInfo(bcCompanyCertificate.baseInfo.document),
+            bcCompanyCertificate.baseInfo.evaluationStatus,
+            bcCompanyCertificate.baseInfo.certificateType,
+            new Date(bcCompanyCertificate.baseInfo.issueDate.toNumber()),
+            new Date(bcCompanyCertificate.validFrom.toNumber()),
+            new Date(bcCompanyCertificate.validUntil.toNumber())
+        );
+    }
+
+    static buildScopeCertificate(
+        bcScopeCertificate: CertificateManager.ScopeCertificateStructOutput
+    ): ScopeCertificate {
+        return new ScopeCertificate(
+            bcScopeCertificate.baseInfo.id.toNumber(),
+            bcScopeCertificate.baseInfo.issuer,
+            bcScopeCertificate.baseInfo.consigneeCompany,
+            bcScopeCertificate.baseInfo.assessmentStandard,
+            this._buildCertificateDocumentInfo(bcScopeCertificate.baseInfo.document),
+            bcScopeCertificate.baseInfo.evaluationStatus,
+            bcScopeCertificate.baseInfo.certificateType,
+            new Date(bcScopeCertificate.baseInfo.issueDate.toNumber()),
+            bcScopeCertificate.processTypes,
+            new Date(bcScopeCertificate.validFrom.toNumber()),
+            new Date(bcScopeCertificate.validUntil.toNumber())
+        );
+    }
+
+    static buildMaterialCertificate(
+        bcMaterialCertificate: CertificateManager.MaterialCertificateStructOutput
+    ): MaterialCertificate {
+        return new MaterialCertificate(
+            bcMaterialCertificate.baseInfo.id.toNumber(),
+            bcMaterialCertificate.baseInfo.issuer,
+            bcMaterialCertificate.baseInfo.consigneeCompany,
+            bcMaterialCertificate.baseInfo.assessmentStandard,
+            this._buildCertificateDocumentInfo(bcMaterialCertificate.baseInfo.document),
+            bcMaterialCertificate.baseInfo.evaluationStatus,
+            bcMaterialCertificate.baseInfo.certificateType,
+            new Date(bcMaterialCertificate.baseInfo.issueDate.toNumber()),
+            bcMaterialCertificate.materialId.toNumber()
+        );
+    }
+
+    static _buildCertificateDocumentInfo(
+        bcDocumentInfo: DocumentLibrary.DocumentInfoStructOutput
+    ): CertificateDocumentInfo {
+        return {
+            id: bcDocumentInfo.id.toNumber(),
+            documentType: bcDocumentInfo.documentType
+        };
     }
 }
