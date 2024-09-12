@@ -94,7 +94,10 @@ export { CompanyCertificate } from './entities/CompanyCertificate';
 export { ScopeCertificate } from './entities/ScopeCertificate';
 export { MaterialCertificate } from './entities/MaterialCertificate';
 export { CertificateManagerDriver } from './drivers/CertificateManagerDriver';
-export { CertificateManagerService } from './services/CertificateManagerService';
+export {
+    CertificateManagerService,
+    CertificateDocument
+} from './services/CertificateManagerService';
 
 export type { ISolidStorageMetadataDriver } from './drivers/ISolidStorageMetadataDriver';
 export type { ISolidStorageDocumentDriver } from './drivers/ISolidStorageDocumentDriver';

@@ -55,6 +55,7 @@
         "dotenv": "^16.3.1",
         "ethers": "^5.6.1",
         "jest-environment-node": "^29.5.0",
+        "jwt-decode": "^4.0.0",
         "node-fetch": "^2.6.1",
         "uuid": "^9.0.1"
     },

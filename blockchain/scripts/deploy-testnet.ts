@@ -2,8 +2,8 @@
 import { ethers } from 'hardhat';
 import * as dotenv from 'dotenv';
 import { Contract } from 'ethers';
-import { ContractName } from '../utils/constants';
 import { Libraries } from '@nomiclabs/hardhat-ethers/types';
+import { ContractName } from '../utils/constants';
 
 dotenv.config({ path: '../.env' });
 
@@ -91,34 +91,34 @@ serial([
     //     ]),
     // () =>
     //     deploy(ContractName.KBC_SHIPMENT_LIBRARY),
-    () =>
-        deploy(
-            ContractName.TRADE_MANAGER,
-            [
-                '0x508d92D0235B2bd1060c93FA9D2c8A21D801e1d6', // DelegateManager
-                '0x8f9c47afF2E345708f104000714215d865b73C29', // ProductCategoryManager
-                '0x8628570545736D5c711734c36e4145F232134cB9', // MaterialManager
-                '0xB1616b899bFa80B8613d20c689621C66A79aAa36', // DocumentManager
-                '0x52A45e1bfAd77E396B7c5180E499B69fA5BB93b8', // EnumerableFiatManager
-                '0x108a6ea0280500f7Ddf6434864B4124cdFd88D4C', // EnumerableUnitManager
-                '0x70cDfdc6e3FBa73438f483C4c7a9A9bf71BDCfA0' // EscrowManager
-            ],
-            undefined,
-            {
-                KBCShipmentLibrary: '0xc79ad82de984f893148bEE79B33E7085AcFd3c02' // KBC_SHIPMENT_LIBRARY
-            }
-        ),
+    // () =>
+    //     deploy(
+    //         ContractName.TRADE_MANAGER,
+    //         [
+    //             '0x508d92D0235B2bd1060c93FA9D2c8A21D801e1d6', // DelegateManager
+    //             '0x8f9c47afF2E345708f104000714215d865b73C29', // ProductCategoryManager
+    //             '0x8628570545736D5c711734c36e4145F232134cB9', // MaterialManager
+    //             '0xB1616b899bFa80B8613d20c689621C66A79aAa36', // DocumentManager
+    //             '0x52A45e1bfAd77E396B7c5180E499B69fA5BB93b8', // EnumerableFiatManager
+    //             '0x108a6ea0280500f7Ddf6434864B4124cdFd88D4C', // EnumerableUnitManager
+    //             '0x70cDfdc6e3FBa73438f483C4c7a9A9bf71BDCfA0' // EscrowManager
+    //         ],
+    //         undefined,
+    //         {
+    //             KBCShipmentLibrary: '0xc79ad82de984f893148bEE79B33E7085AcFd3c02' // KBC_SHIPMENT_LIBRARY
+    //         }
+    //     ),
     // () =>
     //     deploy(ContractName.RELATIONSHIP_MANAGER, [
     //         '0x508d92D0235B2bd1060c93FA9D2c8A21D801e1d6', // DelegateManager
     //         ['0x30054880e4E2fA1082C1976cA5547cC3bd185c11'] // ContractsOwner
     //     ]),
-    () =>
-        deploy(ContractName.ASSET_OPERATION_MANAGER, [
-            '0x508d92D0235B2bd1060c93FA9D2c8A21D801e1d6', // DelegateManager
-            '0x8628570545736D5c711734c36e4145F232134cB9', // MaterialManager
-            '0xb8e699A624963AAcdfe793cE4bbCE856Dcd67eB0' // EnumerableProcessTypeManager
-        ])
+    // () =>
+    //     deploy(ContractName.ASSET_OPERATION_MANAGER, [
+    //         '0x508d92D0235B2bd1060c93FA9D2c8A21D801e1d6', // DelegateManager
+    //         '0x8628570545736D5c711734c36e4145F232134cB9', // MaterialManager
+    //         '0xb8e699A624963AAcdfe793cE4bbCE856Dcd67eB0' // EnumerableProcessTypeManager
+    //     ])
     // () =>
     //     deploy(ContractName.OFFER_MANAGER, [
     //         '0x508d92D0235B2bd1060c93FA9D2c8A21D801e1d6', // DelegateManager
@@ -131,6 +131,14 @@ serial([
     // () => deploy(
     //     ContractName.ETHEREUM_DID_REGISTRY, [],
     // ),
+    // () =>
+    //     deploy(ContractName.CERTIFICATE_MANAGER, [
+    //         '0x508d92D0235B2bd1060c93FA9D2c8A21D801e1d6', // DelegateManager
+    //         '0xb8e699A624963AAcdfe793cE4bbCE856Dcd67eB0', // EnumerableProcessType
+    //         '0x9a0fDb7C439638BA289DC9D951a57D3fa61292b0', // EnumerableAssessmentStandard
+    //         '0xB1616b899bFa80B8613d20c689621C66A79aAa36', // DocumentManager
+    //         '0x8628570545736D5c711734c36e4145F232134cB9' // MaterialManager
+    //     ])
     // async () => {
     //     const contract = await getAttachedContract(ContractName.MY_TOKEN, '0x4D559cDf9e7C2C2D51a8a0e0dD5DA583caC673BF');
     //     const tx = await contract.transfer('0xa1f48005f183780092E0E277B282dC1934AE3308', 50);
