@@ -13,7 +13,7 @@ export class CompanyCertificate extends BaseCertificate {
     constructor(
         id: number,
         issuer: string,
-        consigneeCompany: string,
+        subject: string,
         assessmentStandard: string,
         document: CertificateDocumentInfo,
         evaluationStatus: DocumentEvaluationStatus,
@@ -25,7 +25,7 @@ export class CompanyCertificate extends BaseCertificate {
         super(
             id,
             issuer,
-            consigneeCompany,
+            subject,
             assessmentStandard,
             document,
             evaluationStatus,

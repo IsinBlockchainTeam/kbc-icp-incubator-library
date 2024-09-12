@@ -9,7 +9,7 @@ describe('MaterialCertificate', () => {
         materialCertificate = new MaterialCertificate(
             0,
             'issuer',
-            'consigneeCompany',
+            'subject',
             'assessmentStandard',
             { id: 1, documentType: DocumentType.PRODUCTION_REPORT },
             DocumentEvaluationStatus.NOT_EVALUATED,
@@ -22,7 +22,7 @@ describe('MaterialCertificate', () => {
     it('should correctly initialize a MaterialCertificate', () => {
         expect(materialCertificate.id).toEqual(0);
         expect(materialCertificate.issuer).toEqual('issuer');
-        expect(materialCertificate.consigneeCompany).toEqual('consigneeCompany');
+        expect(materialCertificate.subject).toEqual('subject');
         expect(materialCertificate.assessmentStandard).toEqual('assessmentStandard');
         expect(materialCertificate.document).toEqual({
             id: 1,
@@ -46,9 +46,9 @@ describe('MaterialCertificate', () => {
         expect(materialCertificate.issuer).toEqual('newIssuer');
     });
 
-    it('should correctly set the consigneeCompany', () => {
-        materialCertificate.consigneeCompany = 'newConsigneeCompany';
-        expect(materialCertificate.consigneeCompany).toEqual('newConsigneeCompany');
+    it('should correctly set the subject', () => {
+        materialCertificate.subject = 'newConsigneeCompany';
+        expect(materialCertificate.subject).toEqual('newConsigneeCompany');
     });
 
     it('should correctly set the assessmentStandard', () => {

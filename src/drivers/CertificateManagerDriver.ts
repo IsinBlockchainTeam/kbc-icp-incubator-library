@@ -24,7 +24,7 @@ export class CertificateManagerDriver {
     async registerCompanyCertificate(
         roleProof: RoleProof,
         issuer: string,
-        consigneeCompany: string,
+        subject: string,
         assessmentStandard: string,
         document: CertificateDocumentInfo,
         issueDate: Date,
@@ -34,7 +34,7 @@ export class CertificateManagerDriver {
         const tx: any = await this._actual.registerCompanyCertificate(
             roleProof,
             issuer,
-            consigneeCompany,
+            subject,
             assessmentStandard,
             document,
             issueDate.getTime(),
@@ -52,7 +52,7 @@ export class CertificateManagerDriver {
     async registerScopeCertificate(
         roleProof: RoleProof,
         issuer: string,
-        consigneeCompany: string,
+        subject: string,
         assessmentStandard: string,
         document: CertificateDocumentInfo,
         issueDate: Date,
@@ -63,7 +63,7 @@ export class CertificateManagerDriver {
         const tx: any = await this._actual.registerScopeCertificate(
             roleProof,
             issuer,
-            consigneeCompany,
+            subject,
             assessmentStandard,
             document,
             issueDate.getTime(),
@@ -81,7 +81,7 @@ export class CertificateManagerDriver {
     async registerMaterialCertificate(
         roleProof: RoleProof,
         issuer: string,
-        consigneeCompany: string,
+        subject: string,
         assessmentStandard: string,
         document: CertificateDocumentInfo,
         issueDate: Date,
@@ -90,7 +90,7 @@ export class CertificateManagerDriver {
         const tx: any = await this._actual.registerMaterialCertificate(
             roleProof,
             issuer,
-            consigneeCompany,
+            subject,
             assessmentStandard,
             document,
             issueDate.getTime(),
@@ -106,31 +106,31 @@ export class CertificateManagerDriver {
 
     async getCertificateIdsByConsigneeCompany(
         roleProof: RoleProof,
-        consigneeCompany: string
+        subject: string
     ): Promise<number[]> {
         const certificateIds = await this._actual.getCertificateIdsByConsigneeCompany(
             roleProof,
-            consigneeCompany
+            subject
         );
         return certificateIds.map((certificateId) => certificateId.toNumber());
     }
 
     async getBaseCertificatesInfoByConsigneeCompany(
         roleProof: RoleProof,
-        consigneeCompany: string
+        subject: string
     ): Promise<BaseCertificate[]> {
         const certificates = await this._actual.getBaseCertificatesInfoByConsigneeCompany(
             roleProof,
-            consigneeCompany
+            subject
         );
         return certificates.map((certificate) => EntityBuilder.buildBaseCertificate(certificate));
     }
 
     async getCompanyCertificates(
         roleProof: RoleProof,
-        consigneeCompany: string
+        subject: string
     ): Promise<CompanyCertificate[]> {
-        const certificates = await this._actual.getCompanyCertificates(roleProof, consigneeCompany);
+        const certificates = await this._actual.getCompanyCertificates(roleProof, subject);
         return certificates.map((certificate) =>
             EntityBuilder.buildCompanyCertificate(certificate)
         );
@@ -167,12 +167,12 @@ export class CertificateManagerDriver {
 
     async getMaterialCertificates(
         roleProof: RoleProof,
-        consigneeCompany: string,
+        subject: string,
         materialId: number
     ): Promise<MaterialCertificate[]> {
         const certificates = await this._actual.getMaterialCertificates(
             roleProof,
-            consigneeCompany,
+            subject,
             materialId
         );
         return certificates.map((certificate) =>

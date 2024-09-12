@@ -19,7 +19,7 @@ describe('CertificateManagerDriver', () => {
         delegator: 'delegator'
     };
     const issuer: string = Wallet.createRandom().address;
-    const consigneeCompany: string = Wallet.createRandom().address;
+    const subject: string = Wallet.createRandom().address;
     const assessmentStandard: string = 'assessmentStandard';
     const document: CertificateDocumentInfo = {
         id: 1,
@@ -91,7 +91,7 @@ describe('CertificateManagerDriver', () => {
         await certificateManagerDriver.registerCompanyCertificate(
             roleProof,
             issuer,
-            consigneeCompany,
+            subject,
             assessmentStandard,
             document,
             issueDate,
@@ -102,7 +102,7 @@ describe('CertificateManagerDriver', () => {
         expect(mockedContract.registerCompanyCertificate).toHaveBeenCalledWith(
             roleProof,
             issuer,
-            consigneeCompany,
+            subject,
             assessmentStandard,
             document,
             issueDate.getTime(),
@@ -119,7 +119,7 @@ describe('CertificateManagerDriver', () => {
             certificateManagerDriver.registerCompanyCertificate(
                 roleProof,
                 issuer,
-                consigneeCompany,
+                subject,
                 assessmentStandard,
                 document,
                 issueDate,
@@ -141,7 +141,7 @@ describe('CertificateManagerDriver', () => {
         await certificateManagerDriver.registerScopeCertificate(
             roleProof,
             issuer,
-            consigneeCompany,
+            subject,
             assessmentStandard,
             document,
             issueDate,
@@ -153,7 +153,7 @@ describe('CertificateManagerDriver', () => {
         expect(mockedContract.registerScopeCertificate).toHaveBeenCalledWith(
             roleProof,
             issuer,
-            consigneeCompany,
+            subject,
             assessmentStandard,
             document,
             issueDate.getTime(),
@@ -171,7 +171,7 @@ describe('CertificateManagerDriver', () => {
             certificateManagerDriver.registerScopeCertificate(
                 roleProof,
                 issuer,
-                consigneeCompany,
+                subject,
                 assessmentStandard,
                 document,
                 issueDate,
@@ -194,7 +194,7 @@ describe('CertificateManagerDriver', () => {
         await certificateManagerDriver.registerMaterialCertificate(
             roleProof,
             issuer,
-            consigneeCompany,
+            subject,
             assessmentStandard,
             document,
             issueDate,
@@ -204,7 +204,7 @@ describe('CertificateManagerDriver', () => {
         expect(mockedContract.registerMaterialCertificate).toHaveBeenCalledWith(
             roleProof,
             issuer,
-            consigneeCompany,
+            subject,
             assessmentStandard,
             document,
             issueDate.getTime(),
@@ -220,7 +220,7 @@ describe('CertificateManagerDriver', () => {
             certificateManagerDriver.registerMaterialCertificate(
                 roleProof,
                 issuer,
-                consigneeCompany,
+                subject,
                 assessmentStandard,
                 document,
                 issueDate,
@@ -236,12 +236,12 @@ describe('CertificateManagerDriver', () => {
             .mockResolvedValue(certificateIds);
         const result = await certificateManagerDriver.getCertificateIdsByConsigneeCompany(
             roleProof,
-            consigneeCompany
+            subject
         );
         expect(mockedContract.getCertificateIdsByConsigneeCompany).toHaveBeenCalledTimes(1);
         expect(mockedContract.getCertificateIdsByConsigneeCompany).toHaveBeenCalledWith(
             roleProof,
-            consigneeCompany
+            subject
         );
         expect(result).toEqual(certificateIds.map((id) => id.toNumber()));
     });
@@ -251,7 +251,7 @@ describe('CertificateManagerDriver', () => {
             {
                 id: BigNumber.from(1),
                 issuer,
-                consigneeCompany,
+                subject,
                 assessmentStandard,
                 document: {
                     id: BigNumber.from(document.id),
@@ -267,12 +267,12 @@ describe('CertificateManagerDriver', () => {
             .mockResolvedValue(certificates);
         const result = await certificateManagerDriver.getBaseCertificatesInfoByConsigneeCompany(
             roleProof,
-            consigneeCompany
+            subject
         );
         expect(mockedContract.getBaseCertificatesInfoByConsigneeCompany).toHaveBeenCalledTimes(1);
         expect(mockedContract.getBaseCertificatesInfoByConsigneeCompany).toHaveBeenCalledWith(
             roleProof,
-            consigneeCompany
+            subject
         );
         expect(result).toHaveLength(1);
         expect(result[0]).toEqual(EntityBuilder.buildBaseCertificate(certificates[0]));
@@ -284,7 +284,7 @@ describe('CertificateManagerDriver', () => {
                 baseInfo: {
                     id: BigNumber.from(2),
                     issuer,
-                    consigneeCompany,
+                    subject,
                     assessmentStandard,
                     document: {
                         id: BigNumber.from(document.id),
@@ -299,15 +299,9 @@ describe('CertificateManagerDriver', () => {
             } as CertificateManager.CompanyCertificateStructOutput
         ];
         mockedContract.getCompanyCertificates = jest.fn().mockResolvedValue(certificates);
-        const result = await certificateManagerDriver.getCompanyCertificates(
-            roleProof,
-            consigneeCompany
-        );
+        const result = await certificateManagerDriver.getCompanyCertificates(roleProof, subject);
         expect(mockedContract.getCompanyCertificates).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getCompanyCertificates).toHaveBeenCalledWith(
-            roleProof,
-            consigneeCompany
-        );
+        expect(mockedContract.getCompanyCertificates).toHaveBeenCalledWith(roleProof, subject);
         expect(result).toHaveLength(1);
         expect(result[0]).toEqual(EntityBuilder.buildCompanyCertificate(certificates[0]));
     });
@@ -317,7 +311,7 @@ describe('CertificateManagerDriver', () => {
             baseInfo: {
                 id: BigNumber.from(1),
                 issuer,
-                consigneeCompany,
+                subject,
                 assessmentStandard,
                 document: {
                     id: BigNumber.from(document.id),
@@ -343,7 +337,7 @@ describe('CertificateManagerDriver', () => {
                 baseInfo: {
                     id: BigNumber.from(2),
                     issuer,
-                    consigneeCompany,
+                    subject,
                     assessmentStandard,
                     document: {
                         id: BigNumber.from(document.id),
@@ -361,13 +355,13 @@ describe('CertificateManagerDriver', () => {
         mockedContract.getScopeCertificates = jest.fn().mockResolvedValue(certificates);
         const result = await certificateManagerDriver.getScopeCertificates(
             roleProof,
-            consigneeCompany,
+            subject,
             processTypes[0]
         );
         expect(mockedContract.getScopeCertificates).toHaveBeenCalledTimes(1);
         expect(mockedContract.getScopeCertificates).toHaveBeenCalledWith(
             roleProof,
-            consigneeCompany,
+            subject,
             processTypes[0]
         );
         expect(result).toHaveLength(1);
@@ -379,7 +373,7 @@ describe('CertificateManagerDriver', () => {
             baseInfo: {
                 id: BigNumber.from(1),
                 issuer,
-                consigneeCompany,
+                subject,
                 assessmentStandard,
                 document: {
                     id: BigNumber.from(document.id),
@@ -406,7 +400,7 @@ describe('CertificateManagerDriver', () => {
                 baseInfo: {
                     id: BigNumber.from(2),
                     issuer,
-                    consigneeCompany,
+                    subject,
                     assessmentStandard,
                     document: {
                         id: BigNumber.from(document.id),
@@ -422,13 +416,13 @@ describe('CertificateManagerDriver', () => {
         mockedContract.getMaterialCertificates = jest.fn().mockResolvedValue(certificates);
         const result = await certificateManagerDriver.getMaterialCertificates(
             roleProof,
-            consigneeCompany,
+            subject,
             materialId
         );
         expect(mockedContract.getMaterialCertificates).toHaveBeenCalledTimes(1);
         expect(mockedContract.getMaterialCertificates).toHaveBeenCalledWith(
             roleProof,
-            consigneeCompany,
+            subject,
             materialId
         );
         expect(result).toHaveLength(1);
@@ -440,7 +434,7 @@ describe('CertificateManagerDriver', () => {
             baseInfo: {
                 id: BigNumber.from(1),
                 issuer,
-                consigneeCompany,
+                subject,
                 assessmentStandard,
                 document: {
                     id: BigNumber.from(document.id),
@@ -624,7 +618,7 @@ describe('CertificateManagerDriver', () => {
         const certificate = {
             id: BigNumber.from(1),
             issuer,
-            consigneeCompany,
+            subject,
             assessmentStandard,
             document: {
                 id: BigNumber.from(document.id),

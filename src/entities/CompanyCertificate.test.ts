@@ -11,7 +11,7 @@ describe('CompanyCertificate', () => {
         companyCertificate = new CompanyCertificate(
             0,
             'issuer',
-            'consigneeCompany',
+            'subject',
             'assessmentStandard',
             { id: 1, documentType: DocumentType.CERTIFICATE_OF_CONFORMITY },
             DocumentEvaluationStatus.NOT_EVALUATED,
@@ -25,7 +25,7 @@ describe('CompanyCertificate', () => {
     it('should correctly initialize a CompanyCertificate', () => {
         expect(companyCertificate.id).toEqual(0);
         expect(companyCertificate.issuer).toEqual('issuer');
-        expect(companyCertificate.consigneeCompany).toEqual('consigneeCompany');
+        expect(companyCertificate.subject).toEqual('subject');
         expect(companyCertificate.assessmentStandard).toEqual('assessmentStandard');
         expect(companyCertificate.document).toEqual({
             id: 1,
@@ -48,9 +48,9 @@ describe('CompanyCertificate', () => {
         expect(companyCertificate.issuer).toEqual('newIssuer');
     });
 
-    it('should correctly set the consigneeCompany', () => {
-        companyCertificate.consigneeCompany = 'newConsigneeCompany';
-        expect(companyCertificate.consigneeCompany).toEqual('newConsigneeCompany');
+    it('should correctly set the subject', () => {
+        companyCertificate.subject = 'newConsigneeCompany';
+        expect(companyCertificate.subject).toEqual('newConsigneeCompany');
     });
 
     it('should correctly set the assessmentStandard', () => {
