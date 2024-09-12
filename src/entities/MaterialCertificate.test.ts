@@ -47,8 +47,8 @@ describe('MaterialCertificate', () => {
     });
 
     it('should correctly set the subject', () => {
-        materialCertificate.subject = 'newConsigneeCompany';
-        expect(materialCertificate.subject).toEqual('newConsigneeCompany');
+        materialCertificate.subject = 'newSubject';
+        expect(materialCertificate.subject).toEqual('newSubject');
     });
 
     it('should correctly set the assessmentStandard', () => {

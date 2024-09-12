@@ -52,8 +52,8 @@ describe('ScopeCertificate', () => {
     });
 
     it('should correctly set the subject', () => {
-        scopeCertificate.subject = 'newConsigneeCompany';
-        expect(scopeCertificate.subject).toEqual('newConsigneeCompany');
+        scopeCertificate.subject = 'newSubject';
+        expect(scopeCertificate.subject).toEqual('newSubject');
     });
 
     it('should correctly set the assessmentStandard', () => {

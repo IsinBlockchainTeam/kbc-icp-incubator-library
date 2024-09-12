@@ -28,7 +28,7 @@ export class BaseCertificate {
 
     private _issuer: string;
 
-    private _consigneeCompany: string;
+    private _subject: string;
 
     private _assessmentStandard: string;
 
@@ -52,7 +52,7 @@ export class BaseCertificate {
     ) {
         this._id = id;
         this._issuer = issuer;
-        this._consigneeCompany = subject;
+        this._subject = subject;
         this._assessmentStandard = assessmentStandard;
         this._document = document;
         this._evaluationStatus = evaluationStatus;
@@ -77,11 +77,11 @@ export class BaseCertificate {
     }
 
     get subject(): string {
-        return this._consigneeCompany;
+        return this._subject;
     }
 
     set subject(value: string) {
-        this._consigneeCompany = value;
+        this._subject = value;
     }
 
     get assessmentStandard(): string {

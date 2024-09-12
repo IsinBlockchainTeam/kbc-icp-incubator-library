@@ -144,24 +144,15 @@ export class CertificateManagerService {
         );
     }
 
-    async getCertificateIdsByConsigneeCompany(
-        roleProof: RoleProof,
-        subject: string
-    ): Promise<number[]> {
-        return this._certificateManagerDriver.getCertificateIdsByConsigneeCompany(
-            roleProof,
-            subject
-        );
+    async getCertificateIdsBySubject(roleProof: RoleProof, subject: string): Promise<number[]> {
+        return this._certificateManagerDriver.getCertificateIdsBySubject(roleProof, subject);
     }
 
-    async getBaseCertificatesInfoByConsigneeCompany(
+    async getBaseCertificatesInfoBySubject(
         roleProof: RoleProof,
         subject: string
     ): Promise<BaseCertificate[]> {
-        return this._certificateManagerDriver.getBaseCertificatesInfoByConsigneeCompany(
-            roleProof,
-            subject
-        );
+        return this._certificateManagerDriver.getBaseCertificatesInfoBySubject(roleProof, subject);
     }
 
     async getCompanyCertificates(

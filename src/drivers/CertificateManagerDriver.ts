@@ -104,22 +104,16 @@ export class CertificateManagerDriver {
             .args[0];
     }
 
-    async getCertificateIdsByConsigneeCompany(
-        roleProof: RoleProof,
-        subject: string
-    ): Promise<number[]> {
-        const certificateIds = await this._actual.getCertificateIdsByConsigneeCompany(
-            roleProof,
-            subject
-        );
+    async getCertificateIdsBySubject(roleProof: RoleProof, subject: string): Promise<number[]> {
+        const certificateIds = await this._actual.getCertificateIdsBySubject(roleProof, subject);
         return certificateIds.map((certificateId) => certificateId.toNumber());
     }
 
-    async getBaseCertificatesInfoByConsigneeCompany(
+    async getBaseCertificatesInfoBySubject(
         roleProof: RoleProof,
         subject: string
     ): Promise<BaseCertificate[]> {
-        const certificates = await this._actual.getBaseCertificatesInfoByConsigneeCompany(
+        const certificates = await this._actual.getBaseCertificatesInfoBySubject(
             roleProof,
             subject
         );

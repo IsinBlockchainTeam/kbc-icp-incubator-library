@@ -50,8 +50,8 @@ describe('CertificateManagerDriver', () => {
         getCompanyCertificates: mockedReadFunction,
         getScopeCertificates: mockedReadFunction,
         getMaterialCertificates: mockedReadFunction,
-        getCertificateIdsByConsigneeCompany: mockedReadFunction,
-        getBaseCertificatesInfoByConsigneeCompany: mockedReadFunction,
+        getCertificateIdsBySubject: mockedReadFunction,
+        getBaseCertificatesInfoBySubject: mockedReadFunction,
         updateCompanyCertificate: mockedWriteFunction,
         updateScopeCertificate: mockedWriteFunction,
         updateMaterialCertificate: mockedWriteFunction,
@@ -231,18 +231,13 @@ describe('CertificateManagerDriver', () => {
 
     it('should correctly get certificate ids by consignee company', async () => {
         const certificateIds = [BigNumber.from(1), BigNumber.from(2)];
-        mockedContract.getCertificateIdsByConsigneeCompany = jest
-            .fn()
-            .mockResolvedValue(certificateIds);
-        const result = await certificateManagerDriver.getCertificateIdsByConsigneeCompany(
+        mockedContract.getCertificateIdsBySubject = jest.fn().mockResolvedValue(certificateIds);
+        const result = await certificateManagerDriver.getCertificateIdsBySubject(
             roleProof,
             subject
         );
-        expect(mockedContract.getCertificateIdsByConsigneeCompany).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getCertificateIdsByConsigneeCompany).toHaveBeenCalledWith(
-            roleProof,
-            subject
-        );
+        expect(mockedContract.getCertificateIdsBySubject).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getCertificateIdsBySubject).toHaveBeenCalledWith(roleProof, subject);
         expect(result).toEqual(certificateIds.map((id) => id.toNumber()));
     });
 
@@ -262,15 +257,13 @@ describe('CertificateManagerDriver', () => {
                 issueDate: BigNumber.from(issueDate.getTime())
             } as CertificateManager.BaseInfoStructOutput
         ];
-        mockedContract.getBaseCertificatesInfoByConsigneeCompany = jest
-            .fn()
-            .mockResolvedValue(certificates);
-        const result = await certificateManagerDriver.getBaseCertificatesInfoByConsigneeCompany(
+        mockedContract.getBaseCertificatesInfoBySubject = jest.fn().mockResolvedValue(certificates);
+        const result = await certificateManagerDriver.getBaseCertificatesInfoBySubject(
             roleProof,
             subject
         );
-        expect(mockedContract.getBaseCertificatesInfoByConsigneeCompany).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getBaseCertificatesInfoByConsigneeCompany).toHaveBeenCalledWith(
+        expect(mockedContract.getBaseCertificatesInfoBySubject).toHaveBeenCalledTimes(1);
+        expect(mockedContract.getBaseCertificatesInfoBySubject).toHaveBeenCalledWith(
             roleProof,
             subject
         );

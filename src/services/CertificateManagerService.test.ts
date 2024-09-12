@@ -15,8 +15,8 @@ describe('CertificateManagerService', () => {
         registerCompanyCertificate: jest.fn(),
         registerScopeCertificate: jest.fn(),
         registerMaterialCertificate: jest.fn(),
-        getCertificateIdsByConsigneeCompany: jest.fn(),
-        getBaseCertificatesInfoByConsigneeCompany: jest.fn(),
+        getCertificateIdsBySubject: jest.fn(),
+        getBaseCertificatesInfoBySubject: jest.fn(),
         getCompanyCertificates: jest.fn(),
         getCompanyCertificate: jest.fn(),
         getScopeCertificates: jest.fn(),
@@ -168,22 +168,17 @@ describe('CertificateManagerService', () => {
             ]
         },
         {
-            serviceFunctionName: 'getCertificateIdsByConsigneeCompany',
+            serviceFunctionName: 'getCertificateIdsBySubject',
             serviceFunction: () =>
-                certificateManagerService.getCertificateIdsByConsigneeCompany(roleProof, subject),
-            expectedMockedFunction:
-                mockedCertificateManagerDriver.getCertificateIdsByConsigneeCompany,
+                certificateManagerService.getCertificateIdsBySubject(roleProof, subject),
+            expectedMockedFunction: mockedCertificateManagerDriver.getCertificateIdsBySubject,
             expectedMockedFunctionArgs: [roleProof, subject]
         },
         {
-            serviceFunctionName: 'getBaseCertificatesInfoByConsigneeCompany',
+            serviceFunctionName: 'getBaseCertificatesInfoBySubject',
             serviceFunction: () =>
-                certificateManagerService.getBaseCertificatesInfoByConsigneeCompany(
-                    roleProof,
-                    subject
-                ),
-            expectedMockedFunction:
-                mockedCertificateManagerDriver.getBaseCertificatesInfoByConsigneeCompany,
+                certificateManagerService.getBaseCertificatesInfoBySubject(roleProof, subject),
+            expectedMockedFunction: mockedCertificateManagerDriver.getBaseCertificatesInfoBySubject,
             expectedMockedFunctionArgs: [roleProof, subject]
         },
         {

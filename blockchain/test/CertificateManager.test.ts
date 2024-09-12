@@ -89,7 +89,7 @@ describe('CertificateManager', () => {
                 expect(certificates[0].validFrom).to.be.equal(validFrom);
                 expect(certificates[0].validUntil).to.be.equal(validUntil);
 
-                const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+                const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
                 expect(certificateIds.length).to.be.equal(1);
                 const certificate = await certificateManagerContract.getCompanyCertificate(roleProof, certificateIds[0]);
                 expect(certificate).to.deep.equal(certificates[0]);
@@ -146,7 +146,7 @@ describe('CertificateManager', () => {
                     );
                 await tx.wait();
 
-                const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+                const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
                 expect(certificateIds.length).to.be.equal(1);
 
                 const updateTx = await certificateManagerContract
@@ -182,7 +182,7 @@ describe('CertificateManager', () => {
                         validUntil
                     );
                 await tx.wait();
-                const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+                const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
                 await expect(
                     certificateManagerContract
                         .connect(issuer)
@@ -213,7 +213,7 @@ describe('CertificateManager', () => {
                     );
                 await tx.wait();
 
-                const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+                const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
                 expect(certificateIds.length).to.be.equal(1);
 
                 await certificateManagerContract.evaluateDocument(roleProof, certificateIds[0], 1, 2);
@@ -263,7 +263,7 @@ describe('CertificateManager', () => {
                 expect(certificatesProcessType2.length).to.be.equal(1);
                 expect(certificatesProcessType2[0]).to.deep.equal(certificatesProcessType1[0]);
 
-                const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+                const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
                 expect(certificateIds.length).to.be.equal(1);
                 const certificate = await certificateManagerContract.getScopeCertificate(roleProof, certificateIds[0]);
                 expect(certificate).to.deep.equal(certificatesProcessType1[0]);
@@ -342,7 +342,7 @@ describe('CertificateManager', () => {
                     );
                 await tx.wait();
 
-                const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+                const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
                 expect(certificateIds.length).to.be.equal(1);
 
                 const updateTx = await certificateManagerContract
@@ -381,7 +381,7 @@ describe('CertificateManager', () => {
                         processTypes
                     );
                 await tx.wait();
-                const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+                const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
                 await expect(
                     certificateManagerContract
                         .connect(issuer)
@@ -429,7 +429,7 @@ describe('CertificateManager', () => {
                     );
                 await tx.wait();
 
-                const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+                const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
                 expect(certificateIds.length).to.be.equal(1);
 
                 await certificateManagerContract.evaluateDocument(roleProof, certificateIds[0], 2, 1);
@@ -464,7 +464,7 @@ describe('CertificateManager', () => {
                     );
                 await tx.wait();
 
-                const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+                const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
                 expect(certificateIds.length).to.be.equal(1);
 
                 await expect(
@@ -513,7 +513,7 @@ describe('CertificateManager', () => {
                 expect(certificates[0].baseInfo.issueDate).to.be.equal(issueDate);
                 expect(certificates[0].materialId).to.be.equal(3);
 
-                const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+                const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
                 expect(certificateIds.length).to.be.equal(1);
                 const certificate = await certificateManagerContract.getMaterialCertificate(roleProof, certificateIds[0]);
                 expect(certificate).to.deep.equal(certificates[0]);
@@ -583,7 +583,7 @@ describe('CertificateManager', () => {
                     );
                 await tx.wait();
 
-                const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+                const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
                 expect(certificateIds.length).to.be.equal(1);
 
                 const updateTx = await certificateManagerContract
@@ -611,7 +611,7 @@ describe('CertificateManager', () => {
                     );
                 await tx.wait();
 
-                const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+                const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
                 expect(certificateIds.length).to.be.equal(1);
 
                 await expect(
@@ -635,7 +635,7 @@ describe('CertificateManager', () => {
                     );
                 await tx.wait();
 
-                const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+                const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
                 expect(certificateIds.length).to.be.equal(1);
 
                 await expect(
@@ -663,7 +663,7 @@ describe('CertificateManager', () => {
                 );
             await tx.wait();
 
-            const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+            const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
             expect(certificateIds.length).to.be.equal(1);
 
             const certificate = await certificateManagerContract.getCompanyCertificate(roleProof, certificateIds[0]);
@@ -672,7 +672,7 @@ describe('CertificateManager', () => {
         });
 
         it('should get base certificates by consignee address', async () => {
-            let baseCertificates = await certificateManagerContract.getBaseCertificatesInfoByConsigneeCompany(roleProof, consignee.address);
+            let baseCertificates = await certificateManagerContract.getBaseCertificatesInfoBySubject(roleProof, consignee.address);
             expect(baseCertificates.length).to.be.equal(0);
 
             await certificateManagerContract.registerCompanyCertificate(
@@ -685,7 +685,7 @@ describe('CertificateManager', () => {
                 validFrom,
                 validUntil
             );
-            baseCertificates = await certificateManagerContract.getBaseCertificatesInfoByConsigneeCompany(roleProof, consignee.address);
+            baseCertificates = await certificateManagerContract.getBaseCertificatesInfoBySubject(roleProof, consignee.address);
             expect(baseCertificates.length).to.be.equal(1);
 
             await certificateManagerContract.registerScopeCertificate(
@@ -699,7 +699,7 @@ describe('CertificateManager', () => {
                 validUntil,
                 processTypes
             );
-            baseCertificates = await certificateManagerContract.getBaseCertificatesInfoByConsigneeCompany(roleProof, consignee.address);
+            baseCertificates = await certificateManagerContract.getBaseCertificatesInfoBySubject(roleProof, consignee.address);
             expect(baseCertificates.length).to.be.equal(2);
             expect(baseCertificates[0].certificateType).to.be.equal(0);
             expect(baseCertificates[1].certificateType).to.be.equal(1);
@@ -714,10 +714,8 @@ describe('CertificateManager', () => {
                 validFrom,
                 validUntil
             );
-            expect((await certificateManagerContract.getBaseCertificatesInfoByConsigneeCompany(roleProof, consignee.address)).length).not.to.be.equal(
-                3
-            );
-            expect((await certificateManagerContract.getBaseCertificatesInfoByConsigneeCompany(roleProof, other.address)).length).to.be.equal(1);
+            expect((await certificateManagerContract.getBaseCertificatesInfoBySubject(roleProof, consignee.address)).length).not.to.be.equal(3);
+            expect((await certificateManagerContract.getBaseCertificatesInfoBySubject(roleProof, other.address)).length).to.be.equal(1);
         });
     });
 
@@ -737,7 +735,7 @@ describe('CertificateManager', () => {
                 );
             await tx.wait();
 
-            const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+            const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
             expect(certificateIds.length).to.be.equal(1);
 
             await certificateManagerContract.evaluateDocument(roleProof, certificateIds[0], 1, 2);
@@ -760,7 +758,7 @@ describe('CertificateManager', () => {
                 );
             await tx.wait();
 
-            const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+            const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
             await expect(certificateManagerContract.connect(issuer).evaluateDocument(roleProof, certificateIds[0], 1, 0)).to.be.revertedWith(
                 'CertificateManager: Evaluation status must be different from NOT_EVALUATED'
             );
@@ -781,7 +779,7 @@ describe('CertificateManager', () => {
                 );
             await tx.wait();
 
-            const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+            const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
             await expect(certificateManagerContract.connect(issuer).evaluateDocument(roleProof, certificateIds[0], 3, 2)).to.be.revertedWith(
                 'CertificateManager: Document does not match the certificate'
             );
@@ -802,7 +800,7 @@ describe('CertificateManager', () => {
                 );
             await tx.wait();
 
-            const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+            const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
             await certificateManagerContract.connect(other).evaluateDocument(roleProof, certificateIds[0], 1, 2);
             await expect(certificateManagerContract.connect(issuer).evaluateDocument(roleProof, certificateIds[0], 1, 2)).to.be.revertedWith(
                 'CertificateManager: Document has already been evaluated'
@@ -825,7 +823,7 @@ describe('CertificateManager', () => {
                     validUntil
                 );
             await tx.wait();
-            const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+            const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
             await certificateManagerContract.connect(other).evaluateDocument(roleProof, certificateIds[0], 1, 2);
             let certificate = await certificateManagerContract.getCompanyCertificate(roleProof, certificateIds[0]);
             expect(certificate.baseInfo.evaluationStatus).to.be.equal(2);
@@ -851,7 +849,7 @@ describe('CertificateManager', () => {
                     validUntil
                 );
             await tx.wait();
-            const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+            const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
             await expect(
                 certificateManagerContract
                     .connect(consignee)
@@ -873,7 +871,7 @@ describe('CertificateManager', () => {
                     validUntil
                 );
             await tx.wait();
-            const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+            const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
             await expect(
                 certificateManagerContract.connect(issuer).updateDocument(roleProof, certificateIds[0], 1, 'new external url', 'content hash updated')
             ).to.be.revertedWith('CertificateManager: Only the uploader can update the document');
