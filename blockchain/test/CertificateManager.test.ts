@@ -88,7 +88,8 @@ describe('CertificateManager', () => {
                 const certificates = await certificateManagerContract.getCompanyCertificates(roleProof, consignee.address);
                 expect(certificates.length).to.be.equal(1);
                 expect(certificates[0].baseInfo.issuer).to.be.equal(issuer.address);
-                expect(certificates[0].baseInfo.consigneeCompany).to.be.equal(consignee.address);
+                expect(certificates[0].baseInfo.uploadedBy).to.be.equal(consignee.address);
+                expect(certificates[0].baseInfo.subject).to.be.equal(consignee.address);
                 expect(certificates[0].baseInfo.assessmentStandard).to.be.equal(assessmentStandards[0]);
                 expect(certificates[0].baseInfo.document.id).to.be.equal(1);
                 expect(certificates[0].baseInfo.document.documentType).to.be.equal(0);
@@ -98,7 +99,7 @@ describe('CertificateManager', () => {
                 expect(certificates[0].validFrom).to.be.equal(validFrom);
                 expect(certificates[0].validUntil).to.be.equal(validUntil);
 
-                const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+                const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
                 expect(certificateIds.length).to.be.equal(1);
                 const certificate = await certificateManagerContract.getCompanyCertificate(roleProof, certificateIds[0]);
                 expect(certificate).to.deep.equal(certificates[0]);
@@ -155,7 +156,7 @@ describe('CertificateManager', () => {
                     );
                 await tx.wait();
 
-                const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+                const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
                 expect(certificateIds.length).to.be.equal(1);
 
                 const updateTx = await certificateManagerContract
@@ -175,6 +176,28 @@ describe('CertificateManager', () => {
                 expect(updatedCertificate.baseInfo.issueDate).to.be.equal(issueDate);
                 expect(updatedCertificate.validFrom).to.be.equal(new Date(validFrom).getDate() + 1);
                 expect(updatedCertificate.validUntil).to.be.equal(new Date(validUntil).getDate() + 1);
+            });
+
+            it('should update a company certificate - FAIL (CertificateManager: Only the uploader can update the certificate)', async () => {
+                const tx = await certificateManagerContract
+                    .connect(consignee)
+                    .registerCompanyCertificate(
+                        roleProof,
+                        issuer.address,
+                        consignee.address,
+                        assessmentStandards[0],
+                        { id: 1, documentType: 0 },
+                        issueDate,
+                        validFrom,
+                        validUntil
+                    );
+                await tx.wait();
+                const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
+                await expect(
+                    certificateManagerContract
+                        .connect(issuer)
+                        .updateCompanyCertificate(roleProof, certificateIds[0], assessmentStandards[1], issueDate, validFrom, validUntil)
+                ).to.be.revertedWith('CertificateManager: Only the uploader can update the certificate');
             });
 
             it('should update a company certificate - FAIL (CertificateManager: Company certificate does not exist)', async () => {
@@ -200,7 +223,7 @@ describe('CertificateManager', () => {
                     );
                 await tx.wait();
 
-                const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+                const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
                 expect(certificateIds.length).to.be.equal(1);
 
                 await certificateManagerContract.evaluateDocument(roleProof, certificateIds[0], 1, 2);
@@ -233,8 +256,9 @@ describe('CertificateManager', () => {
 
                 const certificatesProcessType1 = await certificateManagerContract.getScopeCertificates(roleProof, consignee.address, processTypes[0]);
                 expect(certificatesProcessType1.length).to.be.equal(1);
+                expect(certificatesProcessType1[0].baseInfo.uploadedBy).to.be.equal(consignee.address);
                 expect(certificatesProcessType1[0].baseInfo.issuer).to.be.equal(issuer.address);
-                expect(certificatesProcessType1[0].baseInfo.consigneeCompany).to.be.equal(consignee.address);
+                expect(certificatesProcessType1[0].baseInfo.subject).to.be.equal(consignee.address);
                 expect(certificatesProcessType1[0].baseInfo.assessmentStandard).to.be.equal(assessmentStandards[1]);
                 expect(certificatesProcessType1[0].baseInfo.document.id).to.be.equal(2);
                 expect(certificatesProcessType1[0].baseInfo.document.documentType).to.be.equal(1);
@@ -249,7 +273,7 @@ describe('CertificateManager', () => {
                 expect(certificatesProcessType2.length).to.be.equal(1);
                 expect(certificatesProcessType2[0]).to.deep.equal(certificatesProcessType1[0]);
 
-                const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+                const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
                 expect(certificateIds.length).to.be.equal(1);
                 const certificate = await certificateManagerContract.getScopeCertificate(roleProof, certificateIds[0]);
                 expect(certificate).to.deep.equal(certificatesProcessType1[0]);
@@ -328,7 +352,7 @@ describe('CertificateManager', () => {
                     );
                 await tx.wait();
 
-                const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+                const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
                 expect(certificateIds.length).to.be.equal(1);
 
                 const updateTx = await certificateManagerContract
@@ -350,6 +374,37 @@ describe('CertificateManager', () => {
                 expect(updatedCertificate.validFrom).to.be.equal(new Date(validFrom).getDate() + 1);
                 expect(updatedCertificate.validUntil).to.be.equal(new Date(validUntil).getDate() + 1);
                 expect(updatedCertificate.processTypes).to.be.deep.equal([processTypes[0]]);
+            });
+
+            it('should update a scope certificate - FAIL (CertificateManager: Only the uploader can update the certificate)', async () => {
+                const tx = await certificateManagerContract
+                    .connect(consignee)
+                    .registerScopeCertificate(
+                        roleProof,
+                        issuer.address,
+                        consignee.address,
+                        assessmentStandards[1],
+                        { id: 2, documentType: 1 },
+                        issueDate,
+                        validFrom,
+                        validUntil,
+                        processTypes
+                    );
+                await tx.wait();
+                const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
+                await expect(
+                    certificateManagerContract
+                        .connect(issuer)
+                        .updateScopeCertificate(
+                            roleProof,
+                            certificateIds[0],
+                            assessmentStandards[1],
+                            issueDate,
+                            new Date(new Date(validFrom).getDate() + 1).getTime(),
+                            new Date(new Date(validUntil).getDate() + 1).getTime(),
+                            [processTypes[0]]
+                        )
+                ).to.be.revertedWith('CertificateManager: Only the uploader can update the certificate');
             });
 
             it('should update a scope certificate - FAIL (CertificateManager: Scope certificate does not exist)', async () => {
@@ -384,7 +439,7 @@ describe('CertificateManager', () => {
                     );
                 await tx.wait();
 
-                const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+                const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
                 expect(certificateIds.length).to.be.equal(1);
 
                 await certificateManagerContract.evaluateDocument(roleProof, certificateIds[0], 2, 1);
@@ -419,7 +474,7 @@ describe('CertificateManager', () => {
                     );
                 await tx.wait();
 
-                const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+                const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
                 expect(certificateIds.length).to.be.equal(1);
 
                 await expect(
@@ -457,8 +512,9 @@ describe('CertificateManager', () => {
 
                 const certificates = await certificateManagerContract.getMaterialCertificates(roleProof, consignee.address, 3);
                 expect(certificates.length).to.be.equal(1);
+                expect(certificates[0].baseInfo.uploadedBy).to.be.equal(consignee.address);
                 expect(certificates[0].baseInfo.issuer).to.be.equal(issuer.address);
-                expect(certificates[0].baseInfo.consigneeCompany).to.be.equal(consignee.address);
+                expect(certificates[0].baseInfo.subject).to.be.equal(consignee.address);
                 expect(certificates[0].baseInfo.assessmentStandard).to.be.equal(assessmentStandards[2]);
                 expect(certificates[0].baseInfo.document.id).to.be.equal(2);
                 expect(certificates[0].baseInfo.document.documentType).to.be.equal(1);
@@ -467,7 +523,7 @@ describe('CertificateManager', () => {
                 expect(certificates[0].baseInfo.issueDate).to.be.equal(issueDate);
                 expect(certificates[0].materialId).to.be.equal(3);
 
-                const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+                const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
                 expect(certificateIds.length).to.be.equal(1);
                 const certificate = await certificateManagerContract.getMaterialCertificate(roleProof, certificateIds[0]);
                 expect(certificate).to.deep.equal(certificates[0]);
@@ -537,7 +593,7 @@ describe('CertificateManager', () => {
                     );
                 await tx.wait();
 
-                const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+                const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
                 expect(certificateIds.length).to.be.equal(1);
 
                 const updateTx = await certificateManagerContract
@@ -549,6 +605,30 @@ describe('CertificateManager', () => {
                 expect(updatedCertificate.baseInfo.assessmentStandard).to.be.equal(assessmentStandards[1]);
                 expect(updatedCertificate.baseInfo.issueDate).to.be.equal(issueDate);
                 expect(updatedCertificate.materialId).to.be.equal(4);
+            });
+
+            it('should update a material certificate - FAIL (CertificateManager: Only the uploader can update the certificate)', async () => {
+                const tx = await certificateManagerContract
+                    .connect(consignee)
+                    .registerMaterialCertificate(
+                        roleProof,
+                        issuer.address,
+                        consignee.address,
+                        assessmentStandards[2],
+                        { id: 2, documentType: 1 },
+                        issueDate,
+                        3
+                    );
+                await tx.wait();
+
+                const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
+                expect(certificateIds.length).to.be.equal(1);
+
+                await expect(
+                    certificateManagerContract
+                        .connect(issuer)
+                        .updateMaterialCertificate(roleProof, certificateIds[0], assessmentStandards[1], issueDate, 3)
+                ).to.be.revertedWith('CertificateManager: Only the uploader can update the certificate');
             });
 
             it('should update a material certificate - FAIL (CertificateManager: Material does not exist)', async () => {
@@ -565,7 +645,7 @@ describe('CertificateManager', () => {
                     );
                 await tx.wait();
 
-                const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+                const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
                 expect(certificateIds.length).to.be.equal(1);
 
                 await expect(
@@ -593,7 +673,7 @@ describe('CertificateManager', () => {
                 );
             await tx.wait();
 
-            const certificateIds = await certificateManagerContract.getCertificateIdsByConsigneeCompany(roleProof, consignee.address);
+            const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
             expect(certificateIds.length).to.be.equal(1);
 
             const certificate = await certificateManagerContract.getCompanyCertificate(roleProof, certificateIds[0]);
@@ -602,7 +682,7 @@ describe('CertificateManager', () => {
         });
 
         it('should get base certificates by consignee address', async () => {
-            let baseCertificates = await certificateManagerContract.getBaseCertificatesInfoByConsigneeCompany(roleProof, consignee.address);
+            let baseCertificates = await certificateManagerContract.getBaseCertificatesInfoBySubject(roleProof, consignee.address);
             expect(baseCertificates.length).to.be.equal(0);
 
             await certificateManagerContract.registerCompanyCertificate(
@@ -615,7 +695,7 @@ describe('CertificateManager', () => {
                 validFrom,
                 validUntil
             );
-            baseCertificates = await certificateManagerContract.getBaseCertificatesInfoByConsigneeCompany(roleProof, consignee.address);
+            baseCertificates = await certificateManagerContract.getBaseCertificatesInfoBySubject(roleProof, consignee.address);
             expect(baseCertificates.length).to.be.equal(1);
 
             await certificateManagerContract.registerScopeCertificate(
@@ -629,7 +709,7 @@ describe('CertificateManager', () => {
                 validUntil,
                 processTypes
             );
-            baseCertificates = await certificateManagerContract.getBaseCertificatesInfoByConsigneeCompany(roleProof, consignee.address);
+            baseCertificates = await certificateManagerContract.getBaseCertificatesInfoBySubject(roleProof, consignee.address);
             expect(baseCertificates.length).to.be.equal(2);
             expect(baseCertificates[0].certificateType).to.be.equal(0);
             expect(baseCertificates[1].certificateType).to.be.equal(1);
@@ -644,10 +724,167 @@ describe('CertificateManager', () => {
                 validFrom,
                 validUntil
             );
-            expect((await certificateManagerContract.getBaseCertificatesInfoByConsigneeCompany(roleProof, consignee.address)).length).not.to.be.equal(
-                3
+            expect((await certificateManagerContract.getBaseCertificatesInfoBySubject(roleProof, consignee.address)).length).not.to.be.equal(3);
+            expect((await certificateManagerContract.getBaseCertificatesInfoBySubject(roleProof, other.address)).length).to.be.equal(1);
+        });
+    });
+
+    describe('Document evaluation', () => {
+        it('should evaluate document', async () => {
+            const tx = await certificateManagerContract
+                .connect(consignee)
+                .registerCompanyCertificate(
+                    roleProof,
+                    issuer.address,
+                    consignee.address,
+                    assessmentStandards[0],
+                    { id: 1, documentType: 0 },
+                    issueDate,
+                    validFrom,
+                    validUntil
+                );
+            await tx.wait();
+
+            const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
+            expect(certificateIds.length).to.be.equal(1);
+
+            await certificateManagerContract.evaluateDocument(roleProof, certificateIds[0], 1, 2);
+            const certificate = await certificateManagerContract.getCompanyCertificate(roleProof, certificateIds[0]);
+            expect(certificate.baseInfo.evaluationStatus).to.be.equal(2);
+        });
+
+        it('should evaluate document - FAIL (CertificateManager: Evaluation status must be different from NOT_EVALUATED)', async () => {
+            const tx = await certificateManagerContract
+                .connect(consignee)
+                .registerCompanyCertificate(
+                    roleProof,
+                    issuer.address,
+                    consignee.address,
+                    assessmentStandards[0],
+                    { id: 1, documentType: 0 },
+                    issueDate,
+                    validFrom,
+                    validUntil
+                );
+            await tx.wait();
+
+            const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
+            await expect(certificateManagerContract.connect(issuer).evaluateDocument(roleProof, certificateIds[0], 1, 0)).to.be.revertedWith(
+                'CertificateManager: Evaluation status must be different from NOT_EVALUATED'
             );
-            expect((await certificateManagerContract.getBaseCertificatesInfoByConsigneeCompany(roleProof, other.address)).length).to.be.equal(1);
+        });
+
+        it('should evaluate document - FAIL (CertificateManager: Document does not match the certificate)', async () => {
+            const tx = await certificateManagerContract
+                .connect(consignee)
+                .registerCompanyCertificate(
+                    roleProof,
+                    issuer.address,
+                    consignee.address,
+                    assessmentStandards[0],
+                    { id: 1, documentType: 0 },
+                    issueDate,
+                    validFrom,
+                    validUntil
+                );
+            await tx.wait();
+
+            const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
+            await expect(certificateManagerContract.connect(issuer).evaluateDocument(roleProof, certificateIds[0], 3, 2)).to.be.revertedWith(
+                'CertificateManager: Document does not match the certificate'
+            );
+        });
+
+        it('should evaluate document - FAIL (CertificateManager: Document has already been evaluated)', async () => {
+            const tx = await certificateManagerContract
+                .connect(consignee)
+                .registerCompanyCertificate(
+                    roleProof,
+                    issuer.address,
+                    consignee.address,
+                    assessmentStandards[0],
+                    { id: 1, documentType: 0 },
+                    issueDate,
+                    validFrom,
+                    validUntil
+                );
+            await tx.wait();
+
+            const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
+            await certificateManagerContract.connect(other).evaluateDocument(roleProof, certificateIds[0], 1, 2);
+            await expect(certificateManagerContract.connect(issuer).evaluateDocument(roleProof, certificateIds[0], 1, 2)).to.be.revertedWith(
+                'CertificateManager: Document has already been evaluated'
+            );
+        });
+    });
+
+    describe('Document update', () => {
+        it('should update a document', async () => {
+            const tx = await certificateManagerContract
+                .connect(consignee)
+                .registerCompanyCertificate(
+                    roleProof,
+                    issuer.address,
+                    consignee.address,
+                    assessmentStandards[0],
+                    { id: 1, documentType: 0 },
+                    issueDate,
+                    validFrom,
+                    validUntil
+                );
+            await tx.wait();
+            const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
+            await certificateManagerContract.connect(other).evaluateDocument(roleProof, certificateIds[0], 1, 2);
+            let certificate = await certificateManagerContract.getCompanyCertificate(roleProof, certificateIds[0]);
+            expect(certificate.baseInfo.evaluationStatus).to.be.equal(2);
+
+            await certificateManagerContract
+                .connect(consignee)
+                .updateDocument(roleProof, certificateIds[0], 1, 'new external url', 'content hash updated');
+            certificate = await certificateManagerContract.getCompanyCertificate(roleProof, certificateIds[0]);
+            expect(certificate.baseInfo.evaluationStatus).to.be.equal(0);
+        });
+
+        it('should update a document - FAIL (CertificateManager: Document does not match the certificate)', async () => {
+            const tx = await certificateManagerContract
+                .connect(consignee)
+                .registerCompanyCertificate(
+                    roleProof,
+                    issuer.address,
+                    consignee.address,
+                    assessmentStandards[0],
+                    { id: 1, documentType: 0 },
+                    issueDate,
+                    validFrom,
+                    validUntil
+                );
+            await tx.wait();
+            const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
+            await expect(
+                certificateManagerContract
+                    .connect(consignee)
+                    .updateDocument(roleProof, certificateIds[0], 2, 'new external url', 'content hash updated')
+            ).to.be.revertedWith('CertificateManager: Document does not match the certificate');
+        });
+
+        it('should update a document - FAIL (CertificateManager: Only the uploader can update the document)', async () => {
+            const tx = await certificateManagerContract
+                .connect(consignee)
+                .registerCompanyCertificate(
+                    roleProof,
+                    issuer.address,
+                    consignee.address,
+                    assessmentStandards[0],
+                    { id: 1, documentType: 0 },
+                    issueDate,
+                    validFrom,
+                    validUntil
+                );
+            await tx.wait();
+            const certificateIds = await certificateManagerContract.getCertificateIdsBySubject(roleProof, consignee.address);
+            await expect(
+                certificateManagerContract.connect(issuer).updateDocument(roleProof, certificateIds[0], 1, 'new external url', 'content hash updated')
+            ).to.be.revertedWith('CertificateManager: Only the uploader can update the document');
         });
     });
 });

@@ -48,7 +48,7 @@ export class CertificateManagerService {
     async registerCompanyCertificate(
         roleProof: RoleProof,
         issuer: string,
-        consigneeCompany: string,
+        subject: string,
         assessmentStandard: string,
         issueDate: Date,
         validFrom: Date,
@@ -69,7 +69,7 @@ export class CertificateManagerService {
         await this._certificateManagerDriver.registerCompanyCertificate(
             roleProof,
             issuer,
-            consigneeCompany,
+            subject,
             assessmentStandard,
             document,
             issueDate,
@@ -81,7 +81,7 @@ export class CertificateManagerService {
     async registerScopeCertificate(
         roleProof: RoleProof,
         issuer: string,
-        consigneeCompany: string,
+        subject: string,
         assessmentStandard: string,
         issueDate: Date,
         validFrom: Date,
@@ -103,7 +103,7 @@ export class CertificateManagerService {
         await this._certificateManagerDriver.registerScopeCertificate(
             roleProof,
             issuer,
-            consigneeCompany,
+            subject,
             assessmentStandard,
             document,
             issueDate,
@@ -116,7 +116,7 @@ export class CertificateManagerService {
     async registerMaterialCertificate(
         roleProof: RoleProof,
         issuer: string,
-        consigneeCompany: string,
+        subject: string,
         assessmentStandard: string,
         issueDate: Date,
         materialId: number,
@@ -136,7 +136,7 @@ export class CertificateManagerService {
         await this._certificateManagerDriver.registerMaterialCertificate(
             roleProof,
             issuer,
-            consigneeCompany,
+            subject,
             assessmentStandard,
             document,
             issueDate,
@@ -144,31 +144,22 @@ export class CertificateManagerService {
         );
     }
 
-    async getCertificateIdsByConsigneeCompany(
-        roleProof: RoleProof,
-        consigneeCompany: string
-    ): Promise<number[]> {
-        return this._certificateManagerDriver.getCertificateIdsByConsigneeCompany(
-            roleProof,
-            consigneeCompany
-        );
+    async getCertificateIdsBySubject(roleProof: RoleProof, subject: string): Promise<number[]> {
+        return this._certificateManagerDriver.getCertificateIdsBySubject(roleProof, subject);
     }
 
-    async getBaseCertificatesInfoByConsigneeCompany(
+    async getBaseCertificatesInfoBySubject(
         roleProof: RoleProof,
-        consigneeCompany: string
+        subject: string
     ): Promise<BaseCertificate[]> {
-        return this._certificateManagerDriver.getBaseCertificatesInfoByConsigneeCompany(
-            roleProof,
-            consigneeCompany
-        );
+        return this._certificateManagerDriver.getBaseCertificatesInfoBySubject(roleProof, subject);
     }
 
     async getCompanyCertificates(
         roleProof: RoleProof,
-        consigneeCompany: string
+        subject: string
     ): Promise<CompanyCertificate[]> {
-        return this._certificateManagerDriver.getCompanyCertificates(roleProof, consigneeCompany);
+        return this._certificateManagerDriver.getCompanyCertificates(roleProof, subject);
     }
 
     async getCompanyCertificate(
@@ -195,12 +186,12 @@ export class CertificateManagerService {
 
     async getMaterialCertificates(
         roleProof: RoleProof,
-        consigneeCompany: string,
+        subject: string,
         materialId: number
     ): Promise<MaterialCertificate[]> {
         return this._certificateManagerDriver.getMaterialCertificates(
             roleProof,
-            consigneeCompany,
+            subject,
             materialId
         );
     }

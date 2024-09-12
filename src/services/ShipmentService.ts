@@ -1,21 +1,22 @@
-import {FileHelpers, ICPResourceSpec} from '@blockchain-lib/common';
-import {ShipmentDriver} from '../drivers/ShipmentDriver';
+import { FileHelpers, ICPResourceSpec } from '@blockchain-lib/common';
+import { ShipmentDriver } from '../drivers/ShipmentDriver';
 import {
     DocumentEvaluationStatus,
     DocumentInfo,
     DocumentType,
-    EvaluationStatus, Phase,
-    Shipment,
+    EvaluationStatus,
+    Phase,
+    Shipment
 } from '../entities/Shipment';
-import {DocumentDriver} from '../drivers/DocumentDriver';
-import {ICPFileDriver} from '../drivers/ICPFileDriver';
-import {RoleProof} from '../types/RoleProof';
+import { DocumentDriver } from '../drivers/DocumentDriver';
+import { ICPFileDriver } from '../drivers/ICPFileDriver';
+import { RoleProof } from '../types/RoleProof';
 import { URL_SEGMENTS } from '../constants/ICP';
 
 export type ShipmentPhaseDocument = {
     documentType: DocumentType;
     required: boolean;
-}
+};
 export type ShipmentDocument = {
     id: number;
     fileName: string;
@@ -54,7 +55,7 @@ export class ShipmentService {
     }
 
     async getDocumentId(roleProof: RoleProof, documentType: DocumentType): Promise<number> {
-        if(documentType === DocumentType.GENERIC) {
+        if (documentType === DocumentType.GENERIC) {
             throw new Error('Document type must be different from GENERIC');
         }
         return (await this._shipmentManagerDriver.getDocumentsIds(roleProof, documentType))[0];
@@ -68,7 +69,19 @@ export class ShipmentService {
         return this._shipmentManagerDriver.getDocumentInfo(roleProof, documentId);
     }
 
-    async setDetails(roleProof: RoleProof, shipmentNumber: number, expirationDate: Date, fixingDate: Date, targetExchange: string, differentialApplied: number, price: number, quantity: number, containersNumber: number, netWeight: number, grossWeight: number): Promise<void> {
+    async setDetails(
+        roleProof: RoleProof,
+        shipmentNumber: number,
+        expirationDate: Date,
+        fixingDate: Date,
+        targetExchange: string,
+        differentialApplied: number,
+        price: number,
+        quantity: number,
+        containersNumber: number,
+        netWeight: number,
+        grossWeight: number
+    ): Promise<void> {
         return this._shipmentManagerDriver.setDetails(
             roleProof,
             shipmentNumber,
@@ -97,7 +110,10 @@ export class ShipmentService {
     }
 
     async rejectDetails(roleProof: RoleProof): Promise<void> {
-        return this._shipmentManagerDriver.evaluateDetails(roleProof, EvaluationStatus.NOT_APPROVED);
+        return this._shipmentManagerDriver.evaluateDetails(
+            roleProof,
+            EvaluationStatus.NOT_APPROVED
+        );
     }
 
     async approveQuality(roleProof: RoleProof): Promise<void> {
@@ -105,7 +121,10 @@ export class ShipmentService {
     }
 
     async rejectQuality(roleProof: RoleProof): Promise<void> {
-        return this._shipmentManagerDriver.evaluateQuality(roleProof, EvaluationStatus.NOT_APPROVED);
+        return this._shipmentManagerDriver.evaluateQuality(
+            roleProof,
+            EvaluationStatus.NOT_APPROVED
+        );
     }
 
     async depositFunds(roleProof: RoleProof, amount: number): Promise<void> {
@@ -135,7 +154,7 @@ export class ShipmentService {
         await this._icpFileDriver.create(
             FileHelpers.getBytesFromObject(documentMetadata),
             {
-                name: `${shipmentExternalUrl}/${URL_SEGMENTS.FILE}/${fileName}-metadata.json`,
+                name: `${shipmentExternalUrl}/${URL_SEGMENTS.FILE}${fileName}-metadata.json`,
                 type: 'application/json'
             },
             delegatedOrganizationIds
@@ -176,11 +195,19 @@ export class ShipmentService {
     }
 
     async approveDocument(roleProof: RoleProof, documentId: number): Promise<void> {
-        return this._shipmentManagerDriver.evaluateDocument(roleProof, documentId, DocumentEvaluationStatus.APPROVED);
+        return this._shipmentManagerDriver.evaluateDocument(
+            roleProof,
+            documentId,
+            DocumentEvaluationStatus.APPROVED
+        );
     }
 
     async rejectDocument(roleProof: RoleProof, documentId: number): Promise<void> {
-        return this._shipmentManagerDriver.evaluateDocument(roleProof, documentId, DocumentEvaluationStatus.NOT_APPROVED);
+        return this._shipmentManagerDriver.evaluateDocument(
+            roleProof,
+            documentId,
+            DocumentEvaluationStatus.NOT_APPROVED
+        );
     }
 
     async getPhaseDocuments(phase: Phase): Promise<ShipmentPhaseDocument[]> {

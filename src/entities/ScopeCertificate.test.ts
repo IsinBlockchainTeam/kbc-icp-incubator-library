@@ -12,7 +12,7 @@ describe('ScopeCertificate', () => {
         scopeCertificate = new ScopeCertificate(
             0,
             'issuer',
-            'consigneeCompany',
+            'subject',
             'assessmentStandard',
             { id: 1, documentType: DocumentType.CERTIFICATE_OF_CONFORMITY },
             DocumentEvaluationStatus.NOT_EVALUATED,
@@ -27,7 +27,7 @@ describe('ScopeCertificate', () => {
     it('should correctly initialize a ScopeCertificate', () => {
         expect(scopeCertificate.id).toEqual(0);
         expect(scopeCertificate.issuer).toEqual('issuer');
-        expect(scopeCertificate.consigneeCompany).toEqual('consigneeCompany');
+        expect(scopeCertificate.subject).toEqual('subject');
         expect(scopeCertificate.assessmentStandard).toEqual('assessmentStandard');
         expect(scopeCertificate.document).toEqual({
             id: 1,
@@ -51,9 +51,9 @@ describe('ScopeCertificate', () => {
         expect(scopeCertificate.issuer).toEqual('newIssuer');
     });
 
-    it('should correctly set the consigneeCompany', () => {
-        scopeCertificate.consigneeCompany = 'newConsigneeCompany';
-        expect(scopeCertificate.consigneeCompany).toEqual('newConsigneeCompany');
+    it('should correctly set the subject', () => {
+        scopeCertificate.subject = 'newSubject';
+        expect(scopeCertificate.subject).toEqual('newSubject');
     });
 
     it('should correctly set the assessmentStandard', () => {

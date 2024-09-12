@@ -162,7 +162,7 @@ export class EntityBuilder {
         return new BaseCertificate(
             bcBaseCertificate.id.toNumber(),
             bcBaseCertificate.issuer,
-            bcBaseCertificate.consigneeCompany,
+            bcBaseCertificate.subject,
             bcBaseCertificate.assessmentStandard,
             this._buildCertificateDocumentInfo(bcBaseCertificate.document),
             bcBaseCertificate.evaluationStatus,
@@ -177,7 +177,7 @@ export class EntityBuilder {
         return new CompanyCertificate(
             bcCompanyCertificate.baseInfo.id.toNumber(),
             bcCompanyCertificate.baseInfo.issuer,
-            bcCompanyCertificate.baseInfo.consigneeCompany,
+            bcCompanyCertificate.baseInfo.subject,
             bcCompanyCertificate.baseInfo.assessmentStandard,
             this._buildCertificateDocumentInfo(bcCompanyCertificate.baseInfo.document),
             bcCompanyCertificate.baseInfo.evaluationStatus,
@@ -194,7 +194,7 @@ export class EntityBuilder {
         return new ScopeCertificate(
             bcScopeCertificate.baseInfo.id.toNumber(),
             bcScopeCertificate.baseInfo.issuer,
-            bcScopeCertificate.baseInfo.consigneeCompany,
+            bcScopeCertificate.baseInfo.subject,
             bcScopeCertificate.baseInfo.assessmentStandard,
             this._buildCertificateDocumentInfo(bcScopeCertificate.baseInfo.document),
             bcScopeCertificate.baseInfo.evaluationStatus,
@@ -212,7 +212,7 @@ export class EntityBuilder {
         return new MaterialCertificate(
             bcMaterialCertificate.baseInfo.id.toNumber(),
             bcMaterialCertificate.baseInfo.issuer,
-            bcMaterialCertificate.baseInfo.consigneeCompany,
+            bcMaterialCertificate.baseInfo.subject,
             bcMaterialCertificate.baseInfo.assessmentStandard,
             this._buildCertificateDocumentInfo(bcMaterialCertificate.baseInfo.document),
             bcMaterialCertificate.baseInfo.evaluationStatus,

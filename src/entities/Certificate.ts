@@ -28,7 +28,7 @@ export class BaseCertificate {
 
     private _issuer: string;
 
-    private _consigneeCompany: string;
+    private _subject: string;
 
     private _assessmentStandard: string;
 
@@ -43,7 +43,7 @@ export class BaseCertificate {
     constructor(
         id: number,
         issuer: string,
-        consigneeCompany: string,
+        subject: string,
         assessmentStandard: string,
         document: CertificateDocumentInfo,
         evaluationStatus: DocumentEvaluationStatus,
@@ -52,7 +52,7 @@ export class BaseCertificate {
     ) {
         this._id = id;
         this._issuer = issuer;
-        this._consigneeCompany = consigneeCompany;
+        this._subject = subject;
         this._assessmentStandard = assessmentStandard;
         this._document = document;
         this._evaluationStatus = evaluationStatus;
@@ -76,12 +76,12 @@ export class BaseCertificate {
         this._issuer = value;
     }
 
-    get consigneeCompany(): string {
-        return this._consigneeCompany;
+    get subject(): string {
+        return this._subject;
     }
 
-    set consigneeCompany(value: string) {
-        this._consigneeCompany = value;
+    set subject(value: string) {
+        this._subject = value;
     }
 
     get assessmentStandard(): string {

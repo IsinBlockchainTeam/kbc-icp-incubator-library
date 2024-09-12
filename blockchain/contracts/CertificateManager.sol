@@ -32,10 +32,10 @@ contract CertificateManager is AccessControl, KBCAccessControl {
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
-    event CompanyCertificateRegistered(uint256 indexed id, address consigneeCompany);
+    event CompanyCertificateRegistered(uint256 indexed id, address subject);
 //    TODO: verificare se questa dichiarazione è corretta oppure se bisogna emettere un evento per singolo process type
-    event ScopeCertificateRegistered(uint256 indexed id, address indexed consigneeCompany, string[] processType);
-    event MaterialCertificateRegistered(uint256 indexed id, address indexed consigneeCompany, uint256 materialId);
+    event ScopeCertificateRegistered(uint256 indexed id, address indexed subject, string[] processType);
+    event MaterialCertificateRegistered(uint256 indexed id, address indexed subject, uint256 materialId);
 
     modifier onlyAdmin() {
         require(hasRole(ADMIN_ROLE, _msgSender()), "MaterialManager: Caller is not the admin");
@@ -50,8 +50,9 @@ contract CertificateManager is AccessControl, KBCAccessControl {
 
     struct BaseInfo {
         uint256 id;
+        address uploadedBy;
         address issuer;
-        address consigneeCompany;
+        address subject;
         string assessmentStandard;
         DocumentLibrary.DocumentInfo document;
         DocumentLibrary.DocumentEvaluationStatus evaluationStatus;
@@ -114,45 +115,45 @@ contract CertificateManager is AccessControl, KBCAccessControl {
         _materialManager = MaterialManager(materialManagerAddress);
     }
 
-    function registerCompanyCertificate(RoleProof memory roleProof, address issuer, address consigneeCompany, string memory assessmentStandard, DocumentLibrary.DocumentInfo memory document, uint256 issueDate, uint256 validFrom, uint256 validUntil) public atLeastEditor(roleProof) {
-        (BaseInfo memory baseInfo, uint256 certificateId) = _computeBaseInfo(roleProof, issuer, consigneeCompany, assessmentStandard, document, CertificateType.COMPANY, issueDate);
+    function registerCompanyCertificate(RoleProof memory roleProof, address issuer, address subject, string memory assessmentStandard, DocumentLibrary.DocumentInfo memory document, uint256 issueDate, uint256 validFrom, uint256 validUntil) public atLeastEditor(roleProof) {
+        (BaseInfo memory baseInfo, uint256 certificateId) = _computeBaseInfo(roleProof, issuer, subject, assessmentStandard, document, CertificateType.COMPANY, issueDate);
         _allCompanyCertificates[certificateId] = CompanyCertificate(baseInfo, validFrom, validUntil);
-        _companyCertificates[consigneeCompany].push(certificateId);
-        _allCertificatesPerCompany[consigneeCompany].push(certificateId);
+        _companyCertificates[subject].push(certificateId);
+        _allCertificatesPerCompany[subject].push(certificateId);
 
-        emit CompanyCertificateRegistered(certificateId, consigneeCompany);
+        emit CompanyCertificateRegistered(certificateId, subject);
     }
 
-    function registerScopeCertificate(RoleProof memory roleProof, address issuer, address consigneeCompany, string memory assessmentStandard, DocumentLibrary.DocumentInfo memory document, uint256 issueDate, uint256 validFrom, uint256 validUntil, string[] memory processTypes) public atLeastEditor(roleProof) {
+    function registerScopeCertificate(RoleProof memory roleProof, address issuer, address subject, string memory assessmentStandard, DocumentLibrary.DocumentInfo memory document, uint256 issueDate, uint256 validFrom, uint256 validUntil, string[] memory processTypes) public atLeastEditor(roleProof) {
         for(uint256 i = 0; i < processTypes.length; i++) {
             require(_processTypeManager.contains(processTypes[i]), "CertificateManager: Process type does not exist");
         }
-        (BaseInfo memory baseInfo, uint256 certificateId) = _computeBaseInfo(roleProof, issuer, consigneeCompany, assessmentStandard, document, CertificateType.SCOPE, issueDate);
+        (BaseInfo memory baseInfo, uint256 certificateId) = _computeBaseInfo(roleProof, issuer, subject, assessmentStandard, document, CertificateType.SCOPE, issueDate);
         _allScopeCertificates[certificateId] = ScopeCertificate(baseInfo, processTypes, validFrom, validUntil);
-        _allCertificatesPerCompany[consigneeCompany].push(certificateId);
+        _allCertificatesPerCompany[subject].push(certificateId);
         // TODO: in order to check if a scope certificate is valid for a specific process type, we need to add a scope certificate per each process type
         for(uint256 i = 0; i < processTypes.length; i++) {
-            _scopeCertificates[consigneeCompany][processTypes[i]].push(certificateId);
+            _scopeCertificates[subject][processTypes[i]].push(certificateId);
         }
-        emit ScopeCertificateRegistered(certificateId, consigneeCompany, processTypes);
+        emit ScopeCertificateRegistered(certificateId, subject, processTypes);
     }
 
-    function registerMaterialCertificate(RoleProof memory roleProof, address issuer, address consigneeCompany, string memory assessmentStandard, DocumentLibrary.DocumentInfo memory document, uint256 issueDate, uint256 materialId) public atLeastEditor(roleProof) {
+    function registerMaterialCertificate(RoleProof memory roleProof, address issuer, address subject, string memory assessmentStandard, DocumentLibrary.DocumentInfo memory document, uint256 issueDate, uint256 materialId) public atLeastEditor(roleProof) {
         require(_materialManager.getMaterialExists(roleProof, materialId), "CertificateManager: Material does not exist");
-        (BaseInfo memory baseInfo, uint256 certificateId) = _computeBaseInfo(roleProof, issuer, consigneeCompany, assessmentStandard, document, CertificateType.MATERIAL, issueDate);
+        (BaseInfo memory baseInfo, uint256 certificateId) = _computeBaseInfo(roleProof, issuer, subject, assessmentStandard, document, CertificateType.MATERIAL, issueDate);
         _allMaterialCertificates[certificateId] = MaterialCertificate(baseInfo, materialId);
-        _materialCertificates[consigneeCompany][materialId].push(certificateId);
-        _allCertificatesPerCompany[consigneeCompany].push(certificateId);
+        _materialCertificates[subject][materialId].push(certificateId);
+        _allCertificatesPerCompany[subject].push(certificateId);
 
-        emit MaterialCertificateRegistered(certificateId, consigneeCompany, materialId);
+        emit MaterialCertificateRegistered(certificateId, subject, materialId);
     }
 
-    function getCertificateIdsByConsigneeCompany(RoleProof memory roleProof, address consigneeCompany) public view atLeastViewer(roleProof) returns (uint256[] memory) {
-        return _allCertificatesPerCompany[consigneeCompany];
+    function getCertificateIdsBySubject(RoleProof memory roleProof, address subject) public view atLeastViewer(roleProof) returns (uint256[] memory) {
+        return _allCertificatesPerCompany[subject];
     }
 
-    function getBaseCertificatesInfoByConsigneeCompany(RoleProof memory roleProof, address consigneeCompany) public view atLeastViewer(roleProof) returns (BaseInfo[] memory) {
-        uint256[] memory certificateIds = _allCertificatesPerCompany[consigneeCompany];
+    function getBaseCertificatesInfoBySubject(RoleProof memory roleProof, address subject) public view atLeastViewer(roleProof) returns (BaseInfo[] memory) {
+        uint256[] memory certificateIds = _allCertificatesPerCompany[subject];
         BaseInfo[] memory certificates = new BaseInfo[](certificateIds.length);
         for(uint256 i = 0; i < certificateIds.length; i++) {
             certificates[i] = _getActualCertificateById(certificateIds[i]);
@@ -160,8 +161,8 @@ contract CertificateManager is AccessControl, KBCAccessControl {
         return certificates;
     }
 
-    function getCompanyCertificates(RoleProof memory roleProof, address consigneeCompany) public view atLeastViewer(roleProof) returns (CompanyCertificate[] memory) {
-        uint256[] memory certificateIds = _companyCertificates[consigneeCompany];
+    function getCompanyCertificates(RoleProof memory roleProof, address subject) public view atLeastViewer(roleProof) returns (CompanyCertificate[] memory) {
+        uint256[] memory certificateIds = _companyCertificates[subject];
         CompanyCertificate[] memory certificates = new CompanyCertificate[](certificateIds.length);
         for(uint256 i = 0; i < certificateIds.length; i++) {
             certificates[i] = _allCompanyCertificates[certificateIds[i]];
@@ -174,8 +175,8 @@ contract CertificateManager is AccessControl, KBCAccessControl {
         return _allCompanyCertificates[certificateId];
     }
 
-    function getScopeCertificates(RoleProof memory roleProof, address consigneeCompany, string memory processType) public view atLeastViewer(roleProof) returns (ScopeCertificate[] memory) {
-        uint256[] memory certificateIds = _scopeCertificates[consigneeCompany][processType];
+    function getScopeCertificates(RoleProof memory roleProof, address subject, string memory processType) public view atLeastViewer(roleProof) returns (ScopeCertificate[] memory) {
+        uint256[] memory certificateIds = _scopeCertificates[subject][processType];
         ScopeCertificate[] memory certificates = new ScopeCertificate[](certificateIds.length);
         for(uint256 i = 0; i < certificateIds.length; i++) {
             certificates[i] = _allScopeCertificates[certificateIds[i]];
@@ -188,8 +189,8 @@ contract CertificateManager is AccessControl, KBCAccessControl {
         return _allScopeCertificates[certificateId];
     }
 
-    function getMaterialCertificates(RoleProof memory roleProof, address consigneeCompany, uint256 materialId) public view atLeastViewer(roleProof) returns (MaterialCertificate[] memory) {
-        uint256[] memory certificateIds = _materialCertificates[consigneeCompany][materialId];
+    function getMaterialCertificates(RoleProof memory roleProof, address subject, uint256 materialId) public view atLeastViewer(roleProof) returns (MaterialCertificate[] memory) {
+        uint256[] memory certificateIds = _materialCertificates[subject][materialId];
         MaterialCertificate[] memory certificates = new MaterialCertificate[](certificateIds.length);
         for(uint256 i = 0; i < certificateIds.length; i++) {
             certificates[i] = _allMaterialCertificates[certificateIds[i]];
@@ -204,6 +205,7 @@ contract CertificateManager is AccessControl, KBCAccessControl {
 
     function updateCompanyCertificate(RoleProof memory roleProof, uint256 certificateId, string memory assessmentStandard, uint256 issueDate, uint256 validFrom, uint256 validUntil) public atLeastEditor(roleProof) {
         require(_allCompanyCertificates[certificateId].baseInfo.exists, "CertificateManager: Company certificate does not exist");
+        require(_allCompanyCertificates[certificateId].baseInfo.uploadedBy == tx.origin, "CertificateManager: Only the uploader can update the certificate");
         require(_allCompanyCertificates[certificateId].baseInfo.evaluationStatus == DocumentLibrary.DocumentEvaluationStatus.NOT_EVALUATED, "CertificateManager: Certificate has already been evaluated");
         _allCompanyCertificates[certificateId].baseInfo.assessmentStandard = assessmentStandard;
         _allCompanyCertificates[certificateId].baseInfo.issueDate = issueDate;
@@ -213,6 +215,7 @@ contract CertificateManager is AccessControl, KBCAccessControl {
 
     function updateScopeCertificate(RoleProof memory roleProof, uint256 certificateId, string memory assessmentStandard, uint256 issueDate, uint256 validFrom, uint256 validUntil, string[] memory processTypes) public atLeastEditor(roleProof) {
         require(_allScopeCertificates[certificateId].baseInfo.exists, "CertificateManager: Scope certificate does not exist");
+        require(_allScopeCertificates[certificateId].baseInfo.uploadedBy == tx.origin, "CertificateManager: Only the uploader can update the certificate");
         require(_allScopeCertificates[certificateId].baseInfo.evaluationStatus == DocumentLibrary.DocumentEvaluationStatus.NOT_EVALUATED, "CertificateManager: Certificate has already been evaluated");
         for(uint256 i = 0; i < processTypes.length; i++) {
             require(_processTypeManager.contains(processTypes[i]), "CertificateManager: Process type does not exist");
@@ -226,6 +229,7 @@ contract CertificateManager is AccessControl, KBCAccessControl {
 
     function updateMaterialCertificate(RoleProof memory roleProof, uint256 certificateId, string memory assessmentStandard, uint256 issueDate, uint256 materialId) public atLeastEditor(roleProof) {
         require(_allMaterialCertificates[certificateId].baseInfo.exists, "CertificateManager: Material certificate does not exist");
+        require(_allMaterialCertificates[certificateId].baseInfo.uploadedBy == tx.origin, "CertificateManager: Only the uploader can update the certificate");
         require(_materialManager.getMaterialExists(roleProof, materialId), "CertificateManager: Material does not exist");
         require(_allMaterialCertificates[certificateId].baseInfo.evaluationStatus == DocumentLibrary.DocumentEvaluationStatus.NOT_EVALUATED, "CertificateManager: Certificate has already been evaluated");
         _allMaterialCertificates[certificateId].baseInfo.assessmentStandard = assessmentStandard;
@@ -242,8 +246,10 @@ contract CertificateManager is AccessControl, KBCAccessControl {
     }
 
     function updateDocument(RoleProof memory roleProof, uint256 certificationId, uint256 documentId, string memory externalUrl, string memory contentHash) public atLeastEditor(roleProof) {
-        _documentManager.updateDocument(roleProof, documentId, externalUrl, contentHash, _msgSender());
         BaseInfo storage certificate = _getActualCertificateById(certificationId);
+        require(certificate.document.id == documentId, "CertificateManager: Document does not match the certificate");
+        require(certificate.uploadedBy == tx.origin, "CertificateManager: Only the uploader can update the document");
+        _documentManager.updateDocument(roleProof, documentId, externalUrl, contentHash, _msgSender());
         certificate.evaluationStatus = DocumentLibrary.DocumentEvaluationStatus.NOT_EVALUATED;
     }
 
@@ -251,13 +257,13 @@ contract CertificateManager is AccessControl, KBCAccessControl {
         return _getActualCertificateById(certificateId);
     }
 
-    function _computeBaseInfo(RoleProof memory roleProof, address issuer, address consigneeCompany, string memory assessmentStandard, DocumentLibrary.DocumentInfo memory document, CertificateType certificateType, uint256 issueDate) private returns (BaseInfo memory, uint256) {
+    function _computeBaseInfo(RoleProof memory roleProof, address issuer, address subject, string memory assessmentStandard, DocumentLibrary.DocumentInfo memory document, CertificateType certificateType, uint256 issueDate) private returns (BaseInfo memory, uint256) {
         require(_assessmentStandardManager.contains(assessmentStandard), "CertificateManager: Assessment standard does not exist");
         require(_documentManager.getDocumentExists(roleProof, document.id), "CertificateManager: Document does not exist");
 
         uint256 certificateId = _counter.current() + 1;
         _counter.increment();
-        BaseInfo memory baseInfo = BaseInfo(certificateId, issuer, consigneeCompany, assessmentStandard, document, DocumentLibrary.DocumentEvaluationStatus.NOT_EVALUATED, certificateType, issueDate, true);
+        BaseInfo memory baseInfo = BaseInfo(certificateId, tx.origin, issuer, subject, assessmentStandard, document, DocumentLibrary.DocumentEvaluationStatus.NOT_EVALUATED, certificateType, issueDate, true);
         return (baseInfo, certificateId);
     }
 

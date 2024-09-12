@@ -15,8 +15,8 @@ describe('CertificateManagerService', () => {
         registerCompanyCertificate: jest.fn(),
         registerScopeCertificate: jest.fn(),
         registerMaterialCertificate: jest.fn(),
-        getCertificateIdsByConsigneeCompany: jest.fn(),
-        getBaseCertificatesInfoByConsigneeCompany: jest.fn(),
+        getCertificateIdsBySubject: jest.fn(),
+        getBaseCertificatesInfoBySubject: jest.fn(),
         getCompanyCertificates: jest.fn(),
         getCompanyCertificate: jest.fn(),
         getScopeCertificates: jest.fn(),
@@ -45,7 +45,7 @@ describe('CertificateManagerService', () => {
 
     const roleProof: RoleProof = createMock<RoleProof>();
     const issuer = Wallet.createRandom().address;
-    const consigneeCompany = Wallet.createRandom().address;
+    const subject = Wallet.createRandom().address;
     const assessmentStandard = 'ISO 9001';
     const issueDate = new Date();
     const validFrom = new Date(new Date().setDate(new Date().getDate() + 1));
@@ -83,7 +83,7 @@ describe('CertificateManagerService', () => {
                 certificateManagerService.registerCompanyCertificate(
                     roleProof,
                     issuer,
-                    consigneeCompany,
+                    subject,
                     assessmentStandard,
                     issueDate,
                     validFrom,
@@ -96,7 +96,7 @@ describe('CertificateManagerService', () => {
             expectedMockedFunctionArgs: [
                 roleProof,
                 issuer,
-                consigneeCompany,
+                subject,
                 assessmentStandard,
                 {
                     documentType: document.documentType
@@ -112,7 +112,7 @@ describe('CertificateManagerService', () => {
                 certificateManagerService.registerScopeCertificate(
                     roleProof,
                     issuer,
-                    consigneeCompany,
+                    subject,
                     assessmentStandard,
                     issueDate,
                     validFrom,
@@ -126,7 +126,7 @@ describe('CertificateManagerService', () => {
             expectedMockedFunctionArgs: [
                 roleProof,
                 issuer,
-                consigneeCompany,
+                subject,
                 assessmentStandard,
                 {
                     documentType: document.documentType
@@ -143,7 +143,7 @@ describe('CertificateManagerService', () => {
                 certificateManagerService.registerMaterialCertificate(
                     roleProof,
                     issuer,
-                    consigneeCompany,
+                    subject,
                     assessmentStandard,
                     issueDate,
                     3,
@@ -155,7 +155,7 @@ describe('CertificateManagerService', () => {
             expectedMockedFunctionArgs: [
                 roleProof,
                 issuer,
-                consigneeCompany,
+                subject,
                 assessmentStandard,
                 {
                     documentType: document.documentType
@@ -165,33 +165,25 @@ describe('CertificateManagerService', () => {
             ]
         },
         {
-            serviceFunctionName: 'getCertificateIdsByConsigneeCompany',
+            serviceFunctionName: 'getCertificateIdsBySubject',
             serviceFunction: () =>
-                certificateManagerService.getCertificateIdsByConsigneeCompany(
-                    roleProof,
-                    consigneeCompany
-                ),
-            expectedMockedFunction:
-                mockedCertificateManagerDriver.getCertificateIdsByConsigneeCompany,
-            expectedMockedFunctionArgs: [roleProof, consigneeCompany]
+                certificateManagerService.getCertificateIdsBySubject(roleProof, subject),
+            expectedMockedFunction: mockedCertificateManagerDriver.getCertificateIdsBySubject,
+            expectedMockedFunctionArgs: [roleProof, subject]
         },
         {
-            serviceFunctionName: 'getBaseCertificatesInfoByConsigneeCompany',
+            serviceFunctionName: 'getBaseCertificatesInfoBySubject',
             serviceFunction: () =>
-                certificateManagerService.getBaseCertificatesInfoByConsigneeCompany(
-                    roleProof,
-                    consigneeCompany
-                ),
-            expectedMockedFunction:
-                mockedCertificateManagerDriver.getBaseCertificatesInfoByConsigneeCompany,
-            expectedMockedFunctionArgs: [roleProof, consigneeCompany]
+                certificateManagerService.getBaseCertificatesInfoBySubject(roleProof, subject),
+            expectedMockedFunction: mockedCertificateManagerDriver.getBaseCertificatesInfoBySubject,
+            expectedMockedFunctionArgs: [roleProof, subject]
         },
         {
             serviceFunctionName: 'getCompanyCertificates',
             serviceFunction: () =>
-                certificateManagerService.getCompanyCertificates(roleProof, consigneeCompany),
+                certificateManagerService.getCompanyCertificates(roleProof, subject),
             expectedMockedFunction: mockedCertificateManagerDriver.getCompanyCertificates,
-            expectedMockedFunctionArgs: [roleProof, consigneeCompany]
+            expectedMockedFunctionArgs: [roleProof, subject]
         },
         {
             serviceFunctionName: 'getCompanyCertificate',
@@ -202,13 +194,9 @@ describe('CertificateManagerService', () => {
         {
             serviceFunctionName: 'getScopeCertificates',
             serviceFunction: () =>
-                certificateManagerService.getScopeCertificates(
-                    roleProof,
-                    consigneeCompany,
-                    processTypes[0]
-                ),
+                certificateManagerService.getScopeCertificates(roleProof, subject, processTypes[0]),
             expectedMockedFunction: mockedCertificateManagerDriver.getScopeCertificates,
-            expectedMockedFunctionArgs: [roleProof, consigneeCompany, processTypes[0]]
+            expectedMockedFunctionArgs: [roleProof, subject, processTypes[0]]
         },
         {
             serviceFunctionName: 'getScopeCertificate',
@@ -219,9 +207,9 @@ describe('CertificateManagerService', () => {
         {
             serviceFunctionName: 'getMaterialCertificates',
             serviceFunction: () =>
-                certificateManagerService.getMaterialCertificates(roleProof, consigneeCompany, 2),
+                certificateManagerService.getMaterialCertificates(roleProof, subject, 2),
             expectedMockedFunction: mockedCertificateManagerDriver.getMaterialCertificates,
-            expectedMockedFunctionArgs: [roleProof, consigneeCompany, 2]
+            expectedMockedFunctionArgs: [roleProof, subject, 2]
         },
         {
             serviceFunctionName: 'getMaterialCertificate',
@@ -334,7 +322,7 @@ describe('CertificateManagerService', () => {
         await certificateManagerService.registerCompanyCertificate(
             roleProof,
             issuer,
-            consigneeCompany,
+            subject,
             assessmentStandard,
             issueDate,
             validFrom,
@@ -349,7 +337,7 @@ describe('CertificateManagerService', () => {
             1,
             roleProof,
             issuer,
-            consigneeCompany,
+            subject,
             assessmentStandard,
             {
                 documentType: document.documentType
@@ -389,7 +377,7 @@ describe('CertificateManagerService', () => {
         await certificateManagerService.registerScopeCertificate(
             roleProof,
             issuer,
-            consigneeCompany,
+            subject,
             assessmentStandard,
             issueDate,
             validFrom,
@@ -405,7 +393,7 @@ describe('CertificateManagerService', () => {
             1,
             roleProof,
             issuer,
-            consigneeCompany,
+            subject,
             assessmentStandard,
             {
                 documentType: document.documentType
@@ -446,7 +434,7 @@ describe('CertificateManagerService', () => {
         await certificateManagerService.registerMaterialCertificate(
             roleProof,
             issuer,
-            consigneeCompany,
+            subject,
             assessmentStandard,
             issueDate,
             3,
@@ -460,7 +448,7 @@ describe('CertificateManagerService', () => {
             1,
             roleProof,
             issuer,
-            consigneeCompany,
+            subject,
             assessmentStandard,
             {
                 documentType: document.documentType
