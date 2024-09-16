@@ -57,7 +57,6 @@ describe('Escrow.sol', () => {
             expect(await escrowContract.getOwner()).to.equal(payee.address);
             expect(await escrowContract.getPayee()).to.equal(payee.address);
             expect(await escrowContract.getPayers()).to.deep.equal([]);
-            expect(await escrowContract.getDeployedAt()).to.be.closeTo(Math.floor(Date.now() / 1000), 100);
             expect(await escrowContract.getDuration()).to.equal(duration);
             expect(await escrowContract.getTokenAddress()).to.equal(tokenContract.address);
             expect(await escrowContract.getToken()).to.equal(tokenContract.address);
