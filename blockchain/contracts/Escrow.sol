@@ -157,7 +157,7 @@ contract Escrow is AccessControl {
         return withdrawableAmount;
     }
     function getRefundableAmount(uint256 amount, address payer) public view returns (uint256) {
-        if (amount == 0) {
+        if (amount == 0 || _totalDepositedAmount == 0) {
             return 0;
         }
         // calculate the proportion of the payer's deposited amount to the total payers deposited amount
@@ -225,6 +225,7 @@ contract Escrow is AccessControl {
 
                 _refundedAmount[payer] += refundableAmount;
                 _totalRefundedAmount += refundableAmount;
+                _lockedAmount -= refundableAmount;
                 emit EscrowRefunded(payer, payment);
             }
         }
