@@ -1,7 +1,7 @@
 import { createMock } from 'ts-auto-mock';
+import {ethers} from "ethers";
 import { TokenDriver } from '../drivers/TokenDriver';
 import {TokenService} from "./TokenService";
-import {ethers} from "ethers";
 
 describe('TokenService', () => {
     const companyA = ethers.Wallet.createRandom();
@@ -39,6 +39,12 @@ describe('TokenService', () => {
             serviceFunctionName: 'approve',
             serviceFunction: () => tokenService.approve(companyA.address, 1),
             expectedMockedFunction: mockedTokenDriver.approve,
+            expectedMockedFunctionArgs: [companyA.address, 1]
+        },
+        {
+            serviceFunctionName: 'transfer',
+            serviceFunction: () => tokenService.transfer(companyA.address, 1),
+            expectedMockedFunction: mockedTokenDriver.transfer,
             expectedMockedFunctionArgs: [companyA.address, 1]
         }
     ])(

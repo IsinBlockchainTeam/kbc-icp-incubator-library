@@ -30,6 +30,7 @@ describe('TokenDriver', () => {
             balanceOf: mockedReadFunction,
             symbol: mockedReadFunction,
             approve: mockedWriteFunction,
+            transfer: mockedWriteFunction
         });
 
         mockedTokenConnect.mockReturnValue(mockedContract);
@@ -72,6 +73,18 @@ describe('TokenDriver', () => {
 
     it('should call and wait approve', async () => {
         await tokenDriver.approve(companyA.address, 1000);
+
+        expect(mockedWriteFunction).toHaveBeenCalledTimes(1);
+        expect(mockedWriteFunction).toHaveBeenNthCalledWith(
+            1,
+            companyA.address,
+            1000,
+        );
+        expect(mockedWait).toHaveBeenCalledTimes(1);
+    });
+
+    it('should call and wait transfer', async () => {
+        await tokenDriver.transfer(companyA.address, 1000);
 
         expect(mockedWriteFunction).toHaveBeenCalledTimes(1);
         expect(mockedWriteFunction).toHaveBeenNthCalledWith(

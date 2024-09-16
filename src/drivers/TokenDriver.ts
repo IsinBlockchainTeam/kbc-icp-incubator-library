@@ -1,5 +1,5 @@
-import {MyToken, MyToken__factory} from "../smart-contracts";
 import {Signer} from "ethers";
+import {MyToken, MyToken__factory} from "../smart-contracts";
 
 export class TokenDriver {
     private readonly _contract: MyToken;
@@ -18,6 +18,11 @@ export class TokenDriver {
 
     async approve(spender: string, amount: number): Promise<void> {
         const tx = await this._contract.approve(spender, amount);
+        await tx.wait();
+    }
+
+    async transfer(to: string, amount: number): Promise<void> {
+        const tx = await this._contract.transfer(to, amount);
         await tx.wait();
     }
 }
