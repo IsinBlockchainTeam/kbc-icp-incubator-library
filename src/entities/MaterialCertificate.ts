@@ -16,7 +16,7 @@ export class MaterialCertificate extends BaseCertificate {
         document: CertificateDocumentInfo,
         evaluationStatus: DocumentEvaluationStatus,
         certificateType: CertificateType,
-        issueDate: Date,
+        issueDate: number,
         materialId: number
     ) {
         super(

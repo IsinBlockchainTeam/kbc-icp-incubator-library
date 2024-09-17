@@ -22,9 +22,9 @@ describe('CertificateManagerDriver', () => {
         id: 1,
         documentType: DocumentType.CERTIFICATE_OF_CONFORMITY
     };
-    const issueDate: Date = new Date();
-    const validFrom: Date = new Date(new Date().setDate(new Date().getDate() + 1));
-    const validUntil: Date = new Date(new Date().setDate(new Date().getDate() + 365));
+    const issueDate = new Date().getTime();
+    const validFrom = new Date(new Date().setDate(new Date().getDate() + 1)).getTime();
+    const validUntil = new Date(new Date().setDate(new Date().getDate() + 365)).getTime();
     const processTypes: string[] = ['processType1', 'processType2'];
     const materialId: number = 3;
     const errorMessage = 'testError';
@@ -102,9 +102,9 @@ describe('CertificateManagerDriver', () => {
             subject,
             assessmentStandard,
             document,
-            issueDate.getTime(),
-            validFrom.getTime(),
-            validUntil.getTime()
+            issueDate,
+            validFrom,
+            validUntil
         );
     });
 
@@ -153,9 +153,9 @@ describe('CertificateManagerDriver', () => {
             subject,
             assessmentStandard,
             document,
-            issueDate.getTime(),
-            validFrom.getTime(),
-            validUntil.getTime(),
+            issueDate,
+            validFrom,
+            validUntil,
             processTypes
         );
     });
@@ -204,7 +204,7 @@ describe('CertificateManagerDriver', () => {
             subject,
             assessmentStandard,
             document,
-            issueDate.getTime(),
+            issueDate,
             materialId
         );
     });
@@ -251,7 +251,7 @@ describe('CertificateManagerDriver', () => {
                 },
                 evaluationStatus: DocumentEvaluationStatus.NOT_EVALUATED,
                 certificateType: DocumentType.CERTIFICATE_OF_CONFORMITY,
-                issueDate: BigNumber.from(issueDate.getTime())
+                issueDate: BigNumber.from(issueDate)
             } as CertificateManager.BaseInfoStructOutput
         ];
         mockedContract.getBaseCertificatesInfoBySubject = jest.fn().mockResolvedValue(certificates);
@@ -282,10 +282,10 @@ describe('CertificateManagerDriver', () => {
                     },
                     evaluationStatus: DocumentEvaluationStatus.NOT_EVALUATED,
                     certificateType: DocumentType.CERTIFICATE_OF_CONFORMITY,
-                    issueDate: BigNumber.from(issueDate.getTime())
+                    issueDate: BigNumber.from(issueDate)
                 },
-                validFrom: BigNumber.from(validFrom.getTime()),
-                validUntil: BigNumber.from(validUntil.getTime())
+                validFrom: BigNumber.from(validFrom),
+                validUntil: BigNumber.from(validUntil)
             } as CertificateManager.CompanyCertificateStructOutput
         ];
         mockedContract.getCompanyCertificates = jest.fn().mockResolvedValue(certificates);
@@ -309,10 +309,10 @@ describe('CertificateManagerDriver', () => {
                 },
                 evaluationStatus: DocumentEvaluationStatus.NOT_EVALUATED,
                 certificateType: DocumentType.CERTIFICATE_OF_CONFORMITY,
-                issueDate: BigNumber.from(issueDate.getTime())
+                issueDate: BigNumber.from(issueDate)
             },
-            validFrom: BigNumber.from(validFrom.getTime()),
-            validUntil: BigNumber.from(validUntil.getTime())
+            validFrom: BigNumber.from(validFrom),
+            validUntil: BigNumber.from(validUntil)
         } as CertificateManager.CompanyCertificateStructOutput;
         mockedContract.getCompanyCertificate = jest.fn().mockResolvedValue(certificate);
         const result = await certificateManagerDriver.getCompanyCertificate(roleProof, 1);
@@ -335,10 +335,10 @@ describe('CertificateManagerDriver', () => {
                     },
                     evaluationStatus: DocumentEvaluationStatus.NOT_EVALUATED,
                     certificateType: DocumentType.CERTIFICATE_OF_CONFORMITY,
-                    issueDate: BigNumber.from(issueDate.getTime())
+                    issueDate: BigNumber.from(issueDate)
                 },
-                validFrom: BigNumber.from(validFrom.getTime()),
-                validUntil: BigNumber.from(validUntil.getTime()),
+                validFrom: BigNumber.from(validFrom),
+                validUntil: BigNumber.from(validUntil),
                 processTypes
             } as CertificateManager.ScopeCertificateStructOutput
         ];
@@ -371,10 +371,10 @@ describe('CertificateManagerDriver', () => {
                 },
                 evaluationStatus: DocumentEvaluationStatus.NOT_EVALUATED,
                 certificateType: DocumentType.CERTIFICATE_OF_CONFORMITY,
-                issueDate: BigNumber.from(issueDate.getTime())
+                issueDate: BigNumber.from(issueDate)
             },
-            validFrom: BigNumber.from(validFrom.getTime()),
-            validUntil: BigNumber.from(validUntil.getTime()),
+            validFrom: BigNumber.from(validFrom),
+            validUntil: BigNumber.from(validUntil),
             processTypes
         } as CertificateManager.ScopeCertificateStructOutput;
         mockedContract.getScopeCertificate = jest.fn().mockResolvedValue(certificate);
@@ -398,7 +398,7 @@ describe('CertificateManagerDriver', () => {
                     },
                     evaluationStatus: DocumentEvaluationStatus.NOT_EVALUATED,
                     certificateType: DocumentType.CERTIFICATE_OF_CONFORMITY,
-                    issueDate: BigNumber.from(issueDate.getTime())
+                    issueDate: BigNumber.from(issueDate)
                 },
                 materialId: BigNumber.from(materialId)
             } as CertificateManager.MaterialCertificateStructOutput
@@ -432,7 +432,7 @@ describe('CertificateManagerDriver', () => {
                 },
                 evaluationStatus: DocumentEvaluationStatus.NOT_EVALUATED,
                 certificateType: DocumentType.CERTIFICATE_OF_CONFORMITY,
-                issueDate: BigNumber.from(issueDate.getTime())
+                issueDate: BigNumber.from(issueDate)
             },
             materialId: BigNumber.from(materialId)
         } as CertificateManager.MaterialCertificateStructOutput;
@@ -457,9 +457,9 @@ describe('CertificateManagerDriver', () => {
             roleProof,
             1,
             assessmentStandard,
-            issueDate.getTime(),
-            validFrom.getTime(),
-            validUntil.getTime()
+            issueDate,
+            validFrom,
+            validUntil
         );
     });
 
@@ -494,9 +494,9 @@ describe('CertificateManagerDriver', () => {
             roleProof,
             1,
             assessmentStandard,
-            issueDate.getTime(),
-            validFrom.getTime(),
-            validUntil.getTime(),
+            issueDate,
+            validFrom,
+            validUntil,
             processTypes
         );
     });
@@ -531,7 +531,7 @@ describe('CertificateManagerDriver', () => {
             roleProof,
             1,
             assessmentStandard,
-            issueDate.getTime(),
+            issueDate,
             materialId
         );
     });
@@ -616,7 +616,7 @@ describe('CertificateManagerDriver', () => {
             },
             evaluationStatus: DocumentEvaluationStatus.NOT_EVALUATED,
             certificateType: DocumentType.CERTIFICATE_OF_CONFORMITY,
-            issueDate: BigNumber.from(issueDate.getTime())
+            issueDate: BigNumber.from(issueDate)
         } as CertificateManager.BaseInfoStructOutput;
         mockedContract.getBaseCertificateInfoById = jest.fn().mockResolvedValue(certificate);
         const result = await certificateManagerDriver.getBaseCertificateInfoById(roleProof, 1);

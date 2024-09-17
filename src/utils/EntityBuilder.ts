@@ -167,7 +167,7 @@ export class EntityBuilder {
             this._buildCertificateDocumentInfo(bcBaseCertificate.document),
             bcBaseCertificate.evaluationStatus,
             bcBaseCertificate.certificateType,
-            new Date(bcBaseCertificate.issueDate.toNumber())
+            bcBaseCertificate.issueDate.toNumber()
         );
     }
 
@@ -182,9 +182,9 @@ export class EntityBuilder {
             this._buildCertificateDocumentInfo(bcCompanyCertificate.baseInfo.document),
             bcCompanyCertificate.baseInfo.evaluationStatus,
             bcCompanyCertificate.baseInfo.certificateType,
-            new Date(bcCompanyCertificate.baseInfo.issueDate.toNumber()),
-            new Date(bcCompanyCertificate.validFrom.toNumber()),
-            new Date(bcCompanyCertificate.validUntil.toNumber())
+            bcCompanyCertificate.baseInfo.issueDate.toNumber(),
+            bcCompanyCertificate.validFrom.toNumber(),
+            bcCompanyCertificate.validUntil.toNumber()
         );
     }
 
@@ -199,10 +199,10 @@ export class EntityBuilder {
             this._buildCertificateDocumentInfo(bcScopeCertificate.baseInfo.document),
             bcScopeCertificate.baseInfo.evaluationStatus,
             bcScopeCertificate.baseInfo.certificateType,
-            new Date(bcScopeCertificate.baseInfo.issueDate.toNumber()),
+            bcScopeCertificate.baseInfo.issueDate.toNumber(),
             bcScopeCertificate.processTypes,
-            new Date(bcScopeCertificate.validFrom.toNumber()),
-            new Date(bcScopeCertificate.validUntil.toNumber())
+            bcScopeCertificate.validFrom.toNumber(),
+            bcScopeCertificate.validUntil.toNumber()
         );
     }
 
@@ -217,7 +217,7 @@ export class EntityBuilder {
             this._buildCertificateDocumentInfo(bcMaterialCertificate.baseInfo.document),
             bcMaterialCertificate.baseInfo.evaluationStatus,
             bcMaterialCertificate.baseInfo.certificateType,
-            new Date(bcMaterialCertificate.baseInfo.issueDate.toNumber()),
+            bcMaterialCertificate.baseInfo.issueDate.toNumber(),
             bcMaterialCertificate.materialId.toNumber()
         );
     }

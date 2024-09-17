@@ -27,9 +27,9 @@ export class CertificateManagerDriver {
         subject: string,
         assessmentStandard: string,
         document: CertificateDocumentInfo,
-        issueDate: Date,
-        validFrom: Date,
-        validUntil: Date
+        issueDate: number,
+        validFrom: number,
+        validUntil: number
     ): Promise<[number, string]> {
         const tx: any = await this._actual.registerCompanyCertificate(
             roleProof,
@@ -37,9 +37,9 @@ export class CertificateManagerDriver {
             subject,
             assessmentStandard,
             document,
-            issueDate.getTime(),
-            validFrom.getTime(),
-            validUntil.getTime()
+            issueDate,
+            validFrom,
+            validUntil
         );
         const { events, transactionHash } = await tx.wait();
         if (!events)
@@ -57,9 +57,9 @@ export class CertificateManagerDriver {
         subject: string,
         assessmentStandard: string,
         document: CertificateDocumentInfo,
-        issueDate: Date,
-        validFrom: Date,
-        validUntil: Date,
+        issueDate: number,
+        validFrom: number,
+        validUntil: number,
         processTypes: string[]
     ): Promise<[number, string]> {
         const tx: any = await this._actual.registerScopeCertificate(
@@ -68,9 +68,9 @@ export class CertificateManagerDriver {
             subject,
             assessmentStandard,
             document,
-            issueDate.getTime(),
-            validFrom.getTime(),
-            validUntil.getTime(),
+            issueDate,
+            validFrom,
+            validUntil,
             processTypes
         );
         const { events, transactionHash } = await tx.wait();
@@ -89,7 +89,7 @@ export class CertificateManagerDriver {
         subject: string,
         assessmentStandard: string,
         document: CertificateDocumentInfo,
-        issueDate: Date,
+        issueDate: number,
         materialId: number
     ): Promise<[number, string]> {
         const tx: any = await this._actual.registerMaterialCertificate(
@@ -98,7 +98,7 @@ export class CertificateManagerDriver {
             subject,
             assessmentStandard,
             document,
-            issueDate.getTime(),
+            issueDate,
             materialId
         );
         const { events, transactionHash } = await tx.wait();
@@ -193,18 +193,18 @@ export class CertificateManagerDriver {
         roleProof: RoleProof,
         certificateId: number,
         assessmentStandard: string,
-        issueDate: Date,
-        validFrom: Date,
-        validUntil: Date
+        issueDate: number,
+        validFrom: number,
+        validUntil: number
     ): Promise<void> {
         try {
             const tx = await this._actual.updateCompanyCertificate(
                 roleProof,
                 certificateId,
                 assessmentStandard,
-                issueDate.getTime(),
-                validFrom.getTime(),
-                validUntil.getTime()
+                issueDate,
+                validFrom,
+                validUntil
             );
             await tx.wait();
         } catch (e: any) {
@@ -216,9 +216,9 @@ export class CertificateManagerDriver {
         roleProof: RoleProof,
         certificateId: number,
         assessmentStandard: string,
-        issueDate: Date,
-        validFrom: Date,
-        validUntil: Date,
+        issueDate: number,
+        validFrom: number,
+        validUntil: number,
         processTypes: string[]
     ): Promise<void> {
         try {
@@ -226,9 +226,9 @@ export class CertificateManagerDriver {
                 roleProof,
                 certificateId,
                 assessmentStandard,
-                issueDate.getTime(),
-                validFrom.getTime(),
-                validUntil.getTime(),
+                issueDate,
+                validFrom,
+                validUntil,
                 processTypes
             );
             await tx.wait();
@@ -241,7 +241,7 @@ export class CertificateManagerDriver {
         roleProof: RoleProof,
         certificateId: number,
         assessmentStandard: string,
-        issueDate: Date,
+        issueDate: number,
         materialId: number
     ): Promise<void> {
         try {
@@ -249,7 +249,7 @@ export class CertificateManagerDriver {
                 roleProof,
                 certificateId,
                 assessmentStandard,
-                issueDate.getTime(),
+                issueDate,
                 materialId
             );
             await tx.wait();

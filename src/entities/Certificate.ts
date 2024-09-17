@@ -38,7 +38,7 @@ export class BaseCertificate {
 
     private _certificateType: CertificateType;
 
-    private _issueDate: Date;
+    private _issueDate: number;
 
     constructor(
         id: number,
@@ -48,7 +48,7 @@ export class BaseCertificate {
         document: CertificateDocumentInfo,
         evaluationStatus: DocumentEvaluationStatus,
         certificateType: CertificateType,
-        issueDate: Date
+        issueDate: number
     ) {
         this._id = id;
         this._issuer = issuer;
@@ -116,11 +116,11 @@ export class BaseCertificate {
         this._certificateType = value;
     }
 
-    get issueDate(): Date {
+    get issueDate(): number {
         return this._issueDate;
     }
 
-    set issueDate(value: Date) {
+    set issueDate(value: number) {
         this._issueDate = value;
     }
 }

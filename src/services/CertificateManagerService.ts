@@ -25,9 +25,7 @@ type CertificateDocumentMetadata = {
 export type CertificateDocument = {
     fileName: string;
     fileType: string;
-    documentType: DocumentType;
     fileContent: Uint8Array;
-    documentReferenceId: string;
 };
 
 export class CertificateManagerService {
@@ -52,9 +50,11 @@ export class CertificateManagerService {
         issuer: string,
         subject: string,
         assessmentStandard: string,
-        issueDate: Date,
-        validFrom: Date,
-        validUntil: Date,
+        issueDate: number,
+        validFrom: number,
+        validUntil: number,
+        documentType: DocumentType,
+        documentReferenceId: string,
         certificateDocument: CertificateDocument,
         urlStructure: URLStructure,
         resourceSpec: ICPResourceSpec,
@@ -85,10 +85,12 @@ export class CertificateManagerService {
         issuer: string,
         subject: string,
         assessmentStandard: string,
-        issueDate: Date,
-        validFrom: Date,
-        validUntil: Date,
+        issueDate: number,
+        validFrom: number,
+        validUntil: number,
         processTypes: string[],
+        documentType: DocumentType,
+        documentReferenceId: string,
         certificateDocument: CertificateDocument,
         urlStructure: URLStructure,
         resourceSpec: ICPResourceSpec,
@@ -120,8 +122,10 @@ export class CertificateManagerService {
         issuer: string,
         subject: string,
         assessmentStandard: string,
-        issueDate: Date,
+        issueDate: number,
         materialId: number,
+        documentType: DocumentType,
+        documentReferenceId: string,
         certificateDocument: CertificateDocument,
         urlStructure: URLStructure,
         resourceSpec: ICPResourceSpec,
@@ -209,9 +213,9 @@ export class CertificateManagerService {
         roleProof: RoleProof,
         certificateId: number,
         assessmentStandard: string,
-        issueDate: Date,
-        validFrom: Date,
-        validUntil: Date
+        issueDate: number,
+        validFrom: number,
+        validUntil: number
     ): Promise<void> {
         return this._certificateManagerDriver.updateCompanyCertificate(
             roleProof,
@@ -227,9 +231,9 @@ export class CertificateManagerService {
         roleProof: RoleProof,
         certificateId: number,
         assessmentStandard: string,
-        issueDate: Date,
-        validFrom: Date,
-        validUntil: Date,
+        issueDate: number,
+        validFrom: number,
+        validUntil: number,
         processTypes: string[]
     ): Promise<void> {
         return this._certificateManagerDriver.updateScopeCertificate(
@@ -247,7 +251,7 @@ export class CertificateManagerService {
         roleProof: RoleProof,
         certificateId: number,
         assessmentStandard: string,
-        issueDate: Date,
+        issueDate: number,
         materialId: number
     ): Promise<void> {
         return this._certificateManagerDriver.updateMaterialCertificate(
@@ -345,11 +349,6 @@ export class CertificateManagerService {
         resourceSpec: ICPResourceSpec,
         delegatedOrganizationIds: number[] = []
     ): Promise<string> {
-        console.log('baseExternalUrl', baseExternalUrl);
-        console.log('certificateDocument', certificateDocument);
-        console.log('resourceSpec', resourceSpec);
-        console.log('delegatedOrganizationIds', delegatedOrganizationIds);
-        console.log('resource name', `${baseExternalUrl}${resourceSpec.name}`);
         await this._icpFileDriver.create(
             certificateDocument.fileContent,
             { ...resourceSpec, name: `${baseExternalUrl}${resourceSpec.name}` },
@@ -391,6 +390,7 @@ export class CertificateManagerService {
             resourceSpec,
             delegatedOrganizationIds
         );
+        console.log('externalUrl', externalUrl);
         return {
             id: await this._documentDriver.registerDocument(
                 roleProof,

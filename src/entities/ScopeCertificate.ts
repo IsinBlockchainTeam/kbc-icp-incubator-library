@@ -8,9 +8,9 @@ import {
 export class ScopeCertificate extends BaseCertificate {
     private _processTypes: string[];
 
-    private _validFrom: Date;
+    private _validFrom: number;
 
-    private _validUntil: Date;
+    private _validUntil: number;
 
     constructor(
         id: number,
@@ -20,10 +20,10 @@ export class ScopeCertificate extends BaseCertificate {
         document: CertificateDocumentInfo,
         evaluationStatus: DocumentEvaluationStatus,
         certificateType: CertificateType,
-        issueDate: Date,
+        issueDate: number,
         processTypes: string[],
-        validFrom: Date,
-        validUntil: Date
+        validFrom: number,
+        validUntil: number
     ) {
         super(
             id,
@@ -48,19 +48,19 @@ export class ScopeCertificate extends BaseCertificate {
         this._processTypes = value;
     }
 
-    get validFrom(): Date {
+    get validFrom(): number {
         return this._validFrom;
     }
 
-    set validFrom(value: Date) {
+    set validFrom(value: number) {
         this._validFrom = value;
     }
 
-    get validUntil(): Date {
+    get validUntil(): number {
         return this._validUntil;
     }
 
-    set validUntil(value: Date) {
+    set validUntil(value: number) {
         this._validUntil = value;
     }
 }

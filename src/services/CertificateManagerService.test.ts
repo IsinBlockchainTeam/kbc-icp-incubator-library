@@ -47,9 +47,9 @@ describe('CertificateManagerService', () => {
     const issuer = Wallet.createRandom().address;
     const subject = Wallet.createRandom().address;
     const assessmentStandard = 'ISO 9001';
-    const issueDate = new Date();
-    const validFrom = new Date(new Date().setDate(new Date().getDate() + 1));
-    const validUntil = new Date(new Date().setDate(new Date().getDate() + 30));
+    const issueDate = new Date().getTime();
+    const validFrom = new Date(new Date().setDate(new Date().getDate() + 1)).getTime();
+    const validUntil = new Date(new Date().setDate(new Date().getDate() + 30)).getTime();
     const processTypes = ['type1', 'type2'];
     const document: CertificateDocument = {
         fileName: 'document.pdf',

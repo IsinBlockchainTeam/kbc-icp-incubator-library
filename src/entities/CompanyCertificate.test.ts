@@ -3,9 +3,9 @@ import { CertificateType, DocumentEvaluationStatus, DocumentType } from './Certi
 
 describe('CompanyCertificate', () => {
     let companyCertificate: CompanyCertificate;
-    const issueDate = new Date();
-    const validFrom = new Date(new Date().setDate(new Date().getDate() + 1));
-    const validUntil = new Date(new Date().setDate(new Date().getDate() + 365));
+    const issueDate = new Date().getTime();
+    const validFrom = new Date(new Date().setDate(new Date().getDate() + 1)).getTime();
+    const validUntil = new Date(new Date().setDate(new Date().getDate() + 365)).getTime();
 
     beforeAll(() => {
         companyCertificate = new CompanyCertificate(
@@ -77,19 +77,19 @@ describe('CompanyCertificate', () => {
     });
 
     it('should correctly set the issueDate', () => {
-        const newIssueDate = new Date();
+        const newIssueDate = new Date().getTime();
         companyCertificate.issueDate = newIssueDate;
         expect(companyCertificate.issueDate).toEqual(newIssueDate);
     });
 
     it('should correctly set the validFrom', () => {
-        const newValidFrom = new Date();
+        const newValidFrom = new Date().getTime();
         companyCertificate.validFrom = newValidFrom;
         expect(companyCertificate.validFrom).toEqual(newValidFrom);
     });
 
     it('should correctly set the validUntil', () => {
-        const newValidUntil = new Date();
+        const newValidUntil = new Date().getTime();
         companyCertificate.validUntil = newValidUntil;
         expect(companyCertificate.validUntil).toEqual(newValidUntil);
     });
