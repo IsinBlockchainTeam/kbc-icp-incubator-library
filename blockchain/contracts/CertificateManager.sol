@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@blockchain-lib/blockchain-common/contracts/EnumerableType.sol";
 import "./KBCAccessControl.sol";
 import "./DocumentManager.sol";
-import "../libraries/KBCCertificateLibrary.sol";
 import "./MaterialManager.sol";
 
 library DocumentLibrary {

@@ -10,7 +10,7 @@ library KBCCertificateLibrary {
         MATERIAL
     }
 
-//    TODO: uncomment this function when the DocumentLibrary has been moved to an indipendent library, in order to avoid circular dependencies
+//    TODO: uncomment this function when the DocumentLibrary has been moved to an independent library, in order to avoid circular dependencies
 //    function getDocumentTypesByCertificateType(CertificateType certificateType) public pure returns (DocumentLibrary.DocumentType[] memory) {
 //        if (certificateType == CertificateType.COMPANY) {
 //            return [DocumentLibrary.DocumentType.CERTIFICATE_OF_CONFORMITY, DocumentLibrary.DocumentType.COUNTRY_OF_ORIGIN];

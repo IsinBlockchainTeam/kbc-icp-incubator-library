@@ -53,6 +53,7 @@ describe('CertificateManagerService', () => {
     const processTypes = ['type1', 'type2'];
     const document: CertificateDocument = {
         fileName: 'document.pdf',
+        fileType: 'application/pdf',
         documentType: DocumentType.CERTIFICATE_OF_CONFORMITY,
         fileContent: new Uint8Array([1, 2, 3, 4]),
         documentReferenceId: '1234'

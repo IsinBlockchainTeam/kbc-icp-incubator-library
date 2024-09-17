@@ -30,7 +30,7 @@ export class CertificateManagerDriver {
         issueDate: Date,
         validFrom: Date,
         validUntil: Date
-    ): Promise<number> {
+    ): Promise<[number, string]> {
         const tx: any = await this._actual.registerCompanyCertificate(
             roleProof,
             issuer,
@@ -41,12 +41,14 @@ export class CertificateManagerDriver {
             validFrom.getTime(),
             validUntil.getTime()
         );
-        const { events } = await tx.wait();
+        const { events, transactionHash } = await tx.wait();
         if (!events)
             throw new Error('Error during company certificate registration, no events found');
 
-        return events.find((event: Event) => event.event === 'CompanyCertificateRegistered')
-            .args[0];
+        return [
+            events.find((event: Event) => event.event === 'CompanyCertificateRegistered').args[0],
+            transactionHash
+        ];
     }
 
     async registerScopeCertificate(
@@ -59,7 +61,7 @@ export class CertificateManagerDriver {
         validFrom: Date,
         validUntil: Date,
         processTypes: string[]
-    ): Promise<number> {
+    ): Promise<[number, string]> {
         const tx: any = await this._actual.registerScopeCertificate(
             roleProof,
             issuer,
@@ -71,11 +73,14 @@ export class CertificateManagerDriver {
             validUntil.getTime(),
             processTypes
         );
-        const { events } = await tx.wait();
+        const { events, transactionHash } = await tx.wait();
         if (!events)
             throw new Error('Error during scope certificate registration, no events found');
 
-        return events.find((event: Event) => event.event === 'ScopeCertificateRegistered').args[0];
+        return [
+            events.find((event: Event) => event.event === 'ScopeCertificateRegistered').args[0],
+            transactionHash
+        ];
     }
 
     async registerMaterialCertificate(
@@ -86,7 +91,7 @@ export class CertificateManagerDriver {
         document: CertificateDocumentInfo,
         issueDate: Date,
         materialId: number
-    ): Promise<number> {
+    ): Promise<[number, string]> {
         const tx: any = await this._actual.registerMaterialCertificate(
             roleProof,
             issuer,
@@ -96,12 +101,14 @@ export class CertificateManagerDriver {
             issueDate.getTime(),
             materialId
         );
-        const { events } = await tx.wait();
+        const { events, transactionHash } = await tx.wait();
         if (!events)
             throw new Error('Error during material certificate registration, no events found');
 
-        return events.find((event: Event) => event.event === 'MaterialCertificateRegistered')
-            .args[0];
+        return [
+            events.find((event: Event) => event.event === 'MaterialCertificateRegistered').args[0],
+            transactionHash
+        ];
     }
 
     async getCertificateIdsBySubject(roleProof: RoleProof, subject: string): Promise<number[]> {

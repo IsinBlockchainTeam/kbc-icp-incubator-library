@@ -131,14 +131,14 @@ serial([
     // () => deploy(
     //     ContractName.ETHEREUM_DID_REGISTRY, [],
     // ),
-    // () =>
-    //     deploy(ContractName.CERTIFICATE_MANAGER, [
-    //         '0x508d92D0235B2bd1060c93FA9D2c8A21D801e1d6', // DelegateManager
-    //         '0xb8e699A624963AAcdfe793cE4bbCE856Dcd67eB0', // EnumerableProcessType
-    //         '0x9a0fDb7C439638BA289DC9D951a57D3fa61292b0', // EnumerableAssessmentStandard
-    //         '0xB1616b899bFa80B8613d20c689621C66A79aAa36', // DocumentManager
-    //         '0x8628570545736D5c711734c36e4145F232134cB9' // MaterialManager
-    //     ])
+    () =>
+        deploy(ContractName.CERTIFICATE_MANAGER, [
+            '0x508d92D0235B2bd1060c93FA9D2c8A21D801e1d6', // DelegateManager
+            '0xb8e699A624963AAcdfe793cE4bbCE856Dcd67eB0', // EnumerableProcessType
+            '0x9a0fDb7C439638BA289DC9D951a57D3fa61292b0', // EnumerableAssessmentStandard
+            '0xB1616b899bFa80B8613d20c689621C66A79aAa36', // DocumentManager
+            '0x8628570545736D5c711734c36e4145F232134cB9' // MaterialManager
+        ])
     // async () => {
     //     const contract = await getAttachedContract(ContractName.MY_TOKEN, '0x4D559cDf9e7C2C2D51a8a0e0dD5DA583caC673BF');
     //     const tx = await contract.transfer('0xa1f48005f183780092E0E277B282dC1934AE3308', 50);

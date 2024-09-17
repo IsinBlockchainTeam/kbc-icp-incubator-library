@@ -17,12 +17,14 @@ import { URLStructure } from '../types/URLStructure';
 
 type CertificateDocumentMetadata = {
     fileName: string;
+    fileType: string;
     documentType: DocumentType;
     documentReferenceId: string;
 };
 
 export type CertificateDocument = {
     fileName: string;
+    fileType: string;
     documentType: DocumentType;
     fileContent: Uint8Array;
     documentReferenceId: string;
@@ -57,7 +59,7 @@ export class CertificateManagerService {
         urlStructure: URLStructure,
         resourceSpec: ICPResourceSpec,
         delegatedOrganizationIds: number[] = []
-    ): Promise<void> {
+    ): Promise<[number, string]> {
         const document = await this._addDocument(
             roleProof,
             URL_SEGMENTS.CERTIFICATION.COMPANY,
@@ -66,7 +68,7 @@ export class CertificateManagerService {
             resourceSpec,
             delegatedOrganizationIds
         );
-        await this._certificateManagerDriver.registerCompanyCertificate(
+        return this._certificateManagerDriver.registerCompanyCertificate(
             roleProof,
             issuer,
             subject,
@@ -91,7 +93,7 @@ export class CertificateManagerService {
         urlStructure: URLStructure,
         resourceSpec: ICPResourceSpec,
         delegatedOrganizationIds: number[] = []
-    ): Promise<void> {
+    ): Promise<[number, string]> {
         const document = await this._addDocument(
             roleProof,
             URL_SEGMENTS.CERTIFICATION.SCOPE,
@@ -100,7 +102,7 @@ export class CertificateManagerService {
             resourceSpec,
             delegatedOrganizationIds
         );
-        await this._certificateManagerDriver.registerScopeCertificate(
+        return this._certificateManagerDriver.registerScopeCertificate(
             roleProof,
             issuer,
             subject,
@@ -124,7 +126,7 @@ export class CertificateManagerService {
         urlStructure: URLStructure,
         resourceSpec: ICPResourceSpec,
         delegatedOrganizationIds: number[] = []
-    ): Promise<void> {
+    ): Promise<[number, string]> {
         const document = await this._addDocument(
             roleProof,
             `${URL_SEGMENTS.CERTIFICATION.MATERIAL}${materialId}/`,
@@ -133,7 +135,7 @@ export class CertificateManagerService {
             resourceSpec,
             delegatedOrganizationIds
         );
-        await this._certificateManagerDriver.registerMaterialCertificate(
+        return this._certificateManagerDriver.registerMaterialCertificate(
             roleProof,
             issuer,
             subject,
@@ -292,6 +294,7 @@ export class CertificateManagerService {
             const fileContent = await this._icpFileDriver.read(documentInfo.externalUrl);
             return {
                 fileName: documentMetadata.fileName,
+                fileType: documentMetadata.fileType,
                 documentType: documentMetadata.documentType,
                 fileContent,
                 documentReferenceId: documentMetadata.documentReferenceId
@@ -342,6 +345,11 @@ export class CertificateManagerService {
         resourceSpec: ICPResourceSpec,
         delegatedOrganizationIds: number[] = []
     ): Promise<string> {
+        console.log('baseExternalUrl', baseExternalUrl);
+        console.log('certificateDocument', certificateDocument);
+        console.log('resourceSpec', resourceSpec);
+        console.log('delegatedOrganizationIds', delegatedOrganizationIds);
+        console.log('resource name', `${baseExternalUrl}${resourceSpec.name}`);
         await this._icpFileDriver.create(
             certificateDocument.fileContent,
             { ...resourceSpec, name: `${baseExternalUrl}${resourceSpec.name}` },
@@ -349,6 +357,7 @@ export class CertificateManagerService {
         );
         const metadata: CertificateDocumentMetadata = {
             fileName: certificateDocument.fileName,
+            fileType: certificateDocument.fileType,
             documentType: certificateDocument.documentType,
             documentReferenceId: certificateDocument.documentReferenceId
         };

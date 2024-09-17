@@ -2,6 +2,7 @@
 import { ethers } from 'hardhat';
 import * as dotenv from 'dotenv';
 import { Contract } from 'ethers';
+import { Libraries } from '@nomiclabs/hardhat-ethers/types';
 import { ContractName } from '../utils/constants';
 
 dotenv.config({ path: '../.env' });
@@ -19,8 +20,10 @@ async function getAttachedContract(contractName: string, contractAddress: string
     return ContractFactory.attach(contractAddress);
 }
 
-async function deploy(contractName: string, contractArgs?: any[], contractAliasName?: string): Promise<void> {
-    const ContractFactory = await ethers.getContractFactory(contractName);
+async function deploy(contractName: string, contractArgs?: any[], contractAliasName?: string, libraries?: Libraries): Promise<void> {
+    const ContractFactory = await ethers.getContractFactory(contractName, {
+        libraries
+    });
     const contract = await ContractFactory.deploy(...(contractArgs || []));
     await contract.deployed();
 
@@ -81,15 +84,22 @@ serial([
             process.env.ESCROW_COMMISSIONER_FEE || 1
         ]),
     () =>
-        deploy(ContractName.TRADE_MANAGER, [
-            contractMap.get(ContractName.DELEGATE_MANAGER)!.address,
-            contractMap.get(ContractName.PRODUCT_CATEGORY_MANAGER)!.address,
-            contractMap.get(ContractName.MATERIAL_MANAGER)!.address,
-            contractMap.get(ContractName.DOCUMENT_MANAGER)!.address,
-            contractMap.get('EnumerableFiatManager')!.address,
-            contractMap.get('EnumerableUnitManager')!.address,
-            contractMap.get(ContractName.ESCROW_MANAGER)!.address
-        ]),
+        deploy(
+            ContractName.TRADE_MANAGER,
+            [
+                contractMap.get(ContractName.DELEGATE_MANAGER)!.address,
+                contractMap.get(ContractName.PRODUCT_CATEGORY_MANAGER)!.address,
+                contractMap.get(ContractName.MATERIAL_MANAGER)!.address,
+                contractMap.get(ContractName.DOCUMENT_MANAGER)!.address,
+                contractMap.get('EnumerableFiatManager')!.address,
+                contractMap.get('EnumerableUnitManager')!.address,
+                contractMap.get(ContractName.ESCROW_MANAGER)!.address
+            ],
+            undefined,
+            {
+                KBCShipmentLibrary: '0xc79ad82de984f893148bEE79B33E7085AcFd3c02' // KBC_SHIPMENT_LIBRARY
+            }
+        ),
     () => deploy(ContractName.RELATIONSHIP_MANAGER, [contractMap.get(ContractName.DELEGATE_MANAGER)!.address, [process.env.SUPPLIER_ADMIN || '']]),
     () =>
         deploy(ContractName.ASSET_OPERATION_MANAGER, [
@@ -112,7 +122,7 @@ serial([
             contractMap.get('EnumerableAssessmentStandardManager')!.address,
             contractMap.get(ContractName.DOCUMENT_MANAGER)!.address,
             contractMap.get(ContractName.MATERIAL_MANAGER)!.address
-        ]),
+        ])
 ]).catch((error: any) => {
     console.error(error);
     process.exitCode = 1;
