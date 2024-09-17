@@ -119,6 +119,10 @@ export class EscrowService {
         await this._escrowDriver.releaseFunds(amount);
     }
 
+    async refundFunds(amount: number): Promise<void> {
+        await this._escrowDriver.refundFunds(amount);
+    }
+
     async deposit(amount: number, payer: string): Promise<void> {
         await this._escrowDriver.deposit(amount, payer);
     }

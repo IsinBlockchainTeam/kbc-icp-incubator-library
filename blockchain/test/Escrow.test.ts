@@ -176,7 +176,7 @@ describe('Escrow.sol', () => {
             await deposit(admin, depositAmount);
             const tx = await withdraw(admin, depositAmount);
             await expect(tx).to.emit(escrowContract, 'EscrowWithdrawn');
-            expect(await escrowContract.getPayers()).to.deep.equal([admin.address]);
+            expect(await escrowContract.getPayers()).to.deep.equal([]);
             expect(await escrowContract.getTotalDepositedAmount()).to.equal(0);
             expect(await escrowContract.getDepositedAmount(admin.address)).to.equal(0);
             expect(await escrowContract.getLockedAmount()).to.equal(0);

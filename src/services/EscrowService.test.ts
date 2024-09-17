@@ -35,6 +35,7 @@ describe('EscrowService', () => {
         isExpired: jest.fn(),
         lockFunds: jest.fn(),
         releaseFunds: jest.fn(),
+        refundFunds: jest.fn(),
         deposit: jest.fn(),
         withdraw: jest.fn(),
         addAdmin: jest.fn(),
@@ -218,6 +219,12 @@ describe('EscrowService', () => {
             serviceFunctionName: 'releaseFunds',
             serviceFunction: () => escrowService.releaseFunds(1),
             expectedMockedFunction: mockedInstance.releaseFunds,
+            expectedMockedFunctionArgs: [1]
+        },
+        {
+            serviceFunctionName: 'refundFunds',
+            serviceFunction: () => escrowService.refundFunds(1),
+            expectedMockedFunction: mockedInstance.refundFunds,
             expectedMockedFunctionArgs: [1]
         },
         {

@@ -4,6 +4,7 @@ pragma solidity ^0.8.17;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -235,8 +236,10 @@ contract Escrow is AccessControl {
 
         _token.safeTransferFrom(payer, address(this), amount);
 
+        // check if not already a payer
         if(_depositedAmount[payer] == 0)
             _payers.push(payer);
+
         _depositedAmount[payer] += amount;
         _totalDepositedAmount += amount;
         emit EscrowDeposited(payer, amount);
@@ -249,8 +252,16 @@ contract Escrow is AccessControl {
         _token.safeTransferFrom(address(this), _msgSender(), amount);
 
         _depositedAmount[_msgSender()] -= amount;
-        if(_depositedAmount[_msgSender()] == 0)
-            delete _depositedAmount[_msgSender()];
+        // remove payer from _payers if no more deposited amount
+        if(_depositedAmount[_msgSender()] == 0) {
+            for (uint256 i = 0; i < _payers.length; i++) {
+                if (_payers[i] == _msgSender()) {
+                    _payers[i] = _payers[_payers.length - 1];
+                    _payers.pop();
+                    break;
+                }
+            }
+        }
 
         _totalDepositedAmount -= amount;
         emit EscrowWithdrawn(_msgSender(), amount);

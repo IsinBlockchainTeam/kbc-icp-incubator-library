@@ -235,7 +235,7 @@ describe('ShipmentService', () => {
             2,
             bytesFromObject,
             {
-                name: 'shipmentExternalUrl/files//fileName-metadata.json',
+                name: 'shipmentExternalUrl/files/fileName-metadata.json',
                 type: 'application/json'
             },
             delegatedOrganizationIds
