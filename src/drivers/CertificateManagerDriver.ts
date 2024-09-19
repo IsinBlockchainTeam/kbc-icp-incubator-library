@@ -8,7 +8,8 @@ import { RoleProof } from '../types/RoleProof';
 import {
     BaseCertificate,
     CertificateDocumentInfo,
-    DocumentEvaluationStatus
+    DocumentEvaluationStatus,
+    DocumentType
 } from '../entities/Certificate';
 
 export class CertificateManagerDriver {
@@ -195,7 +196,8 @@ export class CertificateManagerDriver {
         assessmentStandard: string,
         issueDate: number,
         validFrom: number,
-        validUntil: number
+        validUntil: number,
+        documentType: DocumentType
     ): Promise<void> {
         try {
             const tx = await this._actual.updateCompanyCertificate(
@@ -204,7 +206,8 @@ export class CertificateManagerDriver {
                 assessmentStandard,
                 issueDate,
                 validFrom,
-                validUntil
+                validUntil,
+                documentType
             );
             await tx.wait();
         } catch (e: any) {
@@ -219,7 +222,8 @@ export class CertificateManagerDriver {
         issueDate: number,
         validFrom: number,
         validUntil: number,
-        processTypes: string[]
+        processTypes: string[],
+        documentType: DocumentType
     ): Promise<void> {
         try {
             const tx = await this._actual.updateScopeCertificate(
@@ -229,6 +233,7 @@ export class CertificateManagerDriver {
                 issueDate,
                 validFrom,
                 validUntil,
+                documentType,
                 processTypes
             );
             await tx.wait();
@@ -242,7 +247,8 @@ export class CertificateManagerDriver {
         certificateId: number,
         assessmentStandard: string,
         issueDate: number,
-        materialId: number
+        materialId: number,
+        documentType: DocumentType
     ): Promise<void> {
         try {
             const tx = await this._actual.updateMaterialCertificate(
@@ -250,7 +256,8 @@ export class CertificateManagerDriver {
                 certificateId,
                 assessmentStandard,
                 issueDate,
-                materialId
+                materialId,
+                documentType
             );
             await tx.wait();
         } catch (e: any) {

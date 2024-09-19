@@ -18,7 +18,6 @@ import { URLStructure } from '../types/URLStructure';
 type CertificateDocumentMetadata = {
     fileName: string;
     fileType: string;
-    documentType: DocumentType;
     documentReferenceId: string;
 };
 
@@ -64,6 +63,8 @@ export class CertificateManagerService {
             roleProof,
             URL_SEGMENTS.CERTIFICATION.COMPANY,
             certificateDocument,
+            documentType,
+            documentReferenceId,
             urlStructure,
             resourceSpec,
             delegatedOrganizationIds
@@ -100,6 +101,8 @@ export class CertificateManagerService {
             roleProof,
             URL_SEGMENTS.CERTIFICATION.SCOPE,
             certificateDocument,
+            documentType,
+            documentReferenceId,
             urlStructure,
             resourceSpec,
             delegatedOrganizationIds
@@ -135,6 +138,8 @@ export class CertificateManagerService {
             roleProof,
             `${URL_SEGMENTS.CERTIFICATION.MATERIAL}${materialId}/`,
             certificateDocument,
+            documentType,
+            documentReferenceId,
             urlStructure,
             resourceSpec,
             delegatedOrganizationIds
@@ -212,6 +217,7 @@ export class CertificateManagerService {
     async updateCompanyCertificate(
         roleProof: RoleProof,
         certificateId: number,
+        documentType: DocumentType,
         assessmentStandard: string,
         issueDate: number,
         validFrom: number,
@@ -223,13 +229,15 @@ export class CertificateManagerService {
             assessmentStandard,
             issueDate,
             validFrom,
-            validUntil
+            validUntil,
+            documentType
         );
     }
 
     async updateScopeCertificate(
         roleProof: RoleProof,
         certificateId: number,
+        documentType: DocumentType,
         assessmentStandard: string,
         issueDate: number,
         validFrom: number,
@@ -243,13 +251,15 @@ export class CertificateManagerService {
             issueDate,
             validFrom,
             validUntil,
-            processTypes
+            processTypes,
+            documentType
         );
     }
 
     async updateMaterialCertificate(
         roleProof: RoleProof,
         certificateId: number,
+        documentType: DocumentType,
         assessmentStandard: string,
         issueDate: number,
         materialId: number
@@ -259,7 +269,8 @@ export class CertificateManagerService {
             certificateId,
             assessmentStandard,
             issueDate,
-            materialId
+            materialId,
+            documentType
         );
     }
 
@@ -299,9 +310,7 @@ export class CertificateManagerService {
             return {
                 fileName: documentMetadata.fileName,
                 fileType: documentMetadata.fileType,
-                documentType: documentMetadata.documentType,
-                fileContent,
-                documentReferenceId: documentMetadata.documentReferenceId
+                fileContent
             };
         } catch (e: any) {
             throw new Error(
@@ -315,6 +324,7 @@ export class CertificateManagerService {
         certificationId: number,
         documentId: number,
         certificateDocument: CertificateDocument,
+        documentReferenceId: string,
         resourceSpec: ICPResourceSpec,
         delegatedOrganizationIds: number[] = []
     ): Promise<void> {
@@ -323,6 +333,7 @@ export class CertificateManagerService {
         const externalUrl = await this._addDocumentToExtStorage(
             `${path}/`,
             certificateDocument,
+            documentReferenceId,
             resourceSpec,
             delegatedOrganizationIds
         );
@@ -346,6 +357,7 @@ export class CertificateManagerService {
     async _addDocumentToExtStorage(
         baseExternalUrl: string,
         certificateDocument: CertificateDocument,
+        documentReferenceId: string,
         resourceSpec: ICPResourceSpec,
         delegatedOrganizationIds: number[] = []
     ): Promise<string> {
@@ -357,8 +369,7 @@ export class CertificateManagerService {
         const metadata: CertificateDocumentMetadata = {
             fileName: certificateDocument.fileName,
             fileType: certificateDocument.fileType,
-            documentType: certificateDocument.documentType,
-            documentReferenceId: certificateDocument.documentReferenceId
+            documentReferenceId
         };
         await this._icpFileDriver.create(
             FileHelpers.getBytesFromObject(metadata),
@@ -375,6 +386,8 @@ export class CertificateManagerService {
         roleProof: RoleProof,
         relativePath: string,
         certificateDocument: CertificateDocument,
+        documentType: DocumentType,
+        documentReferenceId: string,
         urlStructure: URLStructure,
         resourceSpec: ICPResourceSpec,
         delegatedOrganizationIds: number[] = []
@@ -387,17 +400,17 @@ export class CertificateManagerService {
         const externalUrl = await this._addDocumentToExtStorage(
             baseExternalUrl,
             certificateDocument,
+            documentReferenceId,
             resourceSpec,
             delegatedOrganizationIds
         );
-        console.log('externalUrl', externalUrl);
         return {
             id: await this._documentDriver.registerDocument(
                 roleProof,
                 externalUrl,
                 FileHelpers.getHash(certificateDocument.fileContent).toString()
             ),
-            documentType: certificateDocument.documentType
+            documentType
         };
     }
 }

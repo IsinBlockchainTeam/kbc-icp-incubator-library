@@ -450,7 +450,8 @@ describe('CertificateManagerDriver', () => {
             assessmentStandard,
             issueDate,
             validFrom,
-            validUntil
+            validUntil,
+            document.documentType
         );
         expect(mockedContract.updateCompanyCertificate).toHaveBeenCalledTimes(1);
         expect(mockedContract.updateCompanyCertificate).toHaveBeenCalledWith(
@@ -474,7 +475,8 @@ describe('CertificateManagerDriver', () => {
                 assessmentStandard,
                 issueDate,
                 validFrom,
-                validUntil
+                validUntil,
+                document.documentType
             )
         ).rejects.toThrow(errorMessage);
     });
@@ -487,7 +489,8 @@ describe('CertificateManagerDriver', () => {
             issueDate,
             validFrom,
             validUntil,
-            processTypes
+            processTypes,
+            document.documentType
         );
         expect(mockedContract.updateScopeCertificate).toHaveBeenCalledTimes(1);
         expect(mockedContract.updateScopeCertificate).toHaveBeenCalledWith(
@@ -513,7 +516,8 @@ describe('CertificateManagerDriver', () => {
                 issueDate,
                 validFrom,
                 validUntil,
-                processTypes
+                processTypes,
+                document.documentType
             )
         ).rejects.toThrow(errorMessage);
     });
@@ -524,7 +528,8 @@ describe('CertificateManagerDriver', () => {
             1,
             assessmentStandard,
             issueDate,
-            materialId
+            materialId,
+            document.documentType
         );
         expect(mockedContract.updateMaterialCertificate).toHaveBeenCalledTimes(1);
         expect(mockedContract.updateMaterialCertificate).toHaveBeenCalledWith(
@@ -532,7 +537,8 @@ describe('CertificateManagerDriver', () => {
             1,
             assessmentStandard,
             issueDate,
-            materialId
+            materialId,
+            document.documentType
         );
     });
 
@@ -546,7 +552,8 @@ describe('CertificateManagerDriver', () => {
                 1,
                 assessmentStandard,
                 issueDate,
-                materialId
+                materialId,
+                document.documentType
             )
         ).rejects.toThrow(errorMessage);
     });
