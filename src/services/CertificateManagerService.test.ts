@@ -54,7 +54,8 @@ describe('CertificateManagerService', () => {
     const document: CertificateDocument = {
         fileName: 'document.pdf',
         fileType: 'application/pdf',
-        fileContent: new Uint8Array([1, 2, 3, 4])
+        fileContent: new Uint8Array([1, 2, 3, 4]),
+        documentReferenceId: '1234'
     };
     const documentType = DocumentType.CERTIFICATE_OF_CONFORMITY;
     const documentReferenceId = '1234';
@@ -90,7 +91,6 @@ describe('CertificateManagerService', () => {
                     validFrom,
                     validUntil,
                     documentType,
-                    documentReferenceId,
                     document,
                     urlStructure,
                     resourceSpec
@@ -122,7 +122,6 @@ describe('CertificateManagerService', () => {
                     validUntil,
                     processTypes,
                     documentType,
-                    documentReferenceId,
                     document,
                     urlStructure,
                     resourceSpec
@@ -153,7 +152,6 @@ describe('CertificateManagerService', () => {
                     issueDate,
                     3,
                     documentType,
-                    documentReferenceId,
                     document,
                     urlStructure,
                     resourceSpec
@@ -339,7 +337,6 @@ describe('CertificateManagerService', () => {
             validFrom,
             validUntil,
             documentType,
-            documentReferenceId,
             document,
             urlStructure,
             resourceSpec
@@ -397,7 +394,6 @@ describe('CertificateManagerService', () => {
             validUntil,
             processTypes,
             documentType,
-            documentReferenceId,
             document,
             urlStructure,
             resourceSpec
@@ -454,7 +450,6 @@ describe('CertificateManagerService', () => {
             issueDate,
             3,
             documentType,
-            documentReferenceId,
             document,
             urlStructure,
             resourceSpec
@@ -535,14 +530,7 @@ describe('CertificateManagerService', () => {
         mockedDocumentDriver.getDocumentById = jest.fn().mockResolvedValue({
             externalUrl: 'path/to/url/file.pdf'
         });
-        await certificateManagerService.updateDocument(
-            roleProof,
-            1,
-            2,
-            document,
-            documentReferenceId,
-            resourceSpec
-        );
+        await certificateManagerService.updateDocument(roleProof, 1, 2, document, resourceSpec);
 
         expect(mockedIcpFileDriver.create).toHaveBeenCalledTimes(2);
         expect(mockedIcpFileDriver.create).toHaveBeenNthCalledWith(

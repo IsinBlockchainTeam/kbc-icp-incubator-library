@@ -21,9 +21,7 @@ type CertificateDocumentMetadata = {
     documentReferenceId: string;
 };
 
-export type CertificateDocument = {
-    fileName: string;
-    fileType: string;
+export type CertificateDocument = CertificateDocumentMetadata & {
     fileContent: Uint8Array;
 };
 
@@ -53,7 +51,6 @@ export class CertificateManagerService {
         validFrom: number,
         validUntil: number,
         documentType: DocumentType,
-        documentReferenceId: string,
         certificateDocument: CertificateDocument,
         urlStructure: URLStructure,
         resourceSpec: ICPResourceSpec,
@@ -64,7 +61,6 @@ export class CertificateManagerService {
             URL_SEGMENTS.CERTIFICATION.COMPANY,
             certificateDocument,
             documentType,
-            documentReferenceId,
             urlStructure,
             resourceSpec,
             delegatedOrganizationIds
@@ -91,7 +87,6 @@ export class CertificateManagerService {
         validUntil: number,
         processTypes: string[],
         documentType: DocumentType,
-        documentReferenceId: string,
         certificateDocument: CertificateDocument,
         urlStructure: URLStructure,
         resourceSpec: ICPResourceSpec,
@@ -102,7 +97,6 @@ export class CertificateManagerService {
             URL_SEGMENTS.CERTIFICATION.SCOPE,
             certificateDocument,
             documentType,
-            documentReferenceId,
             urlStructure,
             resourceSpec,
             delegatedOrganizationIds
@@ -128,7 +122,6 @@ export class CertificateManagerService {
         issueDate: number,
         materialId: number,
         documentType: DocumentType,
-        documentReferenceId: string,
         certificateDocument: CertificateDocument,
         urlStructure: URLStructure,
         resourceSpec: ICPResourceSpec,
@@ -139,7 +132,6 @@ export class CertificateManagerService {
             `${URL_SEGMENTS.CERTIFICATION.MATERIAL}${materialId}/`,
             certificateDocument,
             documentType,
-            documentReferenceId,
             urlStructure,
             resourceSpec,
             delegatedOrganizationIds
@@ -310,7 +302,8 @@ export class CertificateManagerService {
             return {
                 fileName: documentMetadata.fileName,
                 fileType: documentMetadata.fileType,
-                fileContent
+                fileContent,
+                documentReferenceId: documentMetadata.documentReferenceId
             };
         } catch (e: any) {
             throw new Error(
@@ -324,7 +317,6 @@ export class CertificateManagerService {
         certificationId: number,
         documentId: number,
         certificateDocument: CertificateDocument,
-        documentReferenceId: string,
         resourceSpec: ICPResourceSpec,
         delegatedOrganizationIds: number[] = []
     ): Promise<void> {
@@ -333,7 +325,6 @@ export class CertificateManagerService {
         const externalUrl = await this._addDocumentToExtStorage(
             `${path}/`,
             certificateDocument,
-            documentReferenceId,
             resourceSpec,
             delegatedOrganizationIds
         );
@@ -343,6 +334,23 @@ export class CertificateManagerService {
             documentId,
             externalUrl,
             FileHelpers.getHash(certificateDocument.fileContent).toString()
+        );
+    }
+
+    async updateDocumentMetadata(
+        roleProof: RoleProof,
+        documentId: number,
+        certificateDocument: CertificateDocument,
+        resourceSpec: ICPResourceSpec,
+        delegatedOrganizationIds: number[] = []
+    ): Promise<void> {
+        const documentInfo = await this._documentDriver.getDocumentById(roleProof, documentId);
+        const path = documentInfo.externalUrl.split('/').slice(0, -1).join('/');
+        await this._addDocumentMetadataToExtStorage(
+            `${path}/`,
+            certificateDocument,
+            resourceSpec,
+            delegatedOrganizationIds
         );
     }
 
@@ -357,7 +365,6 @@ export class CertificateManagerService {
     async _addDocumentToExtStorage(
         baseExternalUrl: string,
         certificateDocument: CertificateDocument,
-        documentReferenceId: string,
         resourceSpec: ICPResourceSpec,
         delegatedOrganizationIds: number[] = []
     ): Promise<string> {
@@ -366,11 +373,24 @@ export class CertificateManagerService {
             { ...resourceSpec, name: `${baseExternalUrl}${resourceSpec.name}` },
             delegatedOrganizationIds
         );
+        return `${baseExternalUrl}${resourceSpec.name}`;
+    }
+
+    async _addDocumentMetadataToExtStorage(
+        baseExternalUrl: string,
+        certificateDocument: CertificateDocument,
+        resourceSpec: ICPResourceSpec,
+        delegatedOrganizationIds: number[] = []
+    ): Promise<void> {
         const metadata: CertificateDocumentMetadata = {
             fileName: certificateDocument.fileName,
             fileType: certificateDocument.fileType,
-            documentReferenceId
+            documentReferenceId: certificateDocument.documentReferenceId
         };
+        console.log('metadata', metadata);
+        console.log('baseExternalUrl', baseExternalUrl);
+        console.log('certificateDocument', certificateDocument);
+        console.log('resourceSpec', resourceSpec);
         await this._icpFileDriver.create(
             FileHelpers.getBytesFromObject(metadata),
             {
@@ -379,7 +399,6 @@ export class CertificateManagerService {
             },
             delegatedOrganizationIds
         );
-        return `${baseExternalUrl}${resourceSpec.name}`;
     }
 
     async _addDocument(
@@ -387,7 +406,6 @@ export class CertificateManagerService {
         relativePath: string,
         certificateDocument: CertificateDocument,
         documentType: DocumentType,
-        documentReferenceId: string,
         urlStructure: URLStructure,
         resourceSpec: ICPResourceSpec,
         delegatedOrganizationIds: number[] = []
@@ -400,7 +418,12 @@ export class CertificateManagerService {
         const externalUrl = await this._addDocumentToExtStorage(
             baseExternalUrl,
             certificateDocument,
-            documentReferenceId,
+            resourceSpec,
+            delegatedOrganizationIds
+        );
+        await this._addDocumentMetadataToExtStorage(
+            baseExternalUrl,
+            certificateDocument,
             resourceSpec,
             delegatedOrganizationIds
         );
