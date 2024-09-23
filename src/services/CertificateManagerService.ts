@@ -328,6 +328,16 @@ export class CertificateManagerService {
             resourceSpec,
             delegatedOrganizationIds
         );
+        await this._addDocumentMetadataToExtStorage(
+            `${path}/`,
+            {
+                fileName: certificateDocument.fileName,
+                fileType: certificateDocument.fileType,
+                documentReferenceId: certificateDocument.documentReferenceId
+            },
+            resourceSpec,
+            delegatedOrganizationIds
+        );
         await this._certificateManagerDriver.updateDocument(
             roleProof,
             certificationId,
@@ -340,7 +350,7 @@ export class CertificateManagerService {
     async updateDocumentMetadata(
         roleProof: RoleProof,
         documentId: number,
-        certificateDocument: CertificateDocument,
+        metadata: CertificateDocumentMetadata,
         resourceSpec: ICPResourceSpec,
         delegatedOrganizationIds: number[] = []
     ): Promise<void> {
@@ -348,7 +358,7 @@ export class CertificateManagerService {
         const path = documentInfo.externalUrl.split('/').slice(0, -1).join('/');
         await this._addDocumentMetadataToExtStorage(
             `${path}/`,
-            certificateDocument,
+            metadata,
             resourceSpec,
             delegatedOrganizationIds
         );
@@ -378,19 +388,10 @@ export class CertificateManagerService {
 
     async _addDocumentMetadataToExtStorage(
         baseExternalUrl: string,
-        certificateDocument: CertificateDocument,
+        metadata: CertificateDocumentMetadata,
         resourceSpec: ICPResourceSpec,
         delegatedOrganizationIds: number[] = []
     ): Promise<void> {
-        const metadata: CertificateDocumentMetadata = {
-            fileName: certificateDocument.fileName,
-            fileType: certificateDocument.fileType,
-            documentReferenceId: certificateDocument.documentReferenceId
-        };
-        console.log('metadata', metadata);
-        console.log('baseExternalUrl', baseExternalUrl);
-        console.log('certificateDocument', certificateDocument);
-        console.log('resourceSpec', resourceSpec);
         await this._icpFileDriver.create(
             FileHelpers.getBytesFromObject(metadata),
             {
