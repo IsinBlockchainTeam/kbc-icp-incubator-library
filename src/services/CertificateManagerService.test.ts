@@ -241,7 +241,8 @@ describe('CertificateManagerService', () => {
                 assessmentStandard,
                 issueDate,
                 validFrom,
-                validUntil
+                validUntil,
+                documentType
             ]
         },
         {
@@ -261,12 +262,12 @@ describe('CertificateManagerService', () => {
             expectedMockedFunctionArgs: [
                 roleProof,
                 1,
-                documentType,
                 assessmentStandard,
                 issueDate,
                 validFrom,
                 validUntil,
-                processTypes
+                processTypes,
+                documentType
             ]
         },
         {
@@ -281,7 +282,14 @@ describe('CertificateManagerService', () => {
                     3
                 ),
             expectedMockedFunction: mockedCertificateManagerDriver.updateMaterialCertificate,
-            expectedMockedFunctionArgs: [roleProof, 1, assessmentStandard, issueDate, 3]
+            expectedMockedFunctionArgs: [
+                roleProof,
+                1,
+                assessmentStandard,
+                issueDate,
+                3,
+                documentType
+            ]
         },
         {
             serviceFunctionName: 'evaluateDocument',
@@ -372,7 +380,7 @@ describe('CertificateManagerService', () => {
             2,
             FileHelpers.getBytesFromObject({
                 fileName: document.fileName,
-                documentType,
+                fileType: document.fileType,
                 documentReferenceId
             }),
             {
@@ -430,7 +438,7 @@ describe('CertificateManagerService', () => {
             2,
             FileHelpers.getBytesFromObject({
                 fileName: document.fileName,
-                documentType,
+                fileType: document.fileType,
                 documentReferenceId
             }),
             {
@@ -484,7 +492,7 @@ describe('CertificateManagerService', () => {
             2,
             FileHelpers.getBytesFromObject({
                 fileName: document.fileName,
-                documentType,
+                fileType: document.fileType,
                 documentReferenceId
             }),
             {
@@ -543,7 +551,7 @@ describe('CertificateManagerService', () => {
             2,
             FileHelpers.getBytesFromObject({
                 fileName: document.fileName,
-                documentType,
+                fileType: document.fileType,
                 documentReferenceId
             }),
             {

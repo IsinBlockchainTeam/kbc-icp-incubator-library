@@ -424,7 +424,11 @@ export class CertificateManagerService {
         );
         await this._addDocumentMetadataToExtStorage(
             baseExternalUrl,
-            certificateDocument,
+            {
+                fileName: certificateDocument.fileName,
+                fileType: certificateDocument.fileType,
+                documentReferenceId: certificateDocument.documentReferenceId
+            },
             resourceSpec,
             delegatedOrganizationIds
         );

@@ -460,7 +460,8 @@ describe('CertificateManagerDriver', () => {
             assessmentStandard,
             issueDate,
             validFrom,
-            validUntil
+            validUntil,
+            document.documentType
         );
     });
 
@@ -500,6 +501,7 @@ describe('CertificateManagerDriver', () => {
             issueDate,
             validFrom,
             validUntil,
+            document.documentType,
             processTypes
         );
     });
