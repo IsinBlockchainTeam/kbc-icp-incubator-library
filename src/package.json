@@ -5,6 +5,7 @@
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "scripts": {
+        "icp-build": "cp -r ../icp/ts-canister/declarations/ ./declarations && node transform-declarations.js",
         "build": "npx tsc",
         "test": "jest",
         "lint": "eslint *.ts --fix",
@@ -25,8 +26,12 @@
         "Token"
     ],
     "devDependencies": {
-        "@dfinity/identity-secp256k1": "1.4.0",
+        "@babel/cli": "^7.25.6",
+        "@babel/core": "^7.25.2",
+        "@babel/plugin-transform-modules-commonjs": "^7.24.8",
+        "@babel/preset-env": "^7.25.4",
         "@dfinity/agent": "1.4.0",
+        "@dfinity/identity-secp256k1": "^1.4.0",
         "@types/crypto-js": "^4.2.2",
         "@types/jest": "^29.4.0",
         "@types/node": "^18.14.6",
@@ -47,6 +52,7 @@
     },
     "dependencies": {
         "@blockchain-lib/common": "2.0.5",
+        "@dfinity/auth-client": "^1.4.0",
         "@ethersproject/providers": "^5.6.4",
         "@jest/test-sequencer": "^29.7.0",
         "@supercharge/promise-pool": "^3.2.0",

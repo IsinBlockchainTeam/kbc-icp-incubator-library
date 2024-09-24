@@ -3,11 +3,17 @@
 
 /src/**/dist/
 /src/**/smart-contracts/
+/src/declarations/
 /src/**/coverage/
 /src/**/integration-test/coverage/
 
 /coverage/
 /credentials/gitlab_write_token
+
+icp/ts-canister/.azle
+icp/ts-canister/.dfx
+icp/ts-canister/declarations
+
 
 /blockchain/**/artifacts/
 /blockchain/**/cache/

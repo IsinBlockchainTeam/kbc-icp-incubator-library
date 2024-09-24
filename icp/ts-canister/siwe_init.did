@@ -1,0 +1,15 @@
+(record {
+    domain = "127.0.0.1";
+    uri = "http://127.0.0.1:5173";
+    salt = "salt";
+    chain_id = opt 1;
+    scheme = opt "http";
+    statement = opt "Login to the SIWE/IC";
+    sign_in_expires_in = opt 300000000000;
+    session_expires_in = opt 604800000000000;
+    targets = opt vec {
+        "bkyz2-fmaaa-aaaaa-qaaaq-cai";
+        "br5f7-7uaaa-aaaaa-qaaca-cai";
+    };
+  }
+)
