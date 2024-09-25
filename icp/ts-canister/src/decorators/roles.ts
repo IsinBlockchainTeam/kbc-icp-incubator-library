@@ -4,8 +4,16 @@ export const ROLE_VIEWER = 'ROLE_VIEWER';
 export const ROLE_EDITOR = 'ROLE_EDITOR';
 export const ROLE_SIGNER = 'ROLE_SIGNER';
 
+function getDelegateManagerCanisterId(): string {
+    if (process.env.CANISTER_ID_DELEGATE_MANAGER !== undefined) {
+        return process.env.CANISTER_ID_DELEGATE_MANAGER;
+    }
+
+    throw new Error(`process.env.CANISTER_ID_DELEGATE_MANAGER is not defined`);
+}
+
 async function isViewer(value: string): Promise<boolean> {
-    const bool = await call("br5f7-7uaaa-aaaaa-qaaca-cai", 'canRead', {
+    const bool = await call(getDelegateManagerCanisterId(), 'canRead', {
         paramIdlTypes: [IDL.Bool],
         returnIdlType: IDL.Bool,
         args: [true]

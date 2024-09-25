@@ -1,4 +1,4 @@
-import {IDL, StableBTreeMap, update, init} from 'azle';
+import {IDL, StableBTreeMap, update, init, query} from 'azle';
 import { ic, None } from 'azle/experimental';
 import { managementCanister } from 'azle/experimental/canisters/management';
 import { toUtf8Bytes, keccak256, AbiCoder } from "ethers";
@@ -68,6 +68,12 @@ class DelegateManager {
         // })();
 
         console.log('DelegateManager initialized')
+        console.log(process.env)
+    }
+
+    @query([IDL.Bool], IDL.Bool)
+    canRead(b: boolean): boolean {
+        return b;
     }
 
 }

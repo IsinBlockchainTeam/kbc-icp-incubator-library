@@ -8,7 +8,8 @@
                 "node_compatibility": true
             },
             "custom": {
-                "experimental": true
+                "experimental": true,
+                "env": ["CANISTER_ID_DELEGATE_MANAGER"]
             }
         },
         "material_manager": {
