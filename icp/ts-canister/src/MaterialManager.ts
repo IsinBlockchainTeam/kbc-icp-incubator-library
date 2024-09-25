@@ -16,6 +16,11 @@ class MaterialManager {
         return this.materials.values();
     }
 
+    @query([IDL.Bool], IDL.Bool)
+    canRead(b: boolean): boolean {
+        return b;
+    }
+
     @update([IDL.Nat], Material)
     async registerMaterial(productCategoryId: number): Promise<Material> {
         if (!(await this.productCategoryExists(productCategoryId))) {

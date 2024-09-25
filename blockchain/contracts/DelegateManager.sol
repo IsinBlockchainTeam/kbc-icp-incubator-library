@@ -50,8 +50,6 @@ contract DelegateManager {
 
     RevocationRegistry private _revocationRegistry;
 
-    mapping(address => address[]) private _delegates;
-
     address private _owner;
 
     constructor(string memory name, string memory version, uint256 chainId, address revocationRegistryAddress) {

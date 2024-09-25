@@ -1,6 +1,7 @@
 import { IDL, query, update, StableBTreeMap, caller } from 'azle';
 import { ProductCategory } from "./types";
 import {ethers} from "ethers";
+import {OnlyViewer} from "./decorators/roles";
 
 class ProductCategoryManager {
     productCategories = StableBTreeMap<bigint, ProductCategory>(0);
@@ -37,8 +38,9 @@ class ProductCategoryManager {
         return productCategory;
     }
 
-    @query([], IDL.Text)
-    whoAmI(): string {
+    @query([IDL.Text], IDL.Text)
+    @OnlyViewer
+    async whoAmI(_: string): Promise<string> {
         return caller().toString();
     }
 

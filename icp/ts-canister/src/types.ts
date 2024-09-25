@@ -21,3 +21,31 @@ export const Material = IDL.Record({
     productCategoryId: IDL.Nat,
 });
 
+
+
+export type MembershipProof = {
+    signedProof: string;
+    delegatorCredentialIdHash: string;
+    delegatorCredentialExpiryDate: string;
+    issuer: string;
+}
+export const MembershipProof = IDL.Record({
+    signedProof: IDL.Text,
+    delegatorCredentialIdHash: IDL.Text,
+    delegatorCredentialExpiryDate: IDL.Text,
+    issuer: IDL.Text
+});
+export type RoleProof = {
+    signedProof: string,
+    delegateCredentialIdHash: string,
+    delegateCredentialExpiryDate: number,
+    delegator: string,
+    membershipProof: MembershipProof
+}
+export const RoleProof = IDL.Record({
+    signedProof: IDL.Text,
+    delegateCredentialIdHash: IDL.Text,
+    delegateCredentialExpiryDate: IDL.Nat,
+    delegator: IDL.Text,
+    membershipProof: MembershipProof
+})

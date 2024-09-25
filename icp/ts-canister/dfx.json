@@ -22,6 +22,18 @@
                 "env": ["CANISTER_ID_PRODUCT_CATEGORY_MANAGER"]
             }
         },
+        "delegate_manager": {
+            "type": "azle",
+            "main": "src/DelegateManager.ts",
+            "init_arg_file": "./init/delegate_manager_init.did",
+            "declarations": {
+                "output": "declarations/delegate_manager",
+                "node_compatibility": true
+            },
+            "custom": {
+                "experimental": true
+            }
+        },
         "internet_identity": {
             "type": "custom",
             "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
@@ -35,7 +47,7 @@
             "candid": "https://github.com/kristoferlund/ic-siwe/releases/download/v0.0.6/ic_siwe_provider.did",
             "type": "custom",
             "wasm": "https://github.com/kristoferlund/ic-siwe/releases/download/v0.0.6/ic_siwe_provider.wasm.gz",
-            "init_arg_file": "./siwe_init.did",
+            "init_arg_file": "./init/siwe_init.did",
             "declarations": {
                 "output": "declarations/ic_siwe_provider",
                 "node_compatibility": true
