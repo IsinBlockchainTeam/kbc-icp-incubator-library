@@ -38,7 +38,7 @@ class ProductCategoryManager {
         return productCategory;
     }
 
-    @query([IDL.Text], IDL.Text)
+    @update([IDL.Text], IDL.Text)
     @OnlyViewer
     async whoAmI(_: string): Promise<string> {
         return caller().toString();

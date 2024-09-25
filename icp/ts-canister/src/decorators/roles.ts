@@ -10,7 +10,6 @@ async function isViewer(value: string): Promise<boolean> {
         returnIdlType: IDL.Bool,
         args: [true]
     });
-    console.log('bool', bool);
     return bool && value === ROLE_VIEWER;
 }
 async function isEditor(value: string): Promise<boolean> {
