@@ -53,6 +53,16 @@
                 "output": "declarations/ic_siwe_provider",
                 "node_compatibility": true
             }
+        },
+        "evm_rpc": {
+            "candid": "https://github.com/internet-computer-protocol/evm-rpc-canister/releases/latest/download/evm_rpc.did",
+            "type": "custom",
+            "wasm": "https://github.com/internet-computer-protocol/evm-rpc-canister/releases/latest/download/evm_rpc.wasm.gz",
+            "init_arg_file": "./init/evm_rpc_init.did",
+            "declarations": {
+                "output": "declarations/evm_rpc",
+                "node_compatibility": true
+            }
         }
     },
     "output_env_file": ".env",
