@@ -66,6 +66,7 @@ const abi = [
         "type": "function"
     }
 ];
+
 class DelegateManager {
     domainSeparator: string = "";
     chainId: number = 0;
@@ -144,14 +145,10 @@ class DelegateManager {
     }
 
     async isRevoked(signer: string, credentialIdHash: string) {
-        //call etheruem smart contract with ethers
-        // const provider = new ethers.JsonRpcProvider("http://195.14.127.21:8545");
-        // const contract = new ethers.Contract("0x946F4Ded379cF96E94387129588B4478e279aFB9", abi, provider);
-        // const result = await contract.revoked(signer, credentialIdHash);
         const methodName = "revoked";
         const contractAddress = "0x946F4Ded379cF96E94387129588B4478e279aFB9";
-        const interf = new ethers.Interface(abi);
-        const data = interf.encodeFunctionData(methodName, [signer, credentialIdHash]);
+        const abiInterface = new ethers.Interface(abi);
+        const data = abiInterface.encodeFunctionData(methodName, [signer, credentialIdHash]);
         const jsonRpcPayload = {
             "jsonrpc": "2.0",
             "method": "eth_call",
@@ -181,9 +178,10 @@ class DelegateManager {
             }
         );
         console.log(resp);
-        //TODO handle response error
 
-        const decodedResult = interf.decodeFunctionResult(methodName, JSON.parse(resp.Ok).result);
+        if(resp.Err) throw new Error('Unable to fetch revocation registry');
+
+        const decodedResult = abiInterface.decodeFunctionResult(methodName, JSON.parse(resp.Ok).result);
         console.log(decodedResult[0]);
         return decodedResult[0] !== 0n;
     }
