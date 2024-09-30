@@ -13,6 +13,7 @@
 icp/ts-canister/.azle
 icp/ts-canister/.dfx
 icp/ts-canister/declarations
+icp/ts-canister/eth-abi/RevocationRegistry.json
 
 
 /blockchain/**/artifacts/

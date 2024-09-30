@@ -1,4 +1,4 @@
-import {IDL, StableBTreeMap, update, init, query, call} from 'azle';
+import {IDL, update, init, query, call} from 'azle';
 import { ic, None } from 'azle/experimental';
 import { managementCanister } from 'azle/experimental/canisters/management';
 import {
@@ -6,66 +6,10 @@ import {
     computeAddress,
 
 } from "ethers";
-import {Address, RequestResult, RoleProof, RpcService, Tanucchio} from "./types";
-
-const abi = [
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": false,
-                "internalType": "address",
-                "name": "issuer",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "bytes32",
-                "name": "digest",
-                "type": "bytes32"
-            }
-        ],
-        "name": "Revoked",
-        "type": "event"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "bytes32",
-                "name": "digest",
-                "type": "bytes32"
-            }
-        ],
-        "name": "revoke",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "issuer",
-                "type": "address"
-            },
-            {
-                "internalType": "bytes32",
-                "name": "digest",
-                "type": "bytes32"
-            }
-        ],
-        "name": "revoked",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    }
-];
+import {Address} from "./models/Address";
+import {Tanucchio} from "./models/Proof";
+import {RpcService, RequestResult} from "./models/Rpc";
+import revocationRegistryAbi from "../eth-abi/RevocationRegistry.json";
 
 class DelegateManager {
     domainSeparator: string = "";
@@ -147,8 +91,9 @@ class DelegateManager {
     async isRevoked(signer: string, credentialIdHash: string) {
         const methodName = "revoked";
         const contractAddress = "0x946F4Ded379cF96E94387129588B4478e279aFB9";
-        const abiInterface = new ethers.Interface(abi);
+        const abiInterface = new ethers.Interface(revocationRegistryAbi.abi);
         const data = abiInterface.encodeFunctionData(methodName, [signer, credentialIdHash]);
+
         const jsonRpcPayload = {
             "jsonrpc": "2.0",
             "method": "eth_call",
@@ -177,7 +122,6 @@ class DelegateManager {
                 payment: 2_000_000_000n
             }
         );
-        console.log(resp);
 
         if(resp.Err) throw new Error('Unable to fetch revocation registry');
 

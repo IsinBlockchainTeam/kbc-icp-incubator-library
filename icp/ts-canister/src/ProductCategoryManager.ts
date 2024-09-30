@@ -1,7 +1,7 @@
 import { IDL, query, update, StableBTreeMap, caller } from 'azle';
-import { ProductCategory } from "./types";
 import {ethers} from "ethers";
 import {OnlyViewer} from "./decorators/roles";
+import {ProductCategory} from "./models/ProductCategory";
 
 class ProductCategoryManager {
     productCategories = StableBTreeMap<bigint, ProductCategory>(0);

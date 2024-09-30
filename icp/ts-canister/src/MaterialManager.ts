@@ -1,5 +1,6 @@
 import { IDL, query, update, StableBTreeMap, call } from 'azle';
-import { Material, ProductCategory } from './types';
+import {Material} from "./models/Material";
+import {ProductCategory} from "./models/ProductCategory";
 
 class MaterialManager {
     productCategoryManagerCanisterId: string = getProductCategoryManagerCanisterId();
