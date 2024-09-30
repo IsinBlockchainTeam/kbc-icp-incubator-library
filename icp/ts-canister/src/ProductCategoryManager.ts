@@ -1,7 +1,8 @@
-import { IDL, query, update, StableBTreeMap, caller } from 'azle';
+import {caller, IDL, query, StableBTreeMap, update} from 'azle';
 import {ethers} from "ethers";
 import {OnlyViewer} from "./decorators/roles";
 import {ProductCategory} from "./models/ProductCategory";
+import {RoleProof} from "./models/Proof";
 
 class ProductCategoryManager {
     productCategories = StableBTreeMap<bigint, ProductCategory>(0);
@@ -38,9 +39,9 @@ class ProductCategoryManager {
         return productCategory;
     }
 
-    @update([IDL.Text], IDL.Text)
+    @update([RoleProof], IDL.Text)
     @OnlyViewer
-    async whoAmI(_: string): Promise<string> {
+    async whoAmI(): Promise<string> {
         return caller().toString();
     }
 
@@ -52,6 +53,5 @@ class ProductCategoryManager {
             return '';
         }
     }
-
 }
 export default ProductCategoryManager;

@@ -1,96 +1,73 @@
-import {IDL, update, init, query, call} from 'azle';
-import { ic, None } from 'azle/experimental';
-import { managementCanister } from 'azle/experimental/canisters/management';
-import {
-    ethers,
-    computeAddress,
-
-} from "ethers";
-import {Address} from "./models/Address";
-import {Tanucchio} from "./models/Proof";
-import {RpcService, RequestResult} from "./models/Rpc";
+import {call, IDL, init, update} from 'azle';
+import {ic, Principal} from 'azle/experimental';
+import {ethers} from "ethers";
+import {RoleProof} from "./models/Proof";
+import {RequestResult, RpcService} from "./models/Rpc";
 import revocationRegistryAbi from "../eth-abi/RevocationRegistry.json";
+import {Address, GetAddressResponse} from "./models/Address";
 
 class DelegateManager {
-    domainSeparator: string = "";
-    chainId: number = 0;
-    MEMBERSHIP_TYPE_HASH: string = "";
-    ROLE_DELEGATION_TYPE_HASH: string = "";
-    DOMAIN_TYPE_HASH: string = "";
+    revocationRegistryAddress: Address = "0x";
+    rpcUrl: string = "";
     owner: Address = "0x";
-    initialized = false;
-    nameHash: string = "";
-    versionHash: string = "";
-    clearDomainSeparator: any;
+    evmRpcCanisterId: string = getEVMRpcCanisterId();
+    siweProviderCanisterId: string = getSiweProviderCanisterId();
+    incrementalRoles = ["Viewer", "Editor", "Signer"];
 
-    @init([IDL.Text, IDL.Text, IDL.Nat, IDL.Text, IDL.Text])
-    async construct(name: string, version: string, chainId: number, revocationRegistryAddress: string, ownerAddress: Address) {
-        // this.chainId = chainId;
-        // this.MEMBERSHIP_TYPE_HASH = keccak256(toUtf8Bytes("Membership(address delegatorAddress,bytes32 delegatorCredentialIdHash,uint256 delegatorCredentialExpiryDate)"));
-        // this.ROLE_DELEGATION_TYPE_HASH = keccak256(toUtf8Bytes("RoleDelegation(address delegateAddress,string role,bytes32 delegateCredentialIdHash,uint256 delegateCredentialExpiryDate)"));
-        // this.DOMAIN_TYPE_HASH = keccak256(toUtf8Bytes("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"));
-        // this.owner = ownerAddress;
-        // this.nameHash = keccak256(toUtf8Bytes(name));
-        // this.versionHash = keccak256(toUtf8Bytes(version));
-        // this.clearDomainSeparator = {
-        //     chainId,
-        //     name,
-        //     version
-        // }
+
+    @init([IDL.Text, IDL.Text])
+    async init(revocationRegistryAddress: string, rpcUrl: string): Promise<void> {
+        this.revocationRegistryAddress = revocationRegistryAddress as Address;
+        this.rpcUrl = rpcUrl;
     }
 
-    @query([IDL.Bool], IDL.Bool)
-    canRead(b: boolean): boolean {
-        return b;
-    }
-
-    @update([Tanucchio], IDL.Bool)
-    async hasValidRole(proof: Tanucchio): Promise<boolean> {
+    @update([RoleProof, IDL.Principal, IDL.Text], IDL.Bool)
+    async hasValidRole(proof: RoleProof, caller: Principal, minimumRole: string): Promise<boolean> {
         const unixTime = Number(ic.time().toString().substring(0, 13));
         const { signedProof, signer: expectedSigner, ...data} = proof;
-        data.delegateCredentialExpiryDate = Number(data.delegateCredentialExpiryDate);
+        const delegateCredentialExpiryDate = Number(data.delegateCredentialExpiryDate);
         const stringifiedData = JSON.stringify({
             delegateAddress: data.delegateAddress,
             role: data.role,
             delegateCredentialIdHash: data.delegateCredentialIdHash,
-            delegateCredentialExpiryDate: data.delegateCredentialExpiryDate,
+            delegateCredentialExpiryDate: delegateCredentialExpiryDate,
         });
         const signer = ethers.verifyMessage(stringifiedData, signedProof);
 
+        // If the caller is not the delegate address, the proof is invalid
+        if(await this.getAddress(caller) !== data.delegateAddress) return false;
         // If signedProof is different from the reconstructed proof, the two signers are different
         if(signer !== expectedSigner) return false;
         // If the delegate credential has been revoked, the delegate is not valid
         if(await this.isRevoked(signer, data.delegateCredentialIdHash)) return false;
         // If the delegate credential has expired, the delegate is not valid
         if(data.delegateCredentialExpiryDate < unixTime) return false;
-
-
+        // If the delegate is not at least the minimum role, the delegate is not valid
+        if(!this.isAtLeast(data.role, minimumRole)) return false;
 
         return true;
     }
 
-    async getAddress(principal: Uint8Array): Promise<Address> {
-        const publicKeyResult = await ic.call(
-            managementCanister.ecdsa_public_key,
+    async getAddress(principal: Principal): Promise<Address> {
+        const resp = await call(
+            this.siweProviderCanisterId,
+            'get_address',
             {
-                args: [
-                    {
-                        canister_id: None,
-                        derivation_path: [principal],
-                        key_id: {
-                            curve: { secp256k1: null },
-                            name: 'dfx_test_key'
-                        }
-                    }
-                ]
+                paramIdlTypes: [IDL.Vec(IDL.Nat8)],
+                returnIdlType: GetAddressResponse,
+                args: [principal.toUint8Array()],
             }
         );
-        return computeAddress("0x" + Buffer.from(publicKeyResult.public_key).toString("hex")) as Address;
+        if(resp.Err) throw new Error('Unable to fetch address');
+        return resp.Ok;
     }
 
-    async isRevoked(signer: string, credentialIdHash: string) {
+    isAtLeast(actualRole: string, minimumRole: string): boolean {
+        return this.incrementalRoles.indexOf(actualRole) >= this.incrementalRoles.indexOf(minimumRole);
+    }
+
+    async isRevoked(signer: string, credentialIdHash: string): Promise<boolean> {
         const methodName = "revoked";
-        const contractAddress = "0x946F4Ded379cF96E94387129588B4478e279aFB9";
         const abiInterface = new ethers.Interface(revocationRegistryAbi.abi);
         const data = abiInterface.encodeFunctionData(methodName, [signer, credentialIdHash]);
 
@@ -99,7 +76,7 @@ class DelegateManager {
             "method": "eth_call",
             "params": [
                 {
-                    "to": contractAddress,
+                    "to": this.revocationRegistryAddress,
                     "data": data
                 },
                 "latest"
@@ -108,12 +85,12 @@ class DelegateManager {
         }
         const JsonRpcSource = {
             Custom: {
-                url: "https://testnet-3achain-rpc.noku.io/",
+                url: this.rpcUrl,
                 headers: []
             }
         }
         const resp = await call(
-            'bd3sg-teaaa-aaaaa-qaaba-cai',
+            this.evmRpcCanisterId,
             'request',
             {
                 paramIdlTypes: [RpcService, IDL.Text, IDL.Nat64],
@@ -129,6 +106,20 @@ class DelegateManager {
         console.log(decodedResult[0]);
         return decodedResult[0] !== 0n;
     }
+}
+function getSiweProviderCanisterId(): string {
+    if (process.env.CANISTER_ID_IC_SIWE_PROVIDER !== undefined) {
+        return process.env.CANISTER_ID_IC_SIWE_PROVIDER;
+    }
+
+    throw new Error(`process.env.CANISTER_ID_IC_SIWE_PROVIDER is not defined`);
+}
+function getEVMRpcCanisterId(): string {
+    if (process.env.CANISTER_ID_EVM_RPC !== undefined) {
+        return process.env.CANISTER_ID_EVM_RPC;
+    }
+
+    throw new Error(`process.env.CANISTER_ID_EVM_RPC is not defined`);
 }
 
 export default DelegateManager;

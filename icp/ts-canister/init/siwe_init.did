@@ -10,6 +10,7 @@
     targets = opt vec {
         "be2us-64aaa-aaaaa-qaabq-cai";
         "bw4dl-smaaa-aaaaa-qaacq-cai";
+        "b77ix-eeaaa-aaaaa-qaada-cai";
     };
   }
 )

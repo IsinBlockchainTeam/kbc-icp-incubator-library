@@ -32,7 +32,8 @@
                 "node_compatibility": true
             },
             "custom": {
-                "experimental": true
+                "experimental": true,
+                "env": ["CANISTER_ID_EVM_RPC", "CANISTER_ID_IC_SIWE_PROVIDER"]
             }
         },
         "internet_identity": {

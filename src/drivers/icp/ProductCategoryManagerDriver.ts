@@ -1,6 +1,7 @@
 import type { ActorSubclass, Identity } from '@dfinity/agent';
 import { _SERVICE } from '../../../icp/ts-canister/.dfx/local/canisters/product_category_manager/service.did';
 import { createActor } from '../../declarations/product_category_manager';
+import {RoleProof} from "../../../icp/ts-canister/src/models/Proof";
 
 export class ProductCategoryManagerDriver {
     private _actor: ActorSubclass<_SERVICE>;
@@ -24,8 +25,8 @@ export class ProductCategoryManagerDriver {
         return this._actor.getProductCategories();
     }
 
-    async whoAmI() {
-        return this._actor.whoAmI();
+    async whoAmI(roleProof: RoleProof) {
+        return this._actor.whoAmI(roleProof);
     }
 
     async verifyMessage(message: string, signature: string) {

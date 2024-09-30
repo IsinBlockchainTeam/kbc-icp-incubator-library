@@ -51,33 +51,6 @@ Check that the installation went smoothly by looking for clean output from the f
 dfx --version
 ```
 
-## Deployment
-
-To create and deploy a simple sample application called `hello_world`:
-
-```bash
-# create a new default project called hello_world
-npx azle new hello_world
-cd hello_world
-```
-
-```bash
-# install all npm dependencies including azle
-npm install
-```
-
-```bash
-# start up a local ICP replica
-dfx start --clean
-```
-
-In a separate terminal in the `hello_world` directory:
-
-```bash
-# deploy your canister
-dfx deploy
-```
-
 ## Env
 
 To deploy the canister:
@@ -85,3 +58,6 @@ To deploy the canister:
 ```bash
 source .env && dfx deploy
 ```
+
+## Note
+Smart contracts ABIs are encoded in the project. If you want to update them, modify the `eth-abi` folder.
