@@ -561,4 +561,35 @@ describe('CertificateManagerService', () => {
             []
         );
     });
+
+    it('should update a document metadata', async () => {
+        mockedDocumentDriver.getDocumentById = jest.fn().mockResolvedValue({
+            externalUrl: 'path/to/url/file.pdf'
+        });
+        await certificateManagerService.updateDocumentMetadata(
+            roleProof,
+            1,
+            {
+                fileName: document.fileName,
+                fileType: document.fileType,
+                documentReferenceId
+            },
+            resourceSpec
+        );
+
+        expect(mockedIcpFileDriver.create).toHaveBeenCalledTimes(1);
+        expect(mockedIcpFileDriver.create).toHaveBeenNthCalledWith(
+            1,
+            FileHelpers.getBytesFromObject({
+                fileName: document.fileName,
+                fileType: document.fileType,
+                documentReferenceId
+            }),
+            {
+                name: `path/to/url/${FileHelpers.removeFileExtension(resourceSpec.name)}-metadata.json`,
+                type: 'application/json'
+            },
+            []
+        );
+    });
 });
