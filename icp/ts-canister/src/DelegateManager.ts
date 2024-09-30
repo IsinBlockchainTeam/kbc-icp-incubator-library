@@ -1,4 +1,4 @@
-import {call, IDL, init, update} from 'azle';
+import {call, IDL, init, update, StableBTreeMap} from 'azle';
 import {ic, Principal} from 'azle/experimental';
 import {ethers} from "ethers";
 import {RoleProof} from "./models/Proof";
@@ -6,46 +6,74 @@ import {RequestResult, RpcService} from "./models/Rpc";
 import revocationRegistryAbi from "../eth-abi/RevocationRegistry.json";
 import {Address, GetAddressResponse} from "./models/Address";
 
+const RPC_URL_KEY = "RPC_URL";
+const REVOCATION_REGISTRY_ADDRESS_KEY = "REVOCATION_REGISTRY_ADDRESS";
+const OWNER_ADDRESS_KEY = "OWNER_ADDRESS";
 class DelegateManager {
-    revocationRegistryAddress: Address = "0x";
-    rpcUrl: string = "";
-    owner: Address = "0x";
+    instanceVariable = StableBTreeMap<string, string>(0);
     evmRpcCanisterId: string = getEVMRpcCanisterId();
     siweProviderCanisterId: string = getSiweProviderCanisterId();
     incrementalRoles = ["Viewer", "Editor", "Signer"];
 
 
-    @init([IDL.Text, IDL.Text])
-    async init(revocationRegistryAddress: string, rpcUrl: string): Promise<void> {
-        this.revocationRegistryAddress = revocationRegistryAddress as Address;
-        this.rpcUrl = rpcUrl;
+    @init([IDL.Text, IDL.Text, IDL.Text])
+    async init(rpcUrl: string, revocationRegistryAddress: Address, ownerAddress: Address): Promise<void> {
+        this.instanceVariable.insert(RPC_URL_KEY, rpcUrl);
+        this.instanceVariable.insert(REVOCATION_REGISTRY_ADDRESS_KEY, revocationRegistryAddress);
+        this.instanceVariable.insert(OWNER_ADDRESS_KEY, ownerAddress);
     }
 
     @update([RoleProof, IDL.Principal, IDL.Text], IDL.Bool)
     async hasValidRole(proof: RoleProof, caller: Principal, minimumRole: string): Promise<boolean> {
         const unixTime = Number(ic.time().toString().substring(0, 13));
         const { signedProof, signer: expectedSigner, ...data} = proof;
+
         const delegateCredentialExpiryDate = Number(data.delegateCredentialExpiryDate);
-        const stringifiedData = JSON.stringify({
+        const roleProofStringifiedData = JSON.stringify({
             delegateAddress: data.delegateAddress,
             role: data.role,
             delegateCredentialIdHash: data.delegateCredentialIdHash,
             delegateCredentialExpiryDate: delegateCredentialExpiryDate,
         });
-        const signer = ethers.verifyMessage(stringifiedData, signedProof);
+        const roleProofSigner = ethers.verifyMessage(roleProofStringifiedData, signedProof);
 
-        // If the caller is not the delegate address, the proof is invalid
-        if(await this.getAddress(caller) !== data.delegateAddress) return false;
+        console.log("roleProofSigner", roleProofSigner);
+        console.log("expectedSigner", expectedSigner);
+
         // If signedProof is different from the reconstructed proof, the two signers are different
-        if(signer !== expectedSigner) return false;
-        // If the delegate credential has been revoked, the delegate is not valid
-        if(await this.isRevoked(signer, data.delegateCredentialIdHash)) return false;
-        // If the delegate credential has expired, the delegate is not valid
-        if(data.delegateCredentialExpiryDate < unixTime) return false;
+        if(roleProofSigner !== expectedSigner) return false;
         // If the delegate is not at least the minimum role, the delegate is not valid
         if(!this.isAtLeast(data.role, minimumRole)) return false;
+        // If the delegate credential has expired, the delegate is not valid
+        if(data.delegateCredentialExpiryDate < unixTime) return false;
+        // If the caller is not the delegate address, the proof is invalid
+        if(await this.getAddress(caller) !== data.delegateAddress) return false;
+        // If the delegate credential has been revoked, the delegate is not valid
+        if(await this.isRevoked(roleProofSigner, data.delegateCredentialIdHash)) return false;
 
-        return true;
+        const { membershipProof } = data;
+        const delegatorCredentialExpiryDate = Number(membershipProof.delegatorCredentialExpiryDate);
+        const membershipProofStringifiedData = JSON.stringify({
+            delegatorCredentialIdHash: membershipProof.delegatorCredentialIdHash,
+            delegatorCredentialExpiryDate: delegatorCredentialExpiryDate,
+            delegatorAddress: membershipProof.delegatorAddress,
+        });
+        const membershipProofSigner = ethers.verifyMessage(membershipProofStringifiedData, membershipProof.signedProof);
+
+        console.log("membershipProofSigner", membershipProofSigner);
+        console.log("roleProofSigner", roleProofSigner);
+        console.log("membershipProof.issuer", membershipProof.issuer);
+
+        // If the membership proof signer is different from the delegate signer, the proof is invalid
+        if(membershipProofSigner !== membershipProof.issuer) return false;
+        // If the proof signer is not the owner, the proof is invalid
+        if(membershipProofSigner !== this.instanceVariable.get(OWNER_ADDRESS_KEY)) return false;
+        // If the delegator is not the signer of the role proof, the proof is invalid
+        if(membershipProof.delegatorAddress !== roleProofSigner) return false;
+        // If the membership credential has expired, the proof is invalid
+        if(membershipProof.delegatorCredentialExpiryDate < unixTime) return false;
+        // If the membership credential has been revoked, the proof is invalid
+        return !await this.isRevoked(membershipProofSigner, membershipProof.delegatorCredentialIdHash);
     }
 
     async getAddress(principal: Principal): Promise<Address> {
@@ -76,7 +104,7 @@ class DelegateManager {
             "method": "eth_call",
             "params": [
                 {
-                    "to": this.revocationRegistryAddress,
+                    "to": this.instanceVariable.get(REVOCATION_REGISTRY_ADDRESS_KEY),
                     "data": data
                 },
                 "latest"
@@ -85,7 +113,7 @@ class DelegateManager {
         }
         const JsonRpcSource = {
             Custom: {
-                url: this.rpcUrl,
+                url: this.instanceVariable.get(RPC_URL_KEY),
                 headers: []
             }
         }
@@ -99,7 +127,7 @@ class DelegateManager {
                 payment: 2_000_000_000n
             }
         );
-
+        console.log('resp', resp);
         if(resp.Err) throw new Error('Unable to fetch revocation registry');
 
         const decodedResult = abiInterface.decodeFunctionResult(methodName, JSON.parse(resp.Ok).result);

@@ -1,14 +1,15 @@
-import {keccak256, toUtf8Bytes, verifyMessage, Wallet} from "ethers";
+import {verifyMessage, Wallet} from "ethers";
 
 const createSignature = async () => {
-    const wallet = new Wallet('538d7d8aec31a0a83f12461b1237ce6b00d8efc1d8b1c73566c05f63ed5e6d02');
+    const issuerWallet = new Wallet('ec6b3634419525310628dce4da4cf2abbc866c608aebc1e5f9ee7edf6926e985');
+    const delegatorWallet = new Wallet('538d7d8aec31a0a83f12461b1237ce6b00d8efc1d8b1c73566c05f63ed5e6d02');
 
     const membershipProof = {
-        delegatorAddress: "0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123",
         delegatorCredentialIdHash: "0xf19b6aebcdaba2222d3f2c818ff1ecda71c7ed93c3e0f958241787663b58bc4b",
-        delegatorCredentialExpiryDate: 1859262399000
+        delegatorCredentialExpiryDate: 1859262399000,
+        delegatorAddress: "0xa1f48005f183780092E0E277B282dC1934AE3308",
     }
-    const membershipSignature = await wallet.signMessage(JSON.stringify(membershipProof));
+    const membershipSignature = await issuerWallet.signMessage(JSON.stringify(membershipProof));
     console.log('Membership Signature:', membershipSignature);
 
     const roleProof = {
@@ -17,7 +18,7 @@ const createSignature = async () => {
         delegateCredentialIdHash: "0x2cc6c15c35500c4341eee2f9f5f8c39873b9c3737edb343ebc3d16424e99a0d4",
         delegateCredentialExpiryDate: 1827353873000
     }
-    const roleSignature = await wallet.signMessage(JSON.stringify(roleProof));
+    const roleSignature = await delegatorWallet.signMessage(JSON.stringify(roleProof));
     console.log('Role Signature:', roleSignature);
 
     verifySignature();
