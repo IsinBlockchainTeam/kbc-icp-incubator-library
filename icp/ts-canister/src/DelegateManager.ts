@@ -5,6 +5,7 @@ import {RoleProof} from "./models/Proof";
 import {RequestResult, RpcService} from "./models/Rpc";
 import revocationRegistryAbi from "../eth-abi/RevocationRegistry.json";
 import {Address, GetAddressResponse} from "./models/Address";
+import {ROLES} from "./models/Role";
 
 const RPC_URL_KEY = "RPC_URL";
 const REVOCATION_REGISTRY_ADDRESS_KEY = "REVOCATION_REGISTRY_ADDRESS";
@@ -13,7 +14,7 @@ class DelegateManager {
     instanceVariable = StableBTreeMap<string, string>(0);
     evmRpcCanisterId: string = getEVMRpcCanisterId();
     siweProviderCanisterId: string = getSiweProviderCanisterId();
-    incrementalRoles = ["Viewer", "Editor", "Signer"];
+    incrementalRoles = [ROLES.VIEWER, ROLES.EDITOR, ROLES.SIGNER];
 
 
     @init([IDL.Text, IDL.Text, IDL.Text])
@@ -36,10 +37,6 @@ class DelegateManager {
             delegateCredentialExpiryDate: delegateCredentialExpiryDate,
         });
         const roleProofSigner = ethers.verifyMessage(roleProofStringifiedData, signedProof);
-
-        console.log("roleProofSigner", roleProofSigner);
-        console.log("expectedSigner", expectedSigner);
-
         // If signedProof is different from the reconstructed proof, the two signers are different
         if(roleProofSigner !== expectedSigner) return false;
         // If the delegate is not at least the minimum role, the delegate is not valid
@@ -59,11 +56,6 @@ class DelegateManager {
             delegatorAddress: membershipProof.delegatorAddress,
         });
         const membershipProofSigner = ethers.verifyMessage(membershipProofStringifiedData, membershipProof.signedProof);
-
-        console.log("membershipProofSigner", membershipProofSigner);
-        console.log("roleProofSigner", roleProofSigner);
-        console.log("membershipProof.issuer", membershipProof.issuer);
-
         // If the membership proof signer is different from the delegate signer, the proof is invalid
         if(membershipProofSigner !== membershipProof.issuer) return false;
         // If the proof signer is not the owner, the proof is invalid

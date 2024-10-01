@@ -7,8 +7,6 @@ export class ProductCategoryManagerDriver {
     private _actor: ActorSubclass<_SERVICE>;
 
     public constructor(icpIdentity: Identity, canisterId: string, host?: string) {
-        if (!icpIdentity) throw new Error('ICPStorageDriver: No ICP identity found');
-
         this._actor = createActor(canisterId, {
             agentOptions: {
                 identity: icpIdentity,

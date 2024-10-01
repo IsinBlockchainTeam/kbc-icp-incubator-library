@@ -1,5 +1,13 @@
 {
     "canisters": {
+        "fiat_registry": {
+            "type": "azle",
+            "main": "src/ElementRegistry.ts",
+            "declarations": {
+                "output": "declarations/fiat_registry",
+                "node_compatibility": true
+            }
+        },
         "product_category_manager": {
             "type": "azle",
             "main": "src/ProductCategoryManager.ts",
@@ -21,6 +29,18 @@
             },
             "custom": {
                 "env": ["CANISTER_ID_PRODUCT_CATEGORY_MANAGER"]
+            }
+        },
+        "order_manager": {
+            "type": "azle",
+            "main": "src/OrderManager.ts",
+            "declarations": {
+                "output": "declarations/order_manager",
+                "node_compatibility": true
+            },
+            "custom": {
+                "experimental": true,
+                "env": ["CANISTER_ID_DELEGATE_MANAGER"]
             }
         },
         "delegate_manager": {
