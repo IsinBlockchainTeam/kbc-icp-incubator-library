@@ -60,4 +60,5 @@ source .env && dfx deploy
 ```
 
 ## Note
+
 Smart contracts ABIs are encoded in the project. If you want to update them, modify the `eth-abi` folder.

@@ -1,8 +1,18 @@
-import {caller, IDL, query, StableBTreeMap, update} from 'azle';
-import {ethers} from "ethers";
-import {OnlyViewer} from "./decorators/roles";
-import {ProductCategory} from "./models/ProductCategory";
-import {RoleProof} from "./models/Proof";
+import { call, caller, IDL, query, StableBTreeMap, update } from 'azle';
+import { ethers } from 'ethers';
+import { OnlyViewer } from './decorators/roles';
+import { ProductCategory } from './models/ProductCategory';
+import { RoleProof } from './models/Proof';
+import { CANISTER } from './constants/canister';
+
+export const ProductCategoryManagerMethods = {
+    getProductCategory: async (id: number) =>
+        call(CANISTER.PRODUCT_CATEGORY_MANAGER_ID(), 'getProductCategory', {
+            paramIdlTypes: [IDL.Nat],
+            returnIdlType: IDL.Opt(ProductCategory),
+            args: [id]
+        })
+};
 
 class ProductCategoryManager {
     productCategories = StableBTreeMap<bigint, ProductCategory>(0);

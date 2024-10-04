@@ -13,8 +13,7 @@ export function getTests(helloWorldCanister: ActorSubclass<_SERVICE>): Test {
         });
 
         it('sets a new message', async () => {
-            const result =
-                await helloWorldCanister.setMessage('Goodbye world!');
+            const result = await helloWorldCanister.setMessage('Goodbye world!');
 
             expect(result).toBeUndefined();
         });

@@ -1,19 +1,19 @@
-import {IDL, update, StableBTreeMap} from 'azle';
-import {Order, OrderLine} from "./models/Order";
-import {Address} from "./models/Address";
-import {validateAddress, validateDeadline, validateInterestedParty, validatePositiveNumber} from "./validation";
-import {RoleProof} from "./models/Proof";
-import {OnlyEditor, OnlySigner, OnlyViewer} from "./decorators/roles";
-import {ROLES} from "./models/Role";
+import { IDL, update, StableBTreeMap } from 'azle';
+import { Order, OrderLine } from './models/Order';
+import { Address } from './models/Address';
+import { validateAddress, validateDeadline, validateInterestedParties, validatePositiveNumber } from './utils/validation';
+import { RoleProof } from './models/Proof';
+import { OnlyEditor, OnlySigner, OnlyViewer } from './decorators/roles';
+import { ROLES } from './models/Role';
 
 class OrderManager {
     orders = StableBTreeMap<bigint, Order>(0);
 
     @update([RoleProof], IDL.Vec(Order))
     @OnlyViewer
-    async getOrders(roleProof: RoleProof,): Promise<Order[]> {
+    async getOrders(roleProof: RoleProof): Promise<Order[]> {
         const companyAddress = roleProof.membershipProof.delegatorAddress as Address;
-        return this.orders.values().filter(order => {
+        return this.orders.values().filter((order) => {
             const interestedParties = [order.supplier, order.customer, order.commissioner];
             return interestedParties.includes(companyAddress);
         });
@@ -23,11 +23,10 @@ class OrderManager {
     @OnlyViewer
     async getOrder(roleProof: RoleProof, id: bigint): Promise<Order> {
         const result = this.orders.get(id);
-        if(result) {
+        if (result) {
             const interestedParties = [result.supplier, result.customer, result.commissioner];
             const companyAddress = roleProof.membershipProof.delegatorAddress as Address;
-            if(!interestedParties.includes(companyAddress))
-                throw new Error('Access denied');
+            if (!interestedParties.includes(companyAddress)) throw new Error('Access denied');
             return result;
         }
         throw new Error('Order not found');
@@ -50,14 +49,13 @@ class OrderManager {
         escrowManager: Address,
         lines: OrderLine[]
     ): Promise<Order> {
-        if(supplier === customer)
-            throw new Error('Supplier and customer must be different');
+        if (supplier === customer) throw new Error('Supplier and customer must be different');
         validateAddress('Supplier', supplier);
         validateAddress('Customer', customer);
         validateAddress('Commissioner', commissioner);
         const interestedParties = [supplier, customer, commissioner];
         const companyAddress = roleProof.membershipProof.delegatorAddress as Address;
-        validateInterestedParty('Caller', companyAddress, interestedParties);
+        validateInterestedParties('Caller', companyAddress, interestedParties);
         validateDeadline('Payment deadline', paymentDeadline);
         validateDeadline('Document delivery deadline', documentDeliveryDeadline);
         validateDeadline('Shipping deadline', shippingDeadline);
@@ -96,7 +94,10 @@ class OrderManager {
         return order;
     }
 
-    @update([RoleProof, IDL.Nat, Address, Address, Address, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, Address, Address, IDL.Nat, Address, IDL.Vec(OrderLine)], Order)
+    @update(
+        [RoleProof, IDL.Nat, Address, Address, Address, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, Address, Address, IDL.Nat, Address, IDL.Vec(OrderLine)],
+        Order
+    )
     @OnlyEditor
     async updateOrder(
         roleProof: RoleProof,
@@ -115,16 +116,14 @@ class OrderManager {
         lines: OrderLine[]
     ): Promise<Order> {
         const order = this.orders.get(id);
-        if (!order)
-            throw new Error('Order not found');
-        if(supplier === customer)
-            throw new Error('Supplier and customer must be different');
+        if (!order) throw new Error('Order not found');
+        if (supplier === customer) throw new Error('Supplier and customer must be different');
         validateAddress('Supplier', supplier);
         validateAddress('Customer', customer);
         validateAddress('Commissioner', commissioner);
         const interestedParties = [supplier, customer, commissioner];
         const companyAddress = roleProof.membershipProof.delegatorAddress as Address;
-        validateInterestedParty('Caller', companyAddress, interestedParties);
+        validateInterestedParties('Caller', companyAddress, interestedParties);
         validateDeadline('Payment deadline', paymentDeadline);
         validateDeadline('Document delivery deadline', documentDeliveryDeadline);
         validateDeadline('Shipping deadline', shippingDeadline);
@@ -151,7 +150,7 @@ class OrderManager {
             shippingDeadline,
             deliveryDeadline,
             arbiter,
-            lines: lines,
+            lines,
             token,
             agreedAmount,
             escrowManager,
@@ -166,14 +165,11 @@ class OrderManager {
     @OnlySigner
     async signOrder(roleProof: RoleProof, id: bigint): Promise<Order> {
         const order = this.orders.get(id);
-        if (!order)
-            throw new Error('Order not found');
+        if (!order) throw new Error('Order not found');
         const companyAddress = roleProof.membershipProof.delegatorAddress as Address;
-        if(order.signatures.includes(companyAddress))
-            throw new Error('Order already signed');
+        if (order.signatures.includes(companyAddress)) throw new Error('Order already signed');
         order.signatures.push(companyAddress);
-        if (order.signatures.includes(order.supplier) && order.signatures.includes(order.customer))
-            order.status = { CONFIRMED: null };
+        if (order.signatures.includes(order.supplier) && order.signatures.includes(order.customer)) order.status = { CONFIRMED: null };
         this.orders.insert(id, order);
         return order;
     }

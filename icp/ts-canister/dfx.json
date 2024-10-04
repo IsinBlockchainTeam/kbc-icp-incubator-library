@@ -28,6 +28,7 @@
                 "node_compatibility": true
             },
             "custom": {
+                "experimental": true,
                 "env": ["CANISTER_ID_PRODUCT_CATEGORY_MANAGER"]
             }
         },

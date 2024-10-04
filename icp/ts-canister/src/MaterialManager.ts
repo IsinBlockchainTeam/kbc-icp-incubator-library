@@ -1,9 +1,11 @@
-import { IDL, query, update, StableBTreeMap, call } from 'azle';
-import {Material} from "./models/Material";
-import {ProductCategory} from "./models/ProductCategory";
+import { IDL, query, update, StableBTreeMap } from 'azle';
+import { Material } from './models/Material';
+import { CANISTER } from './constants/canister';
+import { ProductCategoryManagerMethods } from './ProductCategoryManager';
 
 class MaterialManager {
-    productCategoryManagerCanisterId: string = getProductCategoryManagerCanisterId();
+    productCategoryManagerCanisterId: string = CANISTER.PRODUCT_CATEGORY_MANAGER_ID();
+
     materials = StableBTreeMap<bigint, Material>(0);
 
     @query([IDL.Nat], IDL.Opt(Material))
@@ -43,21 +45,9 @@ class MaterialManager {
     }
 
     async productCategoryExists(productCategoryId: number): Promise<boolean> {
-        const productCategory = await call(this.productCategoryManagerCanisterId, 'getProductCategory', {
-            paramIdlTypes: [IDL.Nat],
-            returnIdlType: IDL.Opt(ProductCategory),
-            args: [productCategoryId]
-        });
+        const productCategory = await ProductCategoryManagerMethods.getProductCategory(productCategoryId);
         return productCategory.length > 0;
     }
-}
-
-function getProductCategoryManagerCanisterId(): string {
-    if (process.env.CANISTER_ID_PRODUCT_CATEGORY_MANAGER !== undefined) {
-        return process.env.CANISTER_ID_PRODUCT_CATEGORY_MANAGER;
-    }
-
-    throw new Error(`process.env.CANISTER_ID_PRODUCT_CATEGORY_MANAGER is not defined`);
 }
 
 export default MaterialManager;

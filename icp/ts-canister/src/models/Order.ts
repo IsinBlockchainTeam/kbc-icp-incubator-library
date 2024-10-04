@@ -1,11 +1,11 @@
-import {Price} from "./Price";
-import {Address} from "./Address";
-import {IDL} from "azle";
+import { IDL } from 'azle';
+import { Price } from './Price';
+import { Address } from './Address';
 
 export const OrderStatus = IDL.Variant({
     PENDING: IDL.Null,
     CONFIRMED: IDL.Null,
-    EXPIRED: IDL.Null,
+    EXPIRED: IDL.Null
 });
 export type OrderStatus = { PENDING: null } | { CONFIRMED: null } | { EXPIRED: null };
 export type OrderLine = {
@@ -14,12 +14,12 @@ export type OrderLine = {
     unit: string;
     price: Price;
     // materialId: number | null;
-}
+};
 export const OrderLine = IDL.Record({
     productCategoryId: IDL.Nat,
     quantity: IDL.Float32,
     unit: IDL.Text,
-    price: Price,
+    price: Price
     // materialId: IDL.Opt(IDL.Nat),
 });
 export type Order = {
@@ -40,7 +40,7 @@ export type Order = {
     escrowManager: Address;
     escrow: [Address] | [];
     shipmentId: [number] | [];
-}
+};
 export const Order = IDL.Record({
     id: IDL.Nat,
     supplier: Address,
@@ -58,5 +58,5 @@ export const Order = IDL.Record({
     agreedAmount: IDL.Nat,
     escrowManager: Address,
     escrow: IDL.Opt(Address),
-    shipmentId: IDL.Opt(IDL.Nat),
+    shipmentId: IDL.Opt(IDL.Nat)
 });

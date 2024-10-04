@@ -1,4 +1,4 @@
-import {IDL} from "azle";
+import { IDL } from 'azle';
 
 export type Material = {
     id: number;
@@ -6,5 +6,5 @@ export type Material = {
 };
 export const Material = IDL.Record({
     id: IDL.Nat,
-    productCategoryId: IDL.Nat,
+    productCategoryId: IDL.Nat
 });

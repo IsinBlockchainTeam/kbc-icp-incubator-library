@@ -1,4 +1,4 @@
-import {IDL} from "azle";
+import { IDL } from 'azle';
 
 export type Price = {
     amount: number;
@@ -7,5 +7,5 @@ export type Price = {
 
 export const Price = IDL.Record({
     amount: IDL.Float32,
-    fiat: IDL.Text,
+    fiat: IDL.Text
 });

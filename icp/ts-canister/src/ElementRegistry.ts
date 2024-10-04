@@ -1,4 +1,13 @@
-import { IDL, query, update, StableBTreeMap } from 'azle';
+import { IDL, query, update, StableBTreeMap, call } from 'azle';
+
+export const ElementRegistryMethods = (elementCanisterId: string) => ({
+    hasElement: (element: string) =>
+        call(elementCanisterId, 'hasElement', {
+            paramIdlTypes: [IDL.Text],
+            returnIdlType: IDL.Bool,
+            args: [element]
+        })
+});
 
 class ElementRegistry {
     elements = StableBTreeMap<bigint, string>(0);

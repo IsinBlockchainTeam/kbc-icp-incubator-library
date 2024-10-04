@@ -1,4 +1,4 @@
-import {IDL} from "azle";
+import { IDL } from 'azle';
 
 export type ProductCategory = {
     id: number;
@@ -10,5 +10,5 @@ export const ProductCategory = IDL.Record({
     id: IDL.Nat,
     name: IDL.Text,
     quality: IDL.Nat,
-    description: IDL.Text,
+    description: IDL.Text
 });
