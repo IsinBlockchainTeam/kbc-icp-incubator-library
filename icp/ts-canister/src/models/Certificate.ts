@@ -24,11 +24,11 @@ export type DocumentType =
 
 export const DocumentInfo = IDL.Record({
     id: IDL.Nat,
-    type: DocumentType
+    docType: DocumentType
 });
 export type DocumentInfo = {
-    id: number;
-    type: DocumentType;
+    id: bigint;
+    docType: DocumentType;
 };
 
 export const CertificateType = IDL.Variant({
@@ -38,7 +38,7 @@ export const CertificateType = IDL.Variant({
 });
 export type CertificateType = { COMPANY: null } | { SCOPE: null } | { MATERIAL: null };
 
-export const BaseCertificate = IDL.Record({
+const BaseCertificateType = {
     id: IDL.Nat,
     uploadedBy: Address,
     issuer: Address,
@@ -46,47 +46,50 @@ export const BaseCertificate = IDL.Record({
     assessmentStandard: IDL.Text,
     document: DocumentInfo,
     evaluationStatus: DocumentEvaluationStatus,
-    type: CertificateType,
-    issueDate: IDL.Nat
+    certType: CertificateType
+};
+export const BaseCertificate = IDL.Record({
+    ...BaseCertificateType
 });
 export type BaseCertificate = {
-    id: number;
+    id: bigint;
     uploadedBy: Address;
     issuer: Address;
     subject: Address;
     assessmentStandard: string;
     document: DocumentInfo;
     evaluationStatus: DocumentEvaluationStatus;
-    type: CertificateType;
-    issueDate: number;
+    certType: CertificateType;
+    issueDate: bigint;
 };
 
 export const CompanyCertificate = IDL.Record({
-    ...BaseCertificate,
+    ...BaseCertificateType,
+    issueDate: IDL.Nat,
     validFrom: IDL.Nat,
     validUntil: IDL.Nat
 });
 export type CompanyCertificate = BaseCertificate & {
-    validFrom: number;
-    validUntil: number;
+    validFrom: bigint;
+    validUntil: bigint;
 };
 
 export const ScopeCertificate = IDL.Record({
-    ...BaseCertificate,
+    ...BaseCertificateType,
     validFrom: IDL.Nat,
     validUntil: IDL.Nat,
     processTypes: IDL.Vec(IDL.Text)
 });
 export type ScopeCertificate = BaseCertificate & {
-    validFrom: number;
-    validUntil: number;
+    validFrom: bigint;
+    validUntil: bigint;
     processTypes: string[];
 };
 
 export const MaterialCertificate = IDL.Record({
-    ...BaseCertificate,
+    ...BaseCertificateType,
     materialId: IDL.Nat
 });
 export type MaterialCertificate = BaseCertificate & {
-    materialId: number;
+    materialId: bigint;
 };

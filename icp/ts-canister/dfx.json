@@ -44,6 +44,18 @@
                 "env": ["CANISTER_ID_DELEGATE_MANAGER"]
             }
         },
+        "certification_manager": {
+            "type": "azle",
+            "main": "src/CertificationManager.ts",
+            "declarations": {
+                "output": "declarations/certification_manager",
+                "node_compatibility": true
+            },
+            "custom": {
+                "experimental": true,
+                "env": ["CANISTER_ID_DELEGATE_MANAGER"]
+            }
+        },
         "delegate_manager": {
             "type": "azle",
             "main": "src/DelegateManager.ts",
