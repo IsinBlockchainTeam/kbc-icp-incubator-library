@@ -43,6 +43,18 @@
                 "env": ["CANISTER_ID_DELEGATE_MANAGER"]
             }
         },
+        "document_manager": {
+            "type": "azle",
+            "main": "src/DocumentManager.ts",
+            "declarations": {
+                "output": "declarations/document_manager",
+                "node_compatibility": true
+            },
+            "custom": {
+                "experimental": true,
+                "env": ["CANISTER_ID_DELEGATE_MANAGER"]
+            }
+        },
         "delegate_manager": {
             "type": "azle",
             "main": "src/DelegateManager.ts",
