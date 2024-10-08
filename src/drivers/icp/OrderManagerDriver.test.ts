@@ -12,8 +12,8 @@ const DELEGATE_CREDENTIAL_ID_HASH =
     '0x2cc6c15c35500c4341eee2f9f5f8c39873b9c3737edb343ebc3d16424e99a0d4';
 const DELEGATOR_CREDENTIAL_ID_HASH =
     '0xf19b6aebcdaba2222d3f2c818ff1ecda71c7ed93c3e0f958241787663b58bc4b';
-const SIWE_CANISTER_ID = 'bw4dl-smaaa-aaaaa-qaacq-cai';
-const ORDER_MANAGER_CANISTER_ID = 'avqkn-guaaa-aaaaa-qaaea-cai';
+const SIWE_CANISTER_ID = process.env.CANISTER_ID_IC_SIWE_PROVIDER!;
+const ORDER_MANAGER_CANISTER_ID = process.env.CANISTER_ID_ORDER_MANAGER!;
 type Utils = {
     userWallet: Wallet;
     companyWallet: Wallet;
@@ -45,13 +45,6 @@ describe('OrderManagerDriver', () => {
     beforeAll(async () => {
         utils1 = await getUtils(USER1_PRIVATE_KEY, COMPANY1_PRIVATE_KEY);
         utils2 = await getUtils(USER2_PRIVATE_KEY, COMPANY2_PRIVATE_KEY);
-    }, 30000);
-
-    it('should retrieve orders', async () => {
-        const { orderManagerDriver, roleProof } = utils1;
-        const orders = await orderManagerDriver.getOrders(roleProof);
-        console.log(orders);
-        expect(orders).toBeDefined();
     }, 30000);
 
     it('should create order', async () => {
@@ -95,6 +88,14 @@ describe('OrderManagerDriver', () => {
         expect(order).toBeDefined();
     }, 30000);
 
+    it('should retrieve orders', async () => {
+        const { orderManagerDriver, roleProof } = utils1;
+        const orders = await orderManagerDriver.getOrders(roleProof);
+        console.log(orders);
+        expect(orders).toBeDefined();
+        expect(orders.length).toBeGreaterThan(0);
+    }, 30000);
+
     it('should update order', async () => {
         const { companyWallet: company1Wallet, orderManagerDriver, roleProof } = utils1;
         const { companyWallet: company2Wallet } = utils2;
@@ -102,7 +103,7 @@ describe('OrderManagerDriver', () => {
         date.setDate(date.getDate() + 14);
         const order = await orderManagerDriver.updateOrder(
             roleProof,
-            2,
+            0,
             company1Wallet.address,
             company2Wallet.address,
             company1Wallet.address,

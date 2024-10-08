@@ -12,8 +12,8 @@ const DELEGATE_CREDENTIAL_ID_HASH =
     '0x2cc6c15c35500c4341eee2f9f5f8c39873b9c3737edb343ebc3d16424e99a0d4';
 const DELEGATOR_CREDENTIAL_ID_HASH =
     '0xf19b6aebcdaba2222d3f2c818ff1ecda71c7ed93c3e0f958241787663b58bc4b';
-const SIWE_CANISTER_ID = 'bw4dl-smaaa-aaaaa-qaacq-cai';
-const CERTIFICATION_MANAGER_CANISTER_ID = 'bkyz2-fmaaa-aaaaa-qaaaq-cai';
+const SIWE_CANISTER_ID = process.env.CANISTER_ID_IC_SIWE_PROVIDER!;
+const CERTIFICATION_MANAGER_CANISTER_ID = process.env.CANISTER_ID_CERTIFICATION_MANAGER!;
 type Utils = {
     userWallet: Wallet;
     companyWallet: Wallet;
@@ -71,6 +71,52 @@ describe('CertificationManagerDriver', () => {
         expect(companyCertificate).toBeDefined();
     }, 30000);
 
+    it('should register scope certificate', async () => {
+        const {
+            certificationManagerDriver,
+            companyWallet: issuerCompanyWallet,
+            roleProof
+        } = utils1;
+        const { companyWallet: subjectCompanyWallet } = utils2;
+        const scopeCertificate = await certificationManagerDriver.registerScopeCertificate(
+            roleProof,
+            issuerCompanyWallet.address,
+            subjectCompanyWallet.address,
+            'standard2',
+            {
+                id: BigInt(1),
+                docType: { PRODUCTION_REPORT: null }
+            },
+            new Date(),
+            new Date(new Date().setDate(new Date().getDate() + 365)),
+            ['processType1', 'processType2']
+        );
+        console.log(scopeCertificate);
+        expect(scopeCertificate).toBeDefined();
+    }, 30000);
+
+    it('should register material certificate', async () => {
+        const {
+            certificationManagerDriver,
+            companyWallet: issuerCompanyWallet,
+            roleProof
+        } = utils1;
+        const { companyWallet: subjectCompanyWallet } = utils2;
+        const materialCertificate = await certificationManagerDriver.registerMaterialCertificate(
+            roleProof,
+            issuerCompanyWallet.address,
+            subjectCompanyWallet.address,
+            'standard3',
+            {
+                id: BigInt(1),
+                docType: { PRODUCTION_REPORT: null }
+            },
+            1
+        );
+        console.log(materialCertificate);
+        expect(materialCertificate).toBeDefined();
+    }, 30000);
+
     it('should retrieve company certificate', async () => {
         const { certificationManagerDriver, roleProof } = utils1;
         const { companyWallet: subjectCompanyWallet } = utils2;
@@ -81,5 +127,48 @@ describe('CertificationManagerDriver', () => {
         );
         console.log(companyCertificate);
         expect(companyCertificate).toBeDefined();
+        const companyCertificates = await certificationManagerDriver.getCompanyCertificates(
+            roleProof,
+            subjectCompanyWallet.address
+        );
+        expect(companyCertificates.length).toBeGreaterThan(0);
+    }, 30000);
+
+    it('should retrieve scope certificate', async () => {
+        const { certificationManagerDriver, roleProof } = utils1;
+        const { companyWallet: subjectCompanyWallet } = utils2;
+        const scopeCertificate = await certificationManagerDriver.getScopeCertificate(
+            roleProof,
+            subjectCompanyWallet.address,
+            1
+        );
+        console.log(scopeCertificate);
+        expect(scopeCertificate).toBeDefined();
+    }, 30000);
+
+    it('should retrieve material certificate', async () => {
+        const { certificationManagerDriver, roleProof } = utils1;
+        const { companyWallet: subjectCompanyWallet } = utils2;
+        const materialCertificate = await certificationManagerDriver.getMaterialCertificate(
+            roleProof,
+            subjectCompanyWallet.address,
+            2
+        );
+        console.log(materialCertificate);
+        expect(materialCertificate).toBeDefined();
+    }, 30000);
+
+    it('should retrieve all certificates by subject', async () => {
+        const { certificationManagerDriver, roleProof } = utils1;
+        const { companyWallet: subjectCompanyWallet } = utils2;
+        const certificates = await certificationManagerDriver.getBaseCertificatesInfoBySubject(
+            roleProof,
+            subjectCompanyWallet.address
+        );
+        console.log(certificates);
+        expect(certificates.length).toEqual(3);
+        expect(certificates[0].certType).toEqual({ COMPANY: null });
+        expect(certificates[1].certType).toEqual({ SCOPE: null });
+        expect(certificates[2].certType).toEqual({ MATERIAL: null });
     }, 30000);
 });

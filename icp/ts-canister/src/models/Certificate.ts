@@ -46,7 +46,8 @@ const BaseCertificateType = {
     assessmentStandard: IDL.Text,
     document: DocumentInfo,
     evaluationStatus: DocumentEvaluationStatus,
-    certType: CertificateType
+    certType: CertificateType,
+    issueDate: IDL.Nat
 };
 export const BaseCertificate = IDL.Record({
     ...BaseCertificateType
@@ -65,7 +66,6 @@ export type BaseCertificate = {
 
 export const CompanyCertificate = IDL.Record({
     ...BaseCertificateType,
-    issueDate: IDL.Nat,
     validFrom: IDL.Nat,
     validUntil: IDL.Nat
 });

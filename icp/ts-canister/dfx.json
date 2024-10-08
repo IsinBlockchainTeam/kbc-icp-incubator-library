@@ -8,6 +8,22 @@
                 "node_compatibility": true
             }
         },
+        "process_type_registry": {
+            "type": "azle",
+            "main": "src/ElementRegistry.ts",
+            "declarations": {
+                "output": "declarations/process_type_registry",
+                "node_compatibility": true
+            }
+        },
+        "assessment_standard_registry": {
+            "type": "azle",
+            "main": "src/ElementRegistry.ts",
+            "declarations": {
+                "output": "declarations/assessment_standard_registry",
+                "node_compatibility": true
+            }
+        },
         "product_category_manager": {
             "type": "azle",
             "main": "src/ProductCategoryManager.ts",

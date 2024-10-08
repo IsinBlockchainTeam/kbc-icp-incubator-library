@@ -25,6 +25,7 @@ deploy_canisters() {
     if [ $? -eq 0 ]; then
         echo "Generating declarations..."
         dfx generate
+        cp .env ../../src/
         cd ../../src
         npm run icp-build
     else

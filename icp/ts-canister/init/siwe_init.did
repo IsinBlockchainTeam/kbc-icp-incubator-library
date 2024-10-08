@@ -8,10 +8,10 @@
     sign_in_expires_in = opt 300000000000;
     session_expires_in = opt 604800000000000;
     targets = opt vec {
-        "bw4dl-smaaa-aaaaa-qaacq-cai";
+        "b77ix-eeaaa-aaaaa-qaada-cai";
         "asrmz-lmaaa-aaaaa-qaaeq-cai";
-        "avqkn-guaaa-aaaaa-qaaea-cai";
-        "bkyz2-fmaaa-aaaaa-qaaaq-cai";
+        "a4tbr-q4aaa-aaaaa-qaafq-cai";
+        "bd3sg-teaaa-aaaaa-qaaba-cai";
     };
   }
 )

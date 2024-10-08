@@ -1,4 +1,4 @@
-import { IDL, init, query, StableBTreeMap, update } from 'azle';
+import { IDL, init, StableBTreeMap, update } from 'azle';
 import { Address } from './models/Address';
 import { BaseCertificate, CompanyCertificate, DocumentInfo, MaterialCertificate, ScopeCertificate } from './models/Certificate';
 import { OnlyEditor, OnlyViewer } from './decorators/roles';
@@ -51,12 +51,11 @@ class CertificationManager {
         };
         if (!this.companyCertificates.containsKey(subject)) this.companyCertificates.insert(subject, [certificate]);
         else this.companyCertificates.get(subject)!.push(certificate);
-        console.log('certificates after registration: ', this.companyCertificates.get(subject));
         this.allCertificates.insert(BigInt(certificate.id), certificate);
         return certificate;
     }
 
-    @update([RoleProof, Address, Address, IDL.Text, DocumentInfo, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Vec(IDL.Text)], ScopeCertificate)
+    @update([RoleProof, Address, Address, IDL.Text, DocumentInfo, IDL.Nat, IDL.Nat, IDL.Vec(IDL.Text)], ScopeCertificate)
     @OnlyEditor
     async registerScopeCertificate(
         roleProof: RoleProof,
@@ -92,7 +91,7 @@ class CertificationManager {
         return certificate;
     }
 
-    @update([RoleProof, Address, Address, IDL.Text, DocumentInfo, IDL.Nat, IDL.Nat], MaterialCertificate)
+    @update([RoleProof, Address, Address, IDL.Text, DocumentInfo, IDL.Nat], MaterialCertificate)
     @OnlyEditor
     async registerMaterialCertificate(
         roleProof: RoleProof,
@@ -123,9 +122,9 @@ class CertificationManager {
         return certificate;
     }
 
-    @query([RoleProof, Address], IDL.Vec(BaseCertificate))
+    @update([RoleProof, Address], IDL.Vec(BaseCertificate))
     @OnlyViewer
-    async getBaseCertificatesInfoBySubject(subject: Address): Promise<BaseCertificate[]> {
+    async getBaseCertificatesInfoBySubject(roleProof: RoleProof, subject: Address): Promise<BaseCertificate[]> {
         validateAddress('Subject', subject);
         const certificates = this.companyCertificates.get(subject) || [];
         const scopeCertificates = this.scopeCertificates.get(subject) || [];
@@ -144,21 +143,23 @@ class CertificationManager {
         }));
     }
 
-    @query([RoleProof, Address], IDL.Vec(CompanyCertificate))
+    @update([RoleProof, Address], IDL.Vec(CompanyCertificate))
     @OnlyViewer
-    async getCompanyCertificates(subject: Address): Promise<CompanyCertificate[]> {
+    async getCompanyCertificates(roleProof: RoleProof, subject: Address): Promise<CompanyCertificate[]> {
+        console.log('getCompanyCertificates - subject: ', subject);
+        console.log('getCompanyCertificates - this.companyCertificates: ', this.companyCertificates.get(subject));
         return this.companyCertificates.get(subject) || [];
     }
 
-    @query([RoleProof, Address], IDL.Vec(ScopeCertificate))
+    @update([RoleProof, Address], IDL.Vec(ScopeCertificate))
     @OnlyViewer
-    async getScopeCertificates(subject: Address): Promise<ScopeCertificate[]> {
+    async getScopeCertificates(roleProof: RoleProof, subject: Address): Promise<ScopeCertificate[]> {
         return this.scopeCertificates.get(subject) || [];
     }
 
-    @query([RoleProof, Address], IDL.Vec(MaterialCertificate))
+    @update([RoleProof, Address], IDL.Vec(MaterialCertificate))
     @OnlyViewer
-    async getMaterialCertificates(subject: Address): Promise<MaterialCertificate[]> {
+    async getMaterialCertificates(roleProof: RoleProof, subject: Address): Promise<MaterialCertificate[]> {
         return this.materialCertificates.get(subject) || [];
     }
 
@@ -169,74 +170,78 @@ class CertificationManager {
         if (!certificate) throw new Error('Company certificate not found');
         return certificate;
     }
-    //
-    // @query([RoleProof, Address, IDL.Nat], IDL.Opt(ScopeCertificate))
-    // @OnlyViewer
-    // async getScopeCertificate(roleProof: RoleProof, subject: Address, id: bigint): Promise<ScopeCertificate | undefined> {
-    //     return this.scopeCertificates.get(subject)?.find((cert) => BigInt(cert.id) === id);
-    // }
-    //
-    // @query([RoleProof, Address, IDL.Nat], IDL.Opt(MaterialCertificate))
-    // @OnlyViewer
-    // async getMaterialCertificate(subject: Address, id: bigint): Promise<MaterialCertificate | undefined> {
-    //     return this.materialCertificates.get(subject)?.find((cert) => BigInt(cert.id) === id);
-    // }
-    //
-    // @update([RoleProof, IDL.Nat, IDL.Text, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat], CompanyCertificate)
-    // @OnlyEditor
-    // async updateCompanyCertificate(
-    //     roleProof: RoleProof,
-    //     certificateId: number,
-    //     assessmentStandard: string,
-    //     validFrom: number,
-    //     validUntil: number
-    // ): Promise<CompanyCertificate> {
-    //     validateDatesValidity(validFrom, validUntil);
-    //     const companyCertificates = this.companyCertificates.get(roleProof.membershipProof.delegatorAddress as Address) || [];
-    //     const certificate = companyCertificates.find((cert) => cert.id === certificateId);
-    //     if (!certificate) throw new Error('Company certificate not found');
-    //     certificate.assessmentStandard = assessmentStandard;
-    //     certificate.validFrom = validFrom;
-    //     certificate.validUntil = validUntil;
-    //     return certificate;
-    // }
-    //
-    // @update([RoleProof, IDL.Nat, IDL.Text, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Vec(IDL.Text)], ScopeCertificate)
-    // @OnlyEditor
-    // async updateScopeCertificate(
-    //     roleProof: RoleProof,
-    //     certificateId: number,
-    //     assessmentStandard: string,
-    //     validFrom: number,
-    //     validUntil: number,
-    //     processTypes: string[]
-    // ): Promise<ScopeCertificate> {
-    //     validateDatesValidity(validFrom, validUntil);
-    //     const scopeCertificates = this.scopeCertificates.get(roleProof.membershipProof.delegatorAddress as Address) || [];
-    //     const certificate = scopeCertificates.find((cert) => cert.id === certificateId);
-    //     if (!certificate) throw new Error('Scope certificate not found');
-    //     certificate.assessmentStandard = assessmentStandard;
-    //     certificate.validFrom = validFrom;
-    //     certificate.validUntil = validUntil;
-    //     certificate.processTypes = processTypes;
-    //     return certificate;
-    // }
-    //
-    // @update([RoleProof, IDL.Nat, IDL.Text, IDL.Nat], MaterialCertificate)
-    // @OnlyEditor
-    // async updateMaterialCertificate(
-    //     roleProof: RoleProof,
-    //     certificateId: number,
-    //     assessmentStandard: string,
-    //     materialId: number
-    // ): Promise<MaterialCertificate> {
-    //     const materialCertificates = this.materialCertificates.get(roleProof.membershipProof.delegatorAddress as Address) || [];
-    //     const certificate = materialCertificates.find((cert) => cert.id === certificateId);
-    //     if (!certificate) throw new Error('Material certificate not found');
-    //     certificate.assessmentStandard = assessmentStandard;
-    //     certificate.materialId = materialId;
-    //     return certificate;
-    // }
+
+    @update([RoleProof, Address, IDL.Nat], ScopeCertificate)
+    @OnlyViewer
+    async getScopeCertificate(roleProof: RoleProof, subject: Address, id: bigint): Promise<ScopeCertificate> {
+        const certificate = this.scopeCertificates.get(subject)?.find((cert) => BigInt(cert.id) === id);
+        if (!certificate) throw new Error('Scope certificate not found');
+        return certificate;
+    }
+
+    @update([RoleProof, Address, IDL.Nat], MaterialCertificate)
+    @OnlyViewer
+    async getMaterialCertificate(roleProof: RoleProof, subject: Address, id: bigint): Promise<MaterialCertificate> {
+        const certificate = this.materialCertificates.get(subject)?.find((cert) => BigInt(cert.id) === id);
+        if (!certificate) throw new Error('Material certificate not found');
+        return certificate;
+    }
+
+    @update([RoleProof, IDL.Nat, IDL.Text, IDL.Nat, IDL.Nat], CompanyCertificate)
+    @OnlyEditor
+    async updateCompanyCertificate(
+        roleProof: RoleProof,
+        certificateId: bigint,
+        assessmentStandard: string,
+        validFrom: number,
+        validUntil: number
+    ): Promise<CompanyCertificate> {
+        validateDatesValidity(validFrom, validUntil);
+        const companyCertificates = this.companyCertificates.get(roleProof.membershipProof.delegatorAddress as Address) || [];
+        const certificate = companyCertificates.find((cert) => cert.id === certificateId);
+        if (!certificate) throw new Error('Company certificate not found');
+        certificate.assessmentStandard = assessmentStandard;
+        certificate.validFrom = BigInt(validFrom);
+        certificate.validUntil = BigInt(validUntil);
+        return certificate;
+    }
+
+    @update([RoleProof, IDL.Nat, IDL.Text, IDL.Nat, IDL.Nat, IDL.Vec(IDL.Text)], ScopeCertificate)
+    @OnlyEditor
+    async updateScopeCertificate(
+        roleProof: RoleProof,
+        certificateId: bigint,
+        assessmentStandard: string,
+        validFrom: number,
+        validUntil: number,
+        processTypes: string[]
+    ): Promise<ScopeCertificate> {
+        validateDatesValidity(validFrom, validUntil);
+        const scopeCertificates = this.scopeCertificates.get(roleProof.membershipProof.delegatorAddress as Address) || [];
+        const certificate = scopeCertificates.find((cert) => cert.id === certificateId);
+        if (!certificate) throw new Error('Scope certificate not found');
+        certificate.assessmentStandard = assessmentStandard;
+        certificate.validFrom = BigInt(validFrom);
+        certificate.validUntil = BigInt(validUntil);
+        certificate.processTypes = processTypes;
+        return certificate;
+    }
+
+    @update([RoleProof, IDL.Nat, IDL.Text, IDL.Nat], MaterialCertificate)
+    @OnlyEditor
+    async updateMaterialCertificate(
+        roleProof: RoleProof,
+        certificateId: bigint,
+        assessmentStandard: string,
+        materialId: bigint
+    ): Promise<MaterialCertificate> {
+        const materialCertificates = this.materialCertificates.get(roleProof.membershipProof.delegatorAddress as Address) || [];
+        const certificate = materialCertificates.find((cert) => cert.id === certificateId);
+        if (!certificate) throw new Error('Material certificate not found');
+        certificate.assessmentStandard = assessmentStandard;
+        certificate.materialId = materialId;
+        return certificate;
+    }
     //
     // @update([RoleProof, Address, IDL.Nat])
     // @OnlyEditor
