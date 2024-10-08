@@ -33,7 +33,7 @@ class OrderManager {
         throw new Error('Order not found');
     }
 
-    @update([RoleProof, Address, Address, Address, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, Address, Address, IDL.Nat, Address, IDL.Vec(OrderLine)], Order)
+    @update([RoleProof, Address, Address, Address, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, Address, Address, IDL.Nat, Address, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(OrderLine)], Order)
     @OnlyEditor
     async createOrder(
         roleProof: RoleProof,
@@ -48,6 +48,10 @@ class OrderManager {
         token: Address,
         agreedAmount: number,
         escrowManager: Address,
+        incoterms: string,
+        shipper: string,
+        shippingPort: string,
+        deliveryPort: string,
         lines: OrderLine[]
     ): Promise<Order> {
         if(supplier === customer)
@@ -85,6 +89,10 @@ class OrderManager {
             shippingDeadline,
             deliveryDeadline,
             arbiter,
+            incoterms,
+            shipper,
+            shippingPort,
+            deliveryPort,
             lines,
             token,
             agreedAmount,
@@ -96,7 +104,7 @@ class OrderManager {
         return order;
     }
 
-    @update([RoleProof, IDL.Nat, Address, Address, Address, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, Address, Address, IDL.Nat, Address, IDL.Vec(OrderLine)], Order)
+    @update([RoleProof, IDL.Nat, Address, Address, Address, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, Address, Address, IDL.Nat, Address, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(OrderLine)], Order)
     @OnlyEditor
     async updateOrder(
         roleProof: RoleProof,
@@ -112,11 +120,34 @@ class OrderManager {
         token: Address,
         agreedAmount: number,
         escrowManager: Address,
+        incoterms: string,
+        shipper: string,
+        shippingPort: string,
+        deliveryPort: string,
         lines: OrderLine[]
     ): Promise<Order> {
         const order = this.orders.get(id);
         if (!order)
             throw new Error('Order not found');
+        if(order.supplier == supplier &&
+            order.customer == customer &&
+            order.commissioner == commissioner &&
+            order.paymentDeadline == paymentDeadline &&
+            order.documentDeliveryDeadline == documentDeliveryDeadline &&
+            order.shippingDeadline == shippingDeadline &&
+            order.deliveryDeadline == deliveryDeadline &&
+            order.arbiter == arbiter &&
+            order.token == token &&
+            order.agreedAmount == agreedAmount &&
+            order.escrowManager == escrowManager &&
+            order.incoterms == incoterms &&
+            order.shipper == shipper &&
+            order.shippingPort == shippingPort &&
+            order.deliveryPort == deliveryPort &&
+            order.lines == lines
+        ) {
+            throw new Error('No changes detected');
+        }
         if(supplier === customer)
             throw new Error('Supplier and customer must be different');
         validateAddress('Supplier', supplier);
@@ -151,6 +182,10 @@ class OrderManager {
             shippingDeadline,
             deliveryDeadline,
             arbiter,
+            incoterms,
+            shipper,
+            shippingPort,
+            deliveryPort,
             lines: lines,
             token,
             agreedAmount,

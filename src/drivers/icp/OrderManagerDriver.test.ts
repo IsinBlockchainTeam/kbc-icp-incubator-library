@@ -75,6 +75,10 @@ describe('OrderManagerDriver', () => {
             '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
             100,
             '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
+            'incoterms',
+            'shipper',
+            'shippingPort',
+            'deliveryPort',
             [
                 {
                     productCategoryId: 1,
@@ -111,6 +115,10 @@ describe('OrderManagerDriver', () => {
             '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
             100,
             '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
+            'incoterms',
+            'shipper',
+            'shippingPort',
+            'deliveryPort',
             [
                 {
                     productCategoryId: 1,
@@ -130,7 +138,7 @@ describe('OrderManagerDriver', () => {
 
     it('should sign order', async () => {
         const {orderManagerDriver, roleProof} = utils2;
-        const order = await orderManagerDriver.signOrder(roleProof, 0);
+        const order = await orderManagerDriver.signOrder(roleProof, 1);
         console.log(order);
         expect(order).toBeDefined();
     }, 30000);
