@@ -1,11 +1,8 @@
 import { IDL, query, update, StableBTreeMap } from 'azle';
 import { Material } from './models/Material';
-import { CANISTER } from './constants/canister';
 import { ProductCategoryManagerMethods } from './ProductCategoryManager';
 
 class MaterialManager {
-    productCategoryManagerCanisterId: string = CANISTER.PRODUCT_CATEGORY_MANAGER_ID();
-
     materials = StableBTreeMap<bigint, Material>(0);
 
     @query([IDL.Nat], IDL.Opt(Material))

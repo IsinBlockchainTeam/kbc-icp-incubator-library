@@ -1,5 +1,7 @@
 import { ethers } from 'ethers';
 import { Address } from '../models/Address';
+import { ElementRegistryMethods } from '../ElementRegistry';
+import { CANISTER } from '../constants/canister';
 
 export const validateDeadline = (name: string, deadline: number) => {
     if (deadline < Date.now() / 1000) throw new Error(`${name} must be in the future`);
@@ -15,6 +17,15 @@ export const validatePositiveNumber = (name: string, number: number) => {
 };
 export const validateInterestedParties = (name: string, address: Address, interestedParties: Address[]) => {
     if (!interestedParties.includes(address)) throw new Error(`${name} is not an interested party`);
+};
+export const validateAssessmentStandard = async (assessmentStandardValue: string) => {
+    if (!(await ElementRegistryMethods(CANISTER.ASSESSMENT_STANDARD_ID()).hasElement(assessmentStandardValue)))
+        throw new Error('Assessment standard not found');
+};
+export const validateProcessTypes = async (processTypeValues: string[]) => {
+    processTypeValues.map(async (processTypeValue) => {
+        if (!(await ElementRegistryMethods(CANISTER.PROCESS_TYPE_ID()).hasElement(processTypeValue))) throw new Error('Process type not found');
+    });
 };
 export const validateFieldValue = (value: any, valueToCompare: any, message: string) => {
     valueToCompare = Array.isArray(valueToCompare) ? valueToCompare : [valueToCompare];

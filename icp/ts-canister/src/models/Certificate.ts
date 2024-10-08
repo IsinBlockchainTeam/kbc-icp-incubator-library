@@ -58,6 +58,7 @@ export type BaseCertificate = {
     issuer: Address;
     subject: Address;
     assessmentStandard: string;
+
     document: DocumentInfo;
     evaluationStatus: DocumentEvaluationStatus;
     certType: CertificateType;

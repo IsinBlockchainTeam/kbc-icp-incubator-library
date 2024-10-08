@@ -3,7 +3,7 @@ import { Address } from './models/Address';
 import { BaseCertificate, CompanyCertificate, DocumentInfo, MaterialCertificate, ScopeCertificate } from './models/Certificate';
 import { OnlyEditor, OnlyViewer } from './decorators/roles';
 import { RoleProof } from './models/Proof';
-import { validateAddress, validateDatesValidity } from './utils/validation';
+import { validateAddress, validateAssessmentStandard, validateDatesValidity, validateProcessTypes } from './utils/validation';
 
 class CertificationManager {
     allCertificates = StableBTreeMap<bigint, BaseCertificate>(0);
@@ -35,6 +35,7 @@ class CertificationManager {
         validateAddress('Issuer', issuer);
         validateAddress('Subject', subject);
         validateDatesValidity(validFrom, validUntil);
+        await validateAssessmentStandard(assessmentStandard);
         const companyAddress = roleProof.membershipProof.delegatorAddress as Address;
         const certificate: CompanyCertificate = {
             id: BigInt(this.counter++),
@@ -70,6 +71,8 @@ class CertificationManager {
         validateAddress('Issuer', issuer);
         validateAddress('Subject', subject);
         validateDatesValidity(validFrom, validUntil);
+        await validateAssessmentStandard(assessmentStandard);
+        await validateProcessTypes(processTypes);
         const companyAddress = roleProof.membershipProof.delegatorAddress as Address;
         const certificate: ScopeCertificate = {
             id: BigInt(this.counter++),
@@ -103,6 +106,7 @@ class CertificationManager {
     ): Promise<MaterialCertificate> {
         validateAddress('Issuer', issuer);
         validateAddress('Subject', subject);
+        await validateAssessmentStandard(assessmentStandard);
         const companyAddress = roleProof.membershipProof.delegatorAddress as Address;
         const certificate: MaterialCertificate = {
             id: BigInt(this.counter++),
@@ -146,8 +150,6 @@ class CertificationManager {
     @update([RoleProof, Address], IDL.Vec(CompanyCertificate))
     @OnlyViewer
     async getCompanyCertificates(roleProof: RoleProof, subject: Address): Promise<CompanyCertificate[]> {
-        console.log('getCompanyCertificates - subject: ', subject);
-        console.log('getCompanyCertificates - this.companyCertificates: ', this.companyCertificates.get(subject));
         return this.companyCertificates.get(subject) || [];
     }
 
@@ -197,6 +199,7 @@ class CertificationManager {
         validUntil: number
     ): Promise<CompanyCertificate> {
         validateDatesValidity(validFrom, validUntil);
+        await validateAssessmentStandard(assessmentStandard);
         const companyCertificates = this.companyCertificates.get(roleProof.membershipProof.delegatorAddress as Address) || [];
         const certificate = companyCertificates.find((cert) => cert.id === certificateId);
         if (!certificate) throw new Error('Company certificate not found');
@@ -217,6 +220,8 @@ class CertificationManager {
         processTypes: string[]
     ): Promise<ScopeCertificate> {
         validateDatesValidity(validFrom, validUntil);
+        await validateAssessmentStandard(assessmentStandard);
+        await validateProcessTypes(processTypes);
         const scopeCertificates = this.scopeCertificates.get(roleProof.membershipProof.delegatorAddress as Address) || [];
         const certificate = scopeCertificates.find((cert) => cert.id === certificateId);
         if (!certificate) throw new Error('Scope certificate not found');
@@ -235,6 +240,7 @@ class CertificationManager {
         assessmentStandard: string,
         materialId: bigint
     ): Promise<MaterialCertificate> {
+        await validateAssessmentStandard(assessmentStandard);
         const materialCertificates = this.materialCertificates.get(roleProof.membershipProof.delegatorAddress as Address) || [];
         const certificate = materialCertificates.find((cert) => cert.id === certificateId);
         if (!certificate) throw new Error('Material certificate not found');

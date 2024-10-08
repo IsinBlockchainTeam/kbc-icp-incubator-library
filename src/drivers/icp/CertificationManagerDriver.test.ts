@@ -23,6 +23,15 @@ type Utils = {
 
 describe('CertificationManagerDriver', () => {
     let utils1: Utils, utils2: Utils;
+    const processTypes = ['33 - Collecting', '38 - Harvesting'];
+    const assessmentStandards = [
+        'Chemical use assessment',
+        'Environment assessment',
+        'Origin assessment',
+        'Quality assessment',
+        'Swiss Decode'
+    ];
+
     const getUtils = async (userPrivateKey: string, companyPrivateKey: string) => {
         const userWallet = new Wallet(userPrivateKey);
         const companyWallet = new Wallet(companyPrivateKey);
@@ -59,7 +68,7 @@ describe('CertificationManagerDriver', () => {
             roleProof,
             issuerCompanyWallet.address,
             subjectCompanyWallet.address,
-            'standard1',
+            assessmentStandards[1],
             {
                 id: BigInt(1),
                 docType: { CERTIFICATE_OF_CONFORMITY: null }
@@ -82,14 +91,14 @@ describe('CertificationManagerDriver', () => {
             roleProof,
             issuerCompanyWallet.address,
             subjectCompanyWallet.address,
-            'standard2',
+            assessmentStandards[3],
             {
                 id: BigInt(1),
                 docType: { PRODUCTION_REPORT: null }
             },
             new Date(),
             new Date(new Date().setDate(new Date().getDate() + 365)),
-            ['processType1', 'processType2']
+            processTypes
         );
         console.log(scopeCertificate);
         expect(scopeCertificate).toBeDefined();
@@ -106,7 +115,7 @@ describe('CertificationManagerDriver', () => {
             roleProof,
             issuerCompanyWallet.address,
             subjectCompanyWallet.address,
-            'standard3',
+            assessmentStandards[0],
             {
                 id: BigInt(1),
                 docType: { PRODUCTION_REPORT: null }

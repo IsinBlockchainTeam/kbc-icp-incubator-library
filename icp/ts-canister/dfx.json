@@ -69,7 +69,7 @@
             },
             "custom": {
                 "experimental": true,
-                "env": ["CANISTER_ID_DELEGATE_MANAGER"]
+                "env": ["CANISTER_ID_DELEGATE_MANAGER", "CANISTER_ID_ASSESSMENT_STANDARD_REGISTRY", "CANISTER_ID_PROCESS_TYPE_REGISTRY"]
             }
         },
         "delegate_manager": {

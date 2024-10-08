@@ -21,6 +21,19 @@ deploy_canisters() {
     cd $ROOT_DIR
     echo "Deploying canisters..."
     npm run deploy
+    echo $1
+    if [ "$1" = "populate" ]; then
+        echo "Populate element canisters with data..."
+        echo "Process types loading..."
+        dfx canister call process_type_registry addElement '33 - Collecting'
+        dfx canister call process_type_registry addElement '38 - Harvesting'
+        echo "Assessment standards loading..."
+        dfx canister call assessment_standard_registry addElement 'Chemical use assessment'
+        dfx canister call assessment_standard_registry addElement 'Environment assessment'
+        dfx canister call assessment_standard_registry addElement 'Origin assessment'
+        dfx canister call assessment_standard_registry addElement 'Quality assessment'
+        dfx canister call assessment_standard_registry addElement 'Swiss Decode'
+    fi
 
     if [ $? -eq 0 ]; then
         echo "Generating declarations..."
@@ -53,7 +66,7 @@ trap stop_network EXIT
 # Initial deployment
 stop_network
 start_icp_network
-deploy_canisters
+deploy_canisters populate
 
 # Watch for the "u" key press to uninstall and redeploy canisters
 while true; do
@@ -64,7 +77,7 @@ while true; do
     if [[ "$key" == "t" ]]; then
         stop_network
         start_icp_network
-        deploy_canisters
+        deploy_canisters populate
     elif [[ "$key" == "u" ]]; then
         deploy_canisters
     elif [[ "$key" == "q" ]]; then
