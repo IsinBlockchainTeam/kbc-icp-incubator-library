@@ -3,7 +3,7 @@ import { Address } from './models/Address';
 import { BaseCertificate, CompanyCertificate, DocumentInfo, MaterialCertificate, ScopeCertificate } from './models/Certificate';
 import { OnlyEditor, OnlyViewer } from './decorators/roles';
 import { RoleProof } from './models/Proof';
-import { validateAddress, validateAssessmentStandard, validateDatesValidity, validateProcessTypes } from './utils/validation';
+import { validateAddress, validateAssessmentStandard, validateDatesValidity, validateFieldValue, validateProcessTypes } from './utils/validation';
 
 class CertificationManager {
     allCertificates = StableBTreeMap<bigint, BaseCertificate>(0);
@@ -21,13 +21,14 @@ class CertificationManager {
         this.counter = this.allCertificates.keys().length;
     }
 
-    @update([RoleProof, Address, Address, IDL.Text, DocumentInfo, IDL.Nat, IDL.Nat], CompanyCertificate)
+    @update([RoleProof, Address, Address, IDL.Text, IDL.Text, DocumentInfo, IDL.Nat, IDL.Nat], CompanyCertificate)
     @OnlyEditor
     async registerCompanyCertificate(
         roleProof: RoleProof,
         issuer: Address,
         subject: Address,
         assessmentStandard: string,
+        referenceId: string,
         document: DocumentInfo,
         validFrom: number,
         validUntil: number
@@ -37,12 +38,14 @@ class CertificationManager {
         validateDatesValidity(validFrom, validUntil);
         await validateAssessmentStandard(assessmentStandard);
         const companyAddress = roleProof.membershipProof.delegatorAddress as Address;
+        console.log('registerCompanyCertificate - companyAddress: ', companyAddress);
         const certificate: CompanyCertificate = {
             id: BigInt(this.counter++),
             uploadedBy: companyAddress,
             issuer,
             subject,
             assessmentStandard,
+            referenceId,
             document,
             evaluationStatus: { NOT_EVALUATED: null },
             issueDate: BigInt(Date.now()),
@@ -56,13 +59,14 @@ class CertificationManager {
         return certificate;
     }
 
-    @update([RoleProof, Address, Address, IDL.Text, DocumentInfo, IDL.Nat, IDL.Nat, IDL.Vec(IDL.Text)], ScopeCertificate)
+    @update([RoleProof, Address, Address, IDL.Text, IDL.Text, DocumentInfo, IDL.Nat, IDL.Nat, IDL.Vec(IDL.Text)], ScopeCertificate)
     @OnlyEditor
     async registerScopeCertificate(
         roleProof: RoleProof,
         issuer: Address,
         subject: Address,
         assessmentStandard: string,
+        referenceId: string,
         document: DocumentInfo,
         validFrom: number,
         validUntil: number,
@@ -80,6 +84,7 @@ class CertificationManager {
             issuer,
             subject,
             assessmentStandard,
+            referenceId,
             document,
             evaluationStatus: { NOT_EVALUATED: null },
             issueDate: BigInt(Date.now()),
@@ -94,13 +99,14 @@ class CertificationManager {
         return certificate;
     }
 
-    @update([RoleProof, Address, Address, IDL.Text, DocumentInfo, IDL.Nat], MaterialCertificate)
+    @update([RoleProof, Address, Address, IDL.Text, IDL.Text, DocumentInfo, IDL.Nat], MaterialCertificate)
     @OnlyEditor
     async registerMaterialCertificate(
         roleProof: RoleProof,
         issuer: Address,
         subject: Address,
         assessmentStandard: string,
+        referenceId: string,
         document: DocumentInfo,
         materialId: bigint
     ): Promise<MaterialCertificate> {
@@ -114,6 +120,7 @@ class CertificationManager {
             issuer,
             subject,
             assessmentStandard,
+            referenceId,
             document,
             evaluationStatus: { NOT_EVALUATED: null },
             issueDate: BigInt(Date.now()),
@@ -140,6 +147,7 @@ class CertificationManager {
             issuer: certificate.issuer,
             subject: certificate.subject,
             assessmentStandard: certificate.assessmentStandard,
+            referenceId: certificate.referenceId,
             document: certificate.document,
             evaluationStatus: certificate.evaluationStatus,
             issueDate: certificate.issueDate,
@@ -189,32 +197,37 @@ class CertificationManager {
         return certificate;
     }
 
-    @update([RoleProof, IDL.Nat, IDL.Text, IDL.Nat, IDL.Nat], CompanyCertificate)
+    @update([RoleProof, IDL.Nat, IDL.Text, IDL.Text, IDL.Nat, IDL.Nat], CompanyCertificate)
     @OnlyEditor
     async updateCompanyCertificate(
         roleProof: RoleProof,
         certificateId: bigint,
         assessmentStandard: string,
+        referenceId: string,
         validFrom: number,
         validUntil: number
     ): Promise<CompanyCertificate> {
         validateDatesValidity(validFrom, validUntil);
         await validateAssessmentStandard(assessmentStandard);
-        const companyCertificates = this.companyCertificates.get(roleProof.membershipProof.delegatorAddress as Address) || [];
-        const certificate = companyCertificates.find((cert) => cert.id === certificateId);
-        if (!certificate) throw new Error('Company certificate not found');
-        certificate.assessmentStandard = assessmentStandard;
-        certificate.validFrom = BigInt(validFrom);
-        certificate.validUntil = BigInt(validUntil);
-        return certificate;
+        const certificate = this.allCertificates.get(certificateId);
+        if (!certificate || JSON.stringify(certificate.certType) !== JSON.stringify({ COMPANY: null }))
+            throw new Error('Company certificate not found');
+        const companyCertificate = certificate as CompanyCertificate;
+        validateFieldValue(companyCertificate.uploadedBy, roleProof.membershipProof.delegatorAddress, 'Caller is not the owner of the certificate');
+        companyCertificate.assessmentStandard = assessmentStandard;
+        companyCertificate.referenceId = referenceId;
+        companyCertificate.validFrom = BigInt(validFrom);
+        companyCertificate.validUntil = BigInt(validUntil);
+        return companyCertificate;
     }
 
-    @update([RoleProof, IDL.Nat, IDL.Text, IDL.Nat, IDL.Nat, IDL.Vec(IDL.Text)], ScopeCertificate)
+    @update([RoleProof, IDL.Nat, IDL.Text, IDL.Text, IDL.Nat, IDL.Nat, IDL.Vec(IDL.Text)], ScopeCertificate)
     @OnlyEditor
     async updateScopeCertificate(
         roleProof: RoleProof,
         certificateId: bigint,
         assessmentStandard: string,
+        referenceId: string,
         validFrom: number,
         validUntil: number,
         processTypes: string[]
@@ -222,31 +235,37 @@ class CertificationManager {
         validateDatesValidity(validFrom, validUntil);
         await validateAssessmentStandard(assessmentStandard);
         await validateProcessTypes(processTypes);
-        const scopeCertificates = this.scopeCertificates.get(roleProof.membershipProof.delegatorAddress as Address) || [];
-        const certificate = scopeCertificates.find((cert) => cert.id === certificateId);
-        if (!certificate) throw new Error('Scope certificate not found');
-        certificate.assessmentStandard = assessmentStandard;
-        certificate.validFrom = BigInt(validFrom);
-        certificate.validUntil = BigInt(validUntil);
-        certificate.processTypes = processTypes;
-        return certificate;
+        const certificate = this.allCertificates.get(certificateId);
+        if (!certificate || JSON.stringify(certificate.certType) !== JSON.stringify({ SCOPE: null })) throw new Error('Scope certificate not found');
+        const scopeCertificate = certificate as ScopeCertificate;
+        validateFieldValue(scopeCertificate.uploadedBy, roleProof.membershipProof.delegatorAddress, 'Caller is not the owner of the certificate');
+        scopeCertificate.assessmentStandard = assessmentStandard;
+        scopeCertificate.referenceId = referenceId;
+        scopeCertificate.validFrom = BigInt(validFrom);
+        scopeCertificate.validUntil = BigInt(validUntil);
+        scopeCertificate.processTypes = processTypes;
+        return scopeCertificate;
     }
 
-    @update([RoleProof, IDL.Nat, IDL.Text, IDL.Nat], MaterialCertificate)
+    @update([RoleProof, IDL.Nat, IDL.Text, IDL.Text, IDL.Nat], MaterialCertificate)
     @OnlyEditor
     async updateMaterialCertificate(
         roleProof: RoleProof,
         certificateId: bigint,
         assessmentStandard: string,
+        referenceId: string,
         materialId: bigint
     ): Promise<MaterialCertificate> {
         await validateAssessmentStandard(assessmentStandard);
-        const materialCertificates = this.materialCertificates.get(roleProof.membershipProof.delegatorAddress as Address) || [];
-        const certificate = materialCertificates.find((cert) => cert.id === certificateId);
-        if (!certificate) throw new Error('Material certificate not found');
-        certificate.assessmentStandard = assessmentStandard;
-        certificate.materialId = materialId;
-        return certificate;
+        const certificate = this.allCertificates.get(certificateId);
+        if (!certificate || JSON.stringify(certificate.certType) !== JSON.stringify({ MATERIAL: null }))
+            throw new Error('Material certificate not found');
+        const materialCertificate = certificate as MaterialCertificate;
+        validateFieldValue(materialCertificate.uploadedBy, roleProof.membershipProof.delegatorAddress, 'Caller is not the owner of the certificate');
+        materialCertificate.assessmentStandard = assessmentStandard;
+        materialCertificate.referenceId = referenceId;
+        materialCertificate.materialId = materialId;
+        return materialCertificate;
     }
     //
     // @update([RoleProof, Address, IDL.Nat])

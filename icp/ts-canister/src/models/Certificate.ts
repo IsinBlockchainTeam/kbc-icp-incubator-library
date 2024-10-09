@@ -44,6 +44,7 @@ const BaseCertificateType = {
     issuer: Address,
     subject: Address,
     assessmentStandard: IDL.Text,
+    referenceId: IDL.Text,
     document: DocumentInfo,
     evaluationStatus: DocumentEvaluationStatus,
     certType: CertificateType,
@@ -58,7 +59,7 @@ export type BaseCertificate = {
     issuer: Address;
     subject: Address;
     assessmentStandard: string;
-
+    referenceId: string;
     document: DocumentInfo;
     evaluationStatus: DocumentEvaluationStatus;
     certType: CertificateType;

@@ -21,6 +21,7 @@ export class CertificationManagerDriver {
         issuer: string,
         subject: string,
         assessmentStandard: string,
+        referenceId: string,
         document: DocumentInfo,
         validFrom: Date,
         validUntil: Date
@@ -30,6 +31,7 @@ export class CertificationManagerDriver {
             issuer,
             subject,
             assessmentStandard,
+            referenceId,
             document,
             BigInt(validFrom.getTime()),
             BigInt(validUntil.getTime())
@@ -41,6 +43,7 @@ export class CertificationManagerDriver {
         issuer: string,
         subject: string,
         assessmentStandard: string,
+        referenceId: string,
         document: DocumentInfo,
         validFrom: Date,
         validUntil: Date,
@@ -51,6 +54,7 @@ export class CertificationManagerDriver {
             issuer,
             subject,
             assessmentStandard,
+            referenceId,
             document,
             BigInt(validFrom.getTime()),
             BigInt(validUntil.getTime()),
@@ -63,6 +67,7 @@ export class CertificationManagerDriver {
         issuer: string,
         subject: string,
         assessmentStandard: string,
+        referenceId: string,
         document: DocumentInfo,
         materialId: number
     ) {
@@ -71,6 +76,7 @@ export class CertificationManagerDriver {
             issuer,
             subject,
             assessmentStandard,
+            referenceId,
             document,
             BigInt(materialId)
         );
@@ -108,6 +114,7 @@ export class CertificationManagerDriver {
         roleProof: RoleProof,
         certificateId: number,
         assessmentStandard: string,
+        referenceId: string,
         validFrom: Date,
         validUntil: Date
     ) {
@@ -115,6 +122,7 @@ export class CertificationManagerDriver {
             roleProof,
             BigInt(certificateId),
             assessmentStandard,
+            referenceId,
             BigInt(validFrom.getTime()),
             BigInt(validUntil.getTime())
         );
@@ -124,6 +132,7 @@ export class CertificationManagerDriver {
         roleProof: RoleProof,
         certificateId: number,
         assessmentStandard: string,
+        referenceId: string,
         validFrom: Date,
         validUntil: Date,
         processTypes: string[]
@@ -132,6 +141,7 @@ export class CertificationManagerDriver {
             roleProof,
             BigInt(certificateId),
             assessmentStandard,
+            referenceId,
             BigInt(validFrom.getTime()),
             BigInt(validUntil.getTime()),
             processTypes
@@ -142,12 +152,15 @@ export class CertificationManagerDriver {
         roleProof: RoleProof,
         certificateId: number,
         assessmentStandard: string,
+        referenceId: string,
         materialId: number
     ) {
+        // TODO: check that only uploader can update the certificate
         return this._actor.updateMaterialCertificate(
             roleProof,
             BigInt(certificateId),
             assessmentStandard,
+            referenceId,
             BigInt(materialId)
         );
     }
