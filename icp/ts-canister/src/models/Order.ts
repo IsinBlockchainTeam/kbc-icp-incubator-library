@@ -34,6 +34,10 @@ export type Order = {
     shippingDeadline: number;
     deliveryDeadline: number;
     arbiter: Address;
+    incoterms: string;
+    shipper: string;
+    shippingPort: string;
+    deliveryPort: string;
     lines: OrderLine[];
     token: Address;
     agreedAmount: number;
@@ -53,6 +57,10 @@ export const Order = IDL.Record({
     shippingDeadline: IDL.Nat,
     deliveryDeadline: IDL.Nat,
     arbiter: Address,
+    incoterms: IDL.Text,
+    shipper: IDL.Text,
+    shippingPort: IDL.Text,
+    deliveryPort: IDL.Text,
     lines: IDL.Vec(OrderLine),
     token: Address,
     agreedAmount: IDL.Nat,

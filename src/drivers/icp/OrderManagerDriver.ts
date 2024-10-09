@@ -36,6 +36,10 @@ export class OrderManagerDriver {
         token: string,
         agreedAmount: number,
         escrowManager: string,
+        incoterms: string,
+        shipper: string,
+        shippingPort: string,
+        deliveryPort: string,
         lines: {
             productCategoryId: number,
             quantity: number,
@@ -59,6 +63,10 @@ export class OrderManagerDriver {
             token,
             BigInt(agreedAmount),
             escrowManager,
+            incoterms,
+            shipper,
+            shippingPort,
+            deliveryPort,
             lines.map(line => ({
                 productCategoryId: BigInt(line.productCategoryId),
                 quantity: line.quantity,
@@ -85,6 +93,10 @@ export class OrderManagerDriver {
         token: string,
         agreedAmount: number,
         escrowManager: string,
+        incoterms: string,
+        shipper: string,
+        shippingPort: string,
+        deliveryPort: string,
         lines: {
             productCategoryId: number,
             quantity: number,
@@ -109,6 +121,10 @@ export class OrderManagerDriver {
             token,
             BigInt(agreedAmount),
             escrowManager,
+            incoterms,
+            shipper,
+            shippingPort,
+            deliveryPort,
             lines.map(line => ({
                 productCategoryId: BigInt(line.productCategoryId),
                 quantity: line.quantity,
