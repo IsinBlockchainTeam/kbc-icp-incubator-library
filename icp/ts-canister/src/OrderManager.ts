@@ -1,13 +1,36 @@
-import {IDL, update, StableBTreeMap} from 'azle';
+import {IDL, update, init, StableBTreeMap, call} from 'azle';
 import {Order, OrderLine} from "./models/Order";
-import {Address} from "./models/Address";
+import {Address, GetAddressResponse} from "./models/Address";
 import {validateAddress, validateDeadline, validateInterestedParty, validatePositiveNumber} from "./validation";
 import {RoleProof} from "./models/Proof";
 import {OnlyEditor, OnlySigner, OnlyViewer} from "./decorators/roles";
 import {ROLES} from "./models/Role";
+import {ethers} from "ethers";
+import escrowManagerAbi from "../eth-abi/EscrowManager.json";
+import {ic, Principal} from "azle/experimental";
+import {
+    CHAIN_ID,
+    ESCROW_MANAGER_ADDRESS,
+    ethFeeHistory,
+    ethGetTransactionCount,
+    ethMaxPriorityFeePerGas,
+    ethSendRawTransaction,
+    RPC_URL
+} from "./rpcUtils";
+import {calculateRsvForTEcdsa, ecdsaPublicKey, signWithEcdsa} from "./ecdsaUtils";
 
+const RPC_URL_KEY = "RPC_URL";
+const ESCROW_MANAGER_ADDRESS_KEY = "ESCROW_MANAGER_ADDRESS";
 class OrderManager {
+    instanceVariable = StableBTreeMap<string, string>(0);
+    siweProviderCanisterId: string = getSiweProviderCanisterId();
     orders = StableBTreeMap<bigint, Order>(0);
+
+    @init([])
+    async init(): Promise<void> {
+        this.instanceVariable.insert(RPC_URL_KEY, RPC_URL);
+        this.instanceVariable.insert(ESCROW_MANAGER_ADDRESS_KEY, ESCROW_MANAGER_ADDRESS);
+    }
 
     @update([RoleProof], IDL.Vec(Order))
     @OnlyViewer
@@ -212,5 +235,80 @@ class OrderManager {
         this.orders.insert(id, order);
         return order;
     }
+
+    @update([IDL.Text, IDL.Nat, IDL.Text])
+    async registerDownPayment(supplier: Address, paymentDeadline: number, token: Address): Promise<void> {
+        const methodName = "registerEscrow";
+        const canisterAddress = ethers.computeAddress(
+            ethers.hexlify(
+                await ecdsaPublicKey([ic.id().toUint8Array()])
+            )
+        );
+        console.log('canisterAddress', canisterAddress);
+        const abiInterface = new ethers.Interface(escrowManagerAbi.abi);
+        const data = abiInterface.encodeFunctionData(methodName, [canisterAddress, supplier, paymentDeadline, token]);
+        //TODO: eth_maxPriorityFeePerGas not available in hardhat
+        // const maxPriorityFeePerGas = await ethMaxPriorityFeePerGas();
+        const maxPriorityFeePerGas = BigInt(1);
+        console.log('maxPriorityFeePerGas', maxPriorityFeePerGas);
+        //TODO: eth_maxPriorityFeePerGas not available in hardhat
+        // const baseFeePerGas = BigInt(
+        //     (await ethFeeHistory()).Consistent?.Ok[0].baseFeePerGas[0]
+        // );
+        const baseFeePerGas = 300_000_000n;
+        console.log('baseFeePerGas', baseFeePerGas);
+        const maxFeePerGas = baseFeePerGas * 2n + maxPriorityFeePerGas;
+        const gasLimit = 30_000_000n; // Potresti voler stimare il gas necessario per la chiamata
+        const nonce = await ethGetTransactionCount(canisterAddress);
+        console.log('nonce', nonce);
+        let tx = ethers.Transaction.from({
+            to: this.instanceVariable.get(ESCROW_MANAGER_ADDRESS_KEY),
+            data,
+            value: 0,
+            maxPriorityFeePerGas,
+            maxFeePerGas,
+            gasLimit,
+            nonce,
+            chainId: CHAIN_ID
+        });
+        const unsignedSerializedTx = tx.unsignedSerialized;
+        const unsignedSerializedTxHash = ethers.keccak256(unsignedSerializedTx);
+        console.log('unsignedSerializedTxHash', unsignedSerializedTxHash);
+        const signedSerializedTxHash = await signWithEcdsa(
+            [ic.id().toUint8Array()],
+            ethers.getBytes(unsignedSerializedTxHash)
+        );
+        const { r, s, v } = calculateRsvForTEcdsa(
+            CHAIN_ID,
+            canisterAddress,
+            unsignedSerializedTxHash,
+            signedSerializedTxHash
+        );
+        tx.signature = {r, s, v};
+        const rawTransaction = tx.serialized;
+        const resp = await ethSendRawTransaction(rawTransaction);
+        console.log(resp);
+    }
+
+    async getAddress(principal: Principal): Promise<Address> {
+        const resp = await call(
+            this.siweProviderCanisterId,
+            'get_address',
+            {
+                paramIdlTypes: [IDL.Vec(IDL.Nat8)],
+                returnIdlType: GetAddressResponse,
+                args: [principal.toUint8Array()],
+            }
+        );
+        if(resp.Err) throw new Error('Unable to fetch address');
+        return resp.Ok;
+    }
+}
+function getSiweProviderCanisterId(): string {
+    if (process.env.CANISTER_ID_IC_SIWE_PROVIDER !== undefined) {
+        return process.env.CANISTER_ID_IC_SIWE_PROVIDER;
+    }
+
+    throw new Error(`process.env.CANISTER_ID_IC_SIWE_PROVIDER is not defined`);
 }
 export default OrderManager;

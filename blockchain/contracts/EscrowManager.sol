@@ -45,13 +45,13 @@ contract EscrowManager is AccessControl, KBCAccessControl {
         return _counter.current();
     }
 
+    //TODO re-add roleProof
     function registerEscrow(
-        RoleProof memory roleProof,
         address admin,
         address payee,
         uint256 duration,
         address tokenAddress
-    ) public atLeastEditor(roleProof) returns (Escrow) {
+    ) public returns (Escrow) {
         require(admin != address(0), "EscrowManager: admin is the zero address");
         require(payee != address(0), "EscrowManager: payee is the zero address");
         require(duration != 0, "EscrowManager: duration is zero");

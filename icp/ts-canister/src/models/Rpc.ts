@@ -73,3 +73,68 @@ export const RpcService = IDL.Variant({
     'Chain' : IDL.Nat64,
     'Provider' : IDL.Nat64,
 });
+export const RpcServices = IDL.Variant({
+    'EthSepolia' : IDL.Opt(IDL.Vec(EthSepoliaService)),
+    'BaseMainnet' : IDL.Opt(IDL.Vec(L2MainnetService)),
+    'Custom' : IDL.Record({
+        'chainId' : IDL.Nat64,
+        'services' : IDL.Vec(RpcApi),
+    }),
+    'OptimismMainnet' : IDL.Opt(IDL.Vec(L2MainnetService)),
+    'ArbitrumOne' : IDL.Opt(IDL.Vec(L2MainnetService)),
+    'EthMainnet' : IDL.Opt(IDL.Vec(EthMainnetService)),
+});
+export const RpcConfig = IDL.Record({ 'responseSizeEstimate' : IDL.Opt(IDL.Nat64) });
+export const SendRawTransactionStatus = IDL.Variant({
+    'Ok' : IDL.Opt(IDL.Text),
+    'NonceTooLow' : IDL.Null,
+    'NonceTooHigh' : IDL.Null,
+    'InsufficientFunds' : IDL.Null,
+});
+const SendRawTransactionResult = IDL.Variant({
+    'Ok' : SendRawTransactionStatus,
+    'Err' : RpcError,
+});
+export const MultiSendRawTransactionResult = IDL.Variant({
+    'Consistent' : SendRawTransactionResult,
+    'Inconsistent' : IDL.Vec(IDL.Tuple(RpcService, SendRawTransactionResult)),
+});
+const BlockTag = IDL.Variant({
+    'Earliest' : IDL.Null,
+    'Safe' : IDL.Null,
+    'Finalized' : IDL.Null,
+    'Latest' : IDL.Null,
+    'Number' : IDL.Nat,
+    'Pending' : IDL.Null,
+});
+export const FeeHistoryArgs = IDL.Record({
+    'blockCount' : IDL.Nat,
+    'newestBlock' : BlockTag,
+    'rewardPercentiles' : IDL.Opt(IDL.Vec(IDL.Nat8)),
+});
+const FeeHistory = IDL.Record({
+    'reward' : IDL.Vec(IDL.Vec(IDL.Nat)),
+    'gasUsedRatio' : IDL.Vec(IDL.Float64),
+    'oldestBlock' : IDL.Nat,
+    'baseFeePerGas' : IDL.Vec(IDL.Nat),
+});
+const FeeHistoryResult = IDL.Variant({
+    'Ok' : IDL.Opt(FeeHistory),
+    'Err' : RpcError,
+});
+export const MultiFeeHistoryResult = IDL.Variant({
+    'Consistent' : FeeHistoryResult,
+    'Inconsistent' : IDL.Vec(IDL.Tuple(RpcService, FeeHistoryResult)),
+});
+export const GetTransactionCountArgs = IDL.Record({
+    'address' : IDL.Text,
+    'block' : BlockTag,
+});
+const GetTransactionCountResult = IDL.Variant({
+    'Ok' : IDL.Nat,
+    'Err' : RpcError,
+});
+export const MultiGetTransactionCountResult = IDL.Variant({
+    'Consistent' : GetTransactionCountResult,
+    'Inconsistent' : IDL.Vec(IDL.Tuple(RpcService, GetTransactionCountResult)),
+});

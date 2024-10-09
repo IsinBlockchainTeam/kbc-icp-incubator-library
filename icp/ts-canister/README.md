@@ -61,3 +61,25 @@ source .env && dfx deploy
 
 ## Note
 Smart contracts ABIs are encoded in the project. If you want to update them, modify the `eth-abi` folder.
+
+
+## Local deployment
+Inside `blockchain` folder, run:
+```bash
+npx hardhat node
+npm run deploy-temp
+```
+
+Inside `blockchain/scripts/send-eth.ts` edit the recipient address to top-up the account. Then run:
+```bash
+npm run send-eth 
+```
+Create a ngrok tunnel to the local blockchain:
+```bash
+ngrok http 8545
+```
+Copy the ngrok URL and paste it in the `ts-canister/src/rpcUtils.ts` file. Then run:
+```bash
+dfx start --clean
+npm run deploy
+```

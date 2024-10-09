@@ -9,6 +9,8 @@
         "compileOnly": "npx hardhat compile",
         "compile": "npx hardhat compile && rm -rf ../src/smart-contracts && cp -R ./typechain-types ../src/smart-contracts",
         "deploy": "npx hardhat run ./scripts/deploy.ts",
+        "deploy-temp": "npx hardhat run ./scripts/deploy-temp.ts --network localhost",
+        "send-eth": "npx hardhat run ./scripts/send-eth.ts --network localhost",
         "deploy-testnet": "npx hardhat run ./scripts/deploy-testnet.ts --network threeachain",
         "node": "npx hardhat node --hostname 0.0.0.0",
         "lint": "eslint \"{contracts,scripts,test,utils}/**/*.ts\" --fix",

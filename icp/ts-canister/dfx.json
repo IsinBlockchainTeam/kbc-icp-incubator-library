@@ -40,7 +40,7 @@
             },
             "custom": {
                 "experimental": true,
-                "env": ["CANISTER_ID_DELEGATE_MANAGER"]
+                "env": ["CANISTER_ID_DELEGATE_MANAGER", "CANISTER_ID_IC_SIWE_PROVIDER", "CANISTER_ID_EVM_RPC"]
             }
         },
         "delegate_manager": {
