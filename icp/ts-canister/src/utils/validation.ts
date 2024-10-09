@@ -27,6 +27,10 @@ export const validateProcessTypes = async (processTypeValues: string[]) => {
         if (!(await ElementRegistryMethods(CANISTER.PROCESS_TYPE_ID()).hasElement(processTypeValue))) throw new Error('Process type not found');
     });
 };
+export const validateAssessmentAssuranceLevel = async (assessmentAssuranceLevelValue: string) => {
+    if (!(await ElementRegistryMethods(CANISTER.ASSESSMENT_ASSURANCE_LEVEL_ID()).hasElement(assessmentAssuranceLevelValue)))
+        throw new Error('Assessment assurance level not found');
+};
 export const validateFieldValue = (value: any, valueToCompare: any, message: string) => {
     valueToCompare = Array.isArray(valueToCompare) ? valueToCompare : [valueToCompare];
     if (!valueToCompare.includes(value)) throw new Error(message);

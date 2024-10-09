@@ -35,6 +35,12 @@ deploy_canisters() {
             dfx canister call assessment_standard_registry addElement 'Origin assessment'
             dfx canister call assessment_standard_registry addElement 'Quality assessment'
             dfx canister call assessment_standard_registry addElement 'Swiss Decode'
+            echo "Assessment assurance level loading..."
+            dfx canister call assessment_assurance_level_registry addElement 'Reviewed by peer members'
+            dfx canister call assessment_assurance_level_registry addElement 'Self assessed'
+            dfx canister call assessment_assurance_level_registry addElement 'Self declaration / Not verified'
+            dfx canister call assessment_assurance_level_registry addElement 'Verified by second party'
+            dfx canister call assessment_assurance_level_registry addElement 'Certified (Third Party)'
         fi
         echo "Generating declarations..."
         dfx generate

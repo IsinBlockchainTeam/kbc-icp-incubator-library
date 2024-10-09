@@ -31,6 +31,13 @@ describe('CertificationManagerDriver', () => {
         'Quality assessment',
         'Swiss Decode'
     ];
+    const assessmentAssuranceLevels = [
+        'Certified (Third Party)',
+        'Reviewed by peer members',
+        'Self assessed',
+        'Self declaration / Not verified',
+        'Verified by second party'
+    ];
 
     const getUtils = async (userPrivateKey: string, companyPrivateKey: string) => {
         const userWallet = new Wallet(userPrivateKey);
@@ -70,6 +77,7 @@ describe('CertificationManagerDriver', () => {
                 issuerCompanyWallet.address,
                 subjectCompanyWallet.address,
                 assessmentStandards[1],
+                assessmentAssuranceLevels[0],
                 '123456',
                 {
                     id: BigInt(1),
@@ -93,6 +101,7 @@ describe('CertificationManagerDriver', () => {
                 issuerCompanyWallet.address,
                 subjectCompanyWallet.address,
                 assessmentStandards[3],
+                assessmentAssuranceLevels[2],
                 '123456',
                 {
                     id: BigInt(1),
@@ -118,6 +127,7 @@ describe('CertificationManagerDriver', () => {
                     issuerCompanyWallet.address,
                     subjectCompanyWallet.address,
                     assessmentStandards[0],
+                    assessmentAssuranceLevels[3],
                     '123456',
                     {
                         id: BigInt(1),
@@ -190,6 +200,7 @@ describe('CertificationManagerDriver', () => {
                 roleProof,
                 0,
                 assessmentStandards[1],
+                assessmentAssuranceLevels[0],
                 '12345678',
                 new Date(),
                 new Date(new Date().setDate(new Date().getDate() + 365))
@@ -205,6 +216,7 @@ describe('CertificationManagerDriver', () => {
                 roleProof,
                 1,
                 assessmentStandards[3],
+                assessmentAssuranceLevels[2],
                 '12345678',
                 new Date(),
                 updatedValidUntil,
@@ -220,6 +232,7 @@ describe('CertificationManagerDriver', () => {
                 roleProof,
                 2,
                 assessmentStandards[3],
+                assessmentAssuranceLevels[4],
                 '12345678',
                 1
             );

@@ -24,6 +24,14 @@
                 "node_compatibility": true
             }
         },
+        "assessment_assurance_level_registry": {
+            "type": "azle",
+            "main": "src/ElementRegistry.ts",
+            "declarations": {
+                "output": "declarations/assessment_assurance_level_registry",
+                "node_compatibility": true
+            }
+        },
         "product_category_manager": {
             "type": "azle",
             "main": "src/ProductCategoryManager.ts",
@@ -69,7 +77,7 @@
             },
             "custom": {
                 "experimental": true,
-                "env": ["CANISTER_ID_DELEGATE_MANAGER", "CANISTER_ID_ASSESSMENT_STANDARD_REGISTRY", "CANISTER_ID_PROCESS_TYPE_REGISTRY"]
+                "env": ["CANISTER_ID_DELEGATE_MANAGER", "CANISTER_ID_ASSESSMENT_STANDARD_REGISTRY", "CANISTER_ID_PROCESS_TYPE_REGISTRY", "CANISTER_ID_ASSESSMENT_ASSURANCE_LEVEL_REGISTRY"]
             }
         },
         "delegate_manager": {

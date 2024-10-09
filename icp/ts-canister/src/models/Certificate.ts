@@ -24,11 +24,13 @@ export type DocumentType =
 
 export const DocumentInfo = IDL.Record({
     id: IDL.Nat,
-    docType: DocumentType
+    docType: DocumentType,
+    externalUrl: IDL.Text
 });
 export type DocumentInfo = {
     id: bigint;
     docType: DocumentType;
+    externalUrl: string;
 };
 
 export const CertificateType = IDL.Variant({
@@ -44,6 +46,7 @@ const BaseCertificateType = {
     issuer: Address,
     subject: Address,
     assessmentStandard: IDL.Text,
+    assessmentAssuranceLevel: IDL.Text,
     referenceId: IDL.Text,
     document: DocumentInfo,
     evaluationStatus: DocumentEvaluationStatus,
@@ -59,6 +62,7 @@ export type BaseCertificate = {
     issuer: Address;
     subject: Address;
     assessmentStandard: string;
+    assessmentAssuranceLevel: string;
     referenceId: string;
     document: DocumentInfo;
     evaluationStatus: DocumentEvaluationStatus;
