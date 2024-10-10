@@ -81,7 +81,8 @@ describe('CertificationManagerDriver', () => {
                 '123456',
                 {
                     id: BigInt(1),
-                    docType: { CERTIFICATE_OF_CONFORMITY: null }
+                    docType: { CERTIFICATE_OF_CONFORMITY: null },
+                    externalUrl: 'externalUrl'
                 },
                 new Date(),
                 new Date(new Date().setDate(new Date().getDate() + 365))
@@ -105,7 +106,8 @@ describe('CertificationManagerDriver', () => {
                 '123456',
                 {
                     id: BigInt(1),
-                    docType: { PRODUCTION_REPORT: null }
+                    docType: { PRODUCTION_REPORT: null },
+                    externalUrl: 'externalUrl'
                 },
                 new Date(),
                 new Date(new Date().setDate(new Date().getDate() + 365)),
@@ -131,7 +133,8 @@ describe('CertificationManagerDriver', () => {
                     '123456',
                     {
                         id: BigInt(1),
-                        docType: { PRODUCTION_REPORT: null }
+                        docType: { PRODUCTION_REPORT: null },
+                        externalUrl: 'externalUrl'
                     },
                     1
                 );
@@ -196,6 +199,7 @@ describe('CertificationManagerDriver', () => {
     describe('Update certificates', () => {
         it('should update company certificate', async () => {
             const { certificationManagerDriver, roleProof } = utils1;
+            const { companyWallet: subjectCompanyWallet } = utils2;
             const companyCertificate = await certificationManagerDriver.updateCompanyCertificate(
                 roleProof,
                 0,
@@ -207,10 +211,18 @@ describe('CertificationManagerDriver', () => {
             );
             expect(companyCertificate).toBeDefined();
             expect(companyCertificate.referenceId).toEqual('12345678');
+            const updatedCompanyCertificate =
+                await certificationManagerDriver.getCompanyCertificate(
+                    roleProof,
+                    subjectCompanyWallet.address,
+                    0
+                );
+            expect(updatedCompanyCertificate).toEqual(companyCertificate);
         }, 30000);
 
         it('should update scope certificate', async () => {
             const { certificationManagerDriver, roleProof } = utils1;
+            const { companyWallet: subjectCompanyWallet } = utils2;
             const updatedValidUntil = new Date(new Date().setDate(new Date().getDate() + 2));
             const scopeCertificate = await certificationManagerDriver.updateScopeCertificate(
                 roleProof,
@@ -224,10 +236,17 @@ describe('CertificationManagerDriver', () => {
             );
             expect(scopeCertificate).toBeDefined();
             expect(scopeCertificate.validUntil).toEqual(BigInt(updatedValidUntil.getTime()));
+            const updatedScopeCertificate = await certificationManagerDriver.getScopeCertificate(
+                roleProof,
+                subjectCompanyWallet.address,
+                1
+            );
+            expect(updatedScopeCertificate).toEqual(scopeCertificate);
         }, 30000);
 
         it('should update material certificate', async () => {
             const { certificationManagerDriver, roleProof } = utils1;
+            const { companyWallet: subjectCompanyWallet } = utils2;
             const materialCertificate = await certificationManagerDriver.updateMaterialCertificate(
                 roleProof,
                 2,
@@ -238,6 +257,13 @@ describe('CertificationManagerDriver', () => {
             );
             expect(materialCertificate).toBeDefined();
             expect(materialCertificate.assessmentStandard).toEqual(assessmentStandards[3]);
+            const updatedMaterialCertificate =
+                await certificationManagerDriver.getMaterialCertificate(
+                    roleProof,
+                    subjectCompanyWallet.address,
+                    2
+                );
+            expect(updatedMaterialCertificate).toEqual(materialCertificate);
         }, 30000);
     });
 });
