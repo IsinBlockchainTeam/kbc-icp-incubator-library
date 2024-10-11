@@ -43,11 +43,11 @@
                 "env": ["CANISTER_ID_DELEGATE_MANAGER"]
             }
         },
-        "document_manager": {
+        "shipment_manager": {
             "type": "azle",
-            "main": "src/DocumentManager.ts",
+            "main": "src/ShipmentManager.ts",
             "declarations": {
-                "output": "declarations/document_manager",
+                "output": "declarations/shipment_manager",
                 "node_compatibility": true
             },
             "custom": {
