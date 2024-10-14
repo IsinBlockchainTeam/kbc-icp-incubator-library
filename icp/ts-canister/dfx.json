@@ -52,7 +52,7 @@
             },
             "custom": {
                 "experimental": true,
-                "env": ["CANISTER_ID_DELEGATE_MANAGER"]
+                "env": ["CANISTER_ID_DELEGATE_MANAGER", "ESCROW_MANAGER_ADDRESS"]
             }
         },
         "delegate_manager": {

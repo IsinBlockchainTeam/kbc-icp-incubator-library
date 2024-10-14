@@ -1,7 +1,7 @@
 import {IDL, update, StableBTreeMap} from 'azle';
 import {Order, OrderLine} from "./models/Order";
 import {Address} from "./models/Address";
-import {validateAddress, validateDeadline, validateInterestedParty, validatePositiveNumber} from "./validation";
+import {validateAddress, validateDeadline, validateInterestedParty, validatePositiveNumber} from "./utils/validation";
 import {RoleProof} from "./models/Proof";
 import {OnlyEditor, OnlySigner, OnlyViewer} from "./decorators/roles";
 import {ROLES} from "./models/Role";

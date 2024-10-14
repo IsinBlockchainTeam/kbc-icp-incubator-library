@@ -1,4 +1,4 @@
-import {Address} from "./models/Address";
+import {Address} from "../models/Address";
 import {ethers} from "ethers";
 
 export const validateDeadline = (name: string, deadline: number) => {

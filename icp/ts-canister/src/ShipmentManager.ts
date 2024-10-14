@@ -1,7 +1,8 @@
-import {IDL, update, StableBTreeMap, query} from 'azle';
+import { IDL, update, StableBTreeMap, query } from 'azle';
 import {
-     FundStatusEnum,
-    Phase, PhaseEnum,
+    FundStatusEnum,
+    Phase,
+    PhaseEnum,
     Shipment
 } from './models/Shipment';
 import { DocumentInfo, DocumentType, DocumentTypeEnum } from './models/Document';
@@ -9,62 +10,10 @@ import { EvaluationStatus, EvaluationStatusEnum } from './models/Evaluation';
 import { OnlyEditor, OnlyViewer } from './decorators/roles';
 import { Address } from './models/Address';
 import { RoleProof } from './models/Proof';
-import { validateAddress, validateInterestedParty } from './validation';
-import { ethers } from 'ethers';
-import escrowAbi from '../eth-abi/Escrow.json';
-import { CHAIN_ID, ethGetTransactionCount, ethSendRawTransaction } from './rpcUtils';
-import { calculateRsvForTEcdsa, signWithEcdsa } from './ecdsaUtils';
-import { ic } from 'azle/experimental';
-
-function validateAndExtractParameters(this: any, args: any[]) {
-    console.log('args2', args);
-    if (args.length < 2)
-        throw new Error(`Expected at least 2 arguments but got ${args.length}`);
-    if (args[0].delegateAddress === undefined)
-        throw new Error(`First argument must be a RoleProof`);
-    if (args[1] === undefined)
-        throw new Error(`Second argument must be the Shipment id`);
-
-    const roleProof = args[0] as RoleProof;
-    const id = args[1] as bigint;
-    const shipment = this.shipments.get(id);
-    if (!shipment)
-        throw new Error('Shipment not found');
-    return { shipment, callerAddress: roleProof.membershipProof.delegatorAddress as Address };
-}
-
-// TODO: move to dedicated file
-function OnlyInvolvedParties(originalMethod: any, _context: any) {
-    async function replacementMethod(this: any, ...args: any[]) {
-        console.log('args1', args);
-        const { shipment, callerAddress } = validateAndExtractParameters.call(this, args);
-        const interestedParties = [shipment.supplier, shipment.commissioner];
-        if (!interestedParties.includes(callerAddress))
-            throw new Error('Access denied, user is not an involved party');
-        return originalMethod.call(this, ...args);
-    }
-    return replacementMethod;
-}
-
-function OnlySupplier(originalMethod: any, _context: any) {
-    async function replacementMethod(this: any, ...args: any[]) {
-        const { shipment, callerAddress } = validateAndExtractParameters.call(this, args);
-        if (callerAddress !== shipment.supplier)
-            throw new Error('Access denied, user is not the supplier');
-        return originalMethod.call(this, ...args);
-    }
-    return replacementMethod;
-}
-
-function OnlyCommissioner(originalMethod: any, _context: any) {
-    async function replacementMethod(this: any, ...args: any[]) {
-        const { shipment, callerAddress } = validateAndExtractParameters.call(this, args);
-        if (callerAddress !== shipment.commissioner)
-            throw new Error('Access denied, user is not the commissioner');
-        return originalMethod.call(this, ...args);
-    }
-    return replacementMethod;
-}
+import { validateAddress, validateInterestedParty } from './utils/validation';
+import escrowManagerAbi from '../eth-abi/EscrowManager.json';
+import { ethSendContractTransaction } from './utils/rpc';
+import { OnlyCommissioner, OnlyInvolvedParties, OnlySupplier } from './decorators/shipmentParties';
 
 class ShipmentManager {
     shipments = StableBTreeMap<bigint, Shipment>(0);
@@ -107,8 +56,6 @@ class ShipmentManager {
         const companyAddress = roleProof.membershipProof.delegatorAddress as Address;
         validateInterestedParty('Caller', companyAddress, interestedParties);
 
-        // TODO: create escrow
-
         const id = this.shipments.keys().length;
         const shipment: Shipment = {
             id,
@@ -133,6 +80,12 @@ class ShipmentManager {
             grossWeight: 0,
             documents: [],
         };
+
+        // TODO: remove this hardcoded values
+        const duration = 1_000_000n;
+        const tokenAddress = '0xA0BF1413F37870D386999A316696C4e4e77FC611';
+        await ethSendContractTransaction(getEscrowManagerAddress(), escrowManagerAbi.abi, 'registerEscrow', [shipment.id, supplier, duration, tokenAddress]);
+
         this.shipments.insert(BigInt(id), shipment);
         return shipment;
     }
@@ -309,46 +262,6 @@ class ShipmentManager {
         //     _escrow.lockFunds(requiredAmount);
         //     _fundsStatus = FundsStatus.LOCKED;
         // }
-
-        const methodName = "deposit";
-        const abiInterface = new ethers.Interface(escrowAbi.abi);
-        const payer = roleProof.membershipProof.delegatorAddress as Address;
-        const data = abiInterface.encodeFunctionData(methodName, [amount, payer]);
-        const maxPriorityFeePerGas = BigInt(1);
-        const baseFeePerGas = 300_000_000n;
-        const maxFeePerGas = baseFeePerGas * 2n + maxPriorityFeePerGas;
-        const gasLimit = 30_000_000n;
-        const nonce = await ethGetTransactionCount(payer);
-        console.log('escrowAddress', shipment.escrowAddress[0]);
-        let tx = ethers.Transaction.from({
-            to: shipment.escrowAddress[0],
-            data,
-            value: 0,
-            maxPriorityFeePerGas,
-            maxFeePerGas,
-            gasLimit,
-            nonce,
-            chainId: CHAIN_ID
-        });
-        console.log('tx', tx);
-        const unsignedSerializedTx = tx.unsignedSerialized;
-        const unsignedSerializedTxHash = ethers.keccak256(unsignedSerializedTx);
-        console.log('unsignedSerializedTxHash', unsignedSerializedTxHash);
-        const signedSerializedTxHash = await signWithEcdsa(
-            [ic.id().toUint8Array()],
-            ethers.getBytes(unsignedSerializedTxHash)
-        );
-        const { r, s, v } = calculateRsvForTEcdsa(
-            CHAIN_ID,
-            payer,
-            unsignedSerializedTxHash,
-            signedSerializedTxHash
-        );
-        tx.signature = {r, s, v};
-        const rawTransaction = tx.serialized;
-        const resp = await ethSendRawTransaction(rawTransaction);
-        console.log(resp);
-
         return shipment;
     }
 
@@ -551,4 +464,13 @@ class ShipmentManager {
         return [];
     }
 }
+
+function getEscrowManagerAddress(): Address {
+    if (process.env.ESCROW_MANAGER_ADDRESS) {
+        return process.env.ESCROW_MANAGER_ADDRESS as Address;
+    }
+
+    throw new Error(`process.env.ESCROW_MANAGER_ADDRESS is not defined`);
+}
+
 export default ShipmentManager;
