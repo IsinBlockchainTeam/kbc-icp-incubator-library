@@ -1,4 +1,4 @@
-import {call, IDL, init, update, StableBTreeMap} from 'azle';
+import {call, IDL, update} from 'azle';
 import {ic, Principal} from 'azle/experimental';
 import {ethers} from "ethers";
 import {RoleProof} from "./models/Proof";
@@ -6,23 +6,20 @@ import {RequestResult, RpcService} from "./models/Rpc";
 import revocationRegistryAbi from "../eth-abi/RevocationRegistry.json";
 import {Address, GetAddressResponse} from "./models/Address";
 import {ROLES} from "./models/Role";
+import {
+    getEvmMembershipIssuerAddress,
+    getEvmRevocationRegistryAddress,
+    getEvmRpcCanisterId, getEvmRpcUrl,
+    getSiweProviderCanisterId
+} from "./utils/env";
 
-const RPC_URL_KEY = "RPC_URL";
-const REVOCATION_REGISTRY_ADDRESS_KEY = "REVOCATION_REGISTRY_ADDRESS";
-const OWNER_ADDRESS_KEY = "OWNER_ADDRESS";
 class DelegateManager {
-    instanceVariable = StableBTreeMap<string, string>(0);
-    evmRpcCanisterId: string = getEVMRpcCanisterId();
+    evmRpcCanisterId: string = getEvmRpcCanisterId();
     siweProviderCanisterId: string = getSiweProviderCanisterId();
+    evmRpcUrl: string = getEvmRpcUrl();
+    evmRevocationRegistryAddress: string = getEvmRevocationRegistryAddress();
+    evmMembershipIssuerAddress: string = getEvmMembershipIssuerAddress();
     incrementalRoles = [ROLES.VIEWER, ROLES.EDITOR, ROLES.SIGNER];
-
-
-    @init([IDL.Text, IDL.Text, IDL.Text])
-    async init(rpcUrl: string, revocationRegistryAddress: Address, ownerAddress: Address): Promise<void> {
-        this.instanceVariable.insert(RPC_URL_KEY, rpcUrl);
-        this.instanceVariable.insert(REVOCATION_REGISTRY_ADDRESS_KEY, revocationRegistryAddress);
-        this.instanceVariable.insert(OWNER_ADDRESS_KEY, ownerAddress);
-    }
 
     @update([RoleProof, IDL.Principal, IDL.Text], IDL.Bool)
     async hasValidRole(proof: RoleProof, caller: Principal, minimumRole: string): Promise<boolean> {
@@ -59,7 +56,7 @@ class DelegateManager {
         // If the membership proof signer is different from the delegate signer, the proof is invalid
         if(membershipProofSigner !== membershipProof.issuer) return false;
         // If the proof signer is not the owner, the proof is invalid
-        if(membershipProofSigner !== this.instanceVariable.get(OWNER_ADDRESS_KEY)) return false;
+        if(membershipProofSigner !== this.evmMembershipIssuerAddress) return false;
         // If the delegator is not the signer of the role proof, the proof is invalid
         if(membershipProof.delegatorAddress !== roleProofSigner) return false;
         // If the membership credential has expired, the proof is invalid
@@ -96,7 +93,7 @@ class DelegateManager {
             "method": "eth_call",
             "params": [
                 {
-                    "to": this.instanceVariable.get(REVOCATION_REGISTRY_ADDRESS_KEY),
+                    "to": this.evmRevocationRegistryAddress,
                     "data": data
                 },
                 "latest"
@@ -105,7 +102,7 @@ class DelegateManager {
         }
         const JsonRpcSource = {
             Custom: {
-                url: this.instanceVariable.get(RPC_URL_KEY),
+                url: this.evmRpcUrl,
                 headers: []
             }
         }
@@ -127,19 +124,4 @@ class DelegateManager {
         return decodedResult[0] !== 0n;
     }
 }
-function getSiweProviderCanisterId(): string {
-    if (process.env.CANISTER_ID_IC_SIWE_PROVIDER !== undefined) {
-        return process.env.CANISTER_ID_IC_SIWE_PROVIDER;
-    }
-
-    throw new Error(`process.env.CANISTER_ID_IC_SIWE_PROVIDER is not defined`);
-}
-function getEVMRpcCanisterId(): string {
-    if (process.env.CANISTER_ID_EVM_RPC !== undefined) {
-        return process.env.CANISTER_ID_EVM_RPC;
-    }
-
-    throw new Error(`process.env.CANISTER_ID_EVM_RPC is not defined`);
-}
-
 export default DelegateManager;

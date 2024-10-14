@@ -1,6 +1,7 @@
 import { IDL, query, update, StableBTreeMap, call } from 'azle';
 import {Material} from "./models/Material";
 import {ProductCategory} from "./models/ProductCategory";
+import { getProductCategoryManagerCanisterId } from './utils/env';
 
 class MaterialManager {
     productCategoryManagerCanisterId: string = getProductCategoryManagerCanisterId();
@@ -50,14 +51,6 @@ class MaterialManager {
         });
         return productCategory.length > 0;
     }
-}
-
-function getProductCategoryManagerCanisterId(): string {
-    if (process.env.CANISTER_ID_PRODUCT_CATEGORY_MANAGER !== undefined) {
-        return process.env.CANISTER_ID_PRODUCT_CATEGORY_MANAGER;
-    }
-
-    throw new Error(`process.env.CANISTER_ID_PRODUCT_CATEGORY_MANAGER is not defined`);
 }
 
 export default MaterialManager;

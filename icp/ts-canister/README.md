@@ -62,6 +62,16 @@ source .env && dfx deploy
 ## Note
 Smart contracts ABIs are encoded in the project. If you want to update them, modify the `eth-abi` folder.
 
+## Env
+Update the `.env.evm` file the following variables:
+```bash
+EVM_RPC_URL=<RPC_URL>
+EVM_CHAIN_ID=<CHAIN_ID>
+EVM_ESCROW_MANAGER_ADDRESS=<ESCROW_MANAGER_ADDRESS>
+EVM_REVOCATION_REGISTRY_ADDRESS=<REVOCATION_REGISTRY_ADDRESS>
+EVM_MEMBERSHIP_ISSUER_ADDRESS=<MEMBERSHIP_ISSUER_ADDRESS>
+```
+
 
 ## Local deployment
 Inside `blockchain` folder, run:

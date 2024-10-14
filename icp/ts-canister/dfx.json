@@ -40,20 +40,32 @@
             },
             "custom": {
                 "experimental": true,
-                "env": ["CANISTER_ID_DELEGATE_MANAGER", "CANISTER_ID_IC_SIWE_PROVIDER", "CANISTER_ID_EVM_RPC"]
+                "env": [
+                    "CANISTER_ID_DELEGATE_MANAGER",
+                    "CANISTER_ID_IC_SIWE_PROVIDER",
+                    "CANISTER_ID_EVM_RPC",
+                    "EVM_RPC_URL",
+                    "EVM_ESCROW_MANAGER_ADDRESS",
+                    "EVM_CHAIN_ID"
+                ]
             }
         },
         "delegate_manager": {
             "type": "azle",
             "main": "src/DelegateManager.ts",
-            "init_arg_file": "./init/delegate_manager_init.did",
             "declarations": {
                 "output": "declarations/delegate_manager",
                 "node_compatibility": true
             },
             "custom": {
                 "experimental": true,
-                "env": ["CANISTER_ID_EVM_RPC", "CANISTER_ID_IC_SIWE_PROVIDER"]
+                "env": [
+                    "CANISTER_ID_EVM_RPC",
+                    "CANISTER_ID_IC_SIWE_PROVIDER",
+                    "EVM_RPC_URL",
+                    "EVM_REVOCATION_REGISTRY_ADDRESS",
+                    "EVM_MEMBERSHIP_ISSUER_ADDRESS"
+                ]
             }
         },
         "internet_identity": {
