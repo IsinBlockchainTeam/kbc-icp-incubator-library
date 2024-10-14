@@ -61,8 +61,6 @@ describe('ShipmentManagerDriver', () => {
         const { shipmentManagerDriver, roleProof } = utils1;
         const shipment = await shipmentManagerDriver.getShipment(roleProof, SHIPMENT_ID);
         console.log(shipment);
-        console.log(shipment.documents);
-        console.log(shipment.documents[0][1]);
         expect(shipment).toBeDefined();
     });
 
@@ -73,7 +71,6 @@ describe('ShipmentManagerDriver', () => {
             roleProof,
             company1Wallet.address,
             company2Wallet.address,
-            '0x6909eb1E1dd2f62357B4A6dE9aDC172543e6e75A',
             true
         );
         console.log(shipment);
@@ -117,7 +114,7 @@ describe('ShipmentManagerDriver', () => {
     });
 
     it('should evaluate sample', async () => {
-        const { shipmentManagerDriver, roleProof } = utils1;
+        const { shipmentManagerDriver, roleProof } = utils2;
         const shipment = await shipmentManagerDriver.evaluateSample(roleProof, SHIPMENT_ID, {
             APPROVED: null
         });
@@ -126,7 +123,7 @@ describe('ShipmentManagerDriver', () => {
     });
 
     it('should evaluate shipment details', async () => {
-        const { shipmentManagerDriver, roleProof } = utils1;
+        const { shipmentManagerDriver, roleProof } = utils2;
         const shipment = await shipmentManagerDriver.evaluateShipmentDetails(
             roleProof,
             SHIPMENT_ID,
@@ -139,7 +136,7 @@ describe('ShipmentManagerDriver', () => {
     });
 
     it('should evaluate quality', async () => {
-        const { shipmentManagerDriver, roleProof } = utils1;
+        const { shipmentManagerDriver, roleProof } = utils2;
         const shipment = await shipmentManagerDriver.evaluateQuality(roleProof, SHIPMENT_ID, {
             APPROVED: null
         });
@@ -154,7 +151,6 @@ describe('ShipmentManagerDriver', () => {
         expect(shipment).toBeDefined();
     });
 
-    // TODO: fix this test
     it('should get documents', async () => {
         const { shipmentManagerDriver, roleProof } = utils1;
         const documents = await shipmentManagerDriver.getDocuments(roleProof, SHIPMENT_ID);
@@ -167,7 +163,7 @@ describe('ShipmentManagerDriver', () => {
         const shipment = await shipmentManagerDriver.addDocument(
             roleProof,
             SHIPMENT_ID,
-            { BOOKING_CONFIRMATION: null },
+            { PRE_SHIPMENT_SAMPLE: null },
             'https://example.com'
         );
         console.log(shipment);
@@ -188,7 +184,7 @@ describe('ShipmentManagerDriver', () => {
 
     it('should evaluate a document', async () => {
         const { shipmentManagerDriver, roleProof } = utils2;
-        const shipment = await shipmentManagerDriver.evaluateDocument(roleProof, SHIPMENT_ID, 5, {
+        const shipment = await shipmentManagerDriver.evaluateDocument(roleProof, SHIPMENT_ID, 0, {
             APPROVED: null
         });
         console.log(shipment);

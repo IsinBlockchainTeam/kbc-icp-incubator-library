@@ -2,7 +2,8 @@ import { ActorSubclass, Identity } from '@dfinity/agent';
 import { RoleProof } from '../../../icp/ts-canister/src/models/Proof';
 import { _SERVICE } from '../../declarations/shipment_manager/shipment_manager.did';
 import { createActor } from '../../declarations/shipment_manager';
-import { DocumentType, EvaluationStatus } from '../../../icp/ts-canister/src/models/Shipment';
+import { DocumentType } from '../../../icp/ts-canister/src/models/Document';
+import { EvaluationStatus } from '../../../icp/ts-canister/src/models/Evaluation';
 
 export class ShipmentManagerDriver {
     private _actor: ActorSubclass<_SERVICE>;
@@ -28,14 +29,12 @@ export class ShipmentManagerDriver {
         roleProof: RoleProof,
         supplier: string,
         commissioner: string,
-        escrowAddress: string,
         sampleApprovalRequired: boolean
     ) {
         return this._actor.createShipment(
             roleProof,
             supplier,
             commissioner,
-            escrowAddress,
             sampleApprovalRequired
         );
     }

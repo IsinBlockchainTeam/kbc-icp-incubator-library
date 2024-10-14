@@ -1,16 +1,70 @@
-import {IDL, update, StableBTreeMap} from 'azle';
+import {IDL, update, StableBTreeMap, query} from 'azle';
 import {
-    DocumentEvaluationStatus,
-    DocumentInfo,
-    DocumentType,
-    EvaluationStatus,
-    Phase,
+     FundStatusEnum,
+    Phase, PhaseEnum,
     Shipment
 } from './models/Shipment';
+import { DocumentInfo, DocumentType, DocumentTypeEnum } from './models/Document';
+import { EvaluationStatus, EvaluationStatusEnum } from './models/Evaluation';
 import { OnlyEditor, OnlyViewer } from './decorators/roles';
 import { Address } from './models/Address';
 import { RoleProof } from './models/Proof';
 import { validateAddress, validateInterestedParty } from './validation';
+import { ethers } from 'ethers';
+import escrowAbi from '../eth-abi/Escrow.json';
+import { CHAIN_ID, ethGetTransactionCount, ethSendRawTransaction } from './rpcUtils';
+import { calculateRsvForTEcdsa, signWithEcdsa } from './ecdsaUtils';
+import { ic } from 'azle/experimental';
+
+function validateAndExtractParameters(this: any, args: any[]) {
+    console.log('args2', args);
+    if (args.length < 2)
+        throw new Error(`Expected at least 2 arguments but got ${args.length}`);
+    if (args[0].delegateAddress === undefined)
+        throw new Error(`First argument must be a RoleProof`);
+    if (args[1] === undefined)
+        throw new Error(`Second argument must be the Shipment id`);
+
+    const roleProof = args[0] as RoleProof;
+    const id = args[1] as bigint;
+    const shipment = this.shipments.get(id);
+    if (!shipment)
+        throw new Error('Shipment not found');
+    return { shipment, callerAddress: roleProof.membershipProof.delegatorAddress as Address };
+}
+
+// TODO: move to dedicated file
+function OnlyInvolvedParties(originalMethod: any, _context: any) {
+    async function replacementMethod(this: any, ...args: any[]) {
+        console.log('args1', args);
+        const { shipment, callerAddress } = validateAndExtractParameters.call(this, args);
+        const interestedParties = [shipment.supplier, shipment.commissioner];
+        if (!interestedParties.includes(callerAddress))
+            throw new Error('Access denied, user is not an involved party');
+        return originalMethod.call(this, ...args);
+    }
+    return replacementMethod;
+}
+
+function OnlySupplier(originalMethod: any, _context: any) {
+    async function replacementMethod(this: any, ...args: any[]) {
+        const { shipment, callerAddress } = validateAndExtractParameters.call(this, args);
+        if (callerAddress !== shipment.supplier)
+            throw new Error('Access denied, user is not the supplier');
+        return originalMethod.call(this, ...args);
+    }
+    return replacementMethod;
+}
+
+function OnlyCommissioner(originalMethod: any, _context: any) {
+    async function replacementMethod(this: any, ...args: any[]) {
+        const { shipment, callerAddress } = validateAndExtractParameters.call(this, args);
+        if (callerAddress !== shipment.commissioner)
+            throw new Error('Access denied, user is not the commissioner');
+        return originalMethod.call(this, ...args);
+    }
+    return replacementMethod;
+}
 
 class ShipmentManager {
     shipments = StableBTreeMap<bigint, Shipment>(0);
@@ -27,42 +81,40 @@ class ShipmentManager {
 
     @update([RoleProof, IDL.Nat], Shipment)
     @OnlyViewer
+    @OnlyInvolvedParties
     async getShipment(roleProof: RoleProof, id: bigint): Promise<Shipment> {
         const result = this.shipments.get(id);
-        if(result) {
-            const interestedParties = [result.supplier, result.commissioner];
-            const companyAddress = roleProof.membershipProof.delegatorAddress as Address;
-            if(!interestedParties.includes(companyAddress))
-                throw new Error('Access denied');
-            return result;
+        if(!result) {
+            throw new Error('Shipment not found');
         }
-        throw new Error('Shipment not found');
+        return result;
     }
 
-    @update([RoleProof, Address, Address, Address, IDL.Bool], Shipment)
+    @update([RoleProof, Address, Address, IDL.Bool], Shipment)
     @OnlyEditor
+    // TODO: only order canister can call this method
     async createShipment(
         roleProof: RoleProof,
         supplier: Address,
         commissioner: Address,
-        escrowAddress: Address,
         sampleApprovalRequired: boolean
     ): Promise<Shipment> {
         if(supplier === commissioner)
             throw new Error('Supplier and commissioner must be different');
         validateAddress('Supplier', supplier);
         validateAddress('Commissioner', commissioner);
-        validateAddress('Escrow address', escrowAddress);
         const interestedParties = [supplier, commissioner];
         const companyAddress = roleProof.membershipProof.delegatorAddress as Address;
         validateInterestedParty('Caller', companyAddress, interestedParties);
+
+        // TODO: create escrow
 
         const id = this.shipments.keys().length;
         const shipment: Shipment = {
             id,
             supplier,
             commissioner,
-            escrowAddress,
+            escrowAddress: [],
             sampleEvaluationStatus: { NOT_EVALUATED: null },
             detailsEvaluationStatus: { NOT_EVALUATED: null },
             qualityEvaluationStatus: { NOT_EVALUATED: null },
@@ -87,22 +139,23 @@ class ShipmentManager {
 
     @update([RoleProof, IDL.Nat], Phase)
     @OnlyViewer
+    @OnlyInvolvedParties
     async getShipmentPhase(roleProof: RoleProof, id: bigint): Promise<Phase> {
         const shipment = this.shipments.get(id);
         if(shipment) {
             if(!await this.areDocumentsUploadedAndApproved(roleProof, id, this.getPhase1RequiredDocuments()))
                 return { PHASE_1: null };
-            if(shipment.sampleApprovalRequired && !('APPROVED' in shipment.sampleEvaluationStatus))
+            if(shipment.sampleApprovalRequired && !(EvaluationStatusEnum.APPROVED in shipment.sampleEvaluationStatus))
                 return { PHASE_1: null };
 
             if(!await this.areDocumentsUploadedAndApproved(roleProof, id, this.getPhase2RequiredDocuments()))
                 return { PHASE_2: null };
-            if(!('APPROVED' in shipment.detailsEvaluationStatus))
+            if(!(EvaluationStatusEnum.APPROVED in shipment.detailsEvaluationStatus))
                 return { PHASE_2: null };
 
             if(!await this.areDocumentsUploadedAndApproved(roleProof, id, this.getPhase3RequiredDocuments()))
                 return { PHASE_3: null };
-            if('NOT_LOCKED' in shipment.fundsStatus)
+            if(FundStatusEnum.NOT_LOCKED in shipment.fundsStatus)
                 return { PHASE_3: null };
 
             if(!await this.areDocumentsUploadedAndApproved(roleProof, id, this.getPhase4RequiredDocuments()))
@@ -110,10 +163,10 @@ class ShipmentManager {
 
             if(!await this.areDocumentsUploadedAndApproved(roleProof, id, this.getPhase5RequiredDocuments()))
                 return { PHASE_5: null };
-            if('NOT_EVALUATED' in shipment.qualityEvaluationStatus)
+            if(EvaluationStatusEnum.NOT_EVALUATED in shipment.qualityEvaluationStatus)
                 return { PHASE_5: null };
 
-            if('APPROVED' in shipment.qualityEvaluationStatus)
+            if(EvaluationStatusEnum.APPROVED in shipment.qualityEvaluationStatus)
                 return { CONFIRMED: null };
 
             return { ARBITRATION: null };
@@ -124,7 +177,7 @@ class ShipmentManager {
     private async areDocumentsUploadedAndApproved(roleProof: RoleProof, id: bigint, requiredDocuments: DocumentType[]): Promise<boolean> {
         for (const documentType of requiredDocuments) {
             const document = await this.getDocumentsByType(roleProof, id, documentType);
-            if(document.length === 0 || !('APPROVED' in document[0].evaluationStatus))
+            if(document.length === 0 || !(EvaluationStatusEnum.APPROVED in document[0].evaluationStatus))
                 return false;
         }
         return true;
@@ -132,26 +185,17 @@ class ShipmentManager {
 
     @update([RoleProof, IDL.Nat, DocumentType], IDL.Opt(IDL.Vec(DocumentInfo)))
     @OnlyViewer
+    @OnlyInvolvedParties
     async getDocumentsByType(roleProof: RoleProof, id: bigint, documentType: DocumentType): Promise<DocumentInfo[] | []> {
         const shipment = this.shipments.get(id);
         if (!shipment) throw new Error('Shipment not found');
-        const documentTuple = shipment.documents.find(([type]) => Object.keys(documentType)[0] in type);
-        return documentTuple ? documentTuple[1] : [];
+        const documentInfos = shipment.documents.find(([type]) => Object.keys(documentType)[0] in type);
+        return documentInfos ? documentInfos[1] : [];
     }
-
-    // @update([RoleProof, IDL.Nat, DocumentType], IDL.Opt(DocumentInfo))
-    // @OnlyViewer
-    // async getTypedDocument(roleProof: RoleProof, id: bigint, documentType: DocumentType): Promise<[DocumentInfo] | []> {
-    //     const shipment = this.shipments.get(id);
-    //     if(!shipment)
-    //         throw new Error('Shipment not found');
-    //     const documentTuple = shipment.typedDocuments.find(([type]) => type === documentType);
-    //     return documentTuple ? [documentTuple[1]] : [];
-    // }
-
 
     @update([RoleProof, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Text, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat], Shipment)
     @OnlyEditor
+    @OnlySupplier
     async setShipmentDetails(
         roleProof: RoleProof,
         id: bigint,
@@ -169,9 +213,9 @@ class ShipmentManager {
         const shipment = this.shipments.get(id);
         if(!shipment)
             throw new Error('Shipment not found');
-        if('PHASE_2' in await this.getShipmentPhase(roleProof, id))
+        if(PhaseEnum.PHASE_2 in await this.getShipmentPhase(roleProof, id))
             throw new Error('Shipment in wrong phase');
-        if('APPROVED' in shipment.detailsEvaluationStatus)
+        if(EvaluationStatusEnum.APPROVED in shipment.detailsEvaluationStatus)
             throw new Error('Details already approved');
 
         shipment.shipmentNumber = shipmentNumber;
@@ -192,15 +236,16 @@ class ShipmentManager {
 
     @update([RoleProof, IDL.Nat, EvaluationStatus], Shipment)
     @OnlyEditor
+    @OnlyCommissioner
     async evaluateSample(roleProof: RoleProof, id: bigint, evaluationStatus: EvaluationStatus): Promise<Shipment> {
         const shipment = this.shipments.get(id);
         if(!shipment)
             throw new Error('Shipment not found');
-        if(!('PHASE_1' in await this.getShipmentPhase(roleProof, id)))
+        if(!(PhaseEnum.PHASE_1 in await this.getShipmentPhase(roleProof, id)))
             throw new Error('Shipment in wrong phase');
 
-        if(!('NOT_EVALUATED' in shipment.sampleEvaluationStatus))
-            throw new Error('Sample already evaluated');
+        if(EvaluationStatusEnum.APPROVED in shipment.sampleEvaluationStatus)
+            throw new Error('Sample already approved');
         shipment.sampleEvaluationStatus = evaluationStatus;
 
         this.shipments.insert(id, shipment);
@@ -209,10 +254,17 @@ class ShipmentManager {
 
     @update([RoleProof, IDL.Nat, EvaluationStatus], Shipment)
     @OnlyEditor
+    @OnlyCommissioner
     async evaluateShipmentDetails(roleProof: RoleProof, id: bigint, evaluationStatus: EvaluationStatus): Promise<Shipment> {
         const shipment = this.shipments.get(id);
         if(!shipment)
             throw new Error('Shipment not found');
+        if(!(PhaseEnum.PHASE_2 in await this.getShipmentPhase(roleProof, id)))
+            throw new Error('Shipment in wrong phase');
+        if(!shipment.detailsSet)
+            throw new Error('Details not set');
+        if(EvaluationStatusEnum.APPROVED in shipment.detailsEvaluationStatus)
+            throw new Error('Details already approved');
         shipment.detailsEvaluationStatus = evaluationStatus;
 
         this.shipments.insert(id, shipment);
@@ -221,10 +273,15 @@ class ShipmentManager {
 
     @update([RoleProof, IDL.Nat, EvaluationStatus], Shipment)
     @OnlyEditor
+    @OnlyCommissioner
     async evaluateQuality(roleProof: RoleProof, id: bigint, evaluationStatus: EvaluationStatus): Promise<Shipment> {
         const shipment = this.shipments.get(id);
         if(!shipment)
             throw new Error('Shipment not found');
+        if(!(PhaseEnum.PHASE_5 in await this.getShipmentPhase(roleProof, id)))
+            throw new Error('Shipment in wrong phase');
+        if(EvaluationStatusEnum.APPROVED in shipment.qualityEvaluationStatus)
+            throw new Error('Quality already approved');
         shipment.qualityEvaluationStatus = evaluationStatus;
 
         this.shipments.insert(id, shipment);
@@ -237,9 +294,11 @@ class ShipmentManager {
         const shipment = this.shipments.get(id);
         if(!shipment)
             throw new Error('Shipment not found');
-        if(!('PHASE_3' in await this.getShipmentPhase(roleProof, id)))
+        if(shipment.escrowAddress.length === 0)
+            throw new Error('Escrow not set');
+        if(!(PhaseEnum.PHASE_3 in await this.getShipmentPhase(roleProof, id)))
             throw new Error('Shipment in wrong phase');
-        if(!('NOT_LOCKED' in shipment.fundsStatus))
+        if(!(FundStatusEnum.NOT_LOCKED in shipment.fundsStatus))
             throw new Error('Funds already locked');
 
         // TODO: Call escrow "deposit" method
@@ -251,11 +310,51 @@ class ShipmentManager {
         //     _fundsStatus = FundsStatus.LOCKED;
         // }
 
+        const methodName = "deposit";
+        const abiInterface = new ethers.Interface(escrowAbi.abi);
+        const payer = roleProof.membershipProof.delegatorAddress as Address;
+        const data = abiInterface.encodeFunctionData(methodName, [amount, payer]);
+        const maxPriorityFeePerGas = BigInt(1);
+        const baseFeePerGas = 300_000_000n;
+        const maxFeePerGas = baseFeePerGas * 2n + maxPriorityFeePerGas;
+        const gasLimit = 30_000_000n;
+        const nonce = await ethGetTransactionCount(payer);
+        console.log('escrowAddress', shipment.escrowAddress[0]);
+        let tx = ethers.Transaction.from({
+            to: shipment.escrowAddress[0],
+            data,
+            value: 0,
+            maxPriorityFeePerGas,
+            maxFeePerGas,
+            gasLimit,
+            nonce,
+            chainId: CHAIN_ID
+        });
+        console.log('tx', tx);
+        const unsignedSerializedTx = tx.unsignedSerialized;
+        const unsignedSerializedTxHash = ethers.keccak256(unsignedSerializedTx);
+        console.log('unsignedSerializedTxHash', unsignedSerializedTxHash);
+        const signedSerializedTxHash = await signWithEcdsa(
+            [ic.id().toUint8Array()],
+            ethers.getBytes(unsignedSerializedTxHash)
+        );
+        const { r, s, v } = calculateRsvForTEcdsa(
+            CHAIN_ID,
+            payer,
+            unsignedSerializedTxHash,
+            signedSerializedTxHash
+        );
+        tx.signature = {r, s, v};
+        const rawTransaction = tx.serialized;
+        const resp = await ethSendRawTransaction(rawTransaction);
+        console.log(resp);
+
         return shipment;
     }
 
     @update([RoleProof, IDL.Nat], IDL.Vec(IDL.Tuple(DocumentType, IDL.Vec(DocumentInfo))))
     @OnlyViewer
+    @OnlyInvolvedParties
     async getDocuments(roleProof: RoleProof, id: bigint) {
         const shipment = this.shipments.get(id);
         if(!shipment)
@@ -265,15 +364,16 @@ class ShipmentManager {
 
     @update([RoleProof, IDL.Nat, DocumentType, IDL.Text], Shipment)
     @OnlyEditor
+    @OnlyInvolvedParties
     async addDocument(roleProof: RoleProof, id: bigint, documentType: DocumentType, externalUrl: string): Promise<Shipment> {
         const shipment = this.shipments.get(id);
         if(!shipment)
             throw new Error('Shipment not found');
         const documents = await this.getDocumentsByType(roleProof, id, documentType);
         if(!(
-            'GENERIC' in documentType
+            DocumentTypeEnum.GENERIC in documentType
             || documents.length == 0
-            || !('APPROVED' in documents[0].evaluationStatus)
+            || !(EvaluationStatusEnum.APPROVED in documents[0].evaluationStatus)
         ))
             throw new Error('Document of this type already approved');
 
@@ -284,7 +384,7 @@ class ShipmentManager {
             uploadedBy: roleProof.membershipProof.delegatorAddress as Address,
             externalUrl,
         }
-        if('GENERIC' in documentType) {
+        if(DocumentTypeEnum.GENERIC in documentType) {
             const genericDocuments = shipment.documents.find(([type]) => 'GENERIC' in type);
             genericDocuments ? genericDocuments[1].push(documentInfo) : shipment.documents.push([documentType, [documentInfo]]);
         } else {
@@ -302,6 +402,7 @@ class ShipmentManager {
 
     @update([RoleProof, IDL.Nat, IDL.Nat, IDL.Text], Shipment)
     @OnlyEditor
+    @OnlyInvolvedParties
     async updateDocument(roleProof: RoleProof, id: bigint, documentId: bigint, externalUrl: string): Promise<Shipment> {
         const shipment = this.shipments.get(id);
         if(!shipment)
@@ -312,7 +413,7 @@ class ShipmentManager {
         const document = documentTuple[1].find(doc => doc.id === documentId);
         if(!document)
             throw new Error('Document not found');
-        if('APPROVED' in document.evaluationStatus)
+        if(EvaluationStatusEnum.APPROVED in document.evaluationStatus)
             throw new Error('Document already approved');
         const documentIndex = documentTuple[1].findIndex(doc => doc.id === documentId);
         documentTuple[1][documentIndex].externalUrl = externalUrl;
@@ -322,9 +423,10 @@ class ShipmentManager {
         return shipment;
     }
 
-    @update([RoleProof, IDL.Nat, IDL.Nat, DocumentEvaluationStatus], Shipment)
+    @update([RoleProof, IDL.Nat, IDL.Nat, EvaluationStatus], Shipment)
     @OnlyEditor
-    async evaluateDocument(roleProof: RoleProof, id: bigint, documentId: bigint, documentEvaluationStatus: DocumentEvaluationStatus): Promise<Shipment> {
+    @OnlyInvolvedParties
+    async evaluateDocument(roleProof: RoleProof, id: bigint, documentId: bigint, documentEvaluationStatus: EvaluationStatus): Promise<Shipment> {
         const shipment = this.shipments.get(id);
         if(!shipment)
             throw new Error('Shipment not found');
@@ -334,7 +436,7 @@ class ShipmentManager {
         const document = documentTuple[1][0];
         if(document.uploadedBy === roleProof.membershipProof.delegatorAddress)
             throw new Error('Caller is the uploader');
-        if('APPROVED' in document.evaluationStatus)
+        if(EvaluationStatusEnum.APPROVED in document.evaluationStatus)
             throw new Error('Document already approved');
         const documentIndex = documentTuple[1].findIndex(doc => doc.id === documentId);
         documentTuple[1][documentIndex].evaluationStatus = documentEvaluationStatus;
@@ -349,6 +451,7 @@ class ShipmentManager {
         return shipment;
     }
 
+    @query([], IDL.Vec(DocumentType))
     getPhase1Documents() {
         return [{
             SERVICE_GUIDE: null,
@@ -361,12 +464,14 @@ class ShipmentManager {
         }];
     }
 
+    @query([], IDL.Vec(DocumentType))
     getPhase1RequiredDocuments() {
         return [{
             PRE_SHIPMENT_SAMPLE: null,
         }];
     }
 
+    @query([], IDL.Vec(DocumentType))
     getPhase2Documents() {
         return [{
             SHIPPING_INSTRUCTIONS: null,
@@ -375,6 +480,7 @@ class ShipmentManager {
         }];
     }
 
+    @query([], IDL.Vec(DocumentType))
     getPhase2RequiredDocuments() {
         return [{
             SHIPPING_INSTRUCTIONS: null,
@@ -383,6 +489,7 @@ class ShipmentManager {
         }];
     }
 
+    @query([], IDL.Vec(DocumentType))
     getPhase3Documents() {
         return [{
             BOOKING_CONFIRMATION: null,
@@ -397,12 +504,14 @@ class ShipmentManager {
         }];
     }
 
+    @query([], IDL.Vec(DocumentType))
     getPhase3RequiredDocuments() {
         return [{
             BOOKING_CONFIRMATION: null,
         }];
     }
 
+    @query([], IDL.Vec(DocumentType))
     getPhase4Documents() {
         return [{
             EXPORT_CONFIRMATION: null,
@@ -421,6 +530,7 @@ class ShipmentManager {
         }];
     }
 
+    @query([], IDL.Vec(DocumentType))
     getPhase4RequiredDocuments() {
         return [{
             PHYTOSANITARY_CERTIFICATE: null,
@@ -431,10 +541,12 @@ class ShipmentManager {
         }];
     }
 
+    @query([], IDL.Vec(DocumentType))
     getPhase5Documents() {
         return [];
     }
 
+    @query([], IDL.Vec(DocumentType))
     getPhase5RequiredDocuments() {
         return [];
     }
