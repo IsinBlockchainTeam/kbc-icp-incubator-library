@@ -1,24 +1,26 @@
-import {call, IDL, init, update, StableBTreeMap} from 'azle';
-import {ic, Principal} from 'azle/experimental';
-import {ethers} from "ethers";
-import {RoleProof} from "./models/Proof";
-import {RequestResult, RpcService} from "./models/Rpc";
-import revocationRegistryAbi from "../eth-abi/RevocationRegistry.json";
-import {Address, GetAddressResponse} from "./models/Address";
-import {ROLES} from "./models/Role";
+import { call, IDL, init, update, StableBTreeMap } from 'azle';
+import { ic, Principal } from 'azle/experimental';
+import { ethers } from 'ethers';
+import { RoleProof } from './models/Proof';
+import { RequestResult, RpcService } from './models/Rpc';
+import revocationRegistryAbi from '../eth-abi/RevocationRegistry.json';
+import { GetAddressResponse } from './models/Address';
+import { ROLES } from './models/Role';
 
-const RPC_URL_KEY = "RPC_URL";
-const REVOCATION_REGISTRY_ADDRESS_KEY = "REVOCATION_REGISTRY_ADDRESS";
-const OWNER_ADDRESS_KEY = "OWNER_ADDRESS";
+const RPC_URL_KEY = 'RPC_URL';
+const REVOCATION_REGISTRY_ADDRESS_KEY = 'REVOCATION_REGISTRY_ADDRESS';
+const OWNER_ADDRESS_KEY = 'OWNER_ADDRESS';
 class DelegateManager {
     instanceVariable = StableBTreeMap<string, string>(0);
+
     evmRpcCanisterId: string = getEVMRpcCanisterId();
+
     siweProviderCanisterId: string = getSiweProviderCanisterId();
+
     incrementalRoles = [ROLES.VIEWER, ROLES.EDITOR, ROLES.SIGNER];
 
-
     @init([IDL.Text, IDL.Text, IDL.Text])
-    async init(rpcUrl: string, revocationRegistryAddress: Address, ownerAddress: Address): Promise<void> {
+    async init(rpcUrl: string, revocationRegistryAddress: string, ownerAddress: string): Promise<void> {
         this.instanceVariable.insert(RPC_URL_KEY, rpcUrl);
         this.instanceVariable.insert(REVOCATION_REGISTRY_ADDRESS_KEY, revocationRegistryAddress);
         this.instanceVariable.insert(OWNER_ADDRESS_KEY, ownerAddress);
@@ -27,58 +29,54 @@ class DelegateManager {
     @update([RoleProof, IDL.Principal, IDL.Text], IDL.Bool)
     async hasValidRole(proof: RoleProof, caller: Principal, minimumRole: string): Promise<boolean> {
         const unixTime = Number(ic.time().toString().substring(0, 13));
-        const { signedProof, signer: expectedSigner, ...data} = proof;
+        const { signedProof, signer: expectedSigner, ...data } = proof;
 
         const delegateCredentialExpiryDate = Number(data.delegateCredentialExpiryDate);
         const roleProofStringifiedData = JSON.stringify({
             delegateAddress: data.delegateAddress,
             role: data.role,
             delegateCredentialIdHash: data.delegateCredentialIdHash,
-            delegateCredentialExpiryDate: delegateCredentialExpiryDate,
+            delegateCredentialExpiryDate
         });
         const roleProofSigner = ethers.verifyMessage(roleProofStringifiedData, signedProof);
         // If signedProof is different from the reconstructed proof, the two signers are different
-        if(roleProofSigner !== expectedSigner) return false;
+        if (roleProofSigner !== expectedSigner) return false;
         // If the delegate is not at least the minimum role, the delegate is not valid
-        if(!this.isAtLeast(data.role, minimumRole)) return false;
+        if (!this.isAtLeast(data.role, minimumRole)) return false;
         // If the delegate credential has expired, the delegate is not valid
-        if(data.delegateCredentialExpiryDate < unixTime) return false;
+        if (data.delegateCredentialExpiryDate < unixTime) return false;
         // If the caller is not the delegate address, the proof is invalid
-        if(await this.getAddress(caller) !== data.delegateAddress) return false;
+        if ((await this.getAddress(caller)) !== data.delegateAddress) return false;
         // If the delegate credential has been revoked, the delegate is not valid
-        if(await this.isRevoked(roleProofSigner, data.delegateCredentialIdHash)) return false;
+        if (await this.isRevoked(roleProofSigner, data.delegateCredentialIdHash)) return false;
 
         const { membershipProof } = data;
         const delegatorCredentialExpiryDate = Number(membershipProof.delegatorCredentialExpiryDate);
         const membershipProofStringifiedData = JSON.stringify({
             delegatorCredentialIdHash: membershipProof.delegatorCredentialIdHash,
-            delegatorCredentialExpiryDate: delegatorCredentialExpiryDate,
-            delegatorAddress: membershipProof.delegatorAddress,
+            delegatorCredentialExpiryDate,
+            delegatorAddress: membershipProof.delegatorAddress
         });
         const membershipProofSigner = ethers.verifyMessage(membershipProofStringifiedData, membershipProof.signedProof);
         // If the membership proof signer is different from the delegate signer, the proof is invalid
-        if(membershipProofSigner !== membershipProof.issuer) return false;
+        if (membershipProofSigner !== membershipProof.issuer) return false;
         // If the proof signer is not the owner, the proof is invalid
-        if(membershipProofSigner !== this.instanceVariable.get(OWNER_ADDRESS_KEY)) return false;
+        if (membershipProofSigner !== this.instanceVariable.get(OWNER_ADDRESS_KEY)) return false;
         // If the delegator is not the signer of the role proof, the proof is invalid
-        if(membershipProof.delegatorAddress !== roleProofSigner) return false;
+        if (membershipProof.delegatorAddress !== roleProofSigner) return false;
         // If the membership credential has expired, the proof is invalid
-        if(membershipProof.delegatorCredentialExpiryDate < unixTime) return false;
+        if (membershipProof.delegatorCredentialExpiryDate < unixTime) return false;
         // If the membership credential has been revoked, the proof is invalid
-        return !await this.isRevoked(membershipProofSigner, membershipProof.delegatorCredentialIdHash);
+        return !(await this.isRevoked(membershipProofSigner, membershipProof.delegatorCredentialIdHash));
     }
 
-    async getAddress(principal: Principal): Promise<Address> {
-        const resp = await call(
-            this.siweProviderCanisterId,
-            'get_address',
-            {
-                paramIdlTypes: [IDL.Vec(IDL.Nat8)],
-                returnIdlType: GetAddressResponse,
-                args: [principal.toUint8Array()],
-            }
-        );
-        if(resp.Err) throw new Error('Unable to fetch address');
+    async getAddress(principal: Principal): Promise<string> {
+        const resp = await call(this.siweProviderCanisterId, 'get_address', {
+            paramIdlTypes: [IDL.Vec(IDL.Nat8)],
+            returnIdlType: GetAddressResponse,
+            args: [principal.toUint8Array()]
+        });
+        if (resp.Err) throw new Error('Unable to fetch address');
         return resp.Ok;
     }
 
@@ -87,40 +85,36 @@ class DelegateManager {
     }
 
     async isRevoked(signer: string, credentialIdHash: string): Promise<boolean> {
-        const methodName = "revoked";
+        const methodName = 'revoked';
         const abiInterface = new ethers.Interface(revocationRegistryAbi.abi);
         const data = abiInterface.encodeFunctionData(methodName, [signer, credentialIdHash]);
 
         const jsonRpcPayload = {
-            "jsonrpc": "2.0",
-            "method": "eth_call",
-            "params": [
+            jsonrpc: '2.0',
+            method: 'eth_call',
+            params: [
                 {
-                    "to": this.instanceVariable.get(REVOCATION_REGISTRY_ADDRESS_KEY),
-                    "data": data
+                    to: this.instanceVariable.get(REVOCATION_REGISTRY_ADDRESS_KEY),
+                    data
                 },
-                "latest"
+                'latest'
             ],
-            "id": 1
-        }
+            id: 1
+        };
         const JsonRpcSource = {
             Custom: {
                 url: this.instanceVariable.get(RPC_URL_KEY),
                 headers: []
             }
-        }
-        const resp = await call(
-            this.evmRpcCanisterId,
-            'request',
-            {
-                paramIdlTypes: [RpcService, IDL.Text, IDL.Nat64],
-                returnIdlType: RequestResult,
-                args: [JsonRpcSource, JSON.stringify(jsonRpcPayload), 2048],
-                payment: 2_000_000_000n
-            }
-        );
+        };
+        const resp = await call(this.evmRpcCanisterId, 'request', {
+            paramIdlTypes: [RpcService, IDL.Text, IDL.Nat64],
+            returnIdlType: RequestResult,
+            args: [JsonRpcSource, JSON.stringify(jsonRpcPayload), 2048],
+            payment: 2_000_000_000n
+        });
         console.log('resp', resp);
-        if(resp.Err) throw new Error('Unable to fetch revocation registry');
+        if (resp.Err) throw new Error('Unable to fetch revocation registry');
 
         const decodedResult = abiInterface.decodeFunctionResult(methodName, JSON.parse(resp.Ok).result);
         console.log(decodedResult[0]);

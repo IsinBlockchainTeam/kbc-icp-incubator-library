@@ -1,5 +1,4 @@
 import { ethers } from 'ethers';
-import { Address } from '../models/Address';
 import { ElementRegistryMethods } from '../ElementRegistry';
 import { CANISTER } from '../constants/canister';
 
@@ -9,13 +8,13 @@ export const validateDeadline = (name: string, deadline: number) => {
 export const validateDatesValidity = (validFrom: number, validUntil: number) => {
     if (validFrom > validUntil) throw new Error(`Valid until date must be greater than valid from one`);
 };
-export const validateAddress = (name: string, address: Address) => {
+export const validateAddress = (name: string, address: string) => {
     if (!ethers.isAddress(address)) throw new Error(`${name} is not a valid address`);
 };
 export const validatePositiveNumber = (name: string, number: number) => {
     if (number <= 0) throw new Error(`${name} must be greater than 0`);
 };
-export const validateInterestedParties = (name: string, address: Address, interestedParties: Address[]) => {
+export const validateInterestedParties = (name: string, address: string, interestedParties: string[]) => {
     if (!interestedParties.includes(address)) throw new Error(`${name} is not an interested party`);
 };
 export const validateAssessmentStandard = async (assessmentStandardValue: string) => {

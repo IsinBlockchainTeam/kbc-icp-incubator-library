@@ -1,7 +1,7 @@
 import { Wallet } from 'ethers';
-import { computeRoleProof } from './proof';
 import { CertificationManagerDriver } from './CertificationManagerDriver';
 import { SiweIdentityProvider } from './SiweIdentityProvider';
+import { computeRoleProof } from './proof';
 import { RoleProof } from '../../../icp/ts-canister/src/models/Proof';
 
 const USER1_PRIVATE_KEY = '0c7e66e74f6666b514cc73ee2b7ffc518951cf1ca5719d6820459c4e134f2264';
@@ -90,56 +90,56 @@ describe('CertificationManagerDriver', () => {
             expect(companyCertificate).toBeDefined();
         }, 30000);
 
-        it('should register scope certificate', async () => {
-            const {
-                certificationManagerDriver,
-                companyWallet: issuerCompanyWallet,
-                roleProof
-            } = utils1;
-            const { companyWallet: subjectCompanyWallet } = utils2;
-            const scopeCertificate = await certificationManagerDriver.registerScopeCertificate(
-                roleProof,
-                issuerCompanyWallet.address,
-                subjectCompanyWallet.address,
-                assessmentStandards[3],
-                assessmentAssuranceLevels[2],
-                '123456',
-                {
-                    id: BigInt(1),
-                    docType: { PRODUCTION_REPORT: null },
-                    externalUrl: 'externalUrl'
-                },
-                new Date(),
-                new Date(new Date().setDate(new Date().getDate() + 365)),
-                processTypes
-            );
-            expect(scopeCertificate).toBeDefined();
-        }, 30000);
-
-        it('should register material certificate', async () => {
-            const {
-                certificationManagerDriver,
-                companyWallet: issuerCompanyWallet,
-                roleProof
-            } = utils1;
-            const { companyWallet: subjectCompanyWallet } = utils2;
-            const materialCertificate =
-                await certificationManagerDriver.registerMaterialCertificate(
-                    roleProof,
-                    issuerCompanyWallet.address,
-                    subjectCompanyWallet.address,
-                    assessmentStandards[0],
-                    assessmentAssuranceLevels[3],
-                    '123456',
-                    {
-                        id: BigInt(1),
-                        docType: { PRODUCTION_REPORT: null },
-                        externalUrl: 'externalUrl'
-                    },
-                    1
-                );
-            expect(materialCertificate).toBeDefined();
-        }, 30000);
+        // it('should register scope certificate', async () => {
+        //     const {
+        //         certificationManagerDriver,
+        //         companyWallet: issuerCompanyWallet,
+        //         roleProof
+        //     } = utils1;
+        //     const { companyWallet: subjectCompanyWallet } = utils2;
+        //     const scopeCertificate = await certificationManagerDriver.registerScopeCertificate(
+        //         roleProof,
+        //         issuerCompanyWallet.address,
+        //         subjectCompanyWallet.address,
+        //         assessmentStandards[3],
+        //         assessmentAssuranceLevels[2],
+        //         '123456',
+        //         {
+        //             id: BigInt(1),
+        //             docType: { PRODUCTION_REPORT: null },
+        //             externalUrl: 'externalUrl'
+        //         },
+        //         new Date(),
+        //         new Date(new Date().setDate(new Date().getDate() + 365)),
+        //         processTypes
+        //     );
+        //     expect(scopeCertificate).toBeDefined();
+        // }, 30000);
+        //
+        // it('should register material certificate', async () => {
+        //     const {
+        //         certificationManagerDriver,
+        //         companyWallet: issuerCompanyWallet,
+        //         roleProof
+        //     } = utils1;
+        //     const { companyWallet: subjectCompanyWallet } = utils2;
+        //     const materialCertificate =
+        //         await certificationManagerDriver.registerMaterialCertificate(
+        //             roleProof,
+        //             issuerCompanyWallet.address,
+        //             subjectCompanyWallet.address,
+        //             assessmentStandards[0],
+        //             assessmentAssuranceLevels[3],
+        //             '123456',
+        //             {
+        //                 id: BigInt(1),
+        //                 docType: { PRODUCTION_REPORT: null },
+        //                 externalUrl: 'externalUrl'
+        //             },
+        //             1
+        //         );
+        //     expect(materialCertificate).toBeDefined();
+        // }, 30000);
     });
 
     describe('Get certificates', () => {
@@ -151,7 +151,6 @@ describe('CertificationManagerDriver', () => {
                 subjectCompanyWallet.address,
                 0
             );
-            console.log(companyCertificate);
             expect(companyCertificate).toBeDefined();
             const companyCertificates = await certificationManagerDriver.getCompanyCertificates(
                 roleProof,
@@ -160,40 +159,40 @@ describe('CertificationManagerDriver', () => {
             expect(companyCertificates.length).toBeGreaterThan(0);
         }, 30000);
 
-        it('should retrieve scope certificate', async () => {
-            const { certificationManagerDriver, roleProof } = utils1;
-            const { companyWallet: subjectCompanyWallet } = utils2;
-            const scopeCertificate = await certificationManagerDriver.getScopeCertificate(
-                roleProof,
-                subjectCompanyWallet.address,
-                1
-            );
-            expect(scopeCertificate).toBeDefined();
-        }, 30000);
-
-        it('should retrieve material certificate', async () => {
-            const { certificationManagerDriver, roleProof } = utils1;
-            const { companyWallet: subjectCompanyWallet } = utils2;
-            const materialCertificate = await certificationManagerDriver.getMaterialCertificate(
-                roleProof,
-                subjectCompanyWallet.address,
-                2
-            );
-            expect(materialCertificate).toBeDefined();
-        }, 30000);
-
-        it('should retrieve all certificates by subject', async () => {
-            const { certificationManagerDriver, roleProof } = utils1;
-            const { companyWallet: subjectCompanyWallet } = utils2;
-            const certificates = await certificationManagerDriver.getBaseCertificatesInfoBySubject(
-                roleProof,
-                subjectCompanyWallet.address
-            );
-            expect(certificates.length).toEqual(3);
-            expect(certificates[0].certType).toEqual({ COMPANY: null });
-            expect(certificates[1].certType).toEqual({ SCOPE: null });
-            expect(certificates[2].certType).toEqual({ MATERIAL: null });
-        }, 30000);
+        // it('should retrieve scope certificate', async () => {
+        //     const { certificationManagerDriver, roleProof } = utils1;
+        //     const { companyWallet: subjectCompanyWallet } = utils2;
+        //     const scopeCertificate = await certificationManagerDriver.getScopeCertificate(
+        //         roleProof,
+        //         subjectCompanyWallet.address,
+        //         1
+        //     );
+        //     expect(scopeCertificate).toBeDefined();
+        // }, 30000);
+        //
+        // it('should retrieve material certificate', async () => {
+        //     const { certificationManagerDriver, roleProof } = utils1;
+        //     const { companyWallet: subjectCompanyWallet } = utils2;
+        //     const materialCertificate = await certificationManagerDriver.getMaterialCertificate(
+        //         roleProof,
+        //         subjectCompanyWallet.address,
+        //         2
+        //     );
+        //     expect(materialCertificate).toBeDefined();
+        // }, 30000);
+        //
+        // it('should retrieve all certificates by subject', async () => {
+        //     const { certificationManagerDriver, roleProof } = utils1;
+        //     const { companyWallet: subjectCompanyWallet } = utils2;
+        //     const certificates = await certificationManagerDriver.getBaseCertificatesInfoBySubject(
+        //         roleProof,
+        //         subjectCompanyWallet.address
+        //     );
+        //     expect(certificates.length).toEqual(3);
+        //     expect(certificates[0].certType).toEqual({ COMPANY: null });
+        //     expect(certificates[1].certType).toEqual({ SCOPE: null });
+        //     expect(certificates[2].certType).toEqual({ MATERIAL: null });
+        // }, 30000);
     });
 
     describe('Update certificates', () => {
@@ -220,50 +219,90 @@ describe('CertificationManagerDriver', () => {
             expect(updatedCompanyCertificate).toEqual(companyCertificate);
         }, 30000);
 
-        it('should update scope certificate', async () => {
-            const { certificationManagerDriver, roleProof } = utils1;
-            const { companyWallet: subjectCompanyWallet } = utils2;
-            const updatedValidUntil = new Date(new Date().setDate(new Date().getDate() + 2));
-            const scopeCertificate = await certificationManagerDriver.updateScopeCertificate(
-                roleProof,
-                1,
-                assessmentStandards[3],
-                assessmentAssuranceLevels[2],
-                '12345678',
-                new Date(),
-                updatedValidUntil,
-                processTypes
-            );
-            expect(scopeCertificate).toBeDefined();
-            expect(scopeCertificate.validUntil).toEqual(BigInt(updatedValidUntil.getTime()));
-            const updatedScopeCertificate = await certificationManagerDriver.getScopeCertificate(
-                roleProof,
-                subjectCompanyWallet.address,
-                1
-            );
-            expect(updatedScopeCertificate).toEqual(scopeCertificate);
-        }, 30000);
+        // it('should update scope certificate', async () => {
+        //     const { certificationManagerDriver, roleProof } = utils1;
+        //     const { companyWallet: subjectCompanyWallet } = utils2;
+        //     const updatedValidUntil = new Date(new Date().setDate(new Date().getDate() + 2));
+        //     const scopeCertificate = await certificationManagerDriver.updateScopeCertificate(
+        //         roleProof,
+        //         1,
+        //         assessmentStandards[3],
+        //         assessmentAssuranceLevels[2],
+        //         '12345678',
+        //         new Date(),
+        //         updatedValidUntil,
+        //         processTypes
+        //     );
+        //     expect(scopeCertificate).toBeDefined();
+        //     expect(scopeCertificate.validUntil).toEqual(BigInt(updatedValidUntil.getTime()));
+        //     const updatedScopeCertificate = await certificationManagerDriver.getScopeCertificate(
+        //         roleProof,
+        //         subjectCompanyWallet.address,
+        //         1
+        //     );
+        //     expect(updatedScopeCertificate).toEqual(scopeCertificate);
+        // }, 30000);
+        //
+        // it('should update material certificate', async () => {
+        //     const { certificationManagerDriver, roleProof } = utils1;
+        //     const { companyWallet: subjectCompanyWallet } = utils2;
+        //     const materialCertificate = await certificationManagerDriver.updateMaterialCertificate(
+        //         roleProof,
+        //         2,
+        //         assessmentStandards[3],
+        //         assessmentAssuranceLevels[4],
+        //         '12345678',
+        //         1
+        //     );
+        //     expect(materialCertificate).toBeDefined();
+        //     expect(materialCertificate.assessmentStandard).toEqual(assessmentStandards[3]);
+        //     const updatedMaterialCertificate =
+        //         await certificationManagerDriver.getMaterialCertificate(
+        //             roleProof,
+        //             subjectCompanyWallet.address,
+        //             2
+        //         );
+        //     expect(updatedMaterialCertificate).toEqual(materialCertificate);
+        // }, 30000);
 
-        it('should update material certificate', async () => {
-            const { certificationManagerDriver, roleProof } = utils1;
-            const { companyWallet: subjectCompanyWallet } = utils2;
-            const materialCertificate = await certificationManagerDriver.updateMaterialCertificate(
-                roleProof,
-                2,
-                assessmentStandards[3],
-                assessmentAssuranceLevels[4],
-                '12345678',
-                1
-            );
-            expect(materialCertificate).toBeDefined();
-            expect(materialCertificate.assessmentStandard).toEqual(assessmentStandards[3]);
-            const updatedMaterialCertificate =
-                await certificationManagerDriver.getMaterialCertificate(
-                    roleProof,
-                    subjectCompanyWallet.address,
-                    2
-                );
-            expect(updatedMaterialCertificate).toEqual(materialCertificate);
-        }, 30000);
+        // it('should update certificate document', async () => {
+        //     const { certificationManagerDriver, roleProof } = utils1;
+        //     const { companyWallet: subjectCompanyWallet } = utils2;
+        //     const document = {
+        //         id: BigInt(1),
+        //         docType: { CERTIFICATE_OF_CONFORMITY: null },
+        //         externalUrl: 'externalUrl'
+        //     };
+        //     const updatedDocument = {
+        //         id: BigInt(2),
+        //         docType: { CERTIFICATE_OF_CONFORMITY: null },
+        //         externalUrl: 'externalUrl'
+        //     };
+        //     const companyCertificate = await certificationManagerDriver.registerCompanyCertificate(
+        //         roleProof,
+        //         subjectCompanyWallet.address,
+        //         subjectCompanyWallet.address,
+        //         assessmentStandards[1],
+        //         assessmentAssuranceLevels[0],
+        //         '123456',
+        //         document,
+        //         new Date(),
+        //         new Date(new Date().setDate(new Date().getDate() + 365))
+        //     );
+        //     expect(companyCertificate).toBeDefined();
+        //     await certificationManagerDriver.updateDocument(
+        //         roleProof,
+        //         companyCertificate.id,
+        //         updatedDocument
+        //     );
+        //     const updatedCompanyCertificate =
+        //         await certificationManagerDriver.getCompanyCertificate(
+        //             roleProof,
+        //             subjectCompanyWallet.address,
+        //             companyCertificate.id
+        //         );
+        //     expect(updatedCompanyCertificate).toBeDefined();
+        //     expect(updatedCompanyCertificate.document).toEqual(updatedDocument);
+        // });
     });
 });

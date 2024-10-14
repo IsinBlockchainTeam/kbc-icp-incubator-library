@@ -1,6 +1,5 @@
 import { IDL, update, StableBTreeMap } from 'azle';
 import { Order, OrderLine } from './models/Order';
-import { Address } from './models/Address';
 import { validateAddress, validateDeadline, validateInterestedParties, validatePositiveNumber } from './utils/validation';
 import { RoleProof } from './models/Proof';
 import { OnlyEditor, OnlySigner, OnlyViewer } from './decorators/roles';
@@ -12,7 +11,7 @@ class OrderManager {
     @update([RoleProof], IDL.Vec(Order))
     @OnlyViewer
     async getOrders(roleProof: RoleProof): Promise<Order[]> {
-        const companyAddress = roleProof.membershipProof.delegatorAddress as Address;
+        const companyAddress = roleProof.membershipProof.delegatorAddress;
         return this.orders.values().filter((order) => {
             const interestedParties = [order.supplier, order.customer, order.commissioner];
             return interestedParties.includes(companyAddress);
@@ -25,28 +24,31 @@ class OrderManager {
         const result = this.orders.get(id);
         if (result) {
             const interestedParties = [result.supplier, result.customer, result.commissioner];
-            const companyAddress = roleProof.membershipProof.delegatorAddress as Address;
+            const companyAddress = roleProof.membershipProof.delegatorAddress;
             if (!interestedParties.includes(companyAddress)) throw new Error('Access denied');
             return result;
         }
         throw new Error('Order not found');
     }
 
-    @update([RoleProof, Address, Address, Address, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, Address, Address, IDL.Nat, Address, IDL.Vec(OrderLine)], Order)
+    @update(
+        [RoleProof, IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Text, IDL.Text, IDL.Nat, IDL.Text, IDL.Vec(OrderLine)],
+        Order
+    )
     @OnlyEditor
     async createOrder(
         roleProof: RoleProof,
-        supplier: Address,
-        customer: Address,
-        commissioner: Address,
+        supplier: string,
+        customer: string,
+        commissioner: string,
         paymentDeadline: number,
         documentDeliveryDeadline: number,
         shippingDeadline: number,
         deliveryDeadline: number,
-        arbiter: Address,
-        token: Address,
+        arbiter: string,
+        token: string,
         agreedAmount: number,
-        escrowManager: Address,
+        escrowManager: string,
         lines: OrderLine[]
     ): Promise<Order> {
         if (supplier === customer) throw new Error('Supplier and customer must be different');
@@ -54,7 +56,7 @@ class OrderManager {
         validateAddress('Customer', customer);
         validateAddress('Commissioner', commissioner);
         const interestedParties = [supplier, customer, commissioner];
-        const companyAddress = roleProof.membershipProof.delegatorAddress as Address;
+        const companyAddress = roleProof.membershipProof.delegatorAddress;
         validateInterestedParties('Caller', companyAddress, interestedParties);
         validateDeadline('Payment deadline', paymentDeadline);
         validateDeadline('Document delivery deadline', documentDeliveryDeadline);
@@ -95,24 +97,39 @@ class OrderManager {
     }
 
     @update(
-        [RoleProof, IDL.Nat, Address, Address, Address, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, Address, Address, IDL.Nat, Address, IDL.Vec(OrderLine)],
+        [
+            RoleProof,
+            IDL.Nat,
+            IDL.Text,
+            IDL.Text,
+            IDL.Text,
+            IDL.Nat,
+            IDL.Nat,
+            IDL.Nat,
+            IDL.Nat,
+            IDL.Text,
+            IDL.Text,
+            IDL.Nat,
+            IDL.Text,
+            IDL.Vec(OrderLine)
+        ],
         Order
     )
     @OnlyEditor
     async updateOrder(
         roleProof: RoleProof,
         id: bigint,
-        supplier: Address,
-        customer: Address,
-        commissioner: Address,
+        supplier: string,
+        customer: string,
+        commissioner: string,
         paymentDeadline: number,
         documentDeliveryDeadline: number,
         shippingDeadline: number,
         deliveryDeadline: number,
-        arbiter: Address,
-        token: Address,
+        arbiter: string,
+        token: string,
         agreedAmount: number,
-        escrowManager: Address,
+        escrowManager: string,
         lines: OrderLine[]
     ): Promise<Order> {
         const order = this.orders.get(id);
@@ -122,7 +139,7 @@ class OrderManager {
         validateAddress('Customer', customer);
         validateAddress('Commissioner', commissioner);
         const interestedParties = [supplier, customer, commissioner];
-        const companyAddress = roleProof.membershipProof.delegatorAddress as Address;
+        const companyAddress = roleProof.membershipProof.delegatorAddress;
         validateInterestedParties('Caller', companyAddress, interestedParties);
         validateDeadline('Payment deadline', paymentDeadline);
         validateDeadline('Document delivery deadline', documentDeliveryDeadline);
@@ -166,7 +183,7 @@ class OrderManager {
     async signOrder(roleProof: RoleProof, id: bigint): Promise<Order> {
         const order = this.orders.get(id);
         if (!order) throw new Error('Order not found');
-        const companyAddress = roleProof.membershipProof.delegatorAddress as Address;
+        const companyAddress = roleProof.membershipProof.delegatorAddress;
         if (order.signatures.includes(companyAddress)) throw new Error('Order already signed');
         order.signatures.push(companyAddress);
         if (order.signatures.includes(order.supplier) && order.signatures.includes(order.customer)) order.status = { CONFIRMED: null };

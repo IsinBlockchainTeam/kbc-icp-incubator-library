@@ -65,6 +65,7 @@
         "curly": "off",
         "class-methods-use-this": "off",
         "no-console": "off",
-        "no-redeclare": "off"
+        "no-redeclare": "off",
+        "no-param-reassign": "off"
     }
 }

@@ -1,6 +1,5 @@
 import { IDL } from 'azle';
 import { Price } from './Price';
-import { Address } from './Address';
 
 export const OrderStatus = IDL.Variant({
     PENDING: IDL.Null,
@@ -24,39 +23,39 @@ export const OrderLine = IDL.Record({
 });
 export type Order = {
     id: number;
-    supplier: Address;
-    customer: Address;
-    commissioner: Address;
-    signatures: Address[];
+    supplier: string;
+    customer: string;
+    commissioner: string;
+    signatures: string[];
     status: OrderStatus;
     paymentDeadline: number;
     documentDeliveryDeadline: number;
     shippingDeadline: number;
     deliveryDeadline: number;
-    arbiter: Address;
+    arbiter: string;
     lines: OrderLine[];
-    token: Address;
+    token: string;
     agreedAmount: number;
-    escrowManager: Address;
-    escrow: [Address] | [];
+    escrowManager: string;
+    escrow: [string] | [];
     shipmentId: [number] | [];
 };
 export const Order = IDL.Record({
     id: IDL.Nat,
-    supplier: Address,
-    customer: Address,
-    commissioner: Address,
-    signatures: IDL.Vec(Address),
+    supplier: IDL.Text,
+    customer: IDL.Text,
+    commissioner: IDL.Text,
+    signatures: IDL.Vec(IDL.Text),
     status: OrderStatus,
     paymentDeadline: IDL.Nat,
     documentDeliveryDeadline: IDL.Nat,
     shippingDeadline: IDL.Nat,
     deliveryDeadline: IDL.Nat,
-    arbiter: Address,
+    arbiter: IDL.Text,
     lines: IDL.Vec(OrderLine),
-    token: Address,
+    token: IDL.Text,
     agreedAmount: IDL.Nat,
-    escrowManager: Address,
-    escrow: IDL.Opt(Address),
+    escrowManager: IDL.Text,
+    escrow: IDL.Opt(IDL.Text),
     shipmentId: IDL.Opt(IDL.Nat)
 });

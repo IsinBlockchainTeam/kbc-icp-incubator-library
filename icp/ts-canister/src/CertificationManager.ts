@@ -1,6 +1,14 @@
 import { IDL, init, StableBTreeMap, update } from 'azle';
-import { Address } from './models/Address';
-import { BaseCertificate, CertificateType, CompanyCertificate, DocumentInfo, MaterialCertificate, ScopeCertificate } from './models/Certificate';
+import {
+    BaseCertificate,
+    CertificateType,
+    CertificateTypeEnum,
+    CompanyCertificate,
+    DocumentEvaluationStatus,
+    DocumentInfo,
+    MaterialCertificate,
+    ScopeCertificate
+} from './models/Certificate';
 import { OnlyEditor, OnlyViewer } from './decorators/roles';
 import { RoleProof } from './models/Proof';
 import {
@@ -13,22 +21,22 @@ import {
 } from './utils/validation';
 
 type CertificationRecord = {
-    subject: Address;
+    subject: string;
     certType: CertificateType;
 };
 const CertificationRecord = IDL.Record({
-    subject: Address,
+    subject: IDL.Text,
     certType: CertificateType
 });
 
 class CertificationManager {
     allCertificateRecords = StableBTreeMap<bigint, CertificationRecord>(0);
 
-    companyCertificates = StableBTreeMap<Address, CompanyCertificate[]>(1);
+    companyCertificates = StableBTreeMap<string, CompanyCertificate[]>(1);
 
-    scopeCertificates = StableBTreeMap<Address, ScopeCertificate[]>(2);
+    scopeCertificates = StableBTreeMap<string, ScopeCertificate[]>(2);
 
-    materialCertificates = StableBTreeMap<Address, MaterialCertificate[]>(3);
+    materialCertificates = StableBTreeMap<string, MaterialCertificate[]>(3);
 
     counter = 0;
 
@@ -37,12 +45,12 @@ class CertificationManager {
         this.counter = this.allCertificateRecords.keys().length;
     }
 
-    @update([RoleProof, Address, Address, IDL.Text, IDL.Text, IDL.Text, DocumentInfo, IDL.Nat, IDL.Nat], CompanyCertificate)
+    @update([RoleProof, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, DocumentInfo, IDL.Nat, IDL.Nat], CompanyCertificate)
     @OnlyEditor
     async registerCompanyCertificate(
         roleProof: RoleProof,
-        issuer: Address,
-        subject: Address,
+        issuer: string,
+        subject: string,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
         referenceId: string,
@@ -55,7 +63,7 @@ class CertificationManager {
         validateDatesValidity(validFrom, validUntil);
         await validateAssessmentStandard(assessmentStandard);
         await validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
-        const companyAddress = roleProof.membershipProof.delegatorAddress as Address;
+        const companyAddress = roleProof.membershipProof.delegatorAddress;
         const certificate: CompanyCertificate = {
             id: BigInt(this.counter++),
             uploadedBy: companyAddress,
@@ -77,12 +85,12 @@ class CertificationManager {
         return certificate;
     }
 
-    @update([RoleProof, Address, Address, IDL.Text, IDL.Text, IDL.Text, DocumentInfo, IDL.Nat, IDL.Nat, IDL.Vec(IDL.Text)], ScopeCertificate)
+    @update([RoleProof, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, DocumentInfo, IDL.Nat, IDL.Nat, IDL.Vec(IDL.Text)], ScopeCertificate)
     @OnlyEditor
     async registerScopeCertificate(
         roleProof: RoleProof,
-        issuer: Address,
-        subject: Address,
+        issuer: string,
+        subject: string,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
         referenceId: string,
@@ -97,7 +105,7 @@ class CertificationManager {
         await validateAssessmentStandard(assessmentStandard);
         await validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
         await validateProcessTypes(processTypes);
-        const companyAddress = roleProof.membershipProof.delegatorAddress as Address;
+        const companyAddress = roleProof.membershipProof.delegatorAddress;
         const certificate: ScopeCertificate = {
             id: BigInt(this.counter++),
             uploadedBy: companyAddress,
@@ -120,12 +128,12 @@ class CertificationManager {
         return certificate;
     }
 
-    @update([RoleProof, Address, Address, IDL.Text, IDL.Text, IDL.Text, DocumentInfo, IDL.Nat], MaterialCertificate)
+    @update([RoleProof, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, DocumentInfo, IDL.Nat], MaterialCertificate)
     @OnlyEditor
     async registerMaterialCertificate(
         roleProof: RoleProof,
-        issuer: Address,
-        subject: Address,
+        issuer: string,
+        subject: string,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
         referenceId: string,
@@ -136,7 +144,7 @@ class CertificationManager {
         validateAddress('Subject', subject);
         await validateAssessmentStandard(assessmentStandard);
         await validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
-        const companyAddress = roleProof.membershipProof.delegatorAddress as Address;
+        const companyAddress = roleProof.membershipProof.delegatorAddress;
         const certificate: MaterialCertificate = {
             id: BigInt(this.counter++),
             uploadedBy: companyAddress,
@@ -157,9 +165,9 @@ class CertificationManager {
         return certificate;
     }
 
-    @update([RoleProof, Address], IDL.Vec(BaseCertificate))
+    @update([RoleProof, IDL.Text], IDL.Vec(BaseCertificate))
     @OnlyViewer
-    async getBaseCertificatesInfoBySubject(roleProof: RoleProof, subject: Address): Promise<BaseCertificate[]> {
+    async getBaseCertificatesInfoBySubject(roleProof: RoleProof, subject: string): Promise<BaseCertificate[]> {
         validateAddress('Subject', subject);
         const companyCertificates = this.companyCertificates.get(subject) || [];
         const scopeCertificates = this.scopeCertificates.get(subject) || [];
@@ -180,43 +188,43 @@ class CertificationManager {
         }));
     }
 
-    @update([RoleProof, Address], IDL.Vec(CompanyCertificate))
+    @update([RoleProof, IDL.Text], IDL.Vec(CompanyCertificate))
     @OnlyViewer
-    async getCompanyCertificates(roleProof: RoleProof, subject: Address): Promise<CompanyCertificate[]> {
+    async getCompanyCertificates(roleProof: RoleProof, subject: string): Promise<CompanyCertificate[]> {
         return this.companyCertificates.get(subject) || [];
     }
 
-    @update([RoleProof, Address], IDL.Vec(ScopeCertificate))
+    @update([RoleProof, IDL.Text], IDL.Vec(ScopeCertificate))
     @OnlyViewer
-    async getScopeCertificates(roleProof: RoleProof, subject: Address): Promise<ScopeCertificate[]> {
+    async getScopeCertificates(roleProof: RoleProof, subject: string): Promise<ScopeCertificate[]> {
         return this.scopeCertificates.get(subject) || [];
     }
 
-    @update([RoleProof, Address], IDL.Vec(MaterialCertificate))
+    @update([RoleProof, IDL.Text], IDL.Vec(MaterialCertificate))
     @OnlyViewer
-    async getMaterialCertificates(roleProof: RoleProof, subject: Address): Promise<MaterialCertificate[]> {
+    async getMaterialCertificates(roleProof: RoleProof, subject: string): Promise<MaterialCertificate[]> {
         return this.materialCertificates.get(subject) || [];
     }
 
-    @update([RoleProof, Address, IDL.Nat], CompanyCertificate)
+    @update([RoleProof, IDL.Text, IDL.Nat], CompanyCertificate)
     @OnlyViewer
-    async getCompanyCertificate(roleProof: RoleProof, subject: Address, id: bigint): Promise<CompanyCertificate> {
+    async getCompanyCertificate(roleProof: RoleProof, subject: string, id: bigint): Promise<CompanyCertificate> {
         const certificate = this.companyCertificates.get(subject)?.find((cert) => BigInt(cert.id) === id);
         if (!certificate) throw new Error('Company certificate not found');
         return certificate;
     }
 
-    @update([RoleProof, Address, IDL.Nat], ScopeCertificate)
+    @update([RoleProof, IDL.Text, IDL.Nat], ScopeCertificate)
     @OnlyViewer
-    async getScopeCertificate(roleProof: RoleProof, subject: Address, id: bigint): Promise<ScopeCertificate> {
+    async getScopeCertificate(roleProof: RoleProof, subject: string, id: bigint): Promise<ScopeCertificate> {
         const certificate = this.scopeCertificates.get(subject)?.find((cert) => BigInt(cert.id) === id);
         if (!certificate) throw new Error('Scope certificate not found');
         return certificate;
     }
 
-    @update([RoleProof, Address, IDL.Nat], MaterialCertificate)
+    @update([RoleProof, IDL.Text, IDL.Nat], MaterialCertificate)
     @OnlyViewer
-    async getMaterialCertificate(roleProof: RoleProof, subject: Address, id: bigint): Promise<MaterialCertificate> {
+    async getMaterialCertificate(roleProof: RoleProof, subject: string, id: bigint): Promise<MaterialCertificate> {
         const certificate = this.materialCertificates.get(subject)?.find((cert) => BigInt(cert.id) === id);
         if (!certificate) throw new Error('Material certificate not found');
         return certificate;
@@ -236,12 +244,7 @@ class CertificationManager {
         validateDatesValidity(validFrom, validUntil);
         await validateAssessmentStandard(assessmentStandard);
         await validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
-        const certificate = this.allCertificateRecords.get(certificateId);
-        if (!certificate || JSON.stringify(certificate.certType) !== JSON.stringify({ COMPANY: null }))
-            throw new Error('Company certificate not found');
-        const companyCertificates = this.companyCertificates.get(certificate.subject)!;
-        const certificateIndex = companyCertificates.findIndex((cert) => cert.id === certificateId);
-        const companyCertificate = companyCertificates[certificateIndex];
+        const [companyCertificate, companyCertificates, certificateIndex] = this._getCertificateInfoById<CompanyCertificate>(certificateId);
         validateFieldValue(companyCertificate.uploadedBy, roleProof.membershipProof.delegatorAddress, 'Caller is not the owner of the certificate');
         companyCertificate.assessmentStandard = assessmentStandard;
         companyCertificate.assessmentAssuranceLevel = assessmentAssuranceLevel;
@@ -250,7 +253,7 @@ class CertificationManager {
         companyCertificate.validUntil = BigInt(validUntil);
 
         companyCertificates[certificateIndex] = companyCertificate;
-        this.companyCertificates.insert(certificate.subject, companyCertificates);
+        this.companyCertificates.insert(companyCertificate.subject, companyCertificates);
         return companyCertificate;
     }
 
@@ -270,11 +273,7 @@ class CertificationManager {
         await validateAssessmentStandard(assessmentStandard);
         await validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
         await validateProcessTypes(processTypes);
-        const certificate = this.allCertificateRecords.get(certificateId);
-        if (!certificate || JSON.stringify(certificate.certType) !== JSON.stringify({ SCOPE: null })) throw new Error('Scope certificate not found');
-        const scopeCertificates = this.scopeCertificates.get(certificate.subject)!;
-        const certificateIndex = scopeCertificates.findIndex((cert) => cert.id === certificateId);
-        const scopeCertificate = scopeCertificates[certificateIndex];
+        const [scopeCertificate, scopeCertificates, certificateIndex] = this._getCertificateInfoById<ScopeCertificate>(certificateId);
         validateFieldValue(scopeCertificate.uploadedBy, roleProof.membershipProof.delegatorAddress, 'Caller is not the owner of the certificate');
         scopeCertificate.assessmentStandard = assessmentStandard;
         scopeCertificate.assessmentAssuranceLevel = assessmentAssuranceLevel;
@@ -284,7 +283,7 @@ class CertificationManager {
         scopeCertificate.processTypes = processTypes;
 
         scopeCertificates[certificateIndex] = scopeCertificate;
-        this.scopeCertificates.insert(certificate.subject, scopeCertificates);
+        this.scopeCertificates.insert(scopeCertificate.subject, scopeCertificates);
         return scopeCertificate;
     }
 
@@ -300,12 +299,7 @@ class CertificationManager {
     ): Promise<MaterialCertificate> {
         await validateAssessmentStandard(assessmentStandard);
         await validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
-        const certificate = this.allCertificateRecords.get(certificateId);
-        if (!certificate || JSON.stringify(certificate.certType) !== JSON.stringify({ MATERIAL: null }))
-            throw new Error('Material certificate not found');
-        const materialCertificates = this.materialCertificates.get(certificate.subject)!;
-        const certificateIndex = materialCertificates.findIndex((cert) => cert.id === certificateId);
-        const materialCertificate = materialCertificates[certificateIndex];
+        const [materialCertificate, materialCertificates, certificateIndex] = this._getCertificateInfoById<MaterialCertificate>(certificateId);
         validateFieldValue(materialCertificate.uploadedBy, roleProof.membershipProof.delegatorAddress, 'Caller is not the owner of the certificate');
         materialCertificate.assessmentStandard = assessmentStandard;
         materialCertificate.assessmentAssuranceLevel = assessmentAssuranceLevel;
@@ -313,20 +307,60 @@ class CertificationManager {
         materialCertificate.materialId = materialId;
 
         materialCertificates[certificateIndex] = materialCertificate;
-        this.materialCertificates.insert(certificate.subject, materialCertificates);
+        this.materialCertificates.insert(materialCertificate.subject, materialCertificates);
         return materialCertificate;
     }
-    //
-    // @update([RoleProof, Address, IDL.Nat])
-    // @OnlyEditor
-    // async evaluateDocument(certificateId: bigint, documentId: bigint, evaluation: DocumentEvaluationStatus): Promise<void> {
-    //     // TODO: check if evaluation is valid
-    //     const certificate = this.allCertificates.get(certificateId);
-    //     if (!certificate) throw new Error('Certificate not found');
-    //     validateFieldValue(certificate.document.id, documentId, 'Document not found');
-    //     // TODO: check if document is already evaluated
-    //     certificate.evaluationStatus = evaluation;
-    // }
+
+    @update([RoleProof, IDL.Nat, DocumentInfo])
+    @OnlyEditor
+    async updateDocument(roleProof: RoleProof, certificateId: bigint, document: DocumentInfo): Promise<void> {
+        const [certificate, certificates, certificateIndex] = this._getCertificateInfoById<BaseCertificate>(certificateId);
+        certificate.document = document;
+        this._updateCertificate(certificate, certificates, certificateIndex);
+    }
+
+    @update([RoleProof, IDL.Nat, IDL.Nat, DocumentEvaluationStatus])
+    @OnlyEditor
+    async evaluateDocument(roleProof: RoleProof, certificateId: bigint, documentId: bigint, evaluation: DocumentEvaluationStatus): Promise<void> {
+        if ('NOT_EVALUATED' in evaluation) throw new Error('Invalid evaluation status');
+        const [certificate, certificates, certificateIndex] = this._getCertificateInfoById<BaseCertificate>(certificateId);
+        validateFieldValue(certificate.document.id, documentId, 'Document not found');
+        certificate.evaluationStatus = evaluation;
+        this._updateCertificate(certificate, certificates, certificateIndex);
+    }
+
+    _getCertificateInfoById<T extends BaseCertificate>(certificateId: bigint): [T, T[], number] {
+        const certificateRecord = this.allCertificateRecords.get(certificateId);
+        if (!certificateRecord) throw new Error('Certificate not found');
+        let certificates: T[] | null;
+
+        if (CertificateTypeEnum.COMPANY in certificateRecord.certType) {
+            certificates = this.companyCertificates.get(certificateRecord.subject) as unknown as T[];
+        } else if (CertificateTypeEnum.SCOPE in certificateRecord.certType) {
+            certificates = this.scopeCertificates.get(certificateRecord.subject) as unknown as T[];
+        } else if (CertificateTypeEnum.MATERIAL in certificateRecord.certType) {
+            certificates = this.materialCertificates.get(certificateRecord.subject) as unknown as T[];
+        } else {
+            throw new Error('Invalid certificate type');
+        }
+
+        const index = certificates.findIndex((cert) => cert.id === certificateId);
+        const certificate = index !== -1 ? certificates[index] : undefined;
+        if (!certificate) throw new Error('The provided certificate ID does not match the certificate type');
+
+        return [certificate, certificates, index];
+    }
+
+    _updateCertificate<T extends BaseCertificate>(certificate: T, certificates: T[], index: number): void {
+        certificates[index] = certificate;
+        if (CertificateTypeEnum.COMPANY in certificate.certType) {
+            this.companyCertificates.insert(certificate.subject, certificates as unknown as CompanyCertificate[]);
+        } else if (CertificateTypeEnum.SCOPE in certificate.certType) {
+            this.scopeCertificates.insert(certificate.subject, certificates as unknown as ScopeCertificate[]);
+        } else if (CertificateTypeEnum.MATERIAL in certificate.certType) {
+            this.materialCertificates.insert(certificate.subject, certificates as unknown as MaterialCertificate[]);
+        }
+    }
 }
 
 export default CertificationManager;

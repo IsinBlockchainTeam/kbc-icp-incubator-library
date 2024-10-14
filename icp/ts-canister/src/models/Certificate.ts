@@ -1,6 +1,10 @@
 import { IDL } from 'azle';
-import { Address } from './Address';
 
+export enum DocumentEvaluationStatusEnum {
+    NOT_EVALUATED = 'NOT_EVALUATED',
+    APPROVED = 'APPROVED',
+    NOT_APPROVED = 'NOT_APPROVED'
+}
 export const DocumentEvaluationStatus = IDL.Variant({
     NOT_EVALUATED: IDL.Null,
     APPROVED: IDL.Null,
@@ -8,6 +12,13 @@ export const DocumentEvaluationStatus = IDL.Variant({
 });
 export type DocumentEvaluationStatus = { NOT_EVALUATED: null } | { APPROVED: null } | { NOT_APPROVED: null };
 
+export enum DocumentTypeEnum {
+    CERTIFICATE_OF_CONFORMITY = 'CERTIFICATE_OF_CONFORMITY',
+    COUNTRY_OF_ORIGIN = 'COUNTRY_OF_ORIGIN',
+    SWISS_DECODE = 'SWISS_DECODE',
+    PRODUCTION_REPORT = 'PRODUCTION_REPORT',
+    PRODUCTION_FACILITY_LICENSE = 'PRODUCTION_FACILITY_LICENSE'
+}
 export const DocumentType = IDL.Variant({
     CERTIFICATE_OF_CONFORMITY: IDL.Null,
     COUNTRY_OF_ORIGIN: IDL.Null,
@@ -33,6 +44,11 @@ export type DocumentInfo = {
     externalUrl: string;
 };
 
+export enum CertificateTypeEnum {
+    COMPANY = 'COMPANY',
+    SCOPE = 'SCOPE',
+    MATERIAL = 'MATERIAL'
+}
 export const CertificateType = IDL.Variant({
     COMPANY: IDL.Null,
     SCOPE: IDL.Null,
@@ -42,9 +58,9 @@ export type CertificateType = { COMPANY: null } | { SCOPE: null } | { MATERIAL: 
 
 const BaseCertificateType = {
     id: IDL.Nat,
-    uploadedBy: Address,
-    issuer: Address,
-    subject: Address,
+    issuer: IDL.Text,
+    subject: IDL.Text,
+    uploadedBy: IDL.Text,
     assessmentStandard: IDL.Text,
     assessmentAssuranceLevel: IDL.Text,
     referenceId: IDL.Text,
@@ -56,11 +72,11 @@ const BaseCertificateType = {
 export const BaseCertificate = IDL.Record({
     ...BaseCertificateType
 });
-export type BaseCertificate = {
+export interface BaseCertificate {
     id: bigint;
-    uploadedBy: Address;
-    issuer: Address;
-    subject: Address;
+    issuer: string;
+    subject: string;
+    uploadedBy: string;
     assessmentStandard: string;
     assessmentAssuranceLevel: string;
     referenceId: string;
@@ -68,17 +84,17 @@ export type BaseCertificate = {
     evaluationStatus: DocumentEvaluationStatus;
     certType: CertificateType;
     issueDate: bigint;
-};
+}
 
 export const CompanyCertificate = IDL.Record({
     ...BaseCertificateType,
     validFrom: IDL.Nat,
     validUntil: IDL.Nat
 });
-export type CompanyCertificate = BaseCertificate & {
+export interface CompanyCertificate extends BaseCertificate {
     validFrom: bigint;
     validUntil: bigint;
-};
+}
 
 export const ScopeCertificate = IDL.Record({
     ...BaseCertificateType,
@@ -86,16 +102,16 @@ export const ScopeCertificate = IDL.Record({
     validUntil: IDL.Nat,
     processTypes: IDL.Vec(IDL.Text)
 });
-export type ScopeCertificate = BaseCertificate & {
+export interface ScopeCertificate extends BaseCertificate {
     validFrom: bigint;
     validUntil: bigint;
     processTypes: string[];
-};
+}
 
 export const MaterialCertificate = IDL.Record({
     ...BaseCertificateType,
     materialId: IDL.Nat
 });
-export type MaterialCertificate = BaseCertificate & {
+export interface MaterialCertificate extends BaseCertificate {
     materialId: bigint;
-};
+}
