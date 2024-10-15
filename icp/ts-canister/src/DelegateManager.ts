@@ -116,11 +116,9 @@ class DelegateManager {
                 payment: 2_000_000_000n
             }
         );
-        console.log('resp', resp);
         if(resp.Err) throw new Error('Unable to fetch revocation registry');
 
         const decodedResult = abiInterface.decodeFunctionResult(methodName, JSON.parse(resp.Ok).result);
-        console.log(decodedResult[0]);
         return decodedResult[0] !== 0n;
     }
 }

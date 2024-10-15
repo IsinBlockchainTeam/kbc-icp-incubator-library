@@ -235,7 +235,9 @@ contract OrderTrade is Trade {
         require(_hasSupplierSigned && _hasCommissionerSigned, "OrderTrade: The order has not been confirmed yet");
         require(_shipmentAddress == address(0), "OrderTrade: Shipment already created");
 
-        _escrow = _escrowManager.registerEscrow(address(this), _supplier, _paymentDeadline - block.timestamp, _tokenAddress);
+        // Workaround for making the legacy code compile...
+        uint256 shipmentId = 0;
+        _escrow = _escrowManager.registerEscrow(shipmentId, _supplier, _paymentDeadline - block.timestamp, _tokenAddress);
 
         // TODO: sampleApprovalRequired true if sample is required
         _shipmentAddress = address(new Shipment(roleProof, address(_delegateManager), _supplier, _commissioner, _externalUrl, address(_escrow), address(_documentManager), true));
