@@ -12,8 +12,9 @@ import {
 } from "../models/Rpc";
 import {ethers} from "ethers";
 import {calculateRsvForTEcdsa, ecdsaPublicKey, signWithEcdsa} from "./ecdsa";
-import {ic} from "azle/experimental";
-import {getEvmChainId, getEvmRpcUrl} from "./env";
+import { ic, Principal } from 'azle/experimental';
+import { getEvmChainId, getEvmRpcCanisterId, getEvmRpcUrl, getSiweProviderCanisterId } from './env';
+import { Address, GetAddressResponse } from '../models/Address';
 
 export async function jsonRpcRequest(body: Record<string, any>): Promise<any> {
     if (process.env.CANISTER_ID_EVM_RPC === undefined) {
@@ -157,6 +158,7 @@ export async function ethSendContractTransaction(
             await ecdsaPublicKey([ic.id().toUint8Array()])
         )
     );
+    console.log('canisterAddress', canisterAddress);
     const abiInterface = new ethers.Interface(contractAbi);
     const data = abiInterface.encodeFunctionData(methodName, methodArgs);
     //TODO: eth_maxPriorityFeePerGas not available in hardhat
@@ -199,4 +201,63 @@ export async function ethSendContractTransaction(
     tx.signature = {r, s, v};
     const rawTransaction = tx.serialized;
     return await ethSendRawTransaction(rawTransaction);
+}
+
+export async function ethCallContract(
+    contractAddress: string,
+    contractAbi: ethers.InterfaceAbi,
+    methodName: string,
+    methodArgs: any[],
+) {
+    const abiInterface = new ethers.Interface(contractAbi);
+    const data = abiInterface.encodeFunctionData(methodName, methodArgs);
+
+    const jsonRpcPayload = {
+        "jsonrpc": "2.0",
+        "method": "eth_call",
+        "params": [
+            {
+                "to": contractAddress,
+                "data": data
+            },
+            "latest"
+        ],
+        "id": 1
+    }
+    const JsonRpcSource = {
+        Custom: {
+            url: getEvmRpcUrl(),
+            headers: []
+        }
+    }
+    const resp = await call(
+        getEvmRpcCanisterId(),
+        'request',
+        {
+            paramIdlTypes: [RpcService, IDL.Text, IDL.Nat64],
+            returnIdlType: RequestResult,
+            args: [JsonRpcSource, JSON.stringify(jsonRpcPayload), 2048],
+            payment: 2_000_000_000n
+        }
+    );
+
+    if(resp.Err) throw new Error('Unable to fetch revocation registry');
+
+    const decodedResult = abiInterface.decodeFunctionResult(methodName, JSON.parse(resp.Ok).result);
+    console.log(decodedResult);
+    return decodedResult[0];
+}
+
+export async function getAddress(principal: Principal): Promise<Address> {
+    const resp = await call(
+        getSiweProviderCanisterId(),
+        'get_address',
+        {
+            paramIdlTypes: [IDL.Vec(IDL.Nat8)],
+            returnIdlType: GetAddressResponse,
+            args: [principal.toUint8Array()],
+        }
+    );
+    if(resp.Err) throw new Error('Unable to fetch address');
+return resp.Ok;
 }

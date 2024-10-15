@@ -12,7 +12,7 @@ import { Address } from './models/Address';
 import { RoleProof } from './models/Proof';
 import { validateAddress, validateInterestedParty } from './utils/validation';
 import escrowManagerAbi from '../eth-abi/EscrowManager.json';
-import { ethSendContractTransaction } from './utils/rpc';
+import { ethCallContract, ethSendContractTransaction } from './utils/rpc';
 import { OnlyCommissioner, OnlyInvolvedParties, OnlySupplier } from './decorators/shipmentParties';
 
 class ShipmentManager {
@@ -247,12 +247,26 @@ class ShipmentManager {
         const shipment = this.shipments.get(id);
         if(!shipment)
             throw new Error('Shipment not found');
-        if(shipment.escrowAddress.length === 0)
-            throw new Error('Escrow not set');
         if(!(PhaseEnum.PHASE_3 in await this.getShipmentPhase(roleProof, id)))
             throw new Error('Shipment in wrong phase');
         if(!(FundStatusEnum.NOT_LOCKED in shipment.fundsStatus))
             throw new Error('Funds already locked');
+
+        const escrowAddress = await ethCallContract(getEscrowManagerAddress(), escrowManagerAbi.abi, 'getEscrowByShipmentId', [shipment.id]);
+        console.log('escrowAddress', escrowAddress);
+
+        // await ethSendContractTransaction(escrowAddress, escrowAbi.abi, 'deposit', [amount, await getAddress(ic.caller())]);
+
+        // const totalLockedFunds = (await ethCallContract(escrowAddress, escrowAbi.abi, 'getLockedAmount', [])).toNumber();
+        // console.log('totalLockedFunds', totalLockedFunds);
+        // const requiredAmount = shipment.price;
+        // console.log('requiredAmount', requiredAmount);
+        // const totalDepositedAmount = (await ethCallContract(escrowAddress, escrowAbi.abi, 'getTotalDepositedAmount', [])).toNumber();
+        // console.log('totalDepositedAmount', totalDepositedAmount);
+        // if(totalDepositedAmount >= totalLockedFunds + requiredAmount) {
+        //     await ethSendContractTransaction(escrowAddress, escrowAbi.abi, 'lockFunds', [requiredAmount]);
+        //     shipment.fundsStatus = { LOCKED: null };
+        // }
 
         // TODO: Call escrow "deposit" method
         // _escrow.deposit(amount, _msgSender());
@@ -466,11 +480,11 @@ class ShipmentManager {
 }
 
 function getEscrowManagerAddress(): Address {
-    if (process.env.ESCROW_MANAGER_ADDRESS) {
-        return process.env.ESCROW_MANAGER_ADDRESS as Address;
+    if (process.env.EVM_ESCROW_MANAGER_ADDRESS) {
+        return process.env.EVM_ESCROW_MANAGER_ADDRESS as Address;
     }
 
-    throw new Error(`process.env.ESCROW_MANAGER_ADDRESS is not defined`);
+    throw new Error(`process.env.EVM_ESCROW_MANAGER_ADDRESS is not defined`);
 }
 
 export default ShipmentManager;

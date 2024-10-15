@@ -52,7 +52,7 @@
             },
             "custom": {
                 "experimental": true,
-                "env": ["CANISTER_ID_DELEGATE_MANAGER", "ESCROW_MANAGER_ADDRESS"]
+                "env": ["CANISTER_ID_DELEGATE_MANAGER", "CANISTER_ID_IC_SIWE_PROVIDER", "CANISTER_ID_EVM_RPC", "EVM_ESCROW_MANAGER_ADDRESS", "EVM_CHAIN_ID", "EVM_RPC_URL"]
             }
         },
         "delegate_manager": {

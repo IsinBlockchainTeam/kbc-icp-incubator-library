@@ -29,13 +29,14 @@ contract EscrowManager is AccessControl {
     // ShipmentId => Escrow
     mapping(uint256 => Escrow) private _escrowsByShipmentId;
 
-    constructor(address feeRecipient, uint256 baseFee, uint256 percentageFee) {
+    constructor(address admin, address feeRecipient, uint256 baseFee, uint256 percentageFee) {
         require(feeRecipient != address(0), "EscrowManager: fee recipient is the zero address");
         require(percentageFee <= 100, "EscrowManager: percentage fee cannot be greater than 100");
 
         _setupRole(ADMIN_ROLE, _msgSender());
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
         _admin = _msgSender();
+        addAdmin(admin);
 
         _feeRecipient = feeRecipient;
         _baseFee = baseFee;
