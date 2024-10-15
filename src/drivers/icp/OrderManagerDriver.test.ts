@@ -45,7 +45,6 @@ describe('OrderManagerDriver', () => {
 
     it('should retrieve orders', async () => {
         const {orderManagerDriver, roleProof} = utils1;
-        console.log(roleProof)
         const orders = await orderManagerDriver.getOrders(roleProof);
         console.log(orders);
         expect(orders).toBeDefined();
@@ -91,7 +90,6 @@ describe('OrderManagerDriver', () => {
                 }
             ]
         }
-        date.setDate(date.getDate() + 14);
         const order = await orderManagerDriver.createOrder(
             roleProof,
             orderParams

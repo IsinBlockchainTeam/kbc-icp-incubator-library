@@ -6,6 +6,7 @@ import {Order, OrderStatus} from "../../entities/icp/Order";
 
 export class EntityBuilder {
     static buildOrder(order: ICPOrder) {
+        console.log(order.paymentDeadline)
         return new Order(
             Number(order.id),
             order.supplier,
