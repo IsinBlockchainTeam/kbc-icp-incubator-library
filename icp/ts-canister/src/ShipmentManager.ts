@@ -8,20 +8,22 @@ import {
 import { DocumentInfo, DocumentType, DocumentTypeEnum } from './models/Document';
 import { EvaluationStatus, EvaluationStatusEnum } from './models/Evaluation';
 import { OnlyEditor, OnlyViewer } from './decorators/roles';
-import { Address } from './models/Address';
 import { RoleProof } from './models/Proof';
 import { validateAddress, validateInterestedParty } from './utils/validation';
 import escrowManagerAbi from '../eth-abi/EscrowManager.json';
 import { ethCallContract, ethSendContractTransaction } from './utils/rpc';
 import { OnlyCommissioner, OnlyInvolvedParties, OnlySupplier } from './decorators/shipmentParties';
+import {getEvmEscrowManagerAddress} from "./utils/env";
+import {OnlyOrderManagerCanister} from "./decorators/canister";
 
 class ShipmentManager {
+    escrowManagerAddress: string = getEvmEscrowManagerAddress();
     shipments = StableBTreeMap<bigint, Shipment>(0);
 
     @update([RoleProof], IDL.Vec(Shipment))
     @OnlyViewer
     async getShipments(roleProof: RoleProof): Promise<Shipment[]> {
-        const companyAddress = roleProof.membershipProof.delegatorAddress as Address;
+        const companyAddress = roleProof.membershipProof.delegatorAddress;
         return this.shipments.values().filter(shipment => {
             const interestedParties = [shipment.supplier, shipment.commissioner];
             return interestedParties.includes(companyAddress);
@@ -39,13 +41,12 @@ class ShipmentManager {
         return result;
     }
 
-    @update([RoleProof, Address, Address, IDL.Bool], Shipment)
-    @OnlyEditor
-    // TODO: only order canister can call this method
+    @update([RoleProof, IDL.Text, IDL.Text, IDL.Bool], Shipment)
+    @OnlyOrderManagerCanister
     async createShipment(
         roleProof: RoleProof,
-        supplier: Address,
-        commissioner: Address,
+        supplier: string,
+        commissioner: string,
         sampleApprovalRequired: boolean
     ): Promise<Shipment> {
         if(supplier === commissioner)
@@ -53,7 +54,7 @@ class ShipmentManager {
         validateAddress('Supplier', supplier);
         validateAddress('Commissioner', commissioner);
         const interestedParties = [supplier, commissioner];
-        const companyAddress = roleProof.membershipProof.delegatorAddress as Address;
+        const companyAddress = roleProof.membershipProof.delegatorAddress;
         validateInterestedParty('Caller', companyAddress, interestedParties);
 
         const id = this.shipments.keys().length;
@@ -84,7 +85,7 @@ class ShipmentManager {
         // TODO: remove this hardcoded values
         const duration = 1_000_000n;
         const tokenAddress = '0xA0BF1413F37870D386999A316696C4e4e77FC611';
-        await ethSendContractTransaction(getEscrowManagerAddress(), escrowManagerAbi.abi, 'registerEscrow', [shipment.id, supplier, duration, tokenAddress]);
+        await ethSendContractTransaction(this.escrowManagerAddress, escrowManagerAbi.abi, 'registerEscrow', [shipment.id, supplier, duration, tokenAddress]);
 
         this.shipments.insert(BigInt(id), shipment);
         return shipment;
@@ -252,7 +253,7 @@ class ShipmentManager {
         if(!(FundStatusEnum.NOT_LOCKED in shipment.fundsStatus))
             throw new Error('Funds already locked');
 
-        const escrowAddress = await ethCallContract(getEscrowManagerAddress(), escrowManagerAbi.abi, 'getEscrowByShipmentId', [shipment.id]);
+        const escrowAddress = await ethCallContract(this.escrowManagerAddress, escrowManagerAbi.abi, 'getEscrowByShipmentId', [shipment.id]);
         console.log('escrowAddress', escrowAddress);
 
         // await ethSendContractTransaction(escrowAddress, escrowAbi.abi, 'deposit', [amount, await getAddress(ic.caller())]);
@@ -308,7 +309,7 @@ class ShipmentManager {
             id: BigInt(shipment.documents.length),
             documentType,
             evaluationStatus: { NOT_EVALUATED: null },
-            uploadedBy: roleProof.membershipProof.delegatorAddress as Address,
+            uploadedBy: roleProof.membershipProof.delegatorAddress,
             externalUrl,
         }
         if(DocumentTypeEnum.GENERIC in documentType) {
@@ -344,7 +345,7 @@ class ShipmentManager {
             throw new Error('Document already approved');
         const documentIndex = documentTuple[1].findIndex(doc => doc.id === documentId);
         documentTuple[1][documentIndex].externalUrl = externalUrl;
-        documentTuple[1][documentIndex].uploadedBy = roleProof.membershipProof.delegatorAddress as Address;
+        documentTuple[1][documentIndex].uploadedBy = roleProof.membershipProof.delegatorAddress;
 
         this.shipments.insert(id, shipment);
         return shipment;
@@ -478,13 +479,4 @@ class ShipmentManager {
         return [];
     }
 }
-
-function getEscrowManagerAddress(): Address {
-    if (process.env.EVM_ESCROW_MANAGER_ADDRESS) {
-        return process.env.EVM_ESCROW_MANAGER_ADDRESS as Address;
-    }
-
-    throw new Error(`process.env.EVM_ESCROW_MANAGER_ADDRESS is not defined`);
-}
-
 export default ShipmentManager;

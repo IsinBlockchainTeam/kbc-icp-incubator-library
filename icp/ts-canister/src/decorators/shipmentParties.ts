@@ -1,5 +1,4 @@
 import { RoleProof } from '../models/Proof';
-import { Address } from '../models/Address';
 
 function validateAndExtractParameters(this: any, args: any[]) {
     console.log('args2', args);
@@ -15,7 +14,7 @@ function validateAndExtractParameters(this: any, args: any[]) {
     const shipment = this.shipments.get(id);
     if (!shipment)
         throw new Error('Shipment not found');
-    return { shipment, callerAddress: roleProof.membershipProof.delegatorAddress as Address };
+    return { shipment, callerAddress: roleProof.membershipProof.delegatorAddress };
 }
 
 export function OnlyInvolvedParties(originalMethod: any, _context: any) {

@@ -19,6 +19,20 @@ export function getEvmRpcCanisterId(): string {
 
     throw new Error(`process.env.CANISTER_ID_EVM_RPC is not defined`);
 }
+export function getShipmentManagerCanisterId(): string {
+    if (process.env.CANISTER_ID_SHIPMENT_MANAGER !== undefined) {
+        return process.env.CANISTER_ID_SHIPMENT_MANAGER;
+    }
+
+    throw new Error(`process.env.CANISTER_ID_SHIPMENT_MANAGER is not defined`);
+}
+export function getOrderManagerCanisterId(): string {
+    if (process.env.CANISTER_ID_ORDER_MANAGER !== undefined) {
+        return process.env.CANISTER_ID_ORDER_MANAGER;
+    }
+
+    throw new Error(`process.env.CANISTER_ID_ORDER_MANAGER is not defined`);
+}
 export function getEvmRpcUrl(): string {
     if (process.env.EVM_RPC_URL !== undefined) {
         return process.env.EVM_RPC_URL;

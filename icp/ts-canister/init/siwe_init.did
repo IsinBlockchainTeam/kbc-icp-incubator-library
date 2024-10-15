@@ -8,10 +8,10 @@
     sign_in_expires_in = opt 300000000000;
     session_expires_in = opt 604800000000000;
     targets = opt vec {
-        "br5f7-7uaaa-aaaaa-qaaca-cai";
-        "asrmz-lmaaa-aaaaa-qaaeq-cai";
-        "avqkn-guaaa-aaaaa-qaaea-cai";
-        "by6od-j4aaa-aaaaa-qaadq-cai";
+        "br5f7-7uaaa-aaaaa-qaaca-cai"; // SIWE
+        "asrmz-lmaaa-aaaaa-qaaeq-cai"; // Shipment Manager
+        "avqkn-guaaa-aaaaa-qaaea-cai"; // Product Category Manager
+        "by6od-j4aaa-aaaaa-qaadq-cai"; // Order Manager
     };
   }
 )

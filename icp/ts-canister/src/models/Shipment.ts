@@ -1,5 +1,4 @@
 import { IDL } from 'azle';
-import { Address } from './Address';
 import { EvaluationStatus } from './Evaluation';
 import { DocumentInfo, DocumentType } from './Document';
 
@@ -37,9 +36,9 @@ export const FundStatus = IDL.Variant({
 
 export type Shipment = {
     id: number;
-    supplier: Address;
-    commissioner: Address;
-    escrowAddress: [Address] | [];
+    supplier: string;
+    commissioner: string;
+    escrowAddress: [string] | [];
     sampleEvaluationStatus: EvaluationStatus;
     detailsEvaluationStatus: EvaluationStatus;
     qualityEvaluationStatus: EvaluationStatus;
@@ -60,9 +59,9 @@ export type Shipment = {
 };
 export const Shipment = IDL.Record({
     id: IDL.Nat,
-    supplier: Address,
-    commissioner: Address,
-    escrowAddress: IDL.Opt(Address),
+    supplier: IDL.Text,
+    commissioner: IDL.Text,
+    escrowAddress: IDL.Opt(IDL.Text),
     sampleEvaluationStatus: EvaluationStatus,
     detailsEvaluationStatus: EvaluationStatus,
     qualityEvaluationStatus: EvaluationStatus,

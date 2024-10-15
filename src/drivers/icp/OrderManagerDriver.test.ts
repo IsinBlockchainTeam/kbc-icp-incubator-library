@@ -18,6 +18,7 @@ type Utils = {
     orderManagerDriver: OrderManagerDriver,
     roleProof: RoleProof
 };
+const ORDER_ID = 8;
 describe('OrderManagerDriver', () => {
     let utils1: Utils, utils2: Utils;
     const getUtils = async (userPrivateKey: string, companyPrivateKey: string) => {
@@ -64,7 +65,7 @@ describe('OrderManagerDriver', () => {
         const orderParams = {
             supplier: company1Wallet.address,
             customer: company2Wallet.address,
-            commissioner: company1Wallet.address,
+            commissioner: company2Wallet.address,
             paymentDeadline: date,
             documentDeliveryDeadline: date,
             shippingDeadline: date,
@@ -90,6 +91,7 @@ describe('OrderManagerDriver', () => {
                 }
             ]
         }
+        date.setDate(date.getDate() + 14);
         const order = await orderManagerDriver.createOrder(
             roleProof,
             orderParams
@@ -134,7 +136,7 @@ describe('OrderManagerDriver', () => {
         date.setDate(date.getDate() + 14);
         const order = await orderManagerDriver.updateOrder(
             roleProof,
-            2,
+            ORDER_ID,
             orderParams
         );
         console.log(order);
@@ -143,7 +145,7 @@ describe('OrderManagerDriver', () => {
 
     it('should sign order', async () => {
         const {orderManagerDriver, roleProof} = utils2;
-        const order = await orderManagerDriver.signOrder(roleProof, 0);
+        const order = await orderManagerDriver.signOrder(roleProof, ORDER_ID);
         console.log(order);
         expect(order).toBeDefined();
     }, 30000);

@@ -1,19 +1,16 @@
-import {IDL, StableBTreeMap, update} from 'azle';
+import {call, IDL, StableBTreeMap, update} from 'azle';
 import {Order, OrderLine} from "./models/Order";
 import {validateAddress, validateDeadline, validateInterestedParty, validatePositiveNumber} from "./utils/validation";
 import {RoleProof} from "./models/Proof";
 import {OnlyEditor, OnlySigner, OnlyViewer} from "./decorators/roles";
 import {ROLES} from "./models/Role";
-import {ethers} from "ethers";
-import escrowManagerAbi from "../eth-abi/EscrowManager.json";
-import {ic} from "azle/experimental";
-import {ethSendContractTransaction} from "./utils/rpc";
-import {ecdsaPublicKey} from "./utils/ecdsa";
-import {getEvmEscrowManagerAddress, getSiweProviderCanisterId} from "./utils/env";
+import {getEvmEscrowManagerAddress, getShipmentManagerCanisterId, getSiweProviderCanisterId} from "./utils/env";
+import {Shipment} from "./models/Shipment";
 
 class OrderManager {
     siweProviderCanisterId: string = getSiweProviderCanisterId();
     escrowManagerAddress: string = getEvmEscrowManagerAddress();
+    shipmentCanisterId: string = getShipmentManagerCanisterId();
     orders = StableBTreeMap<bigint, Order>(0);
 
     @update([RoleProof], IDL.Vec(Order))
@@ -214,27 +211,18 @@ class OrderManager {
         if(order.signatures.includes(companyAddress))
             throw new Error('Order already signed');
         order.signatures.push(companyAddress);
-        if (order.signatures.includes(order.supplier) && order.signatures.includes(order.customer))
+        if (order.signatures.includes(order.supplier) && order.signatures.includes(order.customer)) {
             order.status = { CONFIRMED: null };
+            const shipment = await call(this.shipmentCanisterId, 'createShipment', {
+                paramIdlTypes: [RoleProof, IDL.Text, IDL.Text, IDL.Bool],
+                returnIdlType: Shipment,
+                args: [roleProof, order.supplier, order.commissioner, true]
+            });
+            order.shipmentId = [shipment.id];
+            console.log(shipment);
+        }
         this.orders.insert(id, order);
         return order;
-    }
-
-    @update([IDL.Text, IDL.Nat, IDL.Text])
-    async registerDownPayment(supplier: string, paymentDeadline: number, token: string): Promise<void> {
-        const canisterAddress = ethers.computeAddress(
-            ethers.hexlify(
-                await ecdsaPublicKey([ic.id().toUint8Array()])
-            )
-        );
-        console.log('canisterAddress', canisterAddress);
-        const resp = await ethSendContractTransaction(
-            this.escrowManagerAddress,
-            escrowManagerAbi.abi,
-            'registerEscrow',
-            [canisterAddress, supplier, paymentDeadline, token]
-        );
-        console.log(resp);
     }
 }
 export default OrderManager;

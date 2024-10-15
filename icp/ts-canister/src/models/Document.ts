@@ -1,4 +1,3 @@
-import { Address } from './Address';
 import { IDL } from 'azle';
 import { EvaluationStatus } from './Evaluation';
 
@@ -6,13 +5,13 @@ export type Document = {
     id: number;
     externalUrl: string;
     contentHash: string;
-    uploadedBy: Address;
+    uploadedBy: string;
 };
 export const Document = IDL.Record({
     id: IDL.Nat,
     externalUrl: IDL.Text,
     contentHash: IDL.Text,
-    uploadedBy: Address,
+    uploadedBy: IDL.Text,
 });
 
 export enum DocumentTypeEnum {

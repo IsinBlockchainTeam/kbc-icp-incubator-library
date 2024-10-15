@@ -22,7 +22,7 @@ type Utils = {
     shipmentManagerDriver: ShipmentManagerDriver;
     roleProof: RoleProof;
 };
-const SHIPMENT_ID = 4;
+const SHIPMENT_ID = 3;
 describe('ShipmentManagerDriver', () => {
     let utils1: Utils, utils2: Utils;
     const getUtils = async (userPrivateKey: string, companyPrivateKey: string) => {

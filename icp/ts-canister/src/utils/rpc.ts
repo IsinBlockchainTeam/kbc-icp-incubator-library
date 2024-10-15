@@ -200,7 +200,12 @@ export async function ethSendContractTransaction(
     );
     tx.signature = {r, s, v};
     const rawTransaction = tx.serialized;
-    return await ethSendRawTransaction(rawTransaction);
+    const resp = await ethSendRawTransaction(rawTransaction);
+    if(resp.Consistent.Err){
+        console.log('Response', resp.Consistent.Err);
+        throw new Error('Received error when sending transaction.');
+    }
+    return resp;
 }
 
 export async function ethCallContract(
