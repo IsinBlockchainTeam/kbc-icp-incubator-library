@@ -8,7 +8,7 @@ async function getAttachedContract(contractName: string, contractAddress: string
 const main = async () => {
     const [_,owner] = await ethers.getSigners();
     const tx = await owner.sendTransaction({
-        to: '0x03aB5e0bC2Bc854af89c6796C98a0b593c060758',
+        to: '0xd84b5BDb4117bDa27Fd40BB8AE8D1fdF3020838d',
         value: ethers.utils.parseEther('1000')
     });
     const resp = await tx.wait();

@@ -1,5 +1,4 @@
 import {Price} from "./Price";
-import {Address} from "./Address";
 import {IDL} from "azle";
 
 export const OrderStatus = IDL.Variant({
@@ -9,11 +8,11 @@ export const OrderStatus = IDL.Variant({
 });
 export type OrderStatus = { PENDING: null } | { CONFIRMED: null } | { EXPIRED: null };
 export type OrderLine = {
-    productCategoryId: number;
+    productCategoryId: bigint;
     quantity: number;
     unit: string;
     price: Price;
-    // materialId: number | null;
+    // materialId: bigint | null;
 }
 export const OrderLine = IDL.Record({
     productCategoryId: IDL.Nat,
@@ -23,48 +22,48 @@ export const OrderLine = IDL.Record({
     // materialId: IDL.Opt(IDL.Nat),
 });
 export type Order = {
-    id: number;
-    supplier: Address;
-    customer: Address;
-    commissioner: Address;
-    signatures: Address[];
+    id: bigint;
+    supplier: string;
+    customer: string;
+    commissioner: string;
+    signatures: string[];
     status: OrderStatus;
-    paymentDeadline: number;
-    documentDeliveryDeadline: number;
-    shippingDeadline: number;
-    deliveryDeadline: number;
-    arbiter: Address;
+    paymentDeadline: bigint;
+    documentDeliveryDeadline: bigint;
+    shippingDeadline: bigint;
+    deliveryDeadline: bigint;
+    arbiter: string;
     incoterms: string;
     shipper: string;
     shippingPort: string;
     deliveryPort: string;
     lines: OrderLine[];
-    token: Address;
-    agreedAmount: number;
-    escrowManager: Address;
-    escrow: [Address] | [];
-    shipmentId: [number] | [];
+    token: string;
+    agreedAmount: bigint;
+    escrowManager: string;
+    escrow: [string] | [];
+    shipmentId: [bigint] | [];
 }
 export const Order = IDL.Record({
     id: IDL.Nat,
-    supplier: Address,
-    customer: Address,
-    commissioner: Address,
-    signatures: IDL.Vec(Address),
+    supplier: IDL.Text,
+    customer: IDL.Text,
+    commissioner: IDL.Text,
+    signatures: IDL.Vec(IDL.Text),
     status: OrderStatus,
     paymentDeadline: IDL.Nat,
     documentDeliveryDeadline: IDL.Nat,
     shippingDeadline: IDL.Nat,
     deliveryDeadline: IDL.Nat,
-    arbiter: Address,
+    arbiter: IDL.Text,
     incoterms: IDL.Text,
     shipper: IDL.Text,
     shippingPort: IDL.Text,
     deliveryPort: IDL.Text,
     lines: IDL.Vec(OrderLine),
-    token: Address,
+    token: IDL.Text,
     agreedAmount: IDL.Nat,
-    escrowManager: Address,
-    escrow: IDL.Opt(Address),
+    escrowManager: IDL.Text,
+    escrow: IDL.Opt(IDL.Text),
     shipmentId: IDL.Opt(IDL.Nat),
 });

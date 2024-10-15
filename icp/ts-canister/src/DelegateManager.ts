@@ -4,7 +4,7 @@ import {ethers} from "ethers";
 import {RoleProof} from "./models/Proof";
 import {RequestResult, RpcService} from "./models/Rpc";
 import revocationRegistryAbi from "../eth-abi/RevocationRegistry.json";
-import {Address, GetAddressResponse} from "./models/Address";
+import {GetAddressResponse} from "./models/Address";
 import {ROLES} from "./models/Role";
 import {
     getEvmMembershipIssuerAddress,
@@ -65,7 +65,7 @@ class DelegateManager {
         return !await this.isRevoked(membershipProofSigner, membershipProof.delegatorCredentialIdHash);
     }
 
-    async getAddress(principal: Principal): Promise<Address> {
+    async getAddress(principal: Principal): Promise<string> {
         const resp = await call(
             this.siweProviderCanisterId,
             'get_address',

@@ -1,6 +1,5 @@
 import {IDL, StableBTreeMap, update} from 'azle';
 import {Order, OrderLine} from "./models/Order";
-import {Address} from "./models/Address";
 import {validateAddress, validateDeadline, validateInterestedParty, validatePositiveNumber} from "./utils/validation";
 import {RoleProof} from "./models/Proof";
 import {OnlyEditor, OnlySigner, OnlyViewer} from "./decorators/roles";
@@ -19,8 +18,8 @@ class OrderManager {
 
     @update([RoleProof], IDL.Vec(Order))
     @OnlyViewer
-    async getOrders(roleProof: RoleProof,): Promise<Order[]> {
-        const companyAddress = roleProof.membershipProof.delegatorAddress as Address;
+    async getOrders(roleProof: RoleProof): Promise<Order[]> {
+        const companyAddress = roleProof.membershipProof.delegatorAddress;
         return this.orders.values().filter(order => {
             const interestedParties = [order.supplier, order.customer, order.commissioner];
             return interestedParties.includes(companyAddress);
@@ -33,7 +32,7 @@ class OrderManager {
         const result = this.orders.get(id);
         if(result) {
             const interestedParties = [result.supplier, result.customer, result.commissioner];
-            const companyAddress = roleProof.membershipProof.delegatorAddress as Address;
+            const companyAddress = roleProof.membershipProof.delegatorAddress;
             if(!interestedParties.includes(companyAddress))
                 throw new Error('Access denied');
             return result;
@@ -41,21 +40,21 @@ class OrderManager {
         throw new Error('Order not found');
     }
 
-    @update([RoleProof, Address, Address, Address, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, Address, Address, IDL.Nat, Address, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(OrderLine)], Order)
+    @update([RoleProof, IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Text, IDL.Text, IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(OrderLine)], Order)
     @OnlyEditor
     async createOrder(
         roleProof: RoleProof,
-        supplier: Address,
-        customer: Address,
-        commissioner: Address,
-        paymentDeadline: number,
-        documentDeliveryDeadline: number,
-        shippingDeadline: number,
-        deliveryDeadline: number,
-        arbiter: Address,
-        token: Address,
-        agreedAmount: number,
-        escrowManager: Address,
+        supplier: string,
+        customer: string,
+        commissioner: string,
+        paymentDeadline: bigint,
+        documentDeliveryDeadline: bigint,
+        shippingDeadline: bigint,
+        deliveryDeadline: bigint,
+        arbiter: string,
+        token: string,
+        agreedAmount: bigint,
+        escrowManager: string,
         incoterms: string,
         shipper: string,
         shippingPort: string,
@@ -68,15 +67,15 @@ class OrderManager {
         validateAddress('Customer', customer);
         validateAddress('Commissioner', commissioner);
         const interestedParties = [supplier, customer, commissioner];
-        const companyAddress = roleProof.membershipProof.delegatorAddress as Address;
+        const companyAddress = roleProof.membershipProof.delegatorAddress;
         validateInterestedParty('Caller', companyAddress, interestedParties);
-        validateDeadline('Payment deadline', paymentDeadline);
-        validateDeadline('Document delivery deadline', documentDeliveryDeadline);
-        validateDeadline('Shipping deadline', shippingDeadline);
-        validateDeadline('Delivery deadline', deliveryDeadline);
+        validateDeadline('Payment deadline', Number(paymentDeadline));
+        validateDeadline('Document delivery deadline', Number(documentDeliveryDeadline));
+        validateDeadline('Shipping deadline', Number(shippingDeadline));
+        validateDeadline('Delivery deadline', Number(deliveryDeadline));
         validateAddress('Arbiter', arbiter);
         validateAddress('Token', token);
-        validatePositiveNumber('Agreed amount', agreedAmount);
+        validatePositiveNumber('Agreed amount', Number(agreedAmount));
         validateAddress('Escrow manager', escrowManager);
         for (const line of lines) {
             // TODO: check that product category exists
@@ -86,7 +85,7 @@ class OrderManager {
         const id = this.orders.keys().length;
         const signatures = roleProof.role === ROLES.SIGNER ? [companyAddress] : [];
         const order: Order = {
-            id,
+            id: BigInt(id),
             supplier,
             customer,
             commissioner,
@@ -112,22 +111,22 @@ class OrderManager {
         return order;
     }
 
-    @update([RoleProof, IDL.Nat, Address, Address, Address, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, Address, Address, IDL.Nat, Address, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(OrderLine)], Order)
+    @update([RoleProof, IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Text, IDL.Text, IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(OrderLine)], Order)
     @OnlyEditor
     async updateOrder(
         roleProof: RoleProof,
         id: bigint,
-        supplier: Address,
-        customer: Address,
-        commissioner: Address,
-        paymentDeadline: number,
-        documentDeliveryDeadline: number,
-        shippingDeadline: number,
-        deliveryDeadline: number,
-        arbiter: Address,
-        token: Address,
-        agreedAmount: number,
-        escrowManager: Address,
+        supplier: string,
+        customer: string,
+        commissioner: string,
+        paymentDeadline: bigint,
+        documentDeliveryDeadline: bigint,
+        shippingDeadline: bigint,
+        deliveryDeadline: bigint,
+        arbiter: string,
+        token: string,
+        agreedAmount: bigint,
+        escrowManager: string,
         incoterms: string,
         shipper: string,
         shippingPort: string,
@@ -162,15 +161,15 @@ class OrderManager {
         validateAddress('Customer', customer);
         validateAddress('Commissioner', commissioner);
         const interestedParties = [supplier, customer, commissioner];
-        const companyAddress = roleProof.membershipProof.delegatorAddress as Address;
+        const companyAddress = roleProof.membershipProof.delegatorAddress;
         validateInterestedParty('Caller', companyAddress, interestedParties);
-        validateDeadline('Payment deadline', paymentDeadline);
-        validateDeadline('Document delivery deadline', documentDeliveryDeadline);
-        validateDeadline('Shipping deadline', shippingDeadline);
-        validateDeadline('Delivery deadline', deliveryDeadline);
+        validateDeadline('Payment deadline', Number(paymentDeadline));
+        validateDeadline('Document delivery deadline', Number(documentDeliveryDeadline));
+        validateDeadline('Shipping deadline', Number(shippingDeadline));
+        validateDeadline('Delivery deadline', Number(deliveryDeadline));
         validateAddress('Arbiter', arbiter);
         validateAddress('Token', token);
-        validatePositiveNumber('Agreed amount', agreedAmount);
+        validatePositiveNumber('Agreed amount', Number(agreedAmount));
         validateAddress('Escrow manager', escrowManager);
         for (const line of lines) {
             // TODO: check that product category exists
@@ -179,7 +178,7 @@ class OrderManager {
         }
         const signatures = roleProof.role === ROLES.SIGNER ? [companyAddress] : [];
         const updatedOrder: Order = {
-            id: Number(id),
+            id: BigInt(id),
             supplier,
             customer,
             commissioner,
@@ -211,7 +210,7 @@ class OrderManager {
         const order = this.orders.get(id);
         if (!order)
             throw new Error('Order not found');
-        const companyAddress = roleProof.membershipProof.delegatorAddress as Address;
+        const companyAddress = roleProof.membershipProof.delegatorAddress;
         if(order.signatures.includes(companyAddress))
             throw new Error('Order already signed');
         order.signatures.push(companyAddress);
@@ -222,7 +221,7 @@ class OrderManager {
     }
 
     @update([IDL.Text, IDL.Nat, IDL.Text])
-    async registerDownPayment(supplier: Address, paymentDeadline: number, token: Address): Promise<void> {
+    async registerDownPayment(supplier: string, paymentDeadline: number, token: string): Promise<void> {
         const canisterAddress = ethers.computeAddress(
             ethers.hexlify(
                 await ecdsaPublicKey([ic.id().toUint8Array()])

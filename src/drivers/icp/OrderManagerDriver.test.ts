@@ -45,6 +45,7 @@ describe('OrderManagerDriver', () => {
 
     it('should retrieve orders', async () => {
         const {orderManagerDriver, roleProof} = utils1;
+        console.log(roleProof)
         const orders = await orderManagerDriver.getOrders(roleProof);
         console.log(orders);
         expect(orders).toBeDefined();
@@ -61,25 +62,23 @@ describe('OrderManagerDriver', () => {
         const {companyWallet: company1Wallet, orderManagerDriver, roleProof} = utils1;
         const {companyWallet: company2Wallet} = utils2;
         const date = new Date();
-        date.setDate(date.getDate() + 14);
-        const order = await orderManagerDriver.createOrder(
-            roleProof,
-            company1Wallet.address,
-            company2Wallet.address,
-            company1Wallet.address,
-            date,
-            date,
-            date,
-            date,
-            '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
-            '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
-            100,
-            '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
-            'incoterms',
-            'shipper',
-            'shippingPort',
-            'deliveryPort',
-            [
+        const orderParams = {
+            supplier: company1Wallet.address,
+            customer: company2Wallet.address,
+            commissioner: company1Wallet.address,
+            paymentDeadline: date,
+            documentDeliveryDeadline: date,
+            shippingDeadline: date,
+            deliveryDeadline: date,
+            arbiter: '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
+            token: '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
+            agreedAmount: 100,
+            escrowManager: '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
+            incoterms: 'incoterms',
+            shipper: 'shipper',
+            shippingPort: 'shippingPort',
+            deliveryPort: 'deliveryPort',
+            lines: [
                 {
                     productCategoryId: 1,
                     quantity: 1,
@@ -91,6 +90,11 @@ describe('OrderManagerDriver', () => {
                     }
                 }
             ]
+        }
+        date.setDate(date.getDate() + 14);
+        const order = await orderManagerDriver.createOrder(
+            roleProof,
+            orderParams
         );
         console.log(order);
         expect(order).toBeDefined();
@@ -100,26 +104,23 @@ describe('OrderManagerDriver', () => {
         const {companyWallet: company1Wallet, orderManagerDriver, roleProof} = utils1;
         const {companyWallet: company2Wallet} = utils2;
         const date = new Date();
-        date.setDate(date.getDate() + 14);
-        const order = await orderManagerDriver.updateOrder(
-            roleProof,
-            2,
-            company1Wallet.address,
-            company2Wallet.address,
-            company1Wallet.address,
-            date,
-            date,
-            date,
-            date,
-            '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
-            '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
-            100,
-            '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
-            'incoterms',
-            'shipper',
-            'shippingPort',
-            'deliveryPort',
-            [
+        const orderParams = {
+            supplier: company1Wallet.address,
+            customer: company2Wallet.address,
+            commissioner: company1Wallet.address,
+            paymentDeadline: date,
+            documentDeliveryDeadline: date,
+            shippingDeadline: date,
+            deliveryDeadline: date,
+            arbiter: '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
+            token: '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
+            agreedAmount: 100,
+            escrowManager: '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
+            incoterms: 'incoterms',
+            shipper: 'shipper',
+            shippingPort: 'shippingPort',
+            deliveryPort: 'deliveryPort',
+            lines: [
                 {
                     productCategoryId: 1,
                     quantity: 1,
@@ -131,6 +132,12 @@ describe('OrderManagerDriver', () => {
                     }
                 }
             ]
+        }
+        date.setDate(date.getDate() + 14);
+        const order = await orderManagerDriver.updateOrder(
+            roleProof,
+            2,
+            orderParams
         );
         console.log(order);
         expect(order).toBeDefined();
@@ -138,7 +145,7 @@ describe('OrderManagerDriver', () => {
 
     it('should sign order', async () => {
         const {orderManagerDriver, roleProof} = utils2;
-        const order = await orderManagerDriver.signOrder(roleProof, 1);
+        const order = await orderManagerDriver.signOrder(roleProof, 0);
         console.log(order);
         expect(order).toBeDefined();
     }, 30000);
