@@ -1,6 +1,6 @@
 import type { ActorSubclass, Identity } from '@dfinity/agent';
-import { _SERVICE } from '../../../icp/ts-canister/.dfx/local/canisters/product_category_manager/service.did';
-import { createActor } from '../../declarations/product_category_manager';
+import { _SERVICE } from '../../declarations/entity_manager/entity_manager.did';
+import { createActor } from '../../declarations/entity_manager';
 import {RoleProof} from "../../../icp/ts-canister/src/models/Proof";
 
 export class ProductCategoryManagerDriver {

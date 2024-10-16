@@ -1,5 +1,5 @@
 import { ICPSiweDriver, SIWE_IDENTITY_SERVICE } from '@blockchain-lib/common';
-import { ActorSubclass, Identity } from '@dfinity/agent';
+import type { ActorSubclass, Identity } from '@dfinity/agent';
 import { Wallet } from 'ethers';
 import { DelegationIdentity, Ed25519KeyIdentity } from '@dfinity/identity';
 

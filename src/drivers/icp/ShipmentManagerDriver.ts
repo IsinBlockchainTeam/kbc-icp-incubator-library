@@ -1,7 +1,7 @@
-import { ActorSubclass, Identity } from '@dfinity/agent';
+import type { ActorSubclass, Identity } from '@dfinity/agent';
 import { RoleProof } from '../../../icp/ts-canister/src/models/Proof';
-import { _SERVICE } from '../../declarations/shipment_manager/shipment_manager.did';
-import { createActor } from '../../declarations/shipment_manager';
+import { _SERVICE } from '../../declarations/entity_manager/entity_manager.did';
+import { createActor } from '../../declarations/entity_manager';
 import { DocumentType } from '../../../icp/ts-canister/src/models/Document';
 import { EvaluationStatus } from '../../../icp/ts-canister/src/models/Evaluation';
 
@@ -23,20 +23,6 @@ export class ShipmentManagerDriver {
 
     async getShipment(roleProof: RoleProof, id: number) {
         return this._actor.getShipment(roleProof, BigInt(id));
-    }
-
-    async createShipment(
-        roleProof: RoleProof,
-        supplier: string,
-        commissioner: string,
-        sampleApprovalRequired: boolean
-    ) {
-        return this._actor.createShipment(
-            roleProof,
-            supplier,
-            commissioner,
-            sampleApprovalRequired
-        );
     }
 
     async getShipmentPhase(roleProof: RoleProof, id: number) {

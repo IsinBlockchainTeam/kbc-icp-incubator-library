@@ -1,91 +1,22 @@
 {
     "canisters": {
-        "fiat_registry": {
+        "entity_manager": {
             "type": "azle",
-            "main": "src/ElementRegistry.ts",
+            "main": "src/controllers/index.ts",
             "declarations": {
-                "output": "declarations/fiat_registry",
-                "node_compatibility": true
-            }
-        },
-        "product_category_manager": {
-            "type": "azle",
-            "main": "src/ProductCategoryManager.ts",
-            "declarations": {
-                "output": "declarations/product_category_manager",
-                "node_compatibility": true
-            },
-            "custom": {
-                "experimental": true,
-                "env": ["CANISTER_ID_DELEGATE_MANAGER"]
-            }
-        },
-        "material_manager": {
-            "type": "azle",
-            "main": "src/MaterialManager.ts",
-            "declarations": {
-                "output": "declarations/material_manager",
-                "node_compatibility": true
-            },
-            "custom": {
-                "env": ["CANISTER_ID_PRODUCT_CATEGORY_MANAGER"]
-            }
-        },
-        "order_manager": {
-            "type": "azle",
-            "main": "src/OrderManager.ts",
-            "declarations": {
-                "output": "declarations/order_manager",
+                "output": "declarations/entity_manager",
                 "node_compatibility": true
             },
             "custom": {
                 "experimental": true,
                 "env": [
-                    "CANISTER_ID_DELEGATE_MANAGER",
                     "CANISTER_ID_IC_SIWE_PROVIDER",
                     "CANISTER_ID_EVM_RPC",
-                    "CANISTER_ID_SHIPMENT_MANAGER",
                     "EVM_RPC_URL",
                     "EVM_ESCROW_MANAGER_ADDRESS",
-                    "EVM_CHAIN_ID"
-                ]
-            }
-        },
-        "shipment_manager": {
-            "type": "azle",
-            "main": "src/ShipmentManager.ts",
-            "declarations": {
-                "output": "declarations/shipment_manager",
-                "node_compatibility": true
-            },
-            "custom": {
-                "experimental": true,
-                "env": [
-                    "CANISTER_ID_DELEGATE_MANAGER",
-                    "CANISTER_ID_IC_SIWE_PROVIDER",
-                    "CANISTER_ID_EVM_RPC",
-                    "CANISTER_ID_ORDER_MANAGER",
-                    "EVM_ESCROW_MANAGER_ADDRESS",
-                    "EVM_CHAIN_ID",
-                    "EVM_RPC_URL"
-                ]
-            }
-        },
-        "delegate_manager": {
-            "type": "azle",
-            "main": "src/DelegateManager.ts",
-            "declarations": {
-                "output": "declarations/delegate_manager",
-                "node_compatibility": true
-            },
-            "custom": {
-                "experimental": true,
-                "env": [
-                    "CANISTER_ID_EVM_RPC",
-                    "CANISTER_ID_IC_SIWE_PROVIDER",
-                    "EVM_RPC_URL",
                     "EVM_REVOCATION_REGISTRY_ADDRESS",
-                    "EVM_MEMBERSHIP_ISSUER_ADDRESS"
+                    "EVM_MEMBERSHIP_ISSUER_ADDRESS",
+                    "EVM_CHAIN_ID"
                 ]
             }
         },

@@ -10,15 +10,15 @@ const USER2_PRIVATE_KEY = '0c7e66e74f6666b514cc73ee2b7ffc518951cf1ca5719d6820459
 const COMPANY2_PRIVATE_KEY = '0c7e66e74f6666b514cc73ee2b7ffc518951cf1ca5719d6820459c4e134f2264';
 const DELEGATE_CREDENTIAL_ID_HASH = '0x2cc6c15c35500c4341eee2f9f5f8c39873b9c3737edb343ebc3d16424e99a0d4';
 const DELEGATOR_CREDENTIAL_ID_HASH = '0xf19b6aebcdaba2222d3f2c818ff1ecda71c7ed93c3e0f958241787663b58bc4b';
-const SIWE_CANISTER_ID = 'br5f7-7uaaa-aaaaa-qaaca-cai';
-const ORDER_MANAGER_CANISTER_ID = 'by6od-j4aaa-aaaaa-qaadq-cai';
+const SIWE_CANISTER_ID = 'be2us-64aaa-aaaaa-qaabq-cai';
+const ENTITY_MANAGER_CANISTER_ID = 'bkyz2-fmaaa-aaaaa-qaaaq-cai';
 type Utils = {
     userWallet: Wallet,
     companyWallet: Wallet,
     orderManagerDriver: OrderManagerDriver,
     roleProof: RoleProof
 };
-const ORDER_ID = 8;
+const ORDER_ID = 0;
 describe('OrderManagerDriver', () => {
     let utils1: Utils, utils2: Utils;
     const getUtils = async (userPrivateKey: string, companyPrivateKey: string) => {
@@ -27,7 +27,7 @@ describe('OrderManagerDriver', () => {
         const siweIdentityProvider = new SiweIdentityProvider(userWallet, SIWE_CANISTER_ID);
         await siweIdentityProvider.createIdentity();
         const orderManagerDriver = new OrderManagerDriver(
-            siweIdentityProvider.identity, ORDER_MANAGER_CANISTER_ID, 'http://127.0.0.1:4943/'
+            siweIdentityProvider.identity, ENTITY_MANAGER_CANISTER_ID, 'http://127.0.0.1:4943/'
         );
         const roleProof = await computeRoleProof(
             userWallet.address,

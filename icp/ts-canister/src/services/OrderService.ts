@@ -1,32 +1,33 @@
-import {call, IDL, StableBTreeMap, update} from 'azle';
-import {Order, OrderLine} from "./models/Order";
-import {validateAddress, validateDeadline, validateInterestedParty, validatePositiveNumber} from "./utils/validation";
-import {RoleProof} from "./models/Proof";
-import {OnlyEditor, OnlySigner, OnlyViewer} from "./decorators/roles";
-import {ROLES} from "./models/Role";
-import {getEvmEscrowManagerAddress, getShipmentManagerCanisterId, getSiweProviderCanisterId} from "./utils/env";
-import {Shipment} from "./models/Shipment";
+import {StableBTreeMap} from "azle";
+import {Order, OrderLine} from "../models/Order";
+import {StableMemoryId} from "../utils/stableMemory";
+import {RoleProof} from "../models/Proof";
+import {validateAddress, validateDeadline, validateInterestedParty, validatePositiveNumber} from "../utils/validation";
+import {ROLES} from "../models/Role";
+import ShipmentService from "./ShipmentService";
 
-class OrderManager {
-    siweProviderCanisterId: string = getSiweProviderCanisterId();
-    escrowManagerAddress: string = getEvmEscrowManagerAddress();
-    shipmentCanisterId: string = getShipmentManagerCanisterId();
-    orders = StableBTreeMap<bigint, Order>(0);
+class OrderService {
+    private static _instance: OrderService;
+    private _orders = StableBTreeMap<bigint, Order>(StableMemoryId.ORDERS);
 
-    @update([RoleProof], IDL.Vec(Order))
-    @OnlyViewer
-    async getOrders(roleProof: RoleProof): Promise<Order[]> {
+    private constructor() {}
+    static get instance() {
+        if (!OrderService._instance) {
+            OrderService._instance = new OrderService();
+        }
+        return OrderService._instance;
+    }
+
+    getOrders(roleProof: RoleProof): Order[] {
         const companyAddress = roleProof.membershipProof.delegatorAddress;
-        return this.orders.values().filter(order => {
+        return this._orders.values().filter(order => {
             const interestedParties = [order.supplier, order.customer, order.commissioner];
             return interestedParties.includes(companyAddress);
         });
     }
 
-    @update([RoleProof, IDL.Nat], Order)
-    @OnlyViewer
-    async getOrder(roleProof: RoleProof, id: bigint): Promise<Order> {
-        const result = this.orders.get(id);
+    getOrder(roleProof: RoleProof, id: bigint): Order {
+        const result = this._orders.get(id);
         if(result) {
             const interestedParties = [result.supplier, result.customer, result.commissioner];
             const companyAddress = roleProof.membershipProof.delegatorAddress;
@@ -37,9 +38,7 @@ class OrderManager {
         throw new Error('Order not found');
     }
 
-    @update([RoleProof, IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Text, IDL.Text, IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(OrderLine)], Order)
-    @OnlyEditor
-    async createOrder(
+    createOrder(
         roleProof: RoleProof,
         supplier: string,
         customer: string,
@@ -57,7 +56,7 @@ class OrderManager {
         shippingPort: string,
         deliveryPort: string,
         lines: OrderLine[]
-    ): Promise<Order> {
+    ): Order {
         if(supplier === customer)
             throw new Error('Supplier and customer must be different');
         validateAddress('Supplier', supplier);
@@ -79,7 +78,7 @@ class OrderManager {
             validatePositiveNumber('Quantity', line.quantity);
             validatePositiveNumber('Price amount', line.price.amount);
         }
-        const id = this.orders.keys().length;
+        const id = this._orders.keys().length;
         const signatures = roleProof.role === ROLES.SIGNER ? [companyAddress] : [];
         const order: Order = {
             id: BigInt(id),
@@ -104,13 +103,11 @@ class OrderManager {
             escrow: [],
             shipmentId: []
         };
-        this.orders.insert(BigInt(id), order);
+        this._orders.insert(BigInt(id), order);
         return order;
     }
 
-    @update([RoleProof, IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Text, IDL.Text, IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(OrderLine)], Order)
-    @OnlyEditor
-    async updateOrder(
+    updateOrder(
         roleProof: RoleProof,
         id: bigint,
         supplier: string,
@@ -129,8 +126,8 @@ class OrderManager {
         shippingPort: string,
         deliveryPort: string,
         lines: OrderLine[]
-    ): Promise<Order> {
-        const order = this.orders.get(id);
+    ): Order {
+        const order = this._orders.get(id);
         if (!order)
             throw new Error('Order not found');
         if(order.supplier == supplier &&
@@ -197,14 +194,12 @@ class OrderManager {
             escrow: [],
             shipmentId: []
         };
-        this.orders.insert(id, updatedOrder);
+        this._orders.insert(id, updatedOrder);
         return updatedOrder;
     }
 
-    @update([RoleProof, IDL.Nat], Order)
-    @OnlySigner
     async signOrder(roleProof: RoleProof, id: bigint): Promise<Order> {
-        const order = this.orders.get(id);
+        const order = this._orders.get(id);
         if (!order)
             throw new Error('Order not found');
         const companyAddress = roleProof.membershipProof.delegatorAddress;
@@ -213,16 +208,12 @@ class OrderManager {
         order.signatures.push(companyAddress);
         if (order.signatures.includes(order.supplier) && order.signatures.includes(order.customer)) {
             order.status = { CONFIRMED: null };
-            const shipment = await call(this.shipmentCanisterId, 'createShipment', {
-                paramIdlTypes: [RoleProof, IDL.Text, IDL.Text, IDL.Bool],
-                returnIdlType: Shipment,
-                args: [roleProof, order.supplier, order.commissioner, true]
-            });
+            const shipment = await ShipmentService.instance.createShipment(roleProof, order.supplier, order.commissioner, true);
             order.shipmentId = [shipment.id];
             console.log(shipment);
         }
-        this.orders.insert(id, order);
+        this._orders.insert(id, order);
         return order;
     }
 }
-export default OrderManager;
+export default OrderService;

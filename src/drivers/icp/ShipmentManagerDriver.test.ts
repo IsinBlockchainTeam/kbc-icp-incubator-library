@@ -14,8 +14,8 @@ const DELEGATE_CREDENTIAL_ID_HASH =
     '0x2cc6c15c35500c4341eee2f9f5f8c39873b9c3737edb343ebc3d16424e99a0d4';
 const DELEGATOR_CREDENTIAL_ID_HASH =
     '0xf19b6aebcdaba2222d3f2c818ff1ecda71c7ed93c3e0f958241787663b58bc4b';
-const SIWE_CANISTER_ID = 'br5f7-7uaaa-aaaaa-qaaca-cai';
-const SHIPMENT_MANAGER_CANISTER_ID = 'asrmz-lmaaa-aaaaa-qaaeq-cai';
+const SIWE_CANISTER_ID = 'be2us-64aaa-aaaaa-qaabq-cai';
+const ENTITY_MANAGER_CANISTER_ID = 'bkyz2-fmaaa-aaaaa-qaaaq-cai';
 type Utils = {
     userWallet: Wallet;
     companyWallet: Wallet;
@@ -32,7 +32,7 @@ describe('ShipmentManagerDriver', () => {
         await siweIdentityProvider.createIdentity();
         const shipmentManagerDriver = new ShipmentManagerDriver(
             siweIdentityProvider.identity,
-            SHIPMENT_MANAGER_CANISTER_ID,
+            ENTITY_MANAGER_CANISTER_ID,
             'http://127.0.0.1:4943/'
         );
         const roleProof = await computeRoleProof(
@@ -60,19 +60,6 @@ describe('ShipmentManagerDriver', () => {
     it('should retrieve shipment', async () => {
         const { shipmentManagerDriver, roleProof } = utils1;
         const shipment = await shipmentManagerDriver.getShipment(roleProof, SHIPMENT_ID);
-        console.log(shipment);
-        expect(shipment).toBeDefined();
-    });
-
-    it('should create shipment', async () => {
-        const { companyWallet: company1Wallet, shipmentManagerDriver, roleProof } = utils1;
-        const { companyWallet: company2Wallet } = utils2;
-        const shipment = await shipmentManagerDriver.createShipment(
-            roleProof,
-            company1Wallet.address,
-            company2Wallet.address,
-            true
-        );
         console.log(shipment);
         expect(shipment).toBeDefined();
     });

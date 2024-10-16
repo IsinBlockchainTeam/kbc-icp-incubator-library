@@ -35,7 +35,7 @@ export const FundStatus = IDL.Variant({
 });
 
 export type Shipment = {
-    id: number;
+    id: bigint;
     supplier: string;
     commissioner: string;
     escrowAddress: [string] | [];
@@ -45,16 +45,16 @@ export type Shipment = {
     fundsStatus: FundStatus;
     detailsSet: boolean;
     sampleApprovalRequired: boolean;
-    shipmentNumber: number;
-    expirationDate: number;
-    fixingDate: number;
+    shipmentNumber: bigint;
+    expirationDate: bigint;
+    fixingDate: bigint;
     targetExchange: string;
-    differentialApplied: number;
-    price: number;
-    quantity: number;
-    containersNumber: number;
-    netWeight: number;
-    grossWeight: number;
+    differentialApplied: bigint;
+    price: bigint;
+    quantity: bigint;
+    containersNumber: bigint;
+    netWeight: bigint;
+    grossWeight: bigint;
     documents: Array<[DocumentType, DocumentInfo[]]>,
 };
 export const Shipment = IDL.Record({

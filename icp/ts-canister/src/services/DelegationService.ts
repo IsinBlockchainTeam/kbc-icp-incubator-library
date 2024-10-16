@@ -1,27 +1,36 @@
-import {call, IDL, update} from 'azle';
-import {ic, Principal} from 'azle/experimental';
-import {ethers} from "ethers";
-import {RoleProof} from "./models/Proof";
-import {RequestResult, RpcService} from "./models/Rpc";
-import revocationRegistryAbi from "../eth-abi/RevocationRegistry.json";
-import {GetAddressResponse} from "./models/Address";
-import {ROLES} from "./models/Role";
 import {
     getEvmMembershipIssuerAddress,
     getEvmRevocationRegistryAddress,
-    getEvmRpcCanisterId, getEvmRpcUrl,
+    getEvmRpcCanisterId,
+    getEvmRpcUrl,
     getSiweProviderCanisterId
-} from "./utils/env";
+} from "../utils/env";
+import {ROLES} from "../models/Role";
+import {RoleProof} from "../models/Proof";
+import {ic, Principal} from "azle/experimental";
+import {ethers} from "ethers";
+import {call, IDL} from "azle";
+import {GetAddressResponse} from "../models/Address";
+import revocationRegistryAbi from "../../eth-abi/RevocationRegistry.json";
+import {RequestResult, RpcService} from "../models/Rpc";
 
-class DelegateManager {
-    evmRpcCanisterId: string = getEvmRpcCanisterId();
-    siweProviderCanisterId: string = getSiweProviderCanisterId();
-    evmRpcUrl: string = getEvmRpcUrl();
-    evmRevocationRegistryAddress: string = getEvmRevocationRegistryAddress();
-    evmMembershipIssuerAddress: string = getEvmMembershipIssuerAddress();
-    incrementalRoles = [ROLES.VIEWER, ROLES.EDITOR, ROLES.SIGNER];
+class DelegationService {
+    private static _instance: DelegationService;
+    private _evmRpcCanisterId: string = getEvmRpcCanisterId();
+    private _siweProviderCanisterId: string = getSiweProviderCanisterId();
+    private _evmRpcUrl: string = getEvmRpcUrl();
+    private _evmRevocationRegistryAddress: string = getEvmRevocationRegistryAddress();
+    private _evmMembershipIssuerAddress: string = getEvmMembershipIssuerAddress();
+    private _incrementalRoles = [ROLES.VIEWER, ROLES.EDITOR, ROLES.SIGNER];
 
-    @update([RoleProof, IDL.Principal, IDL.Text], IDL.Bool)
+    private constructor() {}
+    static get instance() {
+        if (!DelegationService._instance) {
+            DelegationService._instance = new DelegationService();
+        }
+        return DelegationService._instance;
+    }
+
     async hasValidRole(proof: RoleProof, caller: Principal, minimumRole: string): Promise<boolean> {
         const unixTime = Number(ic.time().toString().substring(0, 13));
         const { signedProof, signer: expectedSigner, ...data} = proof;
@@ -56,7 +65,7 @@ class DelegateManager {
         // If the membership proof signer is different from the delegate signer, the proof is invalid
         if(membershipProofSigner !== membershipProof.issuer) return false;
         // If the proof signer is not the owner, the proof is invalid
-        if(membershipProofSigner !== this.evmMembershipIssuerAddress) return false;
+        if(membershipProofSigner !== this._evmMembershipIssuerAddress) return false;
         // If the delegator is not the signer of the role proof, the proof is invalid
         if(membershipProof.delegatorAddress !== roleProofSigner) return false;
         // If the membership credential has expired, the proof is invalid
@@ -67,7 +76,7 @@ class DelegateManager {
 
     async getAddress(principal: Principal): Promise<string> {
         const resp = await call(
-            this.siweProviderCanisterId,
+            this._siweProviderCanisterId,
             'get_address',
             {
                 paramIdlTypes: [IDL.Vec(IDL.Nat8)],
@@ -80,7 +89,7 @@ class DelegateManager {
     }
 
     isAtLeast(actualRole: string, minimumRole: string): boolean {
-        return this.incrementalRoles.indexOf(actualRole) >= this.incrementalRoles.indexOf(minimumRole);
+        return this._incrementalRoles.indexOf(actualRole) >= this._incrementalRoles.indexOf(minimumRole);
     }
 
     async isRevoked(signer: string, credentialIdHash: string): Promise<boolean> {
@@ -93,7 +102,7 @@ class DelegateManager {
             "method": "eth_call",
             "params": [
                 {
-                    "to": this.evmRevocationRegistryAddress,
+                    "to": this._evmRevocationRegistryAddress,
                     "data": data
                 },
                 "latest"
@@ -102,12 +111,12 @@ class DelegateManager {
         }
         const JsonRpcSource = {
             Custom: {
-                url: this.evmRpcUrl,
+                url: this._evmRpcUrl,
                 headers: []
             }
         }
         const resp = await call(
-            this.evmRpcCanisterId,
+            this._evmRpcCanisterId,
             'request',
             {
                 paramIdlTypes: [RpcService, IDL.Text, IDL.Nat64],
@@ -122,4 +131,4 @@ class DelegateManager {
         return decodedResult[0] !== 0n;
     }
 }
-export default DelegateManager;
+export default DelegationService;

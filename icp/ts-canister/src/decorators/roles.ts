@@ -1,14 +1,6 @@
-import {call, IDL} from "azle";
 import {RoleProof} from "../models/Proof";
 import {ic} from "azle/experimental";
-
-function getDelegateManagerCanisterId(): string {
-    if (process.env.CANISTER_ID_DELEGATE_MANAGER !== undefined) {
-        return process.env.CANISTER_ID_DELEGATE_MANAGER;
-    }
-
-    throw new Error(`process.env.CANISTER_ID_DELEGATE_MANAGER is not defined`);
-}
+import DelegationService from "../services/DelegationService";
 
 function OnlyRole(role: string, originalMethod: any, _context: any) {
     async function replacementMethod(this: any, ...args: any[]) {
@@ -19,11 +11,7 @@ function OnlyRole(role: string, originalMethod: any, _context: any) {
             throw new Error(`First argument must be a RoleProof`);
 
         const roleProof = args[0] as RoleProof;
-        const isValid = await call(getDelegateManagerCanisterId(), 'hasValidRole', {
-            paramIdlTypes: [RoleProof, IDL.Principal, IDL.Text],
-            returnIdlType: IDL.Bool,
-            args: [roleProof, ic.caller(), role]
-        });
+        const isValid = DelegationService.instance.hasValidRole(roleProof, ic.caller(), role);
         if (!isValid) {
             throw new Error(`Access denied: user is not a ${role}`);
         }

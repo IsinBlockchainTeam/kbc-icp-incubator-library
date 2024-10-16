@@ -1,6 +1,6 @@
 import type { ActorSubclass, Identity } from '@dfinity/agent';
-import { _SERVICE } from '../../../icp/ts-canister/.dfx/local/canisters/order_manager/service.did';
-import {createActor} from "../../declarations/order_manager";
+import { _SERVICE } from '../../declarations/entity_manager/entity_manager.did';
+import {createActor} from "../../declarations/entity_manager";
 import {RoleProof} from "../../../icp/ts-canister/src/models/Proof";
 import {EntityBuilder} from "../../utils/icp/EntityBuilder";
 import {Order} from "../../entities/icp/Order";
