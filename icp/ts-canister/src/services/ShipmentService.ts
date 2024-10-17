@@ -3,13 +3,12 @@ import {StableBTreeMap} from "azle";
 import {FundStatusEnum, Phase, PhaseEnum, Shipment} from "../models/Shipment";
 import {RoleProof} from "../models/Proof";
 import {validateAddress, validateInterestedParty} from "../utils/validation";
-import { ethCallContract, ethSendContractTransaction, getAddress } from '../utils/rpc';
+import {ethCallContract, ethSendContractTransaction} from "../utils/rpc";
 import escrowManagerAbi from "../../eth-abi/EscrowManager.json";
 import escrowAbi from "../../eth-abi/Escrow.json";
 import {EvaluationStatus, EvaluationStatusEnum} from "../models/Evaluation";
 import {DocumentInfo, DocumentType, DocumentTypeEnum} from "../models/Document";
 import {StableMemoryId} from "../utils/stableMemory";
-import { ic } from 'azle/experimental';
 
 class ShipmentService {
     private static _instance: ShipmentService;
@@ -44,9 +43,7 @@ class ShipmentService {
         roleProof: RoleProof,
         supplier: string,
         commissioner: string,
-        sampleApprovalRequired: boolean,
-        duration: bigint,
-        tokenAddress: string
+        sampleApprovalRequired: boolean
     ): Promise<Shipment> {
         if(supplier === commissioner)
             throw new Error('Supplier and commissioner must be different');
@@ -81,6 +78,9 @@ class ShipmentService {
             documents: [],
         };
 
+        // TODO: remove this hardcoded values
+        const duration = 1_000_000n;
+        const tokenAddress = '0xA0BF1413F37870D386999A316696C4e4e77FC611';
         await ethSendContractTransaction(this.escrowManagerAddress, escrowManagerAbi.abi, 'registerEscrow', [shipment.id, supplier, duration, tokenAddress]);
 
         this.shipments.insert(BigInt(id), shipment);
@@ -154,7 +154,7 @@ class ShipmentService {
         const shipment = this.shipments.get(id);
         if(!shipment)
             throw new Error('Shipment not found');
-        if(!(PhaseEnum.PHASE_2 in this.getShipmentPhase(roleProof, id)))
+        if(PhaseEnum.PHASE_2 in this.getShipmentPhase(roleProof, id))
             throw new Error('Shipment in wrong phase');
         if(EvaluationStatusEnum.APPROVED in shipment.detailsEvaluationStatus)
             throw new Error('Details already approved');
@@ -229,19 +229,21 @@ class ShipmentService {
         if(!(FundStatusEnum.NOT_LOCKED in shipment.fundsStatus))
             throw new Error('Funds already locked');
 
-        if(shipment.escrowAddress.length === 0) {
-            const escrowAddress = await ethCallContract(this.escrowManagerAddress, escrowManagerAbi.abi, 'getEscrowByShipmentId', [shipment.id]);
-            console.log('escrowAddress', escrowAddress);
-            shipment.escrowAddress = [escrowAddress];
-        }
-
-        const callerAddress = await getAddress(ic.caller());
-        console.log('callerAddress', callerAddress);
-        const escrowAddress = shipment.escrowAddress[0];
+        const escrowAddress = await ethCallContract(this.escrowManagerAddress, escrowManagerAbi.abi, 'getEscrowByShipmentId', [shipment.id]);
         console.log('escrowAddress', escrowAddress);
 
-        await new Promise(resolve => setTimeout(resolve, 5000));
-        await ethSendContractTransaction(escrowAddress, escrowAbi.abi, 'deposit', [amount, callerAddress]);
+        // await ethSendContractTransaction(escrowAddress, escrowAbi.abi, 'deposit', [amount, await getAddress(ic.caller())]);
+
+        // const totalLockedFunds = (await ethCallContract(escrowAddress, escrowAbi.abi, 'getLockedAmount', [])).toNumber();
+        // console.log('totalLockedFunds', totalLockedFunds);
+        // const requiredAmount = shipment.price;
+        // console.log('requiredAmount', requiredAmount);
+        // const totalDepositedAmount = (await ethCallContract(escrowAddress, escrowAbi.abi, 'getTotalDepositedAmount', [])).toNumber();
+        // console.log('totalDepositedAmount', totalDepositedAmount);
+        // if(totalDepositedAmount >= totalLockedFunds + requiredAmount) {
+        //     await ethSendContractTransaction(escrowAddress, escrowAbi.abi, 'lockFunds', [requiredAmount]);
+        //     shipment.fundsStatus = { LOCKED: null };
+        // }
 
         // TODO: Call escrow "deposit" method
         // _escrow.deposit(amount, _msgSender());
@@ -251,40 +253,6 @@ class ShipmentService {
         //     _escrow.lockFunds(requiredAmount);
         //     _fundsStatus = FundsStatus.LOCKED;
         // }
-        this.shipments.insert(id, shipment);
-        return shipment;
-    }
-
-    async lockFunds(roleProof: RoleProof, id: bigint): Promise<Shipment> {
-        const shipment = this.shipments.get(id);
-        if(!shipment)
-            throw new Error('Shipment not found');
-        if(!(PhaseEnum.PHASE_3 in this.getShipmentPhase(roleProof, id)))
-            throw new Error('Shipment in wrong phase');
-        if(!(FundStatusEnum.NOT_LOCKED in shipment.fundsStatus))
-            throw new Error('Funds already locked');
-
-        if(shipment.escrowAddress.length === 0) {
-            const escrowAddress = await ethCallContract(this.escrowManagerAddress, escrowManagerAbi.abi, 'getEscrowByShipmentId', [shipment.id]);
-            console.log('escrowAddress', escrowAddress);
-            shipment.escrowAddress = [escrowAddress];
-        }
-
-        const escrowAddress = shipment.escrowAddress[0];
-        console.log('escrowAddress', escrowAddress);
-        const totalLockedFunds = await ethCallContract(escrowAddress, escrowAbi.abi, 'getLockedAmount', []);
-        const requiredAmount = shipment.price;
-        const totalDepositedAmount = await ethCallContract(escrowAddress, escrowAbi.abi, 'getTotalDepositedAmount', []);
-        console.log('totalLockedFunds', totalLockedFunds);
-        console.log('requiredAmount', requiredAmount);
-        console.log('totalDepositedAmount', totalDepositedAmount);
-        if (totalDepositedAmount >= totalLockedFunds + requiredAmount) {
-            await ethSendContractTransaction(escrowAddress, escrowAbi.abi, 'lockFunds', [requiredAmount]);
-            shipment.fundsStatus = { LOCKED: null };
-            console.log('funds locked');
-        }
-
-        this.shipments.insert(id, shipment);
         return shipment;
     }
 

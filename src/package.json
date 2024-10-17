@@ -63,7 +63,8 @@
         "jest-environment-node": "^29.5.0",
         "jwt-decode": "^4.0.0",
         "node-fetch": "^2.6.1",
-        "uuid": "^9.0.1"
+        "uuid": "^9.0.1",
+        "@kbc-lib/azle-types": "file:../icp/ts-canister"
     },
     "author": "ISIN Blockchain team",
     "license": "MIT"

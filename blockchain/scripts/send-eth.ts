@@ -1,5 +1,5 @@
-import { ethers } from 'hardhat';
-import { Contract } from 'ethers';
+import {ethers} from "hardhat";
+import {Contract} from "ethers";
 
 async function getAttachedContract(contractName: string, contractAddress: string): Promise<Contract> {
     const ContractFactory = await ethers.getContractFactory(contractName);

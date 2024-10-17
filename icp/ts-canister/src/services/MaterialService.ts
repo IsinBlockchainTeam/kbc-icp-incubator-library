@@ -1,5 +1,5 @@
 import {StableBTreeMap} from "azle";
-import {Material} from "../models/Material";
+import {Material} from "../models/types";
 import ProductCategoryService from "./ProductCategoryService";
 import {StableMemoryId} from "../utils/stableMemory";
 

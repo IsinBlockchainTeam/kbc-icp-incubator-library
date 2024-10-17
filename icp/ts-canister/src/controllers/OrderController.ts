@@ -1,23 +1,29 @@
 import {IDL, update} from "azle";
-import {RoleProof} from "../models/Proof";
-import {Order, OrderLine} from "../models/Order";
+import {
+    RoleProof as IDLRoleProof,
+    Order as IDLOrder, OrderLine as IDLOrderLine
+} from "../models/idls";
+import {
+    RoleProof,
+    Order, OrderLine
+} from "../models/types";
 import {OnlyEditor, OnlySigner, OnlyViewer} from "../decorators/roles";
 import OrderService from "../services/OrderService";
 
 class OrderController {
-    @update([RoleProof], IDL.Vec(Order))
+    @update([IDLRoleProof], IDL.Vec(IDLOrder))
     @OnlyViewer
     async getOrders(roleProof: RoleProof): Promise<Order[]> {
         return OrderService.instance.getOrders(roleProof);
     }
 
-    @update([RoleProof, IDL.Nat], Order)
+    @update([IDLRoleProof, IDL.Nat], IDLOrder)
     @OnlyViewer
     async getOrder(roleProof: RoleProof, id: bigint): Promise<Order> {
         return OrderService.instance.getOrder(roleProof, id);
     }
 
-    @update([RoleProof, IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Text, IDL.Text, IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(OrderLine)], Order)
+    @update([IDLRoleProof, IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Text, IDL.Text, IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(IDLOrderLine)], IDLOrder)
     @OnlyEditor
     async createOrder(
         roleProof: RoleProof,
@@ -59,7 +65,7 @@ class OrderController {
         );
     }
 
-    @update([RoleProof, IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Text, IDL.Text, IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(OrderLine)], Order)
+    @update([IDLRoleProof, IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Text, IDL.Text, IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(IDLOrderLine)], IDLOrder)
     @OnlyEditor
     async updateOrder(
         roleProof: RoleProof,
@@ -103,7 +109,7 @@ class OrderController {
         );
     }
 
-    @update([RoleProof, IDL.Nat], Order)
+    @update([IDLRoleProof, IDL.Nat], IDLOrder)
     @OnlySigner
     async signOrder(roleProof: RoleProof, id: bigint): Promise<Order> {
         return OrderService.instance.signOrder(roleProof, id);
