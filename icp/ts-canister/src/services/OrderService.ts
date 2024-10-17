@@ -208,7 +208,8 @@ class OrderService {
         order.signatures.push(companyAddress);
         if (order.signatures.includes(order.supplier) && order.signatures.includes(order.customer)) {
             order.status = { CONFIRMED: null };
-            const shipment = await ShipmentService.instance.createShipment(roleProof, order.supplier, order.commissioner, true);
+            const duration = order.paymentDeadline - BigInt(Math.trunc(Date.now() / 1000));
+            const shipment = await ShipmentService.instance.createShipment(roleProof, order.supplier, order.commissioner, true, duration, order.token);
             order.shipmentId = [shipment.id];
             console.log(shipment);
         }

@@ -22,7 +22,7 @@ type Utils = {
     shipmentManagerDriver: ShipmentManagerDriver;
     roleProof: RoleProof;
 };
-const SHIPMENT_ID = 3;
+const SHIPMENT_ID = 4;
 describe('ShipmentManagerDriver', () => {
     let utils1: Utils, utils2: Utils;
     const getUtils = async (userPrivateKey: string, companyPrivateKey: string) => {
@@ -133,7 +133,14 @@ describe('ShipmentManagerDriver', () => {
 
     it('should deposit funds', async () => {
         const { shipmentManagerDriver, roleProof } = utils1;
-        const shipment = await shipmentManagerDriver.depositFunds(roleProof, SHIPMENT_ID, 1000);
+        const shipment = await shipmentManagerDriver.depositFunds(roleProof, SHIPMENT_ID, 100);
+        console.log(shipment);
+        expect(shipment).toBeDefined();
+    });
+
+    it('should lock funds', async () => {
+        const { shipmentManagerDriver, roleProof } = utils1;
+        const shipment = await shipmentManagerDriver.lockFunds(roleProof, SHIPMENT_ID);
         console.log(shipment);
         expect(shipment).toBeDefined();
     });
@@ -176,5 +183,117 @@ describe('ShipmentManagerDriver', () => {
         });
         console.log(shipment);
         expect(shipment).toBeDefined();
+    });
+
+    it('should bring a new shipment to the 3rd phase', async () => {
+        const { shipmentManagerDriver: supplierDriver, roleProof: supplierProof } = utils1;
+        const { shipmentManagerDriver: commissionerDriver, roleProof: commissionerProof } = utils2;
+
+        await supplierDriver.addDocument(
+            supplierProof,
+            SHIPMENT_ID,
+            { PRE_SHIPMENT_SAMPLE: null },
+            'https://example.com'
+        );
+        await commissionerDriver.evaluateDocument(commissionerProof, SHIPMENT_ID, 0, {
+            APPROVED: null
+        });
+        console.log('pre shipment done');
+        await commissionerDriver.evaluateSample(commissionerProof, SHIPMENT_ID, { APPROVED: null });
+        console.log('evaluated sample');
+        await supplierDriver.setShipmentDetails(
+            supplierProof,
+            SHIPMENT_ID,
+            100,
+            2000,
+            3000,
+            'targetExchange',
+            2,
+            10,
+            1000,
+            1,
+            1000,
+            1100
+        );
+        console.log('set shipment details');
+        await commissionerDriver.evaluateShipmentDetails(commissionerProof, SHIPMENT_ID, {
+            APPROVED: null
+        });
+        console.log('evaluated shipment details');
+        await supplierDriver.addDocument(
+            supplierProof,
+            SHIPMENT_ID,
+            { SHIPPING_INSTRUCTIONS: null },
+            'https://example.com'
+        );
+        await commissionerDriver.evaluateDocument(commissionerProof, SHIPMENT_ID, 1, {
+            APPROVED: null
+        });
+        console.log('shipping instructions');
+        await supplierDriver.addDocument(
+            supplierProof,
+            SHIPMENT_ID,
+            { SHIPPING_NOTE: null },
+            'https://example.com'
+        );
+        await commissionerDriver.evaluateDocument(commissionerProof, SHIPMENT_ID, 2, {
+            APPROVED: null
+        });
+        console.log('shipping note');
+
+        expect(await supplierDriver.getShipmentPhase(supplierProof, SHIPMENT_ID)).toStrictEqual({
+            PHASE_3: null
+        });
+    });
+
+    it('should bring a shipment which has just locked the escrow to the 4th phase', async () => {
+        const { shipmentManagerDriver: supplierDriver, roleProof: supplierProof } = utils1;
+        const { shipmentManagerDriver: commissionerDriver, roleProof: commissionerProof } = utils2;
+
+        expect(await supplierDriver.getShipmentPhase(supplierProof, SHIPMENT_ID)).toStrictEqual({
+            PHASE_3: null
+        });
+        await supplierDriver.addDocument(
+            supplierProof,
+            SHIPMENT_ID,
+            { BOOKING_CONFIRMATION: null },
+            'https://example.com'
+        );
+        await commissionerDriver.evaluateDocument(commissionerProof, SHIPMENT_ID, 3, {
+            APPROVED: null
+        });
+        console.log('booking confirmation');
+        await supplierDriver.addDocument(
+            supplierProof,
+            SHIPMENT_ID,
+            { PHYTOSANITARY_CERTIFICATE: null },
+            'https://example.com'
+        );
+        await supplierDriver.addDocument(
+            supplierProof,
+            SHIPMENT_ID,
+            { BILL_OF_LADING: null },
+            'https://example.com'
+        );
+        await supplierDriver.addDocument(
+            supplierProof,
+            SHIPMENT_ID,
+            { ORIGIN_CERTIFICATE_ICO: null },
+            'https://example.com'
+        );
+        await commissionerDriver.evaluateDocument(commissionerProof, SHIPMENT_ID, 4, {
+            APPROVED: null
+        });
+        await commissionerDriver.evaluateDocument(commissionerProof, SHIPMENT_ID, 5, {
+            APPROVED: null
+        });
+        await commissionerDriver.evaluateDocument(commissionerProof, SHIPMENT_ID, 6, {
+            APPROVED: null
+        });
+        console.log('phytosanitary certificate, bill of lading, origin certificate');
+
+        expect(await supplierDriver.getShipmentPhase(supplierProof, SHIPMENT_ID)).toStrictEqual({
+            PHASE_5: null
+        });
     });
 });

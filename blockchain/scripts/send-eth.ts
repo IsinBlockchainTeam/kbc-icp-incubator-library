@@ -1,5 +1,5 @@
-import {ethers} from "hardhat";
-import {Contract} from "ethers";
+import { ethers } from 'hardhat';
+import { Contract } from 'ethers';
 
 async function getAttachedContract(contractName: string, contractAddress: string): Promise<Contract> {
     const ContractFactory = await ethers.getContractFactory(contractName);
@@ -8,7 +8,8 @@ async function getAttachedContract(contractName: string, contractAddress: string
 const main = async () => {
     const [_, owner] = await ethers.getSigners();
     const tx = await owner.sendTransaction({
-        to: '0xA9Cd4877Fd9b2268B929810e75f779a4A13daC17',
+        // to: '0x16bFc34f7936e829e980b6D77E436765f57415E8',
+        to: '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
         value: ethers.utils.parseEther('1000')
     });
     const resp = await tx.wait();

@@ -83,6 +83,10 @@ export class ShipmentManagerDriver {
         return this._actor.depositFunds(roleProof, BigInt(id), BigInt(amount));
     }
 
+    async lockFunds(roleProof: RoleProof, id: number) {
+        return this._actor.lockFunds(roleProof, BigInt(id));
+    }
+
     async getDocuments(roleProof: RoleProof, id: number) {
         return this._actor.getDocuments(roleProof, BigInt(id));
     }

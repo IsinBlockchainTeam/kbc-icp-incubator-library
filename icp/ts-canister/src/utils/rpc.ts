@@ -1,4 +1,4 @@
-import {call, IDL} from "azle";
+import { call, IDL } from 'azle';
 import {
     FeeHistoryArgs,
     GetTransactionCountArgs,
@@ -9,12 +9,12 @@ import {
     RpcConfig,
     RpcService,
     RpcServices
-} from "../models/Rpc";
-import {ethers} from "ethers";
-import {calculateRsvForTEcdsa, ecdsaPublicKey, signWithEcdsa} from "./ecdsa";
-import {ic, Principal} from 'azle/experimental';
-import {getEvmChainId, getEvmRpcCanisterId, getEvmRpcUrl, getSiweProviderCanisterId} from './env';
-import {GetAddressResponse} from '../models/Address';
+} from '../models/Rpc';
+import { ethers } from 'ethers';
+import { calculateRsvForTEcdsa, ecdsaPublicKey, signWithEcdsa } from './ecdsa';
+import { ic, Principal } from 'azle/experimental';
+import { getEvmChainId, getEvmRpcCanisterId, getEvmRpcUrl, getSiweProviderCanisterId } from './env';
+import { GetAddressResponse } from '../models/Address';
 
 export async function jsonRpcRequest(body: Record<string, any>): Promise<any> {
     if (process.env.CANISTER_ID_EVM_RPC === undefined) {
@@ -26,7 +26,7 @@ export async function jsonRpcRequest(body: Record<string, any>): Promise<any> {
             url: getEvmRpcUrl(),
             headers: []
         }
-    }
+    };
     return await call(
         evmRpcCanisterId,
         'request',
@@ -38,6 +38,7 @@ export async function jsonRpcRequest(body: Record<string, any>): Promise<any> {
         }
     );
 }
+
 export async function ethMaxPriorityFeePerGas(): Promise<bigint> {
     const response = await jsonRpcRequest({
         jsonrpc: '2.0',
@@ -46,10 +47,11 @@ export async function ethMaxPriorityFeePerGas(): Promise<bigint> {
         id: 1
     });
 
-    console.log(response)
+    console.log(response);
     //TODO improve error handling
     return BigInt(response.Ok.result);
 }
+
 export async function ethFeeHistory(): Promise<any> {
     if (process.env.CANISTER_ID_EVM_RPC === undefined) {
         throw new Error('process.env.CANISTER_ID_EVM_RPC is not defined');
@@ -71,7 +73,7 @@ export async function ethFeeHistory(): Promise<any> {
                 headers: []
             }]
         }
-    }
+    };
 
     // TODO improve error handling
     return await call(
@@ -85,6 +87,7 @@ export async function ethFeeHistory(): Promise<any> {
         }
     );
 }
+
 export async function ethGetTransactionCount(address: string): Promise<number> {
     if (process.env.CANISTER_ID_EVM_RPC === undefined) {
         throw new Error('process.env.CANISTER_ID_EVM_RPC is not defined');
@@ -104,7 +107,7 @@ export async function ethGetTransactionCount(address: string): Promise<number> {
                 headers: []
             }]
         }
-    }
+    };
 
     const response = await call(
         evmRpcCanisterId,
@@ -134,7 +137,7 @@ export async function ethSendRawTransaction(
                 headers: []
             }]
         }
-    }
+    };
     return await call(
         evmRpcCanisterId,
         'eth_sendRawTransaction',
@@ -161,6 +164,7 @@ export async function ethSendContractTransaction(
     console.log('canisterAddress', canisterAddress);
     const abiInterface = new ethers.Interface(contractAbi);
     const data = abiInterface.encodeFunctionData(methodName, methodArgs);
+    console.log('data', data);
     //TODO: eth_maxPriorityFeePerGas not available in hardhat
     // const maxPriorityFeePerGas = await ethMaxPriorityFeePerGas();
     const maxPriorityFeePerGas = BigInt(1);
@@ -198,10 +202,10 @@ export async function ethSendContractTransaction(
         unsignedSerializedTxHash,
         signedSerializedTxHash
     );
-    tx.signature = {r, s, v};
+    tx.signature = { r, s, v };
     const rawTransaction = tx.serialized;
     const resp = await ethSendRawTransaction(rawTransaction);
-    if(resp.Consistent.Err){
+    if (resp.Consistent.Err) {
         console.log('Response', resp.Consistent.Err);
         throw new Error('Received error when sending transaction.');
     }
@@ -212,29 +216,29 @@ export async function ethCallContract(
     contractAddress: string,
     contractAbi: ethers.InterfaceAbi,
     methodName: string,
-    methodArgs: any[],
+    methodArgs: any[]
 ) {
     const abiInterface = new ethers.Interface(contractAbi);
     const data = abiInterface.encodeFunctionData(methodName, methodArgs);
 
     const jsonRpcPayload = {
-        "jsonrpc": "2.0",
-        "method": "eth_call",
-        "params": [
+        'jsonrpc': '2.0',
+        'method': 'eth_call',
+        'params': [
             {
-                "to": contractAddress,
-                "data": data
+                'to': contractAddress,
+                'data': data
             },
-            "latest"
+            'latest'
         ],
-        "id": 1
-    }
+        'id': 1
+    };
     const JsonRpcSource = {
         Custom: {
             url: getEvmRpcUrl(),
             headers: []
         }
-    }
+    };
     const resp = await call(
         getEvmRpcCanisterId(),
         'request',
@@ -245,11 +249,12 @@ export async function ethCallContract(
             payment: 2_000_000_000n
         }
     );
+    console.log('resp', resp);
 
-    if(resp.Err) throw new Error('Unable to fetch revocation registry');
+    if (resp.Err) throw new Error('Unable to fetch revocation registry');
 
     const decodedResult = abiInterface.decodeFunctionResult(methodName, JSON.parse(resp.Ok).result);
-    console.log(decodedResult);
+    console.log('decodedResult', decodedResult);
     return decodedResult[0];
 }
 
@@ -260,9 +265,9 @@ export async function getAddress(principal: Principal): Promise<string> {
         {
             paramIdlTypes: [IDL.Vec(IDL.Nat8)],
             returnIdlType: GetAddressResponse,
-            args: [principal.toUint8Array()],
+            args: [principal.toUint8Array()]
         }
     );
-    if(resp.Err) throw new Error('Unable to fetch address');
+    if (resp.Err) throw new Error('Unable to fetch address');
     return resp.Ok;
 }

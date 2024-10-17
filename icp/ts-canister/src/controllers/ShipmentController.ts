@@ -97,6 +97,12 @@ class ShipmentController {
         return ShipmentService.instance.depositFunds(roleProof, id, amount);
     }
 
+    @update([RoleProof, IDL.Nat], Shipment)
+    @OnlyEditor
+    async lockFunds(roleProof: RoleProof, id: bigint): Promise<Shipment> {
+        return ShipmentService.instance.lockFunds(roleProof, id);
+    }
+
     @update([RoleProof, IDL.Nat], IDL.Vec(IDL.Tuple(DocumentType, IDL.Vec(DocumentInfo))))
     @OnlyViewer
     // @OnlyInvolvedParties
