@@ -66,6 +66,7 @@
         "class-methods-use-this": "off",
         "no-console": "off",
         "no-redeclare": "off",
-        "no-param-reassign": "off"
+        "no-param-reassign": "off",
+        "no-use-before-define": "off"
     }
 }

@@ -1,13 +1,13 @@
-import {caller, StableBTreeMap} from "azle";
-import {ProductCategory} from "../models/ProductCategory";
-import {ethers} from "ethers";
-import {StableMemoryId} from "../utils/stableMemory";
+import { caller, StableBTreeMap } from 'azle';
+import { ethers } from 'ethers';
+import { ProductCategory } from '../models/ProductCategory';
+import { StableMemoryId } from '../utils/stableMemory';
 
 class ProductCategoryService {
     private static _instance: ProductCategoryService;
+
     private _productCategories = StableBTreeMap<bigint, ProductCategory>(StableMemoryId.PRODUCT_CATEGORIES);
 
-    private constructor() {}
     static get instance() {
         if (!ProductCategoryService._instance) {
             ProductCategoryService._instance = new ProductCategoryService();

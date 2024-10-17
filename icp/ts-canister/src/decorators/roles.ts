@@ -1,5 +1,5 @@
-import {RoleProof} from "../models/Proof";
 import {ic} from "azle/experimental";
+import {RoleProof} from "../models/Proof";
 import DelegationService from "../services/DelegationService";
 
 function OnlyRole(role: string, originalMethod: any, _context: any) {

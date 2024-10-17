@@ -1,6 +1,7 @@
 import { ethers } from 'ethers';
 import { call } from 'azle';
 import {EcdsaPublicKeyArgs, EcdsaPublicKeyResult, SignWithEcdsaArgs, SignWithEcdsaResult} from 'azle/canisters/management';
+
 const MANAGEMENT_CANISTER_ID = 'aaaaa-aa';
 export async function signWithEcdsa(
     derivationPath: Uint8Array[],

@@ -1,16 +1,16 @@
-import {StableBTreeMap} from "azle";
-import {Order, OrderLine} from "../models/Order";
-import {StableMemoryId} from "../utils/stableMemory";
-import {RoleProof} from "../models/Proof";
-import {validateAddress, validateDeadline, validateInterestedParty, validatePositiveNumber} from "../utils/validation";
-import {ROLES} from "../models/Role";
-import ShipmentService from "./ShipmentService";
+import { StableBTreeMap } from 'azle';
+import { Order, OrderLine } from '../models/Order';
+import { StableMemoryId } from '../utils/stableMemory';
+import { RoleProof } from '../models/Proof';
+import { validateAddress, validateDeadline, validateInterestedParty, validatePositiveNumber } from '../utils/validation';
+import { ROLES } from '../models/Role';
+import ShipmentService from './ShipmentService';
 
 class OrderService {
     private static _instance: OrderService;
+
     private _orders = StableBTreeMap<bigint, Order>(StableMemoryId.ORDERS);
 
-    private constructor() {}
     static get instance() {
         if (!OrderService._instance) {
             OrderService._instance = new OrderService();
@@ -20,7 +20,7 @@ class OrderService {
 
     getOrders(roleProof: RoleProof): Order[] {
         const companyAddress = roleProof.membershipProof.delegatorAddress;
-        return this._orders.values().filter(order => {
+        return this._orders.values().filter((order) => {
             const interestedParties = [order.supplier, order.customer, order.commissioner];
             return interestedParties.includes(companyAddress);
         });
@@ -28,11 +28,10 @@ class OrderService {
 
     getOrder(roleProof: RoleProof, id: bigint): Order {
         const result = this._orders.get(id);
-        if(result) {
+        if (result) {
             const interestedParties = [result.supplier, result.customer, result.commissioner];
             const companyAddress = roleProof.membershipProof.delegatorAddress;
-            if(!interestedParties.includes(companyAddress))
-                throw new Error('Access denied');
+            if (!interestedParties.includes(companyAddress)) throw new Error('Access denied');
             return result;
         }
         throw new Error('Order not found');
@@ -57,8 +56,7 @@ class OrderService {
         deliveryPort: string,
         lines: OrderLine[]
     ): Order {
-        if(supplier === customer)
-            throw new Error('Supplier and customer must be different');
+        if (supplier === customer) throw new Error('Supplier and customer must be different');
         validateAddress('Supplier', supplier);
         validateAddress('Customer', customer);
         validateAddress('Commissioner', commissioner);
@@ -128,29 +126,28 @@ class OrderService {
         lines: OrderLine[]
     ): Order {
         const order = this._orders.get(id);
-        if (!order)
-            throw new Error('Order not found');
-        if(order.supplier == supplier &&
-            order.customer == customer &&
-            order.commissioner == commissioner &&
-            order.paymentDeadline == paymentDeadline &&
-            order.documentDeliveryDeadline == documentDeliveryDeadline &&
-            order.shippingDeadline == shippingDeadline &&
-            order.deliveryDeadline == deliveryDeadline &&
-            order.arbiter == arbiter &&
-            order.token == token &&
-            order.agreedAmount == agreedAmount &&
-            order.escrowManager == escrowManager &&
-            order.incoterms == incoterms &&
-            order.shipper == shipper &&
-            order.shippingPort == shippingPort &&
-            order.deliveryPort == deliveryPort &&
-            order.lines == lines
+        if (!order) throw new Error('Order not found');
+        if (
+            order.supplier === supplier &&
+            order.customer === customer &&
+            order.commissioner === commissioner &&
+            order.paymentDeadline === paymentDeadline &&
+            order.documentDeliveryDeadline === documentDeliveryDeadline &&
+            order.shippingDeadline === shippingDeadline &&
+            order.deliveryDeadline === deliveryDeadline &&
+            order.arbiter === arbiter &&
+            order.token === token &&
+            order.agreedAmount === agreedAmount &&
+            order.escrowManager === escrowManager &&
+            order.incoterms === incoterms &&
+            order.shipper === shipper &&
+            order.shippingPort === shippingPort &&
+            order.deliveryPort === deliveryPort &&
+            order.lines === lines
         ) {
             throw new Error('No changes detected');
         }
-        if(supplier === customer)
-            throw new Error('Supplier and customer must be different');
+        if (supplier === customer) throw new Error('Supplier and customer must be different');
         validateAddress('Supplier', supplier);
         validateAddress('Customer', customer);
         validateAddress('Commissioner', commissioner);
@@ -187,7 +184,7 @@ class OrderService {
             shipper,
             shippingPort,
             deliveryPort,
-            lines: lines,
+            lines,
             token,
             agreedAmount,
             escrowManager,
@@ -200,11 +197,9 @@ class OrderService {
 
     async signOrder(roleProof: RoleProof, id: bigint): Promise<Order> {
         const order = this._orders.get(id);
-        if (!order)
-            throw new Error('Order not found');
+        if (!order) throw new Error('Order not found');
         const companyAddress = roleProof.membershipProof.delegatorAddress;
-        if(order.signatures.includes(companyAddress))
-            throw new Error('Order already signed');
+        if (order.signatures.includes(companyAddress)) throw new Error('Order already signed');
         order.signatures.push(companyAddress);
         if (order.signatures.includes(order.supplier) && order.signatures.includes(order.customer)) {
             order.status = { CONFIRMED: null };

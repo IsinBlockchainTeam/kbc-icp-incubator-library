@@ -1,14 +1,15 @@
-import {StableBTreeMap} from "azle";
-import {Material} from "../models/Material";
-import ProductCategoryService from "./ProductCategoryService";
-import {StableMemoryId} from "../utils/stableMemory";
+import { StableBTreeMap } from 'azle';
+import { Material } from '../models/Material';
+import ProductCategoryService from './ProductCategoryService';
+import { StableMemoryId } from '../utils/stableMemory';
 
 class MaterialService {
     private static _instance: MaterialService;
+
     private _materials = StableBTreeMap<bigint, Material>(StableMemoryId.MATERIALS);
+
     private _productCategoryService = ProductCategoryService.instance;
 
-    private constructor() {}
     static get instance() {
         if (!MaterialService._instance) {
             MaterialService._instance = new MaterialService();

@@ -1,20 +1,21 @@
-import {getEvmEscrowManagerAddress} from "../utils/env";
-import {StableBTreeMap} from "azle";
-import {FundStatusEnum, Phase, PhaseEnum, Shipment} from "../models/Shipment";
-import {RoleProof} from "../models/Proof";
-import {validateAddress, validateInterestedParty} from "../utils/validation";
-import {ethCallContract, ethSendContractTransaction} from "../utils/rpc";
-import escrowManagerAbi from "../../eth-abi/EscrowManager.json";
-import {EvaluationStatus, EvaluationStatusEnum} from "../models/Evaluation";
-import {DocumentInfo, DocumentType, DocumentTypeEnum} from "../models/Document";
-import {StableMemoryId} from "../utils/stableMemory";
+import { StableBTreeMap } from 'azle';
+import { FundStatusEnum, Phase, PhaseEnum, Shipment } from '../models/Shipment';
+import { RoleProof } from '../models/Proof';
+import { validateAddress, validateInterestedParty } from '../utils/validation';
+import { ethCallContract, ethSendContractTransaction } from '../utils/rpc';
+import escrowManagerAbi from '../../eth-abi/EscrowManager.json';
+import { EvaluationStatus, EvaluationStatusEnum } from '../models/Evaluation';
+import { DocumentInfo, DocumentType, DocumentTypeEnum } from '../models/Document';
+import { StableMemoryId } from '../utils/stableMemory';
+import { EVM } from '../constants/evm';
 
 class ShipmentService {
     private static _instance: ShipmentService;
-    private escrowManagerAddress: string = getEvmEscrowManagerAddress();
+
+    private escrowManagerAddress: string = EVM.ESCROW_MANAGER_ADDRESS();
+
     private shipments = StableBTreeMap<bigint, Shipment>(StableMemoryId.SHIPMENTS);
 
-    private constructor() {}
     static get instance() {
         if (!ShipmentService._instance) {
             ShipmentService._instance = new ShipmentService();
@@ -24,7 +25,7 @@ class ShipmentService {
 
     getShipments(roleProof: RoleProof): Shipment[] {
         const companyAddress = roleProof.membershipProof.delegatorAddress;
-        return this.shipments.values().filter(shipment => {
+        return this.shipments.values().filter((shipment) => {
             const interestedParties = [shipment.supplier, shipment.commissioner];
             return interestedParties.includes(companyAddress);
         });
@@ -32,20 +33,14 @@ class ShipmentService {
 
     getShipment(roleProof: RoleProof, id: bigint): Shipment {
         const result = this.shipments.get(id);
-        if(!result) {
+        if (!result) {
             throw new Error('Shipment not found');
         }
         return result;
     }
 
-    async createShipment(
-        roleProof: RoleProof,
-        supplier: string,
-        commissioner: string,
-        sampleApprovalRequired: boolean
-    ): Promise<Shipment> {
-        if(supplier === commissioner)
-            throw new Error('Supplier and commissioner must be different');
+    async createShipment(roleProof: RoleProof, supplier: string, commissioner: string, sampleApprovalRequired: boolean): Promise<Shipment> {
+        if (supplier === commissioner) throw new Error('Supplier and commissioner must be different');
         validateAddress('Supplier', supplier);
         validateAddress('Commissioner', commissioner);
         const interestedParties = [supplier, commissioner];
@@ -74,13 +69,18 @@ class ShipmentService {
             containersNumber: 0n,
             netWeight: 0n,
             grossWeight: 0n,
-            documents: [],
+            documents: []
         };
 
         // TODO: remove this hardcoded values
         const duration = 1_000_000n;
         const tokenAddress = '0xA0BF1413F37870D386999A316696C4e4e77FC611';
-        await ethSendContractTransaction(this.escrowManagerAddress, escrowManagerAbi.abi, 'registerEscrow', [shipment.id, supplier, duration, tokenAddress]);
+        await ethSendContractTransaction(this.escrowManagerAddress, escrowManagerAbi.abi, 'registerEscrow', [
+            shipment.id,
+            supplier,
+            duration,
+            tokenAddress
+        ]);
 
         this.shipments.insert(BigInt(id), shipment);
         return shipment;
@@ -88,32 +88,22 @@ class ShipmentService {
 
     getShipmentPhase(roleProof: RoleProof, id: bigint): Phase {
         const shipment = this.shipments.get(id);
-        if(shipment) {
-            if(!this.areDocumentsUploadedAndApproved(roleProof, id, this.getPhase1RequiredDocuments()))
-                return { PHASE_1: null };
-            if(shipment.sampleApprovalRequired && !(EvaluationStatusEnum.APPROVED in shipment.sampleEvaluationStatus))
-                return { PHASE_1: null };
+        if (shipment) {
+            if (!this.areDocumentsUploadedAndApproved(roleProof, id, this.getPhase1RequiredDocuments())) return { PHASE_1: null };
+            if (shipment.sampleApprovalRequired && !(EvaluationStatusEnum.APPROVED in shipment.sampleEvaluationStatus)) return { PHASE_1: null };
 
-            if(!this.areDocumentsUploadedAndApproved(roleProof, id, this.getPhase2RequiredDocuments()))
-                return { PHASE_2: null };
-            if(!(EvaluationStatusEnum.APPROVED in shipment.detailsEvaluationStatus))
-                return { PHASE_2: null };
+            if (!this.areDocumentsUploadedAndApproved(roleProof, id, this.getPhase2RequiredDocuments())) return { PHASE_2: null };
+            if (!(EvaluationStatusEnum.APPROVED in shipment.detailsEvaluationStatus)) return { PHASE_2: null };
 
-            if(!this.areDocumentsUploadedAndApproved(roleProof, id, this.getPhase3RequiredDocuments()))
-                return { PHASE_3: null };
-            if(FundStatusEnum.NOT_LOCKED in shipment.fundsStatus)
-                return { PHASE_3: null };
+            if (!this.areDocumentsUploadedAndApproved(roleProof, id, this.getPhase3RequiredDocuments())) return { PHASE_3: null };
+            if (FundStatusEnum.NOT_LOCKED in shipment.fundsStatus) return { PHASE_3: null };
 
-            if(!this.areDocumentsUploadedAndApproved(roleProof, id, this.getPhase4RequiredDocuments()))
-                return { PHASE_4: null };
+            if (!this.areDocumentsUploadedAndApproved(roleProof, id, this.getPhase4RequiredDocuments())) return { PHASE_4: null };
 
-            if(!this.areDocumentsUploadedAndApproved(roleProof, id, this.getPhase5RequiredDocuments()))
-                return { PHASE_5: null };
-            if(EvaluationStatusEnum.NOT_EVALUATED in shipment.qualityEvaluationStatus)
-                return { PHASE_5: null };
+            if (!this.areDocumentsUploadedAndApproved(roleProof, id, this.getPhase5RequiredDocuments())) return { PHASE_5: null };
+            if (EvaluationStatusEnum.NOT_EVALUATED in shipment.qualityEvaluationStatus) return { PHASE_5: null };
 
-            if(EvaluationStatusEnum.APPROVED in shipment.qualityEvaluationStatus)
-                return { CONFIRMED: null };
+            if (EvaluationStatusEnum.APPROVED in shipment.qualityEvaluationStatus) return { CONFIRMED: null };
 
             return { ARBITRATION: null };
         }
@@ -123,8 +113,7 @@ class ShipmentService {
     private areDocumentsUploadedAndApproved(roleProof: RoleProof, id: bigint, requiredDocuments: DocumentType[]): boolean {
         for (const documentType of requiredDocuments) {
             const document = this.getDocumentsByType(roleProof, id, documentType);
-            if(document.length === 0 || !(EvaluationStatusEnum.APPROVED in document[0].evaluationStatus))
-                return false;
+            if (document.length === 0 || !(EvaluationStatusEnum.APPROVED in document[0].evaluationStatus)) return false;
         }
         return true;
     }
@@ -151,12 +140,9 @@ class ShipmentService {
         grossWeight: bigint
     ): Shipment {
         const shipment = this.shipments.get(id);
-        if(!shipment)
-            throw new Error('Shipment not found');
-        if(PhaseEnum.PHASE_2 in this.getShipmentPhase(roleProof, id))
-            throw new Error('Shipment in wrong phase');
-        if(EvaluationStatusEnum.APPROVED in shipment.detailsEvaluationStatus)
-            throw new Error('Details already approved');
+        if (!shipment) throw new Error('Shipment not found');
+        if (PhaseEnum.PHASE_2 in this.getShipmentPhase(roleProof, id)) throw new Error('Shipment in wrong phase');
+        if (EvaluationStatusEnum.APPROVED in shipment.detailsEvaluationStatus) throw new Error('Details already approved');
 
         shipment.shipmentNumber = shipmentNumber;
         shipment.expirationDate = expirationDate;
@@ -176,13 +162,10 @@ class ShipmentService {
 
     evaluateSample(roleProof: RoleProof, id: bigint, evaluationStatus: EvaluationStatus): Shipment {
         const shipment = this.shipments.get(id);
-        if(!shipment)
-            throw new Error('Shipment not found');
-        if(!(PhaseEnum.PHASE_1 in this.getShipmentPhase(roleProof, id)))
-            throw new Error('Shipment in wrong phase');
+        if (!shipment) throw new Error('Shipment not found');
+        if (!(PhaseEnum.PHASE_1 in this.getShipmentPhase(roleProof, id))) throw new Error('Shipment in wrong phase');
 
-        if(EvaluationStatusEnum.APPROVED in shipment.sampleEvaluationStatus)
-            throw new Error('Sample already approved');
+        if (EvaluationStatusEnum.APPROVED in shipment.sampleEvaluationStatus) throw new Error('Sample already approved');
         shipment.sampleEvaluationStatus = evaluationStatus;
 
         this.shipments.insert(id, shipment);
@@ -191,14 +174,10 @@ class ShipmentService {
 
     evaluateShipmentDetails(roleProof: RoleProof, id: bigint, evaluationStatus: EvaluationStatus): Shipment {
         const shipment = this.shipments.get(id);
-        if(!shipment)
-            throw new Error('Shipment not found');
-        if(!(PhaseEnum.PHASE_2 in this.getShipmentPhase(roleProof, id)))
-            throw new Error('Shipment in wrong phase');
-        if(!shipment.detailsSet)
-            throw new Error('Details not set');
-        if(EvaluationStatusEnum.APPROVED in shipment.detailsEvaluationStatus)
-            throw new Error('Details already approved');
+        if (!shipment) throw new Error('Shipment not found');
+        if (!(PhaseEnum.PHASE_2 in this.getShipmentPhase(roleProof, id))) throw new Error('Shipment in wrong phase');
+        if (!shipment.detailsSet) throw new Error('Details not set');
+        if (EvaluationStatusEnum.APPROVED in shipment.detailsEvaluationStatus) throw new Error('Details already approved');
         shipment.detailsEvaluationStatus = evaluationStatus;
 
         this.shipments.insert(id, shipment);
@@ -207,12 +186,9 @@ class ShipmentService {
 
     evaluateQuality(roleProof: RoleProof, id: bigint, evaluationStatus: EvaluationStatus): Shipment {
         const shipment = this.shipments.get(id);
-        if(!shipment)
-            throw new Error('Shipment not found');
-        if(!(PhaseEnum.PHASE_5 in this.getShipmentPhase(roleProof, id)))
-            throw new Error('Shipment in wrong phase');
-        if(EvaluationStatusEnum.APPROVED in shipment.qualityEvaluationStatus)
-            throw new Error('Quality already approved');
+        if (!shipment) throw new Error('Shipment not found');
+        if (!(PhaseEnum.PHASE_5 in this.getShipmentPhase(roleProof, id))) throw new Error('Shipment in wrong phase');
+        if (EvaluationStatusEnum.APPROVED in shipment.qualityEvaluationStatus) throw new Error('Quality already approved');
         shipment.qualityEvaluationStatus = evaluationStatus;
 
         this.shipments.insert(id, shipment);
@@ -221,12 +197,9 @@ class ShipmentService {
 
     async depositFunds(roleProof: RoleProof, id: bigint, amount: bigint): Promise<Shipment> {
         const shipment = this.shipments.get(id);
-        if(!shipment)
-            throw new Error('Shipment not found');
-        if(!(PhaseEnum.PHASE_3 in this.getShipmentPhase(roleProof, id)))
-            throw new Error('Shipment in wrong phase');
-        if(!(FundStatusEnum.NOT_LOCKED in shipment.fundsStatus))
-            throw new Error('Funds already locked');
+        if (!shipment) throw new Error('Shipment not found');
+        if (!(PhaseEnum.PHASE_3 in this.getShipmentPhase(roleProof, id))) throw new Error('Shipment in wrong phase');
+        if (!(FundStatusEnum.NOT_LOCKED in shipment.fundsStatus)) throw new Error('Funds already locked');
 
         const escrowAddress = await ethCallContract(this.escrowManagerAddress, escrowManagerAbi.abi, 'getEscrowByShipmentId', [shipment.id]);
         console.log('escrowAddress', escrowAddress);
@@ -257,21 +230,15 @@ class ShipmentService {
 
     getDocuments(roleProof: RoleProof, id: bigint) {
         const shipment = this.shipments.get(id);
-        if(!shipment)
-            throw new Error('Shipment not found');
+        if (!shipment) throw new Error('Shipment not found');
         return shipment.documents;
     }
 
     addDocument(roleProof: RoleProof, id: bigint, documentType: DocumentType, externalUrl: string): Shipment {
         const shipment = this.shipments.get(id);
-        if(!shipment)
-            throw new Error('Shipment not found');
+        if (!shipment) throw new Error('Shipment not found');
         const documents = this.getDocumentsByType(roleProof, id, documentType);
-        if(!(
-            DocumentTypeEnum.GENERIC in documentType
-            || documents.length == 0
-            || !(EvaluationStatusEnum.APPROVED in documents[0].evaluationStatus)
-        ))
+        if (!(DocumentTypeEnum.GENERIC in documentType || documents.length == 0 || !(EvaluationStatusEnum.APPROVED in documents[0].evaluationStatus)))
             throw new Error('Document of this type already approved');
 
         const documentInfo: DocumentInfo = {
@@ -279,9 +246,9 @@ class ShipmentService {
             documentType,
             evaluationStatus: { NOT_EVALUATED: null },
             uploadedBy: roleProof.membershipProof.delegatorAddress,
-            externalUrl,
-        }
-        if(DocumentTypeEnum.GENERIC in documentType) {
+            externalUrl
+        };
+        if (DocumentTypeEnum.GENERIC in documentType) {
             const genericDocuments = shipment.documents.find(([type]) => 'GENERIC' in type);
             genericDocuments ? genericDocuments[1].push(documentInfo) : shipment.documents.push([documentType, [documentInfo]]);
         } else {
@@ -299,17 +266,13 @@ class ShipmentService {
 
     updateDocument(roleProof: RoleProof, id: bigint, documentId: bigint, externalUrl: string): Shipment {
         const shipment = this.shipments.get(id);
-        if(!shipment)
-            throw new Error('Shipment not found');
-        const documentTuple = shipment.documents.find(([_, docs]) => docs.find(doc => doc.id === documentId));
-        if(!documentTuple)
-            throw new Error('Document not found');
-        const document = documentTuple[1].find(doc => doc.id === documentId);
-        if(!document)
-            throw new Error('Document not found');
-        if(EvaluationStatusEnum.APPROVED in document.evaluationStatus)
-            throw new Error('Document already approved');
-        const documentIndex = documentTuple[1].findIndex(doc => doc.id === documentId);
+        if (!shipment) throw new Error('Shipment not found');
+        const documentTuple = shipment.documents.find(([_, docs]) => docs.find((doc) => doc.id === documentId));
+        if (!documentTuple) throw new Error('Document not found');
+        const document = documentTuple[1].find((doc) => doc.id === documentId);
+        if (!document) throw new Error('Document not found');
+        if (EvaluationStatusEnum.APPROVED in document.evaluationStatus) throw new Error('Document already approved');
+        const documentIndex = documentTuple[1].findIndex((doc) => doc.id === documentId);
         documentTuple[1][documentIndex].externalUrl = externalUrl;
         documentTuple[1][documentIndex].uploadedBy = roleProof.membershipProof.delegatorAddress;
 
@@ -319,17 +282,13 @@ class ShipmentService {
 
     evaluateDocument(roleProof: RoleProof, id: bigint, documentId: bigint, documentEvaluationStatus: EvaluationStatus): Shipment {
         const shipment = this.shipments.get(id);
-        if(!shipment)
-            throw new Error('Shipment not found');
-        const documentTuple = shipment.documents.find(([_, docs]) => docs.find(doc => doc.id === documentId));
-        if(!documentTuple)
-            throw new Error('Document not found');
+        if (!shipment) throw new Error('Shipment not found');
+        const documentTuple = shipment.documents.find(([_, docs]) => docs.find((doc) => doc.id === documentId));
+        if (!documentTuple) throw new Error('Document not found');
         const document = documentTuple[1][0];
-        if(document.uploadedBy === roleProof.membershipProof.delegatorAddress)
-            throw new Error('Caller is the uploader');
-        if(EvaluationStatusEnum.APPROVED in document.evaluationStatus)
-            throw new Error('Document already approved');
-        const documentIndex = documentTuple[1].findIndex(doc => doc.id === documentId);
+        if (document.uploadedBy === roleProof.membershipProof.delegatorAddress) throw new Error('Caller is the uploader');
+        if (EvaluationStatusEnum.APPROVED in document.evaluationStatus) throw new Error('Document already approved');
+        const documentIndex = documentTuple[1].findIndex((doc) => doc.id === documentId);
         documentTuple[1][documentIndex].evaluationStatus = documentEvaluationStatus;
 
         // TODO: Unlock funds if all required documents are approved
@@ -343,85 +302,118 @@ class ShipmentService {
     }
 
     getPhase1Documents() {
-        return [{
-            SERVICE_GUIDE: null,
-        }, {
-            SENSORY_EVALUATION_ANALYSIS_REPORT: null,
-        }, {
-            SUBJECT_TO_APPROVAL_OF_SAMPLE: null,
-        }, {
-            PRE_SHIPMENT_SAMPLE: null,
-        }];
+        return [
+            {
+                SERVICE_GUIDE: null
+            },
+            {
+                SENSORY_EVALUATION_ANALYSIS_REPORT: null
+            },
+            {
+                SUBJECT_TO_APPROVAL_OF_SAMPLE: null
+            },
+            {
+                PRE_SHIPMENT_SAMPLE: null
+            }
+        ];
     }
 
     getPhase1RequiredDocuments() {
-        return [{
-            PRE_SHIPMENT_SAMPLE: null,
-        }];
+        return [
+            {
+                PRE_SHIPMENT_SAMPLE: null
+            }
+        ];
     }
 
     getPhase2Documents() {
-        return [{
-            SHIPPING_INSTRUCTIONS: null,
-        }, {
-            SHIPPING_NOTE: null,
-        }];
+        return [
+            {
+                SHIPPING_INSTRUCTIONS: null
+            },
+            {
+                SHIPPING_NOTE: null
+            }
+        ];
     }
 
     getPhase2RequiredDocuments() {
-        return [{
-            SHIPPING_INSTRUCTIONS: null,
-        }, {
-            SHIPPING_NOTE: null,
-        }];
+        return [
+            {
+                SHIPPING_INSTRUCTIONS: null
+            },
+            {
+                SHIPPING_NOTE: null
+            }
+        ];
     }
 
     getPhase3Documents() {
-        return [{
-            BOOKING_CONFIRMATION: null,
-        }, {
-            CARGO_COLLECTION_ORDER: null,
-        }, {
-            EXPORT_INVOICE: null,
-        }, {
-            TRANSPORT_CONTRACT: null,
-        }, {
-            TO_BE_FREED_SINGLE_EXPORT_DECLARATION: null,
-        }];
+        return [
+            {
+                BOOKING_CONFIRMATION: null
+            },
+            {
+                CARGO_COLLECTION_ORDER: null
+            },
+            {
+                EXPORT_INVOICE: null
+            },
+            {
+                TRANSPORT_CONTRACT: null
+            },
+            {
+                TO_BE_FREED_SINGLE_EXPORT_DECLARATION: null
+            }
+        ];
     }
 
     getPhase3RequiredDocuments() {
-        return [{
-            BOOKING_CONFIRMATION: null,
-        }];
+        return [
+            {
+                BOOKING_CONFIRMATION: null
+            }
+        ];
     }
 
     getPhase4Documents() {
-        return [{
-            EXPORT_CONFIRMATION: null,
-        }, {
-            FREED_SINGLE_EXPORT_DECLARATION: null,
-        }, {
-            CONTAINER_PROOF_OF_DELIVERY: null,
-        }, {
-            PHYTOSANITARY_CERTIFICATE: null,
-        }, {
-            BILL_OF_LADING: null,
-        }, {
-            ORIGIN_CERTIFICATE_ICO: null,
-        }, {
-            WEIGHT_CERTIFICATE: null,
-        }];
+        return [
+            {
+                EXPORT_CONFIRMATION: null
+            },
+            {
+                FREED_SINGLE_EXPORT_DECLARATION: null
+            },
+            {
+                CONTAINER_PROOF_OF_DELIVERY: null
+            },
+            {
+                PHYTOSANITARY_CERTIFICATE: null
+            },
+            {
+                BILL_OF_LADING: null
+            },
+            {
+                ORIGIN_CERTIFICATE_ICO: null
+            },
+            {
+                WEIGHT_CERTIFICATE: null
+            }
+        ];
     }
 
     getPhase4RequiredDocuments() {
-        return [{
-            PHYTOSANITARY_CERTIFICATE: null,
-        }, {
-            BILL_OF_LADING: null,
-        }, {
-            ORIGIN_CERTIFICATE_ICO: null,
-        }];
+        return [
+            {
+                PHYTOSANITARY_CERTIFICATE: null
+            },
+            {
+                BILL_OF_LADING: null
+            },
+            {
+                ORIGIN_CERTIFICATE_ICO: null
+            }
+        ];
     }
 
     getPhase5Documents() {

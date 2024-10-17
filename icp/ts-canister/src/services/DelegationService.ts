@@ -1,29 +1,29 @@
-import {
-    getEvmMembershipIssuerAddress,
-    getEvmRevocationRegistryAddress,
-    getEvmRpcCanisterId,
-    getEvmRpcUrl,
-    getSiweProviderCanisterId
-} from "../utils/env";
-import {ROLES} from "../models/Role";
-import {RoleProof} from "../models/Proof";
-import {ic, Principal} from "azle/experimental";
-import {ethers} from "ethers";
-import {call, IDL} from "azle";
-import {GetAddressResponse} from "../models/Address";
-import revocationRegistryAbi from "../../eth-abi/RevocationRegistry.json";
-import {RequestResult, RpcService} from "../models/Rpc";
+import { ic, Principal } from 'azle/experimental';
+import { ethers } from 'ethers';
+import { call, IDL } from 'azle';
+import { ROLES } from '../models/Role';
+import { RoleProof } from '../models/Proof';
+import { GetAddressResponse } from '../models/Address';
+import revocationRegistryAbi from '../../eth-abi/RevocationRegistry.json';
+import { RequestResult, RpcService } from '../models/Rpc';
+import { CANISTER } from '../constants/canister';
+import { EVM } from '../constants/evm';
 
 class DelegationService {
     private static _instance: DelegationService;
-    private _evmRpcCanisterId: string = getEvmRpcCanisterId();
-    private _siweProviderCanisterId: string = getSiweProviderCanisterId();
-    private _evmRpcUrl: string = getEvmRpcUrl();
-    private _evmRevocationRegistryAddress: string = getEvmRevocationRegistryAddress();
-    private _evmMembershipIssuerAddress: string = getEvmMembershipIssuerAddress();
+
+    private _evmRpcCanisterId: string = CANISTER.EVM_RPC_ID();
+
+    private _siweProviderCanisterId: string = CANISTER.IC_SIWE_PROVIDER_ID();
+
+    private _evmRpcUrl: string = EVM.RPC_URL();
+
+    private _evmRevocationRegistryAddress: string = EVM.REVOCATION_REGISTRY_ADDRESS();
+
+    private _evmMembershipIssuerAddress: string = EVM.MEMBERSHIP_ISSUER_ADDRESS();
+
     private _incrementalRoles = [ROLES.VIEWER, ROLES.EDITOR, ROLES.SIGNER];
 
-    private constructor() {}
     static get instance() {
         if (!DelegationService._instance) {
             DelegationService._instance = new DelegationService();
@@ -65,7 +65,7 @@ class DelegationService {
         // If the membership proof signer is different from the delegate signer, the proof is invalid
         if (membershipProofSigner !== membershipProof.issuer) return false;
         // If the proof signer is not the owner, the proof is invalid
-        if(membershipProofSigner !== this._evmMembershipIssuerAddress) return false;
+        if (membershipProofSigner !== this._evmMembershipIssuerAddress) return false;
         // If the delegator is not the signer of the role proof, the proof is invalid
         if (membershipProof.delegatorAddress !== roleProofSigner) return false;
         // If the membership credential has expired, the proof is invalid
@@ -75,16 +75,12 @@ class DelegationService {
     }
 
     async getAddress(principal: Principal): Promise<string> {
-        const resp = await call(
-            this._siweProviderCanisterId,
-            'get_address',
-            {
-                paramIdlTypes: [IDL.Vec(IDL.Nat8)],
-                returnIdlType: GetAddressResponse,
-                args: [principal.toUint8Array()],
-            }
-        );
-        if(resp.Err) throw new Error('Unable to fetch address');
+        const resp = await call(this._siweProviderCanisterId, 'get_address', {
+            paramIdlTypes: [IDL.Vec(IDL.Nat8)],
+            returnIdlType: GetAddressResponse,
+            args: [principal.toUint8Array()]
+        });
+        if (resp.Err) throw new Error('Unable to fetch address');
         return resp.Ok;
     }
 
@@ -102,8 +98,8 @@ class DelegationService {
             method: 'eth_call',
             params: [
                 {
-                    "to": this._evmRevocationRegistryAddress,
-                    "data": data
+                    to: this._evmRevocationRegistryAddress,
+                    data: data
                 },
                 'latest'
             ],
@@ -114,18 +110,14 @@ class DelegationService {
                 url: this._evmRpcUrl,
                 headers: []
             }
-        }
-        const resp = await call(
-            this._evmRpcCanisterId,
-            'request',
-            {
-                paramIdlTypes: [RpcService, IDL.Text, IDL.Nat64],
-                returnIdlType: RequestResult,
-                args: [JsonRpcSource, JSON.stringify(jsonRpcPayload), 2048],
-                payment: 2_000_000_000n
-            }
-        );
-        if(resp.Err) throw new Error('Unable to fetch revocation registry');
+        };
+        const resp = await call(this._evmRpcCanisterId, 'request', {
+            paramIdlTypes: [RpcService, IDL.Text, IDL.Nat64],
+            returnIdlType: RequestResult,
+            args: [JsonRpcSource, JSON.stringify(jsonRpcPayload), 2048],
+            payment: 2_000_000_000n
+        });
+        if (resp.Err) throw new Error('Unable to fetch revocation registry');
 
         const decodedResult = abiInterface.decodeFunctionResult(methodName, JSON.parse(resp.Ok).result);
         return decodedResult[0] !== 0n;

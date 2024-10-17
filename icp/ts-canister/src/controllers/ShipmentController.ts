@@ -6,9 +6,9 @@ import {EvaluationStatus} from "../models/Evaluation";
 import {DocumentInfo, DocumentType} from "../models/Document";
 import ShipmentService from "../services/ShipmentService";
 
-//TODO: fix @OnlyInvolvedParties
-//TODO: fix @OnlySupplier
-//TODO: fix @OnlyCommissioner
+// TODO: fix @OnlyInvolvedParties
+// TODO: fix @OnlySupplier
+// TODO: fix @OnlyCommissioner
 class ShipmentController {
     @update([RoleProof], IDL.Vec(Shipment))
     @OnlyViewer
@@ -18,21 +18,21 @@ class ShipmentController {
 
     @update([RoleProof, IDL.Nat], Shipment)
     @OnlyViewer
-    //@OnlyInvolvedParties
+    // @OnlyInvolvedParties
     async getShipment(roleProof: RoleProof, id: bigint): Promise<Shipment> {
         return ShipmentService.instance.getShipment(roleProof, id);
     }
 
     @update([RoleProof, IDL.Nat], Phase)
     @OnlyViewer
-    //@OnlyInvolvedParties
+    // @OnlyInvolvedParties
     async getShipmentPhase(roleProof: RoleProof, id: bigint): Promise<Phase> {
         return ShipmentService.instance.getShipmentPhase(roleProof, id);
     }
 
     @update([RoleProof, IDL.Nat, DocumentType], IDL.Opt(IDL.Vec(DocumentInfo)))
     @OnlyViewer
-    //@OnlyInvolvedParties
+    // @OnlyInvolvedParties
     async getDocumentsByType(roleProof: RoleProof, id: bigint, documentType: DocumentType): Promise<DocumentInfo[] | []> {
         return ShipmentService.instance.getDocumentsByType(roleProof, id, documentType);
     }

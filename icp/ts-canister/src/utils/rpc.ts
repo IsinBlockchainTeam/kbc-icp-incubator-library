@@ -1,4 +1,6 @@
 import {call, IDL} from "azle";
+import {ethers} from "ethers";
+import {ic, Principal} from 'azle/experimental';
 import {
     FeeHistoryArgs,
     GetTransactionCountArgs,
@@ -10,9 +12,7 @@ import {
     RpcService,
     RpcServices
 } from "../models/Rpc";
-import {ethers} from "ethers";
 import {calculateRsvForTEcdsa, ecdsaPublicKey, signWithEcdsa} from "./ecdsa";
-import {ic, Principal} from 'azle/experimental';
 import {getEvmChainId, getEvmRpcCanisterId, getEvmRpcUrl, getSiweProviderCanisterId} from './env';
 import {GetAddressResponse} from '../models/Address';
 
@@ -47,7 +47,7 @@ export async function ethMaxPriorityFeePerGas(): Promise<bigint> {
     });
 
     console.log(response)
-    //TODO improve error handling
+    // TODO improve error handling
     return BigInt(response.Ok.result);
 }
 export async function ethFeeHistory(): Promise<any> {
@@ -161,11 +161,11 @@ export async function ethSendContractTransaction(
     console.log('canisterAddress', canisterAddress);
     const abiInterface = new ethers.Interface(contractAbi);
     const data = abiInterface.encodeFunctionData(methodName, methodArgs);
-    //TODO: eth_maxPriorityFeePerGas not available in hardhat
+    // TODO: eth_maxPriorityFeePerGas not available in hardhat
     // const maxPriorityFeePerGas = await ethMaxPriorityFeePerGas();
     const maxPriorityFeePerGas = BigInt(1);
     console.log('maxPriorityFeePerGas', maxPriorityFeePerGas);
-    //TODO: eth_maxPriorityFeePerGas not available in hardhat
+    // TODO: eth_maxPriorityFeePerGas not available in hardhat
     // const baseFeePerGas = BigInt(
     //     (await ethFeeHistory()).Consistent?.Ok[0].baseFeePerGas[0]
     // );
@@ -175,7 +175,7 @@ export async function ethSendContractTransaction(
     const gasLimit = 30_000_000n;
     const nonce = await ethGetTransactionCount(canisterAddress);
     console.log('nonce', nonce);
-    let tx = ethers.Transaction.from({
+    const tx = ethers.Transaction.from({
         to: contractAddress,
         data,
         value: 0,
