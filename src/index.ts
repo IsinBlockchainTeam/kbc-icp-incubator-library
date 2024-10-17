@@ -111,3 +111,7 @@ export { GraphService, type GraphData } from './services/GraphService';
 export { serial } from './utils/utils';
 export { URL_SEGMENTS } from './constants/ICP';
 export { URL_SEGMENT_INDEXES } from './constants/ICP';
+
+// ICP refactor
+export { OrderDriver, OrderParams } from './drivers/icp/OrderDriver';
+export { OrderService } from './services/icp/OrderService';

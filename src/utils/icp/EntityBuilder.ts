@@ -1,7 +1,7 @@
 import {
     Order as ICPOrder,
     OrderStatus as ICPOrderStatus,
-} from '../../../icp/ts-canister/src/models/Order';
+} from '@kbc-lib/azle-types';
 import {Order, OrderStatus} from "../../entities/icp/Order";
 
 export class EntityBuilder {

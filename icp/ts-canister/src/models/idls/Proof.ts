@@ -1,12 +1,5 @@
 import {IDL} from "azle";
 
-export type MembershipProof = {
-    signedProof: string;
-    delegatorCredentialIdHash: string;
-    delegatorCredentialExpiryDate: bigint;
-    delegatorAddress: string;
-    issuer: string;
-}
 export const MembershipProof = IDL.Record({
     signedProof: IDL.Text,
     delegatorCredentialIdHash: IDL.Text,
@@ -14,16 +7,6 @@ export const MembershipProof = IDL.Record({
     delegatorAddress: IDL.Text,
     issuer: IDL.Text
 });
-
-export type RoleProof = {
-    signedProof: string,
-    signer: string,
-    delegateAddress: string,
-    role: string,
-    delegateCredentialIdHash: string,
-    delegateCredentialExpiryDate: bigint,
-    membershipProof: MembershipProof
-}
 export const RoleProof = IDL.Record({
     signedProof: IDL.Text,
     signer: IDL.Text,

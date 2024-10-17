@@ -8,13 +8,13 @@ import {
     RequestResult,
     RpcConfig,
     RpcService,
-    RpcServices
-} from "../models/Rpc";
+    RpcServices,
+    GetAddressResponse
+} from "../models/idls";
 import {ethers} from "ethers";
 import {calculateRsvForTEcdsa, ecdsaPublicKey, signWithEcdsa} from "./ecdsa";
 import {ic, Principal} from 'azle/experimental';
 import {getEvmChainId, getEvmRpcCanisterId, getEvmRpcUrl, getSiweProviderCanisterId} from './env';
-import {GetAddressResponse} from '../models/Address';
 
 export async function jsonRpcRequest(body: Record<string, any>): Promise<any> {
     if (process.env.CANISTER_ID_EVM_RPC === undefined) {

@@ -5,14 +5,18 @@ import {
     getEvmRpcUrl,
     getSiweProviderCanisterId
 } from "../utils/env";
-import {ROLES} from "../models/Role";
-import {RoleProof} from "../models/Proof";
+import {
+    ROLES,
+    RoleProof,
+} from "../models/types";
 import {ic, Principal} from "azle/experimental";
 import {ethers} from "ethers";
 import {call, IDL} from "azle";
-import {GetAddressResponse} from "../models/Address";
+import {
+    GetAddressResponse,
+    RequestResult, RpcService
+} from "../models/idls";
 import revocationRegistryAbi from "../../eth-abi/RevocationRegistry.json";
-import {RequestResult, RpcService} from "../models/Rpc";
 
 class DelegationService {
     private static _instance: DelegationService;

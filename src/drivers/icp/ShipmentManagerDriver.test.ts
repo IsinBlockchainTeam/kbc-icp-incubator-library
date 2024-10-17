@@ -1,5 +1,5 @@
 import { Wallet } from 'ethers';
-import { RoleProof } from '../../../icp/ts-canister/src/models/Proof';
+import {RoleProof} from "@kbc-lib/azle-types";
 import { SiweIdentityProvider } from './SiweIdentityProvider';
 import { computeRoleProof } from './proof';
 import { ShipmentManagerDriver } from './ShipmentManagerDriver';
