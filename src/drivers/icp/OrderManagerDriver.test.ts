@@ -8,18 +8,17 @@ const USER1_PRIVATE_KEY = '0c7e66e74f6666b514cc73ee2b7ffc518951cf1ca5719d6820459
 const COMPANY1_PRIVATE_KEY = '538d7d8aec31a0a83f12461b1237ce6b00d8efc1d8b1c73566c05f63ed5e6d02';
 const USER2_PRIVATE_KEY = '0c7e66e74f6666b514cc73ee2b7ffc518951cf1ca5719d6820459c4e134f2264';
 const COMPANY2_PRIVATE_KEY = '0c7e66e74f6666b514cc73ee2b7ffc518951cf1ca5719d6820459c4e134f2264';
-const DELEGATE_CREDENTIAL_ID_HASH =
-    '0x2cc6c15c35500c4341eee2f9f5f8c39873b9c3737edb343ebc3d16424e99a0d4';
-const DELEGATOR_CREDENTIAL_ID_HASH =
-    '0xf19b6aebcdaba2222d3f2c818ff1ecda71c7ed93c3e0f958241787663b58bc4b';
-const SIWE_CANISTER_ID = process.env.CANISTER_ID_IC_SIWE_PROVIDER!;
-const ORDER_MANAGER_CANISTER_ID = process.env.CANISTER_ID_ORDER_MANAGER!;
+const DELEGATE_CREDENTIAL_ID_HASH = '0x2cc6c15c35500c4341eee2f9f5f8c39873b9c3737edb343ebc3d16424e99a0d4';
+const DELEGATOR_CREDENTIAL_ID_HASH = '0xf19b6aebcdaba2222d3f2c818ff1ecda71c7ed93c3e0f958241787663b58bc4b';
+const SIWE_CANISTER_ID = 'be2us-64aaa-aaaaa-qaabq-cai';
+const ENTITY_MANAGER_CANISTER_ID = 'bkyz2-fmaaa-aaaaa-qaaaq-cai';
 type Utils = {
     userWallet: Wallet;
     companyWallet: Wallet;
     orderManagerDriver: OrderManagerDriver;
     roleProof: RoleProof;
 };
+const ORDER_ID = 0;
 describe('OrderManagerDriver', () => {
     let utils1: Utils, utils2: Utils;
     const getUtils = async (userPrivateKey: string, companyPrivateKey: string) => {
@@ -28,9 +27,7 @@ describe('OrderManagerDriver', () => {
         const siweIdentityProvider = new SiweIdentityProvider(userWallet, SIWE_CANISTER_ID);
         await siweIdentityProvider.createIdentity();
         const orderManagerDriver = new OrderManagerDriver(
-            siweIdentityProvider.identity,
-            ORDER_MANAGER_CANISTER_ID,
-            'http://127.0.0.1:4943/'
+            siweIdentityProvider.identity, ENTITY_MANAGER_CANISTER_ID, 'http://127.0.0.1:4943/'
         );
         const roleProof = await computeRoleProof(
             userWallet.address,
@@ -51,21 +48,23 @@ describe('OrderManagerDriver', () => {
         const { companyWallet: company1Wallet, orderManagerDriver, roleProof } = utils1;
         const { companyWallet: company2Wallet } = utils2;
         const date = new Date();
-        date.setDate(date.getDate() + 14);
-        const order = await orderManagerDriver.createOrder(
-            roleProof,
-            company1Wallet.address,
-            company2Wallet.address,
-            company1Wallet.address,
-            date,
-            date,
-            date,
-            date,
-            '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
-            '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
-            100,
-            '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
-            [
+        const orderParams = {
+            supplier: company1Wallet.address,
+            customer: company2Wallet.address,
+            commissioner: company2Wallet.address,
+            paymentDeadline: date,
+            documentDeliveryDeadline: date,
+            shippingDeadline: date,
+            deliveryDeadline: date,
+            arbiter: '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
+            token: '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
+            agreedAmount: 100,
+            escrowManager: '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
+            incoterms: 'incoterms',
+            shipper: 'shipper',
+            shippingPort: 'shippingPort',
+            deliveryPort: 'deliveryPort',
+            lines: [
                 {
                     productCategoryId: 1,
                     quantity: 1,
@@ -76,6 +75,11 @@ describe('OrderManagerDriver', () => {
                     }
                 }
             ]
+        }
+        date.setDate(date.getDate() + 14);
+        const order = await orderManagerDriver.createOrder(
+            roleProof,
+            orderParams
         );
         console.log(order);
         expect(order).toBeDefined();
@@ -100,22 +104,23 @@ describe('OrderManagerDriver', () => {
         const { companyWallet: company1Wallet, orderManagerDriver, roleProof } = utils1;
         const { companyWallet: company2Wallet } = utils2;
         const date = new Date();
-        date.setDate(date.getDate() + 14);
-        const order = await orderManagerDriver.updateOrder(
-            roleProof,
-            0,
-            company1Wallet.address,
-            company2Wallet.address,
-            company1Wallet.address,
-            date,
-            date,
-            date,
-            date,
-            '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
-            '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
-            100,
-            '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
-            [
+        const orderParams = {
+            supplier: company1Wallet.address,
+            customer: company2Wallet.address,
+            commissioner: company1Wallet.address,
+            paymentDeadline: date,
+            documentDeliveryDeadline: date,
+            shippingDeadline: date,
+            deliveryDeadline: date,
+            arbiter: '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
+            token: '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
+            agreedAmount: 100,
+            escrowManager: '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
+            incoterms: 'incoterms',
+            shipper: 'shipper',
+            shippingPort: 'shippingPort',
+            deliveryPort: 'deliveryPort',
+            lines: [
                 {
                     productCategoryId: 1,
                     quantity: 1,
@@ -126,14 +131,20 @@ describe('OrderManagerDriver', () => {
                     }
                 }
             ]
+        }
+        date.setDate(date.getDate() + 14);
+        const order = await orderManagerDriver.updateOrder(
+            roleProof,
+            ORDER_ID,
+            orderParams
         );
         console.log(order);
         expect(order).toBeDefined();
     }, 30000);
 
     it('should sign order', async () => {
-        const { orderManagerDriver, roleProof } = utils2;
-        const order = await orderManagerDriver.signOrder(roleProof, 0);
+        const {orderManagerDriver, roleProof} = utils2;
+        const order = await orderManagerDriver.signOrder(roleProof, ORDER_ID);
         console.log(order);
         expect(order).toBeDefined();
     }, 30000);

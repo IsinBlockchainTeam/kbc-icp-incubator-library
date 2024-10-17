@@ -2,7 +2,7 @@
     "scripts": {
         "pretest": "tsx test/pretest.ts",
         "test": "jest",
-        "deploy": "source .env && dfx deploy",
+        "deploy": "set -o allexport; source .env.evm; set +o allexport && dfx deploy",
         "lint": "eslint --fix --ext .ts .",
         "prettier": "npx prettier . --write"
     },

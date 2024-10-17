@@ -1,32 +1,36 @@
-import { call, IDL, init, update, StableBTreeMap } from 'azle';
-import { ic, Principal } from 'azle/experimental';
-import { ethers } from 'ethers';
-import { RoleProof } from './models/Proof';
-import { RequestResult, RpcService } from './models/Rpc';
-import revocationRegistryAbi from '../eth-abi/RevocationRegistry.json';
-import { GetAddressResponse } from './models/Address';
-import { ROLES } from './models/Role';
+import {
+    getEvmMembershipIssuerAddress,
+    getEvmRevocationRegistryAddress,
+    getEvmRpcCanisterId,
+    getEvmRpcUrl,
+    getSiweProviderCanisterId
+} from "../utils/env";
+import {ROLES} from "../models/Role";
+import {RoleProof} from "../models/Proof";
+import {ic, Principal} from "azle/experimental";
+import {ethers} from "ethers";
+import {call, IDL} from "azle";
+import {GetAddressResponse} from "../models/Address";
+import revocationRegistryAbi from "../../eth-abi/RevocationRegistry.json";
+import {RequestResult, RpcService} from "../models/Rpc";
 
-const RPC_URL_KEY = 'RPC_URL';
-const REVOCATION_REGISTRY_ADDRESS_KEY = 'REVOCATION_REGISTRY_ADDRESS';
-const OWNER_ADDRESS_KEY = 'OWNER_ADDRESS';
-class DelegateManager {
-    instanceVariable = StableBTreeMap<string, string>(0);
+class DelegationService {
+    private static _instance: DelegationService;
+    private _evmRpcCanisterId: string = getEvmRpcCanisterId();
+    private _siweProviderCanisterId: string = getSiweProviderCanisterId();
+    private _evmRpcUrl: string = getEvmRpcUrl();
+    private _evmRevocationRegistryAddress: string = getEvmRevocationRegistryAddress();
+    private _evmMembershipIssuerAddress: string = getEvmMembershipIssuerAddress();
+    private _incrementalRoles = [ROLES.VIEWER, ROLES.EDITOR, ROLES.SIGNER];
 
-    evmRpcCanisterId: string = getEVMRpcCanisterId();
-
-    siweProviderCanisterId: string = getSiweProviderCanisterId();
-
-    incrementalRoles = [ROLES.VIEWER, ROLES.EDITOR, ROLES.SIGNER];
-
-    @init([IDL.Text, IDL.Text, IDL.Text])
-    async init(rpcUrl: string, revocationRegistryAddress: string, ownerAddress: string): Promise<void> {
-        this.instanceVariable.insert(RPC_URL_KEY, rpcUrl);
-        this.instanceVariable.insert(REVOCATION_REGISTRY_ADDRESS_KEY, revocationRegistryAddress);
-        this.instanceVariable.insert(OWNER_ADDRESS_KEY, ownerAddress);
+    private constructor() {}
+    static get instance() {
+        if (!DelegationService._instance) {
+            DelegationService._instance = new DelegationService();
+        }
+        return DelegationService._instance;
     }
 
-    @update([RoleProof, IDL.Principal, IDL.Text], IDL.Bool)
     async hasValidRole(proof: RoleProof, caller: Principal, minimumRole: string): Promise<boolean> {
         const unixTime = Number(ic.time().toString().substring(0, 13));
         const { signedProof, signer: expectedSigner, ...data } = proof;
@@ -61,7 +65,7 @@ class DelegateManager {
         // If the membership proof signer is different from the delegate signer, the proof is invalid
         if (membershipProofSigner !== membershipProof.issuer) return false;
         // If the proof signer is not the owner, the proof is invalid
-        if (membershipProofSigner !== this.instanceVariable.get(OWNER_ADDRESS_KEY)) return false;
+        if(membershipProofSigner !== this._evmMembershipIssuerAddress) return false;
         // If the delegator is not the signer of the role proof, the proof is invalid
         if (membershipProof.delegatorAddress !== roleProofSigner) return false;
         // If the membership credential has expired, the proof is invalid
@@ -71,17 +75,21 @@ class DelegateManager {
     }
 
     async getAddress(principal: Principal): Promise<string> {
-        const resp = await call(this.siweProviderCanisterId, 'get_address', {
-            paramIdlTypes: [IDL.Vec(IDL.Nat8)],
-            returnIdlType: GetAddressResponse,
-            args: [principal.toUint8Array()]
-        });
-        if (resp.Err) throw new Error('Unable to fetch address');
+        const resp = await call(
+            this._siweProviderCanisterId,
+            'get_address',
+            {
+                paramIdlTypes: [IDL.Vec(IDL.Nat8)],
+                returnIdlType: GetAddressResponse,
+                args: [principal.toUint8Array()],
+            }
+        );
+        if(resp.Err) throw new Error('Unable to fetch address');
         return resp.Ok;
     }
 
     isAtLeast(actualRole: string, minimumRole: string): boolean {
-        return this.incrementalRoles.indexOf(actualRole) >= this.incrementalRoles.indexOf(minimumRole);
+        return this._incrementalRoles.indexOf(actualRole) >= this._incrementalRoles.indexOf(minimumRole);
     }
 
     async isRevoked(signer: string, credentialIdHash: string): Promise<boolean> {
@@ -94,8 +102,8 @@ class DelegateManager {
             method: 'eth_call',
             params: [
                 {
-                    to: this.instanceVariable.get(REVOCATION_REGISTRY_ADDRESS_KEY),
-                    data
+                    "to": this._evmRevocationRegistryAddress,
+                    "data": data
                 },
                 'latest'
             ],
@@ -103,37 +111,24 @@ class DelegateManager {
         };
         const JsonRpcSource = {
             Custom: {
-                url: this.instanceVariable.get(RPC_URL_KEY),
+                url: this._evmRpcUrl,
                 headers: []
             }
-        };
-        const resp = await call(this.evmRpcCanisterId, 'request', {
-            paramIdlTypes: [RpcService, IDL.Text, IDL.Nat64],
-            returnIdlType: RequestResult,
-            args: [JsonRpcSource, JSON.stringify(jsonRpcPayload), 2048],
-            payment: 2_000_000_000n
-        });
-        console.log('resp', resp);
-        if (resp.Err) throw new Error('Unable to fetch revocation registry');
+        }
+        const resp = await call(
+            this._evmRpcCanisterId,
+            'request',
+            {
+                paramIdlTypes: [RpcService, IDL.Text, IDL.Nat64],
+                returnIdlType: RequestResult,
+                args: [JsonRpcSource, JSON.stringify(jsonRpcPayload), 2048],
+                payment: 2_000_000_000n
+            }
+        );
+        if(resp.Err) throw new Error('Unable to fetch revocation registry');
 
         const decodedResult = abiInterface.decodeFunctionResult(methodName, JSON.parse(resp.Ok).result);
-        console.log(decodedResult[0]);
         return decodedResult[0] !== 0n;
     }
 }
-function getSiweProviderCanisterId(): string {
-    if (process.env.CANISTER_ID_IC_SIWE_PROVIDER !== undefined) {
-        return process.env.CANISTER_ID_IC_SIWE_PROVIDER;
-    }
-
-    throw new Error(`process.env.CANISTER_ID_IC_SIWE_PROVIDER is not defined`);
-}
-function getEVMRpcCanisterId(): string {
-    if (process.env.CANISTER_ID_EVM_RPC !== undefined) {
-        return process.env.CANISTER_ID_EVM_RPC;
-    }
-
-    throw new Error(`process.env.CANISTER_ID_EVM_RPC is not defined`);
-}
-
-export default DelegateManager;
+export default DelegationService;

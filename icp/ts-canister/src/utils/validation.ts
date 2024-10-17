@@ -1,8 +1,8 @@
+
 import { ethers } from 'ethers';
 import { ElementRegistryMethods } from '../ElementRegistry';
 import { CANISTER } from '../constants/canister';
 
-export const validateDeadline = (name: string, deadline: number) => {
     if (deadline < Date.now() / 1000) throw new Error(`${name} must be in the future`);
 };
 export const validateDatesValidity = (validFrom: number, validUntil: number) => {
@@ -11,7 +11,6 @@ export const validateDatesValidity = (validFrom: number, validUntil: number) => 
 export const validateAddress = (name: string, address: string) => {
     if (!ethers.isAddress(address)) throw new Error(`${name} is not a valid address`);
 };
-export const validatePositiveNumber = (name: string, number: number) => {
     if (number <= 0) throw new Error(`${name} must be greater than 0`);
 };
 export const validateInterestedParties = (name: string, address: string, interestedParties: string[]) => {

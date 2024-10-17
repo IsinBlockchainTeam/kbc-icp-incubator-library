@@ -3,10 +3,9 @@ pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-import "./KBCAccessControl.sol";
 import "./Escrow.sol";
 
-contract EscrowManager is AccessControl, KBCAccessControl {
+contract EscrowManager is AccessControl {
     using Counters for Counters.Counter;
     Counters.Counter private _counter;
 
@@ -27,32 +26,33 @@ contract EscrowManager is AccessControl, KBCAccessControl {
     uint256 private _baseFee;
     uint256 private _percentageFee;
     mapping(uint256 => Escrow) private _escrows;
+    // ShipmentId => Escrow
+    mapping(uint256 => Escrow) private _escrowsByShipmentId;
 
-    constructor(address delegateManagerAddress, address feeRecipient, uint256 baseFee, uint256 percentageFee) KBCAccessControl(delegateManagerAddress) {
+    constructor(address admin, address feeRecipient, uint256 baseFee, uint256 percentageFee) {
         require(feeRecipient != address(0), "EscrowManager: fee recipient is the zero address");
         require(percentageFee <= 100, "EscrowManager: percentage fee cannot be greater than 100");
 
         _setupRole(ADMIN_ROLE, _msgSender());
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
         _admin = _msgSender();
+        addAdmin(admin);
 
         _feeRecipient = feeRecipient;
         _baseFee = baseFee;
         _percentageFee = percentageFee;
     }
 
-    function getEscrowCounter(RoleProof memory roleProof) public view atLeastViewer(roleProof) returns (uint256) {
+    function getEscrowCounter() public view returns (uint256) {
         return _counter.current();
     }
 
     function registerEscrow(
-        RoleProof memory roleProof,
-        address admin,
+        uint256 shipmentId,
         address payee,
         uint256 duration,
         address tokenAddress
-    ) public atLeastEditor(roleProof) returns (Escrow) {
-        require(admin != address(0), "EscrowManager: admin is the zero address");
+    ) public onlyAdmin returns (Escrow) {
         require(payee != address(0), "EscrowManager: payee is the zero address");
         require(duration != 0, "EscrowManager: duration is zero");
         require(tokenAddress != address(0), "EscrowManager: token address is the zero address");
@@ -62,24 +62,28 @@ contract EscrowManager is AccessControl, KBCAccessControl {
 
         Escrow newEscrow = new Escrow(address(this), payee, duration, tokenAddress, _feeRecipient, _baseFee, _percentageFee);
         _escrows[id] = newEscrow;
-        newEscrow.addAdmin(admin);
+        _escrowsByShipmentId[shipmentId] = newEscrow;
+        newEscrow.addAdmin(_msgSender());
         newEscrow.addAdmin(_admin);
 
         emit EscrowRegistered(id, address(newEscrow), payee, tokenAddress, _feeRecipient);
         return newEscrow;
     }
 
-    function getFeeRecipient(RoleProof memory roleProof) public view atLeastViewer(roleProof) returns (address) {
+    function getFeeRecipient() public view returns (address) {
         return _feeRecipient;
     }
-    function getBaseFee(RoleProof memory roleProof) public view atLeastViewer(roleProof) returns (uint256) {
+    function getBaseFee() public view returns (uint256) {
         return _baseFee;
     }
-    function getPercentageFee(RoleProof memory roleProof) public view atLeastViewer(roleProof) returns (uint256) {
+    function getPercentageFee() public view returns (uint256) {
         return _percentageFee;
     }
-    function getEscrow(RoleProof memory roleProof, uint256 id) public view atLeastViewer(roleProof) returns (Escrow) {
+    function getEscrow(uint256 id) public view returns (Escrow) {
         return _escrows[id];
+    }
+    function getEscrowByShipmentId(uint256 shipmentId) public view returns (Escrow) {
+        return _escrowsByShipmentId[shipmentId];
     }
 
     // Updates

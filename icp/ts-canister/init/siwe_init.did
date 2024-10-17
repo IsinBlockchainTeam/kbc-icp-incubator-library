@@ -8,10 +8,8 @@
     sign_in_expires_in = opt 300000000000;
     session_expires_in = opt 604800000000000;
     targets = opt vec {
-        "by6od-j4aaa-aaaaa-qaadq-cai";
-        "a3shf-5eaaa-aaaaa-qaafa-cai";
-        "ajuq4-ruaaa-aaaaa-qaaga-cai";
-        "be2us-64aaa-aaaaa-qaabq-cai";
+        "be2us-64aaa-aaaaa-qaabq-cai"; // SIWE
+        "bkyz2-fmaaa-aaaaa-qaaaq-cai"; // Entity Manager
     };
   }
 )

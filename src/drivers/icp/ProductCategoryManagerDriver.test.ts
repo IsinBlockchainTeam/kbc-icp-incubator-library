@@ -12,7 +12,7 @@ const DELEGATOR_CREDENTIAL_ID_HASH =
     '0xf19b6aebcdaba2222d3f2c818ff1ecda71c7ed93c3e0f958241787663b58bc4b';
 // const ETH_PRIVATE_KEY = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
 const SIWE_CANISTER_ID = process.env.CANISTER_ID_IC_SIWE_PROVIDER!;
-const PRODUCT_CATEGORY_MANAGER_CANISTER_ID = process.env.CANISTER_ID_PRODUCT_CATEGORY_MANAGER!;
+const ENTITY_MANAGER_CANISTER_ID = process.env.ENTITY_MANAGER_CANISTER_ID!;
 
 describe('ProductCategoryManagerDriver', () => {
     let wallet: Wallet;
@@ -26,7 +26,7 @@ describe('ProductCategoryManagerDriver', () => {
         // const identity = Secp256k1KeyIdentity.fromSeedPhrase("test test test test test test test test test test test test")
         productCategoryManagerDriver = new ProductCategoryManagerDriver(
             siweIdentityProvider.identity,
-            PRODUCT_CATEGORY_MANAGER_CANISTER_ID,
+            ENTITY_MANAGER_CANISTER_ID,
             'http://127.0.0.1:4943/'
         );
         roleProof = await computeRoleProof(

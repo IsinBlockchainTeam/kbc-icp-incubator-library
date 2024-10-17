@@ -1,8 +1,8 @@
 import { IDL } from 'azle';
 
 export type Material = {
-    id: number;
-    productCategoryId: number;
+    id: bigint;
+    productCategoryId: bigint;
 };
 export const Material = IDL.Record({
     id: IDL.Nat,

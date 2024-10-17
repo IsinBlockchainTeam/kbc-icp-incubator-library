@@ -1,96 +1,23 @@
 {
     "canisters": {
-        "fiat_registry": {
+        "entity_manager": {
             "type": "azle",
-            "main": "src/ElementRegistry.ts",
+            "main": "src/controllers/index.ts",
             "declarations": {
-                "output": "declarations/fiat_registry",
-                "node_compatibility": true
-            }
-        },
-        "process_type_registry": {
-            "type": "azle",
-            "main": "src/ElementRegistry.ts",
-            "declarations": {
-                "output": "declarations/process_type_registry",
-                "node_compatibility": true
-            }
-        },
-        "assessment_standard_registry": {
-            "type": "azle",
-            "main": "src/ElementRegistry.ts",
-            "declarations": {
-                "output": "declarations/assessment_standard_registry",
-                "node_compatibility": true
-            }
-        },
-        "assessment_assurance_level_registry": {
-            "type": "azle",
-            "main": "src/ElementRegistry.ts",
-            "declarations": {
-                "output": "declarations/assessment_assurance_level_registry",
-                "node_compatibility": true
-            }
-        },
-        "product_category_manager": {
-            "type": "azle",
-            "main": "src/ProductCategoryManager.ts",
-            "declarations": {
-                "output": "declarations/product_category_manager",
+                "output": "declarations/entity_manager",
                 "node_compatibility": true
             },
             "custom": {
                 "experimental": true,
-                "env": ["CANISTER_ID_DELEGATE_MANAGER"]
-            }
-        },
-        "material_manager": {
-            "type": "azle",
-            "main": "src/MaterialManager.ts",
-            "declarations": {
-                "output": "declarations/material_manager",
-                "node_compatibility": true
-            },
-            "custom": {
-                "experimental": true,
-                "env": ["CANISTER_ID_PRODUCT_CATEGORY_MANAGER"]
-            }
-        },
-        "order_manager": {
-            "type": "azle",
-            "main": "src/OrderManager.ts",
-            "declarations": {
-                "output": "declarations/order_manager",
-                "node_compatibility": true
-            },
-            "custom": {
-                "experimental": true,
-                "env": ["CANISTER_ID_DELEGATE_MANAGER"]
-            }
-        },
-        "certification_manager": {
-            "type": "azle",
-            "main": "src/CertificationManager.ts",
-            "declarations": {
-                "output": "declarations/certification_manager",
-                "node_compatibility": true
-            },
-            "custom": {
-                "experimental": true,
-                "env": ["CANISTER_ID_DELEGATE_MANAGER", "CANISTER_ID_ASSESSMENT_STANDARD_REGISTRY", "CANISTER_ID_PROCESS_TYPE_REGISTRY", "CANISTER_ID_ASSESSMENT_ASSURANCE_LEVEL_REGISTRY"]
-            }
-        },
-        "delegate_manager": {
-            "type": "azle",
-            "main": "src/DelegateManager.ts",
-            "init_arg_file": "./init/delegate_manager_init.did",
-            "declarations": {
-                "output": "declarations/delegate_manager",
-                "node_compatibility": true
-            },
-            "custom": {
-                "experimental": true,
-                "env": ["CANISTER_ID_EVM_RPC", "CANISTER_ID_IC_SIWE_PROVIDER"]
+                "env": [
+                    "CANISTER_ID_IC_SIWE_PROVIDER",
+                    "CANISTER_ID_EVM_RPC",
+                    "EVM_RPC_URL",
+                    "EVM_ESCROW_MANAGER_ADDRESS",
+                    "EVM_REVOCATION_REGISTRY_ADDRESS",
+                    "EVM_MEMBERSHIP_ISSUER_ADDRESS",
+                    "EVM_CHAIN_ID"
+                ]
             }
         },
         "internet_identity": {

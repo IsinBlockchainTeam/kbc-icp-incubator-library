@@ -1,7 +1,6 @@
-import { call, IDL } from 'azle';
-import { ic } from 'azle/experimental';
-import { RoleProof } from '../models/Proof';
-import { CANISTER } from '../constants/canister';
+import {RoleProof} from "../models/Proof";
+import {ic} from "azle/experimental";
+import DelegationService from "../services/DelegationService";
 
 function OnlyRole(role: string, originalMethod: any, _context: any) {
     async function replacementMethod(this: any, ...args: any[]) {
@@ -18,11 +17,7 @@ function OnlyRole(role: string, originalMethod: any, _context: any) {
             throw new Error(`First argument must be a RoleProof`);
 
         const roleProof = args[0] as RoleProof;
-        const isValid = await call(CANISTER.DELEGATE_MANAGER_ID(), 'hasValidRole', {
-            paramIdlTypes: [RoleProof, IDL.Principal, IDL.Text],
-            returnIdlType: IDL.Bool,
-            args: [roleProof, ic.caller(), role]
-        });
+        const isValid = DelegationService.instance.hasValidRole(roleProof, ic.caller(), role);
         if (!isValid) {
             throw new Error(`Access denied: user is not a ${role}`);
         }

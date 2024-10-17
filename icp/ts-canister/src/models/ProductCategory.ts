@@ -1,9 +1,9 @@
 import { IDL } from 'azle';
 
 export type ProductCategory = {
-    id: number;
+    id: bigint;
     name: string;
-    quality: number;
+    quality: bigint;
     description: string;
 };
 export const ProductCategory = IDL.Record({

@@ -8,12 +8,12 @@ export const OrderStatus = IDL.Variant({
 });
 export type OrderStatus = { PENDING: null } | { CONFIRMED: null } | { EXPIRED: null };
 export type OrderLine = {
-    productCategoryId: number;
+    productCategoryId: bigint;
     quantity: number;
     unit: string;
     price: Price;
-    // materialId: number | null;
-};
+    // materialId: bigint | null;
+}
 export const OrderLine = IDL.Record({
     productCategoryId: IDL.Nat,
     quantity: IDL.Float32,
@@ -22,24 +22,28 @@ export const OrderLine = IDL.Record({
     // materialId: IDL.Opt(IDL.Nat),
 });
 export type Order = {
-    id: number;
+    id: bigint;
     supplier: string;
     customer: string;
     commissioner: string;
     signatures: string[];
     status: OrderStatus;
-    paymentDeadline: number;
-    documentDeliveryDeadline: number;
-    shippingDeadline: number;
-    deliveryDeadline: number;
+    paymentDeadline: bigint;
+    documentDeliveryDeadline: bigint;
+    shippingDeadline: bigint;
+    deliveryDeadline: bigint;
     arbiter: string;
+    incoterms: string;
+    shipper: string;
+    shippingPort: string;
+    deliveryPort: string;
     lines: OrderLine[];
     token: string;
-    agreedAmount: number;
+    agreedAmount: bigint;
     escrowManager: string;
     escrow: [string] | [];
-    shipmentId: [number] | [];
-};
+    shipmentId: [bigint] | [];
+}
 export const Order = IDL.Record({
     id: IDL.Nat,
     supplier: IDL.Text,
@@ -52,10 +56,14 @@ export const Order = IDL.Record({
     shippingDeadline: IDL.Nat,
     deliveryDeadline: IDL.Nat,
     arbiter: IDL.Text,
+    incoterms: IDL.Text,
+    shipper: IDL.Text,
+    shippingPort: IDL.Text,
+    deliveryPort: IDL.Text,
     lines: IDL.Vec(OrderLine),
     token: IDL.Text,
     agreedAmount: IDL.Nat,
     escrowManager: IDL.Text,
     escrow: IDL.Opt(IDL.Text),
-    shipmentId: IDL.Opt(IDL.Nat)
+    shipmentId: IDL.Opt(IDL.Nat),
 });
