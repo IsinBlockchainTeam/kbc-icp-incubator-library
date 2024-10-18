@@ -2,7 +2,7 @@ import { Wallet } from 'ethers';
 import { RoleProof } from '@kbc-lib/azle-types';
 import { SiweIdentityProvider } from './SiweIdentityProvider';
 import { computeRoleProof } from './proof';
-import { ShipmentManagerDriver } from './ShipmentManagerDriver';
+import { ShipmentDriver } from './ShipmentDriver';
 
 jest.setTimeout(30000);
 
@@ -19,7 +19,7 @@ const ENTITY_MANAGER_CANISTER_ID = 'bkyz2-fmaaa-aaaaa-qaaaq-cai';
 type Utils = {
     userWallet: Wallet;
     companyWallet: Wallet;
-    shipmentManagerDriver: ShipmentManagerDriver;
+    shipmentManagerDriver: ShipmentDriver;
     roleProof: RoleProof;
 };
 const SHIPMENT_ID = 0;
@@ -30,7 +30,7 @@ describe('ShipmentManagerDriver', () => {
         const companyWallet = new Wallet(companyPrivateKey);
         const siweIdentityProvider = new SiweIdentityProvider(userWallet, SIWE_CANISTER_ID);
         await siweIdentityProvider.createIdentity();
-        const shipmentManagerDriver = new ShipmentManagerDriver(
+        const shipmentManagerDriver = new ShipmentDriver(
             siweIdentityProvider.identity,
             ENTITY_MANAGER_CANISTER_ID,
             'http://127.0.0.1:4943/'

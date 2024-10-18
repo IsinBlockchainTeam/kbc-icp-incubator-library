@@ -2,8 +2,10 @@ import type { ActorSubclass, Identity } from '@dfinity/agent';
 import { DocumentType, EvaluationStatus, RoleProof } from '@kbc-lib/azle-types';
 import { _SERVICE } from '../../declarations/entity_manager/entity_manager.did';
 import { createActor } from '../../declarations/entity_manager';
+import { Phase, Shipment } from '../../entities/icp/Shipment';
+import { EntityBuilder } from '../../utils/icp/EntityBuilder';
 
-export class ShipmentManagerDriver {
+export class ShipmentDriver {
     private _actor: ActorSubclass<_SERVICE>;
 
     public constructor(icpIdentity: Identity, canisterId: string, host?: string) {
@@ -15,16 +17,19 @@ export class ShipmentManagerDriver {
         });
     }
 
-    async getShipments(roleProof: RoleProof) {
-        return this._actor.getShipments(roleProof);
+    async getShipments(roleProof: RoleProof): Promise<Shipment[]> {
+        const resp = await this._actor.getShipments(roleProof);
+        return resp.map((rawShipment) => EntityBuilder.buildShipment(rawShipment));
     }
 
-    async getShipment(roleProof: RoleProof, id: number) {
-        return this._actor.getShipment(roleProof, BigInt(id));
+    async getShipment(roleProof: RoleProof, id: number): Promise<Shipment> {
+        const resp = await this._actor.getShipment(roleProof, BigInt(id));
+        return EntityBuilder.buildShipment(resp);
     }
 
-    async getShipmentPhase(roleProof: RoleProof, id: number) {
-        return this._actor.getShipmentPhase(roleProof, BigInt(id));
+    async getShipmentPhase(roleProof: RoleProof, id: number): Promise<Phase> {
+        const resp = await this._actor.getShipmentPhase(roleProof, BigInt(id));
+        return EntityBuilder.buildShipmentPhase(resp);
     }
 
     async getDocumentsByType(roleProof: RoleProof, id: number, documentType: DocumentType) {
