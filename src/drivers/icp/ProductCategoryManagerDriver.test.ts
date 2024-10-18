@@ -1,5 +1,5 @@
 import { Wallet } from 'ethers';
-import {RoleProof} from "@kbc-lib/azle-types";
+import { RoleProof } from '@kbc-lib/azle-types';
 import { ProductCategoryManagerDriver } from './ProductCategoryManagerDriver';
 import { SiweIdentityProvider } from './SiweIdentityProvider';
 import { computeRoleProof } from './proof';
@@ -12,7 +12,7 @@ const DELEGATOR_CREDENTIAL_ID_HASH =
     '0xf19b6aebcdaba2222d3f2c818ff1ecda71c7ed93c3e0f958241787663b58bc4b';
 // const ETH_PRIVATE_KEY = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
 const SIWE_CANISTER_ID = process.env.CANISTER_ID_IC_SIWE_PROVIDER!;
-const ENTITY_MANAGER_CANISTER_ID = process.env.ENTITY_MANAGER_CANISTER_ID!;
+const ENTITY_MANAGER_CANISTER_ID = process.env.CANISTER_ID_ENTITY_MANAGER!;
 
 describe('ProductCategoryManagerDriver', () => {
     let wallet: Wallet;

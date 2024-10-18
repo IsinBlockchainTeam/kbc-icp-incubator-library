@@ -14,27 +14,30 @@ class EnumerationService {
         return EnumerationService._instance;
     }
 
-    getEnumerationsByType(enumeration: EnumerationKey): string[] {
-        return this._enumerations.get(enumeration) || [];
+    getEnumerationsByType(enumeration: Enumeration): string[] {
+        const enumKey = this._getKeyFromEnumeration(enumeration);
+        return this._enumerations.get(enumKey) || [];
     }
 
     addEnumerationValue(enumeration: Enumeration, value: string): void {
         const enumKey = this._getKeyFromEnumeration(enumeration);
-        if (this.hasEnumerationValue(enumKey, value)) throw new Error('Enumeration value already exists');
+        if (this.hasEnumerationValue(enumeration, value)) throw new Error('Enumeration value already exists');
+        console.log('this._enumerations.containsKey(enumKey): ', this._enumerations.containsKey(enumKey));
+        console.log('this._enumerations.get(enumKey): ', this._enumerations.get(enumKey));
         if (!this._enumerations.containsKey(enumKey)) this._enumerations.insert(enumKey, [value]);
-        else this._enumerations.get(enumKey)!.push(value);
+        else this._enumerations.insert(enumKey, [...this.getEnumerationsByType(enumeration), value]);
     }
 
     removeEnumerationValue(enumeration: Enumeration, value: string): void {
         const enumKey = this._getKeyFromEnumeration(enumeration);
-        if (!this.hasEnumerationValue(enumKey, value)) throw new Error('Enumeration value does not exist');
+        if (!this.hasEnumerationValue(enumeration, value)) throw new Error('Enumeration value does not exist');
         this._enumerations.insert(
             enumKey,
-            this.getEnumerationsByType(enumKey).filter((v) => v !== value)
+            this.getEnumerationsByType(enumeration).filter((v) => v !== value)
         );
     }
 
-    hasEnumerationValue(enumeration: EnumerationKey, value: string): boolean {
+    hasEnumerationValue(enumeration: Enumeration, value: string): boolean {
         return this.getEnumerationsByType(enumeration).includes(value);
     }
 

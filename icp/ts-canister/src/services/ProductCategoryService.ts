@@ -1,6 +1,6 @@
 import {caller, StableBTreeMap} from "azle";
-import {ProductCategory} from "../models/types";
 import {ethers} from "ethers";
+import {ProductCategory} from "../models/types";
 import {StableMemoryId} from "../utils/stableMemory";
 
 class ProductCategoryService {

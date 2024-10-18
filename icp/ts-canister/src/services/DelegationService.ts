@@ -1,15 +1,11 @@
 import { ic, Principal } from 'azle/experimental';
 import { ethers } from 'ethers';
 import { call, IDL } from 'azle';
-import { ROLES } from '../models/Role';
-import { RoleProof } from '../models/Proof';
+import { RoleProof, ROLES } from '../models/types';
 import revocationRegistryAbi from '../../eth-abi/RevocationRegistry.json';
 import { CANISTER } from '../constants/canister';
 import { EVM } from '../constants/evm';
-import {
-  GetAddressResponse,
-  RequestResult, RpcService
-} from "../models/idls";
+import { GetAddressResponse, RequestResult, RpcService } from '../models/idls';
 
 class DelegationService {
     private static _instance: DelegationService;
@@ -101,7 +97,7 @@ class DelegationService {
             params: [
                 {
                     to: this._evmRevocationRegistryAddress,
-                    data: data
+                    data
                 },
                 'latest'
             ],

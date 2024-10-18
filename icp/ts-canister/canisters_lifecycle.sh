@@ -27,20 +27,20 @@ deploy_canisters() {
         if [ "$1" = "populate" ]; then
             echo "Populate element canisters with data..."
             echo "Process types loading..."
-#            dfx canister call entity_manager addEnumerationValue 'PROCESS_TYPE', '33 - Collecting'
+            dfx canister call entity_manager addEnumerationValue '(variant {PROCESS_TYPE}, "33 - Collecting")'
             dfx canister call entity_manager addEnumerationValue '(variant {PROCESS_TYPE}, "38 - Harvesting")'
-#            echo "Assessment standards loading..."
-#            dfx canister call entity_manager addElement 'Chemical use assessment'
-#            dfx canister call entity_manager addElement 'Environment assessment'
-#            dfx canister call entity_manager addElement 'Origin assessment'
-#            dfx canister call entity_manager addElement 'Quality assessment'
-#            dfx canister call entity_manager addElement 'Swiss Decode'
-#            echo "Assessment assurance level loading..."
-#            dfx canister call entity_manager addElement 'Reviewed by peer members'
-#            dfx canister call entity_manager addElement 'Self assessed'
-#            dfx canister call entity_manager addElement 'Self declaration / Not verified'
-#            dfx canister call entity_manager addElement 'Verified by second party'
-#            dfx canister call entity_manager addElement 'Certified (Third Party)'
+            echo "Assessment standards loading..."
+            dfx canister call entity_manager addEnumerationValue '(variant {ASSESSMENT_STANDARD}, "Chemical use assessment")'
+            dfx canister call entity_manager addEnumerationValue '(variant {ASSESSMENT_STANDARD}, "Environment assessment")'
+            dfx canister call entity_manager addEnumerationValue '(variant {ASSESSMENT_STANDARD}, "Origin assessment")'
+            dfx canister call entity_manager addEnumerationValue '(variant {ASSESSMENT_STANDARD}, "Quality assessment")'
+            dfx canister call entity_manager addEnumerationValue '(variant {ASSESSMENT_STANDARD}, "Swiss Decode")'
+            echo "Assessment assurance level loading..."
+            dfx canister call entity_manager addEnumerationValue '(variant {ASSESSMENT_ASSURANCE_LEVEL}, "Reviewed by peer members")'
+            dfx canister call entity_manager addEnumerationValue '(variant {ASSESSMENT_ASSURANCE_LEVEL}, "Self assessed")'
+            dfx canister call entity_manager addEnumerationValue '(variant {ASSESSMENT_ASSURANCE_LEVEL}, "Self declaration / Not verified")'
+            dfx canister call entity_manager addEnumerationValue '(variant {ASSESSMENT_ASSURANCE_LEVEL}, "Verified by second party")'
+            dfx canister call entity_manager addEnumerationValue '(variant {ASSESSMENT_ASSURANCE_LEVEL}, "Certified (Third Party)")'
         fi
         echo "Generating declarations..."
         dfx generate

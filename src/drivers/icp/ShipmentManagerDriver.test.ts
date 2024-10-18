@@ -1,5 +1,5 @@
 import { Wallet } from 'ethers';
-import {RoleProof} from "@kbc-lib/azle-types";
+import { RoleProof } from '@kbc-lib/azle-types';
 import { SiweIdentityProvider } from './SiweIdentityProvider';
 import { computeRoleProof } from './proof';
 import { ShipmentManagerDriver } from './ShipmentManagerDriver';
@@ -14,8 +14,8 @@ const DELEGATE_CREDENTIAL_ID_HASH =
     '0x2cc6c15c35500c4341eee2f9f5f8c39873b9c3737edb343ebc3d16424e99a0d4';
 const DELEGATOR_CREDENTIAL_ID_HASH =
     '0xf19b6aebcdaba2222d3f2c818ff1ecda71c7ed93c3e0f958241787663b58bc4b';
-const SIWE_CANISTER_ID = 'be2us-64aaa-aaaaa-qaabq-cai';
-const ENTITY_MANAGER_CANISTER_ID = 'bkyz2-fmaaa-aaaaa-qaaaq-cai';
+const SIWE_CANISTER_ID = process.env.CANISTER_ID_IC_SIWE_PROVIDER!;
+const ENTITY_MANAGER_CANISTER_ID = process.env.CANISTER_ID_ENTITY_MANAGER!;
 type Utils = {
     userWallet: Wallet;
     companyWallet: Wallet;

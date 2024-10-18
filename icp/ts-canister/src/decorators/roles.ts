@@ -1,7 +1,6 @@
-import {RoleProof} from "../models/types";
-import {ic} from "azle/experimental";
-import {RoleProof} from "../models/Proof";
-import DelegationService from "../services/DelegationService";
+import { ic } from 'azle/experimental';
+import { RoleProof } from '../models/types';
+import DelegationService from '../services/DelegationService';
 
 function OnlyRole(role: string, originalMethod: any, _context: any) {
     async function replacementMethod(this: any, ...args: any[]) {

@@ -13,9 +13,7 @@ import {
     RpcServices,
     GetAddressResponse
 } from "../models/idls";
-import {ethers} from "ethers";
 import {calculateRsvForTEcdsa, ecdsaPublicKey, signWithEcdsa} from "./ecdsa";
-import {ic, Principal} from 'azle/experimental';
 import { EVM } from '../constants/evm';
 import { CANISTER } from '../constants/canister';
 
@@ -197,7 +195,7 @@ export async function ethCallContract(contractAddress: string, contractAbi: ethe
         params: [
             {
                 to: contractAddress,
-                data: data
+                data
             },
             'latest'
         ],
