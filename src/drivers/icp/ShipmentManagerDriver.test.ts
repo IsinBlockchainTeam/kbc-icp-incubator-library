@@ -1,5 +1,5 @@
 import { Wallet } from 'ethers';
-import {RoleProof} from "@kbc-lib/azle-types";
+import { RoleProof } from '@kbc-lib/azle-types';
 import { SiweIdentityProvider } from './SiweIdentityProvider';
 import { computeRoleProof } from './proof';
 import { ShipmentManagerDriver } from './ShipmentManagerDriver';
@@ -22,7 +22,7 @@ type Utils = {
     shipmentManagerDriver: ShipmentManagerDriver;
     roleProof: RoleProof;
 };
-const SHIPMENT_ID = 4;
+const SHIPMENT_ID = 1;
 describe('ShipmentManagerDriver', () => {
     let utils1: Utils, utils2: Utils;
     const getUtils = async (userPrivateKey: string, companyPrivateKey: string) => {
@@ -246,7 +246,7 @@ describe('ShipmentManagerDriver', () => {
         });
     });
 
-    it('should bring a shipment which has just locked the escrow to the 4th phase', async () => {
+    it('should bring a shipment which has just locked the escrow to the 5th phase', async () => {
         const { shipmentManagerDriver: supplierDriver, roleProof: supplierProof } = utils1;
         const { shipmentManagerDriver: commissionerDriver, roleProof: commissionerProof } = utils2;
 

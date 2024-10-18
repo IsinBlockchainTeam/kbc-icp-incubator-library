@@ -1,15 +1,14 @@
-import {ethers} from "hardhat";
-import {Contract} from "ethers";
+import { ethers } from 'hardhat';
+import { Contract } from 'ethers';
 
 async function getAttachedContract(contractName: string, contractAddress: string): Promise<Contract> {
     const ContractFactory = await ethers.getContractFactory(contractName);
     return ContractFactory.attach(contractAddress);
 }
-const main = async () => {
+const main = async (address: string) => {
     const [_, owner] = await ethers.getSigners();
     const tx = await owner.sendTransaction({
-        // to: '0x16bFc34f7936e829e980b6D77E436765f57415E8',
-        to: '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
+        to: address,
         value: ethers.utils.parseEther('1000')
     });
     const resp = await tx.wait();
@@ -20,4 +19,6 @@ const main = async () => {
     // const resp = await tx.wait();
     // console.log(resp);
 };
-main().catch(console.error);
+
+main('0x6047c86423f7A24c166AffeB43b396B66169C506').catch(console.error);
+main('0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123').catch(console.error);
