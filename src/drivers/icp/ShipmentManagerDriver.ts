@@ -1,5 +1,5 @@
 import type { ActorSubclass, Identity } from '@dfinity/agent';
-import {DocumentType, EvaluationStatus, RoleProof} from "@kbc-lib/azle-types";
+import { DocumentType, EvaluationStatus, RoleProof } from '@kbc-lib/azle-types';
 import { _SERVICE } from '../../declarations/entity_manager/entity_manager.did';
 import { createActor } from '../../declarations/entity_manager';
 
@@ -83,6 +83,10 @@ export class ShipmentManagerDriver {
 
     async lockFunds(roleProof: RoleProof, id: number) {
         return this._actor.lockFunds(roleProof, BigInt(id));
+    }
+
+    async unlockFunds(roleProof: RoleProof, id: number) {
+        return this._actor.unlockFunds(roleProof, BigInt(id));
     }
 
     async getDocuments(roleProof: RoleProof, id: number) {

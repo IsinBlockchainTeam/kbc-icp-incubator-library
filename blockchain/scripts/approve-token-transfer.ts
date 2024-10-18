@@ -4,7 +4,7 @@ import { ethers } from 'hardhat';
 import { ContractName } from '../utils/constants';
 
 const main = async (escrowAddress: string, amount: number) => {
-    const wallet = new Wallet('0c7e66e74f6666b514cc73ee2b7ffc518951cf1ca5719d6820459c4e134f2264', new JsonRpcProvider('http://localhost:8545'));
+    const wallet = new Wallet('ec6b3634419525310628dce4da4cf2abbc866c608aebc1e5f9ee7edf6926e985', new JsonRpcProvider('http://localhost:8545')); // Commissioner
     const MyToken = await ethers.getContractFactory(ContractName.MY_TOKEN);
     const myToken = MyToken.attach('0xc5a5C42992dECbae36851359345FE25997F5C42d');
     const tx = await myToken.connect(wallet).approve(escrowAddress, amount);
@@ -13,4 +13,4 @@ const main = async (escrowAddress: string, amount: number) => {
     console.log('Balance', await myToken.connect(wallet).balanceOf(wallet.address));
 };
 
-main('0x0665FbB86a3acECa91Df68388EC4BBE11556DDce', 100).catch(console.error);
+main('0x56639dB16Ac50A89228026e42a316B30179A5376', 100).catch(console.error); // Escrow address

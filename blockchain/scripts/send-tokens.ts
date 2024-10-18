@@ -14,4 +14,4 @@ const main = async (address: string) => {
     console.log(`Tokens transferred to ${address}. Transaction hash: ${receipt.transactionHash}`);
 };
 
-main('0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123').catch(console.error);
+main('0x2F2e2b138006ED0CcA198e7090dce5BACF02Bf26').catch(console.error); // Commissioner address

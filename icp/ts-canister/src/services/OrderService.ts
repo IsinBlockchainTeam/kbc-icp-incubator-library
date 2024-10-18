@@ -205,13 +205,15 @@ class OrderService {
         if (!order)
             throw new Error('Order not found');
         const companyAddress = roleProof.membershipProof.delegatorAddress;
+        if(![order.supplier, order.commissioner].includes(companyAddress))
+            throw new Error('Access denied');
         if(order.signatures.includes(companyAddress))
             throw new Error('Order already signed');
         order.signatures.push(companyAddress);
         if (order.signatures.includes(order.supplier) && order.signatures.includes(order.customer)) {
             order.status = { CONFIRMED: null };
             const duration = order.paymentDeadline - BigInt(Math.trunc(Date.now() / 1000));
-            const shipment = await ShipmentService.instance.createShipment(roleProof, order.supplier, order.commissioner, true, duration, order.token);
+            const shipment = await ShipmentService.instance.createShipment(order.supplier, order.commissioner, true, duration, order.token);
             order.shipmentId = [shipment.id];
             console.log(shipment);
         }
