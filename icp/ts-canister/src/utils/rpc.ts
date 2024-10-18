@@ -10,10 +10,12 @@ import {
     RequestResult,
     RpcConfig,
     RpcService,
-    RpcServices
-} from '../models/Rpc';
-import { calculateRsvForTEcdsa, ecdsaPublicKey, signWithEcdsa } from './ecdsa';
-import { GetAddressResponse } from '../models/Address';
+    RpcServices,
+    GetAddressResponse
+} from "../models/idls";
+import {ethers} from "ethers";
+import {calculateRsvForTEcdsa, ecdsaPublicKey, signWithEcdsa} from "./ecdsa";
+import {ic, Principal} from 'azle/experimental';
 import { EVM } from '../constants/evm';
 import { CANISTER } from '../constants/canister';
 

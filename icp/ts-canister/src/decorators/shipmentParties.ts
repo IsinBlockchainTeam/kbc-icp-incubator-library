@@ -1,4 +1,4 @@
-import { RoleProof } from '../models/Proof';
+import { RoleProof } from '../models/types';
 
 function validateAndExtractParameters(this: any, args: any[]) {
     console.log('args2', args);

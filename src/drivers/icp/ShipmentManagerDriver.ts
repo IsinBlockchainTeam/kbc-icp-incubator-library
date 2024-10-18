@@ -1,9 +1,7 @@
 import type { ActorSubclass, Identity } from '@dfinity/agent';
-import { RoleProof } from '../../../icp/ts-canister/src/models/Proof';
+import {DocumentType, EvaluationStatus, RoleProof} from "@kbc-lib/azle-types";
 import { _SERVICE } from '../../declarations/entity_manager/entity_manager.did';
 import { createActor } from '../../declarations/entity_manager';
-import { DocumentType } from '../../../icp/ts-canister/src/models/Document';
-import { EvaluationStatus } from '../../../icp/ts-canister/src/models/Evaluation';
 
 export class ShipmentManagerDriver {
     private _actor: ActorSubclass<_SERVICE>;

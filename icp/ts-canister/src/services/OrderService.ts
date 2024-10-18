@@ -1,10 +1,12 @@
-import { StableBTreeMap } from 'azle';
-import { Order, OrderLine } from '../models/Order';
-import { StableMemoryId } from '../utils/stableMemory';
-import { RoleProof } from '../models/Proof';
-import { validateAddress, validateDeadline, validateInterestedParty, validatePositiveNumber } from '../utils/validation';
-import { ROLES } from '../models/Role';
-import ShipmentService from './ShipmentService';
+import {StableBTreeMap} from "azle";
+import {
+    Order, OrderLine,
+    RoleProof,
+    ROLES
+} from "../models/types";
+import {StableMemoryId} from "../utils/stableMemory";
+import {validateAddress, validateDeadline, validateInterestedParty, validatePositiveNumber} from "../utils/validation";
+import ShipmentService from "./ShipmentService";
 
 class OrderService {
     private static _instance: OrderService;

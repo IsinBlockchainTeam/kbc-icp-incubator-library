@@ -3,11 +3,13 @@ import { ethers } from 'ethers';
 import { call, IDL } from 'azle';
 import { ROLES } from '../models/Role';
 import { RoleProof } from '../models/Proof';
-import { GetAddressResponse } from '../models/Address';
 import revocationRegistryAbi from '../../eth-abi/RevocationRegistry.json';
-import { RequestResult, RpcService } from '../models/Rpc';
 import { CANISTER } from '../constants/canister';
 import { EVM } from '../constants/evm';
+import {
+  GetAddressResponse,
+  RequestResult, RpcService
+} from "../models/idls";
 
 class DelegationService {
     private static _instance: DelegationService;

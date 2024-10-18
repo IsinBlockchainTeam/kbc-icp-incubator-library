@@ -1,49 +1,18 @@
 import { IDL } from 'azle';
-import { Price } from './Price';
+import { Price as IDLPrice } from './Price';
 
 export const OrderStatus = IDL.Variant({
     PENDING: IDL.Null,
     CONFIRMED: IDL.Null,
     EXPIRED: IDL.Null
 });
-export type OrderStatus = { PENDING: null } | { CONFIRMED: null } | { EXPIRED: null };
-export type OrderLine = {
-    productCategoryId: bigint;
-    quantity: number;
-    unit: string;
-    price: Price;
-    // materialId: bigint | null;
-}
 export const OrderLine = IDL.Record({
     productCategoryId: IDL.Nat,
     quantity: IDL.Float32,
     unit: IDL.Text,
-    price: Price
+    price: IDLPrice,
     // materialId: IDL.Opt(IDL.Nat),
 });
-export type Order = {
-    id: bigint;
-    supplier: string;
-    customer: string;
-    commissioner: string;
-    signatures: string[];
-    status: OrderStatus;
-    paymentDeadline: bigint;
-    documentDeliveryDeadline: bigint;
-    shippingDeadline: bigint;
-    deliveryDeadline: bigint;
-    arbiter: string;
-    incoterms: string;
-    shipper: string;
-    shippingPort: string;
-    deliveryPort: string;
-    lines: OrderLine[];
-    token: string;
-    agreedAmount: bigint;
-    escrowManager: string;
-    escrow: [string] | [];
-    shipmentId: [bigint] | [];
-}
 export const Order = IDL.Record({
     id: IDL.Nat,
     supplier: IDL.Text,

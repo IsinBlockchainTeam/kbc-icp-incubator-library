@@ -1,3 +1,4 @@
+import {RoleProof} from "../models/types";
 import {ic} from "azle/experimental";
 import {RoleProof} from "../models/Proof";
 import DelegationService from "../services/DelegationService";

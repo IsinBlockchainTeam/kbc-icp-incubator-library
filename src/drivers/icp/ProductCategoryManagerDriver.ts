@@ -1,7 +1,7 @@
 import type { ActorSubclass, Identity } from '@dfinity/agent';
+import {RoleProof} from "@kbc-lib/azle-types";
 import { _SERVICE } from '../../declarations/entity_manager/entity_manager.did';
 import { createActor } from '../../declarations/entity_manager';
-import {RoleProof} from "../../../icp/ts-canister/src/models/Proof";
 
 export class ProductCategoryManagerDriver {
     private _actor: ActorSubclass<_SERVICE>;

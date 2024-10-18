@@ -1,12 +1,14 @@
-import { StableBTreeMap } from 'azle';
-import { FundStatusEnum, Phase, PhaseEnum, Shipment } from '../models/Shipment';
-import { RoleProof } from '../models/Proof';
-import { validateAddress, validateInterestedParty } from '../utils/validation';
-import { ethCallContract, ethSendContractTransaction } from '../utils/rpc';
-import escrowManagerAbi from '../../eth-abi/EscrowManager.json';
-import { EvaluationStatus, EvaluationStatusEnum } from '../models/Evaluation';
-import { DocumentInfo, DocumentType, DocumentTypeEnum } from '../models/Document';
-import { StableMemoryId } from '../utils/stableMemory';
+import {StableBTreeMap} from "azle";
+import {
+    FundStatusEnum, Phase, PhaseEnum, Shipment,
+    RoleProof,
+    EvaluationStatus, EvaluationStatusEnum,
+    DocumentInfo, DocumentType, DocumentTypeEnum
+} from "../models/types";
+import {validateAddress, validateInterestedParty} from "../utils/validation";
+import {ethCallContract, ethSendContractTransaction} from "../utils/rpc";
+import escrowManagerAbi from "../../eth-abi/EscrowManager.json";
+import {StableMemoryId} from "../utils/stableMemory";
 import { EVM } from '../constants/evm';
 
 class ShipmentService {

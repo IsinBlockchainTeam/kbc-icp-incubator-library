@@ -1,7 +1,7 @@
 import { Wallet } from 'ethers';
+import {RoleProof} from "@kbc-lib/azle-types";
 import { ProductCategoryManagerDriver } from './ProductCategoryManagerDriver';
 import { SiweIdentityProvider } from './SiweIdentityProvider';
-import { RoleProof } from '../../../icp/ts-canister/src/models/Proof';
 import { computeRoleProof } from './proof';
 
 const USER_PRIVATE_KEY = '0c7e66e74f6666b514cc73ee2b7ffc518951cf1ca5719d6820459c4e134f2264';

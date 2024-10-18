@@ -1,8 +1,12 @@
 {
+    "name": "@kbc-lib/azle-types",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
     "scripts": {
         "pretest": "tsx test/pretest.ts",
         "test": "jest",
         "deploy": "set -o allexport; source .env.evm; set +o allexport && dfx deploy",
+        "build-types": "npx tsc -p tsconfig-types.json",
         "lint": "eslint --fix --ext .ts .",
         "prettier": "npx prettier . --write"
     },

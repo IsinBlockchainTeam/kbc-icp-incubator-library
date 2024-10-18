@@ -1,7 +1,7 @@
-import { caller, StableBTreeMap } from 'azle';
-import { ethers } from 'ethers';
-import { ProductCategory } from '../models/ProductCategory';
-import { StableMemoryId } from '../utils/stableMemory';
+import {caller, StableBTreeMap} from "azle";
+import {ProductCategory} from "../models/types";
+import {ethers} from "ethers";
+import {StableMemoryId} from "../utils/stableMemory";
 
 class ProductCategoryService {
     private static _instance: ProductCategoryService;
