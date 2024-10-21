@@ -1,24 +1,8 @@
-import { DocumentInfo, DocumentTypeEnum as DocumentType } from '@kbc-lib/azle-types';
+import { DocumentInfo, DocumentType } from './Document';
+import { EvaluationStatus } from './Evaluation';
+import { PhaseEnum as Phase, FundStatusEnum as FundStatus } from '@kbc-lib/azle-types';
 
-export enum Phase {
-    PHASE_1,
-    PHASE_2,
-    PHASE_3,
-    PHASE_4,
-    PHASE_5,
-    CONFIRMED,
-    ARBITRATION
-}
-export enum EvaluationStatus {
-    NOT_EVALUATED,
-    APPROVED,
-    NOT_APPROVED
-}
-export enum FundStatus {
-    NOT_LOCKED,
-    LOCKED,
-    RELEASED
-}
+export { Phase, FundStatus };
 
 export class Shipment {
     private _id: number;

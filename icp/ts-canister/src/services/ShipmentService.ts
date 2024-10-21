@@ -134,7 +134,7 @@ class ShipmentService {
         return true;
     }
 
-    getDocumentsByType(id: bigint, documentType: DocumentType): DocumentInfo[] | [] {
+    getDocumentsByType(id: bigint, documentType: DocumentType): DocumentInfo[] {
         const shipment = this.shipments.get(id);
         if (!shipment) throw new Error('Shipment not found');
         const documentInfos = shipment.documents.find(([type]) => Object.keys(documentType)[0] in type);
@@ -292,7 +292,7 @@ class ShipmentService {
         return shipment;
     }
 
-    getDocuments(id: bigint) {
+    getDocuments(id: bigint): Array<[DocumentType, DocumentInfo[]]> {
         const shipment = this.shipments.get(id);
         if (!shipment)
             throw new Error('Shipment not found');

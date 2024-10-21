@@ -1,6 +1,6 @@
 import { IDL } from 'azle';
-import { EvaluationStatus as IDLEvaluationStatus} from './Evaluation';
-import { DocumentInfo as IDLDocumentInfo, DocumentType as IDLDocumentType } from './Document';
+import { IDLEvaluationStatus as IDLEvaluationStatus} from './Evaluation';
+import { IDLDocumentInfo as IDLDocumentInfo, IDLDocumentType as IDLDocumentType } from './Document';
 
 export const Phase = IDL.Variant({
     PHASE_1: IDL.Null,

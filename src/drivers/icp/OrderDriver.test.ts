@@ -20,7 +20,7 @@ type Utils = {
     orderManagerDriver: OrderDriver;
     roleProof: RoleProof;
 };
-const ORDER_ID = 0;
+const ORDER_ID = 4;
 describe('OrderDriver', () => {
     let utils1: Utils, utils2: Utils;
     const getUtils = async (userPrivateKey: string, companyPrivateKey: string) => {

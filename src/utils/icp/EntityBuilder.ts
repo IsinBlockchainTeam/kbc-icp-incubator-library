@@ -4,13 +4,15 @@ import {
     Shipment as ICPShipment,
     Phase as ICPPhase,
     FundStatus as ICPFundStatus,
-    DocumentType as ICPDocumentType,
+    DocumentType as IDLDocumentType,
+    DocumentInfo as IDLDocumentInfo,
     EvaluationStatus as ICPEvaluationStatus
 } from '@kbc-lib/azle-types';
 import { Order, OrderStatus } from '../../entities/icp/Order';
-import { EvaluationStatus, Shipment } from '../../entities/icp/Shipment';
-import { DocumentInfo, DocumentTypeEnum as DocumentType } from '@kbc-lib/azle-types';
+import { Shipment } from '../../entities/icp/Shipment';
 import { Phase, FundStatus } from '../../entities/icp/Shipment';
+import { DocumentInfo, DocumentType } from '../../entities/icp/Document';
+import { EvaluationStatus } from '../../entities/icp/Evaluation';
 
 export class EntityBuilder {
     static buildOrder(order: ICPOrder) {
@@ -55,6 +57,7 @@ export class EntityBuilder {
     }
 
     static buildShipment(shipment: ICPShipment): Shipment {
+        // TODO: escrow address is only set during deposit
         if (shipment.escrowAddress.length === 0) throw new Error('Invalid escrow address');
 
         return new Shipment(
@@ -62,10 +65,10 @@ export class EntityBuilder {
             shipment.supplier,
             shipment.commissioner,
             shipment.escrowAddress[0],
-            this._buildEvaluationStatus(shipment.sampleEvaluationStatus),
-            this._buildEvaluationStatus(shipment.detailsEvaluationStatus),
-            this._buildEvaluationStatus(shipment.qualityEvaluationStatus),
-            this._buildFundStatus(shipment.fundsStatus),
+            this.buildEvaluationStatus(shipment.sampleEvaluationStatus),
+            this.buildEvaluationStatus(shipment.detailsEvaluationStatus),
+            this.buildEvaluationStatus(shipment.qualityEvaluationStatus),
+            this.buildFundStatus(shipment.fundsStatus),
             shipment.detailsSet,
             shipment.sampleApprovalRequired,
             Number(shipment.shipmentNumber),
@@ -83,14 +86,14 @@ export class EntityBuilder {
     }
 
     static buildShipmentDocuments = (
-        icpDocuments: Array<[ICPDocumentType, DocumentInfo[]]>
+        icpDocuments: Array<[IDLDocumentType, IDLDocumentInfo[]]>
     ): Map<DocumentType, DocumentInfo[]> => {
         const documents = new Map<DocumentType, DocumentInfo[]>();
 
         for (const [icpDocumentType, infos] of icpDocuments) {
-            const documentType = this._buildDocumentType(icpDocumentType);
+            const documentType = this.buildDocumentType(icpDocumentType);
             const documentInfos = documents.get(documentType) || [];
-            documentInfos.push(...infos);
+            documentInfos.push(...infos.map((info) => this.buildDocumentInfo(info)));
             documents.set(documentType, documentInfos);
         }
 
@@ -108,21 +111,27 @@ export class EntityBuilder {
         throw new Error('Invalid phase');
     };
 
-    static _buildFundStatus = (status: ICPFundStatus): FundStatus => {
+    static buildFundStatus = (status: ICPFundStatus): FundStatus => {
         if (FundStatus.NOT_LOCKED in status) return FundStatus.NOT_LOCKED;
         if (FundStatus.LOCKED in status) return FundStatus.LOCKED;
         if (FundStatus.RELEASED in status) return FundStatus.RELEASED;
         throw new Error('Invalid fund status');
     };
 
-    static _buildEvaluationStatus = (status: ICPEvaluationStatus): EvaluationStatus => {
+    static buildEvaluationStatus = (status: ICPEvaluationStatus): EvaluationStatus => {
         if (EvaluationStatus.NOT_EVALUATED in status) return EvaluationStatus.NOT_EVALUATED;
         if (EvaluationStatus.APPROVED in status) return EvaluationStatus.APPROVED;
         if (EvaluationStatus.NOT_APPROVED in status) return EvaluationStatus.NOT_APPROVED;
         throw new Error('Invalid evaluation status');
     };
 
-    static _buildDocumentType = (type: ICPDocumentType): DocumentType => {
+    static buildIDLEvaluationStatus = (status: EvaluationStatus): ICPEvaluationStatus => {
+        return {
+            [status]: null
+        } as ICPEvaluationStatus;
+    };
+
+    static buildDocumentType = (type: IDLDocumentType): DocumentType => {
         if (DocumentType.SERVICE_GUIDE in type) return DocumentType.SERVICE_GUIDE;
         if (DocumentType.SENSORY_EVALUATION_ANALYSIS_REPORT in type)
             return DocumentType.SENSORY_EVALUATION_ANALYSIS_REPORT;
@@ -149,5 +158,21 @@ export class EntityBuilder {
         if (DocumentType.WEIGHT_CERTIFICATE in type) return DocumentType.WEIGHT_CERTIFICATE;
         if (DocumentType.GENERIC in type) return DocumentType.GENERIC;
         throw new Error('Invalid document');
+    };
+
+    static buildIDLDocumentType = (docType: DocumentType): IDLDocumentType => {
+        return {
+            [docType]: null
+        } as IDLDocumentType;
+    };
+
+    static buildDocumentInfo = (info: IDLDocumentInfo): DocumentInfo => {
+        return {
+            id: Number(info.id),
+            documentType: this.buildDocumentType(info.documentType),
+            evaluationStatus: this.buildEvaluationStatus(info.evaluationStatus),
+            uploadedBy: info.uploadedBy,
+            externalUrl: info.externalUrl
+        };
     };
 }
