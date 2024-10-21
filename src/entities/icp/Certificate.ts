@@ -1,26 +1,22 @@
+import { EvaluationStatus } from './Document';
+
 export enum CertificateType {
-    COMPANY,
-    SCOPE,
-    MATERIAL
+    COMPANY = 'COMPANY',
+    SCOPE = 'SCOPE',
+    MATERIAL = 'MATERIAL'
 }
 
-export enum DocumentType {
-    CERTIFICATE_OF_CONFORMITY,
-    COUNTRY_OF_ORIGIN,
-    SWISS_DECODE,
-    PRODUCTION_REPORT,
-    PRODUCTION_FACILITY_LICENSE
+export enum CertificateDocumentType {
+    CERTIFICATE_OF_CONFORMITY = 'CERTIFICATE_OF_CONFORMITY',
+    COUNTRY_OF_ORIGIN = 'COUNTRY_OF_ORIGIN',
+    SWISS_DECODE = 'SWISS_DECODE',
+    PRODUCTION_REPORT = 'PRODUCTION_REPORT',
+    PRODUCTION_FACILITY_LICENSE = 'PRODUCTION_FACILITY_LICENSE'
 }
 
-export enum DocumentEvaluationStatus {
-    NOT_EVALUATED,
-    APPROVED,
-    NOT_APPROVED
-}
-
-export type CertificateDocument = {
+export type CertificateDocumentInfo = {
     id: number;
-    documentType: DocumentType;
+    documentType: CertificateDocumentType;
     externalUrl: string;
 };
 
@@ -39,9 +35,9 @@ export class BaseCertificate {
 
     private _referenceId: string;
 
-    private _document: CertificateDocument;
+    private _document: CertificateDocumentInfo;
 
-    private _evaluationStatus: DocumentEvaluationStatus;
+    private _evaluationStatus: EvaluationStatus;
 
     private _certificateType: CertificateType;
 
@@ -55,8 +51,8 @@ export class BaseCertificate {
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
         referenceId: string,
-        document: CertificateDocument,
-        evaluationStatus: DocumentEvaluationStatus,
+        document: CertificateDocumentInfo,
+        evaluationStatus: EvaluationStatus,
         certificateType: CertificateType,
         issueDate: Date
     ) {
@@ -129,19 +125,19 @@ export class BaseCertificate {
         this._referenceId = value;
     }
 
-    get document(): CertificateDocument {
+    get document(): CertificateDocumentInfo {
         return this._document;
     }
 
-    set document(value: CertificateDocument) {
+    set document(value: CertificateDocumentInfo) {
         this._document = value;
     }
 
-    get evaluationStatus(): DocumentEvaluationStatus {
+    get evaluationStatus(): EvaluationStatus {
         return this._evaluationStatus;
     }
 
-    set evaluationStatus(value: DocumentEvaluationStatus) {
+    set evaluationStatus(value: EvaluationStatus) {
         this._evaluationStatus = value;
     }
 

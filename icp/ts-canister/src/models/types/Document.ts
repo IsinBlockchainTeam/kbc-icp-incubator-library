@@ -8,6 +8,7 @@ export type Document = {
 };
 
 export enum DocumentTypeEnum {
+    // shipment document types
     SERVICE_GUIDE = 'SERVICE_GUIDE',
     SENSORY_EVALUATION_ANALYSIS_REPORT = 'SENSORY_EVALUATION_ANALYSIS_REPORT',
     SUBJECT_TO_APPROVAL_OF_SAMPLE = 'SUBJECT_TO_APPROVAL_OF_SAMPLE',
@@ -26,9 +27,29 @@ export enum DocumentTypeEnum {
     BILL_OF_LADING = 'BILL_OF_LADING',
     ORIGIN_CERTIFICATE_ICO = 'ORIGIN_CERTIFICATE_ICO',
     WEIGHT_CERTIFICATE = 'WEIGHT_CERTIFICATE',
-    GENERIC = 'GENERIC',
+    GENERIC = 'GENERIC'
 }
-export type DocumentType = { SERVICE_GUIDE: null } | { SENSORY_EVALUATION_ANALYSIS_REPORT: null } | { SUBJECT_TO_APPROVAL_OF_SAMPLE: null } | { PRE_SHIPMENT_SAMPLE: null } | { SHIPPING_INSTRUCTIONS: null } | { SHIPPING_NOTE: null } | { BOOKING_CONFIRMATION: null } | { CARGO_COLLECTION_ORDER: null } | { EXPORT_INVOICE: null } | { TRANSPORT_CONTRACT: null } | { TO_BE_FREED_SINGLE_EXPORT_DECLARATION: null } | { EXPORT_CONFIRMATION: null } | { FREED_SINGLE_EXPORT_DECLARATION: null } | { CONTAINER_PROOF_OF_DELIVERY: null } | { PHYTOSANITARY_CERTIFICATE: null } | { BILL_OF_LADING: null } | { ORIGIN_CERTIFICATE_ICO: null } | { WEIGHT_CERTIFICATE: null } | { GENERIC: null };
+export type DocumentType =
+    // shipment document types
+    | { SERVICE_GUIDE: null }
+    | { SENSORY_EVALUATION_ANALYSIS_REPORT: null }
+    | { SUBJECT_TO_APPROVAL_OF_SAMPLE: null }
+    | { PRE_SHIPMENT_SAMPLE: null }
+    | { SHIPPING_INSTRUCTIONS: null }
+    | { SHIPPING_NOTE: null }
+    | { BOOKING_CONFIRMATION: null }
+    | { CARGO_COLLECTION_ORDER: null }
+    | { EXPORT_INVOICE: null }
+    | { TRANSPORT_CONTRACT: null }
+    | { TO_BE_FREED_SINGLE_EXPORT_DECLARATION: null }
+    | { EXPORT_CONFIRMATION: null }
+    | { FREED_SINGLE_EXPORT_DECLARATION: null }
+    | { CONTAINER_PROOF_OF_DELIVERY: null }
+    | { PHYTOSANITARY_CERTIFICATE: null }
+    | { BILL_OF_LADING: null }
+    | { ORIGIN_CERTIFICATE_ICO: null }
+    | { WEIGHT_CERTIFICATE: null }
+    | { GENERIC: null };
 
 export type DocumentInfo = {
     id: bigint;

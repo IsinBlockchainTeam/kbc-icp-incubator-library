@@ -1,18 +1,15 @@
-import {IDL, query, update} from "azle";
+import { IDL, query, update } from 'azle';
 import {
     RoleProof as IDLRoleProof,
-    Phase as IDLPhase, Shipment as IDLShipment,
+    Phase as IDLPhase,
+    Shipment as IDLShipment,
     EvaluationStatus as IDLEvaluationStatus,
-    DocumentInfo as IDLDocumentInfo, DocumentType as IDLDocumentType
-} from "../models/idls";
-import {
-    RoleProof,
-    Phase, Shipment,
-    EvaluationStatus,
-    DocumentInfo, DocumentType
-} from "../models/types";
-import {OnlyEditor, OnlyViewer} from "../decorators/roles";
-import ShipmentService from "../services/ShipmentService";
+    DocumentInfo as IDLDocumentInfo,
+    DocumentType as IDLDocumentType
+} from '../models/idls';
+import { RoleProof, Phase, Shipment, EvaluationStatus, DocumentInfo, DocumentType } from '../models/types';
+import { OnlyEditor, OnlyViewer } from '../decorators/roles';
+import ShipmentService from '../services/ShipmentService';
 
 // TODO: fix @OnlyInvolvedParties
 // TODO: fix @OnlySupplier

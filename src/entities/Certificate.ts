@@ -21,6 +21,7 @@ export enum DocumentEvaluationStatus {
 export type CertificateDocumentInfo = {
     id: number;
     documentType: DocumentType;
+    externalUrl: string;
 };
 
 export class BaseCertificate {

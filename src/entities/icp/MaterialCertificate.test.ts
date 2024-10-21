@@ -1,5 +1,5 @@
 import { MaterialCertificate } from './MaterialCertificate';
-import { CertificateType, DocumentEvaluationStatus, DocumentType } from './Certificate';
+import { CertificateType, DocumentEvaluationStatus, CertificateDocumentType } from './Certificate';
 
 describe('MaterialCertificate', () => {
     let materialCertificate: MaterialCertificate;
@@ -11,7 +11,7 @@ describe('MaterialCertificate', () => {
             'issuer',
             'subject',
             'assessmentStandard',
-            { id: 1, documentType: DocumentType.PRODUCTION_REPORT },
+            { id: 1, documentType: CertificateDocumentType.PRODUCTION_REPORT },
             DocumentEvaluationStatus.NOT_EVALUATED,
             CertificateType.MATERIAL,
             issueDate,
@@ -26,7 +26,7 @@ describe('MaterialCertificate', () => {
         expect(materialCertificate.assessmentStandard).toEqual('assessmentStandard');
         expect(materialCertificate.document).toEqual({
             id: 1,
-            documentType: DocumentType.PRODUCTION_REPORT
+            documentType: CertificateDocumentType.PRODUCTION_REPORT
         });
         expect(materialCertificate.evaluationStatus).toEqual(
             DocumentEvaluationStatus.NOT_EVALUATED
@@ -59,11 +59,11 @@ describe('MaterialCertificate', () => {
     it('should correctly set the document', () => {
         materialCertificate.document = {
             id: 2,
-            documentType: DocumentType.PRODUCTION_FACILITY_LICENSE
+            documentType: CertificateDocumentType.PRODUCTION_FACILITY_LICENSE
         };
         expect(materialCertificate.document).toEqual({
             id: 2,
-            documentType: DocumentType.PRODUCTION_FACILITY_LICENSE
+            documentType: CertificateDocumentType.PRODUCTION_FACILITY_LICENSE
         });
     });
 

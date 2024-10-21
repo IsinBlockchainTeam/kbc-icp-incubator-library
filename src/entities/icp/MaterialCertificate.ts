@@ -1,9 +1,5 @@
-import {
-    BaseCertificate,
-    CertificateDocument,
-    CertificateType,
-    DocumentEvaluationStatus
-} from './Certificate';
+import { BaseCertificate, CertificateDocumentInfo, CertificateType } from './Certificate';
+import { EvaluationStatus } from './Document';
 
 export class MaterialCertificate extends BaseCertificate {
     private _materialId: number;
@@ -16,8 +12,8 @@ export class MaterialCertificate extends BaseCertificate {
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
         referenceId: string,
-        document: CertificateDocument,
-        evaluationStatus: DocumentEvaluationStatus,
+        document: CertificateDocumentInfo,
+        evaluationStatus: EvaluationStatus,
         certificateType: CertificateType,
         issueDate: Date,
         materialId: number

@@ -1,5 +1,5 @@
 import { CompanyCertificate } from './CompanyCertificate';
-import { CertificateType, DocumentEvaluationStatus, DocumentType } from './Certificate';
+import { CertificateType, DocumentEvaluationStatus, CertificateDocumentType } from './Certificate';
 
 describe('CompanyCertificate', () => {
     let companyCertificate: CompanyCertificate;
@@ -13,7 +13,7 @@ describe('CompanyCertificate', () => {
             'issuer',
             'subject',
             'assessmentStandard',
-            { id: 1, documentType: DocumentType.CERTIFICATE_OF_CONFORMITY },
+            { id: 1, documentType: CertificateDocumentType.CERTIFICATE_OF_CONFORMITY },
             DocumentEvaluationStatus.NOT_EVALUATED,
             CertificateType.COMPANY,
             issueDate,
@@ -29,7 +29,7 @@ describe('CompanyCertificate', () => {
         expect(companyCertificate.assessmentStandard).toEqual('assessmentStandard');
         expect(companyCertificate.document).toEqual({
             id: 1,
-            documentType: DocumentType.CERTIFICATE_OF_CONFORMITY
+            documentType: CertificateDocumentType.CERTIFICATE_OF_CONFORMITY
         });
         expect(companyCertificate.evaluationStatus).toEqual(DocumentEvaluationStatus.NOT_EVALUATED);
         expect(companyCertificate.certificateType).toEqual(CertificateType.COMPANY);
@@ -59,10 +59,13 @@ describe('CompanyCertificate', () => {
     });
 
     it('should correctly set the document', () => {
-        companyCertificate.document = { id: 2, documentType: DocumentType.COUNTRY_OF_ORIGIN };
+        companyCertificate.document = {
+            id: 2,
+            documentType: CertificateDocumentType.COUNTRY_OF_ORIGIN
+        };
         expect(companyCertificate.document).toEqual({
             id: 2,
-            documentType: DocumentType.COUNTRY_OF_ORIGIN
+            documentType: CertificateDocumentType.COUNTRY_OF_ORIGIN
         });
     });
 

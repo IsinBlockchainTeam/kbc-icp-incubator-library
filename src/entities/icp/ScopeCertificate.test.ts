@@ -1,5 +1,5 @@
 import { ScopeCertificate } from './ScopeCertificate';
-import { CertificateType, DocumentEvaluationStatus, DocumentType } from './Certificate';
+import { CertificateType, DocumentEvaluationStatus, CertificateDocumentType } from './Certificate';
 
 describe('ScopeCertificate', () => {
     let scopeCertificate: ScopeCertificate;
@@ -14,7 +14,7 @@ describe('ScopeCertificate', () => {
             'issuer',
             'subject',
             'assessmentStandard',
-            { id: 1, documentType: DocumentType.CERTIFICATE_OF_CONFORMITY },
+            { id: 1, documentType: CertificateDocumentType.CERTIFICATE_OF_CONFORMITY },
             DocumentEvaluationStatus.NOT_EVALUATED,
             CertificateType.SCOPE,
             issueDate,
@@ -31,7 +31,7 @@ describe('ScopeCertificate', () => {
         expect(scopeCertificate.assessmentStandard).toEqual('assessmentStandard');
         expect(scopeCertificate.document).toEqual({
             id: 1,
-            documentType: DocumentType.CERTIFICATE_OF_CONFORMITY
+            documentType: CertificateDocumentType.CERTIFICATE_OF_CONFORMITY
         });
         expect(scopeCertificate.evaluationStatus).toEqual(DocumentEvaluationStatus.NOT_EVALUATED);
         expect(scopeCertificate.certificateType).toEqual(CertificateType.SCOPE);
@@ -62,10 +62,13 @@ describe('ScopeCertificate', () => {
     });
 
     it('should correctly set the document', () => {
-        scopeCertificate.document = { id: 2, documentType: DocumentType.COUNTRY_OF_ORIGIN };
+        scopeCertificate.document = {
+            id: 2,
+            documentType: CertificateDocumentType.COUNTRY_OF_ORIGIN
+        };
         expect(scopeCertificate.document).toEqual({
             id: 2,
-            documentType: DocumentType.COUNTRY_OF_ORIGIN
+            documentType: CertificateDocumentType.COUNTRY_OF_ORIGIN
         });
     });
 

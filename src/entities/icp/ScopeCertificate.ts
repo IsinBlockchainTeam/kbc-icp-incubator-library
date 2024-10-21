@@ -1,9 +1,5 @@
-import {
-    BaseCertificate,
-    CertificateDocument,
-    CertificateType,
-    DocumentEvaluationStatus
-} from './Certificate';
+import { BaseCertificate, CertificateDocumentInfo, CertificateType } from './Certificate';
+import { EvaluationStatus } from './Document';
 
 export class ScopeCertificate extends BaseCertificate {
     private _processTypes: string[];
@@ -20,8 +16,8 @@ export class ScopeCertificate extends BaseCertificate {
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
         referenceId: string,
-        document: CertificateDocument,
-        evaluationStatus: DocumentEvaluationStatus,
+        document: CertificateDocumentInfo,
+        evaluationStatus: EvaluationStatus,
         certificateType: CertificateType,
         issueDate: Date,
         processTypes: string[],

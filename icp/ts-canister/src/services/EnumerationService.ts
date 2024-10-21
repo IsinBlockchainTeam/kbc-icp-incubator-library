@@ -22,8 +22,6 @@ class EnumerationService {
     addEnumerationValue(enumeration: Enumeration, value: string): void {
         const enumKey = this._getKeyFromEnumeration(enumeration);
         if (this.hasEnumerationValue(enumeration, value)) throw new Error('Enumeration value already exists');
-        console.log('this._enumerations.containsKey(enumKey): ', this._enumerations.containsKey(enumKey));
-        console.log('this._enumerations.get(enumKey): ', this._enumerations.get(enumKey));
         if (!this._enumerations.containsKey(enumKey)) this._enumerations.insert(enumKey, [value]);
         else this._enumerations.insert(enumKey, [...this.getEnumerationsByType(enumeration), value]);
     }
