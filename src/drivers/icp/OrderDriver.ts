@@ -1,7 +1,7 @@
 import type { ActorSubclass, Identity } from '@dfinity/agent';
 import {RoleProof} from "@kbc-lib/azle-types";
-import { _SERVICE } from '../../declarations/entity_manager/entity_manager.did';
-import {createActor} from "../../declarations/entity_manager";
+import {createActor} from "icp-declarations/entity_manager";
+import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
 import {EntityBuilder} from "../../utils/icp/EntityBuilder";
 import {Order} from "../../entities/icp/Order";
 
