@@ -9,6 +9,7 @@ import {
     CertificateType
 } from '../../entities/icp/Certificate';
 import { EntityBuilder } from '../../utils/icp/EntityBuilder';
+import { EvaluationStatus } from '../../entities/icp/Document';
 
 const USER1_PRIVATE_KEY = '0c7e66e74f6666b514cc73ee2b7ffc518951cf1ca5719d6820459c4e134f2264';
 const COMPANY1_PRIVATE_KEY = '538d7d8aec31a0a83f12461b1237ce6b00d8efc1d8b1c73566c05f63ed5e6d02';
@@ -370,6 +371,39 @@ describe('CertificationManagerDriver', () => {
                 );
             expect(updatedCompanyCertificate).toBeDefined();
             expect(updatedCompanyCertificate.document).toEqual(updatedDocument);
+        }, 30000);
+    });
+
+    describe('Evaluations', () => {
+        it('should evaluate a scope certificate', async () => {
+            const { certificationManagerDriver, roleProof } = utils1;
+            const { companyWallet: subjectCompanyWallet } = utils2;
+            const scopeCertificates = await certificationManagerDriver.getScopeCertificates(
+                roleProof,
+                subjectCompanyWallet.address
+            );
+            expect(scopeCertificates.length).toBeGreaterThan(0);
+            const lastScopeCertificateId = Number(
+                scopeCertificates[scopeCertificates.length - 1].id
+            );
+            const scopeCertificate = await certificationManagerDriver.getScopeCertificate(
+                roleProof,
+                subjectCompanyWallet.address,
+                lastScopeCertificateId
+            );
+            expect(scopeCertificate.evaluationStatus).toEqual(EvaluationStatus.NOT_EVALUATED);
+            await certificationManagerDriver.evaluateDocument(
+                roleProof,
+                lastScopeCertificateId,
+                1,
+                EvaluationStatus.APPROVED
+            );
+            const evaluatedScopeCertificate = await certificationManagerDriver.getScopeCertificate(
+                roleProof,
+                subjectCompanyWallet.address,
+                lastScopeCertificateId
+            );
+            expect(evaluatedScopeCertificate.evaluationStatus).toEqual(EvaluationStatus.APPROVED);
         }, 30000);
     });
 });

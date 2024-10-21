@@ -1,5 +1,5 @@
 import { ActorSubclass, Identity } from '@dfinity/agent';
-import { EvaluationStatus, RoleProof } from '@kbc-lib/azle-types';
+import { RoleProof } from '@kbc-lib/azle-types';
 import { _SERVICE } from '../../declarations/entity_manager/entity_manager.did';
 import { createActor } from '../../declarations/entity_manager';
 import { EntityBuilder } from '../../utils/icp/EntityBuilder';
@@ -7,6 +7,7 @@ import { CompanyCertificate } from '../../entities/icp/CompanyCertificate';
 import { MaterialCertificate } from '../../entities/icp/MaterialCertificate';
 import { ScopeCertificate } from '../../entities/icp/ScopeCertificate';
 import { BaseCertificate, CertificateDocumentInfo } from '../../entities/icp/Certificate';
+import { EvaluationStatus } from '../../entities/icp/Document';
 
 export class CertificationManagerDriver {
     private _actor: ActorSubclass<_SERVICE>;
@@ -234,11 +235,11 @@ export class CertificationManagerDriver {
         documentId: number,
         evaluationStatus: EvaluationStatus
     ) {
-        return this._actor.evaluateDocument(
+        await this._actor.evaluateCertificateDocument(
             roleProof,
             BigInt(certificateId),
             BigInt(documentId),
-            evaluationStatus
+            EntityBuilder.buildIDLEvaluationStatus(evaluationStatus)
         );
     }
 }

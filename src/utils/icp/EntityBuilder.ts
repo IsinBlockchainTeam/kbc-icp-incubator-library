@@ -141,6 +141,12 @@ export class EntityBuilder {
         };
     }
 
+    static buildIDLEvaluationStatus(evaluationStatus: EvaluationStatus): IDLEvaluationStatus {
+        return {
+            [evaluationStatus]: null
+        } as IDLEvaluationStatus;
+    }
+
     static buildIDLCertificateDocumentType(
         documentType: CertificateDocumentType
     ): IDLCertificateDocumentType {

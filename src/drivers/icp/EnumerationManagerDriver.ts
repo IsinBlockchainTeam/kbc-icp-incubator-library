@@ -1,5 +1,5 @@
 import { ActorSubclass, Identity } from '@dfinity/agent';
-import { Enumeration } from '@kbc-lib/azle-types/src/models/Enumeration';
+import { Enumeration } from '@kbc-lib/azle-types/src/models/types/Enumeration';
 import { _SERVICE } from '../../declarations/entity_manager/entity_manager.did';
 import { createActor } from '../../declarations/entity_manager';
 

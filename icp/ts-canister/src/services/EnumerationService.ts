@@ -1,5 +1,5 @@
 import { StableBTreeMap } from 'azle';
-import { Enumeration, EnumerationKey } from '../models/Enumeration';
+import { Enumeration, EnumerationKey } from '../models/types/Enumeration';
 import { StableMemoryId } from '../utils/stableMemory';
 
 class EnumerationService {
