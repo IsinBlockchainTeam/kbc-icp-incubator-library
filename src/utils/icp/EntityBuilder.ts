@@ -1,12 +1,22 @@
 import {
+    ProductCategory as ICPProductCategory,
     Order as ICPOrder,
     OrderStatus as ICPOrderStatus,
 } from '@kbc-lib/azle-types';
 import {Order, OrderStatus} from "../../entities/icp/Order";
+import {ProductCategory} from "../../entities/ProductCategory";
 
 export class EntityBuilder {
+    static buildProductCategory(productCategory: ICPProductCategory) {
+        return new ProductCategory(
+            Number(productCategory.id),
+            productCategory.name,
+            Number(productCategory.quality),
+            productCategory.description
+        );
+    }
+
     static buildOrder(order: ICPOrder) {
-        console.log(order.paymentDeadline)
         return new Order(
             Number(order.id),
             order.supplier,
