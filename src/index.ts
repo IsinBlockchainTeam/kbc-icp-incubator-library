@@ -7,6 +7,8 @@ export { RelationshipDriver } from './drivers/RelationshipDriver';
 export { RelationshipService } from './services/RelationshipService';
 
 export { type RoleProof } from './types/RoleProof';
+// TODO: update RoleProof instead of export two different ones. Remove the old one.
+export { type RoleProof as UpdatedRoleProof } from '@kbc-lib/azle-types';
 export { DelegateManagerDriver } from './drivers/DelegateManagerDriver';
 export { DelegateManagerService } from './services/DelegateManagerService';
 
@@ -122,3 +124,20 @@ export { OrderService } from './services/icp/OrderService';
 // export {createActor} from 'icp-declarations/entity_manager'
 export { ProductCategoryDriver as ICPProductCategoryDriver } from './drivers/icp/ProductCategoryDriver';
 export { ProductCategoryService as ICPProductCategoryService } from './services/icp/ProductCategoryService';
+
+// certification
+export { CertificationManagerDriver as ICPCertificationManagerDriver } from './drivers/icp/CertificationManagerDriver';
+export { CertificationManagerService as ICPCertificationManagerService } from './services/icp/CertificationManagerService';
+export {
+    BaseCertificate as ICPBaseCertificate,
+    CertificateType as ICPCertificateType,
+    CertificateDocumentType as ICPCertificateDocumentType,
+    CertificateDocumentInfo as ICPCertificateDocumentInfo
+} from './entities/icp/Certificate';
+export { CompanyCertificate as ICPCompanyCertificate } from './entities/icp/CompanyCertificate';
+export { ScopeCertificate as ICPScopeCertificate } from './entities/icp/ScopeCertificate';
+export { MaterialCertificate as ICPMaterialCertificate } from './entities/icp/MaterialCertificate';
+
+// enumerations
+export { EnumerationManagerDriver as ICPEnumerationManagerDriver } from './drivers/icp/EnumerationManagerDriver';
+export { EnumerationManagerService as ICPEnumerationManagerService } from './services/icp/EnumerationManagerService';

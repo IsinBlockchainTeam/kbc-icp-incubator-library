@@ -1,24 +1,16 @@
-import { ActorSubclass, Identity } from '@dfinity/agent';
 import { RoleProof } from '@kbc-lib/azle-types';
-import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
-import { createActor } from 'icp-declarations/entity_manager';
-import { EntityBuilder } from '../../utils/icp/EntityBuilder';
-import { CompanyCertificate } from '../../entities/icp/CompanyCertificate';
-import { MaterialCertificate } from '../../entities/icp/MaterialCertificate';
-import { ScopeCertificate } from '../../entities/icp/ScopeCertificate';
+import { CertificationManagerDriver } from '../../drivers/icp/CertificationManagerDriver';
 import { BaseCertificate, CertificateDocumentInfo } from '../../entities/icp/Certificate';
+import { CompanyCertificate } from '../../entities/icp/CompanyCertificate';
+import { ScopeCertificate } from '../../entities/icp/ScopeCertificate';
+import { MaterialCertificate } from '../../entities/icp/MaterialCertificate';
 import { EvaluationStatus } from '../../entities/icp/Document';
 
-export class CertificationManagerDriver {
-    private _actor: ActorSubclass<_SERVICE>;
+export class CertificationManagerService {
+    private readonly _certificationManagerDriver: CertificationManagerDriver;
 
-    public constructor(icpIdentity: Identity, canisterId: string, host?: string) {
-        this._actor = createActor(canisterId, {
-            agentOptions: {
-                identity: icpIdentity,
-                ...(host && { host })
-            }
-        });
+    constructor(certificationManagerDriver: CertificationManagerDriver) {
+        this._certificationManagerDriver = certificationManagerDriver;
     }
 
     async registerCompanyCertificate(
@@ -32,18 +24,17 @@ export class CertificationManagerDriver {
         validFrom: Date,
         validUntil: Date
     ): Promise<CompanyCertificate> {
-        const certificate = await this._actor.registerCompanyCertificate(
+        return this._certificationManagerDriver.registerCompanyCertificate(
             roleProof,
             issuer,
             subject,
             assessmentStandard,
             assessmentAssuranceLevel,
             referenceId,
-            EntityBuilder.buildICPCertificateDocumentInfo(document),
-            BigInt(validFrom.getTime()),
-            BigInt(validUntil.getTime())
+            document,
+            validFrom,
+            validUntil
         );
-        return EntityBuilder.buildCompanyCertificate(certificate);
     }
 
     async registerScopeCertificate(
@@ -58,19 +49,18 @@ export class CertificationManagerDriver {
         validUntil: Date,
         processTypes: string[]
     ): Promise<ScopeCertificate> {
-        const certificate = await this._actor.registerScopeCertificate(
+        return this._certificationManagerDriver.registerScopeCertificate(
             roleProof,
             issuer,
             subject,
             assessmentStandard,
             assessmentAssuranceLevel,
             referenceId,
-            EntityBuilder.buildICPCertificateDocumentInfo(document),
-            BigInt(validFrom.getTime()),
-            BigInt(validUntil.getTime()),
+            document,
+            validFrom,
+            validUntil,
             processTypes
         );
-        return EntityBuilder.buildScopeCertificate(certificate);
     }
 
     async registerMaterialCertificate(
@@ -83,46 +73,44 @@ export class CertificationManagerDriver {
         document: CertificateDocumentInfo,
         materialId: number
     ): Promise<MaterialCertificate> {
-        const certificate = await this._actor.registerMaterialCertificate(
+        return this._certificationManagerDriver.registerMaterialCertificate(
             roleProof,
             issuer,
             subject,
             assessmentStandard,
             assessmentAssuranceLevel,
             referenceId,
-            EntityBuilder.buildICPCertificateDocumentInfo(document),
-            BigInt(materialId)
+            document,
+            materialId
         );
-        return EntityBuilder.buildMaterialCertificate(certificate);
     }
 
     async getBaseCertificatesInfoBySubject(
         roleProof: RoleProof,
         subject: string
     ): Promise<BaseCertificate[]> {
-        const certificates = await this._actor.getBaseCertificatesInfoBySubject(roleProof, subject);
-        return certificates.map((cert) => EntityBuilder.buildBaseCertificate(cert));
+        return this._certificationManagerDriver.getBaseCertificatesInfoBySubject(
+            roleProof,
+            subject
+        );
     }
 
     async getCompanyCertificates(
         roleProof: RoleProof,
         subject: string
     ): Promise<CompanyCertificate[]> {
-        const certificates = await this._actor.getCompanyCertificates(roleProof, subject);
-        return certificates.map((cert) => EntityBuilder.buildCompanyCertificate(cert));
+        return this._certificationManagerDriver.getCompanyCertificates(roleProof, subject);
     }
 
     async getScopeCertificates(roleProof: RoleProof, subject: string): Promise<ScopeCertificate[]> {
-        const certificates = await this._actor.getScopeCertificates(roleProof, subject);
-        return certificates.map((cert) => EntityBuilder.buildScopeCertificate(cert));
+        return this._certificationManagerDriver.getScopeCertificates(roleProof, subject);
     }
 
     async getMaterialCertificates(
         roleProof: RoleProof,
         subject: string
     ): Promise<MaterialCertificate[]> {
-        const certificates = await this._actor.getMaterialCertificates(roleProof, subject);
-        return certificates.map((cert) => EntityBuilder.buildMaterialCertificate(cert));
+        return this._certificationManagerDriver.getMaterialCertificates(roleProof, subject);
     }
 
     async getCompanyCertificate(
@@ -130,8 +118,7 @@ export class CertificationManagerDriver {
         subject: string,
         id: number
     ): Promise<CompanyCertificate> {
-        const certificate = await this._actor.getCompanyCertificate(roleProof, subject, BigInt(id));
-        return EntityBuilder.buildCompanyCertificate(certificate);
+        return this._certificationManagerDriver.getCompanyCertificate(roleProof, subject, id);
     }
 
     async getScopeCertificate(
@@ -139,8 +126,7 @@ export class CertificationManagerDriver {
         subject: string,
         id: number
     ): Promise<ScopeCertificate> {
-        const certificate = await this._actor.getScopeCertificate(roleProof, subject, BigInt(id));
-        return EntityBuilder.buildScopeCertificate(certificate);
+        return this._certificationManagerDriver.getScopeCertificate(roleProof, subject, id);
     }
 
     async getMaterialCertificate(
@@ -148,12 +134,7 @@ export class CertificationManagerDriver {
         subject: string,
         id: number
     ): Promise<MaterialCertificate> {
-        const certificate = await this._actor.getMaterialCertificate(
-            roleProof,
-            subject,
-            BigInt(id)
-        );
-        return EntityBuilder.buildMaterialCertificate(certificate);
+        return this._certificationManagerDriver.getMaterialCertificate(roleProof, subject, id);
     }
 
     async updateCompanyCertificate(
@@ -165,14 +146,14 @@ export class CertificationManagerDriver {
         validFrom: Date,
         validUntil: Date
     ) {
-        return this._actor.updateCompanyCertificate(
+        return this._certificationManagerDriver.updateCompanyCertificate(
             roleProof,
-            BigInt(certificateId),
+            certificateId,
             assessmentStandard,
             assessmentAssuranceLevel,
             referenceId,
-            BigInt(validFrom.getTime()),
-            BigInt(validUntil.getTime())
+            validFrom,
+            validUntil
         );
     }
 
@@ -186,14 +167,14 @@ export class CertificationManagerDriver {
         validUntil: Date,
         processTypes: string[]
     ) {
-        return this._actor.updateScopeCertificate(
+        return this._certificationManagerDriver.updateScopeCertificate(
             roleProof,
-            BigInt(certificateId),
+            certificateId,
             assessmentStandard,
             assessmentAssuranceLevel,
             referenceId,
-            BigInt(validFrom.getTime()),
-            BigInt(validUntil.getTime()),
+            validFrom,
+            validUntil,
             processTypes
         );
     }
@@ -206,13 +187,13 @@ export class CertificationManagerDriver {
         referenceId: string,
         materialId: number
     ) {
-        return this._actor.updateMaterialCertificate(
+        return this._certificationManagerDriver.updateMaterialCertificate(
             roleProof,
-            BigInt(certificateId),
+            certificateId,
             assessmentStandard,
             assessmentAssuranceLevel,
             referenceId,
-            BigInt(materialId)
+            materialId
         );
     }
 
@@ -221,11 +202,7 @@ export class CertificationManagerDriver {
         certificateId: number,
         document: CertificateDocumentInfo
     ) {
-        return this._actor.updateCertificateDocument(
-            roleProof,
-            BigInt(certificateId),
-            EntityBuilder.buildICPCertificateDocumentInfo(document)
-        );
+        return this._certificationManagerDriver.updateDocument(roleProof, certificateId, document);
     }
 
     async evaluateDocument(
@@ -234,11 +211,11 @@ export class CertificationManagerDriver {
         documentId: number,
         evaluationStatus: EvaluationStatus
     ) {
-        await this._actor.evaluateCertificateDocument(
+        return this._certificationManagerDriver.evaluateDocument(
             roleProof,
-            BigInt(certificateId),
-            BigInt(documentId),
-            EntityBuilder.buildICPEvaluationStatus(evaluationStatus)
+            certificateId,
+            documentId,
+            evaluationStatus
         );
     }
 }
