@@ -1,6 +1,6 @@
 import { Wallet } from 'ethers';
-import { RoleProof } from '@kbc-lib/azle-types';
-import { ProductCategoryManagerDriver } from './ProductCategoryManagerDriver';
+import {RoleProof} from "@kbc-lib/azle-types";
+import { ProductCategoryDriver } from './ProductCategoryDriver';
 import { SiweIdentityProvider } from './SiweIdentityProvider';
 import { computeRoleProof } from './proof';
 
@@ -16,7 +16,7 @@ const ENTITY_MANAGER_CANISTER_ID = process.env.CANISTER_ID_ENTITY_MANAGER!;
 
 describe('ProductCategoryManagerDriver', () => {
     let wallet: Wallet;
-    let productCategoryManagerDriver: ProductCategoryManagerDriver;
+    let productCategoryManagerDriver: ProductCategoryDriver;
     let roleProof: RoleProof;
 
     beforeAll(async () => {
@@ -24,7 +24,7 @@ describe('ProductCategoryManagerDriver', () => {
         const siweIdentityProvider = new SiweIdentityProvider(wallet, SIWE_CANISTER_ID);
         await siweIdentityProvider.createIdentity();
         // const identity = Secp256k1KeyIdentity.fromSeedPhrase("test test test test test test test test test test test test")
-        productCategoryManagerDriver = new ProductCategoryManagerDriver(
+        productCategoryManagerDriver = new ProductCategoryDriver(
             siweIdentityProvider.identity,
             ENTITY_MANAGER_CANISTER_ID,
             'http://127.0.0.1:4943/'
@@ -39,24 +39,19 @@ describe('ProductCategoryManagerDriver', () => {
     });
 
     it('should retrieve product categories', async () => {
-        const productCategories = await productCategoryManagerDriver.getProductCategories();
+        const productCategories = await productCategoryManagerDriver.getProductCategories(roleProof);
         console.log(productCategories);
         expect(productCategories).toBeDefined();
     });
 
-    it('should retrieve who am I', async () => {
-        const whoAmI = await productCategoryManagerDriver.whoAmI(roleProof);
-        console.log(whoAmI);
-        expect(whoAmI).toBeDefined();
-    }, 15000);
-
-    it('should verify the signature', async () => {
-        const originalMessage = 'Ciao';
-        const signature = await wallet.signMessage(originalMessage);
-        const resp = await productCategoryManagerDriver.verifyMessage(originalMessage, signature);
-        console.log('Address: ', wallet.address);
-        console.log('Response from canister: ', resp);
-        console.log('Equals: ', wallet.address === resp);
-        expect(resp).toBeDefined();
+    it('should create product category', async () => {
+        const productCategory = await productCategoryManagerDriver.createProductCategory(
+            roleProof,
+            'test',
+            1,
+            'test'
+        );
+        console.log(productCategory);
+        expect(productCategory).toBeDefined();
     });
 });

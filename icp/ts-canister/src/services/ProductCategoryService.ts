@@ -1,5 +1,4 @@
-import {caller, StableBTreeMap} from "azle";
-import {ethers} from "ethers";
+import {StableBTreeMap} from "azle";
 import {ProductCategory} from "../models/types";
 import {StableMemoryId} from "../utils/stableMemory";
 
@@ -15,16 +14,20 @@ class ProductCategoryService {
         return ProductCategoryService._instance;
     }
 
-    getProductCategory(id: bigint): [ProductCategory] | [] {
-        const result = this._productCategories.get(id);
-        return result ? [result] : [];
-    }
-
     getProductCategories(): ProductCategory[] {
         return this._productCategories.values();
     }
 
-    registerProductCategory(name: string, quality: bigint, description: string): ProductCategory {
+    getProductCategory(id: bigint): ProductCategory {
+        const result = this._productCategories.get(id);
+        if(result) {
+            return result;
+        }
+        throw new Error('Product category not found');
+    }
+
+
+    createProductCategory(name: string, quality: bigint, description: string): ProductCategory {
         const id = BigInt(this._productCategories.keys().length);
         const productCategory: ProductCategory = { id, name, quality, description };
         this._productCategories.insert(id, productCategory);
@@ -41,18 +44,6 @@ class ProductCategoryService {
         productCategory.description = description;
         this._productCategories.insert(id, productCategory);
         return productCategory;
-    }
-
-    async whoAmI(): Promise<string> {
-        return caller().toString();
-    }
-
-    verifyMessage(message: string, signature: string): string {
-        try {
-            return ethers.verifyMessage(message, signature);
-        } catch (error) {
-            return '';
-        }
     }
 }
 export default ProductCategoryService;

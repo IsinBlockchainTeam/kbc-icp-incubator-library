@@ -50,7 +50,12 @@ class MaterialService {
     }
 
     productCategoryExists(productCategoryId: bigint): boolean {
-        return this._productCategoryService.getProductCategory(productCategoryId).length > 0;
+        try {
+            this._productCategoryService.getProductCategory(productCategoryId);
+            return true;
+        } catch (e) {
+            return false;
+        }
     }
 }
 export default MaterialService;

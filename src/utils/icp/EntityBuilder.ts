@@ -1,32 +1,41 @@
 import {
-    Order as IDLOrder,
-    OrderStatus as IDLOrderStatus,
-    BaseCertificate as IDLBaseCertificate,
-    CompanyCertificate as IDLCompanyCertificate,
-    CertificateType as IDLCertificateType,
-    CertificateDocumentInfo as IDLCertificateDocumentInfo,
-    CertificateDocumentType as IDLCertificateDocumentType,
-    EvaluationStatus as IDLEvaluationStatus,
-    EvaluationStatusEnum as IDLEvaluationStatusEnum,
-    MaterialCertificate as IDLMaterialCertificate,
-    ScopeCertificate as IDLScopeCertificate
+    ProductCategory as ICPProductCategory,
+    Order as ICPOrder,
+    OrderStatus as ICPOrderStatus,
+  BaseCertificate as IDLBaseCertificate,
+  CompanyCertificate as IDLCompanyCertificate,
+  CertificateType as IDLCertificateType,
+  CertificateDocumentInfo as IDLCertificateDocumentInfo,
+  CertificateDocumentType as IDLCertificateDocumentType,
+  EvaluationStatus as IDLEvaluationStatus,
+  EvaluationStatusEnum as IDLEvaluationStatusEnum,
+  MaterialCertificate as IDLMaterialCertificate,
+  ScopeCertificate as IDLScopeCertificate
 } from '@kbc-lib/azle-types';
-
-import { Order, OrderStatus } from '../../entities/icp/Order';
+import {Order, OrderStatus} from "../../entities/icp/Order";
+import {ProductCategory} from "../../entities/ProductCategory";
 import { CompanyCertificate } from '../../entities/icp/CompanyCertificate';
 import { ScopeCertificate } from '../../entities/icp/ScopeCertificate';
 import { MaterialCertificate } from '../../entities/icp/MaterialCertificate';
 import {
-    BaseCertificate,
-    CertificateDocumentInfo,
-    CertificateDocumentType,
-    CertificateType
+  BaseCertificate,
+  CertificateDocumentInfo,
+  CertificateDocumentType,
+  CertificateType
 } from '../../entities/icp/Certificate';
 import { EvaluationStatus } from '../../entities/icp/Document';
 
 export class EntityBuilder {
-    static buildOrder(order: IDLOrder) {
-        console.log(order.paymentDeadline);
+    static buildProductCategory(productCategory: ICPProductCategory) {
+        return new ProductCategory(
+            Number(productCategory.id),
+            productCategory.name,
+            Number(productCategory.quality),
+            productCategory.description
+        );
+    }
+
+    static buildOrder(order: ICPOrder) {
         return new Order(
             Number(order.id),
             order.supplier,
