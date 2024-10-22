@@ -3,9 +3,9 @@ import { CertificateType, DocumentEvaluationStatus, DocumentType } from './Certi
 
 describe('ScopeCertificate', () => {
     let scopeCertificate: ScopeCertificate;
-    const issueDate = new Date();
-    const validFrom = new Date();
-    const validUntil = new Date();
+    const issueDate = new Date().getTime();
+    const validFrom = new Date().getTime();
+    const validUntil = new Date().getTime();
     const processTypes = ['processType1', 'processType2'];
 
     beforeAll(() => {
@@ -85,19 +85,19 @@ describe('ScopeCertificate', () => {
     });
 
     it('should correctly set the validFrom', () => {
-        const newValidFrom = new Date();
+        const newValidFrom = new Date().getTime();
         scopeCertificate.validFrom = newValidFrom;
         expect(scopeCertificate.validFrom).toEqual(newValidFrom);
     });
 
     it('should correctly set the validUntil', () => {
-        const newValidUntil = new Date();
+        const newValidUntil = new Date().getTime();
         scopeCertificate.validUntil = newValidUntil;
         expect(scopeCertificate.validUntil).toEqual(newValidUntil);
     });
 
     it('should correctly set the issueDate', () => {
-        const newIssueDate = new Date();
+        const newIssueDate = new Date().getTime();
         scopeCertificate.issueDate = newIssueDate;
         expect(scopeCertificate.issueDate).toEqual(newIssueDate);
     });

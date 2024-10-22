@@ -6,9 +6,9 @@ import {
 } from './Certificate';
 
 export class CompanyCertificate extends BaseCertificate {
-    private _validFrom: Date;
+    private _validFrom: number;
 
-    private _validUntil: Date;
+    private _validUntil: number;
 
     constructor(
         id: number,
@@ -18,9 +18,9 @@ export class CompanyCertificate extends BaseCertificate {
         document: CertificateDocumentInfo,
         evaluationStatus: DocumentEvaluationStatus,
         certificateType: CertificateType,
-        issueDate: Date,
-        validFrom: Date,
-        validUntil: Date
+        issueDate: number,
+        validFrom: number,
+        validUntil: number
     ) {
         super(
             id,
@@ -36,19 +36,19 @@ export class CompanyCertificate extends BaseCertificate {
         this._validUntil = validUntil;
     }
 
-    get validFrom(): Date {
+    get validFrom(): number {
         return this._validFrom;
     }
 
-    set validFrom(value: Date) {
+    set validFrom(value: number) {
         this._validFrom = value;
     }
 
-    get validUntil(): Date {
+    get validUntil(): number {
         return this._validUntil;
     }
 
-    set validUntil(value: Date) {
+    set validUntil(value: number) {
         this._validUntil = value;
     }
 }

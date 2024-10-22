@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@blockchain-lib/blockchain-common/contracts/EnumerableType.sol";
 import "./KBCAccessControl.sol";
 import "./DocumentManager.sol";
-import "../libraries/KBCCertificateLibrary.sol";
 import "./MaterialManager.sol";
 
 library DocumentLibrary {
@@ -203,7 +202,7 @@ contract CertificateManager is AccessControl, KBCAccessControl {
         return _allMaterialCertificates[certificateId];
     }
 
-    function updateCompanyCertificate(RoleProof memory roleProof, uint256 certificateId, string memory assessmentStandard, uint256 issueDate, uint256 validFrom, uint256 validUntil) public atLeastEditor(roleProof) {
+    function updateCompanyCertificate(RoleProof memory roleProof, uint256 certificateId, string memory assessmentStandard, uint256 issueDate, uint256 validFrom, uint256 validUntil, DocumentLibrary.DocumentType documentType) public atLeastEditor(roleProof) {
         require(_allCompanyCertificates[certificateId].baseInfo.exists, "CertificateManager: Company certificate does not exist");
         require(_allCompanyCertificates[certificateId].baseInfo.uploadedBy == tx.origin, "CertificateManager: Only the uploader can update the certificate");
         require(_allCompanyCertificates[certificateId].baseInfo.evaluationStatus == DocumentLibrary.DocumentEvaluationStatus.NOT_EVALUATED, "CertificateManager: Certificate has already been evaluated");
@@ -211,9 +210,10 @@ contract CertificateManager is AccessControl, KBCAccessControl {
         _allCompanyCertificates[certificateId].baseInfo.issueDate = issueDate;
         _allCompanyCertificates[certificateId].validFrom = validFrom;
         _allCompanyCertificates[certificateId].validUntil = validUntil;
+        _allCompanyCertificates[certificateId].baseInfo.document.documentType = documentType;
     }
 
-    function updateScopeCertificate(RoleProof memory roleProof, uint256 certificateId, string memory assessmentStandard, uint256 issueDate, uint256 validFrom, uint256 validUntil, string[] memory processTypes) public atLeastEditor(roleProof) {
+    function updateScopeCertificate(RoleProof memory roleProof, uint256 certificateId, string memory assessmentStandard, uint256 issueDate, uint256 validFrom, uint256 validUntil, DocumentLibrary.DocumentType documentType, string[] memory processTypes) public atLeastEditor(roleProof) {
         require(_allScopeCertificates[certificateId].baseInfo.exists, "CertificateManager: Scope certificate does not exist");
         require(_allScopeCertificates[certificateId].baseInfo.uploadedBy == tx.origin, "CertificateManager: Only the uploader can update the certificate");
         require(_allScopeCertificates[certificateId].baseInfo.evaluationStatus == DocumentLibrary.DocumentEvaluationStatus.NOT_EVALUATED, "CertificateManager: Certificate has already been evaluated");
@@ -225,9 +225,10 @@ contract CertificateManager is AccessControl, KBCAccessControl {
         _allScopeCertificates[certificateId].validFrom = validFrom;
         _allScopeCertificates[certificateId].validUntil = validUntil;
         _allScopeCertificates[certificateId].processTypes = processTypes;
+        _allScopeCertificates[certificateId].baseInfo.document.documentType = documentType;
     }
 
-    function updateMaterialCertificate(RoleProof memory roleProof, uint256 certificateId, string memory assessmentStandard, uint256 issueDate, uint256 materialId) public atLeastEditor(roleProof) {
+    function updateMaterialCertificate(RoleProof memory roleProof, uint256 certificateId, string memory assessmentStandard, uint256 issueDate, DocumentLibrary.DocumentType documentType, uint256 materialId) public atLeastEditor(roleProof) {
         require(_allMaterialCertificates[certificateId].baseInfo.exists, "CertificateManager: Material certificate does not exist");
         require(_allMaterialCertificates[certificateId].baseInfo.uploadedBy == tx.origin, "CertificateManager: Only the uploader can update the certificate");
         require(_materialManager.getMaterialExists(roleProof, materialId), "CertificateManager: Material does not exist");
@@ -235,6 +236,7 @@ contract CertificateManager is AccessControl, KBCAccessControl {
         _allMaterialCertificates[certificateId].baseInfo.assessmentStandard = assessmentStandard;
         _allMaterialCertificates[certificateId].baseInfo.issueDate = issueDate;
         _allMaterialCertificates[certificateId].materialId = materialId;
+        _allMaterialCertificates[certificateId].baseInfo.document.documentType = documentType;
     }
 
     function evaluateDocument(RoleProof memory roleProof, uint256 certificateId, uint256 documentId, DocumentLibrary.DocumentEvaluationStatus evaluation) public atLeastEditor(roleProof) {

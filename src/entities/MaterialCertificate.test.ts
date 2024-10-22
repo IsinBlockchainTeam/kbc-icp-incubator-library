@@ -3,7 +3,7 @@ import { CertificateType, DocumentEvaluationStatus, DocumentType } from './Certi
 
 describe('MaterialCertificate', () => {
     let materialCertificate: MaterialCertificate;
-    const issueDate = new Date();
+    const issueDate = new Date().getTime();
 
     beforeAll(() => {
         materialCertificate = new MaterialCertificate(
@@ -78,7 +78,7 @@ describe('MaterialCertificate', () => {
     });
 
     it('should correctly set the issueDate', () => {
-        const newDate = new Date();
+        const newDate = new Date().getTime();
         materialCertificate.issueDate = newDate;
         expect(materialCertificate.issueDate).toEqual(newDate);
     });

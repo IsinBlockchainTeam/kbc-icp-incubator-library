@@ -7,7 +7,7 @@ import {
 
 describe('Certificate', () => {
     let certificate: BaseCertificate;
-    const issueDate = new Date();
+    const issueDate = new Date().getTime();
 
     beforeAll(() => {
         certificate = new BaseCertificate(
@@ -75,7 +75,7 @@ describe('Certificate', () => {
     });
 
     it('should correctly set the issueDate', () => {
-        const newIssueDate = new Date();
+        const newIssueDate = new Date().getTime();
         certificate.issueDate = newIssueDate;
         expect(certificate.issueDate).toEqual(newIssueDate);
     });

@@ -47,16 +47,18 @@ describe('CertificateManagerService', () => {
     const issuer = Wallet.createRandom().address;
     const subject = Wallet.createRandom().address;
     const assessmentStandard = 'ISO 9001';
-    const issueDate = new Date();
-    const validFrom = new Date(new Date().setDate(new Date().getDate() + 1));
-    const validUntil = new Date(new Date().setDate(new Date().getDate() + 30));
+    const issueDate = new Date().getTime();
+    const validFrom = new Date(new Date().setDate(new Date().getDate() + 1)).getTime();
+    const validUntil = new Date(new Date().setDate(new Date().getDate() + 30)).getTime();
     const processTypes = ['type1', 'type2'];
     const document: CertificateDocument = {
         fileName: 'document.pdf',
-        documentType: DocumentType.CERTIFICATE_OF_CONFORMITY,
+        fileType: 'application/pdf',
         fileContent: new Uint8Array([1, 2, 3, 4]),
         documentReferenceId: '1234'
     };
+    const documentType = DocumentType.CERTIFICATE_OF_CONFORMITY;
+    const documentReferenceId = '1234';
     const urlStructure: URLStructure = {
         prefix: 'prefix',
         organizationId: 1
@@ -88,6 +90,7 @@ describe('CertificateManagerService', () => {
                     issueDate,
                     validFrom,
                     validUntil,
+                    documentType,
                     document,
                     urlStructure,
                     resourceSpec
@@ -99,7 +102,7 @@ describe('CertificateManagerService', () => {
                 subject,
                 assessmentStandard,
                 {
-                    documentType: document.documentType
+                    documentType
                 },
                 issueDate,
                 validFrom,
@@ -118,6 +121,7 @@ describe('CertificateManagerService', () => {
                     validFrom,
                     validUntil,
                     processTypes,
+                    documentType,
                     document,
                     urlStructure,
                     resourceSpec
@@ -129,7 +133,7 @@ describe('CertificateManagerService', () => {
                 subject,
                 assessmentStandard,
                 {
-                    documentType: document.documentType
+                    documentType
                 },
                 issueDate,
                 validFrom,
@@ -147,6 +151,7 @@ describe('CertificateManagerService', () => {
                     assessmentStandard,
                     issueDate,
                     3,
+                    documentType,
                     document,
                     urlStructure,
                     resourceSpec
@@ -158,7 +163,7 @@ describe('CertificateManagerService', () => {
                 subject,
                 assessmentStandard,
                 {
-                    documentType: document.documentType
+                    documentType
                 },
                 issueDate,
                 3
@@ -223,6 +228,7 @@ describe('CertificateManagerService', () => {
                 certificateManagerService.updateCompanyCertificate(
                     roleProof,
                     1,
+                    documentType,
                     assessmentStandard,
                     issueDate,
                     validFrom,
@@ -235,7 +241,8 @@ describe('CertificateManagerService', () => {
                 assessmentStandard,
                 issueDate,
                 validFrom,
-                validUntil
+                validUntil,
+                documentType
             ]
         },
         {
@@ -244,6 +251,7 @@ describe('CertificateManagerService', () => {
                 certificateManagerService.updateScopeCertificate(
                     roleProof,
                     1,
+                    documentType,
                     assessmentStandard,
                     issueDate,
                     validFrom,
@@ -258,7 +266,8 @@ describe('CertificateManagerService', () => {
                 issueDate,
                 validFrom,
                 validUntil,
-                processTypes
+                processTypes,
+                documentType
             ]
         },
         {
@@ -267,12 +276,20 @@ describe('CertificateManagerService', () => {
                 certificateManagerService.updateMaterialCertificate(
                     roleProof,
                     1,
+                    documentType,
                     assessmentStandard,
                     issueDate,
                     3
                 ),
             expectedMockedFunction: mockedCertificateManagerDriver.updateMaterialCertificate,
-            expectedMockedFunctionArgs: [roleProof, 1, assessmentStandard, issueDate, 3]
+            expectedMockedFunctionArgs: [
+                roleProof,
+                1,
+                assessmentStandard,
+                issueDate,
+                3,
+                documentType
+            ]
         },
         {
             serviceFunctionName: 'evaluateDocument',
@@ -327,6 +344,7 @@ describe('CertificateManagerService', () => {
             issueDate,
             validFrom,
             validUntil,
+            documentType,
             document,
             urlStructure,
             resourceSpec
@@ -340,7 +358,7 @@ describe('CertificateManagerService', () => {
             subject,
             assessmentStandard,
             {
-                documentType: document.documentType
+                documentType
             },
             issueDate,
             validFrom,
@@ -362,8 +380,8 @@ describe('CertificateManagerService', () => {
             2,
             FileHelpers.getBytesFromObject({
                 fileName: document.fileName,
-                documentType: document.documentType,
-                documentReferenceId: document.documentReferenceId
+                fileType: document.fileType,
+                documentReferenceId
             }),
             {
                 name: `${baseExternalUrl}${FileHelpers.removeFileExtension(resourceSpec.name)}-metadata.json`,
@@ -383,6 +401,7 @@ describe('CertificateManagerService', () => {
             validFrom,
             validUntil,
             processTypes,
+            documentType,
             document,
             urlStructure,
             resourceSpec
@@ -396,7 +415,7 @@ describe('CertificateManagerService', () => {
             subject,
             assessmentStandard,
             {
-                documentType: document.documentType
+                documentType
             },
             issueDate,
             validFrom,
@@ -419,8 +438,8 @@ describe('CertificateManagerService', () => {
             2,
             FileHelpers.getBytesFromObject({
                 fileName: document.fileName,
-                documentType: document.documentType,
-                documentReferenceId: document.documentReferenceId
+                fileType: document.fileType,
+                documentReferenceId
             }),
             {
                 name: `${baseExternalUrl}${FileHelpers.removeFileExtension(resourceSpec.name)}-metadata.json`,
@@ -438,6 +457,7 @@ describe('CertificateManagerService', () => {
             assessmentStandard,
             issueDate,
             3,
+            documentType,
             document,
             urlStructure,
             resourceSpec
@@ -451,7 +471,7 @@ describe('CertificateManagerService', () => {
             subject,
             assessmentStandard,
             {
-                documentType: document.documentType
+                documentType
             },
             issueDate,
             3
@@ -472,8 +492,8 @@ describe('CertificateManagerService', () => {
             2,
             FileHelpers.getBytesFromObject({
                 fileName: document.fileName,
-                documentType: document.documentType,
-                documentReferenceId: document.documentReferenceId
+                fileType: document.fileType,
+                documentReferenceId
             }),
             {
                 name: `${baseExternalUrl}${FileHelpers.removeFileExtension(resourceSpec.name)}-metadata.json`,
@@ -531,8 +551,39 @@ describe('CertificateManagerService', () => {
             2,
             FileHelpers.getBytesFromObject({
                 fileName: document.fileName,
-                documentType: document.documentType,
-                documentReferenceId: document.documentReferenceId
+                fileType: document.fileType,
+                documentReferenceId
+            }),
+            {
+                name: `path/to/url/${FileHelpers.removeFileExtension(resourceSpec.name)}-metadata.json`,
+                type: 'application/json'
+            },
+            []
+        );
+    });
+
+    it('should update a document metadata', async () => {
+        mockedDocumentDriver.getDocumentById = jest.fn().mockResolvedValue({
+            externalUrl: 'path/to/url/file.pdf'
+        });
+        await certificateManagerService.updateDocumentMetadata(
+            roleProof,
+            1,
+            {
+                fileName: document.fileName,
+                fileType: document.fileType,
+                documentReferenceId
+            },
+            resourceSpec
+        );
+
+        expect(mockedIcpFileDriver.create).toHaveBeenCalledTimes(1);
+        expect(mockedIcpFileDriver.create).toHaveBeenNthCalledWith(
+            1,
+            FileHelpers.getBytesFromObject({
+                fileName: document.fileName,
+                fileType: document.fileType,
+                documentReferenceId
             }),
             {
                 name: `path/to/url/${FileHelpers.removeFileExtension(resourceSpec.name)}-metadata.json`,

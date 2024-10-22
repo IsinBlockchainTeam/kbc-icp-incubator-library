@@ -17,15 +17,12 @@ import { URLStructure } from '../types/URLStructure';
 
 type CertificateDocumentMetadata = {
     fileName: string;
-    documentType: DocumentType;
+    fileType: string;
     documentReferenceId: string;
 };
 
-export type CertificateDocument = {
-    fileName: string;
-    documentType: DocumentType;
+export type CertificateDocument = CertificateDocumentMetadata & {
     fileContent: Uint8Array;
-    documentReferenceId: string;
 };
 
 export class CertificateManagerService {
@@ -50,23 +47,25 @@ export class CertificateManagerService {
         issuer: string,
         subject: string,
         assessmentStandard: string,
-        issueDate: Date,
-        validFrom: Date,
-        validUntil: Date,
+        issueDate: number,
+        validFrom: number,
+        validUntil: number,
+        documentType: DocumentType,
         certificateDocument: CertificateDocument,
         urlStructure: URLStructure,
         resourceSpec: ICPResourceSpec,
         delegatedOrganizationIds: number[] = []
-    ): Promise<void> {
+    ): Promise<[number, string]> {
         const document = await this._addDocument(
             roleProof,
             URL_SEGMENTS.CERTIFICATION.COMPANY,
             certificateDocument,
+            documentType,
             urlStructure,
             resourceSpec,
             delegatedOrganizationIds
         );
-        await this._certificateManagerDriver.registerCompanyCertificate(
+        return this._certificateManagerDriver.registerCompanyCertificate(
             roleProof,
             issuer,
             subject,
@@ -83,24 +82,26 @@ export class CertificateManagerService {
         issuer: string,
         subject: string,
         assessmentStandard: string,
-        issueDate: Date,
-        validFrom: Date,
-        validUntil: Date,
+        issueDate: number,
+        validFrom: number,
+        validUntil: number,
         processTypes: string[],
+        documentType: DocumentType,
         certificateDocument: CertificateDocument,
         urlStructure: URLStructure,
         resourceSpec: ICPResourceSpec,
         delegatedOrganizationIds: number[] = []
-    ): Promise<void> {
+    ): Promise<[number, string]> {
         const document = await this._addDocument(
             roleProof,
             URL_SEGMENTS.CERTIFICATION.SCOPE,
             certificateDocument,
+            documentType,
             urlStructure,
             resourceSpec,
             delegatedOrganizationIds
         );
-        await this._certificateManagerDriver.registerScopeCertificate(
+        return this._certificateManagerDriver.registerScopeCertificate(
             roleProof,
             issuer,
             subject,
@@ -118,22 +119,24 @@ export class CertificateManagerService {
         issuer: string,
         subject: string,
         assessmentStandard: string,
-        issueDate: Date,
+        issueDate: number,
         materialId: number,
+        documentType: DocumentType,
         certificateDocument: CertificateDocument,
         urlStructure: URLStructure,
         resourceSpec: ICPResourceSpec,
         delegatedOrganizationIds: number[] = []
-    ): Promise<void> {
+    ): Promise<[number, string]> {
         const document = await this._addDocument(
             roleProof,
             `${URL_SEGMENTS.CERTIFICATION.MATERIAL}${materialId}/`,
             certificateDocument,
+            documentType,
             urlStructure,
             resourceSpec,
             delegatedOrganizationIds
         );
-        await this._certificateManagerDriver.registerMaterialCertificate(
+        return this._certificateManagerDriver.registerMaterialCertificate(
             roleProof,
             issuer,
             subject,
@@ -206,10 +209,11 @@ export class CertificateManagerService {
     async updateCompanyCertificate(
         roleProof: RoleProof,
         certificateId: number,
+        documentType: DocumentType,
         assessmentStandard: string,
-        issueDate: Date,
-        validFrom: Date,
-        validUntil: Date
+        issueDate: number,
+        validFrom: number,
+        validUntil: number
     ): Promise<void> {
         return this._certificateManagerDriver.updateCompanyCertificate(
             roleProof,
@@ -217,17 +221,19 @@ export class CertificateManagerService {
             assessmentStandard,
             issueDate,
             validFrom,
-            validUntil
+            validUntil,
+            documentType
         );
     }
 
     async updateScopeCertificate(
         roleProof: RoleProof,
         certificateId: number,
+        documentType: DocumentType,
         assessmentStandard: string,
-        issueDate: Date,
-        validFrom: Date,
-        validUntil: Date,
+        issueDate: number,
+        validFrom: number,
+        validUntil: number,
         processTypes: string[]
     ): Promise<void> {
         return this._certificateManagerDriver.updateScopeCertificate(
@@ -237,15 +243,17 @@ export class CertificateManagerService {
             issueDate,
             validFrom,
             validUntil,
-            processTypes
+            processTypes,
+            documentType
         );
     }
 
     async updateMaterialCertificate(
         roleProof: RoleProof,
         certificateId: number,
+        documentType: DocumentType,
         assessmentStandard: string,
-        issueDate: Date,
+        issueDate: number,
         materialId: number
     ): Promise<void> {
         return this._certificateManagerDriver.updateMaterialCertificate(
@@ -253,7 +261,8 @@ export class CertificateManagerService {
             certificateId,
             assessmentStandard,
             issueDate,
-            materialId
+            materialId,
+            documentType
         );
     }
 
@@ -292,7 +301,7 @@ export class CertificateManagerService {
             const fileContent = await this._icpFileDriver.read(documentInfo.externalUrl);
             return {
                 fileName: documentMetadata.fileName,
-                documentType: documentMetadata.documentType,
+                fileType: documentMetadata.fileType,
                 fileContent,
                 documentReferenceId: documentMetadata.documentReferenceId
             };
@@ -319,12 +328,39 @@ export class CertificateManagerService {
             resourceSpec,
             delegatedOrganizationIds
         );
+        await this._addDocumentMetadataToExtStorage(
+            `${path}/`,
+            {
+                fileName: certificateDocument.fileName,
+                fileType: certificateDocument.fileType,
+                documentReferenceId: certificateDocument.documentReferenceId
+            },
+            resourceSpec,
+            delegatedOrganizationIds
+        );
         await this._certificateManagerDriver.updateDocument(
             roleProof,
             certificationId,
             documentId,
             externalUrl,
             FileHelpers.getHash(certificateDocument.fileContent).toString()
+        );
+    }
+
+    async updateDocumentMetadata(
+        roleProof: RoleProof,
+        documentId: number,
+        metadata: CertificateDocumentMetadata,
+        resourceSpec: ICPResourceSpec,
+        delegatedOrganizationIds: number[] = []
+    ): Promise<void> {
+        const documentInfo = await this._documentDriver.getDocumentById(roleProof, documentId);
+        const path = documentInfo.externalUrl.split('/').slice(0, -1).join('/');
+        await this._addDocumentMetadataToExtStorage(
+            `${path}/`,
+            metadata,
+            resourceSpec,
+            delegatedOrganizationIds
         );
     }
 
@@ -347,11 +383,15 @@ export class CertificateManagerService {
             { ...resourceSpec, name: `${baseExternalUrl}${resourceSpec.name}` },
             delegatedOrganizationIds
         );
-        const metadata: CertificateDocumentMetadata = {
-            fileName: certificateDocument.fileName,
-            documentType: certificateDocument.documentType,
-            documentReferenceId: certificateDocument.documentReferenceId
-        };
+        return `${baseExternalUrl}${resourceSpec.name}`;
+    }
+
+    async _addDocumentMetadataToExtStorage(
+        baseExternalUrl: string,
+        metadata: CertificateDocumentMetadata,
+        resourceSpec: ICPResourceSpec,
+        delegatedOrganizationIds: number[] = []
+    ): Promise<void> {
         await this._icpFileDriver.create(
             FileHelpers.getBytesFromObject(metadata),
             {
@@ -360,13 +400,13 @@ export class CertificateManagerService {
             },
             delegatedOrganizationIds
         );
-        return `${baseExternalUrl}${resourceSpec.name}`;
     }
 
     async _addDocument(
         roleProof: RoleProof,
         relativePath: string,
         certificateDocument: CertificateDocument,
+        documentType: DocumentType,
         urlStructure: URLStructure,
         resourceSpec: ICPResourceSpec,
         delegatedOrganizationIds: number[] = []
@@ -382,13 +422,23 @@ export class CertificateManagerService {
             resourceSpec,
             delegatedOrganizationIds
         );
+        await this._addDocumentMetadataToExtStorage(
+            baseExternalUrl,
+            {
+                fileName: certificateDocument.fileName,
+                fileType: certificateDocument.fileType,
+                documentReferenceId: certificateDocument.documentReferenceId
+            },
+            resourceSpec,
+            delegatedOrganizationIds
+        );
         return {
             id: await this._documentDriver.registerDocument(
                 roleProof,
                 externalUrl,
                 FileHelpers.getHash(certificateDocument.fileContent).toString()
             ),
-            documentType: certificateDocument.documentType
+            documentType
         };
     }
 }

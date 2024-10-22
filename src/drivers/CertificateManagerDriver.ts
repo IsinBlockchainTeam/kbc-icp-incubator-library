@@ -8,7 +8,8 @@ import { RoleProof } from '../types/RoleProof';
 import {
     BaseCertificate,
     CertificateDocumentInfo,
-    DocumentEvaluationStatus
+    DocumentEvaluationStatus,
+    DocumentType
 } from '../entities/Certificate';
 
 export class CertificateManagerDriver {
@@ -27,26 +28,28 @@ export class CertificateManagerDriver {
         subject: string,
         assessmentStandard: string,
         document: CertificateDocumentInfo,
-        issueDate: Date,
-        validFrom: Date,
-        validUntil: Date
-    ): Promise<number> {
+        issueDate: number,
+        validFrom: number,
+        validUntil: number
+    ): Promise<[number, string]> {
         const tx: any = await this._actual.registerCompanyCertificate(
             roleProof,
             issuer,
             subject,
             assessmentStandard,
             document,
-            issueDate.getTime(),
-            validFrom.getTime(),
-            validUntil.getTime()
+            issueDate,
+            validFrom,
+            validUntil
         );
-        const { events } = await tx.wait();
+        const { events, transactionHash } = await tx.wait();
         if (!events)
             throw new Error('Error during company certificate registration, no events found');
 
-        return events.find((event: Event) => event.event === 'CompanyCertificateRegistered')
-            .args[0];
+        return [
+            events.find((event: Event) => event.event === 'CompanyCertificateRegistered').args[0],
+            transactionHash
+        ];
     }
 
     async registerScopeCertificate(
@@ -55,27 +58,30 @@ export class CertificateManagerDriver {
         subject: string,
         assessmentStandard: string,
         document: CertificateDocumentInfo,
-        issueDate: Date,
-        validFrom: Date,
-        validUntil: Date,
+        issueDate: number,
+        validFrom: number,
+        validUntil: number,
         processTypes: string[]
-    ): Promise<number> {
+    ): Promise<[number, string]> {
         const tx: any = await this._actual.registerScopeCertificate(
             roleProof,
             issuer,
             subject,
             assessmentStandard,
             document,
-            issueDate.getTime(),
-            validFrom.getTime(),
-            validUntil.getTime(),
+            issueDate,
+            validFrom,
+            validUntil,
             processTypes
         );
-        const { events } = await tx.wait();
+        const { events, transactionHash } = await tx.wait();
         if (!events)
             throw new Error('Error during scope certificate registration, no events found');
 
-        return events.find((event: Event) => event.event === 'ScopeCertificateRegistered').args[0];
+        return [
+            events.find((event: Event) => event.event === 'ScopeCertificateRegistered').args[0],
+            transactionHash
+        ];
     }
 
     async registerMaterialCertificate(
@@ -84,24 +90,26 @@ export class CertificateManagerDriver {
         subject: string,
         assessmentStandard: string,
         document: CertificateDocumentInfo,
-        issueDate: Date,
+        issueDate: number,
         materialId: number
-    ): Promise<number> {
+    ): Promise<[number, string]> {
         const tx: any = await this._actual.registerMaterialCertificate(
             roleProof,
             issuer,
             subject,
             assessmentStandard,
             document,
-            issueDate.getTime(),
+            issueDate,
             materialId
         );
-        const { events } = await tx.wait();
+        const { events, transactionHash } = await tx.wait();
         if (!events)
             throw new Error('Error during material certificate registration, no events found');
 
-        return events.find((event: Event) => event.event === 'MaterialCertificateRegistered')
-            .args[0];
+        return [
+            events.find((event: Event) => event.event === 'MaterialCertificateRegistered').args[0],
+            transactionHash
+        ];
     }
 
     async getCertificateIdsBySubject(roleProof: RoleProof, subject: string): Promise<number[]> {
@@ -186,18 +194,20 @@ export class CertificateManagerDriver {
         roleProof: RoleProof,
         certificateId: number,
         assessmentStandard: string,
-        issueDate: Date,
-        validFrom: Date,
-        validUntil: Date
+        issueDate: number,
+        validFrom: number,
+        validUntil: number,
+        documentType: DocumentType
     ): Promise<void> {
         try {
             const tx = await this._actual.updateCompanyCertificate(
                 roleProof,
                 certificateId,
                 assessmentStandard,
-                issueDate.getTime(),
-                validFrom.getTime(),
-                validUntil.getTime()
+                issueDate,
+                validFrom,
+                validUntil,
+                documentType
             );
             await tx.wait();
         } catch (e: any) {
@@ -209,19 +219,21 @@ export class CertificateManagerDriver {
         roleProof: RoleProof,
         certificateId: number,
         assessmentStandard: string,
-        issueDate: Date,
-        validFrom: Date,
-        validUntil: Date,
-        processTypes: string[]
+        issueDate: number,
+        validFrom: number,
+        validUntil: number,
+        processTypes: string[],
+        documentType: DocumentType
     ): Promise<void> {
         try {
             const tx = await this._actual.updateScopeCertificate(
                 roleProof,
                 certificateId,
                 assessmentStandard,
-                issueDate.getTime(),
-                validFrom.getTime(),
-                validUntil.getTime(),
+                issueDate,
+                validFrom,
+                validUntil,
+                documentType,
                 processTypes
             );
             await tx.wait();
@@ -234,16 +246,18 @@ export class CertificateManagerDriver {
         roleProof: RoleProof,
         certificateId: number,
         assessmentStandard: string,
-        issueDate: Date,
-        materialId: number
+        issueDate: number,
+        materialId: number,
+        documentType: DocumentType
     ): Promise<void> {
         try {
             const tx = await this._actual.updateMaterialCertificate(
                 roleProof,
                 certificateId,
                 assessmentStandard,
-                issueDate.getTime(),
-                materialId
+                issueDate,
+                materialId,
+                documentType
             );
             await tx.wait();
         } catch (e: any) {
