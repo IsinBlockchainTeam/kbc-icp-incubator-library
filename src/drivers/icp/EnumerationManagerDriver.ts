@@ -1,7 +1,7 @@
 import { ActorSubclass, Identity } from '@dfinity/agent';
 import { Enumeration } from '@kbc-lib/azle-types/src/models/types/Enumeration';
-import { _SERVICE } from '../../declarations/entity_manager/entity_manager.did';
-import { createActor } from '../../declarations/entity_manager';
+import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
+import { createActor } from 'icp-declarations/entity_manager';
 
 export class EnumerationManagerDriver {
     private _actor: ActorSubclass<_SERVICE>;

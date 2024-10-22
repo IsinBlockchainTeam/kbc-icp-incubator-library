@@ -1,5 +1,5 @@
 import type { ActorSubclass, Identity } from '@dfinity/agent';
-import {DocumentType, EvaluationStatus, RoleProof} from "@kbc-lib/azle-types";
+import { DocumentType, EvaluationStatus, RoleProof } from '@kbc-lib/azle-types';
 import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
 import { createActor } from 'icp-declarations/entity_manager';
 

@@ -1,9 +1,5 @@
-import {
-    BaseCertificate,
-    CertificateType,
-    DocumentEvaluationStatus,
-    CertificateDocumentType
-} from './Certificate';
+import { BaseCertificate, CertificateType, CertificateDocumentType } from './Certificate';
+import { EvaluationStatus } from './Document';
 
 describe('Certificate', () => {
     let certificate: BaseCertificate;
@@ -14,9 +10,16 @@ describe('Certificate', () => {
             0,
             'issuer',
             'subject',
+            'uploadedBy',
             'assessmentStandard',
-            { id: 1, documentType: CertificateDocumentType.CERTIFICATE_OF_CONFORMITY },
-            DocumentEvaluationStatus.NOT_EVALUATED,
+            'assessmentAssuranceLevel',
+            'referenceId',
+            {
+                id: 1,
+                documentType: CertificateDocumentType.CERTIFICATE_OF_CONFORMITY,
+                externalUrl: 'externalUrl'
+            },
+            EvaluationStatus.NOT_EVALUATED,
             CertificateType.COMPANY,
             issueDate
         );
@@ -31,7 +34,7 @@ describe('Certificate', () => {
             id: 1,
             documentType: CertificateDocumentType.CERTIFICATE_OF_CONFORMITY
         });
-        expect(certificate.evaluationStatus).toEqual(DocumentEvaluationStatus.NOT_EVALUATED);
+        expect(certificate.evaluationStatus).toEqual(EvaluationStatus.NOT_EVALUATED);
         expect(certificate.certificateType).toEqual(CertificateType.COMPANY);
         expect(certificate.issueDate).toEqual(issueDate);
     });
@@ -51,22 +54,42 @@ describe('Certificate', () => {
         expect(certificate.subject).toEqual('newSubject');
     });
 
+    it('should correctly set the uploadedBy', () => {
+        certificate.uploadedBy = 'newUploadedBy';
+        expect(certificate.uploadedBy).toEqual('newUploadedBy');
+    });
+
     it('should correctly set the assessmentStandard', () => {
         certificate.assessmentStandard = 'newAssessmentStandard';
         expect(certificate.assessmentStandard).toEqual('newAssessmentStandard');
     });
 
+    it('should correctly set the assessmentAssuranceLevel', () => {
+        certificate.assessmentAssuranceLevel = 'newAssessmentAssuranceLevel';
+        expect(certificate.assessmentAssuranceLevel).toEqual('newAssessmentAssuranceLevel');
+    });
+
+    it('should correctly set the referenceId', () => {
+        certificate.referenceId = 'newReferenceId';
+        expect(certificate.referenceId).toEqual('newReferenceId');
+    });
+
     it('should correctly set the document', () => {
-        certificate.document = { id: 2, documentType: CertificateDocumentType.COUNTRY_OF_ORIGIN };
+        certificate.document = {
+            id: 2,
+            documentType: CertificateDocumentType.COUNTRY_OF_ORIGIN,
+            externalUrl: 'newExternalUrl'
+        };
         expect(certificate.document).toEqual({
             id: 2,
-            documentType: CertificateDocumentType.COUNTRY_OF_ORIGIN
+            documentType: CertificateDocumentType.COUNTRY_OF_ORIGIN,
+            externalUrl: 'newExternalUrl'
         });
     });
 
     it('should correctly set the evaluationStatus', () => {
-        certificate.evaluationStatus = DocumentEvaluationStatus.APPROVED;
-        expect(certificate.evaluationStatus).toEqual(DocumentEvaluationStatus.APPROVED);
+        certificate.evaluationStatus = EvaluationStatus.APPROVED;
+        expect(certificate.evaluationStatus).toEqual(EvaluationStatus.APPROVED);
     });
 
     it('should correctly set the certificateType', () => {

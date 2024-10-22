@@ -2,26 +2,26 @@ import {
     ProductCategory as ICPProductCategory,
     Order as ICPOrder,
     OrderStatus as ICPOrderStatus,
-  BaseCertificate as IDLBaseCertificate,
-  CompanyCertificate as IDLCompanyCertificate,
-  CertificateType as IDLCertificateType,
-  CertificateDocumentInfo as IDLCertificateDocumentInfo,
-  CertificateDocumentType as IDLCertificateDocumentType,
-  EvaluationStatus as IDLEvaluationStatus,
-  EvaluationStatusEnum as IDLEvaluationStatusEnum,
-  MaterialCertificate as IDLMaterialCertificate,
-  ScopeCertificate as IDLScopeCertificate
+    BaseCertificate as ICPBaseCertificate,
+    CompanyCertificate as ICPCompanyCertificate,
+    CertificateType as ICPCertificateType,
+    CertificateDocumentInfo as ICPCertificateDocumentInfo,
+    CertificateDocumentType as ICPCertificateDocumentType,
+    EvaluationStatus as ICPEvaluationStatus,
+    EvaluationStatusEnum as ICPEvaluationStatusEnum,
+    MaterialCertificate as ICPMaterialCertificate,
+    ScopeCertificate as ICPScopeCertificate
 } from '@kbc-lib/azle-types';
-import {Order, OrderStatus} from "../../entities/icp/Order";
-import {ProductCategory} from "../../entities/ProductCategory";
+import { Order, OrderStatus } from '../../entities/icp/Order';
+import { ProductCategory } from '../../entities/ProductCategory';
 import { CompanyCertificate } from '../../entities/icp/CompanyCertificate';
 import { ScopeCertificate } from '../../entities/icp/ScopeCertificate';
 import { MaterialCertificate } from '../../entities/icp/MaterialCertificate';
 import {
-  BaseCertificate,
-  CertificateDocumentInfo,
-  CertificateDocumentType,
-  CertificateType
+    BaseCertificate,
+    CertificateDocumentInfo,
+    CertificateDocumentType,
+    CertificateType
 } from '../../entities/icp/Certificate';
 import { EvaluationStatus } from '../../entities/icp/Document';
 
@@ -68,7 +68,7 @@ export class EntityBuilder {
         );
     }
 
-    static buildBaseCertificate(baseCertificate: IDLBaseCertificate): BaseCertificate {
+    static buildBaseCertificate(baseCertificate: ICPBaseCertificate): BaseCertificate {
         return new BaseCertificate(
             Number(baseCertificate.id),
             baseCertificate.issuer,
@@ -84,7 +84,7 @@ export class EntityBuilder {
         );
     }
 
-    static buildCompanyCertificate(companyCertificate: IDLCompanyCertificate): CompanyCertificate {
+    static buildCompanyCertificate(companyCertificate: ICPCompanyCertificate): CompanyCertificate {
         return new CompanyCertificate(
             Number(companyCertificate.id),
             companyCertificate.issuer,
@@ -102,7 +102,7 @@ export class EntityBuilder {
         );
     }
 
-    static buildScopeCertificate(scopeCertificate: IDLScopeCertificate): ScopeCertificate {
+    static buildScopeCertificate(scopeCertificate: ICPScopeCertificate): ScopeCertificate {
         return new ScopeCertificate(
             Number(scopeCertificate.id),
             scopeCertificate.issuer,
@@ -122,7 +122,7 @@ export class EntityBuilder {
     }
 
     static buildMaterialCertificate(
-        materialCertificate: IDLMaterialCertificate
+        materialCertificate: ICPMaterialCertificate
     ): MaterialCertificate {
         return new MaterialCertificate(
             Number(materialCertificate.id),
@@ -140,32 +140,32 @@ export class EntityBuilder {
         );
     }
 
-    static buildIDLCertificateDocumentInfo(
+    static buildICPCertificateDocumentInfo(
         document: CertificateDocumentInfo
-    ): IDLCertificateDocumentInfo {
+    ): ICPCertificateDocumentInfo {
         return {
             id: BigInt(document.id),
-            docType: this.buildIDLCertificateDocumentType(document.documentType),
+            docType: this.buildICPCertificateDocumentType(document.documentType),
             externalUrl: document.externalUrl
         };
     }
 
-    static buildIDLEvaluationStatus(evaluationStatus: EvaluationStatus): IDLEvaluationStatus {
+    static buildICPEvaluationStatus(evaluationStatus: EvaluationStatus): ICPEvaluationStatus {
         return {
             [evaluationStatus]: null
-        } as IDLEvaluationStatus;
+        } as ICPEvaluationStatus;
     }
 
-    static buildIDLCertificateDocumentType(
+    static buildICPCertificateDocumentType(
         documentType: CertificateDocumentType
-    ): IDLCertificateDocumentType {
+    ): ICPCertificateDocumentType {
         return {
             [documentType]: null
-        } as IDLCertificateDocumentType;
+        } as ICPCertificateDocumentType;
     }
 
     static _buildCertificateDocumentType(
-        documentType: IDLCertificateDocumentType
+        documentType: ICPCertificateDocumentType
     ): CertificateDocumentType {
         if (CertificateDocumentType.CERTIFICATE_OF_CONFORMITY in documentType)
             return CertificateDocumentType.CERTIFICATE_OF_CONFORMITY;
@@ -181,18 +181,18 @@ export class EntityBuilder {
     }
 
     static _buildDocumentEvaluationStatus(
-        documentEvaluationStatus: IDLEvaluationStatus
+        documentEvaluationStatus: ICPEvaluationStatus
     ): EvaluationStatus {
-        if (IDLEvaluationStatusEnum.NOT_EVALUATED in documentEvaluationStatus)
+        if (ICPEvaluationStatusEnum.NOT_EVALUATED in documentEvaluationStatus)
             return EvaluationStatus.NOT_EVALUATED;
-        if (IDLEvaluationStatusEnum.APPROVED in documentEvaluationStatus)
+        if (ICPEvaluationStatusEnum.APPROVED in documentEvaluationStatus)
             return EvaluationStatus.APPROVED;
-        if (IDLEvaluationStatusEnum.NOT_APPROVED in documentEvaluationStatus)
+        if (ICPEvaluationStatusEnum.NOT_APPROVED in documentEvaluationStatus)
             return EvaluationStatus.NOT_APPROVED;
         throw new Error('Invalid document evaluation status');
     }
 
-    static _buildCertificateType(certificateType: IDLCertificateType): CertificateType {
+    static _buildCertificateType(certificateType: ICPCertificateType): CertificateType {
         if (CertificateType.COMPANY in certificateType) return CertificateType.COMPANY;
         if (CertificateType.SCOPE in certificateType) return CertificateType.SCOPE;
         if (CertificateType.MATERIAL in certificateType) return CertificateType.MATERIAL;
@@ -200,7 +200,7 @@ export class EntityBuilder {
     }
 
     static _buildCertificateDocumentInfo(
-        document: IDLCertificateDocumentInfo
+        document: ICPCertificateDocumentInfo
     ): CertificateDocumentInfo {
         return {
             id: Number(document.id),
@@ -209,7 +209,7 @@ export class EntityBuilder {
         };
     }
 
-    static _buildOrderStatus(orderStatus: IDLOrderStatus): OrderStatus {
+    static _buildOrderStatus(orderStatus: ICPOrderStatus): OrderStatus {
         if (OrderStatus.PENDING in orderStatus) return OrderStatus.PENDING;
         if (OrderStatus.CONFIRMED in orderStatus) return OrderStatus.CONFIRMED;
         if (OrderStatus.EXPIRED in orderStatus) return OrderStatus.EXPIRED;

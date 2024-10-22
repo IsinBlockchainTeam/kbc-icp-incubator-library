@@ -1,5 +1,6 @@
 import { CompanyCertificate } from './CompanyCertificate';
-import { CertificateType, DocumentEvaluationStatus, CertificateDocumentType } from './Certificate';
+import { CertificateType, CertificateDocumentType } from './Certificate';
+import { EvaluationStatus } from './Document';
 
 describe('CompanyCertificate', () => {
     let companyCertificate: CompanyCertificate;
@@ -12,9 +13,16 @@ describe('CompanyCertificate', () => {
             0,
             'issuer',
             'subject',
+            'uploadedBy',
             'assessmentStandard',
-            { id: 1, documentType: CertificateDocumentType.CERTIFICATE_OF_CONFORMITY },
-            DocumentEvaluationStatus.NOT_EVALUATED,
+            'assessmentAssuranceLevel',
+            'referenceId',
+            {
+                id: 1,
+                documentType: CertificateDocumentType.CERTIFICATE_OF_CONFORMITY,
+                externalUrl: 'externalUrl'
+            },
+            EvaluationStatus.NOT_EVALUATED,
             CertificateType.COMPANY,
             issueDate,
             validFrom,
@@ -26,12 +34,16 @@ describe('CompanyCertificate', () => {
         expect(companyCertificate.id).toEqual(0);
         expect(companyCertificate.issuer).toEqual('issuer');
         expect(companyCertificate.subject).toEqual('subject');
+        expect(companyCertificate.uploadedBy).toEqual('uploadedBy');
         expect(companyCertificate.assessmentStandard).toEqual('assessmentStandard');
+        expect(companyCertificate.assessmentAssuranceLevel).toEqual('assessmentAssuranceLevel');
+        expect(companyCertificate.referenceId).toEqual('referenceId');
         expect(companyCertificate.document).toEqual({
             id: 1,
-            documentType: CertificateDocumentType.CERTIFICATE_OF_CONFORMITY
+            documentType: CertificateDocumentType.CERTIFICATE_OF_CONFORMITY,
+            externalUrl: 'externalUrl'
         });
-        expect(companyCertificate.evaluationStatus).toEqual(DocumentEvaluationStatus.NOT_EVALUATED);
+        expect(companyCertificate.evaluationStatus).toEqual(EvaluationStatus.NOT_EVALUATED);
         expect(companyCertificate.certificateType).toEqual(CertificateType.COMPANY);
         expect(companyCertificate.issueDate).toEqual(issueDate);
         expect(companyCertificate.validFrom).toEqual(validFrom);
@@ -53,25 +65,42 @@ describe('CompanyCertificate', () => {
         expect(companyCertificate.subject).toEqual('newSubject');
     });
 
+    it('should correctly set the uploadedBy', () => {
+        companyCertificate.uploadedBy = 'newUploadedBy';
+        expect(companyCertificate.uploadedBy).toEqual('newUploadedBy');
+    });
+
     it('should correctly set the assessmentStandard', () => {
         companyCertificate.assessmentStandard = 'newAssessmentStandard';
         expect(companyCertificate.assessmentStandard).toEqual('newAssessmentStandard');
     });
 
+    it('should correctly set the assessmentAssuranceLevel', () => {
+        companyCertificate.assessmentAssuranceLevel = 'newAssessmentAssuranceLevel';
+        expect(companyCertificate.assessmentAssuranceLevel).toEqual('newAssessmentAssuranceLevel');
+    });
+
+    it('should correctly set the referenceId', () => {
+        companyCertificate.referenceId = 'newReferenceId';
+        expect(companyCertificate.referenceId).toEqual('newReferenceId');
+    });
+
     it('should correctly set the document', () => {
         companyCertificate.document = {
             id: 2,
-            documentType: CertificateDocumentType.COUNTRY_OF_ORIGIN
+            documentType: CertificateDocumentType.COUNTRY_OF_ORIGIN,
+            externalUrl: 'newExternalUrl'
         };
         expect(companyCertificate.document).toEqual({
             id: 2,
-            documentType: CertificateDocumentType.COUNTRY_OF_ORIGIN
+            documentType: CertificateDocumentType.COUNTRY_OF_ORIGIN,
+            externalUrl: 'newExternalUrl'
         });
     });
 
     it('should correctly set the evaluationStatus', () => {
-        companyCertificate.evaluationStatus = DocumentEvaluationStatus.APPROVED;
-        expect(companyCertificate.evaluationStatus).toEqual(DocumentEvaluationStatus.APPROVED);
+        companyCertificate.evaluationStatus = EvaluationStatus.APPROVED;
+        expect(companyCertificate.evaluationStatus).toEqual(EvaluationStatus.APPROVED);
     });
 
     it('should correctly set the certificateType', () => {

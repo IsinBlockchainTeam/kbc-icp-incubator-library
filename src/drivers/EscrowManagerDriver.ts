@@ -13,7 +13,7 @@ export class EscrowManagerDriver {
     }
 
     async getEscrowCounter(roleProof: RoleProof): Promise<number> {
-        return (await this._contract.getEscrowCounter(roleProof)).toNumber();
+        return (await this._contract.getEscrowCounter()).toNumber();
     }
 
     async registerEscrow(
@@ -29,13 +29,7 @@ export class EscrowManagerDriver {
         if (duration <= 0) {
             throw new Error('Duration must be greater than 0');
         }
-        const tx = await this._contract.registerEscrow(
-            roleProof,
-            admin,
-            payee,
-            duration,
-            tokenAddress
-        );
+        const tx = await this._contract.registerEscrow(admin, payee, duration, tokenAddress);
         const { events, transactionHash } = await tx.wait();
         if (!events) {
             throw new Error('Error during escrow registration, no events found');
@@ -49,19 +43,19 @@ export class EscrowManagerDriver {
     }
 
     async getFeeRecipient(roleProof: RoleProof): Promise<string> {
-        return this._contract.getFeeRecipient(roleProof);
+        return this._contract.getFeeRecipient();
     }
 
     async getBaseFee(roleProof: RoleProof): Promise<number> {
-        return (await this._contract.getBaseFee(roleProof)).toNumber();
+        return (await this._contract.getBaseFee()).toNumber();
     }
 
     async getPercentageFee(roleProof: RoleProof): Promise<number> {
-        return (await this._contract.getPercentageFee(roleProof)).toNumber();
+        return (await this._contract.getPercentageFee()).toNumber();
     }
 
     async getEscrow(roleProof: RoleProof, id: number): Promise<string> {
-        return this._contract.getEscrow(roleProof, id);
+        return this._contract.getEscrow(id);
     }
 
     async updateFeeRecipient(newFeeRecipient: string): Promise<void> {

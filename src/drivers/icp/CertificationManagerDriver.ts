@@ -1,7 +1,7 @@
 import { ActorSubclass, Identity } from '@dfinity/agent';
 import { RoleProof } from '@kbc-lib/azle-types';
-import { _SERVICE } from '../../declarations/entity_manager/entity_manager.did';
-import { createActor } from '../../declarations/entity_manager';
+import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
+import { createActor } from 'icp-declarations/entity_manager';
 import { EntityBuilder } from '../../utils/icp/EntityBuilder';
 import { CompanyCertificate } from '../../entities/icp/CompanyCertificate';
 import { MaterialCertificate } from '../../entities/icp/MaterialCertificate';
@@ -39,7 +39,7 @@ export class CertificationManagerDriver {
             assessmentStandard,
             assessmentAssuranceLevel,
             referenceId,
-            EntityBuilder.buildIDLCertificateDocumentInfo(document),
+            EntityBuilder.buildICPCertificateDocumentInfo(document),
             BigInt(validFrom.getTime()),
             BigInt(validUntil.getTime())
         );
@@ -65,7 +65,7 @@ export class CertificationManagerDriver {
             assessmentStandard,
             assessmentAssuranceLevel,
             referenceId,
-            EntityBuilder.buildIDLCertificateDocumentInfo(document),
+            EntityBuilder.buildICPCertificateDocumentInfo(document),
             BigInt(validFrom.getTime()),
             BigInt(validUntil.getTime()),
             processTypes
@@ -90,7 +90,7 @@ export class CertificationManagerDriver {
             assessmentStandard,
             assessmentAssuranceLevel,
             referenceId,
-            EntityBuilder.buildIDLCertificateDocumentInfo(document),
+            EntityBuilder.buildICPCertificateDocumentInfo(document),
             BigInt(materialId)
         );
         return EntityBuilder.buildMaterialCertificate(certificate);
@@ -225,7 +225,7 @@ export class CertificationManagerDriver {
         return this._actor.updateCertificateDocument(
             roleProof,
             BigInt(certificateId),
-            EntityBuilder.buildIDLCertificateDocumentInfo(document)
+            EntityBuilder.buildICPCertificateDocumentInfo(document)
         );
     }
 
@@ -239,7 +239,7 @@ export class CertificationManagerDriver {
             roleProof,
             BigInt(certificateId),
             BigInt(documentId),
-            EntityBuilder.buildIDLEvaluationStatus(evaluationStatus)
+            EntityBuilder.buildICPEvaluationStatus(evaluationStatus)
         );
     }
 }
