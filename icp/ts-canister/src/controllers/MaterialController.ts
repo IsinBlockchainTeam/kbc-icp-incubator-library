@@ -1,30 +1,36 @@
 import { IDL, query, update } from 'azle';
 import {
-    Material as IDLMaterial
+    Material as IDLMaterial,
+    RoleProof as IDLRoleProof
 } from "../models/idls";
 import {
-    Material
+    Material, RoleProof
 } from "../models/types";
 import MaterialService from "../services/MaterialService";
+import {OnlyEditor, OnlyViewer} from "../decorators/roles";
 
 class MaterialController {
-    @query([IDL.Nat], IDL.Opt(IDLMaterial))
-    getMaterial(id: bigint): [Material] | [] {
-        return MaterialService.instance.getMaterial(id);
-    }
-
-    @query([], IDL.Vec(IDLMaterial))
-    getMaterials(): Material[] {
+    @query([IDLRoleProof], IDL.Vec(IDLMaterial))
+    @OnlyViewer
+    async getMaterials(_: RoleProof): Promise<Material[]> {
         return MaterialService.instance.getMaterials();
     }
 
-    @update([IDL.Nat], IDLMaterial)
-    async registerMaterial(productCategoryId: bigint): Promise<Material> {
-        return MaterialService.instance.registerMaterial(productCategoryId);
+    @query([IDLRoleProof, IDL.Nat], IDLMaterial)
+    @OnlyViewer
+    async getMaterial(_: RoleProof, id: bigint): Promise<Material> {
+        return MaterialService.instance.getMaterial(id);
     }
 
-    @update([IDL.Nat, IDL.Nat], IDLMaterial)
-    async updateMaterial(id: bigint, productCategoryId: bigint): Promise<Material> {
+    @update([IDLRoleProof, IDL.Nat], IDLMaterial)
+    @OnlyEditor
+    async createMaterial(_: RoleProof, productCategoryId: bigint): Promise<Material> {
+        return MaterialService.instance.createMaterial(productCategoryId);
+    }
+
+    @update([IDLRoleProof, IDL.Nat, IDL.Nat], IDLMaterial)
+    @OnlyEditor
+    async updateMaterial(_: RoleProof, id: bigint, productCategoryId: bigint): Promise<Material> {
         return MaterialService.instance.updateMaterial(id, productCategoryId);
     }
 }

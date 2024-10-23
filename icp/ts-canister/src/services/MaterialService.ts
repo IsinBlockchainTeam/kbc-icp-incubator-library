@@ -16,16 +16,19 @@ class MaterialService {
         return MaterialService._instance;
     }
 
-    getMaterial(id: bigint): [Material] | [] {
-        const result = this._materials.get(id);
-        return result ? [result] : [];
-    }
-
     getMaterials(): Material[] {
         return this._materials.values();
     }
 
-    registerMaterial(productCategoryId: bigint): Material {
+    getMaterial(id: bigint): Material {
+        const result = this._materials.get(id);
+        if(result) {
+            return result;
+        }
+        throw new Error('Material not found');
+    }
+
+    createMaterial(productCategoryId: bigint): Material {
         if (!this.productCategoryExists(productCategoryId)) {
             throw new Error('Product category not found');
         }
