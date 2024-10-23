@@ -1,10 +1,12 @@
 import {
     ProductCategory as ICPProductCategory,
+    Material as ICPMaterial,
     Order as ICPOrder,
     OrderStatus as ICPOrderStatus,
 } from '@kbc-lib/azle-types';
 import {Order, OrderStatus} from "../../entities/icp/Order";
 import {ProductCategory} from "../../entities/ProductCategory";
+import {Material} from "../../entities/Material";
 
 export class EntityBuilder {
     static buildProductCategory(productCategory: ICPProductCategory) {
@@ -13,6 +15,13 @@ export class EntityBuilder {
             productCategory.name,
             Number(productCategory.quality),
             productCategory.description
+        );
+    }
+
+    static buildMaterial(material: ICPMaterial) {
+        return new Material(
+            Number(material.id),
+            this.buildProductCategory(material.productCategory)
         );
     }
 

@@ -122,3 +122,6 @@ export { OrderService } from './services/icp/OrderService';
 // export {createActor} from 'icp-declarations/entity_manager'
 export { ProductCategoryDriver as ICPProductCategoryDriver } from './drivers/icp/ProductCategoryDriver';
 export { ProductCategoryService as ICPProductCategoryService } from './services/icp/ProductCategoryService';
+
+export { MaterialDriver as ICPMaterialDriver } from './drivers/icp/MaterialDriver';
+export { MaterialService as ICPMaterialService } from './services/icp/MaterialService';

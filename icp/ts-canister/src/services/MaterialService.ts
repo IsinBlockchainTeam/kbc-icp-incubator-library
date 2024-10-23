@@ -32,8 +32,9 @@ class MaterialService {
         if (!this.productCategoryExists(productCategoryId)) {
             throw new Error('Product category not found');
         }
+        const productCategory = this._productCategoryService.getProductCategory(productCategoryId);
         const id = BigInt(this._materials.keys().length);
-        const material: Material = { id, productCategoryId };
+        const material: Material = { id, productCategory };
         this._materials.insert(id, material);
         return material;
     }
@@ -46,7 +47,7 @@ class MaterialService {
         if (!this.productCategoryExists(productCategoryId)) {
             throw new Error('Product category not found');
         }
-        material.productCategoryId = productCategoryId;
+        material.productCategory = this._productCategoryService.getProductCategory(productCategoryId);
         this._materials.insert(id, material);
         return material;
     }

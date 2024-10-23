@@ -48,12 +48,6 @@ describe('ProductCategoryService', () => {
             driverFunction: mockedFn.updateProductCategory,
             driverFunctionResult: {},
             driverFunctionArgs: [{} as RoleProof, 1, 'test', 1, 'test']
-        }, {
-            functionName: 'updateProductCategory',
-            serviceFunction: () => productCategoryService.updateProductCategory({} as RoleProof, 1, 'test', 1, 'test'),
-            driverFunction: mockedFn.updateProductCategory,
-            driverFunctionResult: {},
-            driverFunctionArgs: [{} as RoleProof, 1, 'test', 1, 'test']
         }
     ])(`should call driver function $functionName`, async ({serviceFunction, driverFunction, driverFunctionResult, driverFunctionArgs}) => {
         driverFunction.mockReturnValue(driverFunctionResult);

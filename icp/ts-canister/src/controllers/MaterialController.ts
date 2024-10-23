@@ -10,13 +10,13 @@ import MaterialService from "../services/MaterialService";
 import {OnlyEditor, OnlyViewer} from "../decorators/roles";
 
 class MaterialController {
-    @query([IDLRoleProof], IDL.Vec(IDLMaterial))
+    @update([IDLRoleProof], IDL.Vec(IDLMaterial))
     @OnlyViewer
     async getMaterials(_: RoleProof): Promise<Material[]> {
         return MaterialService.instance.getMaterials();
     }
 
-    @query([IDLRoleProof, IDL.Nat], IDLMaterial)
+    @update([IDLRoleProof, IDL.Nat], IDLMaterial)
     @OnlyViewer
     async getMaterial(_: RoleProof, id: bigint): Promise<Material> {
         return MaterialService.instance.getMaterial(id);
