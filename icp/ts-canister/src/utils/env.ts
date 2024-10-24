@@ -68,3 +68,10 @@ export function getEvmMembershipIssuerAddress(): string {
 
     throw new Error(`process.env.EVM_MEMBERSHIP_ISSUER_ADDRESS is not defined`);
 }
+export function getLoginDuration(): string {
+    if (process.env.LOGIN_DURATION !== undefined) {
+        return process.env.LOGIN_DURATION;
+    }
+
+    throw new Error(`process.env.LOGIN_DURATION is not defined`);
+}

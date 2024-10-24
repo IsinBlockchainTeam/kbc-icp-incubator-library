@@ -120,6 +120,9 @@ export { OrderDriver, OrderParams } from './drivers/icp/OrderDriver';
 export { OrderService } from './services/icp/OrderService';
 
 // export {createActor} from 'icp-declarations/entity_manager'
+export { AuthenticationDriver as ICPAuthenticationDriver } from './drivers/icp/AuthenticationDriver';
+export { AuthenticationService as ICPAuthenticationService } from './services/icp/AuthenticationService';
+
 export { ProductCategoryDriver as ICPProductCategoryDriver } from './drivers/icp/ProductCategoryDriver';
 export { ProductCategoryService as ICPProductCategoryService } from './services/icp/ProductCategoryService';
 

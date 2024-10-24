@@ -1,4 +1,3 @@
-import {RoleProof} from "@kbc-lib/azle-types";
 import {MaterialDriver} from "../../drivers/icp/MaterialDriver";
 import {Material} from "../../entities/Material";
 
@@ -9,19 +8,19 @@ export class MaterialService {
         this._productCategoryDriver = productCategoryDriver;
     }
 
-    async getMaterials(roleProof: RoleProof): Promise<Material[]> {
-        return this._productCategoryDriver.getMaterials(roleProof);
+    async getMaterials(): Promise<Material[]> {
+        return this._productCategoryDriver.getMaterials();
     }
 
-    async getMaterial(roleProof: RoleProof, id: number): Promise<Material> {
-        return this._productCategoryDriver.getMaterial(roleProof, id);
+    async getMaterial(id: number): Promise<Material> {
+        return this._productCategoryDriver.getMaterial(id);
     }
 
-    async createMaterial(roleProof: RoleProof, productCategoryId: number): Promise<Material> {
-        return this._productCategoryDriver.createMaterial(roleProof, productCategoryId);
+    async createMaterial(productCategoryId: number): Promise<Material> {
+        return this._productCategoryDriver.createMaterial(productCategoryId);
     }
 
-    async updateMaterial(roleProof: RoleProof, id: number, productCategoryId: number) {
-        return this._productCategoryDriver.updateMaterial(roleProof, id, productCategoryId);
+    async updateMaterial(id: number, productCategoryId: number) {
+        return this._productCategoryDriver.updateMaterial(id, productCategoryId);
     }
 }

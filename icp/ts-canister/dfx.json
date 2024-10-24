@@ -16,7 +16,8 @@
                     "EVM_ESCROW_MANAGER_ADDRESS",
                     "EVM_REVOCATION_REGISTRY_ADDRESS",
                     "EVM_MEMBERSHIP_ISSUER_ADDRESS",
-                    "EVM_CHAIN_ID"
+                    "EVM_CHAIN_ID",
+                    "LOGIN_DURATION"
                 ]
             }
         },

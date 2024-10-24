@@ -1,5 +1,4 @@
 import {createMock} from "ts-auto-mock";
-import {RoleProof} from "@kbc-lib/azle-types";
 import {MaterialService} from "../MaterialService";
 import {MaterialDriver} from "../../../drivers/icp/MaterialDriver";
 
@@ -26,28 +25,28 @@ describe('MaterialService', () => {
     it.each([
         {
             functionName: 'getMaterials',
-            serviceFunction: () => materialService.getMaterials({} as RoleProof),
+            serviceFunction: () => materialService.getMaterials(),
             driverFunction: mockedFn.getMaterials,
             driverFunctionResult: [],
-            driverFunctionArgs: [{} as RoleProof]
+            driverFunctionArgs: []
         }, {
             functionName: 'getMaterial',
-            serviceFunction: () => materialService.getMaterial({} as RoleProof, 1),
+            serviceFunction: () => materialService.getMaterial(1),
             driverFunction: mockedFn.getMaterial,
             driverFunctionResult: {},
-            driverFunctionArgs: [{} as RoleProof, 1]
+            driverFunctionArgs: [1]
         }, {
             functionName: 'createMaterial',
-            serviceFunction: () => materialService.createMaterial({} as RoleProof, 1),
+            serviceFunction: () => materialService.createMaterial(1),
             driverFunction: mockedFn.createMaterial,
             driverFunctionResult: {},
-            driverFunctionArgs: [{} as RoleProof, 1]
+            driverFunctionArgs: [1]
         }, {
             functionName: 'updateMaterial',
-            serviceFunction: () => materialService.updateMaterial({} as RoleProof, 1, 1),
+            serviceFunction: () => materialService.updateMaterial(1, 1),
             driverFunction: mockedFn.updateMaterial,
             driverFunctionResult: {},
-            driverFunctionArgs: [{} as RoleProof, 1, 1]
+            driverFunctionArgs: [1, 1]
         }
     ])(`should call driver function $functionName`, async ({serviceFunction, driverFunction, driverFunctionResult, driverFunctionArgs}) => {
         driverFunction.mockReturnValue(driverFunctionResult);
