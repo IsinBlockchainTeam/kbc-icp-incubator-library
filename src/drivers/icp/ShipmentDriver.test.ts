@@ -25,7 +25,8 @@ type Utils = {
     shipmentManagerDriver: ShipmentDriver;
     roleProof: RoleProof;
 };
-const SHIPMENT_ID = 4;
+const SHIPMENT_ID = 0;
+const DOCUMENT_ID = 0;
 describe('ShipmentManagerDriver', () => {
     let utils1: Utils, utils2: Utils;
     const getUtils = async (userPrivateKey: string, companyPrivateKey: string) => {
@@ -172,7 +173,7 @@ describe('ShipmentManagerDriver', () => {
         const shipment = await shipmentManagerDriver.addDocument(
             roleProof,
             SHIPMENT_ID,
-            DocumentTypeEnum.GENERIC,
+            DocumentTypeEnum.CARGO_COLLECTION_ORDER,
             'https://example.com'
         );
         console.log(shipment);
@@ -184,7 +185,7 @@ describe('ShipmentManagerDriver', () => {
         const shipment = await shipmentManagerDriver.updateDocument(
             roleProof,
             SHIPMENT_ID,
-            0,
+            DOCUMENT_ID,
             'https://example.com/edited'
         );
         console.log(shipment);
@@ -196,7 +197,7 @@ describe('ShipmentManagerDriver', () => {
         const shipment = await shipmentManagerDriver.evaluateDocument(
             roleProof,
             SHIPMENT_ID,
-            0,
+            DOCUMENT_ID,
             EvaluationStatus.APPROVED
         );
         console.log(shipment);
@@ -283,9 +284,9 @@ describe('ShipmentManagerDriver', () => {
         const { shipmentManagerDriver: supplierDriver, roleProof: supplierProof } = utils1;
         const { shipmentManagerDriver: commissionerDriver, roleProof: commissionerProof } = utils2;
 
-        expect(await supplierDriver.getShipmentPhase(supplierProof, SHIPMENT_ID)).toStrictEqual({
-            PHASE_3: null
-        });
+        expect(await supplierDriver.getShipmentPhase(supplierProof, SHIPMENT_ID)).toEqual(
+            Phase.PHASE_3
+        );
         await supplierDriver.addDocument(
             supplierProof,
             SHIPMENT_ID,

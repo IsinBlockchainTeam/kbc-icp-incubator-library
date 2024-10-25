@@ -57,14 +57,14 @@ export class EntityBuilder {
     }
 
     static buildShipment(shipment: ICPShipment): Shipment {
-        // TODO: escrow address is only set during deposit
-        if (shipment.escrowAddress.length === 0) throw new Error('Invalid escrow address');
+        // TODO: understand how to manage escrow
+        // if (shipment.escrowAddress.length === 0) throw new Error('Invalid escrow address');
 
         return new Shipment(
             Number(shipment.id),
             shipment.supplier,
             shipment.commissioner,
-            shipment.escrowAddress[0],
+            shipment.escrowAddress[0] ? shipment.escrowAddress[0] : '',
             this.buildEvaluationStatus(shipment.sampleEvaluationStatus),
             this.buildEvaluationStatus(shipment.detailsEvaluationStatus),
             this.buildEvaluationStatus(shipment.qualityEvaluationStatus),
@@ -88,16 +88,16 @@ export class EntityBuilder {
     static buildShipmentDocuments = (
         icpDocuments: Array<[IDLDocumentType, IDLDocumentInfo[]]>
     ): Map<DocumentType, DocumentInfo[]> => {
-        const documents = new Map<DocumentType, DocumentInfo[]>();
-
-        for (const [icpDocumentType, infos] of icpDocuments) {
-            const documentType = this.buildDocumentType(icpDocumentType);
-            const documentInfos = documents.get(documentType) || [];
-            documentInfos.push(...infos.map((info) => this.buildDocumentInfo(info)));
-            documents.set(documentType, documentInfos);
-        }
-
-        return documents;
+        return icpDocuments.reduce(
+            (acc, [documentType, documentInfos]) =>
+                acc.set(
+                    EntityBuilder.buildDocumentType(documentType),
+                    documentInfos.map((documentInfo) =>
+                        EntityBuilder.buildDocumentInfo(documentInfo)
+                    )
+                ),
+            new Map<DocumentType, DocumentInfo[]>()
+        );
     };
 
     static buildShipmentPhase = (phase: ICPPhase): Phase => {

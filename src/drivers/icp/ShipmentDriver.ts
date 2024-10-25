@@ -136,15 +136,8 @@ export class ShipmentDriver {
         roleProof: RoleProof,
         id: number
     ): Promise<Map<DocumentType, DocumentInfo[]>> {
-        const documentMap = new Map<DocumentType, DocumentInfo[]>();
         const documentArray = await this._actor.getDocuments(roleProof, BigInt(id));
-        documentArray.forEach(([documentType, documentInfos]) => {
-            documentMap.set(
-                EntityBuilder.buildDocumentType(documentType),
-                documentInfos.map((documentInfo) => EntityBuilder.buildDocumentInfo(documentInfo))
-            );
-        });
-        return documentMap;
+        return EntityBuilder.buildShipmentDocuments(documentArray);
     }
 
     async addDocument(
