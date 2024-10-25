@@ -68,21 +68,14 @@ export { EscrowService } from './services/EscrowService';
 export { TokenDriver } from './drivers/TokenDriver';
 export { TokenService } from './services/TokenService';
 
+export { Shipment, Phase as ShipmentPhase, FundStatus } from './entities/icp/Shipment';
+export { EvaluationStatus as ShipmentDocumentEvaluationStatus } from './entities/icp/Evaluation';
 export {
-    Shipment,
-    Phase as ShipmentPhase,
-    DocumentEvaluationStatus as ShipmentDocumentEvaluationStatus,
     DocumentInfo as ShipmentDocumentInfo,
-    DocumentType as ShipmentDocumentType,
-    EvaluationStatus as ShipmentEvaluationStatus,
-    FundsStatus
-} from './entities/Shipment';
-export { ShipmentDriver } from './drivers/ShipmentDriver';
-export {
-    ShipmentService,
-    type ShipmentDocument,
-    type ShipmentPhaseDocument
-} from './services/ShipmentService';
+    DocumentType as ShipmentDocumentType
+} from './entities/icp/Document';
+export { ShipmentDriver } from './drivers/icp/ShipmentDriver';
+export { ShipmentService } from './services/icp/ShipmentService';
 
 export {
     BaseCertificate,

@@ -184,4 +184,54 @@ export class ShipmentDriver {
         );
         return EntityBuilder.buildShipment(resp);
     }
+
+    async getPhase1Documents(): Promise<DocumentType[]> {
+        const documents = await this._actor.getPhase1Documents();
+        return documents.map((document) => EntityBuilder.buildDocumentType(document));
+    }
+
+    async getPhase1RequiredDocuments(): Promise<DocumentType[]> {
+        const documents = await this._actor.getPhase1RequiredDocuments();
+        return documents.map((document) => EntityBuilder.buildDocumentType(document));
+    }
+
+    async getPhase2Documents(): Promise<DocumentType[]> {
+        const documents = await this._actor.getPhase2Documents();
+        return documents.map((document) => EntityBuilder.buildDocumentType(document));
+    }
+
+    async getPhase2RequiredDocuments(): Promise<DocumentType[]> {
+        const documents = await this._actor.getPhase2RequiredDocuments();
+        return documents.map((document) => EntityBuilder.buildDocumentType(document));
+    }
+
+    async getPhase3Documents(): Promise<DocumentType[]> {
+        const documents = await this._actor.getPhase3Documents();
+        return documents.map((document) => EntityBuilder.buildDocumentType(document));
+    }
+
+    async getPhase3RequiredDocuments(): Promise<DocumentType[]> {
+        const documents = await this._actor.getPhase3RequiredDocuments();
+        return documents.map((document) => EntityBuilder.buildDocumentType(document));
+    }
+
+    async getPhase4Documents(): Promise<DocumentType[]> {
+        const documents = await this._actor.getPhase4Documents();
+        return documents.map((document) => EntityBuilder.buildDocumentType(document));
+    }
+
+    async getPhase4RequiredDocuments(): Promise<DocumentType[]> {
+        const documents = await this._actor.getPhase4RequiredDocuments();
+        return documents.map((document) => EntityBuilder.buildDocumentType(document));
+    }
+
+    async getPhase5Documents(): Promise<DocumentType[]> {
+        const documents = await this._actor.getPhase5Documents();
+        return documents.map((document) => EntityBuilder.buildDocumentType(document));
+    }
+
+    async getPhase5RequiredDocuments(): Promise<DocumentType[]> {
+        const documents = await this._actor.getPhase5RequiredDocuments();
+        return documents.map((document) => EntityBuilder.buildDocumentType(document));
+    }
 }

@@ -204,6 +204,13 @@ describe('ShipmentManagerDriver', () => {
         expect(shipment).toBeDefined();
     });
 
+    it('should get phase 1 required documents', async () => {
+        const { shipmentManagerDriver } = utils1;
+        const documents = await shipmentManagerDriver.getPhase1RequiredDocuments();
+        console.log(documents);
+        expect(documents).toBeDefined();
+    });
+
     it('should bring a new shipment to the 3rd phase', async () => {
         const { shipmentManagerDriver: supplierDriver, roleProof: supplierProof } = utils1;
         const { shipmentManagerDriver: commissionerDriver, roleProof: commissionerProof } = utils2;

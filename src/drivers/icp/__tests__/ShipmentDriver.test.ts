@@ -321,4 +321,82 @@ describe('ShipmentDriver', () => {
         expect(EntityBuilder.buildShipment).toHaveBeenCalledTimes(1);
         expect(EntityBuilder.buildShipment).toHaveBeenCalledWith(defaultEntities.shipment);
     });
+
+    it('should get phase 1 documents', async () => {
+        mockFn.getPhase1Documents.mockReturnValue([DocumentType.PRE_SHIPMENT_SAMPLE]);
+        (EntityBuilder.buildDocumentType as jest.Mock).mockReturnValue(
+            DocumentType.PRE_SHIPMENT_SAMPLE
+        );
+        await expect(shipmentDriver.getPhase1Documents()).resolves.toEqual([
+            DocumentType.PRE_SHIPMENT_SAMPLE
+        ]);
+        expect(mockFn.getPhase1Documents).toHaveBeenCalledTimes(1);
+        expect(EntityBuilder.buildDocumentType).toHaveBeenCalledTimes(1);
+    });
+
+    type ShipmentPhaseDocumentsMethods =
+        | 'getPhase1Documents'
+        | 'getPhase1RequiredDocuments'
+        | 'getPhase2Documents'
+        | 'getPhase2RequiredDocuments'
+        | 'getPhase3Documents'
+        | 'getPhase3RequiredDocuments'
+        | 'getPhase4Documents'
+        | 'getPhase4RequiredDocuments'
+        | 'getPhase5Documents'
+        | 'getPhase5RequiredDocuments';
+    type ShipmentMockPhaseDocumentsMethods = ShipmentPhaseDocumentsMethods;
+
+    it.each([
+        {
+            fnName: 'getPhase1Documents',
+            documents: [DocumentType.PRE_SHIPMENT_SAMPLE]
+        },
+        {
+            fnName: 'getPhase1RequiredDocuments',
+            documents: [DocumentType.PRE_SHIPMENT_SAMPLE]
+        },
+        {
+            fnName: 'getPhase2Documents',
+            documents: [DocumentType.PRE_SHIPMENT_SAMPLE]
+        },
+        {
+            fnName: 'getPhase2RequiredDocuments',
+            documents: [DocumentType.PRE_SHIPMENT_SAMPLE]
+        },
+        {
+            fnName: 'getPhase3Documents',
+            documents: [DocumentType.PRE_SHIPMENT_SAMPLE]
+        },
+        {
+            fnName: 'getPhase3RequiredDocuments',
+            documents: [DocumentType.PRE_SHIPMENT_SAMPLE]
+        },
+        {
+            fnName: 'getPhase4Documents',
+            documents: [DocumentType.PRE_SHIPMENT_SAMPLE]
+        },
+        {
+            fnName: 'getPhase4RequiredDocuments',
+            documents: [DocumentType.PRE_SHIPMENT_SAMPLE]
+        },
+        {
+            fnName: 'getPhase5Documents',
+            documents: [DocumentType.PRE_SHIPMENT_SAMPLE]
+        },
+        {
+            fnName: 'getPhase5RequiredDocuments',
+            documents: [DocumentType.PRE_SHIPMENT_SAMPLE]
+        }
+    ])('should call $fnName', async ({ fnName, documents }) => {
+        mockFn[fnName as ShipmentPhaseDocumentsMethods].mockReturnValue(documents);
+        (EntityBuilder.buildDocumentType as jest.Mock).mockReturnValue(
+            DocumentType.PRE_SHIPMENT_SAMPLE
+        );
+        await expect(shipmentDriver[fnName as ShipmentPhaseDocumentsMethods]()).resolves.toEqual(
+            documents
+        );
+        expect(mockFn[fnName as ShipmentMockPhaseDocumentsMethods]).toHaveBeenCalledTimes(1);
+        expect(EntityBuilder.buildDocumentType).toHaveBeenCalledTimes(1);
+    });
 });
