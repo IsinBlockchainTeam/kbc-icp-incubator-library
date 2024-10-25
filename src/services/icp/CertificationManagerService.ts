@@ -1,16 +1,30 @@
 import { RoleProof } from '@kbc-lib/azle-types';
+import { FileHelpers, ICPResourceSpec } from '@blockchain-lib/common';
 import { CertificationManagerDriver } from '../../drivers/icp/CertificationManagerDriver';
-import { BaseCertificate, CertificateDocumentInfo } from '../../entities/icp/Certificate';
+import { BaseCertificate, CertificateDocumentType } from '../../entities/icp/Certificate';
 import { CompanyCertificate } from '../../entities/icp/CompanyCertificate';
 import { ScopeCertificate } from '../../entities/icp/ScopeCertificate';
 import { MaterialCertificate } from '../../entities/icp/MaterialCertificate';
 import { EvaluationStatus } from '../../entities/icp/Document';
+import { Document } from './DocumentService';
+import { ICPFileDriver } from '../../drivers/ICPFileDriver';
+import { URL_SEGMENTS } from '../../constants/ICP';
+
+type CertificateDocument = Document & {
+    documentType: CertificateDocumentType;
+};
 
 export class CertificationManagerService {
     private readonly _certificationManagerDriver: CertificationManagerDriver;
 
-    constructor(certificationManagerDriver: CertificationManagerDriver) {
+    private readonly _icpFileDriver: ICPFileDriver;
+
+    constructor(
+        certificationManagerDriver: CertificationManagerDriver,
+        icpFileDriver: ICPFileDriver
+    ) {
         this._certificationManagerDriver = certificationManagerDriver;
+        this._icpFileDriver = icpFileDriver;
     }
 
     async registerCompanyCertificate(
@@ -20,10 +34,14 @@ export class CertificationManagerService {
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
         referenceId: string,
-        document: CertificateDocumentInfo,
+        document: CertificateDocument,
         validFrom: Date,
         validUntil: Date
     ): Promise<CompanyCertificate> {
+        const docExternalUrl = await this._addDocument(
+            URL_SEGMENTS.CERTIFICATION.COMPANY,
+            document
+        );
         return this._certificationManagerDriver.registerCompanyCertificate(
             roleProof,
             issuer,
@@ -31,7 +49,14 @@ export class CertificationManagerService {
             assessmentStandard,
             assessmentAssuranceLevel,
             referenceId,
-            document,
+            {
+                documentType: document.documentType,
+                externalUrl: docExternalUrl,
+                metadata: {
+                    filename: document.filename,
+                    fileType: document.filetype
+                }
+            },
             validFrom,
             validUntil
         );
@@ -44,11 +69,12 @@ export class CertificationManagerService {
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
         referenceId: string,
-        document: CertificateDocumentInfo,
+        document: CertificateDocument,
         validFrom: Date,
         validUntil: Date,
         processTypes: string[]
     ): Promise<ScopeCertificate> {
+        const docExternalUrl = await this._addDocument(URL_SEGMENTS.CERTIFICATION.SCOPE, document);
         return this._certificationManagerDriver.registerScopeCertificate(
             roleProof,
             issuer,
@@ -56,7 +82,14 @@ export class CertificationManagerService {
             assessmentStandard,
             assessmentAssuranceLevel,
             referenceId,
-            document,
+            {
+                documentType: document.documentType,
+                externalUrl: docExternalUrl,
+                metadata: {
+                    filename: document.filename,
+                    fileType: document.filetype
+                }
+            },
             validFrom,
             validUntil,
             processTypes
@@ -70,9 +103,13 @@ export class CertificationManagerService {
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
         referenceId: string,
-        document: CertificateDocumentInfo,
+        document: CertificateDocument,
         materialId: number
     ): Promise<MaterialCertificate> {
+        const docExternalUrl = await this._addDocument(
+            URL_SEGMENTS.CERTIFICATION.MATERIAL,
+            document
+        );
         return this._certificationManagerDriver.registerMaterialCertificate(
             roleProof,
             issuer,
@@ -80,7 +117,14 @@ export class CertificationManagerService {
             assessmentStandard,
             assessmentAssuranceLevel,
             referenceId,
-            document,
+            {
+                documentType: document.documentType,
+                externalUrl: docExternalUrl,
+                metadata: {
+                    filename: document.filename,
+                    fileType: document.filetype
+                }
+            },
             materialId
         );
     }
@@ -200,8 +244,10 @@ export class CertificationManagerService {
     async updateDocument(
         roleProof: RoleProof,
         certificateId: number,
-        document: CertificateDocumentInfo
+        document: CertificateDocument
     ) {
+        const path = document.externalUrl.split('/').slice(0, -1).join('/');
+
         return this._certificationManagerDriver.updateDocument(roleProof, certificateId, document);
     }
 
@@ -216,6 +262,34 @@ export class CertificationManagerService {
             certificateId,
             documentId,
             evaluationStatus
+        );
+    }
+
+    async _addDocumentToExtStorage(
+        baseExternalUrl: string,
+        document: Document,
+        resourceSpec: ICPResourceSpec,
+        delegatedOrganizationIds: number[] = []
+    ): Promise<string> {
+        await this._icpFileDriver.create(
+            document.fileContent,
+            { ...resourceSpec, name: `${baseExternalUrl}${resourceSpec.name}` },
+            delegatedOrganizationIds
+        );
+        return `${baseExternalUrl}${resourceSpec.name}`;
+    }
+
+    async _addDocument(relativePath: string, document: Document): Promise<string> {
+        const baseExternalUrl = `${
+            FileHelpers.ensureTrailingSlash(document.storageConfig.urlStructure.prefix) +
+            URL_SEGMENTS.ORGANIZATION +
+            document.storageConfig.urlStructure.organizationId
+        }/${URL_SEGMENTS.CERTIFICATION.BASE}${URL_SEGMENTS.FILE}${relativePath}`;
+        return this._addDocumentToExtStorage(
+            baseExternalUrl,
+            document,
+            document.storageConfig.resourceSpec,
+            document.storageConfig.delegatedOrganizationIds
         );
     }
 }

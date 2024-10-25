@@ -3,3 +3,8 @@ export enum EvaluationStatus {
     APPROVED = 'APPROVED',
     NOT_APPROVED = 'NOT_APPROVED'
 }
+
+export type DocumentMetadata = {
+    filename: string;
+    fileType: string;
+};

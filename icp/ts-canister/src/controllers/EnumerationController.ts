@@ -1,6 +1,6 @@
 import { IDL, query, update } from 'azle';
 import EnumerationService from '../services/EnumerationService';
-import { Enumeration } from '../models/types/Enumeration';
+import { Enumeration } from '../models/types';
 import { Enumeration as IDLEnumeration } from '../models/idls/Enumeration';
 
 class EnumerationController {

@@ -44,7 +44,7 @@ class CertificationService {
         return CertificationService._instance;
     }
 
-    async registerCompanyCertificate(
+    registerCompanyCertificate(
         roleProof: RoleProof,
         issuer: string,
         subject: string,
@@ -54,12 +54,12 @@ class CertificationService {
         document: CertificateDocumentInfo,
         validFrom: number,
         validUntil: number
-    ): Promise<CompanyCertificate> {
+    ): CompanyCertificate {
         validateAddress('Issuer', issuer);
         validateAddress('Subject', subject);
         validateDatesValidity(validFrom, validUntil);
-        await validateAssessmentStandard(assessmentStandard);
-        await validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
+        validateAssessmentStandard(assessmentStandard);
+        validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
         const companyAddress = roleProof.membershipProof.delegatorAddress;
 
         const certificate: CompanyCertificate = {
@@ -83,7 +83,7 @@ class CertificationService {
         return certificate;
     }
 
-    async registerScopeCertificate(
+    registerScopeCertificate(
         roleProof: RoleProof,
         issuer: string,
         subject: string,
@@ -94,13 +94,13 @@ class CertificationService {
         validFrom: number,
         validUntil: number,
         processTypes: string[]
-    ): Promise<ScopeCertificate> {
+    ): ScopeCertificate {
         validateAddress('Issuer', issuer);
         validateAddress('Subject', subject);
         validateDatesValidity(validFrom, validUntil);
-        await validateAssessmentStandard(assessmentStandard);
-        await validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
-        await validateProcessTypes(processTypes);
+        validateAssessmentStandard(assessmentStandard);
+        validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
+        validateProcessTypes(processTypes);
         const companyAddress = roleProof.membershipProof.delegatorAddress;
         const certificate: ScopeCertificate = {
             id: BigInt(BigInt(this._allCertificateRecords.keys().length + 1)),
@@ -124,7 +124,7 @@ class CertificationService {
         return certificate;
     }
 
-    async registerMaterialCertificate(
+    registerMaterialCertificate(
         roleProof: RoleProof,
         issuer: string,
         subject: string,
@@ -133,11 +133,11 @@ class CertificationService {
         referenceId: string,
         document: CertificateDocumentInfo,
         materialId: bigint
-    ): Promise<MaterialCertificate> {
+    ): MaterialCertificate {
         validateAddress('Issuer', issuer);
         validateAddress('Subject', subject);
-        await validateAssessmentStandard(assessmentStandard);
-        await validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
+        validateAssessmentStandard(assessmentStandard);
+        validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
         const companyAddress = roleProof.membershipProof.delegatorAddress;
         const certificate: MaterialCertificate = {
             id: BigInt(BigInt(this._allCertificateRecords.keys().length + 1)),
@@ -159,7 +159,7 @@ class CertificationService {
         return certificate;
     }
 
-    async getBaseCertificatesInfoBySubject(roleProof: RoleProof, subject: string): Promise<BaseCertificate[]> {
+    getBaseCertificatesInfoBySubject(roleProof: RoleProof, subject: string): BaseCertificate[] {
         validateAddress('Subject', subject);
         const _companyCertificates = this._companyCertificates.get(subject) || [];
         const _scopeCertificates = this._scopeCertificates.get(subject) || [];
@@ -180,31 +180,31 @@ class CertificationService {
         }));
     }
 
-    async getCompanyCertificates(roleProof: RoleProof, subject: string): Promise<CompanyCertificate[]> {
+    getCompanyCertificates(roleProof: RoleProof, subject: string): CompanyCertificate[] {
         return this._companyCertificates.get(subject) || [];
     }
 
-    async getScopeCertificates(roleProof: RoleProof, subject: string): Promise<ScopeCertificate[]> {
+    getScopeCertificates(roleProof: RoleProof, subject: string): ScopeCertificate[] {
         return this._scopeCertificates.get(subject) || [];
     }
 
-    async getMaterialCertificates(roleProof: RoleProof, subject: string): Promise<MaterialCertificate[]> {
+    getMaterialCertificates(roleProof: RoleProof, subject: string): MaterialCertificate[] {
         return this._materialCertificates.get(subject) || [];
     }
 
-    async getCompanyCertificate(roleProof: RoleProof, subject: string, id: bigint): Promise<CompanyCertificate> {
+    getCompanyCertificate(roleProof: RoleProof, subject: string, id: bigint): CompanyCertificate {
         const certificate = this._companyCertificates.get(subject)?.find((cert) => BigInt(cert.id) === id);
         if (!certificate) throw new Error('Company certificate not found');
         return certificate;
     }
 
-    async getScopeCertificate(roleProof: RoleProof, subject: string, id: bigint): Promise<ScopeCertificate> {
+    getScopeCertificate(roleProof: RoleProof, subject: string, id: bigint): ScopeCertificate {
         const certificate = this._scopeCertificates.get(subject)?.find((cert) => BigInt(cert.id) === id);
         if (!certificate) throw new Error('Scope certificate not found');
         return certificate;
     }
 
-    async getMaterialCertificate(roleProof: RoleProof, subject: string, id: bigint): Promise<MaterialCertificate> {
+    getMaterialCertificate(roleProof: RoleProof, subject: string, id: bigint): MaterialCertificate {
         const certificate = this._materialCertificates.get(subject)?.find((cert) => BigInt(cert.id) === id);
         if (!certificate) throw new Error('Material certificate not found');
         return certificate;
@@ -222,7 +222,7 @@ class CertificationService {
         validateDatesValidity(validFrom, validUntil);
         await validateAssessmentStandard(assessmentStandard);
         await validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
-        const [companyCertificate, _companyCertificates, certificateIndex] = this._getCertificateByIdAndInfo<CompanyCertificate>(certificateId);
+        const [companyCertificate, _companyCertificates, certificateIndex] = this._getCertificateAndInfoById<CompanyCertificate>(certificateId);
         validateFieldValue(companyCertificate.uploadedBy, roleProof.membershipProof.delegatorAddress, 'Caller is not the owner of the certificate');
         companyCertificate.assessmentStandard = assessmentStandard;
         companyCertificate.assessmentAssuranceLevel = assessmentAssuranceLevel;
@@ -249,7 +249,7 @@ class CertificationService {
         await validateAssessmentStandard(assessmentStandard);
         await validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
         await validateProcessTypes(processTypes);
-        const [scopeCertificate, _scopeCertificates, certificateIndex] = this._getCertificateByIdAndInfo<ScopeCertificate>(certificateId);
+        const [scopeCertificate, _scopeCertificates, certificateIndex] = this._getCertificateAndInfoById<ScopeCertificate>(certificateId);
         validateFieldValue(scopeCertificate.uploadedBy, roleProof.membershipProof.delegatorAddress, 'Caller is not the owner of the certificate');
         scopeCertificate.assessmentStandard = assessmentStandard;
         scopeCertificate.assessmentAssuranceLevel = assessmentAssuranceLevel;
@@ -273,7 +273,7 @@ class CertificationService {
     ): Promise<MaterialCertificate> {
         await validateAssessmentStandard(assessmentStandard);
         await validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
-        const [materialCertificate, _materialCertificates, certificateIndex] = this._getCertificateByIdAndInfo<MaterialCertificate>(certificateId);
+        const [materialCertificate, _materialCertificates, certificateIndex] = this._getCertificateAndInfoById<MaterialCertificate>(certificateId);
         validateFieldValue(materialCertificate.uploadedBy, roleProof.membershipProof.delegatorAddress, 'Caller is not the owner of the certificate');
         materialCertificate.assessmentStandard = assessmentStandard;
         materialCertificate.assessmentAssuranceLevel = assessmentAssuranceLevel;
@@ -286,20 +286,27 @@ class CertificationService {
     }
 
     async updateDocument(roleProof: RoleProof, certificateId: bigint, document: CertificateDocumentInfo): Promise<void> {
-        const [certificate, certificates, certificateIndex] = this._getCertificateByIdAndInfo<BaseCertificate>(certificateId);
+        const [certificate, certificates, certificateIndex] = this._getCertificateAndInfoById<BaseCertificate>(certificateId);
         certificate.document = document;
         this._updateCertificate(certificate, certificates, certificateIndex);
     }
 
-    async evaluateDocument(roleProof: RoleProof, certificateId: bigint, documentId: bigint, evaluation: EvaluationStatus): Promise<void> {
+    async evaluateDocument(roleProof: RoleProof, certificateId: bigint, evaluation: EvaluationStatus): Promise<void> {
         if (EvaluationStatusEnum.NOT_EVALUATED in evaluation) throw new Error('Invalid evaluation status');
-        const [certificate, certificates, certificateIndex] = this._getCertificateByIdAndInfo<BaseCertificate>(certificateId);
-        validateFieldValue(certificate.document.id, documentId, 'Document not found');
+        const [certificate, certificates, certificateIndex] = this._getCertificateAndInfoById<BaseCertificate>(certificateId);
         certificate.evaluationStatus = evaluation;
         this._updateCertificate(certificate, certificates, certificateIndex);
     }
 
-    private _getCertificateByIdAndInfo<T extends BaseCertificate>(certificateId: bigint): [T, T[], number] {
+    // TODO: make synchronous all the methods
+
+    // TODO: expose this method via controller and use it in frontend to get the external url of the document from certificate id
+    getBaseCertificateById(certificateId: bigint): BaseCertificate {
+        const [certificate] = this._getCertificateAndInfoById<BaseCertificate>(certificateId);
+        return certificate;
+    }
+
+    private _getCertificateAndInfoById<T extends BaseCertificate>(certificateId: bigint): [T, T[], number] {
         const certificateRecord = this._allCertificateRecords.get(certificateId);
         if (!certificateRecord) throw new Error('Certificate not found');
         let certificates: T[] | null;

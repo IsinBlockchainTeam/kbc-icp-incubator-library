@@ -10,6 +10,9 @@
     targets = opt vec {
         "be2us-64aaa-aaaaa-qaabq-cai"; // SIWE
         "bkyz2-fmaaa-aaaaa-qaaaq-cai"; // Entity Manager
+        "asrmz-lmaaa-aaaaa-qaaeq-cai"; // Storage
+        "avqkn-guaaa-aaaaa-qaaea-cai"; // Permission
+        "by6od-j4aaa-aaaaa-qaadq-cai"; // Organization
     };
   }
 )

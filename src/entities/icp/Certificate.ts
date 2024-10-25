@@ -1,4 +1,4 @@
-import { EvaluationStatus } from './Document';
+import { DocumentMetadata, EvaluationStatus } from './Document';
 
 export enum CertificateType {
     COMPANY = 'COMPANY',
@@ -15,9 +15,9 @@ export enum CertificateDocumentType {
 }
 
 export type CertificateDocumentInfo = {
-    id: number;
     documentType: CertificateDocumentType;
     externalUrl: string;
+    metadata: DocumentMetadata;
 };
 
 export class BaseCertificate {

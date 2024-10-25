@@ -15,8 +15,7 @@ export type CertificateDocumentType =
     | { PRODUCTION_FACILITY_LICENSE: null };
 
 export type CertificateDocumentInfo = {
-    id: bigint;
-    docType: CertificateDocumentType;
+    documentType: CertificateDocumentType;
     externalUrl: string;
 };
 

@@ -41,6 +41,14 @@ deploy_canisters() {
             dfx canister call entity_manager addEnumerationValue '(variant {ASSESSMENT_ASSURANCE_LEVEL}, "Self declaration / Not verified")'
             dfx canister call entity_manager addEnumerationValue '(variant {ASSESSMENT_ASSURANCE_LEVEL}, "Verified by second party")'
             dfx canister call entity_manager addEnumerationValue '(variant {ASSESSMENT_ASSURANCE_LEVEL}, "Certified (Third Party)")'
+            echo "Fiats loading..."
+            dfx canister call entity_manager addEnumerationValue '(variant {FIAT}, "CHF")'
+            dfx canister call entity_manager addEnumerationValue '(variant {FIAT}, "EUR")'
+            dfx canister call entity_manager addEnumerationValue '(variant {FIAT}, "USD")'
+            echo "Units loading..."
+            dfx canister call entity_manager addEnumerationValue '(variant {UNIT}, "BG - Bags")'
+            dfx canister call entity_manager addEnumerationValue '(variant {UNIT}, "KGM - Kilograms")'
+            dfx canister call entity_manager addEnumerationValue '(variant {UNIT}, "H87 - Pieces")'
         fi
         echo "Generating declarations..."
         dfx generate

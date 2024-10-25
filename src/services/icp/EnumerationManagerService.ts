@@ -1,5 +1,5 @@
-import { Enumeration } from '@kbc-lib/azle-types/src/models/types/Enumeration';
 import { EnumerationManagerDriver } from '../../drivers/icp/EnumerationManagerDriver';
+import { Enumeration } from '../../entities/icp/Enumeration';
 
 export class EnumerationManagerService {
     private readonly _enumerationManagerDriver: EnumerationManagerDriver;

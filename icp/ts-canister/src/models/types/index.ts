@@ -18,3 +18,4 @@ export {
     ScopeCertificate,
     MaterialCertificate
 } from './Certificate';
+export { Enumeration } from './Enumeration';

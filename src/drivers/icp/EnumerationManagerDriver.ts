@@ -1,7 +1,8 @@
 import { ActorSubclass, Identity } from '@dfinity/agent';
-import { Enumeration } from '@kbc-lib/azle-types/src/models/types/Enumeration';
 import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
 import { createActor } from 'icp-declarations/entity_manager';
+import { Enumeration } from '../../entities/icp/Enumeration';
+import { EntityBuilder } from '../../utils/icp/EntityBuilder';
 
 export class EnumerationManagerDriver {
     private _actor: ActorSubclass<_SERVICE>;
@@ -16,18 +17,27 @@ export class EnumerationManagerDriver {
     }
 
     async getEnumerationsByType(enumeration: Enumeration): Promise<string[]> {
-        return this._actor.getEnumerationsByType(enumeration);
+        return this._actor.getEnumerationsByType(EntityBuilder.buildICPEnumeration(enumeration));
     }
 
     async addEnumerationValue(enumeration: Enumeration, value: string): Promise<void> {
-        await this._actor.addEnumerationValue(enumeration, value);
+        await this._actor.addEnumerationValue(
+            EntityBuilder.buildICPEnumeration(enumeration),
+            value
+        );
     }
 
     async removeEnumerationValue(enumeration: Enumeration, value: string): Promise<void> {
-        await this._actor.removeEnumerationValue(enumeration, value);
+        await this._actor.removeEnumerationValue(
+            EntityBuilder.buildICPEnumeration(enumeration),
+            value
+        );
     }
 
     async hasEnumerationValue(enumeration: Enumeration, value: string): Promise<boolean> {
-        return this._actor.hasEnumerationValue(enumeration, value);
+        return this._actor.hasEnumerationValue(
+            EntityBuilder.buildICPEnumeration(enumeration),
+            value
+        );
     }
 }

@@ -10,8 +10,7 @@ export const CertificateDocumentType = IDL.Variant({
 });
 
 export const CertificateDocumentInfo = IDL.Record({
-    id: IDL.Nat,
-    docType: CertificateDocumentType,
+    documentType: CertificateDocumentType,
     externalUrl: IDL.Text
 });
 

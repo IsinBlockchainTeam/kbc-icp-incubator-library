@@ -141,3 +141,4 @@ export { MaterialCertificate as ICPMaterialCertificate } from './entities/icp/Ma
 // enumerations
 export { EnumerationManagerDriver as ICPEnumerationManagerDriver } from './drivers/icp/EnumerationManagerDriver';
 export { EnumerationManagerService as ICPEnumerationManagerService } from './services/icp/EnumerationManagerService';
+export { Enumeration as ICPEnumeration } from './entities/icp/Enumeration';
