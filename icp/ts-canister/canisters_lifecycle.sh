@@ -19,6 +19,8 @@ start_icp_network() {
 # deploy canisters and generate declarations
 deploy_canisters() {
     cd $ROOT_DIR
+    echo "Updating types..."
+    npm run build-types
     echo "Deploying canisters..."
     touch .env
     npm run deploy

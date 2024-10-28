@@ -15,14 +15,14 @@ export class ScopeCertificate extends BaseCertificate {
         uploadedBy: string,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
-        referenceId: string,
         document: CertificateDocumentInfo,
         evaluationStatus: EvaluationStatus,
         certificateType: CertificateType,
         issueDate: Date,
         processTypes: string[],
         validFrom: Date,
-        validUntil: Date
+        validUntil: Date,
+        notes?: string
     ) {
         super(
             id,
@@ -31,11 +31,11 @@ export class ScopeCertificate extends BaseCertificate {
             uploadedBy,
             assessmentStandard,
             assessmentAssuranceLevel,
-            referenceId,
             document,
             evaluationStatus,
             certificateType,
-            issueDate
+            issueDate,
+            notes
         );
         this._processTypes = processTypes;
         this._validFrom = validFrom;

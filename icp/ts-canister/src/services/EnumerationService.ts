@@ -43,6 +43,8 @@ class EnumerationService {
         if (EnumerationKey.ASSESSMENT_STANDARD in enumeration) return EnumerationKey.ASSESSMENT_STANDARD;
         if (EnumerationKey.PROCESS_TYPE in enumeration) return EnumerationKey.PROCESS_TYPE;
         if (EnumerationKey.ASSESSMENT_ASSURANCE_LEVEL in enumeration) return EnumerationKey.ASSESSMENT_ASSURANCE_LEVEL;
+        if (EnumerationKey.FIAT in enumeration) return EnumerationKey.FIAT;
+        if (EnumerationKey.UNIT in enumeration) return EnumerationKey.UNIT;
         throw new Error('Invalid enumeration type');
     }
 }

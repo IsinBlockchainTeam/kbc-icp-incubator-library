@@ -50,10 +50,10 @@ class CertificationService {
         subject: string,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
-        referenceId: string,
         document: CertificateDocumentInfo,
         validFrom: number,
-        validUntil: number
+        validUntil: number,
+        notes: string
     ): CompanyCertificate {
         validateAddress('Issuer', issuer);
         validateAddress('Subject', subject);
@@ -69,13 +69,13 @@ class CertificationService {
             subject,
             assessmentStandard,
             assessmentAssuranceLevel,
-            referenceId,
             document,
             evaluationStatus: { NOT_EVALUATED: null },
             issueDate: BigInt(Date.now()),
             validFrom: BigInt(validFrom),
             validUntil: BigInt(validUntil),
-            certType: { COMPANY: null }
+            certType: { COMPANY: null },
+            notes
         };
         if (!this._companyCertificates.containsKey(subject)) this._companyCertificates.insert(subject, [certificate]);
         else this._companyCertificates.insert(subject, [...this._companyCertificates.get(subject)!, certificate]);
@@ -89,11 +89,11 @@ class CertificationService {
         subject: string,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
-        referenceId: string,
         document: CertificateDocumentInfo,
         validFrom: number,
         validUntil: number,
-        processTypes: string[]
+        processTypes: string[],
+        notes: string
     ): ScopeCertificate {
         validateAddress('Issuer', issuer);
         validateAddress('Subject', subject);
@@ -103,20 +103,20 @@ class CertificationService {
         validateProcessTypes(processTypes);
         const companyAddress = roleProof.membershipProof.delegatorAddress;
         const certificate: ScopeCertificate = {
-            id: BigInt(BigInt(this._allCertificateRecords.keys().length + 1)),
+            id: BigInt(this._allCertificateRecords.keys().length + 1),
             uploadedBy: companyAddress,
             issuer,
             subject,
             assessmentStandard,
             assessmentAssuranceLevel,
-            referenceId,
             document,
             evaluationStatus: { NOT_EVALUATED: null },
             issueDate: BigInt(Date.now()),
             validFrom: BigInt(validFrom),
             validUntil: BigInt(validUntil),
             processTypes,
-            certType: { SCOPE: null }
+            certType: { SCOPE: null },
+            notes
         };
         if (!this._scopeCertificates.containsKey(subject)) this._scopeCertificates.insert(subject, [certificate]);
         else this._scopeCertificates.insert(subject, [...this._scopeCertificates.get(subject)!, certificate]);
@@ -130,9 +130,9 @@ class CertificationService {
         subject: string,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
-        referenceId: string,
         document: CertificateDocumentInfo,
-        materialId: bigint
+        materialId: bigint,
+        notes: string
     ): MaterialCertificate {
         validateAddress('Issuer', issuer);
         validateAddress('Subject', subject);
@@ -140,18 +140,18 @@ class CertificationService {
         validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
         const companyAddress = roleProof.membershipProof.delegatorAddress;
         const certificate: MaterialCertificate = {
-            id: BigInt(BigInt(this._allCertificateRecords.keys().length + 1)),
+            id: BigInt(this._allCertificateRecords.keys().length + 1),
             uploadedBy: companyAddress,
             issuer,
             subject,
             assessmentStandard,
             assessmentAssuranceLevel,
-            referenceId,
             document,
             evaluationStatus: { NOT_EVALUATED: null },
             issueDate: BigInt(Date.now()),
             materialId,
-            certType: { MATERIAL: null }
+            certType: { MATERIAL: null },
+            notes
         };
         if (!this._materialCertificates.containsKey(subject)) this._materialCertificates.insert(subject, [certificate]);
         else this._materialCertificates.insert(subject, [...this._materialCertificates.get(subject)!, certificate]);
@@ -172,11 +172,11 @@ class CertificationService {
             subject: certificate.subject,
             assessmentStandard: certificate.assessmentStandard,
             assessmentAssuranceLevel: certificate.assessmentAssuranceLevel,
-            referenceId: certificate.referenceId,
             document: certificate.document,
             evaluationStatus: certificate.evaluationStatus,
             issueDate: certificate.issueDate,
-            certType: certificate.certType
+            certType: certificate.certType,
+            notes: certificate.notes
         }));
     }
 
@@ -210,98 +210,95 @@ class CertificationService {
         return certificate;
     }
 
-    async updateCompanyCertificate(
+    updateCompanyCertificate(
         roleProof: RoleProof,
         certificateId: bigint,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
-        referenceId: string,
         validFrom: number,
-        validUntil: number
-    ): Promise<CompanyCertificate> {
+        validUntil: number,
+        notes: string
+    ): CompanyCertificate {
         validateDatesValidity(validFrom, validUntil);
-        await validateAssessmentStandard(assessmentStandard);
-        await validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
+        validateAssessmentStandard(assessmentStandard);
+        validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
         const [companyCertificate, _companyCertificates, certificateIndex] = this._getCertificateAndInfoById<CompanyCertificate>(certificateId);
         validateFieldValue(companyCertificate.uploadedBy, roleProof.membershipProof.delegatorAddress, 'Caller is not the owner of the certificate');
         companyCertificate.assessmentStandard = assessmentStandard;
         companyCertificate.assessmentAssuranceLevel = assessmentAssuranceLevel;
-        companyCertificate.referenceId = referenceId;
         companyCertificate.validFrom = BigInt(validFrom);
         companyCertificate.validUntil = BigInt(validUntil);
+        companyCertificate.notes = notes;
 
         _companyCertificates[certificateIndex] = companyCertificate;
         this._companyCertificates.insert(companyCertificate.subject, _companyCertificates);
         return companyCertificate;
     }
 
-    async updateScopeCertificate(
+    updateScopeCertificate(
         roleProof: RoleProof,
         certificateId: bigint,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
-        referenceId: string,
         validFrom: number,
         validUntil: number,
-        processTypes: string[]
-    ): Promise<ScopeCertificate> {
+        processTypes: string[],
+        notes: string
+    ): ScopeCertificate {
         validateDatesValidity(validFrom, validUntil);
-        await validateAssessmentStandard(assessmentStandard);
-        await validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
-        await validateProcessTypes(processTypes);
+        validateAssessmentStandard(assessmentStandard);
+        validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
+        validateProcessTypes(processTypes);
         const [scopeCertificate, _scopeCertificates, certificateIndex] = this._getCertificateAndInfoById<ScopeCertificate>(certificateId);
         validateFieldValue(scopeCertificate.uploadedBy, roleProof.membershipProof.delegatorAddress, 'Caller is not the owner of the certificate');
         scopeCertificate.assessmentStandard = assessmentStandard;
         scopeCertificate.assessmentAssuranceLevel = assessmentAssuranceLevel;
-        scopeCertificate.referenceId = referenceId;
         scopeCertificate.validFrom = BigInt(validFrom);
         scopeCertificate.validUntil = BigInt(validUntil);
         scopeCertificate.processTypes = processTypes;
+        scopeCertificate.notes = notes;
 
         _scopeCertificates[certificateIndex] = scopeCertificate;
         this._scopeCertificates.insert(scopeCertificate.subject, _scopeCertificates);
         return scopeCertificate;
     }
 
-    async updateMaterialCertificate(
+    updateMaterialCertificate(
         roleProof: RoleProof,
         certificateId: bigint,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
-        referenceId: string,
-        materialId: bigint
-    ): Promise<MaterialCertificate> {
-        await validateAssessmentStandard(assessmentStandard);
-        await validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
+        materialId: bigint,
+        notes: string
+    ): MaterialCertificate {
+        validateAssessmentStandard(assessmentStandard);
+        validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
         const [materialCertificate, _materialCertificates, certificateIndex] = this._getCertificateAndInfoById<MaterialCertificate>(certificateId);
         validateFieldValue(materialCertificate.uploadedBy, roleProof.membershipProof.delegatorAddress, 'Caller is not the owner of the certificate');
         materialCertificate.assessmentStandard = assessmentStandard;
         materialCertificate.assessmentAssuranceLevel = assessmentAssuranceLevel;
-        materialCertificate.referenceId = referenceId;
         materialCertificate.materialId = materialId;
+        materialCertificate.notes = notes;
 
         _materialCertificates[certificateIndex] = materialCertificate;
         this._materialCertificates.insert(materialCertificate.subject, _materialCertificates);
         return materialCertificate;
     }
 
-    async updateDocument(roleProof: RoleProof, certificateId: bigint, document: CertificateDocumentInfo): Promise<void> {
+    updateDocument(roleProof: RoleProof, certificateId: bigint, document: CertificateDocumentInfo): void {
         const [certificate, certificates, certificateIndex] = this._getCertificateAndInfoById<BaseCertificate>(certificateId);
         certificate.document = document;
         this._updateCertificate(certificate, certificates, certificateIndex);
     }
 
-    async evaluateDocument(roleProof: RoleProof, certificateId: bigint, evaluation: EvaluationStatus): Promise<void> {
+    evaluateDocument(roleProof: RoleProof, certificateId: bigint, evaluation: EvaluationStatus): void {
         if (EvaluationStatusEnum.NOT_EVALUATED in evaluation) throw new Error('Invalid evaluation status');
         const [certificate, certificates, certificateIndex] = this._getCertificateAndInfoById<BaseCertificate>(certificateId);
         certificate.evaluationStatus = evaluation;
         this._updateCertificate(certificate, certificates, certificateIndex);
     }
 
-    // TODO: make synchronous all the methods
-
-    // TODO: expose this method via controller and use it in frontend to get the external url of the document from certificate id
-    getBaseCertificateById(certificateId: bigint): BaseCertificate {
+    getBaseCertificateById(roleProof: RoleProof, certificateId: bigint): BaseCertificate {
         const [certificate] = this._getCertificateAndInfoById<BaseCertificate>(certificateId);
         return certificate;
     }

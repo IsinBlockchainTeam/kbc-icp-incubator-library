@@ -85,11 +85,14 @@ describe('CertificationManagerDriver', () => {
                 subjectCompanyWallet.address,
                 assessmentStandards[1],
                 assessmentAssuranceLevels[0],
-                '123456',
                 {
-                    id: 1,
+                    referenceId: '123456',
                     documentType: CertificateDocumentType.CERTIFICATE_OF_CONFORMITY,
-                    externalUrl: 'externalUrl'
+                    externalUrl: 'externalUrl',
+                    metadata: {
+                        filename: 'file.pdf',
+                        fileType: 'application/pdf'
+                    }
                 },
                 new Date(),
                 new Date(new Date().setDate(new Date().getDate() + 365))
@@ -110,11 +113,14 @@ describe('CertificationManagerDriver', () => {
                 subjectCompanyWallet.address,
                 assessmentStandards[3],
                 assessmentAssuranceLevels[2],
-                '123456',
                 {
-                    id: 1,
+                    referenceId: '123456',
                     documentType: CertificateDocumentType.PRODUCTION_REPORT,
-                    externalUrl: 'externalUrl'
+                    externalUrl: 'externalUrl',
+                    metadata: {
+                        filename: 'file.pdf',
+                        fileType: 'application/pdf'
+                    }
                 },
                 new Date(),
                 new Date(new Date().setDate(new Date().getDate() + 365)),
@@ -137,11 +143,14 @@ describe('CertificationManagerDriver', () => {
                     subjectCompanyWallet.address,
                     assessmentStandards[0],
                     assessmentAssuranceLevels[3],
-                    '123456',
                     {
-                        id: 1,
+                        referenceId: '123456',
                         documentType: CertificateDocumentType.PRODUCTION_REPORT,
-                        externalUrl: 'externalUrl'
+                        externalUrl: 'externalUrl',
+                        metadata: {
+                            filename: 'file.pdf',
+                            fileType: 'application/pdf'
+                        }
                     },
                     1
                 );
@@ -250,12 +259,11 @@ describe('CertificationManagerDriver', () => {
                 lastCompanyCertificateId,
                 assessmentStandards[1],
                 assessmentAssuranceLevels[0],
-                '12345678',
                 new Date(),
                 new Date(new Date().setDate(new Date().getDate() + 365))
             );
             expect(companyCertificate).toBeDefined();
-            expect(companyCertificate.referenceId).toEqual('12345678');
+            expect(companyCertificate.assessmentStandard).toEqual(assessmentStandards[1]);
             const updatedCompanyCertificate =
                 await certificationManagerDriver.getCompanyCertificate(
                     roleProof,
@@ -284,7 +292,6 @@ describe('CertificationManagerDriver', () => {
                 lastScopeCertificateId,
                 assessmentStandards[3],
                 assessmentAssuranceLevels[2],
-                '12345678',
                 new Date(),
                 updatedValidUntil,
                 processTypes
@@ -317,7 +324,6 @@ describe('CertificationManagerDriver', () => {
                 lastMaterialCertificateId,
                 assessmentStandards[3],
                 assessmentAssuranceLevels[4],
-                '12345678',
                 1
             );
             expect(materialCertificate).toBeDefined();
@@ -337,14 +343,22 @@ describe('CertificationManagerDriver', () => {
             const { certificationManagerDriver, roleProof } = utils1;
             const { companyWallet: subjectCompanyWallet } = utils2;
             const document: CertificateDocumentInfo = {
-                id: 1,
+                referenceId: '123456',
                 documentType: CertificateDocumentType.CERTIFICATE_OF_CONFORMITY,
-                externalUrl: 'externalUrl'
+                externalUrl: 'externalUrl',
+                metadata: {
+                    filename: 'file1.pdf',
+                    fileType: 'application/pdf'
+                }
             };
             const updatedDocument: CertificateDocumentInfo = {
-                id: 2,
+                referenceId: '567890',
                 documentType: CertificateDocumentType.COUNTRY_OF_ORIGIN,
-                externalUrl: 'externalUrl'
+                externalUrl: 'externalUrl',
+                metadata: {
+                    filename: 'file2.pdf',
+                    fileType: 'application/pdf'
+                }
             };
             const companyCertificate = await certificationManagerDriver.registerCompanyCertificate(
                 roleProof,
@@ -352,7 +366,6 @@ describe('CertificationManagerDriver', () => {
                 subjectCompanyWallet.address,
                 assessmentStandards[1],
                 assessmentAssuranceLevels[0],
-                '123456',
                 document,
                 new Date(),
                 new Date(new Date().setDate(new Date().getDate() + 365))

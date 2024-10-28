@@ -1,4 +1,4 @@
-import { DocumentMetadata, EvaluationStatus } from './Document';
+import { EvaluationStatus } from './Document';
 
 export enum CertificateType {
     COMPANY = 'COMPANY',
@@ -14,7 +14,13 @@ export enum CertificateDocumentType {
     PRODUCTION_FACILITY_LICENSE = 'PRODUCTION_FACILITY_LICENSE'
 }
 
+export type DocumentMetadata = {
+    filename: string;
+    fileType: string;
+};
+
 export type CertificateDocumentInfo = {
+    referenceId: string;
     documentType: CertificateDocumentType;
     externalUrl: string;
     metadata: DocumentMetadata;
@@ -33,8 +39,6 @@ export class BaseCertificate {
 
     private _assessmentAssuranceLevel: string;
 
-    private _referenceId: string;
-
     private _document: CertificateDocumentInfo;
 
     private _evaluationStatus: EvaluationStatus;
@@ -43,6 +47,8 @@ export class BaseCertificate {
 
     private _issueDate: Date;
 
+    private _notes?: string;
+
     constructor(
         id: number,
         issuer: string,
@@ -50,11 +56,11 @@ export class BaseCertificate {
         uploadedBy: string,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
-        referenceId: string,
         document: CertificateDocumentInfo,
         evaluationStatus: EvaluationStatus,
         certificateType: CertificateType,
-        issueDate: Date
+        issueDate: Date,
+        notes?: string
     ) {
         this._id = id;
         this._issuer = issuer;
@@ -62,11 +68,11 @@ export class BaseCertificate {
         this._uploadedBy = uploadedBy;
         this._assessmentStandard = assessmentStandard;
         this._assessmentAssuranceLevel = assessmentAssuranceLevel;
-        this._referenceId = referenceId;
         this._document = document;
         this._evaluationStatus = evaluationStatus;
         this._certificateType = certificateType;
         this._issueDate = issueDate;
+        this._notes = notes;
     }
 
     get id(): number {
@@ -117,14 +123,6 @@ export class BaseCertificate {
         this._assessmentAssuranceLevel = value;
     }
 
-    get referenceId(): string {
-        return this._referenceId;
-    }
-
-    set referenceId(value: string) {
-        this._referenceId = value;
-    }
-
     get document(): CertificateDocumentInfo {
         return this._document;
     }
@@ -155,5 +153,13 @@ export class BaseCertificate {
 
     set issueDate(value: Date) {
         this._issueDate = value;
+    }
+
+    get notes(): string | undefined {
+        return this._notes;
+    }
+
+    set notes(value: string | undefined) {
+        this._notes = value;
     }
 }

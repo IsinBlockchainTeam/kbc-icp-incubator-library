@@ -13,13 +13,13 @@ export class CompanyCertificate extends BaseCertificate {
         uploadedBy: string,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
-        referenceId: string,
         document: CertificateDocumentInfo,
         evaluationStatus: EvaluationStatus,
         certificateType: CertificateType,
         issueDate: Date,
         validFrom: Date,
-        validUntil: Date
+        validUntil: Date,
+        notes?: string
     ) {
         super(
             id,
@@ -28,11 +28,11 @@ export class CompanyCertificate extends BaseCertificate {
             uploadedBy,
             assessmentStandard,
             assessmentAssuranceLevel,
-            referenceId,
             document,
             evaluationStatus,
             certificateType,
-            issueDate
+            issueDate,
+            notes
         );
         this._validFrom = validFrom;
         this._validUntil = validUntil;

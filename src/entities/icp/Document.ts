@@ -4,7 +4,7 @@ export enum EvaluationStatus {
     NOT_APPROVED = 'NOT_APPROVED'
 }
 
-export type DocumentMetadata = {
-    filename: string;
-    fileType: string;
-};
+// export type DocumentMetadata = {
+//     filename: string;
+//     fileType: string;
+// };

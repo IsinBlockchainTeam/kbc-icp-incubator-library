@@ -1,4 +1,5 @@
 import { EvaluationStatus } from './Evaluation';
+import { DocumentMetadata } from './Document';
 
 export enum CertificateDocumentTypeEnum {
     CERTIFICATE_OF_CONFORMITY = 'CERTIFICATE_OF_CONFORMITY',
@@ -15,8 +16,10 @@ export type CertificateDocumentType =
     | { PRODUCTION_FACILITY_LICENSE: null };
 
 export type CertificateDocumentInfo = {
+    referenceId: string;
     documentType: CertificateDocumentType;
     externalUrl: string;
+    metadata: DocumentMetadata;
 };
 
 export enum CertificateTypeEnum {
@@ -33,11 +36,11 @@ export interface BaseCertificate {
     uploadedBy: string;
     assessmentStandard: string;
     assessmentAssuranceLevel: string;
-    referenceId: string;
     document: CertificateDocumentInfo;
     evaluationStatus: EvaluationStatus;
     certType: CertificateType;
     issueDate: bigint;
+    notes: string;
 }
 
 export interface CompanyCertificate extends BaseCertificate {

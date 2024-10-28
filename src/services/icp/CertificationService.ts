@@ -14,7 +14,7 @@ type CertificateDocument = Document & {
     documentType: CertificateDocumentType;
 };
 
-export class CertificationManagerService {
+export class CertificationService {
     private readonly _certificationManagerDriver: CertificationManagerDriver;
 
     private readonly _icpFileDriver: ICPFileDriver;
@@ -33,10 +33,10 @@ export class CertificationManagerService {
         subject: string,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
-        referenceId: string,
         document: CertificateDocument,
         validFrom: Date,
-        validUntil: Date
+        validUntil: Date,
+        notes?: string
     ): Promise<CompanyCertificate> {
         const docExternalUrl = await this._addDocument(
             URL_SEGMENTS.CERTIFICATION.COMPANY,
@@ -48,17 +48,18 @@ export class CertificationManagerService {
             subject,
             assessmentStandard,
             assessmentAssuranceLevel,
-            referenceId,
             {
+                referenceId: document.referenceId,
                 documentType: document.documentType,
                 externalUrl: docExternalUrl,
                 metadata: {
                     filename: document.filename,
-                    fileType: document.filetype
+                    fileType: document.fileType
                 }
             },
             validFrom,
-            validUntil
+            validUntil,
+            notes
         );
     }
 
@@ -68,31 +69,42 @@ export class CertificationManagerService {
         subject: string,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
-        referenceId: string,
         document: CertificateDocument,
         validFrom: Date,
         validUntil: Date,
-        processTypes: string[]
+        processTypes: string[],
+        notes?: string
     ): Promise<ScopeCertificate> {
+        console.log('issuer: ', issuer);
+        console.log('subject: ', subject);
+        console.log('assessmentStandard: ', assessmentStandard);
+        console.log('assessmentAssuranceLevel: ', assessmentAssuranceLevel);
+        console.log('document: ', document);
+        console.log('validFrom: ', validFrom);
+        console.log('validUntil: ', validUntil);
+        console.log('processTypes: ', processTypes);
         const docExternalUrl = await this._addDocument(URL_SEGMENTS.CERTIFICATION.SCOPE, document);
+        console.log('docExternalUrl: ', docExternalUrl);
+        console.log('notes: ', notes || '');
         return this._certificationManagerDriver.registerScopeCertificate(
             roleProof,
             issuer,
             subject,
             assessmentStandard,
             assessmentAssuranceLevel,
-            referenceId,
             {
+                referenceId: document.referenceId,
                 documentType: document.documentType,
                 externalUrl: docExternalUrl,
                 metadata: {
                     filename: document.filename,
-                    fileType: document.filetype
+                    fileType: document.fileType
                 }
             },
             validFrom,
             validUntil,
-            processTypes
+            processTypes,
+            notes
         );
     }
 
@@ -102,9 +114,9 @@ export class CertificationManagerService {
         subject: string,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
-        referenceId: string,
         document: CertificateDocument,
-        materialId: number
+        materialId: number,
+        notes?: string
     ): Promise<MaterialCertificate> {
         const docExternalUrl = await this._addDocument(
             URL_SEGMENTS.CERTIFICATION.MATERIAL,
@@ -116,17 +128,22 @@ export class CertificationManagerService {
             subject,
             assessmentStandard,
             assessmentAssuranceLevel,
-            referenceId,
             {
+                referenceId: document.referenceId,
                 documentType: document.documentType,
                 externalUrl: docExternalUrl,
                 metadata: {
                     filename: document.filename,
-                    fileType: document.filetype
+                    fileType: document.fileType
                 }
             },
-            materialId
+            materialId,
+            notes
         );
+    }
+
+    async getBaseCertificateById(roleProof: RoleProof, id: number): Promise<BaseCertificate> {
+        return this._certificationManagerDriver.getBaseCertificateById(roleProof, id);
     }
 
     async getBaseCertificatesInfoBySubject(
@@ -186,18 +203,18 @@ export class CertificationManagerService {
         certificateId: number,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
-        referenceId: string,
         validFrom: Date,
-        validUntil: Date
+        validUntil: Date,
+        notes?: string
     ) {
         return this._certificationManagerDriver.updateCompanyCertificate(
             roleProof,
             certificateId,
             assessmentStandard,
             assessmentAssuranceLevel,
-            referenceId,
             validFrom,
-            validUntil
+            validUntil,
+            notes
         );
     }
 
@@ -206,20 +223,20 @@ export class CertificationManagerService {
         certificateId: number,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
-        referenceId: string,
         validFrom: Date,
         validUntil: Date,
-        processTypes: string[]
+        processTypes: string[],
+        notes?: string
     ) {
         return this._certificationManagerDriver.updateScopeCertificate(
             roleProof,
             certificateId,
             assessmentStandard,
             assessmentAssuranceLevel,
-            referenceId,
             validFrom,
             validUntil,
-            processTypes
+            processTypes,
+            notes
         );
     }
 
@@ -228,16 +245,16 @@ export class CertificationManagerService {
         certificateId: number,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
-        referenceId: string,
-        materialId: number
+        materialId: number,
+        notes?: string
     ) {
         return this._certificationManagerDriver.updateMaterialCertificate(
             roleProof,
             certificateId,
             assessmentStandard,
             assessmentAssuranceLevel,
-            referenceId,
-            materialId
+            materialId,
+            notes
         );
     }
 
@@ -246,9 +263,24 @@ export class CertificationManagerService {
         certificateId: number,
         document: CertificateDocument
     ) {
-        const path = document.externalUrl.split('/').slice(0, -1).join('/');
+        const baseCertificate = await this.getBaseCertificateById(roleProof, certificateId);
+        const path = baseCertificate.document.externalUrl.split('/').slice(0, -1).join('/');
+        const externalUrl = await this._addDocumentToExtStorage(
+            `${path}/`,
+            document,
+            document.storageConfig.resourceSpec,
+            document.storageConfig.delegatedOrganizationIds
+        );
 
-        return this._certificationManagerDriver.updateDocument(roleProof, certificateId, document);
+        return this._certificationManagerDriver.updateDocument(roleProof, certificateId, {
+            referenceId: document.referenceId,
+            documentType: document.documentType,
+            externalUrl,
+            metadata: {
+                filename: document.filename,
+                fileType: document.fileType
+            }
+        });
     }
 
     async evaluateDocument(

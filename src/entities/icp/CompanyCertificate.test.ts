@@ -16,11 +16,14 @@ describe('CompanyCertificate', () => {
             'uploadedBy',
             'assessmentStandard',
             'assessmentAssuranceLevel',
-            'referenceId',
             {
-                id: 1,
+                referenceId: 'referenceId',
                 documentType: CertificateDocumentType.CERTIFICATE_OF_CONFORMITY,
-                externalUrl: 'externalUrl'
+                externalUrl: 'externalUrl',
+                metadata: {
+                    filename: 'file.pdf',
+                    fileType: 'application/pdf'
+                }
             },
             EvaluationStatus.NOT_EVALUATED,
             CertificateType.COMPANY,
@@ -37,11 +40,14 @@ describe('CompanyCertificate', () => {
         expect(companyCertificate.uploadedBy).toEqual('uploadedBy');
         expect(companyCertificate.assessmentStandard).toEqual('assessmentStandard');
         expect(companyCertificate.assessmentAssuranceLevel).toEqual('assessmentAssuranceLevel');
-        expect(companyCertificate.referenceId).toEqual('referenceId');
         expect(companyCertificate.document).toEqual({
-            id: 1,
+            referenceId: 'referenceId',
             documentType: CertificateDocumentType.CERTIFICATE_OF_CONFORMITY,
-            externalUrl: 'externalUrl'
+            externalUrl: 'externalUrl',
+            metadata: {
+                filename: 'file.pdf',
+                fileType: 'application/pdf'
+            }
         });
         expect(companyCertificate.evaluationStatus).toEqual(EvaluationStatus.NOT_EVALUATED);
         expect(companyCertificate.certificateType).toEqual(CertificateType.COMPANY);
@@ -80,21 +86,24 @@ describe('CompanyCertificate', () => {
         expect(companyCertificate.assessmentAssuranceLevel).toEqual('newAssessmentAssuranceLevel');
     });
 
-    it('should correctly set the referenceId', () => {
-        companyCertificate.referenceId = 'newReferenceId';
-        expect(companyCertificate.referenceId).toEqual('newReferenceId');
-    });
-
     it('should correctly set the document', () => {
         companyCertificate.document = {
-            id: 2,
+            referenceId: 'newReferenceId',
             documentType: CertificateDocumentType.COUNTRY_OF_ORIGIN,
-            externalUrl: 'newExternalUrl'
+            externalUrl: 'newExternalUrl',
+            metadata: {
+                filename: 'file_updated.pdf',
+                fileType: 'application/pdf'
+            }
         };
         expect(companyCertificate.document).toEqual({
-            id: 2,
+            referenceId: 'newReferenceId',
             documentType: CertificateDocumentType.COUNTRY_OF_ORIGIN,
-            externalUrl: 'newExternalUrl'
+            externalUrl: 'newExternalUrl',
+            metadata: {
+                filename: 'file_updated.pdf',
+                fileType: 'application/pdf'
+            }
         });
     });
 

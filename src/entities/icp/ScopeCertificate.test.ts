@@ -17,11 +17,14 @@ describe('ScopeCertificate', () => {
             'uploadedBy',
             'assessmentStandard',
             'assessmentAssuranceLevel',
-            'referenceId',
             {
-                id: 1,
+                referenceId: 'referenceId',
                 documentType: CertificateDocumentType.CERTIFICATE_OF_CONFORMITY,
-                externalUrl: 'externalUrl'
+                externalUrl: 'externalUrl',
+                metadata: {
+                    filename: 'file.pdf',
+                    fileType: 'application/pdf'
+                }
             },
             EvaluationStatus.NOT_EVALUATED,
             CertificateType.SCOPE,
@@ -39,11 +42,14 @@ describe('ScopeCertificate', () => {
         expect(scopeCertificate.uploadedBy).toEqual('uploadedBy');
         expect(scopeCertificate.assessmentStandard).toEqual('assessmentStandard');
         expect(scopeCertificate.assessmentAssuranceLevel).toEqual('assessmentAssuranceLevel');
-        expect(scopeCertificate.referenceId).toEqual('referenceId');
         expect(scopeCertificate.document).toEqual({
-            id: 1,
+            referenceId: 'referenceId',
             documentType: CertificateDocumentType.CERTIFICATE_OF_CONFORMITY,
-            externalUrl: 'externalUrl'
+            externalUrl: 'externalUrl',
+            metadata: {
+                filename: 'file.pdf',
+                fileType: 'application/pdf'
+            }
         });
         expect(scopeCertificate.evaluationStatus).toEqual(EvaluationStatus.NOT_EVALUATED);
         expect(scopeCertificate.certificateType).toEqual(CertificateType.SCOPE);
@@ -83,21 +89,24 @@ describe('ScopeCertificate', () => {
         expect(scopeCertificate.assessmentAssuranceLevel).toEqual('newAssessmentAssuranceLevel');
     });
 
-    it('should correctly set the referenceId', () => {
-        scopeCertificate.referenceId = 'newReferenceId';
-        expect(scopeCertificate.referenceId).toEqual('newReferenceId');
-    });
-
     it('should correctly set the document', () => {
         scopeCertificate.document = {
-            id: 2,
+            referenceId: 'newReferenceId',
             documentType: CertificateDocumentType.COUNTRY_OF_ORIGIN,
-            externalUrl: 'newExternalUrl'
+            externalUrl: 'newExternalUrl',
+            metadata: {
+                filename: 'file_updated.pdf',
+                fileType: 'application/pdf'
+            }
         };
         expect(scopeCertificate.document).toEqual({
-            id: 2,
+            referenceId: 'newReferenceId',
             documentType: CertificateDocumentType.COUNTRY_OF_ORIGIN,
-            externalUrl: 'newExternalUrl'
+            externalUrl: 'newExternalUrl',
+            metadata: {
+                filename: 'file_updated.pdf',
+                fileType: 'application/pdf'
+            }
         });
     });
 

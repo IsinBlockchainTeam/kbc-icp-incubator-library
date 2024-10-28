@@ -3,8 +3,9 @@ import { ICPFileDriver } from '../../drivers/ICPFileDriver';
 import { URLStructure } from '../../types/URLStructure';
 
 export type Document = {
+    referenceId: string;
     filename: string;
-    filetype: string;
+    fileType: string;
     fileContent: Uint8Array;
     storageConfig: {
         urlStructure: URLStructure;

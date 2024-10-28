@@ -11,12 +11,12 @@ export class MaterialCertificate extends BaseCertificate {
         uploadedBy: string,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
-        referenceId: string,
         document: CertificateDocumentInfo,
         evaluationStatus: EvaluationStatus,
         certificateType: CertificateType,
         issueDate: Date,
-        materialId: number
+        materialId: number,
+        notes?: string
     ) {
         super(
             id,
@@ -25,11 +25,11 @@ export class MaterialCertificate extends BaseCertificate {
             uploadedBy,
             assessmentStandard,
             assessmentAssuranceLevel,
-            referenceId,
             document,
             evaluationStatus,
             certificateType,
-            issueDate
+            issueDate,
+            notes
         );
         this._materialId = materialId;
     }

@@ -78,11 +78,11 @@ export class EntityBuilder {
             baseCertificate.uploadedBy,
             baseCertificate.assessmentStandard,
             baseCertificate.assessmentAssuranceLevel,
-            baseCertificate.referenceId,
             this._buildCertificateDocumentInfo(baseCertificate.document),
             this._buildDocumentEvaluationStatus(baseCertificate.evaluationStatus),
             this._buildCertificateType(baseCertificate.certType),
-            new Date(Number(baseCertificate.issueDate) * 1000)
+            new Date(Number(baseCertificate.issueDate)),
+            baseCertificate.notes
         );
     }
 
@@ -94,13 +94,13 @@ export class EntityBuilder {
             companyCertificate.uploadedBy,
             companyCertificate.assessmentStandard,
             companyCertificate.assessmentAssuranceLevel,
-            companyCertificate.referenceId,
             this._buildCertificateDocumentInfo(companyCertificate.document),
             this._buildDocumentEvaluationStatus(companyCertificate.evaluationStatus),
             this._buildCertificateType(companyCertificate.certType),
-            new Date(Number(companyCertificate.issueDate)),
+            new Date(Number(companyCertificate.issueDate) / 1000),
             new Date(Number(companyCertificate.validFrom)),
-            new Date(Number(companyCertificate.validUntil))
+            new Date(Number(companyCertificate.validUntil)),
+            companyCertificate.notes
         );
     }
 
@@ -112,14 +112,14 @@ export class EntityBuilder {
             scopeCertificate.uploadedBy,
             scopeCertificate.assessmentStandard,
             scopeCertificate.assessmentAssuranceLevel,
-            scopeCertificate.referenceId,
             this._buildCertificateDocumentInfo(scopeCertificate.document),
             this._buildDocumentEvaluationStatus(scopeCertificate.evaluationStatus),
             this._buildCertificateType(scopeCertificate.certType),
-            new Date(Number(scopeCertificate.issueDate)),
+            new Date(Number(scopeCertificate.issueDate) / 1000),
             scopeCertificate.processTypes,
             new Date(Number(scopeCertificate.validFrom)),
-            new Date(Number(scopeCertificate.validUntil))
+            new Date(Number(scopeCertificate.validUntil)),
+            scopeCertificate.notes
         );
     }
 
@@ -133,12 +133,12 @@ export class EntityBuilder {
             materialCertificate.uploadedBy,
             materialCertificate.assessmentStandard,
             materialCertificate.assessmentAssuranceLevel,
-            materialCertificate.referenceId,
             this._buildCertificateDocumentInfo(materialCertificate.document),
             this._buildDocumentEvaluationStatus(materialCertificate.evaluationStatus),
             this._buildCertificateType(materialCertificate.certType),
-            new Date(Number(materialCertificate.issueDate)),
-            Number(materialCertificate.materialId)
+            new Date(Number(materialCertificate.issueDate) / 1000),
+            Number(materialCertificate.materialId),
+            materialCertificate.notes
         );
     }
 
@@ -146,9 +146,10 @@ export class EntityBuilder {
         document: CertificateDocumentInfo
     ): ICPCertificateDocumentInfo {
         return {
-            id: BigInt(document.id),
+            referenceId: document.referenceId,
             documentType: this.buildICPCertificateDocumentType(document.documentType),
-            externalUrl: document.externalUrl
+            externalUrl: document.externalUrl,
+            metadata: document.metadata
         };
     }
 
@@ -211,9 +212,10 @@ export class EntityBuilder {
         document: ICPCertificateDocumentInfo
     ): CertificateDocumentInfo {
         return {
-            id: Number(document.id),
+            referenceId: document.referenceId,
             documentType: this._buildCertificateDocumentType(document.documentType),
-            externalUrl: document.externalUrl
+            externalUrl: document.externalUrl,
+            metadata: document.metadata
         };
     }
 

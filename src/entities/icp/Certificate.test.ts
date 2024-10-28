@@ -13,11 +13,14 @@ describe('Certificate', () => {
             'uploadedBy',
             'assessmentStandard',
             'assessmentAssuranceLevel',
-            'referenceId',
             {
-                id: 1,
+                referenceId: 'referenceId',
                 documentType: CertificateDocumentType.CERTIFICATE_OF_CONFORMITY,
-                externalUrl: 'externalUrl'
+                externalUrl: 'externalUrl',
+                metadata: {
+                    filename: 'file.pdf',
+                    fileType: 'application/pdf'
+                }
             },
             EvaluationStatus.NOT_EVALUATED,
             CertificateType.COMPANY,
@@ -31,8 +34,13 @@ describe('Certificate', () => {
         expect(certificate.subject).toEqual('subject');
         expect(certificate.assessmentStandard).toEqual('assessmentStandard');
         expect(certificate.document).toEqual({
-            id: 1,
-            documentType: CertificateDocumentType.CERTIFICATE_OF_CONFORMITY
+            referenceId: 'referenceId',
+            documentType: CertificateDocumentType.CERTIFICATE_OF_CONFORMITY,
+            externalUrl: 'externalUrl',
+            metadata: {
+                filename: 'file.pdf',
+                fileType: 'application/pdf'
+            }
         });
         expect(certificate.evaluationStatus).toEqual(EvaluationStatus.NOT_EVALUATED);
         expect(certificate.certificateType).toEqual(CertificateType.COMPANY);
@@ -69,21 +77,24 @@ describe('Certificate', () => {
         expect(certificate.assessmentAssuranceLevel).toEqual('newAssessmentAssuranceLevel');
     });
 
-    it('should correctly set the referenceId', () => {
-        certificate.referenceId = 'newReferenceId';
-        expect(certificate.referenceId).toEqual('newReferenceId');
-    });
-
     it('should correctly set the document', () => {
         certificate.document = {
-            id: 2,
+            referenceId: 'newReferenceId',
             documentType: CertificateDocumentType.COUNTRY_OF_ORIGIN,
-            externalUrl: 'newExternalUrl'
+            externalUrl: 'newExternalUrl',
+            metadata: {
+                filename: 'file_updated.pdf',
+                fileType: 'application/pdf'
+            }
         };
         expect(certificate.document).toEqual({
-            id: 2,
+            referenceId: 'newReferenceId',
             documentType: CertificateDocumentType.COUNTRY_OF_ORIGIN,
-            externalUrl: 'newExternalUrl'
+            externalUrl: 'newExternalUrl',
+            metadata: {
+                filename: 'file_updated.pdf',
+                fileType: 'application/pdf'
+            }
         });
     });
 

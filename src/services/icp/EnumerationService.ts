@@ -1,7 +1,7 @@
 import { EnumerationManagerDriver } from '../../drivers/icp/EnumerationManagerDriver';
 import { Enumeration } from '../../entities/icp/Enumeration';
 
-export class EnumerationManagerService {
+export class EnumerationService {
     private readonly _enumerationManagerDriver: EnumerationManagerDriver;
 
     constructor(enumerationManagerDriver: EnumerationManagerDriver) {

@@ -7,6 +7,11 @@ export type Document = {
     uploadedBy: string;
 };
 
+export type DocumentMetadata = {
+    filename: string;
+    fileType: string;
+};
+
 export enum DocumentTypeEnum {
     // shipment document types
     SERVICE_GUIDE = 'SERVICE_GUIDE',

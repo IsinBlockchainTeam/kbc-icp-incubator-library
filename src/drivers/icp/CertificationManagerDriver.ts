@@ -27,10 +27,10 @@ export class CertificationManagerDriver {
         subject: string,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
-        referenceId: string,
         document: CertificateDocumentInfo,
         validFrom: Date,
-        validUntil: Date
+        validUntil: Date,
+        notes?: string
     ): Promise<CompanyCertificate> {
         const certificate = await this._actor.registerCompanyCertificate(
             roleProof,
@@ -38,10 +38,10 @@ export class CertificationManagerDriver {
             subject,
             assessmentStandard,
             assessmentAssuranceLevel,
-            referenceId,
             EntityBuilder.buildICPCertificateDocumentInfo(document),
             BigInt(validFrom.getTime()),
-            BigInt(validUntil.getTime())
+            BigInt(validUntil.getTime()),
+            notes || ''
         );
         return EntityBuilder.buildCompanyCertificate(certificate);
     }
@@ -52,11 +52,11 @@ export class CertificationManagerDriver {
         subject: string,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
-        referenceId: string,
         document: CertificateDocumentInfo,
         validFrom: Date,
         validUntil: Date,
-        processTypes: string[]
+        processTypes: string[],
+        notes?: string
     ): Promise<ScopeCertificate> {
         const certificate = await this._actor.registerScopeCertificate(
             roleProof,
@@ -64,11 +64,11 @@ export class CertificationManagerDriver {
             subject,
             assessmentStandard,
             assessmentAssuranceLevel,
-            referenceId,
             EntityBuilder.buildICPCertificateDocumentInfo(document),
             BigInt(validFrom.getTime()),
             BigInt(validUntil.getTime()),
-            processTypes
+            processTypes,
+            notes || ''
         );
         return EntityBuilder.buildScopeCertificate(certificate);
     }
@@ -79,9 +79,9 @@ export class CertificationManagerDriver {
         subject: string,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
-        referenceId: string,
         document: CertificateDocumentInfo,
-        materialId: number
+        materialId: number,
+        notes?: string
     ): Promise<MaterialCertificate> {
         const certificate = await this._actor.registerMaterialCertificate(
             roleProof,
@@ -89,11 +89,16 @@ export class CertificationManagerDriver {
             subject,
             assessmentStandard,
             assessmentAssuranceLevel,
-            referenceId,
             EntityBuilder.buildICPCertificateDocumentInfo(document),
-            BigInt(materialId)
+            BigInt(materialId),
+            notes || ''
         );
         return EntityBuilder.buildMaterialCertificate(certificate);
+    }
+
+    async getBaseCertificateById(roleProof: RoleProof, id: number): Promise<BaseCertificate> {
+        const certificate = await this._actor.getBaseCertificateById(roleProof, BigInt(id));
+        return EntityBuilder.buildBaseCertificate(certificate);
     }
 
     async getBaseCertificatesInfoBySubject(
@@ -161,18 +166,18 @@ export class CertificationManagerDriver {
         certificateId: number,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
-        referenceId: string,
         validFrom: Date,
-        validUntil: Date
+        validUntil: Date,
+        notes?: string
     ) {
         return this._actor.updateCompanyCertificate(
             roleProof,
             BigInt(certificateId),
             assessmentStandard,
             assessmentAssuranceLevel,
-            referenceId,
             BigInt(validFrom.getTime()),
-            BigInt(validUntil.getTime())
+            BigInt(validUntil.getTime()),
+            notes || ''
         );
     }
 
@@ -181,20 +186,20 @@ export class CertificationManagerDriver {
         certificateId: number,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
-        referenceId: string,
         validFrom: Date,
         validUntil: Date,
-        processTypes: string[]
+        processTypes: string[],
+        notes?: string
     ) {
         return this._actor.updateScopeCertificate(
             roleProof,
             BigInt(certificateId),
             assessmentStandard,
             assessmentAssuranceLevel,
-            referenceId,
             BigInt(validFrom.getTime()),
             BigInt(validUntil.getTime()),
-            processTypes
+            processTypes,
+            notes || ''
         );
     }
 
@@ -203,16 +208,16 @@ export class CertificationManagerDriver {
         certificateId: number,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
-        referenceId: string,
-        materialId: number
+        materialId: number,
+        notes?: string
     ) {
         return this._actor.updateMaterialCertificate(
             roleProof,
             BigInt(certificateId),
             assessmentStandard,
             assessmentAssuranceLevel,
-            referenceId,
-            BigInt(materialId)
+            BigInt(materialId),
+            notes || ''
         );
     }
 

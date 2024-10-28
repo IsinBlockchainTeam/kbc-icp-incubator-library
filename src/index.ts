@@ -127,7 +127,7 @@ export { ProductCategoryService as ICPProductCategoryService } from './services/
 
 // certification
 export { CertificationManagerDriver as ICPCertificationManagerDriver } from './drivers/icp/CertificationManagerDriver';
-export { CertificationManagerService as ICPCertificationManagerService } from './services/icp/CertificationManagerService';
+export { CertificationService as ICPCertificationManagerService } from './services/icp/CertificationService';
 export {
     BaseCertificate as ICPBaseCertificate,
     CertificateType as ICPCertificateType,
@@ -140,5 +140,5 @@ export { MaterialCertificate as ICPMaterialCertificate } from './entities/icp/Ma
 
 // enumerations
 export { EnumerationManagerDriver as ICPEnumerationManagerDriver } from './drivers/icp/EnumerationManagerDriver';
-export { EnumerationManagerService as ICPEnumerationManagerService } from './services/icp/EnumerationManagerService';
+export { EnumerationService as ICPEnumerationManagerService } from './services/icp/EnumerationService';
 export { Enumeration as ICPEnumeration } from './entities/icp/Enumeration';

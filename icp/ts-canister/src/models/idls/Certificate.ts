@@ -10,8 +10,13 @@ export const CertificateDocumentType = IDL.Variant({
 });
 
 export const CertificateDocumentInfo = IDL.Record({
+    referenceId: IDL.Text,
     documentType: CertificateDocumentType,
-    externalUrl: IDL.Text
+    externalUrl: IDL.Text,
+    metadata: IDL.Record({
+        filename: IDL.Text,
+        fileType: IDL.Text
+    })
 });
 
 export const CertificateType = IDL.Variant({
@@ -27,11 +32,11 @@ const BaseCertificateType = {
     uploadedBy: IDL.Text,
     assessmentStandard: IDL.Text,
     assessmentAssuranceLevel: IDL.Text,
-    referenceId: IDL.Text,
     document: CertificateDocumentInfo,
     evaluationStatus: EvaluationStatus,
     certType: CertificateType,
-    issueDate: IDL.Nat
+    issueDate: IDL.Nat,
+    notes: IDL.Text
 };
 export const BaseCertificate = IDL.Record({
     ...BaseCertificateType

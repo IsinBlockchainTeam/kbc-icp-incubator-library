@@ -14,11 +14,14 @@ describe('MaterialCertificate', () => {
             'uploadedBy',
             'assessmentStandard',
             'assessmentAssuranceLevel',
-            'referenceId',
             {
-                id: 1,
+                referenceId: 'referenceId',
                 documentType: CertificateDocumentType.PRODUCTION_REPORT,
-                externalUrl: 'externalUrl'
+                externalUrl: 'externalUrl',
+                metadata: {
+                    filename: 'file.pdf',
+                    fileType: 'application/pdf'
+                }
             },
             EvaluationStatus.NOT_EVALUATED,
             CertificateType.MATERIAL,
@@ -34,11 +37,14 @@ describe('MaterialCertificate', () => {
         expect(materialCertificate.uploadedBy).toEqual('uploadedBy');
         expect(materialCertificate.assessmentStandard).toEqual('assessmentStandard');
         expect(materialCertificate.assessmentAssuranceLevel).toEqual('assessmentAssuranceLevel');
-        expect(materialCertificate.referenceId).toEqual('referenceId');
         expect(materialCertificate.document).toEqual({
-            id: 1,
+            referenceId: 'referenceId',
             documentType: CertificateDocumentType.PRODUCTION_REPORT,
-            externalUrl: 'externalUrl'
+            externalUrl: 'externalUrl',
+            metadata: {
+                filename: 'file.pdf',
+                fileType: 'application/pdf'
+            }
         });
         expect(materialCertificate.evaluationStatus).toEqual(EvaluationStatus.NOT_EVALUATED);
         expect(materialCertificate.certificateType).toEqual(CertificateType.MATERIAL);
@@ -76,21 +82,24 @@ describe('MaterialCertificate', () => {
         expect(materialCertificate.assessmentAssuranceLevel).toEqual('newAssessmentAssuranceLevel');
     });
 
-    it('should correctly set the referenceId', () => {
-        materialCertificate.referenceId = 'newReferenceId';
-        expect(materialCertificate.referenceId).toEqual('newReferenceId');
-    });
-
     it('should correctly set the document', () => {
         materialCertificate.document = {
-            id: 2,
+            referenceId: 'newReferenceId',
             documentType: CertificateDocumentType.PRODUCTION_FACILITY_LICENSE,
-            externalUrl: 'newExternalUrl'
+            externalUrl: 'newExternalUrl',
+            metadata: {
+                filename: 'file_updated.pdf',
+                fileType: 'application/pdf'
+            }
         };
         expect(materialCertificate.document).toEqual({
-            id: 2,
+            referenceId: 'newReferenceId',
             documentType: CertificateDocumentType.PRODUCTION_FACILITY_LICENSE,
-            externalUrl: 'newExternalUrl'
+            externalUrl: 'newExternalUrl',
+            metadata: {
+                filename: 'file_updated.pdf',
+                fileType: 'application/pdf'
+            }
         });
     });
 
