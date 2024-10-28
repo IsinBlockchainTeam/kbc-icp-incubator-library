@@ -52,6 +52,7 @@ class MaterialService {
         return material;
     }
 
+    // TODO: Spostare in productCategoryService
     productCategoryExists(productCategoryId: bigint): boolean {
         try {
             this._productCategoryService.getProductCategory(productCategoryId);

@@ -1,6 +1,6 @@
 import ProductCategoryController from "../ProductCategoryController";
 import ProductCategoryService from "../../services/ProductCategoryService";
-import {ProductCategory, RoleProof} from "../../models/types";
+import {ProductCategory} from "../../models/types";
 import {update} from "azle";
 import {OnlyEditor, OnlyViewer} from "../../decorators/roles";
 jest.mock('azle');
@@ -17,32 +17,31 @@ jest.mock('../../services/ProductCategoryService', () => {
     };
 });
 describe('ProductCategoryController', () => {
-    const roleProof = {} as RoleProof;
     let productCategoryServiceInstanceMock = ProductCategoryService.instance as jest.Mocked<ProductCategoryService>;
     let productCategoryController = new ProductCategoryController();
 
     it.each([
         {
             controllerFunctionName: 'getProductCategories',
-            controllerFunction: () => productCategoryController.getProductCategories(roleProof),
+            controllerFunction: () => productCategoryController.getProductCategories(),
             serviceFunction: productCategoryServiceInstanceMock.getProductCategories,
             expectedResult: [{name: 'test'} as ProductCategory],
             expectedDecorators: [update, OnlyViewer],
         }, {
             controllerFunctionName: 'getProductCategory',
-            controllerFunction: () => productCategoryController.getProductCategory(roleProof, 1n),
+            controllerFunction: () => productCategoryController.getProductCategory(1n),
             serviceFunction: productCategoryServiceInstanceMock.getProductCategory,
             expectedResult: {name: 'test'} as ProductCategory,
             expectedDecorators: [update, OnlyViewer],
         }, {
             controllerFunctionName: 'createProductCategory',
-            controllerFunction: () => productCategoryController.createProductCategory(roleProof, 'test', 1n, 'test'),
+            controllerFunction: () => productCategoryController.createProductCategory('test', 1n, 'test'),
             serviceFunction: productCategoryServiceInstanceMock.createProductCategory,
             expectedResult: {name: 'test'} as ProductCategory,
             expectedDecorators: [update, OnlyEditor],
         }, {
             controllerFunctionName: 'updateProductCategory',
-            controllerFunction: () => productCategoryController.updateProductCategory(roleProof, 1n, 'test', 1n, 'test'),
+            controllerFunction: () => productCategoryController.updateProductCategory(1n, 'test', 1n, 'test'),
             serviceFunction: productCategoryServiceInstanceMock.updateProductCategory,
             expectedResult: {name: 'test'} as ProductCategory,
             expectedDecorators: [update, OnlyEditor],

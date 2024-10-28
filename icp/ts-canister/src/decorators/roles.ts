@@ -1,6 +1,7 @@
 import {ic} from "azle/experimental";
 import AuthenticationService from "../services/AuthenticationService";
 
+// TODO: Rename to AtLeast...
 function OnlyRole(role: string, originalMethod: any, _context: any) {
     async function replacementMethod(this: any, ...args: any[]) {
         const isAuthenticated = AuthenticationService.instance.isAuthenticated(ic.caller());

@@ -1,6 +1,6 @@
 import MaterialController from "../MaterialController";
 import MaterialService from "../../services/MaterialService";
-import {Material, RoleProof} from "../../models/types";
+import {Material} from "../../models/types";
 import {update} from "azle";
 import {OnlyEditor, OnlyViewer} from "../../decorators/roles";
 jest.mock('azle');
@@ -17,32 +17,31 @@ jest.mock('../../services/MaterialService', () => {
     };
 });
 describe('MaterialController', () => {
-    const roleProof = {} as RoleProof;
     let materialServiceInstanceMock = MaterialService.instance as jest.Mocked<MaterialService>;
     let materialController = new MaterialController();
 
     it.each([
         {
             controllerFunctionName: 'getMaterials',
-            controllerFunction: () => materialController.getMaterials(roleProof),
+            controllerFunction: () => materialController.getMaterials(),
             serviceFunction: materialServiceInstanceMock.getMaterials,
             expectedResult: [{id: 1n} as Material],
             expectedDecorators: [update, OnlyViewer],
         }, {
             controllerFunctionName: 'getMaterial',
-            controllerFunction: () => materialController.getMaterial(roleProof, 1n),
+            controllerFunction: () => materialController.getMaterial(1n),
             serviceFunction: materialServiceInstanceMock.getMaterial,
             expectedResult: {id: 1n} as Material,
             expectedDecorators: [update, OnlyViewer],
         }, {
             controllerFunctionName: 'createMaterial',
-            controllerFunction: () => materialController.createMaterial(roleProof, 1n),
+            controllerFunction: () => materialController.createMaterial(1n),
             serviceFunction: materialServiceInstanceMock.createMaterial,
             expectedResult: {id: 1n} as Material,
             expectedDecorators: [update, OnlyEditor],
         }, {
             controllerFunctionName: 'updateMaterial',
-            controllerFunction: () => materialController.updateMaterial(roleProof, 1n, 1n),
+            controllerFunction: () => materialController.updateMaterial(1n, 1n),
             serviceFunction: materialServiceInstanceMock.updateMaterial,
             expectedResult: {id: 1n} as Material,
             expectedDecorators: [update, OnlyEditor],
