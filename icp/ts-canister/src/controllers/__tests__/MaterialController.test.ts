@@ -2,7 +2,7 @@ import MaterialController from "../MaterialController";
 import MaterialService from "../../services/MaterialService";
 import {Material} from "../../models/types";
 import {update} from "azle";
-import {OnlyEditor, OnlyViewer} from "../../decorators/roles";
+import {AtLeastEditor, AtLeastViewer} from "../../decorators/roles";
 jest.mock('azle');
 jest.mock('../../decorators/roles');
 jest.mock('../../models/idls');
@@ -26,25 +26,25 @@ describe('MaterialController', () => {
             controllerFunction: () => materialController.getMaterials(),
             serviceFunction: materialServiceInstanceMock.getMaterials,
             expectedResult: [{id: 1n} as Material],
-            expectedDecorators: [update, OnlyViewer],
+            expectedDecorators: [update, AtLeastViewer],
         }, {
             controllerFunctionName: 'getMaterial',
             controllerFunction: () => materialController.getMaterial(1n),
             serviceFunction: materialServiceInstanceMock.getMaterial,
             expectedResult: {id: 1n} as Material,
-            expectedDecorators: [update, OnlyViewer],
+            expectedDecorators: [update, AtLeastViewer],
         }, {
             controllerFunctionName: 'createMaterial',
             controllerFunction: () => materialController.createMaterial(1n),
             serviceFunction: materialServiceInstanceMock.createMaterial,
             expectedResult: {id: 1n} as Material,
-            expectedDecorators: [update, OnlyEditor],
+            expectedDecorators: [update, AtLeastEditor],
         }, {
             controllerFunctionName: 'updateMaterial',
             controllerFunction: () => materialController.updateMaterial(1n, 1n),
             serviceFunction: materialServiceInstanceMock.updateMaterial,
             expectedResult: {id: 1n} as Material,
-            expectedDecorators: [update, OnlyEditor],
+            expectedDecorators: [update, AtLeastEditor],
         },
     ])
     ('should cass service $serviceFunctionName', async (

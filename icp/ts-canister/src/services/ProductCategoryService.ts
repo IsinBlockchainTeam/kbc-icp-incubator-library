@@ -26,6 +26,10 @@ class ProductCategoryService {
         throw new Error('Product category not found');
     }
 
+    productCategoryExists(id: bigint): boolean {
+        const result = this._productCategories.get(id);
+        return !!result;
+    }
 
     createProductCategory(name: string, quality: bigint, description: string): ProductCategory {
         const id = BigInt(this._productCategories.keys().length);
