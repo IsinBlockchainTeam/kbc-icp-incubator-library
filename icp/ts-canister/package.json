@@ -12,7 +12,8 @@
     "dependencies": {
         "@types/jest": "^29.5.14",
         "azle": "^0.24.1",
-        "ethers": "^6.13.2"
+        "ethers": "^6.13.2",
+        "prettier": "^3.3.3"
     },
     "devDependencies": {
         "jest": "^29.7.0",
