@@ -222,7 +222,7 @@ class CertificationController {
         return CertificationService.instance.updateDocument(roleProof, certificateId, document);
     }
 
-    @update([IDLRoleProof, IDL.Nat, IDL.Nat, IDLEvaluationStatus])
+    @update([IDLRoleProof, IDL.Nat, IDLEvaluationStatus])
     @OnlyEditor
     async evaluateCertificateDocument(roleProof: RoleProof, certificateId: bigint, evaluation: EvaluationStatus): Promise<void> {
         return CertificationService.instance.evaluateDocument(roleProof, certificateId, evaluation);

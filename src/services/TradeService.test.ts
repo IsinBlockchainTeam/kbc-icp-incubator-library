@@ -141,7 +141,7 @@ describe('TradeService', () => {
             expect(mockedIcpFileDriver.create).toHaveBeenNthCalledWith(
                 2,
                 FileHelpers.getBytesFromObject({
-                    fileName: resourceSpec.name,
+                    filename: resourceSpec.name,
                     documentType: DocumentType.DELIVERY_NOTE,
                     date: new Date(),
                     transactionLines,

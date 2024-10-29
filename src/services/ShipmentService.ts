@@ -19,12 +19,12 @@ export type ShipmentPhaseDocument = {
 };
 export type ShipmentDocument = {
     id: number;
-    fileName: string;
+    filename: string;
     documentType: DocumentType;
     fileContent: Uint8Array;
 };
 export type ShipmentDocumentMetadata = {
-    fileName: string;
+    filename: string;
     documentType: DocumentType;
     date: Date;
     documentReferenceId: string;
@@ -140,13 +140,13 @@ export class ShipmentService {
         delegatedOrganizationIds: number[] = []
     ): Promise<void> {
         const shipmentExternalUrl = (await this.getShipment(roleProof)).externalUrl;
-        const fileName = FileHelpers.removeFileExtension(resourceSpec.name);
+        const filename = FileHelpers.removeFileExtension(resourceSpec.name);
         const spec = { ...resourceSpec };
         spec.name = `${shipmentExternalUrl}/${URL_SEGMENTS.FILE}${spec.name}`;
         const contentHash = FileHelpers.getHash(fileContent).toString();
         await this._icpFileDriver.create(fileContent, spec, delegatedOrganizationIds);
         const documentMetadata: ShipmentDocumentMetadata = {
-            fileName: spec.name,
+            filename: spec.name,
             documentReferenceId,
             documentType,
             date: new Date()
@@ -154,7 +154,7 @@ export class ShipmentService {
         await this._icpFileDriver.create(
             FileHelpers.getBytesFromObject(documentMetadata),
             {
-                name: `${shipmentExternalUrl}/${URL_SEGMENTS.FILE}${fileName}-metadata.json`,
+                name: `${shipmentExternalUrl}/${URL_SEGMENTS.FILE}${filename}-metadata.json`,
                 type: 'application/json'
             },
             delegatedOrganizationIds
@@ -177,13 +177,13 @@ export class ShipmentService {
             const documentMetadata: ShipmentDocumentMetadata = FileHelpers.getObjectFromBytes(
                 await this._icpFileDriver.read(`${path}/${metadataName}-metadata.json`)
             ) as ShipmentDocumentMetadata;
-            const fileName = documentMetadata.fileName;
+            const filename = documentMetadata.filename;
             const documentType = documentMetadata.documentType;
 
             const fileContent = await this._icpFileDriver.read(documentInfo.externalUrl);
             return {
                 id: documentInfo.id,
-                fileName,
+                filename,
                 documentType,
                 fileContent
             };

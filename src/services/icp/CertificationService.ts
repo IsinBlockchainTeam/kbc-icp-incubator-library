@@ -1,7 +1,11 @@
 import { RoleProof } from '@kbc-lib/azle-types';
 import { FileHelpers, ICPResourceSpec } from '@blockchain-lib/common';
-import { CertificationManagerDriver } from '../../drivers/icp/CertificationManagerDriver';
-import { BaseCertificate, CertificateDocumentType } from '../../entities/icp/Certificate';
+import { CertificationDriver } from '../../drivers/icp/CertificationDriver';
+import {
+    BaseCertificate,
+    CertificateDocument,
+    CertificateDocumentType
+} from '../../entities/icp/Certificate';
 import { CompanyCertificate } from '../../entities/icp/CompanyCertificate';
 import { ScopeCertificate } from '../../entities/icp/ScopeCertificate';
 import { MaterialCertificate } from '../../entities/icp/MaterialCertificate';
@@ -10,19 +14,16 @@ import { Document } from './DocumentService';
 import { ICPFileDriver } from '../../drivers/ICPFileDriver';
 import { URL_SEGMENTS } from '../../constants/ICP';
 
-type CertificateDocument = Document & {
+type CertificateDocumentRequest = Document & {
     documentType: CertificateDocumentType;
 };
 
 export class CertificationService {
-    private readonly _certificationManagerDriver: CertificationManagerDriver;
+    private readonly _certificationManagerDriver: CertificationDriver;
 
     private readonly _icpFileDriver: ICPFileDriver;
 
-    constructor(
-        certificationManagerDriver: CertificationManagerDriver,
-        icpFileDriver: ICPFileDriver
-    ) {
+    constructor(certificationManagerDriver: CertificationDriver, icpFileDriver: ICPFileDriver) {
         this._certificationManagerDriver = certificationManagerDriver;
         this._icpFileDriver = icpFileDriver;
     }
@@ -33,7 +34,7 @@ export class CertificationService {
         subject: string,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
-        document: CertificateDocument,
+        document: CertificateDocumentRequest,
         validFrom: Date,
         validUntil: Date,
         notes?: string
@@ -69,23 +70,13 @@ export class CertificationService {
         subject: string,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
-        document: CertificateDocument,
+        document: CertificateDocumentRequest,
         validFrom: Date,
         validUntil: Date,
         processTypes: string[],
         notes?: string
     ): Promise<ScopeCertificate> {
-        console.log('issuer: ', issuer);
-        console.log('subject: ', subject);
-        console.log('assessmentStandard: ', assessmentStandard);
-        console.log('assessmentAssuranceLevel: ', assessmentAssuranceLevel);
-        console.log('document: ', document);
-        console.log('validFrom: ', validFrom);
-        console.log('validUntil: ', validUntil);
-        console.log('processTypes: ', processTypes);
         const docExternalUrl = await this._addDocument(URL_SEGMENTS.CERTIFICATION.SCOPE, document);
-        console.log('docExternalUrl: ', docExternalUrl);
-        console.log('notes: ', notes || '');
         return this._certificationManagerDriver.registerScopeCertificate(
             roleProof,
             issuer,
@@ -114,7 +105,7 @@ export class CertificationService {
         subject: string,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
-        document: CertificateDocument,
+        document: CertificateDocumentRequest,
         materialId: number,
         notes?: string
     ): Promise<MaterialCertificate> {
@@ -261,40 +252,63 @@ export class CertificationService {
     async updateDocument(
         roleProof: RoleProof,
         certificateId: number,
-        document: CertificateDocument
+        document: CertificateDocumentRequest
     ) {
         const baseCertificate = await this.getBaseCertificateById(roleProof, certificateId);
-        const path = baseCertificate.document.externalUrl.split('/').slice(0, -1).join('/');
-        const externalUrl = await this._addDocumentToExtStorage(
-            `${path}/`,
-            document,
-            document.storageConfig.resourceSpec,
-            document.storageConfig.delegatedOrganizationIds
+        let externalUrl = baseCertificate.document.externalUrl;
+        let metadata = baseCertificate.document.metadata;
+        console.log('document.filename: ', document.filename);
+        console.log(
+            'baseCertificate.document.metadata.filename: ',
+            baseCertificate.document.metadata.filename
         );
+        console.log('document: ', document);
+        if (document.filename && document.filename !== baseCertificate.document.metadata.filename) {
+            console.log('Document content upload');
+            const path = baseCertificate.document.externalUrl.split('/').slice(0, -1).join('/');
+            externalUrl = await this._addDocumentToExtStorage(
+                `${path}/`,
+                document,
+                document.storageConfig.resourceSpec,
+                document.storageConfig.delegatedOrganizationIds
+            );
+            metadata = {
+                filename: document.filename,
+                fileType: document.fileType
+            };
+        }
+
+        console.log('baseCertificate: ', baseCertificate);
+        console.log('externalUrl: ', externalUrl);
+        console.log('metadata: ', metadata);
 
         return this._certificationManagerDriver.updateDocument(roleProof, certificateId, {
             referenceId: document.referenceId,
             documentType: document.documentType,
             externalUrl,
-            metadata: {
-                filename: document.filename,
-                fileType: document.fileType
-            }
+            metadata
         });
     }
 
     async evaluateDocument(
         roleProof: RoleProof,
         certificateId: number,
-        documentId: number,
         evaluationStatus: EvaluationStatus
     ) {
         return this._certificationManagerDriver.evaluateDocument(
             roleProof,
             certificateId,
-            documentId,
             evaluationStatus
         );
+    }
+
+    async getDocument(roleProof: RoleProof, certificateId: number): Promise<CertificateDocument> {
+        const baseCertificate = await this.getBaseCertificateById(roleProof, certificateId);
+        const fileContent = await this._icpFileDriver.read(baseCertificate.document.externalUrl);
+        return {
+            ...baseCertificate.document,
+            fileContent
+        };
     }
 
     async _addDocumentToExtStorage(

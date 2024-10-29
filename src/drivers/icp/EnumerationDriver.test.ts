@@ -2,7 +2,7 @@ import { Wallet } from 'ethers';
 import { RoleProof } from '@kbc-lib/azle-types';
 import { SiweIdentityProvider } from './SiweIdentityProvider';
 import { computeRoleProof } from './proof';
-import { EnumerationManagerDriver } from './EnumerationManagerDriver';
+import { EnumerationDriver } from './EnumerationDriver';
 import { Enumeration } from '../../entities/icp/Enumeration';
 
 const USER1_PRIVATE_KEY = '0c7e66e74f6666b514cc73ee2b7ffc518951cf1ca5719d6820459c4e134f2264';
@@ -19,7 +19,7 @@ const ENTITY_MANAGER_CANISTER_ID = process.env.CANISTER_ID_ENTITY_MANAGER!;
 type Utils = {
     userWallet: Wallet;
     companyWallet: Wallet;
-    enumerationManagerDriver: EnumerationManagerDriver;
+    enumerationManagerDriver: EnumerationDriver;
     roleProof: RoleProof;
 };
 
@@ -31,7 +31,7 @@ describe('EnumerationManagerDriver', () => {
         const companyWallet = new Wallet(companyPrivateKey);
         const siweIdentityProvider = new SiweIdentityProvider(userWallet, SIWE_CANISTER_ID);
         await siweIdentityProvider.createIdentity();
-        const enumerationManagerDriver = new EnumerationManagerDriver(
+        const enumerationManagerDriver = new EnumerationDriver(
             siweIdentityProvider.identity,
             ENTITY_MANAGER_CANISTER_ID,
             'http://127.0.0.1:4943/'

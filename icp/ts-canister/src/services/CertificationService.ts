@@ -159,7 +159,7 @@ class CertificationService {
         return certificate;
     }
 
-    getBaseCertificatesInfoBySubject(roleProof: RoleProof, subject: string): BaseCertificate[] {
+    getBaseCertificatesInfoBySubject(_: RoleProof, subject: string): BaseCertificate[] {
         validateAddress('Subject', subject);
         const _companyCertificates = this._companyCertificates.get(subject) || [];
         const _scopeCertificates = this._scopeCertificates.get(subject) || [];
@@ -180,31 +180,31 @@ class CertificationService {
         }));
     }
 
-    getCompanyCertificates(roleProof: RoleProof, subject: string): CompanyCertificate[] {
+    getCompanyCertificates(_: RoleProof, subject: string): CompanyCertificate[] {
         return this._companyCertificates.get(subject) || [];
     }
 
-    getScopeCertificates(roleProof: RoleProof, subject: string): ScopeCertificate[] {
+    getScopeCertificates(_: RoleProof, subject: string): ScopeCertificate[] {
         return this._scopeCertificates.get(subject) || [];
     }
 
-    getMaterialCertificates(roleProof: RoleProof, subject: string): MaterialCertificate[] {
+    getMaterialCertificates(_: RoleProof, subject: string): MaterialCertificate[] {
         return this._materialCertificates.get(subject) || [];
     }
 
-    getCompanyCertificate(roleProof: RoleProof, subject: string, id: bigint): CompanyCertificate {
+    getCompanyCertificate(_: RoleProof, subject: string, id: bigint): CompanyCertificate {
         const certificate = this._companyCertificates.get(subject)?.find((cert) => BigInt(cert.id) === id);
         if (!certificate) throw new Error('Company certificate not found');
         return certificate;
     }
 
-    getScopeCertificate(roleProof: RoleProof, subject: string, id: bigint): ScopeCertificate {
+    getScopeCertificate(_: RoleProof, subject: string, id: bigint): ScopeCertificate {
         const certificate = this._scopeCertificates.get(subject)?.find((cert) => BigInt(cert.id) === id);
         if (!certificate) throw new Error('Scope certificate not found');
         return certificate;
     }
 
-    getMaterialCertificate(roleProof: RoleProof, subject: string, id: bigint): MaterialCertificate {
+    getMaterialCertificate(_: RoleProof, subject: string, id: bigint): MaterialCertificate {
         const certificate = this._materialCertificates.get(subject)?.find((cert) => BigInt(cert.id) === id);
         if (!certificate) throw new Error('Material certificate not found');
         return certificate;
@@ -222,7 +222,7 @@ class CertificationService {
         validateDatesValidity(validFrom, validUntil);
         validateAssessmentStandard(assessmentStandard);
         validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
-        const [companyCertificate, _companyCertificates, certificateIndex] = this._getCertificateAndInfoById<CompanyCertificate>(certificateId);
+        const [companyCertificate, companyCertificates, certificateIndex] = this._getCertificateAndInfoById<CompanyCertificate>(certificateId);
         validateFieldValue(companyCertificate.uploadedBy, roleProof.membershipProof.delegatorAddress, 'Caller is not the owner of the certificate');
         companyCertificate.assessmentStandard = assessmentStandard;
         companyCertificate.assessmentAssuranceLevel = assessmentAssuranceLevel;
@@ -230,8 +230,7 @@ class CertificationService {
         companyCertificate.validUntil = BigInt(validUntil);
         companyCertificate.notes = notes;
 
-        _companyCertificates[certificateIndex] = companyCertificate;
-        this._companyCertificates.insert(companyCertificate.subject, _companyCertificates);
+        this._updateCertificate(companyCertificate, companyCertificates, certificateIndex);
         return companyCertificate;
     }
 
@@ -249,7 +248,7 @@ class CertificationService {
         validateAssessmentStandard(assessmentStandard);
         validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
         validateProcessTypes(processTypes);
-        const [scopeCertificate, _scopeCertificates, certificateIndex] = this._getCertificateAndInfoById<ScopeCertificate>(certificateId);
+        const [scopeCertificate, scopeCertificates, certificateIndex] = this._getCertificateAndInfoById<ScopeCertificate>(certificateId);
         validateFieldValue(scopeCertificate.uploadedBy, roleProof.membershipProof.delegatorAddress, 'Caller is not the owner of the certificate');
         scopeCertificate.assessmentStandard = assessmentStandard;
         scopeCertificate.assessmentAssuranceLevel = assessmentAssuranceLevel;
@@ -258,8 +257,7 @@ class CertificationService {
         scopeCertificate.processTypes = processTypes;
         scopeCertificate.notes = notes;
 
-        _scopeCertificates[certificateIndex] = scopeCertificate;
-        this._scopeCertificates.insert(scopeCertificate.subject, _scopeCertificates);
+        this._updateCertificate(scopeCertificate, scopeCertificates, certificateIndex);
         return scopeCertificate;
     }
 
@@ -273,32 +271,33 @@ class CertificationService {
     ): MaterialCertificate {
         validateAssessmentStandard(assessmentStandard);
         validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
-        const [materialCertificate, _materialCertificates, certificateIndex] = this._getCertificateAndInfoById<MaterialCertificate>(certificateId);
+        const [materialCertificate, materialCertificates, certificateIndex] = this._getCertificateAndInfoById<MaterialCertificate>(certificateId);
         validateFieldValue(materialCertificate.uploadedBy, roleProof.membershipProof.delegatorAddress, 'Caller is not the owner of the certificate');
         materialCertificate.assessmentStandard = assessmentStandard;
         materialCertificate.assessmentAssuranceLevel = assessmentAssuranceLevel;
         materialCertificate.materialId = materialId;
         materialCertificate.notes = notes;
 
-        _materialCertificates[certificateIndex] = materialCertificate;
-        this._materialCertificates.insert(materialCertificate.subject, _materialCertificates);
+        this._updateCertificate(materialCertificate, materialCertificates, certificateIndex);
         return materialCertificate;
     }
 
-    updateDocument(roleProof: RoleProof, certificateId: bigint, document: CertificateDocumentInfo): void {
+    updateDocument(_: RoleProof, certificateId: bigint, document: CertificateDocumentInfo): void {
         const [certificate, certificates, certificateIndex] = this._getCertificateAndInfoById<BaseCertificate>(certificateId);
         certificate.document = document;
+        console.log('certificate: ', certificate);
+        console.log('request document: ', document);
         this._updateCertificate(certificate, certificates, certificateIndex);
     }
 
-    evaluateDocument(roleProof: RoleProof, certificateId: bigint, evaluation: EvaluationStatus): void {
+    evaluateDocument(_: RoleProof, certificateId: bigint, evaluation: EvaluationStatus): void {
         if (EvaluationStatusEnum.NOT_EVALUATED in evaluation) throw new Error('Invalid evaluation status');
         const [certificate, certificates, certificateIndex] = this._getCertificateAndInfoById<BaseCertificate>(certificateId);
         certificate.evaluationStatus = evaluation;
         this._updateCertificate(certificate, certificates, certificateIndex);
     }
 
-    getBaseCertificateById(roleProof: RoleProof, certificateId: bigint): BaseCertificate {
+    getBaseCertificateById(_: RoleProof, certificateId: bigint): BaseCertificate {
         const [certificate] = this._getCertificateAndInfoById<BaseCertificate>(certificateId);
         return certificate;
     }

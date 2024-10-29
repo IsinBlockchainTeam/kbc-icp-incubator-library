@@ -52,7 +52,7 @@ describe('CertificateManagerService', () => {
     const validUntil = new Date(new Date().setDate(new Date().getDate() + 30)).getTime();
     const processTypes = ['type1', 'type2'];
     const document: CertificateDocument = {
-        fileName: 'document.pdf',
+        filename: 'document.pdf',
         fileType: 'application/pdf',
         fileContent: new Uint8Array([1, 2, 3, 4]),
         documentReferenceId: '1234'
@@ -379,7 +379,7 @@ describe('CertificateManagerService', () => {
         expect(mockedIcpFileDriver.create).toHaveBeenNthCalledWith(
             2,
             FileHelpers.getBytesFromObject({
-                fileName: document.fileName,
+                filename: document.filename,
                 fileType: document.fileType,
                 documentReferenceId
             }),
@@ -437,7 +437,7 @@ describe('CertificateManagerService', () => {
         expect(mockedIcpFileDriver.create).toHaveBeenNthCalledWith(
             2,
             FileHelpers.getBytesFromObject({
-                fileName: document.fileName,
+                filename: document.filename,
                 fileType: document.fileType,
                 documentReferenceId
             }),
@@ -491,7 +491,7 @@ describe('CertificateManagerService', () => {
         expect(mockedIcpFileDriver.create).toHaveBeenNthCalledWith(
             2,
             FileHelpers.getBytesFromObject({
-                fileName: document.fileName,
+                filename: document.filename,
                 fileType: document.fileType,
                 documentReferenceId
             }),
@@ -550,7 +550,7 @@ describe('CertificateManagerService', () => {
         expect(mockedIcpFileDriver.create).toHaveBeenNthCalledWith(
             2,
             FileHelpers.getBytesFromObject({
-                fileName: document.fileName,
+                filename: document.filename,
                 fileType: document.fileType,
                 documentReferenceId
             }),
@@ -570,7 +570,7 @@ describe('CertificateManagerService', () => {
             roleProof,
             1,
             {
-                fileName: document.fileName,
+                filename: document.filename,
                 fileType: document.fileType,
                 documentReferenceId
             },
@@ -581,7 +581,7 @@ describe('CertificateManagerService', () => {
         expect(mockedIcpFileDriver.create).toHaveBeenNthCalledWith(
             1,
             FileHelpers.getBytesFromObject({
-                fileName: document.fileName,
+                filename: document.filename,
                 fileType: document.fileType,
                 documentReferenceId
             }),

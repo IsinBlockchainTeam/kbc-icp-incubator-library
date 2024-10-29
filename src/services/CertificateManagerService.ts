@@ -16,7 +16,7 @@ import { URL_SEGMENTS } from '../constants/ICP';
 import { URLStructure } from '../types/URLStructure';
 
 type CertificateDocumentMetadata = {
-    fileName: string;
+    filename: string;
     fileType: string;
     documentReferenceId: string;
 };
@@ -300,7 +300,7 @@ export class CertificateManagerService {
 
             const fileContent = await this._icpFileDriver.read(documentInfo.externalUrl);
             return {
-                fileName: documentMetadata.fileName,
+                filename: documentMetadata.filename,
                 fileType: documentMetadata.fileType,
                 fileContent,
                 documentReferenceId: documentMetadata.documentReferenceId
@@ -331,7 +331,7 @@ export class CertificateManagerService {
         await this._addDocumentMetadataToExtStorage(
             `${path}/`,
             {
-                fileName: certificateDocument.fileName,
+                filename: certificateDocument.filename,
                 fileType: certificateDocument.fileType,
                 documentReferenceId: certificateDocument.documentReferenceId
             },
@@ -425,7 +425,7 @@ export class CertificateManagerService {
         await this._addDocumentMetadataToExtStorage(
             baseExternalUrl,
             {
-                fileName: certificateDocument.fileName,
+                filename: certificateDocument.filename,
                 fileType: certificateDocument.fileType,
                 documentReferenceId: certificateDocument.documentReferenceId
             },

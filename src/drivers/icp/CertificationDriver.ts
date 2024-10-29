@@ -9,7 +9,7 @@ import { ScopeCertificate } from '../../entities/icp/ScopeCertificate';
 import { BaseCertificate, CertificateDocumentInfo } from '../../entities/icp/Certificate';
 import { EvaluationStatus } from '../../entities/icp/Document';
 
-export class CertificationManagerDriver {
+export class CertificationDriver {
     private _actor: ActorSubclass<_SERVICE>;
 
     public constructor(icpIdentity: Identity, canisterId: string, host?: string) {
@@ -236,13 +236,11 @@ export class CertificationManagerDriver {
     async evaluateDocument(
         roleProof: RoleProof,
         certificateId: number,
-        documentId: number,
         evaluationStatus: EvaluationStatus
     ) {
         await this._actor.evaluateCertificateDocument(
             roleProof,
             BigInt(certificateId),
-            BigInt(documentId),
             EntityBuilder.buildICPEvaluationStatus(evaluationStatus)
         );
     }

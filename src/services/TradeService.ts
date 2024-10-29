@@ -48,14 +48,14 @@ export class TradeService {
     ): Promise<void> {
         if (!this._icpFileDriver)
             throw new Error('OrderTradeService: ICPFileDriver has not been set');
-        const fileName = FileHelpers.removeFileExtension(resourceSpec.name);
+        const filename = FileHelpers.removeFileExtension(resourceSpec.name);
 
         resourceSpec.name = `${externalUrl}/files/${resourceSpec.name}`;
 
         const contentHash = FileHelpers.getHash(fileContent);
         await this._icpFileDriver.create(fileContent, resourceSpec, delegatedOrganizationIds);
         const documentMetadata: DocumentMetadata = {
-            fileName: resourceSpec.name,
+            filename: resourceSpec.name,
             documentType,
             date: new Date(),
             transactionLines,
@@ -65,7 +65,7 @@ export class TradeService {
         await this._icpFileDriver.create(
             FileHelpers.getBytesFromObject(documentMetadata),
             {
-                name: `${externalUrl}/files/${fileName}-metadata.json`,
+                name: `${externalUrl}/files/${filename}-metadata.json`,
                 type: 'application/json'
             },
             delegatedOrganizationIds

@@ -9,7 +9,7 @@ export enum DocumentStatus {
 }
 
 export interface DocumentMetadata {
-    fileName: string;
+    filename: string;
     documentType: DocumentType;
     date: Date;
     transactionLines: TransactionLine[];

@@ -1,6 +1,6 @@
 import { Wallet } from 'ethers';
 import { RoleProof } from '@kbc-lib/azle-types';
-import { CertificationManagerDriver } from './CertificationManagerDriver';
+import { CertificationDriver } from './CertificationDriver';
 import { SiweIdentityProvider } from './SiweIdentityProvider';
 import { computeRoleProof } from './proof';
 import {
@@ -24,7 +24,7 @@ const ENTITY_MANAGER_CANISTER_ID = process.env.CANISTER_ID_ENTITY_MANAGER!;
 type Utils = {
     userWallet: Wallet;
     companyWallet: Wallet;
-    certificationManagerDriver: CertificationManagerDriver;
+    certificationManagerDriver: CertificationDriver;
     roleProof: RoleProof;
 };
 
@@ -51,7 +51,7 @@ describe('CertificationManagerDriver', () => {
         const companyWallet = new Wallet(companyPrivateKey);
         const siweIdentityProvider = new SiweIdentityProvider(userWallet, SIWE_CANISTER_ID);
         await siweIdentityProvider.createIdentity();
-        const certificationManagerDriver = new CertificationManagerDriver(
+        const certificationManagerDriver = new CertificationDriver(
             siweIdentityProvider.identity,
             ENTITY_MANAGER_CANISTER_ID,
             'http://127.0.0.1:4943/'
@@ -408,7 +408,6 @@ describe('CertificationManagerDriver', () => {
             await certificationManagerDriver.evaluateDocument(
                 roleProof,
                 lastScopeCertificateId,
-                1,
                 EvaluationStatus.APPROVED
             );
             const evaluatedScopeCertificate = await certificationManagerDriver.getScopeCertificate(

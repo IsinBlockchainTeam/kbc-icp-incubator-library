@@ -57,17 +57,17 @@ export class DocumentService {
             const documentMetadata: DocumentMetadata = FileHelpers.getObjectFromBytes(
                 await this._icpFileDriver.read(`${path}/${metadataName}-metadata.json`)
             ) as DocumentMetadata;
-            const fileName = documentMetadata.fileName;
+            const filename = documentMetadata.filename;
             const documentType = documentMetadata.documentType;
             const date = documentMetadata.date;
             const transactionLines = documentMetadata.transactionLines;
             const quantity = documentMetadata.quantity;
-            if (!fileName || !documentType || !date) throw new Error('Missing fields');
+            if (!filename || !documentType || !date) throw new Error('Missing fields');
 
             const fileContent = await this._icpFileDriver.read(documentInfo.externalUrl);
             return new Document(
                 documentInfo,
-                fileName,
+                filename,
                 documentType,
                 new Date(date),
                 fileContent,

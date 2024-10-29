@@ -4,7 +4,7 @@ import { createActor } from 'icp-declarations/entity_manager';
 import { Enumeration } from '../../entities/icp/Enumeration';
 import { EntityBuilder } from '../../utils/icp/EntityBuilder';
 
-export class EnumerationManagerDriver {
+export class EnumerationDriver {
     private _actor: ActorSubclass<_SERVICE>;
 
     public constructor(icpIdentity: Identity, canisterId: string, host?: string) {

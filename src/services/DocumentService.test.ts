@@ -127,7 +127,7 @@ describe('DocumentService', () => {
         mockedIcpFileDriver.read = jest.fn().mockResolvedValue(
             new TextEncoder().encode(
                 JSON.stringify({
-                    fileName: 'file1.pdf',
+                    filename: 'file1.pdf',
                     date: new Date(),
                     documentType: DocumentType.BILL_OF_LADING,
                     transactionLines: []
@@ -155,7 +155,7 @@ describe('DocumentService', () => {
         mockedIcpFileDriver.read = jest.fn().mockResolvedValue(
             new TextEncoder().encode(
                 JSON.stringify({
-                    fileName: 'file1.pdf',
+                    filename: 'file1.pdf',
                     date: new Date(),
                     transactionLines: []
                 })

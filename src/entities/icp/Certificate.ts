@@ -25,6 +25,9 @@ export type CertificateDocumentInfo = {
     externalUrl: string;
     metadata: DocumentMetadata;
 };
+export type CertificateDocument = CertificateDocumentInfo & {
+    fileContent: Uint8Array;
+};
 
 export class BaseCertificate {
     private _id: number;

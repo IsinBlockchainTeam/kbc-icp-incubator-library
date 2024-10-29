@@ -200,7 +200,7 @@ describe('ShipmentService', () => {
     });
     it('should add document', async () => {
         const shipmentExternalUrl = 'shipmentExternalUrl';
-        const fileName = 'fileName';
+        const filename = 'filename';
         const fileContent = new Uint8Array([1, 2, 3]);
         const contentHash = new Uint8Array([4, 5, 6]);
         const bytesFromObject = new Uint8Array([7, 8, 9]);
@@ -210,7 +210,7 @@ describe('ShipmentService', () => {
         const delegatedOrganizationIds = [1, 2, 3];
 
         shipmentDriverInstance.getShipment.mockResolvedValue({ externalUrl: shipmentExternalUrl });
-        jest.spyOn(FileHelpers, 'removeFileExtension').mockReturnValue(fileName);
+        jest.spyOn(FileHelpers, 'removeFileExtension').mockReturnValue(filename);
         jest.spyOn(FileHelpers, 'getHash').mockReturnValue(contentHash);
         jest.spyOn(FileHelpers, 'getBytesFromObject').mockReturnValue(bytesFromObject);
 
@@ -235,7 +235,7 @@ describe('ShipmentService', () => {
             2,
             bytesFromObject,
             {
-                name: 'shipmentExternalUrl/files/fileName-metadata.json',
+                name: 'shipmentExternalUrl/files/filename-metadata.json',
                 type: 'application/json'
             },
             delegatedOrganizationIds
@@ -256,7 +256,7 @@ describe('ShipmentService', () => {
         const path = 'externalUrl';
         const metadataName = 'metadataName';
         const documentMetadata = {
-            fileName: 'fileName',
+            filename: 'filename',
             documentType: DocumentType.SERVICE_GUIDE
         };
         const fileContent = new Uint8Array([1, 2, 3]);
@@ -274,7 +274,7 @@ describe('ShipmentService', () => {
 
         expect(result).toEqual({
             id: documentInfo.id,
-            fileName: documentMetadata.fileName,
+            filename: documentMetadata.filename,
             documentType: documentMetadata.documentType,
             fileContent
         });
