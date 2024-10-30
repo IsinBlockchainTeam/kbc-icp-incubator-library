@@ -5,6 +5,12 @@ import OrganizationService from "../services/OrganizationService";
 import { IDLOrganization } from "../models/idls/IDLOrganization";
 
 class OrganizationController {
+    @query([], IDL.Vec(IDLOrganization))
+    @OnlyViewer
+    async getOrganizations(): Promise<Organization[]> {
+        return OrganizationService.instance.getOrganizations();
+    }
+
     @query([IDL.Nat], IDLOrganization)
     @OnlyViewer
     async getOrganization(id: bigint): Promise<Organization> {

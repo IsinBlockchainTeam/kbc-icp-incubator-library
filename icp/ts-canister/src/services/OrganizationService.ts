@@ -16,6 +16,10 @@ class OrganizationService {
         return OrganizationService._instance;
     }
 
+    getOrganizations(): Organization[] {
+        return this._organizations.values();
+    }
+
     getOrganization(id: bigint): Organization {
         const organization = this._organizations.get(id);
         if (!organization) {

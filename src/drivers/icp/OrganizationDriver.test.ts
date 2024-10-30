@@ -69,6 +69,12 @@ describe('OrganizationDriver', () => {
         await login(userWallet, siweIdentityProvider);
     }, 15000);
 
+    it('should get organizations', async () => {
+        const organizations = await organizationDriver.getOrganizations();
+
+        expect(organizations).toBeInstanceOf(Array);
+    });
+
     it('should get organization - not founded', async () => {
         const getOrganizationFunction = async () => organizationDriver.getOrganization(-1);
 

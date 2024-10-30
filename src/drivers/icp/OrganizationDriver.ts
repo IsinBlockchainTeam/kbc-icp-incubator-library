@@ -16,6 +16,13 @@ export class OrganizationDriver {
         });
     }
 
+    async getOrganizations(): Promise<Organization[]> {
+        const organizations = await this._actor.getOrganizations();
+        return organizations.map((organization: any) =>
+            new BroadedOrganizationCreator().createOrganization(organization)
+        );
+    }
+
     async getOrganization(id: number): Promise<Organization> {
         const organization = await this._actor.getOrganization(BigInt(id));
 
