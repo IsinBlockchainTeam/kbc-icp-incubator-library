@@ -32,7 +32,9 @@ describe('OrderDriver', () => {
             'http://127.0.0.1:4943/'
         );
         const orderManagerDriver = new OrderDriver(
-            siweIdentityProvider.identity, ENTITY_MANAGER_CANISTER_ID, 'http://127.0.0.1:4943/'
+            siweIdentityProvider.identity,
+            ENTITY_MANAGER_CANISTER_ID,
+            'http://127.0.0.1:4943/'
         );
         const roleProof = await computeRoleProof(
             userWallet.address,
@@ -80,8 +82,8 @@ describe('OrderDriver', () => {
             shippingDeadline: date,
             deliveryDeadline: date,
             arbiter: '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
-            token: '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
-            agreedAmount: 100,
+            token: '0xc5a5C42992dECbae36851359345FE25997F5C42d',
+            agreedAmount: 10,
             escrowManager: '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
             incoterms: 'incoterms',
             shipper: 'shipper',
@@ -95,11 +97,10 @@ describe('OrderDriver', () => {
                     price: {
                         amount: 1,
                         fiat: 'USD'
-
                     }
                 }
             ]
-        }
+        };
         date.setDate(date.getDate() + 14);
         const order = await orderManagerDriver.createOrder(
             orderParams
@@ -122,7 +123,7 @@ describe('OrderDriver', () => {
             shippingDeadline: date,
             deliveryDeadline: date,
             arbiter: '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
-            token: '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
+            token: '0xc5a5C42992dECbae36851359345FE25997F5C42d',
             agreedAmount: 100,
             escrowManager: '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
             incoterms: 'incoterms',
@@ -137,11 +138,10 @@ describe('OrderDriver', () => {
                     price: {
                         amount: 1,
                         fiat: 'USD'
-
                     }
                 }
             ]
-        }
+        };
         date.setDate(date.getDate() + 14);
         const order = await orderManagerDriver.updateOrder(
             ORDER_ID,

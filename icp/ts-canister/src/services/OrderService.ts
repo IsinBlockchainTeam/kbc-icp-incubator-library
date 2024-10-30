@@ -6,6 +6,7 @@ import {
 import {StableMemoryId} from "../utils/stableMemory";
 import {validateAddress, validateDeadline, validateInterestedParty, validatePositiveNumber} from "../utils/validation";
 import AuthenticationService from "./AuthenticationService";
+import ShipmentService from "./ShipmentService";
 
 class OrderService implements HasInterestedParties{
     private static _instance: OrderService;
@@ -205,9 +206,10 @@ class OrderService implements HasInterestedParties{
         order.signatures.push(delegatorAddress);
         if (order.signatures.includes(order.supplier) && order.signatures.includes(order.customer)) {
             order.status = { CONFIRMED: null };
-            // const shipment = await ShipmentService.instance.createShipment(order.supplier, order.commissioner, true);
-            // order.shipmentId = [shipment.id];
-            // console.log(shipment);
+            const duration = order.paymentDeadline - BigInt(Math.trunc(Date.now() / 1000));
+            const shipment = await ShipmentService.instance.createShipment(order.supplier, order.commissioner, true, duration, order.token);
+            console.log('new shipment id:', shipment.id);
+            order.shipmentId = [shipment.id];
         }
         this._orders.insert(id, order);
         return order;

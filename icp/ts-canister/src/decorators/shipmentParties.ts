@@ -1,7 +1,7 @@
 import { RoleProof } from '../models/types';
+import ShipmentService from '../services/ShipmentService';
 
 function validateAndExtractParameters(this: any, args: any[]) {
-    console.log('args2', args);
     if (args.length < 2)
         throw new Error(`Expected at least 2 arguments but got ${args.length}`);
     if (args[0].delegateAddress === undefined)
@@ -11,7 +11,7 @@ function validateAndExtractParameters(this: any, args: any[]) {
 
     const roleProof = args[0] as RoleProof;
     const id = args[1] as bigint;
-    const shipment = this.shipments.get(id);
+    const shipment = ShipmentService.instance.getShipment(id);
     if (!shipment)
         throw new Error('Shipment not found');
     return { shipment, callerAddress: roleProof.membershipProof.delegatorAddress };
@@ -19,9 +19,10 @@ function validateAndExtractParameters(this: any, args: any[]) {
 
 export function OnlyInvolvedParties(originalMethod: any, _context: any) {
     async function replacementMethod(this: any, ...args: any[]) {
-        console.log('args1', args);
         const { shipment, callerAddress } = validateAndExtractParameters.call(this, args);
         const interestedParties = [shipment.supplier, shipment.commissioner];
+        console.log('interestedParties', interestedParties);
+        console.log('callerAddress', callerAddress);
         if (!interestedParties.includes(callerAddress))
             throw new Error('Access denied, user is not an involved party');
         return originalMethod.call(this, ...args);
