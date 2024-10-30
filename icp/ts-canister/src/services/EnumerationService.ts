@@ -1,51 +1,40 @@
 import { StableBTreeMap } from 'azle';
-import { Enumeration, EnumerationKey } from '../models/types/Enumeration';
 import { StableMemoryId } from '../utils/stableMemory';
 
-class EnumerationService {
-    private static _instance: EnumerationService;
+abstract class EnumerationService {
+    protected _enumerations;
 
-    private _enumerations = StableBTreeMap<EnumerationKey, string[]>(StableMemoryId.ENUMERATIONS);
+    private readonly _valuesKey: bigint;
 
-    static get instance() {
-        if (!EnumerationService._instance) {
-            EnumerationService._instance = new EnumerationService();
-        }
-        return EnumerationService._instance;
+    protected constructor(mapId: StableMemoryId) {
+        this._enumerations = StableBTreeMap<bigint, string[]>(mapId);
+        this._valuesKey = BigInt(mapId.valueOf());
+        this._enumerations.insert(this._valuesKey, []);
     }
 
-    getEnumerationsByType(enumeration: Enumeration): string[] {
-        const enumKey = this._getKeyFromEnumeration(enumeration);
-        return this._enumerations.get(enumKey) || [];
+    static get instance(): EnumerationService {
+        throw new Error("Method 'instance()' must be implemented in subclasses.");
     }
 
-    addEnumerationValue(enumeration: Enumeration, value: string): void {
-        const enumKey = this._getKeyFromEnumeration(enumeration);
-        if (this.hasEnumerationValue(enumeration, value)) throw new Error('Enumeration value already exists');
-        if (!this._enumerations.containsKey(enumKey)) this._enumerations.insert(enumKey, [value]);
-        else this._enumerations.insert(enumKey, [...this.getEnumerationsByType(enumeration), value]);
+    getAllValues(): string[] {
+        return this._enumerations.get(this._valuesKey) || [];
     }
 
-    removeEnumerationValue(enumeration: Enumeration, value: string): void {
-        const enumKey = this._getKeyFromEnumeration(enumeration);
-        if (!this.hasEnumerationValue(enumeration, value)) throw new Error('Enumeration value does not exist');
+    addValue(value: string): void {
+        if (this.hasValue(value)) throw new Error('Enumeration value already exists');
+        this._enumerations.insert(this._valuesKey, [...this.getAllValues(), value]);
+    }
+
+    removeValue(value: string): void {
+        if (!this.hasValue(value)) throw new Error('Enumeration value does not exist');
         this._enumerations.insert(
-            enumKey,
-            this.getEnumerationsByType(enumeration).filter((v) => v !== value)
+            this._valuesKey,
+            this.getAllValues().filter((v) => v !== value)
         );
     }
 
-    hasEnumerationValue(enumeration: Enumeration, value: string): boolean {
-        return this.getEnumerationsByType(enumeration).includes(value);
-    }
-
-    _getKeyFromEnumeration(enumeration: Enumeration): EnumerationKey {
-        if (EnumerationKey.ASSESSMENT_STANDARD in enumeration) return EnumerationKey.ASSESSMENT_STANDARD;
-        if (EnumerationKey.PROCESS_TYPE in enumeration) return EnumerationKey.PROCESS_TYPE;
-        if (EnumerationKey.ASSESSMENT_ASSURANCE_LEVEL in enumeration) return EnumerationKey.ASSESSMENT_ASSURANCE_LEVEL;
-        if (EnumerationKey.FIAT in enumeration) return EnumerationKey.FIAT;
-        if (EnumerationKey.UNIT in enumeration) return EnumerationKey.UNIT;
-        throw new Error('Invalid enumeration type');
+    hasValue(value: string): boolean {
+        return this.getAllValues().includes(value);
     }
 }
 

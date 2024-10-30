@@ -257,14 +257,7 @@ export class CertificationService {
         const baseCertificate = await this.getBaseCertificateById(roleProof, certificateId);
         let externalUrl = baseCertificate.document.externalUrl;
         let metadata = baseCertificate.document.metadata;
-        console.log('document.filename: ', document.filename);
-        console.log(
-            'baseCertificate.document.metadata.filename: ',
-            baseCertificate.document.metadata.filename
-        );
-        console.log('document: ', document);
         if (document.filename && document.filename !== baseCertificate.document.metadata.filename) {
-            console.log('Document content upload');
             const path = baseCertificate.document.externalUrl.split('/').slice(0, -1).join('/');
             externalUrl = await this._addDocumentToExtStorage(
                 `${path}/`,
@@ -277,10 +270,6 @@ export class CertificationService {
                 fileType: document.fileType
             };
         }
-
-        console.log('baseCertificate: ', baseCertificate);
-        console.log('externalUrl: ', externalUrl);
-        console.log('metadata: ', metadata);
 
         return this._certificationManagerDriver.updateDocument(roleProof, certificateId, {
             referenceId: document.referenceId,

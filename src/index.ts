@@ -140,6 +140,13 @@ export { ScopeCertificate as ICPScopeCertificate } from './entities/icp/ScopeCer
 export { MaterialCertificate as ICPMaterialCertificate } from './entities/icp/MaterialCertificate';
 
 // enumerations
-export { EnumerationDriver as ICPEnumerationDriver } from './drivers/icp/EnumerationDriver';
-export { EnumerationService as ICPEnumerationService } from './services/icp/EnumerationService';
-export { Enumeration as ICPEnumeration } from './entities/icp/Enumeration';
+export { FiatDriver as ICPFiatDriver } from './drivers/icp/FiatDriver';
+export { FiatService as ICPFiatService } from './services/icp/FiatService';
+export { UnitDriver as ICPUnitDriver } from './drivers/icp/UnitDriver';
+export { UnitService as ICPUnitService } from './services/icp/UnitService';
+export { ProcessTypeDriver as ICPProcessTypeDriver } from './drivers/icp/ProcessTypeDriver';
+export { ProcessTypeService as ICPProcessTypeService } from './services/icp/ProcessTypeService';
+export { AssessmentStandardDriver as ICPAssessmentStandardDriver } from './drivers/icp/AssessmentStandardDriver';
+export { AssessmentStandardService as ICPAssessmentStandardService } from './services/icp/AssessmentStandardService';
+export { AssessmentAssuranceLevelDriver as ICPAssessmentAssuranceLevelDriver } from './drivers/icp/AssessmentAssuranceLevelDriver';
+export { AssessmentAssuranceLevelService as ICPAssessmentAssuranceLevelService } from './services/icp/AssessmentAssuranceLevelService';

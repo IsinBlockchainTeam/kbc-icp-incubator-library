@@ -7,7 +7,6 @@ import {
     CertificateType as ICPCertificateType,
     CertificateDocumentInfo as ICPCertificateDocumentInfo,
     CertificateDocumentType as ICPCertificateDocumentType,
-    Enumeration as ICPEnumeration,
     EvaluationStatus as ICPEvaluationStatus,
     EvaluationStatusEnum as ICPEvaluationStatusEnum,
     MaterialCertificate as ICPMaterialCertificate,
@@ -25,7 +24,6 @@ import {
     CertificateType
 } from '../../entities/icp/Certificate';
 import { EvaluationStatus } from '../../entities/icp/Document';
-import { Enumeration } from '../../entities/icp/Enumeration';
 
 export class EntityBuilder {
     static buildProductCategory(productCategory: ICPProductCategory) {
@@ -157,12 +155,6 @@ export class EntityBuilder {
         return {
             [evaluationStatus]: null
         } as ICPEvaluationStatus;
-    }
-
-    static buildICPEnumeration(enumeration: Enumeration): ICPEnumeration {
-        return {
-            [enumeration]: null
-        } as ICPEnumeration;
     }
 
     static buildICPCertificateDocumentType(

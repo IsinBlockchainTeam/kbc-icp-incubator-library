@@ -9,4 +9,3 @@ export * from './Proof';
 export * from './Rpc';
 export * from './Shipment';
 export * from './Certificate';
-export * from './Enumeration';
