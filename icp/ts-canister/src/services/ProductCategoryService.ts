@@ -1,6 +1,6 @@
-import {StableBTreeMap} from "azle";
-import {ProductCategory} from "../models/types";
-import {StableMemoryId} from "../utils/stableMemory";
+import { StableBTreeMap } from 'azle';
+import { ProductCategory } from '../models/types';
+import { StableMemoryId } from '../utils/stableMemory';
 
 class ProductCategoryService {
     private static _instance: ProductCategoryService;
@@ -20,7 +20,7 @@ class ProductCategoryService {
 
     getProductCategory(id: bigint): ProductCategory {
         const result = this._productCategories.get(id);
-        if(result) {
+        if (result) {
             return result;
         }
         throw new Error('Product category not found');

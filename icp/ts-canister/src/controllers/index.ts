@@ -1,8 +1,8 @@
-import MaterialController from "./MaterialController";
-import ProductCategoryController from "./ProductCategoryController";
-import OrderController from "./OrderController";
-import ShipmentController from "./ShipmentController";
-import AuthenticationController from "./AuthenticationController";
+import MaterialController from './MaterialController';
+import ProductCategoryController from './ProductCategoryController';
+import OrderController from './OrderController';
+import ShipmentController from './ShipmentController';
+import AuthenticationController from './AuthenticationController';
 import CertificationController from './CertificationController';
 import FiatController from './FiatController';
 import { UnitController } from './UnitController';
@@ -10,9 +10,9 @@ import ProcessTypeController from './ProcessTypeController';
 import AssessmentStandardController from './AssessmentStandardController';
 import AssessmentAssuranceLevelController from './AssessmentAssuranceLevelController';
 
-
 export default class {
     _authenticationController = new AuthenticationController();
+
     _materialController = new MaterialController();
 
     _productCategoryController = new ProductCategoryController();

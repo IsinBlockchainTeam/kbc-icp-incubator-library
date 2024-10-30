@@ -4,16 +4,12 @@ import {
     Phase as IDLPhase,
     Shipment as IDLShipment,
     EvaluationStatus as IDLEvaluationStatus,
-    DocumentInfo as IDLDocumentInfo, DocumentType as IDLDocumentType
-} from "../models/idls";
-import {
-    RoleProof,
-    Phase, Shipment,
-    EvaluationStatus,
-    DocumentInfo, DocumentType
-} from "../models/types";
-import {AtLeastEditor, AtLeastViewer} from "../decorators/roles";
-import ShipmentService from "../services/ShipmentService";
+    DocumentInfo as IDLDocumentInfo,
+    DocumentType as IDLDocumentType
+} from '../models/idls';
+import { RoleProof, Phase, Shipment, EvaluationStatus, DocumentInfo, DocumentType } from '../models/types';
+import { AtLeastEditor, AtLeastViewer } from '../decorators/roles';
+import ShipmentService from '../services/ShipmentService';
 
 // TODO: fix @OnlyInvolvedParties
 // TODO: fix @OnlySupplier
@@ -27,21 +23,21 @@ class ShipmentController {
 
     @update([IDLRoleProof, IDL.Nat], IDLShipment)
     @AtLeastViewer
-    //@OnlyInvolvedParties
+    // @OnlyInvolvedParties
     async getShipment(roleProof: RoleProof, id: bigint): Promise<Shipment> {
         return ShipmentService.instance.getShipment(roleProof, id);
     }
 
     @update([IDLRoleProof, IDL.Nat], IDLPhase)
     @AtLeastViewer
-    //@OnlyInvolvedParties
+    // @OnlyInvolvedParties
     async getShipmentPhase(roleProof: RoleProof, id: bigint): Promise<Phase> {
         return ShipmentService.instance.getShipmentPhase(roleProof, id);
     }
 
     @update([IDLRoleProof, IDL.Nat, IDLDocumentType], IDL.Opt(IDL.Vec(IDLDocumentInfo)))
     @AtLeastViewer
-    //@OnlyInvolvedParties
+    // @OnlyInvolvedParties
     async getDocumentsByType(roleProof: RoleProof, id: bigint, documentType: DocumentType): Promise<DocumentInfo[] | []> {
         return ShipmentService.instance.getDocumentsByType(roleProof, id, documentType);
     }

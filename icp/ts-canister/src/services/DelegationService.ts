@@ -42,7 +42,7 @@ class DelegationService {
         });
         const roleProofSigner = ethers.verifyMessage(roleProofStringifiedData, signedProof);
         // If signedProof is different from the reconstructed proof, the two signers are different
-        if(roleProofSigner !== expectedSigner) return false;
+        if (roleProofSigner !== expectedSigner) return false;
         // If the delegate credential has expired, the delegate is not valid
         if (data.delegateCredentialExpiryDate < unixTime) return false;
         // If the caller is not the delegate address, the proof is invalid

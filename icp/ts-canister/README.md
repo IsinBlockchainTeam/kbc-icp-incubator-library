@@ -1,9 +1,12 @@
 # _ICP_ package
+
 This package defines and deploys the _Internet Computer_ canisters of the KBC Coffee Trading Project.  
 It uses the [DFINITY](https://sdk.dfinity.org/docs/index.html) framework as a development environment and testing network.
 
 ## Typescript Canister (Azle)
+
 ### Getting Started
+
 1. Move inside the `ts-canister` folder, where there are Typescript files that defines the canisters' logic
 2. Run `npm i` to install the required dependencies
 3. Run the script `./canisters_lifecycle.sh`. It will:
@@ -12,7 +15,7 @@ It uses the [DFINITY](https://sdk.dfinity.org/docs/index.html) framework as a de
     - Deploy the canisters
     - Populate the canisters with some initial data
     - Build the canisters and generate the `declarations` folder in which there is the Typescript code that can be used to interact with the canisters
-4. After the script has finished there are 3 options: 
+4. After the script has finished there are 3 options:
     - Press `u` will update the canisters in case of changes in logic, without losing any data
     - Press `t` will re-create a local network and re-deploy the canisters. This will delete all the data stored in the canisters and start with a clean state
     - Press `q` will quit the script
@@ -85,7 +88,9 @@ source .env && dfx deploy
 Smart contracts ABIs are encoded in the project. If you want to update them, modify the `eth-abi` folder.
 
 ## Env
+
 Update the `.env.evm` file the following variables:
+
 ```bash
 EVM_RPC_URL=<RPC_URL>
 EVM_CHAIN_ID=<CHAIN_ID>
@@ -94,23 +99,29 @@ EVM_REVOCATION_REGISTRY_ADDRESS=<REVOCATION_REGISTRY_ADDRESS>
 EVM_MEMBERSHIP_ISSUER_ADDRESS=<MEMBERSHIP_ISSUER_ADDRESS>
 ```
 
-
 ## Local deployment
+
 Inside `blockchain` folder, run:
+
 ```bash
 npx hardhat node
 npm run deploy-temp
 ```
 
 Inside `blockchain/scripts/send-eth.ts` edit the recipient address to top-up the account. Then run:
+
 ```bash
-npm run send-eth 
+npm run send-eth
 ```
+
 Create a ngrok tunnel to the local blockchain:
+
 ```bash
 ngrok http 8545
 ```
+
 Copy the ngrok URL and paste it in the `ts-canister/src/rpcUtils.ts` file. Then run:
+
 ```bash
 dfx start --clean
 npm run deploy

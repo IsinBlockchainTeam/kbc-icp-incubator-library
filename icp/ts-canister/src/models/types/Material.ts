@@ -1,4 +1,4 @@
-import {ProductCategory} from "./ProductCategory";
+import { ProductCategory } from './ProductCategory';
 
 export type Material = {
     id: bigint;

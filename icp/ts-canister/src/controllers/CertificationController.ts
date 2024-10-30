@@ -8,7 +8,6 @@ import {
     BaseCertificate,
     EvaluationStatus
 } from '../models/types';
-import { OnlyEditor, OnlyViewer } from '../decorators/roles';
 import CertificationService from '../services/CertificationService';
 import {
     BaseCertificate as IDLBaseCertificate,
@@ -19,10 +18,11 @@ import {
     ScopeCertificate as IDLScopeCertificate,
     MaterialCertificate as IDLMaterialCertificate
 } from '../models/idls';
+import { AtLeastEditor, AtLeastViewer } from '../decorators/roles';
 
 class CertificationController {
     @update([IDLRoleProof, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDLCertificateDocumentInfo, IDL.Nat, IDL.Nat, IDL.Text], IDLCompanyCertificate)
-    @OnlyEditor
+    @AtLeastEditor
     async registerCompanyCertificate(
         roleProof: RoleProof,
         issuer: string,
@@ -51,7 +51,7 @@ class CertificationController {
         [IDLRoleProof, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDLCertificateDocumentInfo, IDL.Nat, IDL.Nat, IDL.Vec(IDL.Text), IDL.Text],
         IDLScopeCertificate
     )
-    @OnlyEditor
+    @AtLeastEditor
     async registerScopeCertificate(
         roleProof: RoleProof,
         issuer: string,
@@ -79,7 +79,7 @@ class CertificationController {
     }
 
     @update([IDLRoleProof, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDLCertificateDocumentInfo, IDL.Nat, IDL.Text], IDLMaterialCertificate)
-    @OnlyEditor
+    @AtLeastEditor
     async registerMaterialCertificate(
         roleProof: RoleProof,
         issuer: string,
@@ -103,55 +103,55 @@ class CertificationController {
     }
 
     @update([IDLRoleProof, IDL.Nat], IDLBaseCertificate)
-    @OnlyViewer
+    @AtLeastViewer
     async getBaseCertificateById(roleProof: RoleProof, id: bigint): Promise<BaseCertificate> {
         return CertificationService.instance.getBaseCertificateById(roleProof, id);
     }
 
     @update([IDLRoleProof, IDL.Text], IDL.Vec(IDLBaseCertificate))
-    @OnlyViewer
+    @AtLeastViewer
     async getBaseCertificatesInfoBySubject(roleProof: RoleProof, subject: string): Promise<BaseCertificate[]> {
         return CertificationService.instance.getBaseCertificatesInfoBySubject(roleProof, subject);
     }
 
     @update([IDLRoleProof, IDL.Text], IDL.Vec(IDLCompanyCertificate))
-    @OnlyViewer
+    @AtLeastViewer
     async getCompanyCertificates(roleProof: RoleProof, subject: string): Promise<CompanyCertificate[]> {
         return CertificationService.instance.getCompanyCertificates(roleProof, subject);
     }
 
     @update([IDLRoleProof, IDL.Text], IDL.Vec(IDLScopeCertificate))
-    @OnlyViewer
+    @AtLeastViewer
     async getScopeCertificates(roleProof: RoleProof, subject: string): Promise<ScopeCertificate[]> {
         return CertificationService.instance.getScopeCertificates(roleProof, subject);
     }
 
     @update([IDLRoleProof, IDL.Text], IDL.Vec(IDLMaterialCertificate))
-    @OnlyViewer
+    @AtLeastViewer
     async getMaterialCertificates(roleProof: RoleProof, subject: string): Promise<MaterialCertificate[]> {
         return CertificationService.instance.getMaterialCertificates(roleProof, subject);
     }
 
     @update([IDLRoleProof, IDL.Text, IDL.Nat], IDLCompanyCertificate)
-    @OnlyViewer
+    @AtLeastViewer
     async getCompanyCertificate(roleProof: RoleProof, subject: string, id: bigint): Promise<CompanyCertificate> {
         return CertificationService.instance.getCompanyCertificate(roleProof, subject, id);
     }
 
     @update([IDLRoleProof, IDL.Text, IDL.Nat], IDLScopeCertificate)
-    @OnlyViewer
+    @AtLeastViewer
     async getScopeCertificate(roleProof: RoleProof, subject: string, id: bigint): Promise<ScopeCertificate> {
         return CertificationService.instance.getScopeCertificate(roleProof, subject, id);
     }
 
     @update([IDLRoleProof, IDL.Text, IDL.Nat], IDLMaterialCertificate)
-    @OnlyViewer
+    @AtLeastViewer
     async getMaterialCertificate(roleProof: RoleProof, subject: string, id: bigint): Promise<MaterialCertificate> {
         return CertificationService.instance.getMaterialCertificate(roleProof, subject, id);
     }
 
     @update([IDLRoleProof, IDL.Nat, IDL.Text, IDL.Text, IDL.Nat, IDL.Nat, IDL.Text], IDLCompanyCertificate)
-    @OnlyEditor
+    @AtLeastEditor
     async updateCompanyCertificate(
         roleProof: RoleProof,
         certificateId: bigint,
@@ -173,7 +173,7 @@ class CertificationController {
     }
 
     @update([IDLRoleProof, IDL.Nat, IDL.Text, IDL.Text, IDL.Nat, IDL.Nat, IDL.Vec(IDL.Text), IDL.Text], IDLScopeCertificate)
-    @OnlyEditor
+    @AtLeastEditor
     async updateScopeCertificate(
         roleProof: RoleProof,
         certificateId: bigint,
@@ -197,7 +197,7 @@ class CertificationController {
     }
 
     @update([IDLRoleProof, IDL.Nat, IDL.Text, IDL.Text, IDL.Nat, IDL.Text], IDLMaterialCertificate)
-    @OnlyEditor
+    @AtLeastEditor
     async updateMaterialCertificate(
         roleProof: RoleProof,
         certificateId: bigint,
@@ -217,13 +217,13 @@ class CertificationController {
     }
 
     @update([IDLRoleProof, IDL.Nat, IDLCertificateDocumentInfo])
-    @OnlyEditor
+    @AtLeastEditor
     async updateCertificateDocument(roleProof: RoleProof, certificateId: bigint, document: CertificateDocumentInfo): Promise<void> {
         return CertificationService.instance.updateDocument(roleProof, certificateId, document);
     }
 
     @update([IDLRoleProof, IDL.Nat, IDLEvaluationStatus])
-    @OnlyEditor
+    @AtLeastEditor
     async evaluateCertificateDocument(roleProof: RoleProof, certificateId: bigint, evaluation: EvaluationStatus): Promise<void> {
         return CertificationService.instance.evaluateDocument(roleProof, certificateId, evaluation);
     }

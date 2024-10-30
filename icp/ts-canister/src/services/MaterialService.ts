@@ -23,7 +23,7 @@ class MaterialService {
 
     getMaterial(id: bigint): Material {
         const result = this._materials.get(id);
-        if(result) {
+        if (result) {
             return result;
         }
         throw new Error('Material not found');

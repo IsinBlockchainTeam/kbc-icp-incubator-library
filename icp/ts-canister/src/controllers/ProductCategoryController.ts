@@ -1,12 +1,8 @@
-import {IDL, query, update} from 'azle';
-import {
-    ProductCategory as IDLProductCategory,
-} from "../models/idls";
-import {
-    ProductCategory
-} from "../models/types";
-import ProductCategoryService from "../services/ProductCategoryService";
-import {AtLeastEditor, AtLeastViewer} from "../decorators/roles";
+import { IDL, query, update } from 'azle';
+import { ProductCategory as IDLProductCategory } from '../models/idls';
+import { ProductCategory } from '../models/types';
+import ProductCategoryService from '../services/ProductCategoryService';
+import { AtLeastEditor, AtLeastViewer } from '../decorators/roles';
 
 class ProductCategoryController {
     @query([], IDL.Vec(IDLProductCategory))

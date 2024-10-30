@@ -1,24 +1,29 @@
 import { IDL, query, update } from 'azle';
 import ProcessTypeService from '../services/ProcessTypeService';
+import { AtLeastSigner, AtLeastViewer } from '../decorators/roles';
 
 class ProcessTypeController {
     @query([], IDL.Vec(IDL.Text))
-    getAllProcessTypes(): string[] {
+    @AtLeastViewer
+    async getAllProcessTypes(): Promise<string[]> {
         return ProcessTypeService.instance.getAllValues();
     }
 
     @update([IDL.Text])
-    addProcessType(value: string): void {
+    @AtLeastSigner
+    async addProcessType(value: string): Promise<void> {
         ProcessTypeService.instance.addValue(value);
     }
 
     @update([IDL.Text])
-    removeProcessType(value: string): void {
+    @AtLeastSigner
+    async removeProcessType(value: string): Promise<void> {
         ProcessTypeService.instance.removeValue(value);
     }
 
     @query([IDL.Text], IDL.Bool)
-    hasProcessType(value: string): boolean {
+    @AtLeastViewer
+    async hasProcessType(value: string): Promise<boolean> {
         return ProcessTypeService.instance.hasValue(value);
     }
 }

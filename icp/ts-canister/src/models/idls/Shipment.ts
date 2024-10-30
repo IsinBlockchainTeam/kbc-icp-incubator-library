@@ -1,5 +1,5 @@
 import { IDL } from 'azle';
-import { EvaluationStatus as IDLEvaluationStatus} from './Evaluation';
+import { EvaluationStatus as IDLEvaluationStatus } from './Evaluation';
 import { DocumentInfo as IDLDocumentInfo, DocumentType as IDLDocumentType } from './Document';
 
 export const Phase = IDL.Variant({
@@ -9,12 +9,12 @@ export const Phase = IDL.Variant({
     PHASE_4: IDL.Null,
     PHASE_5: IDL.Null,
     CONFIRMED: IDL.Null,
-    ARBITRATION: IDL.Null,
+    ARBITRATION: IDL.Null
 });
 export const FundStatus = IDL.Variant({
     NOT_LOCKED: IDL.Null,
     LOCKED: IDL.Null,
-    RELEASED: IDL.Null,
+    RELEASED: IDL.Null
 });
 export const Shipment = IDL.Record({
     id: IDL.Nat,
@@ -37,5 +37,5 @@ export const Shipment = IDL.Record({
     containersNumber: IDL.Nat,
     netWeight: IDL.Nat,
     grossWeight: IDL.Nat,
-    documents: IDL.Vec(IDL.Tuple(IDLDocumentType, IDL.Vec(IDLDocumentInfo))),
+    documents: IDL.Vec(IDL.Tuple(IDLDocumentType, IDL.Vec(IDLDocumentInfo)))
 });

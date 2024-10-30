@@ -12,8 +12,8 @@ import {
     RpcService,
     RpcServices,
     GetAddressResponse
-} from "../models/idls";
-import {calculateRsvForTEcdsa, ecdsaPublicKey, signWithEcdsa} from "./ecdsa";
+} from '../models/idls';
+import { calculateRsvForTEcdsa, ecdsaPublicKey, signWithEcdsa } from './ecdsa';
 import { EVM } from '../constants/evm';
 import { CANISTER } from '../constants/canister';
 

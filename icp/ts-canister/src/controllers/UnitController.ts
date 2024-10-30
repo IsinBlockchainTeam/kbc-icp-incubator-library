@@ -1,24 +1,29 @@
 import { IDL, query, update } from 'azle';
 import UnitService from '../services/UnitService';
+import { AtLeastSigner, AtLeastViewer } from '../decorators/roles';
 
 export class UnitController {
     @query([], IDL.Vec(IDL.Text))
-    getAllUnits(): string[] {
+    @AtLeastViewer
+    async getAllUnits(): Promise<string[]> {
         return UnitService.instance.getAllValues();
     }
 
     @update([IDL.Text])
-    addUnit(value: string): void {
+    @AtLeastSigner
+    async addUnit(value: string): Promise<void> {
         UnitService.instance.addValue(value);
     }
 
     @update([IDL.Text])
-    removeUnit(value: string): void {
+    @AtLeastSigner
+    async removeUnit(value: string): Promise<void> {
         UnitService.instance.removeValue(value);
     }
 
     @query([IDL.Text], IDL.Bool)
-    hasUnit(value: string): boolean {
+    @AtLeastViewer
+    async hasUnit(value: string): Promise<boolean> {
         return UnitService.instance.hasValue(value);
     }
 }

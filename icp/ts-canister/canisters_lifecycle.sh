@@ -4,7 +4,7 @@ ROOT_DIR=$(pwd)
 
 start_icp_network() {
   echo "Starting local Internet Computer network..."
-      dfx start --clean &
+      npm run start-network &
       while true; do
           dfx ping > /dev/null 2>&1
           if [ $? -eq 0 ]; then
@@ -53,7 +53,7 @@ deploy_canisters() {
             dfx canister call entity_manager addUnit '("H87 - Pieces")'
         fi
         echo "Generating declarations..."
-        dfx generate
+        npm run generate
         cp .env ../../src/
         cd ../../src
         npm run icp-build

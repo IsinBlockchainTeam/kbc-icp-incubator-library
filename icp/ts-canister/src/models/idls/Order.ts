@@ -10,7 +10,7 @@ export const OrderLine = IDL.Record({
     productCategoryId: IDL.Nat,
     quantity: IDL.Float32,
     unit: IDL.Text,
-    price: IDLPrice,
+    price: IDLPrice
     // materialId: IDL.Opt(IDL.Nat),
 });
 export const Order = IDL.Record({
@@ -34,5 +34,5 @@ export const Order = IDL.Record({
     agreedAmount: IDL.Nat,
     escrowManager: IDL.Text,
     escrow: IDL.Opt(IDL.Text),
-    shipmentId: IDL.Opt(IDL.Nat),
+    shipmentId: IDL.Opt(IDL.Nat)
 });

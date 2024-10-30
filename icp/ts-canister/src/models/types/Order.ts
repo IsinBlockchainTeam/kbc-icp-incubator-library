@@ -1,4 +1,4 @@
-import {Price} from "./Price";
+import { Price } from './Price';
 
 export type OrderStatus = { PENDING: null } | { CONFIRMED: null } | { EXPIRED: null };
 export type OrderLine = {
@@ -7,7 +7,7 @@ export type OrderLine = {
     unit: string;
     price: Price;
     // materialId: bigint | null;
-}
+};
 export type Order = {
     id: bigint;
     supplier: string;
@@ -30,4 +30,4 @@ export type Order = {
     escrowManager: string;
     escrow: [string] | [];
     shipmentId: [bigint] | [];
-}
+};

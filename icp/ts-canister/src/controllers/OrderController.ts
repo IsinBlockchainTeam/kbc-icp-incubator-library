@@ -1,14 +1,8 @@
-import {IDL, update} from "azle";
-import {
-    RoleProof as IDLRoleProof,
-    Order as IDLOrder, OrderLine as IDLOrderLine
-} from "../models/idls";
-import {
-    RoleProof,
-    Order, OrderLine
-} from "../models/types";
-import {AtLeastEditor, AtLeastSigner, AtLeastViewer} from "../decorators/roles";
-import OrderService from "../services/OrderService";
+import { IDL, update } from 'azle';
+import { RoleProof as IDLRoleProof, Order as IDLOrder, OrderLine as IDLOrderLine } from '../models/idls';
+import { RoleProof, Order, OrderLine } from '../models/types';
+import { AtLeastEditor, AtLeastSigner, AtLeastViewer } from '../decorators/roles';
+import OrderService from '../services/OrderService';
 
 class OrderController {
     @update([IDLRoleProof], IDL.Vec(IDLOrder))
@@ -23,7 +17,28 @@ class OrderController {
         return OrderService.instance.getOrder(roleProof, id);
     }
 
-    @update([IDLRoleProof, IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Text, IDL.Text, IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(IDLOrderLine)], IDLOrder)
+    @update(
+        [
+            IDLRoleProof,
+            IDL.Text,
+            IDL.Text,
+            IDL.Text,
+            IDL.Nat,
+            IDL.Nat,
+            IDL.Nat,
+            IDL.Nat,
+            IDL.Text,
+            IDL.Text,
+            IDL.Nat,
+            IDL.Text,
+            IDL.Text,
+            IDL.Text,
+            IDL.Text,
+            IDL.Text,
+            IDL.Vec(IDLOrderLine)
+        ],
+        IDLOrder
+    )
     @AtLeastEditor
     async createOrder(
         roleProof: RoleProof,
@@ -65,7 +80,29 @@ class OrderController {
         );
     }
 
-    @update([IDLRoleProof, IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Text, IDL.Text, IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(IDLOrderLine)], IDLOrder)
+    @update(
+        [
+            IDLRoleProof,
+            IDL.Nat,
+            IDL.Text,
+            IDL.Text,
+            IDL.Text,
+            IDL.Nat,
+            IDL.Nat,
+            IDL.Nat,
+            IDL.Nat,
+            IDL.Text,
+            IDL.Text,
+            IDL.Nat,
+            IDL.Text,
+            IDL.Text,
+            IDL.Text,
+            IDL.Text,
+            IDL.Text,
+            IDL.Vec(IDLOrderLine)
+        ],
+        IDLOrder
+    )
     @AtLeastEditor
     async updateOrder(
         roleProof: RoleProof,

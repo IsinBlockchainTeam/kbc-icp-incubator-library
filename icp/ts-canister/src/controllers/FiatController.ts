@@ -1,24 +1,29 @@
 import { IDL, query, update } from 'azle';
 import FiatService from '../services/FiatService';
+import { AtLeastSigner, AtLeastViewer } from '../decorators/roles';
 
 class FiatController {
     @query([], IDL.Vec(IDL.Text))
-    getAllFiats(): string[] {
+    @AtLeastViewer
+    async getAllFiats(): Promise<string[]> {
         return FiatService.instance.getAllValues();
     }
 
     @update([IDL.Text])
-    addFiat(value: string): void {
+    @AtLeastSigner
+    async addFiat(value: string): Promise<void> {
         FiatService.instance.addValue(value);
     }
 
     @update([IDL.Text])
-    removeFiat(value: string): void {
+    @AtLeastSigner
+    async removeFiat(value: string): Promise<void> {
         FiatService.instance.removeValue(value);
     }
 
     @query([IDL.Text], IDL.Bool)
-    hasFiat(value: string): boolean {
+    @AtLeastViewer
+    async hasFiat(value: string): Promise<boolean> {
         return FiatService.instance.hasValue(value);
     }
 }

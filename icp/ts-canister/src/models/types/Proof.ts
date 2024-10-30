@@ -4,13 +4,13 @@ export type MembershipProof = {
     delegatorCredentialExpiryDate: bigint;
     delegatorAddress: string;
     issuer: string;
-}
+};
 export type RoleProof = {
-    signedProof: string,
-    signer: string,
-    delegateAddress: string,
-    role: string,
-    delegateCredentialIdHash: string,
-    delegateCredentialExpiryDate: bigint,
-    membershipProof: MembershipProof
-}
+    signedProof: string;
+    signer: string;
+    delegateAddress: string;
+    role: string;
+    delegateCredentialIdHash: string;
+    delegateCredentialExpiryDate: bigint;
+    membershipProof: MembershipProof;
+};
