@@ -111,6 +111,13 @@ class ShipmentController {
         return ShipmentService.instance.getDocuments(id);
     }
 
+    @update([IDLRoleProof, IDL.Nat, IDL.Nat], IDLDocumentInfo)
+    @OnlyViewer
+    @OnlyInvolvedParties
+    async getDocument(_: RoleProof, id: bigint, documentId: bigint): Promise<DocumentInfo> {
+        return ShipmentService.instance.getDocument(id, documentId);
+    }
+
     @update([IDLRoleProof, IDL.Nat, IDLDocumentType, IDL.Text], IDLShipment)
     @OnlyEditor
     @OnlyInvolvedParties
@@ -130,6 +137,16 @@ class ShipmentController {
     @OnlyInvolvedParties
     async evaluateDocument(roleProof: RoleProof, id: bigint, documentId: bigint, documentEvaluationStatus: EvaluationStatus): Promise<Shipment> {
         return ShipmentService.instance.evaluateDocument(id, roleProof.membershipProof.delegatorAddress, documentId, documentEvaluationStatus);
+    }
+
+    @query([IDLPhase], IDL.Vec(IDLDocumentType))
+    getUploadableDocuments(phase: Phase) {
+        return ShipmentService.instance.getUploadableDocuments(phase);
+    }
+
+    @query([IDLPhase], IDL.Vec(IDLDocumentType))
+    getRequiredDocuments(phase: Phase) {
+        return ShipmentService.instance.getRequiredDocuments(phase);
     }
 
     @query([], IDL.Vec(IDLDocumentType))

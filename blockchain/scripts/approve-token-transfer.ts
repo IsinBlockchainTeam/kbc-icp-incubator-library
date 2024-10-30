@@ -13,4 +13,4 @@ const main = async (escrowAddress: string, amount: number) => {
     console.log('Balance', await myToken.connect(wallet).balanceOf(wallet.address));
 };
 
-main('0x0665FbB86a3acECa91Df68388EC4BBE11556DDce', 100).catch(console.error); // Escrow address
+main('0x56639dB16Ac50A89228026e42a316B30179A5376', 100).catch(console.error); // Escrow address

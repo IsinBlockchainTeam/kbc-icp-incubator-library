@@ -140,6 +140,11 @@ export class ShipmentDriver {
         return EntityBuilder.buildShipmentDocuments(documentArray);
     }
 
+    async getDocument(roleProof: RoleProof, id: number, documentId: number): Promise<DocumentInfo> {
+        const document = await this._actor.getDocument(roleProof, BigInt(id), BigInt(documentId));
+        return EntityBuilder.buildDocumentInfo(document);
+    }
+
     async addDocument(
         roleProof: RoleProof,
         id: number,
@@ -183,6 +188,20 @@ export class ShipmentDriver {
             EntityBuilder.buildIDLEvaluationStatus(evaluationStatus)
         );
         return EntityBuilder.buildShipment(resp);
+    }
+
+    async getUploadableDocuments(phase: Phase): Promise<DocumentType[]> {
+        const documents = await this._actor.getUploadableDocuments(
+            EntityBuilder.buildShipmentIDLPhase(phase)
+        );
+        return documents.map((document) => EntityBuilder.buildDocumentType(document));
+    }
+
+    async getRequiredDocuments(phase: Phase): Promise<DocumentType[]> {
+        const documents = await this._actor.getRequiredDocuments(
+            EntityBuilder.buildShipmentIDLPhase(phase)
+        );
+        return documents.map((document) => EntityBuilder.buildDocumentType(document));
     }
 
     async getPhase1Documents(): Promise<DocumentType[]> {

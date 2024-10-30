@@ -111,6 +111,12 @@ export class EntityBuilder {
         throw new Error('Invalid phase');
     };
 
+    static buildShipmentIDLPhase = (phase: Phase): ICPPhase => {
+        return {
+            [phase]: null
+        } as ICPPhase;
+    };
+
     static buildFundStatus = (status: ICPFundStatus): FundStatus => {
         if (FundStatus.NOT_LOCKED in status) return FundStatus.NOT_LOCKED;
         if (FundStatus.LOCKED in status) return FundStatus.LOCKED;

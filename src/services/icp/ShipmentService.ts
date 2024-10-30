@@ -29,9 +29,16 @@ export class ShipmentService {
 
     private readonly _icpFileDriver: ICPFileDriver;
 
-    constructor(shipmentDriver: ShipmentDriver, icpFileDriver: ICPFileDriver) {
+    private readonly _baseExternalUrl?: string;
+
+    constructor(
+        shipmentDriver: ShipmentDriver,
+        icpFileDriver: ICPFileDriver,
+        baseExternalUrl?: string
+    ) {
         this._shipmentDriver = shipmentDriver;
         this._icpFileDriver = icpFileDriver;
+        this._baseExternalUrl = baseExternalUrl;
     }
 
     async getShipments(roleProof: RoleProof): Promise<Shipment[]> {
@@ -180,6 +187,14 @@ export class ShipmentService {
         return resolvedDocuments;
     }
 
+    async getDocument(
+        roleProof: RoleProof,
+        id: number,
+        documentId: number
+    ): Promise<ShipmentDocument> {
+        return this.retrieveDocument(roleProof, id, documentId);
+    }
+
     async addDocument(
         roleProof: RoleProof,
         id: number,
@@ -189,12 +204,12 @@ export class ShipmentService {
         resourceSpec: ICPResourceSpec,
         delegatedOrganizationIds: number[] = []
     ): Promise<Shipment> {
-        // TODO: update with storage principal id
-        const externalUrl = `https://<storage_principal_id>.localhost:4943/organization/0/transactions/${id}/files`;
+        // const externalUrl = `https://<storage_principal_id>.localhost:4943/organization/0/transactions/${id}`;
+        if (!this._baseExternalUrl) throw new Error('Base external url is not set');
 
         const fileName = FileHelpers.removeFileExtension(resourceSpec.name);
         const spec = { ...resourceSpec };
-        spec.name = `${externalUrl}/${URL_SEGMENTS.FILE}${spec.name}`;
+        spec.name = `${this._baseExternalUrl}/${URL_SEGMENTS.FILE}${spec.name}`;
         await this._icpFileDriver.create(fileContent, spec, delegatedOrganizationIds);
         const documentMetadata: ShipmentDocumentMetadata = {
             fileName: spec.name,
@@ -205,12 +220,12 @@ export class ShipmentService {
         await this._icpFileDriver.create(
             FileHelpers.getBytesFromObject(documentMetadata),
             {
-                name: `${externalUrl}/${URL_SEGMENTS.FILE}${fileName}-metadata.json`,
+                name: `${this._baseExternalUrl}/${URL_SEGMENTS.FILE}${fileName}-metadata.json`,
                 type: 'application/json'
             },
             delegatedOrganizationIds
         );
-        return this._shipmentDriver.addDocument(roleProof, id, documentType, externalUrl);
+        return this._shipmentDriver.addDocument(roleProof, id, documentType, spec.name);
     }
 
     async updateDocument(
@@ -229,6 +244,15 @@ export class ShipmentService {
         evaluationStatus: EvaluationStatus
     ): Promise<Shipment> {
         return this._shipmentDriver.evaluateDocument(roleProof, id, documentId, evaluationStatus);
+    }
+
+    async getPhaseDocuments(phase: Phase): Promise<ShipmentPhaseDocument[]> {
+        const documents = await this._shipmentDriver.getUploadableDocuments(phase);
+        const requiredDocuments = await this._shipmentDriver.getRequiredDocuments(phase);
+        return documents.map((documentType) => ({
+            documentType,
+            required: requiredDocuments.includes(documentType)
+        }));
     }
 
     async getPhase1Documents(): Promise<DocumentType[]> {

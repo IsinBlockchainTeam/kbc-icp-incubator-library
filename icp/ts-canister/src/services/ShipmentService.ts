@@ -299,6 +299,16 @@ class ShipmentService {
         return shipment.documents;
     }
 
+    getDocument(id: bigint, documentId: bigint): DocumentInfo {
+        const shipment = this.shipments.get(id);
+        if (!shipment)
+            throw new Error('Shipment not found');
+        const document = shipment.documents.flatMap(([_, docs]) => docs).find(doc => doc.id === documentId);
+        if (!document)
+            throw new Error('Document not found');
+        return document;
+    }
+
     async addDocument(id: bigint, companyAddress: string, documentType: DocumentType, externalUrl: string): Promise<Shipment> {
         const shipment = this.shipments.get(id);
         if (!shipment)
@@ -384,6 +394,38 @@ class ShipmentService {
 
         this.shipments.insert(id, shipment);
         return shipment;
+    }
+
+    getUploadableDocuments(phase: Phase): DocumentType[] {
+        if (PhaseEnum.PHASE_1 in phase) {
+            return this.getPhase1Documents();
+        }
+        if (PhaseEnum.PHASE_2 in phase) {
+            return this.getPhase2Documents();
+        }
+        if (PhaseEnum.PHASE_3 in phase) {
+            return this.getPhase3Documents();
+        }
+        if (PhaseEnum.PHASE_4 in phase) {
+            return this.getPhase4Documents();
+        }
+        return this.getPhase5Documents();
+    }
+
+    getRequiredDocuments(phase: Phase): DocumentType[] {
+        if (PhaseEnum.PHASE_1 in phase) {
+            return this.getPhase1RequiredDocuments();
+        }
+        if (PhaseEnum.PHASE_2 in phase) {
+            return this.getPhase2RequiredDocuments();
+        }
+        if (PhaseEnum.PHASE_3 in phase) {
+            return this.getPhase3RequiredDocuments();
+        }
+        if (PhaseEnum.PHASE_4 in phase) {
+            return this.getPhase4RequiredDocuments();
+        }
+        return this.getPhase5RequiredDocuments();
     }
 
     getPhase1Documents() {

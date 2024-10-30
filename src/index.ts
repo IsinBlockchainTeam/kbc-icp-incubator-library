@@ -75,7 +75,12 @@ export {
     DocumentType as ShipmentDocumentType
 } from './entities/icp/Document';
 export { ShipmentDriver } from './drivers/icp/ShipmentDriver';
-export { ShipmentService } from './services/icp/ShipmentService';
+export {
+    ShipmentService,
+    ShipmentPhaseDocument,
+    ShipmentDocument,
+    ShipmentDocumentMetadata
+} from './services/icp/ShipmentService';
 
 export {
     BaseCertificate,
