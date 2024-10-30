@@ -1,15 +1,15 @@
 import {call, IDL} from "azle";
 import {
-    FeeHistoryArgs,
-    GetTransactionCountArgs,
-    MultiFeeHistoryResult,
-    MultiGetTransactionCountResult,
-    MultiSendRawTransactionResult,
-    RequestResult,
-    RpcConfig,
-    RpcService,
-    RpcServices,
-    GetAddressResponse
+    IDLFeeHistoryArgs,
+    IDLGetTransactionCountArgs,
+    IDLMultiFeeHistoryResult,
+    IDLMultiGetTransactionCountResult,
+    IDLMultiSendRawTransactionResult,
+    IDLRequestResult,
+    IDLRpcConfig,
+    IDLRpcService,
+    IDLRpcServices,
+    IDLGetAddressResponse
 } from "../models/idls";
 import {ethers} from "ethers";
 import {calculateRsvForTEcdsa, ecdsaPublicKey, signWithEcdsa} from "./ecdsa";
@@ -31,8 +31,8 @@ export async function jsonRpcRequest(body: Record<string, any>): Promise<any> {
         evmRpcCanisterId,
         'request',
         {
-            paramIdlTypes: [RpcService, IDL.Text, IDL.Nat64],
-            returnIdlType: RequestResult,
+            paramIdlTypes: [IDLRpcService, IDL.Text, IDL.Nat64],
+            returnIdlType: IDLRequestResult,
             args: [jsonRpcSource, JSON.stringify(body), 1_000],
             payment: 1_000_000_000n
         }
@@ -78,8 +78,8 @@ export async function ethFeeHistory(): Promise<any> {
         evmRpcCanisterId,
         'eth_feeHistory',
         {
-            paramIdlTypes: [RpcServices, IDL.Opt(RpcConfig), FeeHistoryArgs],
-            returnIdlType: MultiFeeHistoryResult,
+            paramIdlTypes: [IDLRpcServices, IDL.Opt(IDLRpcConfig), IDLFeeHistoryArgs],
+            returnIdlType: IDLMultiFeeHistoryResult,
             args: [rpcSource, [], jsonRpcArgs],
             payment: 1_000_000_000n
         }
@@ -110,8 +110,8 @@ export async function ethGetTransactionCount(address: string): Promise<number> {
         evmRpcCanisterId,
         'eth_getTransactionCount',
         {
-            paramIdlTypes: [RpcServices, IDL.Opt(RpcConfig), GetTransactionCountArgs],
-            returnIdlType: MultiGetTransactionCountResult,
+            paramIdlTypes: [IDLRpcServices, IDL.Opt(IDLRpcConfig), IDLGetTransactionCountArgs],
+            returnIdlType: IDLMultiGetTransactionCountResult,
             args: [rpcSource, [], jsonRpcArgs],
             payment: 1_000_000_000n
         }
@@ -139,8 +139,8 @@ export async function ethSendRawTransaction(
         evmRpcCanisterId,
         'eth_sendRawTransaction',
         {
-            paramIdlTypes: [RpcServices, IDL.Opt(RpcConfig), IDL.Text],
-            returnIdlType: MultiSendRawTransactionResult,
+            paramIdlTypes: [IDLRpcServices, IDL.Opt(IDLRpcConfig), IDL.Text],
+            returnIdlType: IDLMultiSendRawTransactionResult,
             args: [rpcSource, [], rawTransaction],
             payment: 1_000_000_000n
         }
@@ -239,8 +239,8 @@ export async function ethCallContract(
         getEvmRpcCanisterId(),
         'request',
         {
-            paramIdlTypes: [RpcService, IDL.Text, IDL.Nat64],
-            returnIdlType: RequestResult,
+            paramIdlTypes: [IDLRpcService, IDL.Text, IDL.Nat64],
+            returnIdlType: IDLRequestResult,
             args: [JsonRpcSource, JSON.stringify(jsonRpcPayload), 2048],
             payment: 2_000_000_000n
         }
@@ -259,7 +259,7 @@ export async function getAddress(principal: Principal): Promise<string> {
         'get_address',
         {
             paramIdlTypes: [IDL.Vec(IDL.Nat8)],
-            returnIdlType: GetAddressResponse,
+            returnIdlType: IDLGetAddressResponse,
             args: [principal.toUint8Array()],
         }
     );

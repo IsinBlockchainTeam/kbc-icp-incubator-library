@@ -1,9 +1,11 @@
 import {IDL, query, update} from "azle";
 import {
-    RoleProof as IDLRoleProof,
-    Phase as IDLPhase, Shipment as IDLShipment,
-    EvaluationStatus as IDLEvaluationStatus,
-    DocumentInfo as IDLDocumentInfo, DocumentType as IDLDocumentType
+    IDLRoleProof,
+    IDLPhase,
+    IDLShipment,
+    IDLEvaluationStatus,
+    IDLDocumentInfo,
+    IDLDocumentType
 } from "../models/idls";
 import {
     RoleProof,

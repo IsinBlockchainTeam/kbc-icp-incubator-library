@@ -1,25 +1,25 @@
 import {IDL} from "azle";
-import {Price as IDLPrice} from "./Price";
+import {IDLPrice as IDLPrice} from "./Price";
 
-export const OrderStatus = IDL.Variant({
+export const IDLOrderStatus = IDL.Variant({
     PENDING: IDL.Null,
     CONFIRMED: IDL.Null,
     EXPIRED: IDL.Null,
 });
-export const OrderLine = IDL.Record({
+export const IDLOrderLine = IDL.Record({
     productCategoryId: IDL.Nat,
     quantity: IDL.Float32,
     unit: IDL.Text,
     price: IDLPrice,
     // materialId: IDL.Opt(IDL.Nat),
 });
-export const Order = IDL.Record({
+export const IDLOrder = IDL.Record({
     id: IDL.Nat,
     supplier: IDL.Text,
     customer: IDL.Text,
     commissioner: IDL.Text,
     signatures: IDL.Vec(IDL.Text),
-    status: OrderStatus,
+    status: IDLOrderStatus,
     paymentDeadline: IDL.Nat,
     documentDeliveryDeadline: IDL.Nat,
     shippingDeadline: IDL.Nat,
@@ -29,7 +29,7 @@ export const Order = IDL.Record({
     shipper: IDL.Text,
     shippingPort: IDL.Text,
     deliveryPort: IDL.Text,
-    lines: IDL.Vec(OrderLine),
+    lines: IDL.Vec(IDLOrderLine),
     token: IDL.Text,
     agreedAmount: IDL.Nat,
     escrowManager: IDL.Text,

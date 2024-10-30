@@ -1,6 +1,6 @@
 import {IDL, query, update} from 'azle';
 import {
-    ProductCategory as IDLProductCategory,
+    IDLProductCategory,
 } from "../models/idls";
 import {
     ProductCategory

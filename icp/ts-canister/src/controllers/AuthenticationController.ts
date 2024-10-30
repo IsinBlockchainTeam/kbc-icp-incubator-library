@@ -1,6 +1,6 @@
 import {RoleProof} from "../models/types";
 import {IDL, update} from "azle";
-import {RoleProof as IDLRoleProof} from "../models/idls";
+import {IDLRoleProof} from "../models/idls";
 import AuthenticationService from "../services/AuthenticationService";
 
 class AuthenticationController {

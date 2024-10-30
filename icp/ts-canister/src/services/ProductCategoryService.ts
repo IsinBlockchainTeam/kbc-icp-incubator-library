@@ -39,10 +39,7 @@ class ProductCategoryService {
     }
 
     updateProductCategory(id: bigint, name: string, quality: bigint, description: string): ProductCategory {
-        const productCategory = this._productCategories.get(id);
-        if (!productCategory) {
-            throw new Error('Product category not found');
-        }
+        const productCategory = this.getProductCategory(id);
         productCategory.name = name;
         productCategory.quality = quality;
         productCategory.description = description;

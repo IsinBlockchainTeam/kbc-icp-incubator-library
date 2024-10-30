@@ -1,14 +1,13 @@
 import {StableBTreeMap} from "azle";
 import {
     Order, OrderLine,
-    RoleProof,
     ROLES
 } from "../models/types";
 import {StableMemoryId} from "../utils/stableMemory";
 import {validateAddress, validateDeadline, validateInterestedParty, validatePositiveNumber} from "../utils/validation";
-import ShipmentService from "./ShipmentService";
+import AuthenticationService from "./AuthenticationService";
 
-class OrderService {
+class OrderService implements HasInterestedParties{
     private static _instance: OrderService;
     private _orders = StableBTreeMap<bigint, Order>(StableMemoryId.ORDERS);
 
@@ -20,28 +19,27 @@ class OrderService {
         return OrderService._instance;
     }
 
-    getOrders(roleProof: RoleProof): Order[] {
-        const companyAddress = roleProof.membershipProof.delegatorAddress;
+    getInterestedParties(entityId: bigint): string[] {
+        const result = this.getOrder(entityId);
+        return [result.supplier, result.customer, result.commissioner];
+    }
+
+    getOrders(): Order[] {
+        const delegatorAddress = AuthenticationService.instance.getDelegatorAddress();
         return this._orders.values().filter(order => {
             const interestedParties = [order.supplier, order.customer, order.commissioner];
-            return interestedParties.includes(companyAddress);
+            return interestedParties.includes(delegatorAddress);
         });
     }
 
-    getOrder(roleProof: RoleProof, id: bigint): Order {
+    getOrder(id: bigint): Order {
         const result = this._orders.get(id);
-        if(result) {
-            const interestedParties = [result.supplier, result.customer, result.commissioner];
-            const companyAddress = roleProof.membershipProof.delegatorAddress;
-            if(!interestedParties.includes(companyAddress))
-                throw new Error('Access denied');
-            return result;
-        }
-        throw new Error('Order not found');
+        if(!result)
+            throw new Error('Order not found');
+        return result;
     }
 
     createOrder(
-        roleProof: RoleProof,
         supplier: string,
         customer: string,
         commissioner: string,
@@ -65,8 +63,9 @@ class OrderService {
         validateAddress('Customer', customer);
         validateAddress('Commissioner', commissioner);
         const interestedParties = [supplier, customer, commissioner];
-        const companyAddress = roleProof.membershipProof.delegatorAddress;
-        validateInterestedParty('Caller', companyAddress, interestedParties);
+        const delegatorAddress = AuthenticationService.instance.getDelegatorAddress();
+        const role = AuthenticationService.instance.getRole();
+        validateInterestedParty('Caller', delegatorAddress, interestedParties);
         validateDeadline('Payment deadline', Number(paymentDeadline));
         validateDeadline('Document delivery deadline', Number(documentDeliveryDeadline));
         validateDeadline('Shipping deadline', Number(shippingDeadline));
@@ -81,7 +80,7 @@ class OrderService {
             validatePositiveNumber('Price amount', line.price.amount);
         }
         const id = this._orders.keys().length;
-        const signatures = roleProof.role === ROLES.SIGNER ? [companyAddress] : [];
+        const signatures = role === ROLES.SIGNER ? [delegatorAddress] : [];
         const order: Order = {
             id: BigInt(id),
             supplier,
@@ -110,7 +109,6 @@ class OrderService {
     }
 
     updateOrder(
-        roleProof: RoleProof,
         id: bigint,
         supplier: string,
         customer: string,
@@ -129,9 +127,7 @@ class OrderService {
         deliveryPort: string,
         lines: OrderLine[]
     ): Order {
-        const order = this._orders.get(id);
-        if (!order)
-            throw new Error('Order not found');
+        const order = this.getOrder(id);
         if(order.supplier == supplier &&
             order.customer == customer &&
             order.commissioner == commissioner &&
@@ -157,8 +153,9 @@ class OrderService {
         validateAddress('Customer', customer);
         validateAddress('Commissioner', commissioner);
         const interestedParties = [supplier, customer, commissioner];
-        const companyAddress = roleProof.membershipProof.delegatorAddress;
-        validateInterestedParty('Caller', companyAddress, interestedParties);
+        const delegatorAddress = AuthenticationService.instance.getDelegatorAddress();
+        const role = AuthenticationService.instance.getRole();
+        validateInterestedParty('Caller', delegatorAddress, interestedParties);
         validateDeadline('Payment deadline', Number(paymentDeadline));
         validateDeadline('Document delivery deadline', Number(documentDeliveryDeadline));
         validateDeadline('Shipping deadline', Number(shippingDeadline));
@@ -172,7 +169,7 @@ class OrderService {
             validatePositiveNumber('Quantity', line.quantity);
             validatePositiveNumber('Price amount', line.price.amount);
         }
-        const signatures = roleProof.role === ROLES.SIGNER ? [companyAddress] : [];
+        const signatures = role === ROLES.SIGNER ? [delegatorAddress] : [];
         const updatedOrder: Order = {
             id: BigInt(id),
             supplier,
@@ -200,19 +197,17 @@ class OrderService {
         return updatedOrder;
     }
 
-    async signOrder(roleProof: RoleProof, id: bigint): Promise<Order> {
-        const order = this._orders.get(id);
-        if (!order)
-            throw new Error('Order not found');
-        const companyAddress = roleProof.membershipProof.delegatorAddress;
-        if(order.signatures.includes(companyAddress))
+    async signOrder(id: bigint): Promise<Order> {
+        const order = this.getOrder(id);
+        const delegatorAddress = AuthenticationService.instance.getDelegatorAddress();
+        if(order.signatures.includes(delegatorAddress))
             throw new Error('Order already signed');
-        order.signatures.push(companyAddress);
+        order.signatures.push(delegatorAddress);
         if (order.signatures.includes(order.supplier) && order.signatures.includes(order.customer)) {
             order.status = { CONFIRMED: null };
-            const shipment = await ShipmentService.instance.createShipment(roleProof, order.supplier, order.commissioner, true);
-            order.shipmentId = [shipment.id];
-            console.log(shipment);
+            // const shipment = await ShipmentService.instance.createShipment(order.supplier, order.commissioner, true);
+            // order.shipmentId = [shipment.id];
+            // console.log(shipment);
         }
         this._orders.insert(id, order);
         return order;

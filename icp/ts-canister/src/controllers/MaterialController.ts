@@ -1,6 +1,6 @@
 import { IDL, query, update } from 'azle';
 import {
-    Material as IDLMaterial,
+    IDLMaterial,
 } from "../models/idls";
 import {
     Material
