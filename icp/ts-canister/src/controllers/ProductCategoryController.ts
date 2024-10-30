@@ -1,36 +1,35 @@
 import {IDL, query, update} from 'azle';
 import {
     ProductCategory as IDLProductCategory,
-    RoleProof as IDLRoleProof
 } from "../models/idls";
 import {
-    ProductCategory, RoleProof
+    ProductCategory
 } from "../models/types";
 import ProductCategoryService from "../services/ProductCategoryService";
-import {OnlyEditor, OnlyViewer} from "../decorators/roles";
+import {AtLeastEditor, AtLeastViewer} from "../decorators/roles";
 
 class ProductCategoryController {
-    @update([IDLRoleProof], IDL.Vec(IDLProductCategory))
-    @OnlyViewer
-    async getProductCategories(_: RoleProof): Promise<ProductCategory[]> {
+    @query([], IDL.Vec(IDLProductCategory))
+    @AtLeastViewer
+    async getProductCategories(): Promise<ProductCategory[]> {
         return ProductCategoryService.instance.getProductCategories();
     }
 
-    @query([IDLRoleProof, IDL.Nat], IDLProductCategory)
-    @OnlyViewer
-    async getProductCategory(_: RoleProof, id: bigint): Promise<ProductCategory> {
+    @query([IDL.Nat], IDLProductCategory)
+    @AtLeastViewer
+    async getProductCategory(id: bigint): Promise<ProductCategory> {
         return ProductCategoryService.instance.getProductCategory(id);
     }
 
-    @update([IDLRoleProof, IDL.Text, IDL.Nat, IDL.Text], IDLProductCategory)
-    @OnlyEditor
-    async createProductCategory(_: RoleProof, name: string, quality: bigint, description: string): Promise<ProductCategory> {
+    @update([IDL.Text, IDL.Nat, IDL.Text], IDLProductCategory)
+    @AtLeastEditor
+    async createProductCategory(name: string, quality: bigint, description: string): Promise<ProductCategory> {
         return ProductCategoryService.instance.createProductCategory(name, quality, description);
     }
 
-    @update([IDLRoleProof, IDL.Nat, IDL.Text, IDL.Nat, IDL.Text], IDLProductCategory)
-    @OnlyEditor
-    async updateProductCategory(_: RoleProof, id: bigint, name: string, quality: bigint, description: string): Promise<ProductCategory> {
+    @update([IDL.Nat, IDL.Text, IDL.Nat, IDL.Text], IDLProductCategory)
+    @AtLeastEditor
+    async updateProductCategory(id: bigint, name: string, quality: bigint, description: string): Promise<ProductCategory> {
         return ProductCategoryService.instance.updateProductCategory(id, name, quality, description);
     }
 }

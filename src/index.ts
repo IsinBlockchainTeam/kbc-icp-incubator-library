@@ -7,8 +7,6 @@ export { RelationshipDriver } from './drivers/RelationshipDriver';
 export { RelationshipService } from './services/RelationshipService';
 
 export { type RoleProof } from './types/RoleProof';
-// TODO: update RoleProof instead of export two different ones. Remove the old one.
-export { type RoleProof as UpdatedRoleProof } from '@kbc-lib/azle-types';
 export { DelegateManagerDriver } from './drivers/DelegateManagerDriver';
 export { DelegateManagerService } from './services/DelegateManagerService';
 
@@ -122,8 +120,14 @@ export { OrderDriver, OrderParams } from './drivers/icp/OrderDriver';
 export { OrderService } from './services/icp/OrderService';
 
 // export {createActor} from 'icp-declarations/entity_manager'
+export { AuthenticationDriver as ICPAuthenticationDriver } from './drivers/icp/AuthenticationDriver';
+export { AuthenticationService as ICPAuthenticationService } from './services/icp/AuthenticationService';
+
 export { ProductCategoryDriver as ICPProductCategoryDriver } from './drivers/icp/ProductCategoryDriver';
 export { ProductCategoryService as ICPProductCategoryService } from './services/icp/ProductCategoryService';
+
+export { MaterialDriver as ICPMaterialDriver } from './drivers/icp/MaterialDriver';
+export { MaterialService as ICPMaterialService } from './services/icp/MaterialService';
 
 // certification
 export { CertificationDriver as ICPCertificationDriver } from './drivers/icp/CertificationDriver';

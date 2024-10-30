@@ -4,46 +4,50 @@ import {
     Phase as IDLPhase,
     Shipment as IDLShipment,
     EvaluationStatus as IDLEvaluationStatus,
-    DocumentInfo as IDLDocumentInfo,
-    DocumentType as IDLDocumentType
-} from '../models/idls';
-import { RoleProof, Phase, Shipment, EvaluationStatus, DocumentInfo, DocumentType } from '../models/types';
-import { OnlyEditor, OnlyViewer } from '../decorators/roles';
-import ShipmentService from '../services/ShipmentService';
+    DocumentInfo as IDLDocumentInfo, DocumentType as IDLDocumentType
+} from "../models/idls";
+import {
+    RoleProof,
+    Phase, Shipment,
+    EvaluationStatus,
+    DocumentInfo, DocumentType
+} from "../models/types";
+import {AtLeastEditor, AtLeastViewer} from "../decorators/roles";
+import ShipmentService from "../services/ShipmentService";
 
 // TODO: fix @OnlyInvolvedParties
 // TODO: fix @OnlySupplier
 // TODO: fix @OnlyCommissioner
 class ShipmentController {
     @update([IDLRoleProof], IDL.Vec(IDLShipment))
-    @OnlyViewer
+    @AtLeastViewer
     async getShipments(roleProof: RoleProof): Promise<Shipment[]> {
         return ShipmentService.instance.getShipments(roleProof);
     }
 
     @update([IDLRoleProof, IDL.Nat], IDLShipment)
-    @OnlyViewer
-    // @OnlyInvolvedParties
+    @AtLeastViewer
+    //@OnlyInvolvedParties
     async getShipment(roleProof: RoleProof, id: bigint): Promise<Shipment> {
         return ShipmentService.instance.getShipment(roleProof, id);
     }
 
     @update([IDLRoleProof, IDL.Nat], IDLPhase)
-    @OnlyViewer
-    // @OnlyInvolvedParties
+    @AtLeastViewer
+    //@OnlyInvolvedParties
     async getShipmentPhase(roleProof: RoleProof, id: bigint): Promise<Phase> {
         return ShipmentService.instance.getShipmentPhase(roleProof, id);
     }
 
     @update([IDLRoleProof, IDL.Nat, IDLDocumentType], IDL.Opt(IDL.Vec(IDLDocumentInfo)))
-    @OnlyViewer
-    // @OnlyInvolvedParties
+    @AtLeastViewer
+    //@OnlyInvolvedParties
     async getDocumentsByType(roleProof: RoleProof, id: bigint, documentType: DocumentType): Promise<DocumentInfo[] | []> {
         return ShipmentService.instance.getDocumentsByType(roleProof, id, documentType);
     }
 
     @update([IDLRoleProof, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Text, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat], IDLShipment)
-    @OnlyEditor
+    @AtLeastEditor
     // @OnlySupplier
     async setShipmentDetails(
         roleProof: RoleProof,
@@ -76,55 +80,55 @@ class ShipmentController {
     }
 
     @update([IDLRoleProof, IDL.Nat, IDLEvaluationStatus], IDLShipment)
-    @OnlyEditor
+    @AtLeastEditor
     // @OnlyCommissioner
     async evaluateSample(roleProof: RoleProof, id: bigint, evaluationStatus: EvaluationStatus): Promise<Shipment> {
         return ShipmentService.instance.evaluateSample(roleProof, id, evaluationStatus);
     }
 
     @update([IDLRoleProof, IDL.Nat, IDLEvaluationStatus], IDLShipment)
-    @OnlyEditor
+    @AtLeastEditor
     // @OnlyCommissioner
     async evaluateShipmentDetails(roleProof: RoleProof, id: bigint, evaluationStatus: EvaluationStatus): Promise<Shipment> {
         return ShipmentService.instance.evaluateShipmentDetails(roleProof, id, evaluationStatus);
     }
 
     @update([IDLRoleProof, IDL.Nat, IDLEvaluationStatus], IDLShipment)
-    @OnlyEditor
+    @AtLeastEditor
     // @OnlyCommissioner
     async evaluateQuality(roleProof: RoleProof, id: bigint, evaluationStatus: EvaluationStatus): Promise<Shipment> {
         return ShipmentService.instance.evaluateQuality(roleProof, id, evaluationStatus);
     }
 
     @update([IDLRoleProof, IDL.Nat, IDL.Nat], IDLShipment)
-    @OnlyEditor
+    @AtLeastEditor
     async depositFunds(roleProof: RoleProof, id: bigint, amount: bigint): Promise<Shipment> {
         return ShipmentService.instance.depositFunds(roleProof, id, amount);
     }
 
     @update([IDLRoleProof, IDL.Nat], IDL.Vec(IDL.Tuple(IDLDocumentType, IDL.Vec(IDLDocumentInfo))))
-    @OnlyViewer
+    @AtLeastViewer
     // @OnlyInvolvedParties
     async getDocuments(roleProof: RoleProof, id: bigint) {
         return ShipmentService.instance.getDocuments(roleProof, id);
     }
 
     @update([IDLRoleProof, IDL.Nat, IDLDocumentType, IDL.Text], IDLShipment)
-    @OnlyEditor
+    @AtLeastEditor
     // @OnlyInvolvedParties
     async addDocument(roleProof: RoleProof, id: bigint, documentType: DocumentType, externalUrl: string): Promise<Shipment> {
         return ShipmentService.instance.addDocument(roleProof, id, documentType, externalUrl);
     }
 
     @update([IDLRoleProof, IDL.Nat, IDL.Nat, IDL.Text], IDLShipment)
-    @OnlyEditor
+    @AtLeastEditor
     // @OnlyInvolvedParties
     async updateDocument(roleProof: RoleProof, id: bigint, documentId: bigint, externalUrl: string): Promise<Shipment> {
         return ShipmentService.instance.updateDocument(roleProof, id, documentId, externalUrl);
     }
 
     @update([IDLRoleProof, IDL.Nat, IDL.Nat, IDLEvaluationStatus], IDLShipment)
-    @OnlyEditor
+    @AtLeastEditor
     // @OnlyInvolvedParties
     async evaluateDocument(roleProof: RoleProof, id: bigint, documentId: bigint, documentEvaluationStatus: EvaluationStatus): Promise<Shipment> {
         return ShipmentService.instance.evaluateDocument(roleProof, id, documentId, documentEvaluationStatus);

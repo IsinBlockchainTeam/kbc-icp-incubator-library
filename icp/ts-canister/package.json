@@ -3,14 +3,16 @@
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "scripts": {
-        "pretest": "tsx test/pretest.ts",
         "test": "jest",
+        "start-network": "dfx start --clean",
         "deploy": "set -o allexport; source .env.evm; set +o allexport && dfx deploy",
         "build-types": "npx tsc -p tsconfig-types.json",
         "lint": "eslint --fix --ext .ts .",
-        "prettier": "npx prettier . --write"
+        "prettier": "npx prettier . --write",
+        "generate": "dfx generate"
     },
     "dependencies": {
+        "@types/jest": "^29.5.14",
         "azle": "^0.24.1",
         "ethers": "^6.13.2"
     },

@@ -1,5 +1,6 @@
 import {
     ProductCategory as ICPProductCategory,
+    Material as ICPMaterial,
     Order as ICPOrder,
     OrderStatus as ICPOrderStatus,
     BaseCertificate as ICPBaseCertificate,
@@ -14,6 +15,7 @@ import {
 } from '@kbc-lib/azle-types';
 import { Order, OrderStatus } from '../../entities/icp/Order';
 import { ProductCategory } from '../../entities/ProductCategory';
+import {Material} from "../../entities/Material";
 import { CompanyCertificate } from '../../entities/icp/CompanyCertificate';
 import { ScopeCertificate } from '../../entities/icp/ScopeCertificate';
 import { MaterialCertificate } from '../../entities/icp/MaterialCertificate';
@@ -32,6 +34,13 @@ export class EntityBuilder {
             productCategory.name,
             Number(productCategory.quality),
             productCategory.description
+        );
+    }
+
+    static buildMaterial(material: ICPMaterial) {
+        return new Material(
+            Number(material.id),
+            this.buildProductCategory(material.productCategory)
         );
     }
 

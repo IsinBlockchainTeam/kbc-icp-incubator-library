@@ -1,4 +1,3 @@
-import {RoleProof} from "@kbc-lib/azle-types";
 import {ProductCategoryDriver} from "../../drivers/icp/ProductCategoryDriver";
 import {ProductCategory} from "../../entities/ProductCategory";
 
@@ -9,19 +8,19 @@ export class ProductCategoryService {
         this._productCategoryDriver = productCategoryDriver;
     }
 
-    async getProductCategories(roleProof: RoleProof): Promise<ProductCategory[]> {
-        return this._productCategoryDriver.getProductCategories(roleProof);
+    async getProductCategories(): Promise<ProductCategory[]> {
+        return this._productCategoryDriver.getProductCategories();
     }
 
-    async getProductCategory(roleProof: RoleProof, id: number): Promise<ProductCategory> {
-        return this._productCategoryDriver.getProductCategory(roleProof, id);
+    async getProductCategory(id: number): Promise<ProductCategory> {
+        return this._productCategoryDriver.getProductCategory(id);
     }
 
-    async createProductCategory(roleProof: RoleProof, name: string, quality: number, description: string) {
-        return this._productCategoryDriver.createProductCategory(roleProof, name, quality, description);
+    async createProductCategory(name: string, quality: number, description: string) {
+        return this._productCategoryDriver.createProductCategory(name, quality, description);
     }
 
-    async updateProductCategory(roleProof: RoleProof, id: number, name: string, quality: number, description: string) {
-        return this._productCategoryDriver.updateProductCategory(roleProof, id, name, quality, description);
+    async updateProductCategory(id: number, name: string, quality: number, description: string) {
+        return this._productCategoryDriver.updateProductCategory(id, name, quality, description);
     }
 }

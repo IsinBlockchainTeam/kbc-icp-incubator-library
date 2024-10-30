@@ -29,7 +29,7 @@ class DelegationService {
         return DelegationService._instance;
     }
 
-    async hasValidRole(proof: RoleProof, caller: Principal, minimumRole: string): Promise<boolean> {
+    async hasValidRoleProof(proof: RoleProof, caller: Principal): Promise<boolean> {
         const unixTime = Number(ic.time().toString().substring(0, 13));
         const { signedProof, signer: expectedSigner, ...data } = proof;
 
@@ -42,9 +42,7 @@ class DelegationService {
         });
         const roleProofSigner = ethers.verifyMessage(roleProofStringifiedData, signedProof);
         // If signedProof is different from the reconstructed proof, the two signers are different
-        if (roleProofSigner !== expectedSigner) return false;
-        // If the delegate is not at least the minimum role, the delegate is not valid
-        if (!this.isAtLeast(data.role, minimumRole)) return false;
+        if(roleProofSigner !== expectedSigner) return false;
         // If the delegate credential has expired, the delegate is not valid
         if (data.delegateCredentialExpiryDate < unixTime) return false;
         // If the caller is not the delegate address, the proof is invalid
@@ -80,10 +78,6 @@ class DelegationService {
         });
         if (resp.Err) throw new Error('Unable to fetch address');
         return resp.Ok;
-    }
-
-    isAtLeast(actualRole: string, minimumRole: string): boolean {
-        return this._incrementalRoles.indexOf(actualRole) >= this._incrementalRoles.indexOf(minimumRole);
     }
 
     async isRevoked(signer: string, credentialIdHash: string): Promise<boolean> {

@@ -1,4 +1,4 @@
-import {Wallet} from "ethers";
+import {Signer, Wallet} from "ethers";
 
 const issuerWallet = new Wallet('ec6b3634419525310628dce4da4cf2abbc866c608aebc1e5f9ee7edf6926e985');
 const expiryDate = 1859262399000;
@@ -26,19 +26,19 @@ export const computeRoleProof = async (
     role: string,
     delegateCredentialIdHash: string,
     delegatorCredentialIdHash: string,
-    delegatorPrivateKey: string,
+    delegatorSigner: Signer,
     ) => {
-    const delegatorWallet = new Wallet(delegatorPrivateKey);
-    const signedProof = await delegatorWallet.signMessage(JSON.stringify({
+    const signedProof = await delegatorSigner.signMessage(JSON.stringify({
         delegateAddress,
         role,
         delegateCredentialIdHash,
         delegateCredentialExpiryDate: expiryDate
     }));
-    const membershipProof = await computeMembershipProof(delegatorCredentialIdHash, delegatorWallet.address);
+    const delegatorAddress = await delegatorSigner.getAddress();
+    const membershipProof = await computeMembershipProof(delegatorCredentialIdHash, delegatorAddress);
     return {
         signedProof,
-        signer: delegatorWallet.address,
+        signer: delegatorAddress,
         delegateAddress,
         role,
         delegateCredentialIdHash,
