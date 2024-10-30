@@ -214,8 +214,8 @@ class OrderService {
             order.status = { CONFIRMED: null };
             const duration = order.paymentDeadline - BigInt(Math.trunc(Date.now() / 1000));
             const shipment = await ShipmentService.instance.createShipment(order.supplier, order.commissioner, true, duration, order.token);
+            console.log('new shipment id:', shipment.id);
             order.shipmentId = [shipment.id];
-            console.log(shipment);
         }
         this._orders.insert(id, order);
         return order;

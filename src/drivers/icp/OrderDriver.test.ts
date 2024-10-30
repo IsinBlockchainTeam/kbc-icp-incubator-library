@@ -12,15 +12,15 @@ const DELEGATE_CREDENTIAL_ID_HASH =
     '0x2cc6c15c35500c4341eee2f9f5f8c39873b9c3737edb343ebc3d16424e99a0d4';
 const DELEGATOR_CREDENTIAL_ID_HASH =
     '0xf19b6aebcdaba2222d3f2c818ff1ecda71c7ed93c3e0f958241787663b58bc4b';
-const SIWE_CANISTER_ID = 'be2us-64aaa-aaaaa-qaabq-cai';
-const ENTITY_MANAGER_CANISTER_ID = 'bkyz2-fmaaa-aaaaa-qaaaq-cai';
+const SIWE_CANISTER_ID = 'by6od-j4aaa-aaaaa-qaadq-cai';
+const ENTITY_MANAGER_CANISTER_ID = 'bw4dl-smaaa-aaaaa-qaacq-cai';
 type Utils = {
     userWallet: Wallet;
     companyWallet: Wallet;
     orderManagerDriver: OrderDriver;
     roleProof: RoleProof;
 };
-const ORDER_ID = 0;
+const ORDER_ID = 1;
 describe('OrderDriver', () => {
     let utils1: Utils, utils2: Utils;
     const getUtils = async (userPrivateKey: string, companyPrivateKey: string) => {

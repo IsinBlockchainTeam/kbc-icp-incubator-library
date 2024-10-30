@@ -69,7 +69,7 @@ export { TokenDriver } from './drivers/TokenDriver';
 export { TokenService } from './services/TokenService';
 
 export { Shipment, Phase as ShipmentPhase, FundStatus } from './entities/icp/Shipment';
-export { EvaluationStatus as ShipmentDocumentEvaluationStatus } from './entities/icp/Evaluation';
+export { EvaluationStatus } from './entities/icp/Evaluation';
 export {
     DocumentInfo as ShipmentDocumentInfo,
     DocumentType as ShipmentDocumentType

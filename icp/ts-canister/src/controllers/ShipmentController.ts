@@ -1,9 +1,9 @@
 import {IDL, query, update} from "azle";
 import {RoleProof, Phase, Shipment, EvaluationStatus, DocumentInfo, DocumentType} from "../models/types";
 import {RoleProof as IDLRoleProof, Phase as IDLPhase, Shipment as IDLShipment, IDLEvaluationStatus as IDLEvaluationStatus, IDLDocumentInfo, IDLDocumentType } from "../models/idls";
-import {OnlyEditor, OnlyViewer} from "../decorators/roles";
 import ShipmentService from "../services/ShipmentService";
 import {AtLeastEditor, AtLeastViewer} from "../decorators/roles";
+import { OnlyCommissioner, OnlyInvolvedParties, OnlySupplier } from '../decorators/shipmentParties';
 
 //TODO: fix @OnlyInvolvedParties
 //TODO: fix @OnlySupplier
@@ -12,7 +12,7 @@ class ShipmentController {
     @update([IDLRoleProof], IDL.Vec(IDLShipment))
     @AtLeastViewer
     async getShipments(roleProof: RoleProof): Promise<Shipment[]> {
-        return ShipmentService.instance.getShipments(roleProof);
+        return ShipmentService.instance.getShipments(roleProof.membershipProof.delegatorAddress);
     }
 
     @update([IDLRoleProof, IDL.Nat], IDLShipment)
@@ -40,7 +40,7 @@ class ShipmentController {
     @AtLeastEditor
     @OnlySupplier
     async setShipmentDetails(
-        roleProof: RoleProof,
+        _: RoleProof,
         id: bigint,
         shipmentNumber: bigint,
         expirationDate: bigint,
@@ -54,7 +54,6 @@ class ShipmentController {
         grossWeight: bigint
     ): Promise<Shipment> {
         return ShipmentService.instance.setShipmentDetails(
-            roleProof,
             id,
             shipmentNumber,
             expirationDate,
@@ -126,7 +125,7 @@ class ShipmentController {
     @AtLeastEditor
     @OnlyInvolvedParties
     async addDocument(roleProof: RoleProof, id: bigint, documentType: DocumentType, externalUrl: string): Promise<Shipment> {
-        return ShipmentService.instance.addDocument(roleProof, id, documentType, externalUrl);
+        return ShipmentService.instance.addDocument(id, roleProof.membershipProof.delegatorAddress, documentType, externalUrl);
     }
 
     @update([IDLRoleProof, IDL.Nat, IDL.Nat, IDL.Text], IDLShipment)
@@ -140,7 +139,17 @@ class ShipmentController {
     @AtLeastEditor
     @OnlyInvolvedParties
     async evaluateDocument(roleProof: RoleProof, id: bigint, documentId: bigint, documentEvaluationStatus: EvaluationStatus): Promise<Shipment> {
-        return ShipmentService.instance.evaluateDocument(roleProof, id, documentId, documentEvaluationStatus);
+        return ShipmentService.instance.evaluateDocument(id, roleProof.membershipProof.delegatorAddress, documentId, documentEvaluationStatus);
+    }
+
+    @query([IDLPhase], IDL.Vec(IDLDocumentType))
+    getUploadableDocuments(phase: Phase) {
+        return ShipmentService.instance.getUploadableDocuments(phase);
+    }
+
+    @query([IDLPhase], IDL.Vec(IDLDocumentType))
+    getRequiredDocuments(phase: Phase) {
+        return ShipmentService.instance.getRequiredDocuments(phase);
     }
 
     @query([], IDL.Vec(IDLDocumentType))
