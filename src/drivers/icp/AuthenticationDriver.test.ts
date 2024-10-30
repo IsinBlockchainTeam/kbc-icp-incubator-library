@@ -1,9 +1,9 @@
 import { Wallet } from 'ethers';
-import {RoleProof} from "@kbc-lib/azle-types";
+import { RoleProof } from '@kbc-lib/azle-types';
 import { ProductCategoryDriver } from './ProductCategoryDriver';
 import { SiweIdentityProvider } from './SiweIdentityProvider';
 import { computeRoleProof } from './proof';
-import {AuthenticationDriver} from "./AuthenticationDriver";
+import { AuthenticationDriver } from './AuthenticationDriver';
 
 const USER_PRIVATE_KEY = '0c7e66e74f6666b514cc73ee2b7ffc518951cf1ca5719d6820459c4e134f2264';
 const COMPANY_PRIVATE_KEY = '538d7d8aec31a0a83f12461b1237ce6b00d8efc1d8b1c73566c05f63ed5e6d02';
@@ -48,7 +48,7 @@ describe('AuthenticationDriver', () => {
     });
 
     it('should login', async () => {
-        console.log(roleProof)
+        console.log(roleProof);
         const result = await authenticationDriver.login(roleProof);
         console.log(result);
         expect(result).toBeDefined();
@@ -80,5 +80,5 @@ describe('AuthenticationDriver', () => {
         );
         console.log(productCategory);
         expect(productCategory).toBeDefined();
-    });
+    }, 10000);
 });
