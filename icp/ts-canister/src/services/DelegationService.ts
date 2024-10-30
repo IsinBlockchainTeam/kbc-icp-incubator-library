@@ -5,7 +5,8 @@ import { RoleProof, ROLES } from '../models/types';
 import revocationRegistryAbi from '../../eth-abi/RevocationRegistry.json';
 import { CANISTER } from '../constants/canister';
 import { EVM } from '../constants/evm';
-import { GetAddressResponse, RequestResult, RpcService } from '../models/idls';
+import { IDLGetAddressResponse,
+  IDLRequestResult, IDLRpcService } from '../models/idls';
 
 class DelegationService {
     private static _instance: DelegationService;
@@ -71,12 +72,16 @@ class DelegationService {
     }
 
     async getAddress(principal: Principal): Promise<string> {
-        const resp = await call(this._siweProviderCanisterId, 'get_address', {
-            paramIdlTypes: [IDL.Vec(IDL.Nat8)],
-            returnIdlType: GetAddressResponse,
-            args: [principal.toUint8Array()]
-        });
-        if (resp.Err) throw new Error('Unable to fetch address');
+        const resp = await call(
+            this._siweProviderCanisterId,
+            'get_address',
+            {
+                paramIdlTypes: [IDL.Vec(IDL.Nat8)],
+                returnIdlType: IDLGetAddressResponse,
+                args: [principal.toUint8Array()],
+            }
+        );
+        if(resp.Err) throw new Error('Unable to fetch address');
         return resp.Ok;
     }
 
@@ -102,14 +107,18 @@ class DelegationService {
                 url: this._evmRpcUrl,
                 headers: []
             }
-        };
-        const resp = await call(this._evmRpcCanisterId, 'request', {
-            paramIdlTypes: [RpcService, IDL.Text, IDL.Nat64],
-            returnIdlType: RequestResult,
-            args: [JsonRpcSource, JSON.stringify(jsonRpcPayload), 2048],
-            payment: 2_000_000_000n
-        });
-        if (resp.Err) throw new Error('Unable to fetch revocation registry');
+        }
+        const resp = await call(
+            this._evmRpcCanisterId,
+            'request',
+            {
+                paramIdlTypes: [IDLRpcService, IDL.Text, IDL.Nat64],
+                returnIdlType: IDLRequestResult,
+                args: [JsonRpcSource, JSON.stringify(jsonRpcPayload), 2048],
+                payment: 2_000_000_000n
+            }
+        );
+        if(resp.Err) throw new Error('Unable to fetch revocation registry');
 
         const decodedResult = abiInterface.decodeFunctionResult(methodName, JSON.parse(resp.Ok).result);
         return decodedResult[0] !== 0n;

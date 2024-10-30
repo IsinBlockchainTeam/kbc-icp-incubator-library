@@ -1,5 +1,5 @@
 import { IDL, query, update } from 'azle';
-import { Material as IDLMaterial } from '../models/idls';
+import { IDLMaterial } from '../models/idls';
 import { Material } from '../models/types';
 import MaterialService from '../services/MaterialService';
 import { AtLeastEditor, AtLeastViewer } from '../decorators/roles';

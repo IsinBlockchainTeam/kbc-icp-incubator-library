@@ -1,8 +1,8 @@
 import { IDL } from 'azle';
-import { EvaluationStatus as IDLEvaluationStatus } from './Evaluation';
-import { DocumentInfo as IDLDocumentInfo, DocumentType as IDLDocumentType } from './Document';
+import { IDLEvaluationStatus} from './Evaluation';
+import { IDLDocumentInfo, IDLDocumentType } from './Document';
 
-export const Phase = IDL.Variant({
+export const IDLPhase = IDL.Variant({
     PHASE_1: IDL.Null,
     PHASE_2: IDL.Null,
     PHASE_3: IDL.Null,
@@ -11,12 +11,12 @@ export const Phase = IDL.Variant({
     CONFIRMED: IDL.Null,
     ARBITRATION: IDL.Null
 });
-export const FundStatus = IDL.Variant({
+export const IDLFundStatus = IDL.Variant({
     NOT_LOCKED: IDL.Null,
     LOCKED: IDL.Null,
     RELEASED: IDL.Null
 });
-export const Shipment = IDL.Record({
+export const IDLShipment = IDL.Record({
     id: IDL.Nat,
     supplier: IDL.Text,
     commissioner: IDL.Text,
@@ -24,7 +24,7 @@ export const Shipment = IDL.Record({
     sampleEvaluationStatus: IDLEvaluationStatus,
     detailsEvaluationStatus: IDLEvaluationStatus,
     qualityEvaluationStatus: IDLEvaluationStatus,
-    fundsStatus: FundStatus,
+    fundsStatus: IDLFundStatus,
     detailsSet: IDL.Bool,
     sampleApprovalRequired: IDL.Bool,
     shipmentNumber: IDL.Nat,

@@ -41,10 +41,7 @@ class MaterialService {
     }
 
     updateMaterial(id: bigint, productCategoryId: bigint): Material {
-        const material = this._materials.get(id);
-        if (!material) {
-            throw new Error('Material not found');
-        }
+        const material = this.getMaterial(id);
         if (!this._productCategoryService.productCategoryExists(productCategoryId)) {
             throw new Error('Product category not found');
         }

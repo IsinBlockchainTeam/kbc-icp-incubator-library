@@ -1,6 +1,6 @@
 import { IDL } from 'azle';
 
-export const ProductCategory = IDL.Record({
+export const IDLProductCategory = IDL.Record({
     id: IDL.Nat,
     name: IDL.Text,
     quality: IDL.Nat,

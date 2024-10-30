@@ -1,7 +1,7 @@
-import { IDL } from 'azle';
-import { ProductCategory } from './ProductCategory';
+import {IDL} from "azle";
+import {IDLProductCategory} from "./ProductCategory";
 
-export const Material = IDL.Record({
+export const IDLMaterial = IDL.Record({
     id: IDL.Nat,
-    productCategory: ProductCategory
+    productCategory: IDLProductCategory,
 });

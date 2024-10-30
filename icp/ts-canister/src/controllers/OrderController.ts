@@ -1,47 +1,33 @@
-import { IDL, update } from 'azle';
-import { RoleProof as IDLRoleProof, Order as IDLOrder, OrderLine as IDLOrderLine } from '../models/idls';
-import { RoleProof, Order, OrderLine } from '../models/types';
-import { AtLeastEditor, AtLeastSigner, AtLeastViewer } from '../decorators/roles';
-import OrderService from '../services/OrderService';
+import {IDL, query, update} from "azle";
+import {
+    IDLOrder,
+    IDLOrderLine
+} from "../models/idls";
+import {
+    Order,
+    OrderLine
+} from "../models/types";
+import {AtLeastEditor, AtLeastSigner, AtLeastViewer} from "../decorators/roles";
+import OrderService from "../services/OrderService";
+import {OnlyContractParty} from "../decorators/parties";
 
 class OrderController {
-    @update([IDLRoleProof], IDL.Vec(IDLOrder))
+    @query([], IDL.Vec(IDLOrder))
     @AtLeastViewer
-    async getOrders(roleProof: RoleProof): Promise<Order[]> {
-        return OrderService.instance.getOrders(roleProof);
+    async getOrders(): Promise<Order[]> {
+        return OrderService.instance.getOrders();
     }
 
-    @update([IDLRoleProof, IDL.Nat], IDLOrder)
+    @query([IDL.Nat], IDLOrder)
     @AtLeastViewer
-    async getOrder(roleProof: RoleProof, id: bigint): Promise<Order> {
-        return OrderService.instance.getOrder(roleProof, id);
+    @OnlyContractParty(OrderService.instance)
+    async getOrder(id: bigint): Promise<Order> {
+        return OrderService.instance.getOrder(id);
     }
 
-    @update(
-        [
-            IDLRoleProof,
-            IDL.Text,
-            IDL.Text,
-            IDL.Text,
-            IDL.Nat,
-            IDL.Nat,
-            IDL.Nat,
-            IDL.Nat,
-            IDL.Text,
-            IDL.Text,
-            IDL.Nat,
-            IDL.Text,
-            IDL.Text,
-            IDL.Text,
-            IDL.Text,
-            IDL.Text,
-            IDL.Vec(IDLOrderLine)
-        ],
-        IDLOrder
-    )
+    @update([IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Text, IDL.Text, IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(IDLOrderLine)], IDLOrder)
     @AtLeastEditor
     async createOrder(
-        roleProof: RoleProof,
         supplier: string,
         customer: string,
         commissioner: string,
@@ -60,7 +46,6 @@ class OrderController {
         lines: OrderLine[]
     ): Promise<Order> {
         return OrderService.instance.createOrder(
-            roleProof,
             supplier,
             customer,
             commissioner,
@@ -80,32 +65,10 @@ class OrderController {
         );
     }
 
-    @update(
-        [
-            IDLRoleProof,
-            IDL.Nat,
-            IDL.Text,
-            IDL.Text,
-            IDL.Text,
-            IDL.Nat,
-            IDL.Nat,
-            IDL.Nat,
-            IDL.Nat,
-            IDL.Text,
-            IDL.Text,
-            IDL.Nat,
-            IDL.Text,
-            IDL.Text,
-            IDL.Text,
-            IDL.Text,
-            IDL.Text,
-            IDL.Vec(IDLOrderLine)
-        ],
-        IDLOrder
-    )
+    @update([IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Text, IDL.Text, IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(IDLOrderLine)], IDLOrder)
     @AtLeastEditor
+    @OnlyContractParty(OrderService.instance)
     async updateOrder(
-        roleProof: RoleProof,
         id: bigint,
         supplier: string,
         customer: string,
@@ -125,7 +88,6 @@ class OrderController {
         lines: OrderLine[]
     ): Promise<Order> {
         return OrderService.instance.updateOrder(
-            roleProof,
             id,
             supplier,
             customer,
@@ -146,10 +108,11 @@ class OrderController {
         );
     }
 
-    @update([IDLRoleProof, IDL.Nat], IDLOrder)
+    @update([IDL.Nat], IDLOrder)
     @AtLeastSigner
-    async signOrder(roleProof: RoleProof, id: bigint): Promise<Order> {
-        return OrderService.instance.signOrder(roleProof, id);
+    @OnlyContractParty(OrderService.instance)
+    async signOrder(id: bigint): Promise<Order> {
+        return OrderService.instance.signOrder(id);
     }
 }
 export default OrderController;

@@ -1,5 +1,4 @@
 import type { ActorSubclass, Identity } from '@dfinity/agent';
-import {RoleProof} from "@kbc-lib/azle-types";
 import {createActor} from "icp-declarations/entity_manager";
 import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
 import {EntityBuilder} from "../../utils/icp/EntityBuilder";
@@ -44,19 +43,18 @@ export class OrderDriver {
         });
     }
 
-    async getOrders(roleProof: RoleProof): Promise<Order[]> {
-        const resp = await this._actor.getOrders(roleProof);
+    async getOrders(): Promise<Order[]> {
+        const resp = await this._actor.getOrders();
         return resp.map(rawOrder => EntityBuilder.buildOrder(rawOrder));
     }
 
-    async getOrder(roleProof: RoleProof, id: number): Promise<Order> {
-        const resp = await this._actor.getOrder(roleProof, BigInt(id));
+    async getOrder(id: number): Promise<Order> {
+        const resp = await this._actor.getOrder(BigInt(id));
         return EntityBuilder.buildOrder(resp);
     }
 
-    async createOrder(roleProof: RoleProof, params: OrderParams): Promise<Order> {
+    async createOrder(params: OrderParams): Promise<Order> {
         const resp = await this._actor.createOrder(
-            roleProof,
             params.supplier,
             params.customer,
             params.commissioner,
@@ -85,9 +83,8 @@ export class OrderDriver {
         return EntityBuilder.buildOrder(resp);
     }
 
-    async updateOrder(roleProof: RoleProof, id: number, params: OrderParams): Promise<Order> {
+    async updateOrder(id: number, params: OrderParams): Promise<Order> {
         const resp = await this._actor.updateOrder(
-            roleProof,
             BigInt(id),
             params.supplier,
             params.customer,
@@ -117,8 +114,8 @@ export class OrderDriver {
         return EntityBuilder.buildOrder(resp);
     }
 
-    async signOrder(roleProof: RoleProof, id: number): Promise<Order> {
-        const resp = await this._actor.signOrder(roleProof, BigInt(id));
+    async signOrder(id: number): Promise<Order> {
+        const resp = await this._actor.signOrder(BigInt(id));
         return EntityBuilder.buildOrder(resp);
     }
 }
