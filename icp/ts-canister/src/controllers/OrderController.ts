@@ -1,11 +1,11 @@
 import {IDL, query, update} from "azle";
 import {
     IDLOrder,
-    IDLOrderLine
+    IDLOrderLineRaw
 } from "../models/idls";
 import {
     Order,
-    OrderLine
+    OrderLineRaw
 } from "../models/types";
 import {AtLeastEditor, AtLeastSigner, AtLeastViewer} from "../decorators/roles";
 import OrderService from "../services/OrderService";
@@ -25,7 +25,7 @@ class OrderController {
         return OrderService.instance.getOrder(id);
     }
 
-    @update([IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Text, IDL.Text, IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(IDLOrderLine)], IDLOrder)
+    @update([IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Text, IDL.Text, IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(IDLOrderLineRaw)], IDLOrder)
     @AtLeastEditor
     async createOrder(
         supplier: string,
@@ -38,12 +38,11 @@ class OrderController {
         arbiter: string,
         token: string,
         agreedAmount: bigint,
-        escrowManager: string,
         incoterms: string,
         shipper: string,
         shippingPort: string,
         deliveryPort: string,
-        lines: OrderLine[]
+        lines: OrderLineRaw[]
     ): Promise<Order> {
         return OrderService.instance.createOrder(
             supplier,
@@ -56,7 +55,6 @@ class OrderController {
             arbiter,
             token,
             agreedAmount,
-            escrowManager,
             incoterms,
             shipper,
             shippingPort,
@@ -65,7 +63,7 @@ class OrderController {
         );
     }
 
-    @update([IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Text, IDL.Text, IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(IDLOrderLine)], IDLOrder)
+    @update([IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Text, IDL.Text, IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(IDLOrderLineRaw)], IDLOrder)
     @AtLeastEditor
     @OnlyContractParty(OrderService.instance)
     async updateOrder(
@@ -80,12 +78,11 @@ class OrderController {
         arbiter: string,
         token: string,
         agreedAmount: bigint,
-        escrowManager: string,
         incoterms: string,
         shipper: string,
         shippingPort: string,
         deliveryPort: string,
-        lines: OrderLine[]
+        lines: OrderLineRaw[]
     ): Promise<Order> {
         return OrderService.instance.updateOrder(
             id,
@@ -99,7 +96,6 @@ class OrderController {
             arbiter,
             token,
             agreedAmount,
-            escrowManager,
             incoterms,
             shipper,
             shippingPort,

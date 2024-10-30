@@ -1,10 +1,9 @@
+import { FileHelpers, ICPResourceSpec } from '@blockchain-lib/common';
 import { ShipmentDriver } from '../../drivers/icp/ShipmentDriver';
-import { RoleProof } from '@kbc-lib/azle-types';
 import { Shipment, Phase } from '../../entities/icp/Shipment';
 import { DocumentType, DocumentInfo } from '../../entities/icp/Document';
 import { EvaluationStatus } from '../../entities/icp/Evaluation';
 import { ICPFileDriver } from '../../drivers/ICPFileDriver';
-import { FileHelpers, ICPResourceSpec } from '@blockchain-lib/common';
 import { URL_SEGMENTS } from '../../constants/ICP';
 
 export type ShipmentPhaseDocument = {
@@ -41,28 +40,26 @@ export class ShipmentService {
         this._baseExternalUrl = baseExternalUrl;
     }
 
-    async getShipments(roleProof: RoleProof): Promise<Shipment[]> {
-        return this._shipmentDriver.getShipments(roleProof);
+    async getShipments(): Promise<Shipment[]> {
+        return this._shipmentDriver.getShipments();
     }
 
-    async getShipment(roleProof: RoleProof, id: number): Promise<Shipment> {
-        return this._shipmentDriver.getShipment(roleProof, id);
+    async getShipment(id: number): Promise<Shipment> {
+        return this._shipmentDriver.getShipment(id);
     }
 
-    async getShipmentPhase(roleProof: RoleProof, id: number): Promise<Phase> {
-        return this._shipmentDriver.getShipmentPhase(roleProof, id);
+    async getShipmentPhase(id: number): Promise<Phase> {
+        return this._shipmentDriver.getShipmentPhase(id);
     }
 
     async getDocumentsByType(
-        roleProof: RoleProof,
         id: number,
         documentType: DocumentType
     ): Promise<DocumentInfo[]> {
-        return this._shipmentDriver.getDocumentsByType(roleProof, id, documentType);
+        return this._shipmentDriver.getDocumentsByType(id, documentType);
     }
 
     async setShipmentDetails(
-        roleProof: RoleProof,
         id: number,
         shipmentNumber: number,
         expirationDate: Date,
@@ -76,7 +73,6 @@ export class ShipmentService {
         grossWeight: number
     ): Promise<Shipment> {
         return this._shipmentDriver.setShipmentDetails(
-            roleProof,
             id,
             shipmentNumber,
             expirationDate,
@@ -92,48 +88,44 @@ export class ShipmentService {
     }
 
     async evaluateSample(
-        roleProof: RoleProof,
         id: number,
         evaluationStatus: EvaluationStatus
     ): Promise<Shipment> {
-        return this._shipmentDriver.evaluateSample(roleProof, id, evaluationStatus);
+        return this._shipmentDriver.evaluateSample(id, evaluationStatus);
     }
 
     async evaluateShipmentDetails(
-        roleProof: RoleProof,
         id: number,
         evaluationStatus: EvaluationStatus
     ): Promise<Shipment> {
-        return this._shipmentDriver.evaluateShipmentDetails(roleProof, id, evaluationStatus);
+        return this._shipmentDriver.evaluateShipmentDetails(id, evaluationStatus);
     }
 
     async evaluateQuality(
-        roleProof: RoleProof,
         id: number,
         evaluationStatus: EvaluationStatus
     ): Promise<Shipment> {
-        return this._shipmentDriver.evaluateQuality(roleProof, id, evaluationStatus);
+        return this._shipmentDriver.evaluateQuality(id, evaluationStatus);
     }
 
-    async depositFunds(roleProof: RoleProof, id: number, amount: number): Promise<Shipment> {
-        return this._shipmentDriver.depositFunds(roleProof, id, amount);
+    async depositFunds(id: number, amount: number): Promise<Shipment> {
+        return this._shipmentDriver.depositFunds(id, amount);
     }
 
-    async lockFunds(roleProof: RoleProof, id: number): Promise<Shipment> {
-        return this._shipmentDriver.lockFunds(roleProof, id);
+    async lockFunds(id: number): Promise<Shipment> {
+        return this._shipmentDriver.lockFunds(id);
     }
 
-    async unlockFunds(roleProof: RoleProof, id: number): Promise<Shipment> {
-        return this._shipmentDriver.unlockFunds(roleProof, id);
+    async unlockFunds(id: number): Promise<Shipment> {
+        return this._shipmentDriver.unlockFunds(id);
     }
 
     private async retrieveDocument(
-        roleProof: RoleProof,
         id: number,
         documentId: number
     ): Promise<ShipmentDocument> {
         try {
-            const shipment = await this._shipmentDriver.getShipment(roleProof, id);
+            const shipment = await this._shipmentDriver.getShipment(id);
             let documentInfo;
             for (const [, documentInfos] of shipment.documents.entries()) {
                 for (const info of documentInfos) {
@@ -172,15 +164,14 @@ export class ShipmentService {
     }
 
     async getDocuments(
-        roleProof: RoleProof,
         id: number
     ): Promise<Map<DocumentType, ShipmentDocument[]>> {
-        const unresolvedDocuments = await this._shipmentDriver.getDocuments(roleProof, id);
+        const unresolvedDocuments = await this._shipmentDriver.getDocuments(id);
         const resolvedDocuments = new Map<DocumentType, ShipmentDocument[]>();
         for (const [documentType, documentInfos] of unresolvedDocuments.entries()) {
             const resolved: ShipmentDocument[] = [];
             for (const info of documentInfos) {
-                resolved.push(await this.retrieveDocument(roleProof, id, info.id));
+                resolved.push(await this.retrieveDocument(id, info.id));
             }
             resolvedDocuments.set(documentType, resolved);
         }
@@ -188,15 +179,13 @@ export class ShipmentService {
     }
 
     async getDocument(
-        roleProof: RoleProof,
         id: number,
         documentId: number
     ): Promise<ShipmentDocument> {
-        return this.retrieveDocument(roleProof, id, documentId);
+        return this.retrieveDocument(id, documentId);
     }
 
     async addDocument(
-        roleProof: RoleProof,
         id: number,
         documentType: DocumentType,
         documentReferenceId: string,
@@ -225,25 +214,23 @@ export class ShipmentService {
             },
             delegatedOrganizationIds
         );
-        return this._shipmentDriver.addDocument(roleProof, id, documentType, spec.name);
+        return this._shipmentDriver.addDocument(id, documentType, spec.name);
     }
 
     async updateDocument(
-        roleProof: RoleProof,
         id: number,
         documentId: number,
         externalUrl: string
     ): Promise<Shipment> {
-        return this._shipmentDriver.updateDocument(roleProof, id, documentId, externalUrl);
+        return this._shipmentDriver.updateDocument(id, documentId, externalUrl);
     }
 
     async evaluateDocument(
-        roleProof: RoleProof,
         id: number,
         documentId: number,
         evaluationStatus: EvaluationStatus
     ): Promise<Shipment> {
-        return this._shipmentDriver.evaluateDocument(roleProof, id, documentId, evaluationStatus);
+        return this._shipmentDriver.evaluateDocument(id, documentId, evaluationStatus);
     }
 
     async getPhaseDocuments(phase: Phase): Promise<ShipmentPhaseDocument[]> {

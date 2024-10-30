@@ -15,7 +15,6 @@ export type OrderParams = {
     arbiter: string;
     token: string;
     agreedAmount: number;
-    escrowManager: string;
     incoterms: string;
     shipper: string;
     shippingPort: string;
@@ -65,7 +64,6 @@ export class OrderDriver {
             params.arbiter,
             params.token,
             BigInt(params.agreedAmount),
-            params.escrowManager,
             params.incoterms,
             params.shipper,
             params.shippingPort,
@@ -96,7 +94,6 @@ export class OrderDriver {
             params.arbiter,
             params.token,
             BigInt(params.agreedAmount),
-            params.escrowManager,
             params.incoterms,
             params.shipper,
             params.shippingPort,

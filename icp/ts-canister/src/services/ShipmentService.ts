@@ -17,15 +17,13 @@ import escrowManagerAbi from '../../eth-abi/EscrowManager.json';
 import escrowAbi from '../../eth-abi/Escrow.json';
 import { StableMemoryId } from '../utils/stableMemory';
 import { ic } from 'azle/experimental';
+import AuthenticationService from "./AuthenticationService";
 
-class ShipmentService {
+class ShipmentService implements HasInterestedParties{
     private static _instance: ShipmentService;
-    private escrowManagerAddress: string = getEvmEscrowManagerAddress();
-    private shipments = StableBTreeMap<bigint, Shipment>(StableMemoryId.SHIPMENTS);
+    private _shipments = StableBTreeMap<bigint, Shipment>(StableMemoryId.SHIPMENTS);
 
-    private constructor() {
-    }
-
+    private constructor() {}
     static get instance() {
         if (!ShipmentService._instance) {
             ShipmentService._instance = new ShipmentService();
@@ -33,15 +31,29 @@ class ShipmentService {
         return ShipmentService._instance;
     }
 
-    getShipments(companyAddress: string): Shipment[] {
-        return this.shipments.values().filter(shipment => {
+    getInterestedParties(entityId: bigint): string[] {
+        const result = this.getShipment(entityId);
+        return [result.supplier, result.commissioner];
+    }
+
+    getSupplier(entityId: bigint): string {
+        return this.getShipment(entityId).supplier;
+    }
+
+    getCommissioner(entityId: bigint): string {
+        return this.getShipment(entityId).commissioner;
+    }
+
+    getShipments(): Shipment[] {
+        const delegatorAddress = AuthenticationService.instance.getDelegatorAddress();
+        return this._shipments.values().filter(shipment => {
             const interestedParties = [shipment.supplier, shipment.commissioner];
-            return interestedParties.includes(companyAddress);
+            return interestedParties.includes(delegatorAddress);
         });
     }
 
     getShipment(id: bigint): Shipment {
-        const result = this.shipments.get(id);
+        const result = this._shipments.get(id);
         if (!result) {
             throw new Error('Shipment not found');
         }
@@ -60,7 +72,7 @@ class ShipmentService {
         validateAddress('Supplier', supplier);
         validateAddress('Commissioner', commissioner);
 
-        const id = BigInt(this.shipments.keys().length);
+        const id = BigInt(this._shipments.keys().length);
         const shipment: Shipment = {
             id,
             supplier,
@@ -85,44 +97,42 @@ class ShipmentService {
             documents: []
         };
 
-        await ethSendContractTransaction(this.escrowManagerAddress, escrowManagerAbi.abi, 'registerEscrow', [shipment.id, supplier, duration, tokenAddress]);
+        const escrowManagerAddress: string = getEvmEscrowManagerAddress();
+        await ethSendContractTransaction(escrowManagerAddress, escrowManagerAbi.abi, 'registerEscrow', [shipment.id, supplier, duration, tokenAddress]);
 
-        this.shipments.insert(BigInt(id), shipment);
+        this._shipments.insert(BigInt(id), shipment);
         return shipment;
     }
 
     getShipmentPhase(id: bigint): Phase {
-        const shipment = this.shipments.get(id);
-        if (shipment) {
-            if (!this.areDocumentsUploadedAndApproved(id, this.getPhase1RequiredDocuments()))
-                return { PHASE_1: null };
-            if (shipment.sampleApprovalRequired && !(EvaluationStatusEnum.APPROVED in shipment.sampleEvaluationStatus))
-                return { PHASE_1: null };
+        const shipment = this.getShipment(id);
+        if (!this.areDocumentsUploadedAndApproved(id, this.getPhase1RequiredDocuments()))
+            return { PHASE_1: null };
+        if (shipment.sampleApprovalRequired && !(EvaluationStatusEnum.APPROVED in shipment.sampleEvaluationStatus))
+            return { PHASE_1: null };
 
-            if (!this.areDocumentsUploadedAndApproved(id, this.getPhase2RequiredDocuments()))
-                return { PHASE_2: null };
-            if (!(EvaluationStatusEnum.APPROVED in shipment.detailsEvaluationStatus))
-                return { PHASE_2: null };
+        if (!this.areDocumentsUploadedAndApproved(id, this.getPhase2RequiredDocuments()))
+            return { PHASE_2: null };
+        if (!(EvaluationStatusEnum.APPROVED in shipment.detailsEvaluationStatus))
+            return { PHASE_2: null };
 
-            if (!this.areDocumentsUploadedAndApproved(id, this.getPhase3RequiredDocuments()))
-                return { PHASE_3: null };
-            if (FundStatusEnum.NOT_LOCKED in shipment.fundsStatus)
-                return { PHASE_3: null };
+        if (!this.areDocumentsUploadedAndApproved(id, this.getPhase3RequiredDocuments()))
+            return { PHASE_3: null };
+        if (FundStatusEnum.NOT_LOCKED in shipment.fundsStatus)
+            return { PHASE_3: null };
 
-            if (!this.areDocumentsUploadedAndApproved(id, this.getPhase4RequiredDocuments()))
-                return { PHASE_4: null };
+        if (!this.areDocumentsUploadedAndApproved(id, this.getPhase4RequiredDocuments()))
+            return { PHASE_4: null };
 
-            if (!this.areDocumentsUploadedAndApproved(id, this.getPhase5RequiredDocuments()))
-                return { PHASE_5: null };
-            if (EvaluationStatusEnum.NOT_EVALUATED in shipment.qualityEvaluationStatus)
-                return { PHASE_5: null };
+        if (!this.areDocumentsUploadedAndApproved(id, this.getPhase5RequiredDocuments()))
+            return { PHASE_5: null };
+        if (EvaluationStatusEnum.NOT_EVALUATED in shipment.qualityEvaluationStatus)
+            return { PHASE_5: null };
 
-            if (EvaluationStatusEnum.APPROVED in shipment.qualityEvaluationStatus)
-                return { CONFIRMED: null };
+        if (EvaluationStatusEnum.APPROVED in shipment.qualityEvaluationStatus)
+            return { CONFIRMED: null };
 
-            return { ARBITRATION: null };
-        }
-        throw new Error('Shipment not found');
+        return { ARBITRATION: null };
     }
 
     private areDocumentsUploadedAndApproved(id: bigint, requiredDocuments: DocumentType[]): boolean {
@@ -135,8 +145,7 @@ class ShipmentService {
     }
 
     getDocumentsByType(id: bigint, documentType: DocumentType): DocumentInfo[] {
-        const shipment = this.shipments.get(id);
-        if (!shipment) throw new Error('Shipment not found');
+        const shipment = this.getShipment(id);
         const documentInfos = shipment.documents.find(([type]) => Object.keys(documentType)[0] in type);
         return documentInfos ? documentInfos[1] : [];
     }
@@ -154,9 +163,7 @@ class ShipmentService {
         netWeight: bigint,
         grossWeight: bigint
     ): Shipment {
-        const shipment = this.shipments.get(id);
-        if (!shipment)
-            throw new Error('Shipment not found');
+        const shipment = this.getShipment(id);
         if (!(PhaseEnum.PHASE_2 in this.getShipmentPhase(id)))
             throw new Error('Shipment in wrong phase');
         if (EvaluationStatusEnum.APPROVED in shipment.detailsEvaluationStatus)
@@ -174,14 +181,12 @@ class ShipmentService {
         shipment.grossWeight = grossWeight;
         shipment.detailsSet = true;
 
-        this.shipments.insert(id, shipment);
+        this._shipments.insert(id, shipment);
         return shipment;
     }
 
     evaluateSample(id: bigint, evaluationStatus: EvaluationStatus): Shipment {
-        const shipment = this.shipments.get(id);
-        if (!shipment)
-            throw new Error('Shipment not found');
+        const shipment = this.getShipment(id);
         if (!(PhaseEnum.PHASE_1 in this.getShipmentPhase(id)))
             throw new Error('Shipment in wrong phase');
 
@@ -189,14 +194,12 @@ class ShipmentService {
             throw new Error('Sample already approved');
         shipment.sampleEvaluationStatus = evaluationStatus;
 
-        this.shipments.insert(id, shipment);
+        this._shipments.insert(id, shipment);
         return shipment;
     }
 
     evaluateShipmentDetails(id: bigint, evaluationStatus: EvaluationStatus): Shipment {
-        const shipment = this.shipments.get(id);
-        if (!shipment)
-            throw new Error('Shipment not found');
+        const shipment = this.getShipment(id);
         if (!(PhaseEnum.PHASE_2 in this.getShipmentPhase(id)))
             throw new Error('Shipment in wrong phase');
         if (!shipment.detailsSet)
@@ -205,35 +208,32 @@ class ShipmentService {
             throw new Error('Details already approved');
         shipment.detailsEvaluationStatus = evaluationStatus;
 
-        this.shipments.insert(id, shipment);
+        this._shipments.insert(id, shipment);
         return shipment;
     }
 
     evaluateQuality(id: bigint, evaluationStatus: EvaluationStatus): Shipment {
-        const shipment = this.shipments.get(id);
-        if (!shipment)
-            throw new Error('Shipment not found');
+        const shipment = this.getShipment(id);
         if (!(PhaseEnum.PHASE_5 in this.getShipmentPhase(id)))
             throw new Error('Shipment in wrong phase');
         if (EvaluationStatusEnum.APPROVED in shipment.qualityEvaluationStatus)
             throw new Error('Quality already approved');
         shipment.qualityEvaluationStatus = evaluationStatus;
 
-        this.shipments.insert(id, shipment);
+        this._shipments.insert(id, shipment);
         return shipment;
     }
 
     async depositFunds(id: bigint, amount: bigint): Promise<Shipment> {
-        const shipment = this.shipments.get(id);
-        if (!shipment)
-            throw new Error('Shipment not found');
+        const shipment = this.getShipment(id);
         if (!(PhaseEnum.PHASE_3 in this.getShipmentPhase(id)))
             throw new Error('Shipment in wrong phase');
         if (!(FundStatusEnum.NOT_LOCKED in shipment.fundsStatus))
             throw new Error('Funds already locked');
 
         if (shipment.escrowAddress.length === 0) {
-            const escrowAddress = await ethCallContract(this.escrowManagerAddress, escrowManagerAbi.abi, 'getEscrowByShipmentId', [shipment.id]);
+            const escrowManagerAddress: string = getEvmEscrowManagerAddress();
+            const escrowAddress = await ethCallContract(escrowManagerAddress, escrowManagerAbi.abi, 'getEscrowByShipmentId', [shipment.id]);
             shipment.escrowAddress = [escrowAddress];
         }
 
@@ -243,21 +243,20 @@ class ShipmentService {
 
         await ethSendContractTransaction(escrowAddress, escrowAbi.abi, 'deposit', [amount, callerAddress]);
 
-        this.shipments.insert(id, shipment);
+        this._shipments.insert(id, shipment);
         return shipment;
     }
 
     async lockFunds(id: bigint): Promise<Shipment> {
-        const shipment = this.shipments.get(id);
-        if (!shipment)
-            throw new Error('Shipment not found');
+        const shipment = this.getShipment(id);
         if (!(PhaseEnum.PHASE_3 in this.getShipmentPhase(id)))
             throw new Error('Shipment in wrong phase');
         if (!(FundStatusEnum.NOT_LOCKED in shipment.fundsStatus))
             throw new Error('Funds already locked');
 
         if (shipment.escrowAddress.length === 0) {
-            const escrowAddress = await ethCallContract(this.escrowManagerAddress, escrowManagerAbi.abi, 'getEscrowByShipmentId', [shipment.id]);
+            const escrowManagerAddress: string = getEvmEscrowManagerAddress();
+            const escrowAddress = await ethCallContract(escrowManagerAddress, escrowManagerAbi.abi, 'getEscrowByShipmentId', [shipment.id]);
             shipment.escrowAddress = [escrowAddress];
         }
 
@@ -271,14 +270,12 @@ class ShipmentService {
             console.log('funds locked');
         }
 
-        this.shipments.insert(id, shipment);
+        this._shipments.insert(id, shipment);
         return shipment;
     }
 
     async unlockFunds(id: bigint): Promise<Shipment> {
-        const shipment = this.shipments.get(id);
-        if (!shipment)
-            throw new Error('Shipment not found');
+        const shipment = this.getShipment(id);
         if (PhaseEnum.PHASE_5 in this.getShipmentPhase(id) && FundStatusEnum.LOCKED in shipment.fundsStatus) {
             const escrowAddress = shipment.escrowAddress[0];
             if (!escrowAddress)
@@ -288,31 +285,25 @@ class ShipmentService {
             console.log('funds released');
         }
 
-        this.shipments.insert(id, shipment);
+        this._shipments.insert(id, shipment);
         return shipment;
     }
 
     getDocuments(id: bigint): Array<[DocumentType, DocumentInfo[]]> {
-        const shipment = this.shipments.get(id);
-        if (!shipment)
-            throw new Error('Shipment not found');
+        const shipment = this.getShipment(id);
         return shipment.documents;
     }
 
     getDocument(id: bigint, documentId: bigint): DocumentInfo {
-        const shipment = this.shipments.get(id);
-        if (!shipment)
-            throw new Error('Shipment not found');
+        const shipment = this.getShipment(id);
         const document = shipment.documents.flatMap(([_, docs]) => docs).find(doc => doc.id === documentId);
         if (!document)
             throw new Error('Document not found');
         return document;
     }
 
-    async addDocument(id: bigint, companyAddress: string, documentType: DocumentType, externalUrl: string): Promise<Shipment> {
-        const shipment = this.shipments.get(id);
-        if (!shipment)
-            throw new Error('Shipment not found');
+    async addDocument(id: bigint, documentType: DocumentType, externalUrl: string): Promise<Shipment> {
+        const shipment = this.getShipment(id);
         const documents = this.getDocumentsByType(id, documentType);
         if (!(
             DocumentTypeEnum.GENERIC in documentType
@@ -320,12 +311,12 @@ class ShipmentService {
             || !(EvaluationStatusEnum.APPROVED in documents[0].evaluationStatus)
         ))
             throw new Error('Document of this type already approved');
-
+        const delegatorAddress = AuthenticationService.instance.getDelegatorAddress();
         const documentInfo: DocumentInfo = {
             id: BigInt(shipment.documents.length),
             documentType,
             evaluationStatus: { NOT_EVALUATED: null },
-            uploadedBy: companyAddress,
+            uploadedBy: delegatorAddress,
             externalUrl
         };
         if (DocumentTypeEnum.GENERIC in documentType) {
@@ -340,14 +331,12 @@ class ShipmentService {
             }
         }
 
-        this.shipments.insert(id, shipment);
+        this._shipments.insert(id, shipment);
         return shipment;
     }
 
-    async updateDocument(id: bigint, companyAddress: string, documentId: bigint, externalUrl: string): Promise<Shipment> {
-        const shipment = this.shipments.get(id);
-        if (!shipment)
-            throw new Error('Shipment not found');
+    async updateDocument(id: bigint, documentId: bigint, externalUrl: string): Promise<Shipment> {
+        const shipment = this.getShipment(id);
         const documentTuple = shipment.documents.find(([_, docs]) => docs.find(doc => doc.id === documentId));
         if (!documentTuple)
             throw new Error('Document not found');
@@ -358,22 +347,22 @@ class ShipmentService {
             throw new Error('Document already approved');
         const documentIndex = documentTuple[1].findIndex(doc => doc.id === documentId);
 
+        const delegatorAddress = AuthenticationService.instance.getDelegatorAddress();
         documentTuple[1][documentIndex].externalUrl = externalUrl;
-        documentTuple[1][documentIndex].uploadedBy = companyAddress;
+        documentTuple[1][documentIndex].uploadedBy = delegatorAddress;
 
-        this.shipments.insert(id, shipment);
+        this._shipments.insert(id, shipment);
         return shipment;
     }
 
-    async evaluateDocument(id: bigint, companyAddress: string, documentId: bigint, documentEvaluationStatus: EvaluationStatus): Promise<Shipment> {
-        const shipment = this.shipments.get(id);
-        if (!shipment)
-            throw new Error('Shipment not found');
+    async evaluateDocument(id: bigint, documentId: bigint, documentEvaluationStatus: EvaluationStatus): Promise<Shipment> {
+        const shipment = this.getShipment(id);
         const documentTuple = shipment.documents.find(([_, docs]) => docs.find(doc => doc.id === documentId));
         if (!documentTuple)
             throw new Error('Document not found');
         const document = documentTuple[1][0];
-        if (document.uploadedBy === companyAddress)
+        const delegatorAddress = AuthenticationService.instance.getDelegatorAddress();
+        if (document.uploadedBy === delegatorAddress)
             throw new Error('Caller is the uploader');
         if (EvaluationStatusEnum.APPROVED in document.evaluationStatus)
             throw new Error('Document already approved');
@@ -392,7 +381,7 @@ class ShipmentService {
             console.log('funds released');
         }
 
-        this.shipments.insert(id, shipment);
+        this._shipments.insert(id, shipment);
         return shipment;
     }
 

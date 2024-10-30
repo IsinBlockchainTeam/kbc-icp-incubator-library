@@ -1,15 +1,14 @@
+import { createActor } from 'icp-declarations/entity_manager';
+import {
+    DocumentType as IDLDocumentType,
+    EvaluationStatus as ICPEvaluationStatus
+} from '@kbc-lib/azle-types';
+import { Identity } from '@dfinity/agent';
 import { ShipmentDriver } from '../ShipmentDriver';
 import { FundStatus, Shipment, Phase } from '../../../entities/icp/Shipment';
-import { createActor } from 'icp-declarations/entity_manager';
 import { EntityBuilder } from '../../../utils/icp/EntityBuilder';
 import { DocumentInfo, DocumentType } from '../../../entities/icp/Document';
 import { EvaluationStatus } from '../../../entities/icp/Evaluation';
-import {
-    DocumentType as IDLDocumentType,
-    EvaluationStatus as ICPEvaluationStatus,
-    RoleProof
-} from '@kbc-lib/azle-types';
-import { Identity } from '@dfinity/agent';
 
 jest.mock('icp-declarations/entity_manager');
 jest.mock('@dfinity/agent');
@@ -57,7 +56,6 @@ describe('ShipmentDriver', () => {
         idlDocumentType: { [DocumentType.PRE_SHIPMENT_SAMPLE]: null } as IDLDocumentType,
         documentInfo: { id: 0 } as DocumentInfo
     };
-    const roleProof = {} as RoleProof;
 
     beforeAll(async () => {
         jest.clearAllMocks();
@@ -91,33 +89,33 @@ describe('ShipmentDriver', () => {
 
     it('should retrieve shipments', async () => {
         mockFn.getShipments.mockReturnValue([defaultEntities.shipment]);
-        await expect(shipmentDriver.getShipments(roleProof)).resolves.toEqual([
+        await expect(shipmentDriver.getShipments()).resolves.toEqual([
             defaultEntities.shipment
         ]);
         expect(mockFn.getShipments).toHaveBeenCalledTimes(1);
-        expect(mockFn.getShipments).toHaveBeenCalledWith(roleProof);
+        expect(mockFn.getShipments).toHaveBeenCalledWith();
         expect(EntityBuilder.buildShipment).toHaveBeenCalledTimes(1);
         expect(EntityBuilder.buildShipment).toHaveBeenCalledWith(defaultEntities.shipment);
     });
 
     it('should retrieve a shipment', async () => {
         mockFn.getShipment.mockReturnValue(defaultEntities.shipment);
-        await expect(shipmentDriver.getShipment(roleProof, 0)).resolves.toEqual(
+        await expect(shipmentDriver.getShipment(0)).resolves.toEqual(
             defaultEntities.shipment
         );
         expect(mockFn.getShipment).toHaveBeenCalledTimes(1);
-        expect(mockFn.getShipment).toHaveBeenCalledWith(roleProof, BigInt(0));
+        expect(mockFn.getShipment).toHaveBeenCalledWith(BigInt(0));
         expect(EntityBuilder.buildShipment).toHaveBeenCalledTimes(1);
         expect(EntityBuilder.buildShipment).toHaveBeenCalledWith(defaultEntities.shipment);
     });
 
     it('should retrieve a shipment phase', async () => {
         mockFn.getShipmentPhase.mockReturnValue(defaultEntities.shipmentPhase);
-        await expect(shipmentDriver.getShipmentPhase(roleProof, 0)).resolves.toEqual(
+        await expect(shipmentDriver.getShipmentPhase(0)).resolves.toEqual(
             defaultEntities.shipmentPhase
         );
         expect(mockFn.getShipmentPhase).toHaveBeenCalledTimes(1);
-        expect(mockFn.getShipmentPhase).toHaveBeenCalledWith(roleProof, BigInt(0));
+        expect(mockFn.getShipmentPhase).toHaveBeenCalledWith(BigInt(0));
         expect(EntityBuilder.buildShipmentPhase).toHaveBeenCalledTimes(1);
         expect(EntityBuilder.buildShipmentPhase).toHaveBeenCalledWith(
             defaultEntities.shipmentPhase
@@ -132,10 +130,10 @@ describe('ShipmentDriver', () => {
             [DocumentType.PRE_SHIPMENT_SAMPLE]: null
         });
         await expect(
-            shipmentDriver.getDocumentsByType(roleProof, 0, DocumentType.PRE_SHIPMENT_SAMPLE)
+            shipmentDriver.getDocumentsByType(0, DocumentType.PRE_SHIPMENT_SAMPLE)
         ).resolves.toEqual(defaultEntities.documents.get(DocumentType.PRE_SHIPMENT_SAMPLE));
         expect(mockFn.getDocumentsByType).toHaveBeenCalledTimes(1);
-        expect(mockFn.getDocumentsByType).toHaveBeenCalledWith(roleProof, BigInt(0), {
+        expect(mockFn.getDocumentsByType).toHaveBeenCalledWith(BigInt(0), {
             [DocumentType.PRE_SHIPMENT_SAMPLE]: null
         });
         expect(EntityBuilder.buildDocumentInfo).toHaveBeenCalledTimes(1);
@@ -150,11 +148,10 @@ describe('ShipmentDriver', () => {
         mockFn.setShipmentDetails.mockReturnValue(defaultEntities.shipment);
         await expect(
             shipmentDriver.setShipmentDetails(
-                roleProof,
                 0,
                 0,
-                0,
-                0,
+                new Date(0),
+                new Date(0),
                 'targetExchange',
                 0,
                 0,
@@ -166,7 +163,6 @@ describe('ShipmentDriver', () => {
         ).resolves.toEqual(defaultEntities.shipment);
         expect(mockFn.setShipmentDetails).toHaveBeenCalledTimes(1);
         expect(mockFn.setShipmentDetails).toHaveBeenCalledWith(
-            roleProof,
             BigInt(0),
             BigInt(0),
             BigInt(0),
@@ -186,11 +182,10 @@ describe('ShipmentDriver', () => {
     it('should evaluate sample', async () => {
         mockFn.evaluateSample.mockReturnValue(defaultEntities.shipment);
         await expect(
-            shipmentDriver.evaluateSample(roleProof, 0, EvaluationStatus.NOT_EVALUATED)
+            shipmentDriver.evaluateSample(0, EvaluationStatus.NOT_EVALUATED)
         ).resolves.toEqual(defaultEntities.shipment);
         expect(mockFn.evaluateSample).toHaveBeenCalledTimes(1);
         expect(mockFn.evaluateSample).toHaveBeenCalledWith(
-            roleProof,
             BigInt(0),
             defaultEntities.idlEvaluationStatus
         );
@@ -201,11 +196,10 @@ describe('ShipmentDriver', () => {
     it('should evaluate shipment details', async () => {
         mockFn.evaluateShipmentDetails.mockReturnValue(defaultEntities.shipment);
         await expect(
-            shipmentDriver.evaluateShipmentDetails(roleProof, 0, EvaluationStatus.NOT_EVALUATED)
+            shipmentDriver.evaluateShipmentDetails(0, EvaluationStatus.NOT_EVALUATED)
         ).resolves.toEqual(defaultEntities.shipment);
         expect(mockFn.evaluateShipmentDetails).toHaveBeenCalledTimes(1);
         expect(mockFn.evaluateShipmentDetails).toHaveBeenCalledWith(
-            roleProof,
             BigInt(0),
             defaultEntities.idlEvaluationStatus
         );
@@ -216,11 +210,10 @@ describe('ShipmentDriver', () => {
     it('should evaluate quality', async () => {
         mockFn.evaluateQuality.mockReturnValue(defaultEntities.shipment);
         await expect(
-            shipmentDriver.evaluateQuality(roleProof, 0, EvaluationStatus.NOT_EVALUATED)
+            shipmentDriver.evaluateQuality(0, EvaluationStatus.NOT_EVALUATED)
         ).resolves.toEqual(defaultEntities.shipment);
         expect(mockFn.evaluateQuality).toHaveBeenCalledTimes(1);
         expect(mockFn.evaluateQuality).toHaveBeenCalledWith(
-            roleProof,
             BigInt(0),
             defaultEntities.idlEvaluationStatus
         );
@@ -230,33 +223,33 @@ describe('ShipmentDriver', () => {
 
     it('should deposit funds', async () => {
         mockFn.depositFunds.mockReturnValue(defaultEntities.shipment);
-        await expect(shipmentDriver.depositFunds(roleProof, 0, 0)).resolves.toEqual(
+        await expect(shipmentDriver.depositFunds(0, 0)).resolves.toEqual(
             defaultEntities.shipment
         );
         expect(mockFn.depositFunds).toHaveBeenCalledTimes(1);
-        expect(mockFn.depositFunds).toHaveBeenCalledWith(roleProof, BigInt(0), BigInt(0));
+        expect(mockFn.depositFunds).toHaveBeenCalledWith(BigInt(0), BigInt(0));
         expect(EntityBuilder.buildShipment).toHaveBeenCalledTimes(1);
         expect(EntityBuilder.buildShipment).toHaveBeenCalledWith(defaultEntities.shipment);
     });
 
     it('should lock funds', async () => {
         mockFn.lockFunds.mockReturnValue(defaultEntities.shipment);
-        await expect(shipmentDriver.lockFunds(roleProof, 0)).resolves.toEqual(
+        await expect(shipmentDriver.lockFunds(0)).resolves.toEqual(
             defaultEntities.shipment
         );
         expect(mockFn.lockFunds).toHaveBeenCalledTimes(1);
-        expect(mockFn.lockFunds).toHaveBeenCalledWith(roleProof, BigInt(0));
+        expect(mockFn.lockFunds).toHaveBeenCalledWith(BigInt(0));
         expect(EntityBuilder.buildShipment).toHaveBeenCalledTimes(1);
         expect(EntityBuilder.buildShipment).toHaveBeenCalledWith(defaultEntities.shipment);
     });
 
     it('should unlock funds', async () => {
         mockFn.unlockFunds.mockReturnValue(defaultEntities.shipment);
-        await expect(shipmentDriver.unlockFunds(roleProof, 0)).resolves.toEqual(
+        await expect(shipmentDriver.unlockFunds(0)).resolves.toEqual(
             defaultEntities.shipment
         );
         expect(mockFn.unlockFunds).toHaveBeenCalledTimes(1);
-        expect(mockFn.unlockFunds).toHaveBeenCalledWith(roleProof, BigInt(0));
+        expect(mockFn.unlockFunds).toHaveBeenCalledWith(BigInt(0));
         expect(EntityBuilder.buildShipment).toHaveBeenCalledTimes(1);
         expect(EntityBuilder.buildShipment).toHaveBeenCalledWith(defaultEntities.shipment);
     });
@@ -268,11 +261,11 @@ describe('ShipmentDriver', () => {
         (EntityBuilder.buildShipmentDocuments as jest.Mock).mockReturnValue(
             defaultEntities.documents
         );
-        await expect(shipmentDriver.getDocuments(roleProof, 0)).resolves.toEqual(
+        await expect(shipmentDriver.getDocuments(0)).resolves.toEqual(
             defaultEntities.documents
         );
         expect(mockFn.getDocuments).toHaveBeenCalledTimes(1);
-        expect(mockFn.getDocuments).toHaveBeenCalledWith(roleProof, BigInt(0));
+        expect(mockFn.getDocuments).toHaveBeenCalledWith(BigInt(0));
         expect(EntityBuilder.buildShipmentDocuments).toHaveBeenCalledTimes(1);
         expect(EntityBuilder.buildShipmentDocuments).toHaveBeenCalledWith([
             [DocumentType.PRE_SHIPMENT_SAMPLE, [{ id: 0 } as DocumentInfo]]
@@ -282,11 +275,10 @@ describe('ShipmentDriver', () => {
     it('should add a document', async () => {
         mockFn.addDocument.mockReturnValue(defaultEntities.shipment);
         await expect(
-            shipmentDriver.addDocument(roleProof, 0, DocumentType.PRE_SHIPMENT_SAMPLE, 'url')
+            shipmentDriver.addDocument(0, DocumentType.PRE_SHIPMENT_SAMPLE, 'url')
         ).resolves.toEqual(defaultEntities.shipment);
         expect(mockFn.addDocument).toHaveBeenCalledTimes(1);
         expect(mockFn.addDocument).toHaveBeenCalledWith(
-            roleProof,
             BigInt(0),
             defaultEntities.idlDocumentType,
             'url'
@@ -297,11 +289,11 @@ describe('ShipmentDriver', () => {
 
     it('should update a document', async () => {
         mockFn.updateDocument.mockReturnValue(defaultEntities.shipment);
-        await expect(shipmentDriver.updateDocument(roleProof, 0, 0, 'url')).resolves.toEqual(
+        await expect(shipmentDriver.updateDocument(0, 0, 'url')).resolves.toEqual(
             defaultEntities.shipment
         );
         expect(mockFn.updateDocument).toHaveBeenCalledTimes(1);
-        expect(mockFn.updateDocument).toHaveBeenCalledWith(roleProof, BigInt(0), BigInt(0), 'url');
+        expect(mockFn.updateDocument).toHaveBeenCalledWith(BigInt(0), BigInt(0), 'url');
         expect(EntityBuilder.buildShipment).toHaveBeenCalledTimes(1);
         expect(EntityBuilder.buildShipment).toHaveBeenCalledWith(defaultEntities.shipment);
     });
@@ -309,11 +301,10 @@ describe('ShipmentDriver', () => {
     it('should evaluate a document', async () => {
         mockFn.evaluateDocument.mockReturnValue(defaultEntities.shipment);
         await expect(
-            shipmentDriver.evaluateDocument(roleProof, 0, 0, EvaluationStatus.NOT_EVALUATED)
+            shipmentDriver.evaluateDocument(0, 0, EvaluationStatus.NOT_EVALUATED)
         ).resolves.toEqual(defaultEntities.shipment);
         expect(mockFn.evaluateDocument).toHaveBeenCalledTimes(1);
         expect(mockFn.evaluateDocument).toHaveBeenCalledWith(
-            roleProof,
             BigInt(0),
             BigInt(0),
             defaultEntities.idlEvaluationStatus

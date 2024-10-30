@@ -1,7 +1,6 @@
 import type { ActorSubclass, Identity } from '@dfinity/agent';
-import { RoleProof } from '@kbc-lib/azle-types';
-import { _SERVICE } from '../../declarations/entity_manager/entity_manager.did';
-import { createActor } from '../../declarations/entity_manager';
+import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
+import { createActor } from 'icp-declarations/entity_manager';
 import { Phase, Shipment } from '../../entities/icp/Shipment';
 import { EntityBuilder } from '../../utils/icp/EntityBuilder';
 import { DocumentInfo, DocumentType } from '../../entities/icp/Document';
@@ -19,28 +18,26 @@ export class ShipmentDriver {
         });
     }
 
-    async getShipments(roleProof: RoleProof): Promise<Shipment[]> {
-        const resp = await this._actor.getShipments(roleProof);
+    async getShipments(): Promise<Shipment[]> {
+        const resp = await this._actor.getShipments();
         return resp.map((rawShipment) => EntityBuilder.buildShipment(rawShipment));
     }
 
-    async getShipment(roleProof: RoleProof, id: number): Promise<Shipment> {
-        const resp = await this._actor.getShipment(roleProof, BigInt(id));
+    async getShipment(id: number): Promise<Shipment> {
+        const resp = await this._actor.getShipment(BigInt(id));
         return EntityBuilder.buildShipment(resp);
     }
 
-    async getShipmentPhase(roleProof: RoleProof, id: number): Promise<Phase> {
-        const resp = await this._actor.getShipmentPhase(roleProof, BigInt(id));
+    async getShipmentPhase(id: number): Promise<Phase> {
+        const resp = await this._actor.getShipmentPhase(BigInt(id));
         return EntityBuilder.buildShipmentPhase(resp);
     }
 
     async getDocumentsByType(
-        roleProof: RoleProof,
         id: number,
         documentType: DocumentType
     ): Promise<DocumentInfo[]> {
         const documents = await this._actor.getDocumentsByType(
-            roleProof,
             BigInt(id),
             EntityBuilder.buildIDLDocumentType(documentType)
         );
@@ -48,7 +45,6 @@ export class ShipmentDriver {
     }
 
     async setShipmentDetails(
-        roleProof: RoleProof,
         id: number,
         shipmentNumber: number,
         expirationDate: Date,
@@ -62,7 +58,6 @@ export class ShipmentDriver {
         grossWeight: number
     ): Promise<Shipment> {
         const resp = await this._actor.setShipmentDetails(
-            roleProof,
             BigInt(id),
             BigInt(shipmentNumber),
             BigInt(expirationDate.getTime()),
@@ -79,12 +74,10 @@ export class ShipmentDriver {
     }
 
     async evaluateSample(
-        roleProof: RoleProof,
         id: number,
         evaluationStatus: EvaluationStatus
     ): Promise<Shipment> {
         const resp = await this._actor.evaluateSample(
-            roleProof,
             BigInt(id),
             EntityBuilder.buildIDLEvaluationStatus(evaluationStatus)
         );
@@ -92,12 +85,10 @@ export class ShipmentDriver {
     }
 
     async evaluateShipmentDetails(
-        roleProof: RoleProof,
         id: number,
         evaluationStatus: EvaluationStatus
     ): Promise<Shipment> {
         const resp = await this._actor.evaluateShipmentDetails(
-            roleProof,
             BigInt(id),
             EntityBuilder.buildIDLEvaluationStatus(evaluationStatus)
         );
@@ -105,54 +96,49 @@ export class ShipmentDriver {
     }
 
     async evaluateQuality(
-        roleProof: RoleProof,
         id: number,
         evaluationStatus: EvaluationStatus
     ): Promise<Shipment> {
         const resp = await this._actor.evaluateQuality(
-            roleProof,
             BigInt(id),
             EntityBuilder.buildIDLEvaluationStatus(evaluationStatus)
         );
         return EntityBuilder.buildShipment(resp);
     }
 
-    async depositFunds(roleProof: RoleProof, id: number, amount: number): Promise<Shipment> {
-        const resp = await this._actor.depositFunds(roleProof, BigInt(id), BigInt(amount));
+    async depositFunds(id: number, amount: number): Promise<Shipment> {
+        const resp = await this._actor.depositFunds(BigInt(id), BigInt(amount));
         return EntityBuilder.buildShipment(resp);
     }
 
-    async lockFunds(roleProof: RoleProof, id: number): Promise<Shipment> {
-        const resp = await this._actor.lockFunds(roleProof, BigInt(id));
+    async lockFunds(id: number): Promise<Shipment> {
+        const resp = await this._actor.lockFunds(BigInt(id));
         return EntityBuilder.buildShipment(resp);
     }
 
-    async unlockFunds(roleProof: RoleProof, id: number): Promise<Shipment> {
-        const resp = await this._actor.unlockFunds(roleProof, BigInt(id));
+    async unlockFunds(id: number): Promise<Shipment> {
+        const resp = await this._actor.unlockFunds(BigInt(id));
         return EntityBuilder.buildShipment(resp);
     }
 
     async getDocuments(
-        roleProof: RoleProof,
         id: number
     ): Promise<Map<DocumentType, DocumentInfo[]>> {
-        const documentArray = await this._actor.getDocuments(roleProof, BigInt(id));
+        const documentArray = await this._actor.getDocuments(BigInt(id));
         return EntityBuilder.buildShipmentDocuments(documentArray);
     }
 
-    async getDocument(roleProof: RoleProof, id: number, documentId: number): Promise<DocumentInfo> {
-        const document = await this._actor.getDocument(roleProof, BigInt(id), BigInt(documentId));
+    async getDocument(id: number, documentId: number): Promise<DocumentInfo> {
+        const document = await this._actor.getDocument(BigInt(id), BigInt(documentId));
         return EntityBuilder.buildDocumentInfo(document);
     }
 
     async addDocument(
-        roleProof: RoleProof,
         id: number,
         documentType: DocumentType,
         externalUrl: string
     ): Promise<Shipment> {
         const resp = await this._actor.addDocument(
-            roleProof,
             BigInt(id),
             EntityBuilder.buildIDLDocumentType(documentType),
             externalUrl
@@ -161,13 +147,11 @@ export class ShipmentDriver {
     }
 
     async updateDocument(
-        roleProof: RoleProof,
         id: number,
         documentId: number,
         externalUrl: string
     ): Promise<Shipment> {
         const resp = await this._actor.updateDocument(
-            roleProof,
             BigInt(id),
             BigInt(documentId),
             externalUrl
@@ -176,13 +160,11 @@ export class ShipmentDriver {
     }
 
     async evaluateDocument(
-        roleProof: RoleProof,
         id: number,
         documentId: number,
         evaluationStatus: EvaluationStatus
     ): Promise<Shipment> {
         const resp = await this._actor.evaluateDocument(
-            roleProof,
             BigInt(id),
             BigInt(documentId),
             EntityBuilder.buildIDLEvaluationStatus(evaluationStatus)

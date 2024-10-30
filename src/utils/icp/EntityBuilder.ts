@@ -8,11 +8,11 @@ import {
     FundStatus as ICPFundStatus,
     DocumentType as IDLDocumentType,
     DocumentInfo as IDLDocumentInfo,
-    EvaluationStatus as ICPEvaluationStatus
+    EvaluationStatus as ICPEvaluationStatus,
+    OrderStatusEnum as OrderStatus
 } from '@kbc-lib/azle-types';
-import { Order, OrderStatus } from '../../entities/icp/Order';
-import { Shipment } from '../../entities/icp/Shipment';
-import { Phase, FundStatus } from '../../entities/icp/Shipment';
+import { Order } from '../../entities/icp/Order';
+import { Shipment , Phase, FundStatus } from '../../entities/icp/Shipment';
 import { DocumentInfo, DocumentType } from '../../entities/icp/Document';
 import { EvaluationStatus } from '../../entities/icp/Evaluation';
 import { ProductCategory } from '../../entities/ProductCategory';
@@ -36,7 +36,7 @@ export class EntityBuilder {
     }
 
     static buildOrder(order: ICPOrder) {
-        console.log(order.paymentDeadline);
+        const shipment = order.shipment.map((s) => this.buildShipment(s))[0] || null;
         return new Order(
             Number(order.id),
             order.supplier,
@@ -54,7 +54,7 @@ export class EntityBuilder {
             order.shippingPort,
             order.deliveryPort,
             order.lines.map((line) => ({
-                productCategoryId: Number(line.productCategoryId),
+                productCategory: this.buildProductCategory(line.productCategory),
                 quantity: Number(line.quantity),
                 unit: line.unit,
                 price: {
@@ -64,8 +64,7 @@ export class EntityBuilder {
             })),
             order.token,
             Number(order.agreedAmount),
-            // TODO check if this is correct
-            order.shipmentId[0] ? Number(order.shipmentId[0]) : -1
+            shipment
         );
     }
 
@@ -107,8 +106,7 @@ export class EntityBuilder {
 
     static buildShipmentDocuments = (
         icpDocuments: Array<[IDLDocumentType, IDLDocumentInfo[]]>
-    ): Map<DocumentType, DocumentInfo[]> => {
-        return icpDocuments.reduce(
+    ): Map<DocumentType, DocumentInfo[]> => icpDocuments.reduce(
             (acc, [documentType, documentInfos]) =>
                 acc.set(
                     EntityBuilder.buildDocumentType(documentType),
@@ -118,7 +116,6 @@ export class EntityBuilder {
                 ),
             new Map<DocumentType, DocumentInfo[]>()
         );
-    };
 
     static buildShipmentPhase = (phase: ICPPhase): Phase => {
         if (Phase.PHASE_1 in phase) return Phase.PHASE_1;
@@ -131,11 +128,9 @@ export class EntityBuilder {
         throw new Error('Invalid phase');
     };
 
-    static buildShipmentIDLPhase = (phase: Phase): ICPPhase => {
-        return {
+    static buildShipmentIDLPhase = (phase: Phase): ICPPhase => ({
             [phase]: null
-        } as ICPPhase;
-    };
+        } as ICPPhase);
 
     static buildFundStatus = (status: ICPFundStatus): FundStatus => {
         if (FundStatus.NOT_LOCKED in status) return FundStatus.NOT_LOCKED;
@@ -151,11 +146,9 @@ export class EntityBuilder {
         throw new Error('Invalid evaluation status');
     };
 
-    static buildIDLEvaluationStatus = (status: EvaluationStatus): ICPEvaluationStatus => {
-        return {
+    static buildIDLEvaluationStatus = (status: EvaluationStatus): ICPEvaluationStatus => ({
             [status]: null
-        } as ICPEvaluationStatus;
-    };
+        } as ICPEvaluationStatus);
 
     static buildDocumentType = (type: IDLDocumentType): DocumentType => {
         if (DocumentType.SERVICE_GUIDE in type) return DocumentType.SERVICE_GUIDE;
@@ -186,19 +179,15 @@ export class EntityBuilder {
         throw new Error('Invalid document');
     };
 
-    static buildIDLDocumentType = (docType: DocumentType): IDLDocumentType => {
-        return {
+    static buildIDLDocumentType = (docType: DocumentType): IDLDocumentType => ({
             [docType]: null
-        } as IDLDocumentType;
-    };
+        } as IDLDocumentType);
 
-    static buildDocumentInfo = (info: IDLDocumentInfo): DocumentInfo => {
-        return {
+    static buildDocumentInfo = (info: IDLDocumentInfo): DocumentInfo => ({
             id: Number(info.id),
             documentType: this.buildDocumentType(info.documentType),
             evaluationStatus: this.buildEvaluationStatus(info.evaluationStatus),
             uploadedBy: info.uploadedBy,
             externalUrl: info.externalUrl
-        };
-    };
+        });
 }

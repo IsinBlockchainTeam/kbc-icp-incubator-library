@@ -19,6 +19,7 @@ type Utils = {
     login: () => Promise<boolean>
 };
 const ORDER_ID = 0;
+const PRODUCT_CATEGORY_ID = 0;
 describe('OrderDriver', () => {
     let utils1: Utils, utils2: Utils;
     const getUtils = async (userPrivateKey: string, companyPrivateKey: string) => {
@@ -91,7 +92,7 @@ describe('OrderDriver', () => {
             deliveryPort: 'deliveryPort',
             lines: [
                 {
-                    productCategoryId: 1,
+                    productCategoryId: PRODUCT_CATEGORY_ID,
                     quantity: 1,
                     unit: 'unit',
                     price: {
@@ -125,14 +126,13 @@ describe('OrderDriver', () => {
             arbiter: '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
             token: '0xc5a5C42992dECbae36851359345FE25997F5C42d',
             agreedAmount: 100,
-            escrowManager: '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
             incoterms: 'incoterms',
             shipper: 'shipper',
             shippingPort: 'shippingPort',
             deliveryPort: 'deliveryPort',
             lines: [
                 {
-                    productCategoryId: 1,
+                    productCategoryId: PRODUCT_CATEGORY_ID,
                     quantity: 1,
                     unit: 'unit',
                     price: {

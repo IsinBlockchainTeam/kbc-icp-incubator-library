@@ -1,17 +1,24 @@
 import {IDL} from "azle";
 import {IDLPrice as IDLPrice} from "./Price";
+import {IDLShipment} from "./Shipment";
+import {IDLProductCategory} from "./ProductCategory";
 
 export const IDLOrderStatus = IDL.Variant({
     PENDING: IDL.Null,
     CONFIRMED: IDL.Null,
     EXPIRED: IDL.Null,
 });
-export const IDLOrderLine = IDL.Record({
+export const IDLOrderLineRaw = IDL.Record({
     productCategoryId: IDL.Nat,
     quantity: IDL.Float32,
     unit: IDL.Text,
     price: IDLPrice,
-    // materialId: IDL.Opt(IDL.Nat),
+});
+export const IDLOrderLine = IDL.Record({
+    productCategory: IDLProductCategory,
+    quantity: IDL.Float32,
+    unit: IDL.Text,
+    price: IDLPrice,
 });
 export const IDLOrder = IDL.Record({
     id: IDL.Nat,
@@ -32,7 +39,5 @@ export const IDLOrder = IDL.Record({
     lines: IDL.Vec(IDLOrderLine),
     token: IDL.Text,
     agreedAmount: IDL.Nat,
-    escrowManager: IDL.Text,
-    escrow: IDL.Opt(IDL.Text),
-    shipmentId: IDL.Opt(IDL.Nat),
+    shipment: IDL.Opt(IDLShipment),
 });

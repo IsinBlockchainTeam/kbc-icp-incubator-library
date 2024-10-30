@@ -1,6 +1,6 @@
+import { PhaseEnum as Phase, FundStatusEnum as FundStatus } from '@kbc-lib/azle-types';
 import { DocumentInfo, DocumentType } from './Document';
 import { EvaluationStatus } from './Evaluation';
-import { PhaseEnum as Phase, FundStatusEnum as FundStatus } from '@kbc-lib/azle-types';
 
 export { Phase, FundStatus };
 
