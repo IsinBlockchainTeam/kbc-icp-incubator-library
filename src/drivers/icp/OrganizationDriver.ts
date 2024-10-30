@@ -1,0 +1,34 @@
+import type { ActorSubclass, Identity } from '@dfinity/agent';
+import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
+import { createActor } from '../../declarations/entity_manager';
+import { Organization } from '../../entities/organization/Organization';
+import { BroadedOrganizationCreator } from '../../factories/organization/BroadedOrganizationCreator';
+
+export class OrganizationDriver {
+    private _actor: ActorSubclass<_SERVICE>;
+
+    public constructor(icpIdentity: Identity, canisterId: string, host?: string) {
+        this._actor = createActor(canisterId, {
+            agentOptions: {
+                identity: icpIdentity,
+                ...(host && { host })
+            }
+        });
+    }
+
+    async getOrganization(id: number): Promise<Organization> {
+        const organization = await this._actor.getOrganization(BigInt(id));
+
+        return new BroadedOrganizationCreator().createOrganization(organization);
+    }
+
+    async createOrganization(name: string, description: string): Promise<Organization> {
+        const organization = await this._actor.createOrganization(name, description);
+        return new BroadedOrganizationCreator().createOrganization(organization);
+    }
+
+    async updateOrganization(id: number, name: string, description: string): Promise<Organization> {
+        const organization = await this._actor.updateOrganization(BigInt(id), name, description);
+        return new BroadedOrganizationCreator().createOrganization(organization);
+    }
+}
