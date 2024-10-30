@@ -111,5 +111,18 @@ export { URL_SEGMENTS } from './constants/ICP';
 export { URL_SEGMENT_INDEXES } from './constants/ICP';
 
 // ICP refactor
+// export {createActor} from 'icp-declarations/entity_manager'
+export { Order, OrderStatus } from './entities/icp/Order';
+export { computeRoleProof } from './drivers/icp/proof';
 export { OrderDriver, OrderParams } from './drivers/icp/OrderDriver';
 export { OrderService } from './services/icp/OrderService';
+
+// export {createActor} from 'icp-declarations/entity_manager'
+export { AuthenticationDriver as ICPAuthenticationDriver } from './drivers/icp/AuthenticationDriver';
+export { AuthenticationService as ICPAuthenticationService } from './services/icp/AuthenticationService';
+
+export { ProductCategoryDriver as ICPProductCategoryDriver } from './drivers/icp/ProductCategoryDriver';
+export { ProductCategoryService as ICPProductCategoryService } from './services/icp/ProductCategoryService';
+
+export { MaterialDriver as ICPMaterialDriver } from './drivers/icp/MaterialDriver';
+export { MaterialService as ICPMaterialService } from './services/icp/MaterialService';

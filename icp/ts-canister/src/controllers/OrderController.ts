@@ -7,24 +7,24 @@ import {
     RoleProof,
     Order, OrderLine
 } from "../models/types";
-import {OnlyEditor, OnlySigner, OnlyViewer} from "../decorators/roles";
+import {AtLeastEditor, AtLeastSigner, AtLeastViewer} from "../decorators/roles";
 import OrderService from "../services/OrderService";
 
 class OrderController {
     @update([IDLRoleProof], IDL.Vec(IDLOrder))
-    @OnlyViewer
+    @AtLeastViewer
     async getOrders(roleProof: RoleProof): Promise<Order[]> {
         return OrderService.instance.getOrders(roleProof);
     }
 
     @update([IDLRoleProof, IDL.Nat], IDLOrder)
-    @OnlyViewer
+    @AtLeastViewer
     async getOrder(roleProof: RoleProof, id: bigint): Promise<Order> {
         return OrderService.instance.getOrder(roleProof, id);
     }
 
     @update([IDLRoleProof, IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Text, IDL.Text, IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(IDLOrderLine)], IDLOrder)
-    @OnlyEditor
+    @AtLeastEditor
     async createOrder(
         roleProof: RoleProof,
         supplier: string,
@@ -66,7 +66,7 @@ class OrderController {
     }
 
     @update([IDLRoleProof, IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Text, IDL.Text, IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(IDLOrderLine)], IDLOrder)
-    @OnlyEditor
+    @AtLeastEditor
     async updateOrder(
         roleProof: RoleProof,
         id: bigint,
@@ -110,7 +110,7 @@ class OrderController {
     }
 
     @update([IDLRoleProof, IDL.Nat], IDLOrder)
-    @OnlySigner
+    @AtLeastSigner
     async signOrder(roleProof: RoleProof, id: bigint): Promise<Order> {
         return OrderService.instance.signOrder(roleProof, id);
     }

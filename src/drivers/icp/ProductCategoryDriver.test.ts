@@ -1,6 +1,6 @@
 import { Wallet } from 'ethers';
 import {RoleProof} from "@kbc-lib/azle-types";
-import { ProductCategoryManagerDriver } from './ProductCategoryManagerDriver';
+import { ProductCategoryDriver } from './ProductCategoryDriver';
 import { SiweIdentityProvider } from './SiweIdentityProvider';
 import { computeRoleProof } from './proof';
 
@@ -15,26 +15,28 @@ const SIWE_CANISTER_ID = 'be2us-64aaa-aaaaa-qaabq-cai';
 const ENTITY_MANAGER_CANISTER_ID = 'bkyz2-fmaaa-aaaaa-qaaaq-cai';
 
 describe('ProductCategoryManagerDriver', () => {
-    let wallet: Wallet;
-    let productCategoryManagerDriver: ProductCategoryManagerDriver;
+    let userWallet: Wallet;
+    let companyWallet: Wallet;
+    let productCategoryManagerDriver: ProductCategoryDriver;
     let roleProof: RoleProof;
 
     beforeAll(async () => {
-        wallet = new Wallet(USER_PRIVATE_KEY);
-        const siweIdentityProvider = new SiweIdentityProvider(wallet, SIWE_CANISTER_ID);
+        userWallet = new Wallet(USER_PRIVATE_KEY);
+        companyWallet = new Wallet(COMPANY_PRIVATE_KEY);
+        const siweIdentityProvider = new SiweIdentityProvider(userWallet, SIWE_CANISTER_ID);
         await siweIdentityProvider.createIdentity();
         // const identity = Secp256k1KeyIdentity.fromSeedPhrase("test test test test test test test test test test test test")
-        productCategoryManagerDriver = new ProductCategoryManagerDriver(
+        productCategoryManagerDriver = new ProductCategoryDriver(
             siweIdentityProvider.identity,
             ENTITY_MANAGER_CANISTER_ID,
             'http://127.0.0.1:4943/'
         );
         roleProof = await computeRoleProof(
-            wallet.address,
+            userWallet.address,
             'Viewer',
             DELEGATE_CREDENTIAL_ID_HASH,
             DELEGATOR_CREDENTIAL_ID_HASH,
-            COMPANY_PRIVATE_KEY
+            companyWallet
         );
     });
 
@@ -44,19 +46,13 @@ describe('ProductCategoryManagerDriver', () => {
         expect(productCategories).toBeDefined();
     });
 
-    it('should retrieve who am I', async () => {
-        const whoAmI = await productCategoryManagerDriver.whoAmI(roleProof);
-        console.log(whoAmI);
-        expect(whoAmI).toBeDefined();
-    }, 15000);
-
-    it('should verify the signature', async () => {
-        const originalMessage = 'Ciao';
-        const signature = await wallet.signMessage(originalMessage);
-        const resp = await productCategoryManagerDriver.verifyMessage(originalMessage, signature);
-        console.log('Address: ', wallet.address);
-        console.log('Response from canister: ', resp);
-        console.log('Equals: ', wallet.address === resp);
-        expect(resp).toBeDefined();
+    it('should create product category', async () => {
+        const productCategory = await productCategoryManagerDriver.createProductCategory(
+            'test',
+            1,
+            'test'
+        );
+        console.log(productCategory);
+        expect(productCategory).toBeDefined();
     });
 });

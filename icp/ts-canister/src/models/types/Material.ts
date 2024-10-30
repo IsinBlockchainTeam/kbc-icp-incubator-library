@@ -1,4 +1,6 @@
+import {ProductCategory} from "./ProductCategory";
+
 export type Material = {
     id: bigint;
-    productCategoryId: bigint;
+    productCategory: ProductCategory;
 };

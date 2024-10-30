@@ -16,21 +16,25 @@ class MaterialService {
         return MaterialService._instance;
     }
 
-    getMaterial(id: bigint): [Material] | [] {
-        const result = this._materials.get(id);
-        return result ? [result] : [];
-    }
-
     getMaterials(): Material[] {
         return this._materials.values();
     }
 
-    registerMaterial(productCategoryId: bigint): Material {
-        if (!this.productCategoryExists(productCategoryId)) {
+    getMaterial(id: bigint): Material {
+        const result = this._materials.get(id);
+        if(result) {
+            return result;
+        }
+        throw new Error('Material not found');
+    }
+
+    createMaterial(productCategoryId: bigint): Material {
+        if (!this._productCategoryService.productCategoryExists(productCategoryId)) {
             throw new Error('Product category not found');
         }
+        const productCategory = this._productCategoryService.getProductCategory(productCategoryId);
         const id = BigInt(this._materials.keys().length);
-        const material: Material = { id, productCategoryId };
+        const material: Material = { id, productCategory };
         this._materials.insert(id, material);
         return material;
     }
@@ -40,16 +44,12 @@ class MaterialService {
         if (!material) {
             throw new Error('Material not found');
         }
-        if (!this.productCategoryExists(productCategoryId)) {
+        if (!this._productCategoryService.productCategoryExists(productCategoryId)) {
             throw new Error('Product category not found');
         }
-        material.productCategoryId = productCategoryId;
+        material.productCategory = this._productCategoryService.getProductCategory(productCategoryId);
         this._materials.insert(id, material);
         return material;
-    }
-
-    productCategoryExists(productCategoryId: bigint): boolean {
-        return this._productCategoryService.getProductCategory(productCategoryId).length > 0;
     }
 }
 export default MaterialService;
