@@ -20,6 +20,6 @@ const main = async (address: string) => {
     // console.log(resp);
 };
 
-main('0xFc7B68A7d1a09007253D0983E05ba1fDEB8A359C').catch(console.error); // Canister address
+main('0xB4F86f847296bb4C3DDef0b4B97328DCdBd21D74').catch(console.error); // Canister address
 main('0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123').catch(console.error); // Supplier address
 main('0x2F2e2b138006ED0CcA198e7090dce5BACF02Bf26').catch(console.error); // Commissioner address
