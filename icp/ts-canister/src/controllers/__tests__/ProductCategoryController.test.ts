@@ -2,7 +2,7 @@ import ProductCategoryController from "../ProductCategoryController";
 import ProductCategoryService from "../../services/ProductCategoryService";
 import {ProductCategory} from "../../models/types";
 import {update} from "azle";
-import {OnlyEditor, OnlyViewer} from "../../decorators/roles";
+import {AtLeastEditor, AtLeastViewer} from "../../decorators/roles";
 jest.mock('azle');
 jest.mock('../../decorators/roles');
 jest.mock('../../models/idls');
@@ -26,25 +26,25 @@ describe('ProductCategoryController', () => {
             controllerFunction: () => productCategoryController.getProductCategories(),
             serviceFunction: productCategoryServiceInstanceMock.getProductCategories,
             expectedResult: [{name: 'test'} as ProductCategory],
-            expectedDecorators: [update, OnlyViewer],
+            expectedDecorators: [update, AtLeastViewer],
         }, {
             controllerFunctionName: 'getProductCategory',
             controllerFunction: () => productCategoryController.getProductCategory(1n),
             serviceFunction: productCategoryServiceInstanceMock.getProductCategory,
             expectedResult: {name: 'test'} as ProductCategory,
-            expectedDecorators: [update, OnlyViewer],
+            expectedDecorators: [update, AtLeastViewer],
         }, {
             controllerFunctionName: 'createProductCategory',
             controllerFunction: () => productCategoryController.createProductCategory('test', 1n, 'test'),
             serviceFunction: productCategoryServiceInstanceMock.createProductCategory,
             expectedResult: {name: 'test'} as ProductCategory,
-            expectedDecorators: [update, OnlyEditor],
+            expectedDecorators: [update, AtLeastEditor],
         }, {
             controllerFunctionName: 'updateProductCategory',
             controllerFunction: () => productCategoryController.updateProductCategory(1n, 'test', 1n, 'test'),
             serviceFunction: productCategoryServiceInstanceMock.updateProductCategory,
             expectedResult: {name: 'test'} as ProductCategory,
-            expectedDecorators: [update, OnlyEditor],
+            expectedDecorators: [update, AtLeastEditor],
         },
     ])
     ('should cass service $serviceFunctionName', async (

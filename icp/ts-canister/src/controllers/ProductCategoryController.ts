@@ -1,34 +1,34 @@
 import {IDL, query, update} from 'azle';
 import {
-    ProductCategory as IDLProductCategory,
+    IDLProductCategory,
 } from "../models/idls";
 import {
     ProductCategory
 } from "../models/types";
 import ProductCategoryService from "../services/ProductCategoryService";
-import {OnlyEditor, OnlyViewer} from "../decorators/roles";
+import {AtLeastEditor, AtLeastViewer} from "../decorators/roles";
 
 class ProductCategoryController {
     @query([], IDL.Vec(IDLProductCategory))
-    @OnlyViewer
+    @AtLeastViewer
     async getProductCategories(): Promise<ProductCategory[]> {
         return ProductCategoryService.instance.getProductCategories();
     }
 
     @query([IDL.Nat], IDLProductCategory)
-    @OnlyViewer
+    @AtLeastViewer
     async getProductCategory(id: bigint): Promise<ProductCategory> {
         return ProductCategoryService.instance.getProductCategory(id);
     }
 
     @update([IDL.Text, IDL.Nat, IDL.Text], IDLProductCategory)
-    @OnlyEditor
+    @AtLeastEditor
     async createProductCategory(name: string, quality: bigint, description: string): Promise<ProductCategory> {
         return ProductCategoryService.instance.createProductCategory(name, quality, description);
     }
 
     @update([IDL.Nat, IDL.Text, IDL.Nat, IDL.Text], IDLProductCategory)
-    @OnlyEditor
+    @AtLeastEditor
     async updateProductCategory(id: bigint, name: string, quality: bigint, description: string): Promise<ProductCategory> {
         return ProductCategoryService.instance.updateProductCategory(id, name, quality, description);
     }

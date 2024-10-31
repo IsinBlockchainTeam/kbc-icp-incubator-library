@@ -6,15 +6,14 @@ import {
     getSiweProviderCanisterId
 } from "../utils/env";
 import {
-    ROLES,
     RoleProof,
 } from "../models/types";
 import {ic, Principal} from "azle/experimental";
 import {ethers} from "ethers";
 import {call, IDL} from "azle";
 import {
-    GetAddressResponse,
-    RequestResult, RpcService
+    IDLGetAddressResponse,
+    IDLRequestResult, IDLRpcService
 } from "../models/idls";
 import revocationRegistryAbi from "../../eth-abi/RevocationRegistry.json";
 
@@ -81,7 +80,7 @@ class DelegationService {
             'get_address',
             {
                 paramIdlTypes: [IDL.Vec(IDL.Nat8)],
-                returnIdlType: GetAddressResponse,
+                returnIdlType: IDLGetAddressResponse,
                 args: [principal.toUint8Array()],
             }
         );
@@ -116,8 +115,8 @@ class DelegationService {
             this._evmRpcCanisterId,
             'request',
             {
-                paramIdlTypes: [RpcService, IDL.Text, IDL.Nat64],
-                returnIdlType: RequestResult,
+                paramIdlTypes: [IDLRpcService, IDL.Text, IDL.Nat64],
+                returnIdlType: IDLRequestResult,
                 args: [JsonRpcSource, JSON.stringify(jsonRpcPayload), 2048],
                 payment: 2_000_000_000n
             }

@@ -39,6 +39,16 @@ describe("ProductCategoryService", () => {
         expect(() => productCategoryService.getProductCategory(1n)).toThrow(new Error('Product category not found'));
     });
 
+    it("checks if a product category exists", () => {
+        const expectedResponse = {name: 'test'} as ProductCategory;
+        mockedFn.get.mockReturnValue(expectedResponse);
+        expect(productCategoryService.productCategoryExists(1n)).toBeTruthy();
+        expect(mockedFn.get).toHaveBeenCalled();
+
+        mockedFn.get.mockReturnValue(undefined);
+        expect(productCategoryService.productCategoryExists(1n)).toBeFalsy();
+    });
+
     it("creates a product category", () => {
         const expectedResponse = {id: 0n, name: 'test', quality: 1n, description: 'test'} as ProductCategory;
         mockedFn.keys.mockReturnValue([]);

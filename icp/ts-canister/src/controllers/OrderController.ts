@@ -1,32 +1,33 @@
-import {IDL, update} from "azle";
+import {IDL, query, update} from "azle";
 import {
-    RoleProof as IDLRoleProof,
-    Order as IDLOrder, OrderLine as IDLOrderLine
+    IDLOrder,
+    IDLOrderLineRaw
 } from "../models/idls";
 import {
-    RoleProof,
-    Order, OrderLine
+    Order,
+    OrderLineRaw
 } from "../models/types";
-import {OnlyEditor, OnlySigner, OnlyViewer} from "../decorators/roles";
+import {AtLeastEditor, AtLeastSigner, AtLeastViewer} from "../decorators/roles";
 import OrderService from "../services/OrderService";
+import {OnlyContractParty} from "../decorators/parties";
 
 class OrderController {
-    @update([IDLRoleProof], IDL.Vec(IDLOrder))
-    @OnlyViewer
-    async getOrders(roleProof: RoleProof): Promise<Order[]> {
-        return OrderService.instance.getOrders(roleProof);
+    @query([], IDL.Vec(IDLOrder))
+    @AtLeastViewer
+    async getOrders(): Promise<Order[]> {
+        return OrderService.instance.getOrders();
     }
 
-    @update([IDLRoleProof, IDL.Nat], IDLOrder)
-    @OnlyViewer
-    async getOrder(roleProof: RoleProof, id: bigint): Promise<Order> {
-        return OrderService.instance.getOrder(roleProof, id);
+    @query([IDL.Nat], IDLOrder)
+    @AtLeastViewer
+    @OnlyContractParty(OrderService.instance)
+    async getOrder(id: bigint): Promise<Order> {
+        return OrderService.instance.getOrder(id);
     }
 
-    @update([IDLRoleProof, IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Text, IDL.Text, IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(IDLOrderLine)], IDLOrder)
-    @OnlyEditor
+    @update([IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Text, IDL.Text, IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(IDLOrderLineRaw)], IDLOrder)
+    @AtLeastEditor
     async createOrder(
-        roleProof: RoleProof,
         supplier: string,
         customer: string,
         commissioner: string,
@@ -37,15 +38,13 @@ class OrderController {
         arbiter: string,
         token: string,
         agreedAmount: bigint,
-        escrowManager: string,
         incoterms: string,
         shipper: string,
         shippingPort: string,
         deliveryPort: string,
-        lines: OrderLine[]
+        lines: OrderLineRaw[]
     ): Promise<Order> {
         return OrderService.instance.createOrder(
-            roleProof,
             supplier,
             customer,
             commissioner,
@@ -56,7 +55,6 @@ class OrderController {
             arbiter,
             token,
             agreedAmount,
-            escrowManager,
             incoterms,
             shipper,
             shippingPort,
@@ -65,10 +63,10 @@ class OrderController {
         );
     }
 
-    @update([IDLRoleProof, IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Text, IDL.Text, IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(IDLOrderLine)], IDLOrder)
-    @OnlyEditor
+    @update([IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Text, IDL.Text, IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(IDLOrderLineRaw)], IDLOrder)
+    @AtLeastEditor
+    @OnlyContractParty(OrderService.instance)
     async updateOrder(
-        roleProof: RoleProof,
         id: bigint,
         supplier: string,
         customer: string,
@@ -80,15 +78,13 @@ class OrderController {
         arbiter: string,
         token: string,
         agreedAmount: bigint,
-        escrowManager: string,
         incoterms: string,
         shipper: string,
         shippingPort: string,
         deliveryPort: string,
-        lines: OrderLine[]
+        lines: OrderLineRaw[]
     ): Promise<Order> {
         return OrderService.instance.updateOrder(
-            roleProof,
             id,
             supplier,
             customer,
@@ -100,7 +96,6 @@ class OrderController {
             arbiter,
             token,
             agreedAmount,
-            escrowManager,
             incoterms,
             shipper,
             shippingPort,
@@ -109,10 +104,11 @@ class OrderController {
         );
     }
 
-    @update([IDLRoleProof, IDL.Nat], IDLOrder)
-    @OnlySigner
-    async signOrder(roleProof: RoleProof, id: bigint): Promise<Order> {
-        return OrderService.instance.signOrder(roleProof, id);
+    @update([IDL.Nat], IDLOrder)
+    @AtLeastSigner
+    @OnlyContractParty(OrderService.instance)
+    async signOrder(id: bigint): Promise<Order> {
+        return OrderService.instance.signOrder(id);
     }
 }
 export default OrderController;

@@ -1,14 +1,14 @@
-import {ethers} from "hardhat";
-import {Contract} from "ethers";
+import { ethers } from 'hardhat';
+import { Contract } from 'ethers';
 
 async function getAttachedContract(contractName: string, contractAddress: string): Promise<Contract> {
     const ContractFactory = await ethers.getContractFactory(contractName);
     return ContractFactory.attach(contractAddress);
 }
-const main = async () => {
+const main = async (address: string) => {
     const [_, owner] = await ethers.getSigners();
     const tx = await owner.sendTransaction({
-        to: '0x2736d60BBbB93cBeaB99901dcF7A7Af50938984E',
+        to: address,
         value: ethers.utils.parseEther('1000')
     });
     const resp = await tx.wait();
@@ -19,4 +19,7 @@ const main = async () => {
     // const resp = await tx.wait();
     // console.log(resp);
 };
-main().catch(console.error);
+
+main('0xFc7B68A7d1a09007253D0983E05ba1fDEB8A359C').catch(console.error); // Canister address
+main('0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123').catch(console.error); // Supplier address
+main('0x2F2e2b138006ED0CcA198e7090dce5BACF02Bf26').catch(console.error); // Commissioner address

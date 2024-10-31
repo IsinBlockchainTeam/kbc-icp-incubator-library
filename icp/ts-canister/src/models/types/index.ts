@@ -1,7 +1,7 @@
 export {Document, DocumentInfo, DocumentType, DocumentTypeEnum} from './Document';
 export {EvaluationStatus, EvaluationStatusEnum} from './Evaluation';
 export {Material} from './Material';
-export {Order, OrderLine, OrderStatus} from './Order';
+export {Order, OrderLine, OrderLineRaw, OrderStatusEnum, OrderStatus} from './Order';
 export {Price} from './Price';
 export {ProductCategory} from './ProductCategory';
 export {RoleProof} from './Proof';

@@ -1,17 +1,16 @@
+import {OrderStatusEnum, OrderStatusEnum as OrderStatus} from "@kbc-lib/azle-types";
+import {Shipment} from "./Shipment";
+import {ProductCategory} from "../ProductCategory";
+
 export type OrderLinePrice = {
     amount: number;
     fiat: string;
 }
 export type OrderLine = {
-    productCategoryId: number;
+    productCategory: ProductCategory;
     quantity: number;
     unit: string;
     price: OrderLinePrice;
-}
-export enum OrderStatus {
-    PENDING = "PENDING",
-    CONFIRMED = "CONFIRMED",
-    EXPIRED = "EXPIRED"
 }
 export class Order {
     private _id: number;
@@ -50,10 +49,10 @@ export class Order {
 
     private _agreedAmount: number;
 
-    private _shipmentId: number;
+    private _shipment: Shipment | null;
 
 
-    constructor(id: number, supplier: string, customer: string, commissioner: string, signatures: string[], status: OrderStatus, paymentDeadline: Date, documentDeliveryDeadline: Date, shippingDeadline: Date, deliveryDeadline: Date, arbiter: string, incoterms: string, shipper: string, shippingPort: string, deliveryPort: string, lines: OrderLine[], token: string, agreedAmount: number, shipmentId: number) {
+    constructor(id: number, supplier: string, customer: string, commissioner: string, signatures: string[], status: OrderStatusEnum, paymentDeadline: Date, documentDeliveryDeadline: Date, shippingDeadline: Date, deliveryDeadline: Date, arbiter: string, incoterms: string, shipper: string, shippingPort: string, deliveryPort: string, lines: OrderLine[], token: string, agreedAmount: number, shipment: Shipment | null) {
         this._id = id;
         this._supplier = supplier;
         this._customer = customer;
@@ -72,9 +71,8 @@ export class Order {
         this._lines = lines;
         this._token = token;
         this._agreedAmount = agreedAmount;
-        this._shipmentId = shipmentId;
+        this._shipment = shipment;
     }
-
 
     get id(): number {
         return this._id;
@@ -116,11 +114,11 @@ export class Order {
         this._signatures = value;
     }
 
-    get status(): OrderStatus {
+    get status(): OrderStatusEnum {
         return this._status;
     }
 
-    set status(value: OrderStatus) {
+    set status(value: OrderStatusEnum) {
         this._status = value;
     }
 
@@ -220,11 +218,11 @@ export class Order {
         this._agreedAmount = value;
     }
 
-    get shipmentId(): number {
-        return this._shipmentId;
+    get shipment(): Shipment | null {
+        return this._shipment;
     }
 
-    set shipmentId(value: number) {
-        this._shipmentId = value;
+    set shipment(value: Shipment | null) {
+        this._shipment = value;
     }
 }

@@ -29,7 +29,7 @@ class MaterialService {
     }
 
     createMaterial(productCategoryId: bigint): Material {
-        if (!this.productCategoryExists(productCategoryId)) {
+        if (!this._productCategoryService.productCategoryExists(productCategoryId)) {
             throw new Error('Product category not found');
         }
         const productCategory = this._productCategoryService.getProductCategory(productCategoryId);
@@ -40,26 +40,13 @@ class MaterialService {
     }
 
     updateMaterial(id: bigint, productCategoryId: bigint): Material {
-        const material = this._materials.get(id);
-        if (!material) {
-            throw new Error('Material not found');
-        }
-        if (!this.productCategoryExists(productCategoryId)) {
+        const material = this.getMaterial(id);
+        if (!this._productCategoryService.productCategoryExists(productCategoryId)) {
             throw new Error('Product category not found');
         }
         material.productCategory = this._productCategoryService.getProductCategory(productCategoryId);
         this._materials.insert(id, material);
         return material;
-    }
-
-    // TODO: Spostare in productCategoryService
-    productCategoryExists(productCategoryId: bigint): boolean {
-        try {
-            this._productCategoryService.getProductCategory(productCategoryId);
-            return true;
-        } catch (e) {
-            return false;
-        }
     }
 }
 export default MaterialService;

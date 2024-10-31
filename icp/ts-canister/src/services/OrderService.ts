@@ -1,14 +1,17 @@
 import {StableBTreeMap} from "azle";
 import {
-    Order, OrderLine,
-    RoleProof,
-    ROLES
+    Order,
+    ROLES,
+    OrderLineRaw,
+    OrderStatusEnum
 } from "../models/types";
 import {StableMemoryId} from "../utils/stableMemory";
 import {validateAddress, validateDeadline, validateInterestedParty, validatePositiveNumber} from "../utils/validation";
+import AuthenticationService from "./AuthenticationService";
 import ShipmentService from "./ShipmentService";
+import ProductCategoryService from "./ProductCategoryService";
 
-class OrderService {
+class OrderService implements HasInterestedParties{
     private static _instance: OrderService;
     private _orders = StableBTreeMap<bigint, Order>(StableMemoryId.ORDERS);
 
@@ -20,28 +23,35 @@ class OrderService {
         return OrderService._instance;
     }
 
-    getOrders(roleProof: RoleProof): Order[] {
-        const companyAddress = roleProof.membershipProof.delegatorAddress;
+    getInterestedParties(entityId: bigint): string[] {
+        const result = this.getOrder(entityId);
+        return [result.supplier, result.customer, result.commissioner];
+    }
+
+    getSupplier(entityId: bigint): string {
+        return this.getOrder(entityId).supplier;
+    }
+
+    getCommissioner(entityId: bigint): string {
+        return this.getOrder(entityId).commissioner;
+    }
+
+    getOrders(): Order[] {
+        const delegatorAddress = AuthenticationService.instance.getDelegatorAddress();
         return this._orders.values().filter(order => {
             const interestedParties = [order.supplier, order.customer, order.commissioner];
-            return interestedParties.includes(companyAddress);
+            return interestedParties.includes(delegatorAddress);
         });
     }
 
-    getOrder(roleProof: RoleProof, id: bigint): Order {
+    getOrder(id: bigint): Order {
         const result = this._orders.get(id);
-        if(result) {
-            const interestedParties = [result.supplier, result.customer, result.commissioner];
-            const companyAddress = roleProof.membershipProof.delegatorAddress;
-            if(!interestedParties.includes(companyAddress))
-                throw new Error('Access denied');
-            return result;
-        }
-        throw new Error('Order not found');
+        if(!result)
+            throw new Error('Order not found');
+        return result;
     }
 
     createOrder(
-        roleProof: RoleProof,
         supplier: string,
         customer: string,
         commissioner: string,
@@ -52,12 +62,11 @@ class OrderService {
         arbiter: string,
         token: string,
         agreedAmount: bigint,
-        escrowManager: string,
         incoterms: string,
         shipper: string,
         shippingPort: string,
         deliveryPort: string,
-        lines: OrderLine[]
+        lines: OrderLineRaw[]
     ): Order {
         if(supplier === customer)
             throw new Error('Supplier and customer must be different');
@@ -65,8 +74,9 @@ class OrderService {
         validateAddress('Customer', customer);
         validateAddress('Commissioner', commissioner);
         const interestedParties = [supplier, customer, commissioner];
-        const companyAddress = roleProof.membershipProof.delegatorAddress;
-        validateInterestedParty('Caller', companyAddress, interestedParties);
+        const delegatorAddress = AuthenticationService.instance.getDelegatorAddress();
+        const role = AuthenticationService.instance.getRole();
+        validateInterestedParty('Caller', delegatorAddress, interestedParties);
         validateDeadline('Payment deadline', Number(paymentDeadline));
         validateDeadline('Document delivery deadline', Number(documentDeliveryDeadline));
         validateDeadline('Shipping deadline', Number(shippingDeadline));
@@ -74,14 +84,20 @@ class OrderService {
         validateAddress('Arbiter', arbiter);
         validateAddress('Token', token);
         validatePositiveNumber('Agreed amount', Number(agreedAmount));
-        validateAddress('Escrow manager', escrowManager);
+        const orderLines = [];
         for (const line of lines) {
-            // TODO: check that product category exists
+            ProductCategoryService.instance.getProductCategory(line.productCategoryId);
             validatePositiveNumber('Quantity', line.quantity);
             validatePositiveNumber('Price amount', line.price.amount);
+            orderLines.push({
+                productCategory: ProductCategoryService.instance.getProductCategory(line.productCategoryId),
+                quantity: line.quantity,
+                unit: line.unit,
+                price: line.price
+            });
         }
         const id = this._orders.keys().length;
-        const signatures = roleProof.role === ROLES.SIGNER ? [companyAddress] : [];
+        const signatures = role === ROLES.SIGNER ? [delegatorAddress] : [];
         const order: Order = {
             id: BigInt(id),
             supplier,
@@ -98,19 +114,16 @@ class OrderService {
             shipper,
             shippingPort,
             deliveryPort,
-            lines,
+            lines: orderLines,
             token,
             agreedAmount,
-            escrowManager,
-            escrow: [],
-            shipmentId: []
+            shipment: []
         };
         this._orders.insert(BigInt(id), order);
         return order;
     }
 
     updateOrder(
-        roleProof: RoleProof,
         id: bigint,
         supplier: string,
         customer: string,
@@ -122,16 +135,15 @@ class OrderService {
         arbiter: string,
         token: string,
         agreedAmount: bigint,
-        escrowManager: string,
         incoterms: string,
         shipper: string,
         shippingPort: string,
         deliveryPort: string,
-        lines: OrderLine[]
+        lines: OrderLineRaw[]
     ): Order {
-        const order = this._orders.get(id);
-        if (!order)
-            throw new Error('Order not found');
+        const order = this.getOrder(id);
+        if(OrderStatusEnum.CONFIRMED in order.status)
+            throw new Error('Order already confirmed');
         if(order.supplier == supplier &&
             order.customer == customer &&
             order.commissioner == commissioner &&
@@ -142,12 +154,16 @@ class OrderService {
             order.arbiter == arbiter &&
             order.token == token &&
             order.agreedAmount == agreedAmount &&
-            order.escrowManager == escrowManager &&
             order.incoterms == incoterms &&
             order.shipper == shipper &&
             order.shippingPort == shippingPort &&
             order.deliveryPort == deliveryPort &&
-            order.lines == lines
+            //check if the lines are the same
+            order.lines.map(l => l.productCategory.id).sort().toString() == lines.map(l => l.productCategoryId).sort().toString() &&
+            order.lines.map(l => l.quantity).sort().toString() == lines.map(l => l.quantity).sort().toString() &&
+            order.lines.map(l => l.unit).sort().toString() == lines.map(l => l.unit).sort().toString() &&
+            order.lines.map(l => l.price.amount).sort().toString() == lines.map(l => l.price.amount).sort().toString() &&
+            order.lines.map(l => l.price.fiat).sort().toString() == lines.map(l => l.price.fiat).sort().toString()
         ) {
             throw new Error('No changes detected');
         }
@@ -157,8 +173,9 @@ class OrderService {
         validateAddress('Customer', customer);
         validateAddress('Commissioner', commissioner);
         const interestedParties = [supplier, customer, commissioner];
-        const companyAddress = roleProof.membershipProof.delegatorAddress;
-        validateInterestedParty('Caller', companyAddress, interestedParties);
+        const delegatorAddress = AuthenticationService.instance.getDelegatorAddress();
+        const role = AuthenticationService.instance.getRole();
+        validateInterestedParty('Caller', delegatorAddress, interestedParties);
         validateDeadline('Payment deadline', Number(paymentDeadline));
         validateDeadline('Document delivery deadline', Number(documentDeliveryDeadline));
         validateDeadline('Shipping deadline', Number(shippingDeadline));
@@ -166,13 +183,19 @@ class OrderService {
         validateAddress('Arbiter', arbiter);
         validateAddress('Token', token);
         validatePositiveNumber('Agreed amount', Number(agreedAmount));
-        validateAddress('Escrow manager', escrowManager);
+        const orderLines = [];
         for (const line of lines) {
-            // TODO: check that product category exists
+            ProductCategoryService.instance.getProductCategory(line.productCategoryId);
             validatePositiveNumber('Quantity', line.quantity);
             validatePositiveNumber('Price amount', line.price.amount);
+            orderLines.push({
+                productCategory: ProductCategoryService.instance.getProductCategory(line.productCategoryId),
+                quantity: line.quantity,
+                unit: line.unit,
+                price: line.price
+            });
         }
-        const signatures = roleProof.role === ROLES.SIGNER ? [companyAddress] : [];
+        const signatures = role === ROLES.SIGNER ? [delegatorAddress] : [];
         const updatedOrder: Order = {
             id: BigInt(id),
             supplier,
@@ -189,30 +212,29 @@ class OrderService {
             shipper,
             shippingPort,
             deliveryPort,
-            lines: lines,
+            lines: orderLines,
             token,
             agreedAmount,
-            escrowManager,
-            escrow: [],
-            shipmentId: []
+            shipment: []
         };
         this._orders.insert(id, updatedOrder);
         return updatedOrder;
     }
 
-    async signOrder(roleProof: RoleProof, id: bigint): Promise<Order> {
-        const order = this._orders.get(id);
-        if (!order)
-            throw new Error('Order not found');
-        const companyAddress = roleProof.membershipProof.delegatorAddress;
-        if(order.signatures.includes(companyAddress))
+    async signOrder(id: bigint): Promise<Order> {
+        const order = this.getOrder(id);
+        if(OrderStatusEnum.CONFIRMED in order.status)
+            throw new Error('Order already confirmed');
+        const delegatorAddress = AuthenticationService.instance.getDelegatorAddress();
+        if(order.signatures.includes(delegatorAddress))
             throw new Error('Order already signed');
-        order.signatures.push(companyAddress);
+        order.signatures.push(delegatorAddress);
         if (order.signatures.includes(order.supplier) && order.signatures.includes(order.customer)) {
             order.status = { CONFIRMED: null };
-            const shipment = await ShipmentService.instance.createShipment(roleProof, order.supplier, order.commissioner, true);
-            order.shipmentId = [shipment.id];
-            console.log(shipment);
+            const duration = order.paymentDeadline - BigInt(Math.trunc(Date.now() / 1000));
+            const shipment = await ShipmentService.instance.createShipment(order.supplier, order.commissioner, true, duration, order.token);
+            console.log('new shipment id:', shipment.id);
+            order.shipment = [shipment];
         }
         this._orders.insert(id, order);
         return order;
