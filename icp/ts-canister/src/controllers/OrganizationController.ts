@@ -44,6 +44,12 @@ class OrganizationController {
             description,
         );
     }
+
+    @update([IDL.Text], IDL.Bool)
+    @AtLeastEditor
+    async deleteOrganization(ethAddress: string): Promise<boolean> {
+        return OrganizationService.instance.deleteOrganization(ethAddress);
+    }
 }
 
 export default OrganizationController;

@@ -5,10 +5,14 @@ import { computeRoleProof } from './proof';
 import { AuthenticationDriver } from './AuthenticationDriver';
 import { BroadedOrganization } from '../../entities/organization/BroadedOrganization';
 import { Organization } from '../../entities/organization/Organization';
+import { NarrowedOrganization } from '../../entities/organization/NarrowedOrganization';
+import { OrderDriver } from './OrderDriver';
 
 // FIXME: Move this variables to a common file?
-const USER_PRIVATE_KEY = '0c7e66e74f6666b514cc73ee2b7ffc518951cf1ca5719d6820459c4e134f2264';
-const COMPANY_PRIVATE_KEY = '538d7d8aec31a0a83f12461b1237ce6b00d8efc1d8b1c73566c05f63ed5e6d02';
+const USER1_PRIVATE_KEY = '0c7e66e74f6666b514cc73ee2b7ffc518951cf1ca5719d6820459c4e134f2264';
+const COMPANY1_PRIVATE_KEY = '538d7d8aec31a0a83f12461b1237ce6b00d8efc1d8b1c73566c05f63ed5e6d02';
+const USER2_PRIVATE_KEY = '0c7e66e74f6666b514cc73ee2b7ffc518951cf1ca5719d6820459c4e134f2264';
+const COMPANY2_PRIVATE_KEY = '0c7e66e74f6666b514cc73ee2b7ffc518951cf1ca5719d6820459c4e134f2264';
 const DELEGATE_CREDENTIAL_ID_HASH =
     '0x2cc6c15c35500c4341eee2f9f5f8c39873b9c3737edb343ebc3d16424e99a0d4';
 const DELEGATOR_CREDENTIAL_ID_HASH =
@@ -22,14 +26,39 @@ type OrganizationScratch = {
     description: string;
 };
 
+type Login = {
+    userWallet: Wallet;
+    companyWallet: Wallet;
+    siweIdentityProvider: SiweIdentityProvider;
+    login: () => Promise<boolean>;
+};
+
 describe('OrganizationDriver', () => {
-    let organizationDriver: OrganizationDriver;
+    let organizationDriverUser1: OrganizationDriver;
+    let organizationDriverUser2: OrganizationDriver;
     let organizationScratch: OrganizationScratch;
     let updatedOrganizationScratch: OrganizationScratch;
     let createdOrganization: Organization;
 
-    const login = async (userWallet: Wallet, siweIdentityProvider: SiweIdentityProvider) => {
-        const companyWallet = new Wallet(COMPANY_PRIVATE_KEY);
+    let user1: Login;
+    let user2: Login;
+
+    // FIXME: Move this variables to a common file?
+    const prepareLogin = async (
+        userPrivateKey: string,
+        companyPrivateKey: string
+    ): Promise<Login> => {
+        const userWallet = new Wallet(userPrivateKey);
+        const companyWallet = new Wallet(companyPrivateKey);
+        const siweIdentityProvider = new SiweIdentityProvider(userWallet, SIWE_CANISTER_ID);
+        await siweIdentityProvider.createIdentity();
+
+        const authenticationDriver = new AuthenticationDriver(
+            siweIdentityProvider.identity,
+            ENTITY_MANAGER_CANISTER_ID,
+            ICP_NETWORK
+        );
+
         const roleProof = await computeRoleProof(
             userWallet.address,
             'Signer',
@@ -37,22 +66,23 @@ describe('OrganizationDriver', () => {
             DELEGATOR_CREDENTIAL_ID_HASH,
             companyWallet
         );
-        const authenticationDriver = new AuthenticationDriver(
-            siweIdentityProvider.identity,
+
+        const login = () => authenticationDriver.login(roleProof);
+        return { userWallet, companyWallet, siweIdentityProvider, login };
+    };
+
+    beforeAll(async () => {
+        user1 = await prepareLogin(USER1_PRIVATE_KEY, COMPANY1_PRIVATE_KEY);
+        user2 = await prepareLogin(USER2_PRIVATE_KEY, COMPANY2_PRIVATE_KEY);
+
+        organizationDriverUser1 = new OrganizationDriver(
+            user1.siweIdentityProvider.identity,
             ENTITY_MANAGER_CANISTER_ID,
             ICP_NETWORK
         );
 
-        await authenticationDriver.login(roleProof);
-    };
-
-    beforeAll(async () => {
-        const userWallet = new Wallet(USER_PRIVATE_KEY);
-        const siweIdentityProvider = new SiweIdentityProvider(userWallet, SIWE_CANISTER_ID);
-        await siweIdentityProvider.createIdentity();
-
-        organizationDriver = new OrganizationDriver(
-            siweIdentityProvider.identity,
+        organizationDriverUser2 = new OrganizationDriver(
+            user2.siweIdentityProvider.identity,
             ENTITY_MANAGER_CANISTER_ID,
             ICP_NETWORK
         );
@@ -66,23 +96,24 @@ describe('OrganizationDriver', () => {
             description: 'Updated Description'
         };
 
-        await login(userWallet, siweIdentityProvider);
-    }, 15000);
+        await user1.login();
+        await user2.login();
+    }, 25000);
 
     it('should get organizations', async () => {
-        const organizations = await organizationDriver.getOrganizations();
+        const organizations = await organizationDriverUser1.getOrganizations();
 
         expect(organizations).toBeInstanceOf(Array);
     });
 
     it('should get organization - not founded', async () => {
-        const getOrganizationFunction = async () => organizationDriver.getOrganization('0x0');
+        const getOrganizationFunction = async () => organizationDriverUser1.getOrganization('0x0');
 
         await expect(getOrganizationFunction()).rejects.toThrow();
     });
 
     it('should create organization', async () => {
-        createdOrganization = await organizationDriver.createOrganization(
+        createdOrganization = await organizationDriverUser1.createOrganization(
             organizationScratch.name,
             organizationScratch.description
         );
@@ -95,8 +126,75 @@ describe('OrganizationDriver', () => {
         expect(organization.description).toBe(organizationScratch.description);
     });
 
-    it('should get organization - founded', async () => {
-        const retrievedOrganization = await organizationDriver.getOrganization(
+    it('should get organization - founded, caller = organization', async () => {
+        const retrievedOrganization = await organizationDriverUser1.getOrganization(
+            createdOrganization.ethAddress
+        );
+
+        expect(retrievedOrganization).toBeInstanceOf(BroadedOrganization);
+
+        const organization = retrievedOrganization as BroadedOrganization;
+
+        expect(organization.name).toBe(organizationScratch.name);
+        expect(organization.description).toBe(organizationScratch.description);
+    });
+
+    it('should get organization - founded, caller != organization, orderd not traded', async () => {
+        const retrievedOrganization = await organizationDriverUser2.getOrganization(
+            createdOrganization.ethAddress
+        );
+
+        expect(retrievedOrganization).toBeInstanceOf(NarrowedOrganization);
+
+        const organization = retrievedOrganization as NarrowedOrganization;
+
+        expect(organization.name).toBe(organizationScratch.name);
+    });
+
+    it('should simulate order between parties', async () => {
+        const date = new Date();
+        const orderParams = {
+            supplier: user1.companyWallet.address,
+            customer: user2.companyWallet.address,
+            commissioner: user2.companyWallet.address,
+            paymentDeadline: date,
+            documentDeliveryDeadline: date,
+            shippingDeadline: date,
+            deliveryDeadline: date,
+            arbiter: '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
+            token: '0xc5a5C42992dECbae36851359345FE25997F5C42d',
+            agreedAmount: 10,
+            escrowManager: '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
+            incoterms: 'incoterms',
+            shipper: 'shipper',
+            shippingPort: 'shippingPort',
+            deliveryPort: 'deliveryPort',
+            lines: [
+                {
+                    productCategoryId: 0,
+                    quantity: 1,
+                    unit: 'unit',
+                    price: {
+                        amount: 1,
+                        fiat: 'USD'
+                    }
+                }
+            ]
+        };
+        date.setDate(date.getDate() + 14);
+
+        const orderDriver = new OrderDriver(
+            user1.siweIdentityProvider.identity,
+            ENTITY_MANAGER_CANISTER_ID,
+            ICP_NETWORK
+        );
+        const order = await orderDriver.createOrder(orderParams);
+
+        expect(order).toBeDefined();
+    });
+
+    it('should get organization - founded, caller != organization, order traded', async () => {
+        const retrievedOrganization = await organizationDriverUser2.getOrganization(
             createdOrganization.ethAddress
         );
 
@@ -109,7 +207,7 @@ describe('OrganizationDriver', () => {
     });
 
     it('should update organization', async () => {
-        const updatedOrganization = await organizationDriver.updateOrganization(
+        const updatedOrganization = await organizationDriverUser1.updateOrganization(
             createdOrganization.ethAddress,
             updatedOrganizationScratch.name,
             updatedOrganizationScratch.description
@@ -123,8 +221,8 @@ describe('OrganizationDriver', () => {
         expect(organization.description).toBe(updatedOrganizationScratch.description);
     });
 
-    it('should get organization - updated', async () => {
-        const retrievedOrganization = await organizationDriver.getOrganization(
+    it('should get organization - updated, caller = organization', async () => {
+        const retrievedOrganization = await organizationDriverUser1.getOrganization(
             createdOrganization.ethAddress
         );
 
@@ -134,5 +232,20 @@ describe('OrganizationDriver', () => {
 
         expect(organization.name).toBe(updatedOrganizationScratch.name);
         expect(organization.description).toBe(updatedOrganizationScratch.description);
+    });
+
+    it('should delete organization', async () => {
+        const isDeleted = await organizationDriverUser1.deleteOrganization(
+            createdOrganization.ethAddress
+        );
+
+        expect(isDeleted).toBe(true);
+    });
+
+    it('should get organization - deleted', async () => {
+        const getOrganizationFunction = async () =>
+            organizationDriverUser1.getOrganization(createdOrganization.ethAddress);
+
+        await expect(getOrganizationFunction()).rejects.toThrow();
     });
 });

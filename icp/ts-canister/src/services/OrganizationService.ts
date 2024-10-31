@@ -5,6 +5,7 @@ import { OrganizationPresentation } from "../models/presentations/OrganizationPr
 import AuthenticationService from "./AuthenticationService";
 import { NarrowedOrganizationCreator } from "../factories/organization/NarrowedOrganizationCreator";
 import { BroadedOrganizationCreator } from "../factories/organization/BroadedOrganizationCreator";
+import OrderService from "./OrderService";
 
 class OrganizationService {
     private static _instance: OrganizationService;
@@ -20,26 +21,53 @@ class OrganizationService {
         return OrganizationService._instance;
     }
 
+    isOrganizationKnown(ethAddress: string): boolean {
+        const authenticatedAddress =
+            AuthenticationService.instance.getDelegatorAddress();
+
+        const orderBetweenParties =
+            OrderService.instance.getOrdersBetweenParties(
+                authenticatedAddress,
+                ethAddress,
+            );
+
+        return (
+            orderBetweenParties.length > 0 ||
+            ethAddress === authenticatedAddress
+        );
+    }
+
+    getOrganizationPresentation(
+        organization: Organization,
+    ): OrganizationPresentation {
+        const isOrganizationKnown = this.isOrganizationKnown(
+            organization.ethAddress,
+        );
+
+        if (!isOrganizationKnown) {
+            return new NarrowedOrganizationCreator().fromOrganization(
+                organization,
+            );
+        }
+
+        return new BroadedOrganizationCreator().fromOrganization(organization);
+    }
+
     getOrganizations(): OrganizationPresentation[] {
         const organizations = this._organizations.values();
 
         return organizations.map((organization) => {
-            return new BroadedOrganizationCreator().fromOrganization(
-                organization,
-            );
+            return this.getOrganizationPresentation(organization);
         });
     }
 
     getOrganization(ethAddress: string): OrganizationPresentation {
-        const authenticatedAddress =
-            AuthenticationService.instance.getDelegatorAddress();
-
         const organization = this._organizations.get(ethAddress);
         if (!organization) {
             throw new Error("Organization not found");
         }
 
-        return new BroadedOrganizationCreator().fromOrganization(organization);
+        return this.getOrganizationPresentation(organization);
     }
 
     createOrganization(
@@ -81,6 +109,17 @@ class OrganizationService {
         return new BroadedOrganizationCreator().fromOrganization(
             updatedOrganization,
         );
+    }
+
+    deleteOrganization(ethAddress: string): boolean {
+        const organization = this._organizations.get(ethAddress);
+        if (!organization) {
+            throw new Error("Organization not found");
+        }
+
+        this._organizations.remove(ethAddress);
+
+        return true;
     }
 }
 
