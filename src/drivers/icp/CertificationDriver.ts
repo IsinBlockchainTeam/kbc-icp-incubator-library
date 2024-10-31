@@ -1,5 +1,4 @@
 import { ActorSubclass, Identity } from '@dfinity/agent';
-import { RoleProof } from '@kbc-lib/azle-types';
 import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
 import { createActor } from 'icp-declarations/entity_manager';
 import { EntityBuilder } from '../../utils/icp/EntityBuilder';
@@ -22,7 +21,6 @@ export class CertificationDriver {
     }
 
     async registerCompanyCertificate(
-        roleProof: RoleProof,
         issuer: string,
         subject: string,
         assessmentStandard: string,
@@ -33,7 +31,6 @@ export class CertificationDriver {
         notes?: string
     ): Promise<CompanyCertificate> {
         const certificate = await this._actor.registerCompanyCertificate(
-            roleProof,
             issuer,
             subject,
             assessmentStandard,
@@ -47,7 +44,6 @@ export class CertificationDriver {
     }
 
     async registerScopeCertificate(
-        roleProof: RoleProof,
         issuer: string,
         subject: string,
         assessmentStandard: string,
@@ -59,7 +55,6 @@ export class CertificationDriver {
         notes?: string
     ): Promise<ScopeCertificate> {
         const certificate = await this._actor.registerScopeCertificate(
-            roleProof,
             issuer,
             subject,
             assessmentStandard,
@@ -74,7 +69,6 @@ export class CertificationDriver {
     }
 
     async registerMaterialCertificate(
-        roleProof: RoleProof,
         issuer: string,
         subject: string,
         assessmentStandard: string,
@@ -84,7 +78,6 @@ export class CertificationDriver {
         notes?: string
     ): Promise<MaterialCertificate> {
         const certificate = await this._actor.registerMaterialCertificate(
-            roleProof,
             issuer,
             subject,
             assessmentStandard,
@@ -96,73 +89,47 @@ export class CertificationDriver {
         return EntityBuilder.buildMaterialCertificate(certificate);
     }
 
-    async getBaseCertificateById(roleProof: RoleProof, id: number): Promise<BaseCertificate> {
-        const certificate = await this._actor.getBaseCertificateById(roleProof, BigInt(id));
+    async getBaseCertificateById(id: number): Promise<BaseCertificate> {
+        const certificate = await this._actor.getBaseCertificateById(BigInt(id));
         return EntityBuilder.buildBaseCertificate(certificate);
     }
 
-    async getBaseCertificatesInfoBySubject(
-        roleProof: RoleProof,
-        subject: string
-    ): Promise<BaseCertificate[]> {
-        const certificates = await this._actor.getBaseCertificatesInfoBySubject(roleProof, subject);
+    async getBaseCertificatesInfoBySubject(subject: string): Promise<BaseCertificate[]> {
+        const certificates = await this._actor.getBaseCertificatesInfoBySubject(subject);
         return certificates.map((cert) => EntityBuilder.buildBaseCertificate(cert));
     }
 
-    async getCompanyCertificates(
-        roleProof: RoleProof,
-        subject: string
-    ): Promise<CompanyCertificate[]> {
-        const certificates = await this._actor.getCompanyCertificates(roleProof, subject);
+    async getCompanyCertificates(subject: string): Promise<CompanyCertificate[]> {
+        const certificates = await this._actor.getCompanyCertificates(subject);
         return certificates.map((cert) => EntityBuilder.buildCompanyCertificate(cert));
     }
 
-    async getScopeCertificates(roleProof: RoleProof, subject: string): Promise<ScopeCertificate[]> {
-        const certificates = await this._actor.getScopeCertificates(roleProof, subject);
+    async getScopeCertificates(subject: string): Promise<ScopeCertificate[]> {
+        const certificates = await this._actor.getScopeCertificates(subject);
         return certificates.map((cert) => EntityBuilder.buildScopeCertificate(cert));
     }
 
-    async getMaterialCertificates(
-        roleProof: RoleProof,
-        subject: string
-    ): Promise<MaterialCertificate[]> {
-        const certificates = await this._actor.getMaterialCertificates(roleProof, subject);
+    async getMaterialCertificates(subject: string): Promise<MaterialCertificate[]> {
+        const certificates = await this._actor.getMaterialCertificates(subject);
         return certificates.map((cert) => EntityBuilder.buildMaterialCertificate(cert));
     }
 
-    async getCompanyCertificate(
-        roleProof: RoleProof,
-        subject: string,
-        id: number
-    ): Promise<CompanyCertificate> {
-        const certificate = await this._actor.getCompanyCertificate(roleProof, subject, BigInt(id));
+    async getCompanyCertificate(subject: string, id: number): Promise<CompanyCertificate> {
+        const certificate = await this._actor.getCompanyCertificate(subject, BigInt(id));
         return EntityBuilder.buildCompanyCertificate(certificate);
     }
 
-    async getScopeCertificate(
-        roleProof: RoleProof,
-        subject: string,
-        id: number
-    ): Promise<ScopeCertificate> {
-        const certificate = await this._actor.getScopeCertificate(roleProof, subject, BigInt(id));
+    async getScopeCertificate(subject: string, id: number): Promise<ScopeCertificate> {
+        const certificate = await this._actor.getScopeCertificate(subject, BigInt(id));
         return EntityBuilder.buildScopeCertificate(certificate);
     }
 
-    async getMaterialCertificate(
-        roleProof: RoleProof,
-        subject: string,
-        id: number
-    ): Promise<MaterialCertificate> {
-        const certificate = await this._actor.getMaterialCertificate(
-            roleProof,
-            subject,
-            BigInt(id)
-        );
+    async getMaterialCertificate(subject: string, id: number): Promise<MaterialCertificate> {
+        const certificate = await this._actor.getMaterialCertificate(subject, BigInt(id));
         return EntityBuilder.buildMaterialCertificate(certificate);
     }
 
     async updateCompanyCertificate(
-        roleProof: RoleProof,
         certificateId: number,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
@@ -171,7 +138,6 @@ export class CertificationDriver {
         notes?: string
     ) {
         return this._actor.updateCompanyCertificate(
-            roleProof,
             BigInt(certificateId),
             assessmentStandard,
             assessmentAssuranceLevel,
@@ -182,7 +148,6 @@ export class CertificationDriver {
     }
 
     async updateScopeCertificate(
-        roleProof: RoleProof,
         certificateId: number,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
@@ -192,7 +157,6 @@ export class CertificationDriver {
         notes?: string
     ) {
         return this._actor.updateScopeCertificate(
-            roleProof,
             BigInt(certificateId),
             assessmentStandard,
             assessmentAssuranceLevel,
@@ -204,7 +168,6 @@ export class CertificationDriver {
     }
 
     async updateMaterialCertificate(
-        roleProof: RoleProof,
         certificateId: number,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
@@ -212,7 +175,6 @@ export class CertificationDriver {
         notes?: string
     ) {
         return this._actor.updateMaterialCertificate(
-            roleProof,
             BigInt(certificateId),
             assessmentStandard,
             assessmentAssuranceLevel,
@@ -221,25 +183,15 @@ export class CertificationDriver {
         );
     }
 
-    async updateDocument(
-        roleProof: RoleProof,
-        certificateId: number,
-        document: CertificateDocumentInfo
-    ) {
+    async updateDocument(certificateId: number, document: CertificateDocumentInfo) {
         return this._actor.updateCertificateDocument(
-            roleProof,
             BigInt(certificateId),
             EntityBuilder.buildICPCertificateDocumentInfo(document)
         );
     }
 
-    async evaluateDocument(
-        roleProof: RoleProof,
-        certificateId: number,
-        evaluationStatus: EvaluationStatus
-    ) {
+    async evaluateDocument(certificateId: number, evaluationStatus: EvaluationStatus) {
         await this._actor.evaluateCertificateDocument(
-            roleProof,
             BigInt(certificateId),
             EntityBuilder.buildICPEvaluationStatus(evaluationStatus)
         );

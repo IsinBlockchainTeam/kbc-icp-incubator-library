@@ -4,7 +4,7 @@ ROOT_DIR=$(pwd)
 
 start_icp_network() {
   echo "Starting local Internet Computer network..."
-      npm run start-network &
+      dfx start --clean &
       while true; do
           dfx ping > /dev/null 2>&1
           if [ $? -eq 0 ]; then
@@ -28,29 +28,30 @@ deploy_canisters() {
     if [ $? -eq 0 ]; then
         if [ "$1" = "populate" ]; then
             echo "Populate element canisters with data..."
-            echo "Process types loading..."
-            dfx canister call entity_manager addProcessType '("33 - Collecting")'
-            dfx canister call entity_manager addProcessType '("38 - Harvesting")'
-            echo "Assessment standards loading..."
-            dfx canister call entity_manager addAssessmentStandard '("Chemical use assessment")'
-            dfx canister call entity_manager addAssessmentStandard '("Environment assessment")'
-            dfx canister call entity_manager addAssessmentStandard '("Origin assessment")'
-            dfx canister call entity_manager addAssessmentStandard '("Quality assessment")'
-            dfx canister call entity_manager addAssessmentStandard '("Swiss Decode")'
-            echo "Assessment assurance level loading..."
-            dfx canister call entity_manager addAssessmentAssuranceLevel '("Reviewed by peer members")'
-            dfx canister call entity_manager addAssessmentAssuranceLevel '("Self assessed")'
-            dfx canister call entity_manager addAssessmentAssuranceLevel '("Self declaration / Not verified")'
-            dfx canister call entity_manager addAssessmentAssuranceLevel '("Verified by second party")'
-            dfx canister call entity_manager addAssessmentAssuranceLevel '("Certified (Third Party)")'
-            echo "Fiats loading..."
-            dfx canister call entity_manager addFiat '("CHF")'
-            dfx canister call entity_manager addFiat '("EUR")'
-            dfx canister call entity_manager addFiat '("USD")'
-            echo "Units loading..."
-            dfx canister call entity_manager addUnit '("BG - Bags")'
-            dfx canister call entity_manager addUnit '("KGM - Kilograms")'
-            dfx canister call entity_manager addUnit '("H87 - Pieces")'
+            npx ts-node ../../src/scripts/populate.ts
+#            echo "Process types loading..."
+#            dfx canister call entity_manager addProcessType '("33 - Collecting")'
+#            dfx canister call entity_manager addProcessType '("38 - Harvesting")'
+#            echo "Assessment standards loading..."
+#            dfx canister call entity_manager addAssessmentStandard '("Chemical use assessment")'
+#            dfx canister call entity_manager addAssessmentStandard '("Environment assessment")'
+#            dfx canister call entity_manager addAssessmentStandard '("Origin assessment")'
+#            dfx canister call entity_manager addAssessmentStandard '("Quality assessment")'
+#            dfx canister call entity_manager addAssessmentStandard '("Swiss Decode")'
+#            echo "Assessment assurance level loading..."
+#            dfx canister call entity_manager addAssessmentAssuranceLevel '("Reviewed by peer members")'
+#            dfx canister call entity_manager addAssessmentAssuranceLevel '("Self assessed")'
+#            dfx canister call entity_manager addAssessmentAssuranceLevel '("Self declaration / Not verified")'
+#            dfx canister call entity_manager addAssessmentAssuranceLevel '("Verified by second party")'
+#            dfx canister call entity_manager addAssessmentAssuranceLevel '("Certified (Third Party)")'
+#            echo "Fiats loading..."
+#            dfx canister call entity_manager addFiat '("CHF")'
+#            dfx canister call entity_manager addFiat '("EUR")'
+#            dfx canister call entity_manager addFiat '("USD")'
+#            echo "Units loading..."
+#            dfx canister call entity_manager addUnit '("BG - Bags")'
+#            dfx canister call entity_manager addUnit '("KGM - Kilograms")'
+#            dfx canister call entity_manager addUnit '("H87 - Pieces")'
         fi
         echo "Generating declarations..."
         npm run generate

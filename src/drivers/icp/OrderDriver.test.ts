@@ -1,8 +1,8 @@
-import {Wallet} from "ethers";
-import {OrderDriver} from "./OrderDriver";
-import {SiweIdentityProvider} from "./SiweIdentityProvider";
-import {computeRoleProof} from "./proof";
-import {AuthenticationDriver} from "./AuthenticationDriver";
+import { Wallet } from 'ethers';
+import { OrderDriver } from './OrderDriver';
+import { SiweIdentityProvider } from './SiweIdentityProvider';
+import { computeRoleProof } from './proof';
+import { AuthenticationDriver } from './AuthenticationDriver';
 
 const USER1_PRIVATE_KEY = '0c7e66e74f6666b514cc73ee2b7ffc518951cf1ca5719d6820459c4e134f2264';
 const COMPANY1_PRIVATE_KEY = '538d7d8aec31a0a83f12461b1237ce6b00d8efc1d8b1c73566c05f63ed5e6d02';
@@ -15,10 +15,10 @@ const DELEGATOR_CREDENTIAL_ID_HASH =
 const SIWE_CANISTER_ID = process.env.CANISTER_ID_IC_SIWE_PROVIDER!;
 const ENTITY_MANAGER_CANISTER_ID = process.env.CANISTER_ID_ENTITY_MANAGER!;
 type Utils = {
-    userWallet: Wallet,
-    companyWallet: Wallet,
-    orderManagerDriver: OrderDriver,
-    login: () => Promise<boolean>
+    userWallet: Wallet;
+    companyWallet: Wallet;
+    orderManagerDriver: OrderDriver;
+    login: () => Promise<boolean>;
 };
 const ORDER_ID = 0;
 describe('OrderDriver', () => {
@@ -46,8 +46,8 @@ describe('OrderDriver', () => {
             companyWallet
         );
         const login = () => authenticationDriver.login(roleProof);
-        return {userWallet, companyWallet, orderManagerDriver, login};
-    }
+        return { userWallet, companyWallet, orderManagerDriver, login };
+    };
 
     beforeAll(async () => {
         utils1 = await getUtils(USER1_PRIVATE_KEY, COMPANY1_PRIVATE_KEY);
@@ -55,7 +55,7 @@ describe('OrderDriver', () => {
     }, 30000);
 
     it('should retrieve orders', async () => {
-        const {orderManagerDriver, login} = utils1;
+        const { orderManagerDriver, login } = utils1;
         await login();
         const orders = await orderManagerDriver.getOrders();
         console.log(orders);
@@ -63,7 +63,7 @@ describe('OrderDriver', () => {
     }, 30000);
 
     it('should retrieve order', async () => {
-        const {orderManagerDriver, login} = utils1;
+        const { orderManagerDriver, login } = utils1;
         await login();
         const order = await orderManagerDriver.getOrder(0);
         console.log(order);
@@ -71,9 +71,9 @@ describe('OrderDriver', () => {
     }, 30000);
 
     it('should create order', async () => {
-        const {companyWallet: company1Wallet, orderManagerDriver, login} = utils1;
+        const { companyWallet: company1Wallet, orderManagerDriver, login } = utils1;
         await login();
-        const {companyWallet: company2Wallet} = utils2;
+        const { companyWallet: company2Wallet } = utils2;
         const date = new Date();
         const orderParams = {
             supplier: company1Wallet.address,
@@ -104,25 +104,23 @@ describe('OrderDriver', () => {
             ]
         };
         date.setDate(date.getDate() + 14);
-        const order = await orderManagerDriver.createOrder(
-            orderParams
-        );
+        const order = await orderManagerDriver.createOrder(orderParams);
         console.log(order);
         expect(order).toBeDefined();
     }, 30000);
 
     it('should retrieve orders', async () => {
-        const { orderManagerDriver, roleProof } = utils1;
-        const orders = await orderManagerDriver.getOrders(roleProof);
+        const { orderManagerDriver } = utils1;
+        const orders = await orderManagerDriver.getOrders();
         console.log(orders);
         expect(orders).toBeDefined();
         expect(orders.length).toBeGreaterThan(0);
     }, 30000);
 
     it('should update order', async () => {
-        const {companyWallet: company1Wallet, orderManagerDriver, login} = utils1;
+        const { companyWallet: company1Wallet, orderManagerDriver, login } = utils1;
         await login();
-        const {companyWallet: company2Wallet} = utils2;
+        const { companyWallet: company2Wallet } = utils2;
         const date = new Date();
         const orderParams = {
             supplier: company1Wallet.address,
@@ -153,16 +151,13 @@ describe('OrderDriver', () => {
             ]
         };
         date.setDate(date.getDate() + 14);
-        const order = await orderManagerDriver.updateOrder(
-            ORDER_ID,
-            orderParams
-        );
+        const order = await orderManagerDriver.updateOrder(ORDER_ID, orderParams);
         console.log(order);
         expect(order).toBeDefined();
     }, 30000);
 
     it('should sign order', async () => {
-        const {orderManagerDriver, login} = utils2;
+        const { orderManagerDriver, login } = utils2;
         await login();
         const order = await orderManagerDriver.signOrder(ORDER_ID);
         console.log(order);

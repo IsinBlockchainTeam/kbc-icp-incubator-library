@@ -14,12 +14,12 @@ import {
     CompanyCertificate,
     MaterialCertificate,
     ScopeCertificate,
-    RoleProof,
     BaseCertificate,
     CertificateTypeEnum,
     EvaluationStatus,
     EvaluationStatusEnum
 } from '../models/types';
+import AuthenticationService from './AuthenticationService';
 
 type CertificationRecord = {
     subject: string;
@@ -45,7 +45,6 @@ class CertificationService {
     }
 
     registerCompanyCertificate(
-        roleProof: RoleProof,
         issuer: string,
         subject: string,
         assessmentStandard: string,
@@ -60,7 +59,7 @@ class CertificationService {
         validateDatesValidity(validFrom, validUntil);
         validateAssessmentStandard(assessmentStandard);
         validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
-        const companyAddress = roleProof.membershipProof.delegatorAddress;
+        const companyAddress = AuthenticationService.instance.getDelegatorAddress();
 
         const certificate: CompanyCertificate = {
             id: BigInt(this._allCertificateRecords.keys().length + 1),
@@ -84,7 +83,6 @@ class CertificationService {
     }
 
     registerScopeCertificate(
-        roleProof: RoleProof,
         issuer: string,
         subject: string,
         assessmentStandard: string,
@@ -101,7 +99,7 @@ class CertificationService {
         validateAssessmentStandard(assessmentStandard);
         validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
         validateProcessTypes(processTypes);
-        const companyAddress = roleProof.membershipProof.delegatorAddress;
+        const companyAddress = AuthenticationService.instance.getDelegatorAddress();
         const certificate: ScopeCertificate = {
             id: BigInt(this._allCertificateRecords.keys().length + 1),
             uploadedBy: companyAddress,
@@ -125,7 +123,6 @@ class CertificationService {
     }
 
     registerMaterialCertificate(
-        roleProof: RoleProof,
         issuer: string,
         subject: string,
         assessmentStandard: string,
@@ -138,7 +135,7 @@ class CertificationService {
         validateAddress('Subject', subject);
         validateAssessmentStandard(assessmentStandard);
         validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
-        const companyAddress = roleProof.membershipProof.delegatorAddress;
+        const companyAddress = AuthenticationService.instance.getDelegatorAddress();
         const certificate: MaterialCertificate = {
             id: BigInt(this._allCertificateRecords.keys().length + 1),
             uploadedBy: companyAddress,
@@ -159,7 +156,7 @@ class CertificationService {
         return certificate;
     }
 
-    getBaseCertificatesInfoBySubject(_: RoleProof, subject: string): BaseCertificate[] {
+    getBaseCertificatesInfoBySubject(subject: string): BaseCertificate[] {
         validateAddress('Subject', subject);
         const _companyCertificates = this._companyCertificates.get(subject) || [];
         const _scopeCertificates = this._scopeCertificates.get(subject) || [];
@@ -180,38 +177,37 @@ class CertificationService {
         }));
     }
 
-    getCompanyCertificates(_: RoleProof, subject: string): CompanyCertificate[] {
+    getCompanyCertificates(subject: string): CompanyCertificate[] {
         return this._companyCertificates.get(subject) || [];
     }
 
-    getScopeCertificates(_: RoleProof, subject: string): ScopeCertificate[] {
+    getScopeCertificates(subject: string): ScopeCertificate[] {
         return this._scopeCertificates.get(subject) || [];
     }
 
-    getMaterialCertificates(_: RoleProof, subject: string): MaterialCertificate[] {
+    getMaterialCertificates(subject: string): MaterialCertificate[] {
         return this._materialCertificates.get(subject) || [];
     }
 
-    getCompanyCertificate(_: RoleProof, subject: string, id: bigint): CompanyCertificate {
+    getCompanyCertificate(subject: string, id: bigint): CompanyCertificate {
         const certificate = this._companyCertificates.get(subject)?.find((cert) => BigInt(cert.id) === id);
         if (!certificate) throw new Error('Company certificate not found');
         return certificate;
     }
 
-    getScopeCertificate(_: RoleProof, subject: string, id: bigint): ScopeCertificate {
+    getScopeCertificate(subject: string, id: bigint): ScopeCertificate {
         const certificate = this._scopeCertificates.get(subject)?.find((cert) => BigInt(cert.id) === id);
         if (!certificate) throw new Error('Scope certificate not found');
         return certificate;
     }
 
-    getMaterialCertificate(_: RoleProof, subject: string, id: bigint): MaterialCertificate {
+    getMaterialCertificate(subject: string, id: bigint): MaterialCertificate {
         const certificate = this._materialCertificates.get(subject)?.find((cert) => BigInt(cert.id) === id);
         if (!certificate) throw new Error('Material certificate not found');
         return certificate;
     }
 
     updateCompanyCertificate(
-        roleProof: RoleProof,
         certificateId: bigint,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
@@ -223,7 +219,11 @@ class CertificationService {
         validateAssessmentStandard(assessmentStandard);
         validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
         const [companyCertificate, companyCertificates, certificateIndex] = this._getCertificateAndInfoById<CompanyCertificate>(certificateId);
-        validateFieldValue(companyCertificate.uploadedBy, roleProof.membershipProof.delegatorAddress, 'Caller is not the owner of the certificate');
+        validateFieldValue(
+            companyCertificate.uploadedBy,
+            AuthenticationService.instance.getDelegatorAddress(),
+            'Caller is not the owner of the certificate'
+        );
         companyCertificate.assessmentStandard = assessmentStandard;
         companyCertificate.assessmentAssuranceLevel = assessmentAssuranceLevel;
         companyCertificate.validFrom = BigInt(validFrom);
@@ -235,7 +235,6 @@ class CertificationService {
     }
 
     updateScopeCertificate(
-        roleProof: RoleProof,
         certificateId: bigint,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
@@ -249,7 +248,11 @@ class CertificationService {
         validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
         validateProcessTypes(processTypes);
         const [scopeCertificate, scopeCertificates, certificateIndex] = this._getCertificateAndInfoById<ScopeCertificate>(certificateId);
-        validateFieldValue(scopeCertificate.uploadedBy, roleProof.membershipProof.delegatorAddress, 'Caller is not the owner of the certificate');
+        validateFieldValue(
+            scopeCertificate.uploadedBy,
+            AuthenticationService.instance.getDelegatorAddress(),
+            'Caller is not the owner of the certificate'
+        );
         scopeCertificate.assessmentStandard = assessmentStandard;
         scopeCertificate.assessmentAssuranceLevel = assessmentAssuranceLevel;
         scopeCertificate.validFrom = BigInt(validFrom);
@@ -262,7 +265,6 @@ class CertificationService {
     }
 
     updateMaterialCertificate(
-        roleProof: RoleProof,
         certificateId: bigint,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
@@ -272,7 +274,11 @@ class CertificationService {
         validateAssessmentStandard(assessmentStandard);
         validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
         const [materialCertificate, materialCertificates, certificateIndex] = this._getCertificateAndInfoById<MaterialCertificate>(certificateId);
-        validateFieldValue(materialCertificate.uploadedBy, roleProof.membershipProof.delegatorAddress, 'Caller is not the owner of the certificate');
+        validateFieldValue(
+            materialCertificate.uploadedBy,
+            AuthenticationService.instance.getDelegatorAddress(),
+            'Caller is not the owner of the certificate'
+        );
         materialCertificate.assessmentStandard = assessmentStandard;
         materialCertificate.assessmentAssuranceLevel = assessmentAssuranceLevel;
         materialCertificate.materialId = materialId;
@@ -282,7 +288,7 @@ class CertificationService {
         return materialCertificate;
     }
 
-    updateDocument(_: RoleProof, certificateId: bigint, document: CertificateDocumentInfo): void {
+    updateDocument(certificateId: bigint, document: CertificateDocumentInfo): void {
         const [certificate, certificates, certificateIndex] = this._getCertificateAndInfoById<BaseCertificate>(certificateId);
         certificate.document = document;
         console.log('certificate: ', certificate);
@@ -290,14 +296,14 @@ class CertificationService {
         this._updateCertificate(certificate, certificates, certificateIndex);
     }
 
-    evaluateDocument(_: RoleProof, certificateId: bigint, evaluation: EvaluationStatus): void {
+    evaluateDocument(certificateId: bigint, evaluation: EvaluationStatus): void {
         if (EvaluationStatusEnum.NOT_EVALUATED in evaluation) throw new Error('Invalid evaluation status');
         const [certificate, certificates, certificateIndex] = this._getCertificateAndInfoById<BaseCertificate>(certificateId);
         certificate.evaluationStatus = evaluation;
         this._updateCertificate(certificate, certificates, certificateIndex);
     }
 
-    getBaseCertificateById(_: RoleProof, certificateId: bigint): BaseCertificate {
+    getBaseCertificateById(certificateId: bigint): BaseCertificate {
         const [certificate] = this._getCertificateAndInfoById<BaseCertificate>(certificateId);
         return certificate;
     }

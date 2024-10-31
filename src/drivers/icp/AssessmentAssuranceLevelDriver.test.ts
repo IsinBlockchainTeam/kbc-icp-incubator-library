@@ -38,7 +38,7 @@ describe('AssessmentAssuranceLevelDriver', () => {
             'Signer',
             DELEGATE_CREDENTIAL_ID_HASH,
             DELEGATOR_CREDENTIAL_ID_HASH,
-            companyPrivateKey
+            companyWallet
         );
         return { userWallet, companyWallet, assessmentAssuranceLevelDriver, roleProof };
     };

@@ -1,7 +1,7 @@
 import { IDL } from 'azle';
-import { EvaluationStatus } from './Evaluation';
+import { IDLEvaluationStatus } from './Evaluation';
 
-export const CertificateDocumentType = IDL.Variant({
+export const IDLCertificateDocumentType = IDL.Variant({
     CERTIFICATE_OF_CONFORMITY: IDL.Null,
     COUNTRY_OF_ORIGIN: IDL.Null,
     SWISS_DECODE: IDL.Null,
@@ -9,9 +9,9 @@ export const CertificateDocumentType = IDL.Variant({
     PRODUCTION_FACILITY_LICENSE: IDL.Null
 });
 
-export const CertificateDocumentInfo = IDL.Record({
+export const IDLCertificateDocumentInfo = IDL.Record({
     referenceId: IDL.Text,
-    documentType: CertificateDocumentType,
+    documentType: IDLCertificateDocumentType,
     externalUrl: IDL.Text,
     metadata: IDL.Record({
         filename: IDL.Text,
@@ -19,7 +19,7 @@ export const CertificateDocumentInfo = IDL.Record({
     })
 });
 
-export const CertificateType = IDL.Variant({
+export const IDLCertificateType = IDL.Variant({
     COMPANY: IDL.Null,
     SCOPE: IDL.Null,
     MATERIAL: IDL.Null
@@ -32,30 +32,30 @@ const BaseCertificateType = {
     uploadedBy: IDL.Text,
     assessmentStandard: IDL.Text,
     assessmentAssuranceLevel: IDL.Text,
-    document: CertificateDocumentInfo,
-    evaluationStatus: EvaluationStatus,
-    certType: CertificateType,
+    document: IDLCertificateDocumentInfo,
+    evaluationStatus: IDLEvaluationStatus,
+    certType: IDLCertificateType,
     issueDate: IDL.Nat,
     notes: IDL.Text
 };
-export const BaseCertificate = IDL.Record({
+export const IDLBaseCertificate = IDL.Record({
     ...BaseCertificateType
 });
 
-export const CompanyCertificate = IDL.Record({
+export const IDLCompanyCertificate = IDL.Record({
     ...BaseCertificateType,
     validFrom: IDL.Nat,
     validUntil: IDL.Nat
 });
 
-export const ScopeCertificate = IDL.Record({
+export const IDLScopeCertificate = IDL.Record({
     ...BaseCertificateType,
     validFrom: IDL.Nat,
     validUntil: IDL.Nat,
     processTypes: IDL.Vec(IDL.Text)
 });
 
-export const MaterialCertificate = IDL.Record({
+export const IDLMaterialCertificate = IDL.Record({
     ...BaseCertificateType,
     materialId: IDL.Nat
 });

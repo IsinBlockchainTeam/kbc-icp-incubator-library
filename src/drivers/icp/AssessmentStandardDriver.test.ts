@@ -1,7 +1,5 @@
 import { Wallet } from 'ethers';
-import { RoleProof } from '@kbc-lib/azle-types';
 import { SiweIdentityProvider } from './SiweIdentityProvider';
-import { computeRoleProof } from './proof';
 import { AssessmentStandardDriver } from './AssessmentStandardDriver';
 
 const USER1_PRIVATE_KEY = '0c7e66e74f6666b514cc73ee2b7ffc518951cf1ca5719d6820459c4e134f2264';
@@ -17,7 +15,6 @@ type Utils = {
     userWallet: Wallet;
     companyWallet: Wallet;
     assessmentStandardDriver: AssessmentStandardDriver;
-    roleProof: RoleProof;
 };
 
 describe('AssessmentStandardDriver', () => {
@@ -33,14 +30,7 @@ describe('AssessmentStandardDriver', () => {
             ENTITY_MANAGER_CANISTER_ID,
             'http://127.0.0.1:4943/'
         );
-        const roleProof = await computeRoleProof(
-            userWallet.address,
-            'Signer',
-            DELEGATE_CREDENTIAL_ID_HASH,
-            DELEGATOR_CREDENTIAL_ID_HASH,
-            companyPrivateKey
-        );
-        return { userWallet, companyWallet, assessmentStandardDriver, roleProof };
+        return { userWallet, companyWallet, assessmentStandardDriver };
     };
 
     beforeAll(async () => {

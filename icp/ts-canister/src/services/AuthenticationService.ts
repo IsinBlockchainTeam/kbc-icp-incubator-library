@@ -60,20 +60,6 @@ class AuthenticationService {
         return false;
     }
 
-    getDelegatorAddress(caller: Principal = ic.caller()): string {
-        const authentication = this._authentications.get(caller.toText());
-        if(!authentication)
-            throw new Error('Access denied: user is not authenticated');
-        return authentication.roleProof.membershipProof.delegatorAddress;
-    }
-
-    getRole(caller: Principal = ic.caller()): string {
-        const authentication = this._authentications.get(caller.toText());
-        if(!authentication)
-            throw new Error('Access denied: user is not authenticated');
-        return authentication.roleProof.role;
-    }
-
     isAuthenticated(caller: Principal): boolean {
         const authentication = this._authentications.get(caller.toText());
         if (!authentication) return false;
@@ -91,15 +77,13 @@ class AuthenticationService {
 
     getDelegatorAddress(caller: Principal = ic.caller()): string {
         const authentication = this._authentications.get(caller.toText());
-        if(!authentication)
-            throw new Error('Access denied: user is not authenticated');
+        if (!authentication) throw new Error('Access denied: user is not authenticated');
         return authentication.roleProof.membershipProof.delegatorAddress;
     }
 
     getRole(caller: Principal = ic.caller()): string {
         const authentication = this._authentications.get(caller.toText());
-        if(!authentication)
-            throw new Error('Access denied: user is not authenticated');
+        if (!authentication) throw new Error('Access denied: user is not authenticated');
         return authentication.roleProof.role;
     }
 }

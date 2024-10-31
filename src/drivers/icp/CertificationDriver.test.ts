@@ -61,7 +61,7 @@ describe('CertificationManagerDriver', () => {
             'Signer',
             DELEGATE_CREDENTIAL_ID_HASH,
             DELEGATOR_CREDENTIAL_ID_HASH,
-            companyPrivateKey
+            companyWallet
         );
         return { userWallet, companyWallet, certificationManagerDriver, roleProof };
     };
@@ -73,14 +73,9 @@ describe('CertificationManagerDriver', () => {
 
     describe('Register certificates', () => {
         it('should register company certificate', async () => {
-            const {
-                certificationManagerDriver,
-                companyWallet: issuerCompanyWallet,
-                roleProof
-            } = utils1;
+            const { certificationManagerDriver, companyWallet: issuerCompanyWallet } = utils1;
             const { companyWallet: subjectCompanyWallet } = utils2;
             const companyCertificate = await certificationManagerDriver.registerCompanyCertificate(
-                roleProof,
                 issuerCompanyWallet.address,
                 subjectCompanyWallet.address,
                 assessmentStandards[1],
@@ -101,14 +96,9 @@ describe('CertificationManagerDriver', () => {
         }, 30000);
 
         it('should register scope certificate', async () => {
-            const {
-                certificationManagerDriver,
-                companyWallet: issuerCompanyWallet,
-                roleProof
-            } = utils1;
+            const { certificationManagerDriver, companyWallet: issuerCompanyWallet } = utils1;
             const { companyWallet: subjectCompanyWallet } = utils2;
             const scopeCertificate = await certificationManagerDriver.registerScopeCertificate(
-                roleProof,
                 issuerCompanyWallet.address,
                 subjectCompanyWallet.address,
                 assessmentStandards[3],
@@ -130,15 +120,10 @@ describe('CertificationManagerDriver', () => {
         }, 30000);
 
         it('should register material certificate', async () => {
-            const {
-                certificationManagerDriver,
-                companyWallet: issuerCompanyWallet,
-                roleProof
-            } = utils1;
+            const { certificationManagerDriver, companyWallet: issuerCompanyWallet } = utils1;
             const { companyWallet: subjectCompanyWallet } = utils2;
             const materialCertificate =
                 await certificationManagerDriver.registerMaterialCertificate(
-                    roleProof,
                     issuerCompanyWallet.address,
                     subjectCompanyWallet.address,
                     assessmentStandards[0],
@@ -163,12 +148,10 @@ describe('CertificationManagerDriver', () => {
             const { certificationManagerDriver, roleProof } = utils1;
             const { companyWallet: subjectCompanyWallet } = utils2;
             const companyCertificates = await certificationManagerDriver.getCompanyCertificates(
-                roleProof,
                 subjectCompanyWallet.address
             );
             expect(companyCertificates.length).toBeGreaterThan(0);
             const companyCertificate = await certificationManagerDriver.getCompanyCertificate(
-                roleProof,
                 subjectCompanyWallet.address,
                 Number(companyCertificates[companyCertificates.length - 1].id)
             );
@@ -179,12 +162,10 @@ describe('CertificationManagerDriver', () => {
             const { certificationManagerDriver, roleProof } = utils1;
             const { companyWallet: subjectCompanyWallet } = utils2;
             const scopeCertificates = await certificationManagerDriver.getScopeCertificates(
-                roleProof,
                 subjectCompanyWallet.address
             );
             expect(scopeCertificates.length).toBeGreaterThan(0);
             const scopeCertificate = await certificationManagerDriver.getScopeCertificate(
-                roleProof,
                 subjectCompanyWallet.address,
                 Number(scopeCertificates[scopeCertificates.length - 1].id)
             );
@@ -195,12 +176,10 @@ describe('CertificationManagerDriver', () => {
             const { certificationManagerDriver, roleProof } = utils1;
             const { companyWallet: subjectCompanyWallet } = utils2;
             const materialCertificates = await certificationManagerDriver.getMaterialCertificates(
-                roleProof,
                 subjectCompanyWallet.address
             );
             expect(materialCertificates.length).toBeGreaterThan(0);
             const materialCertificate = await certificationManagerDriver.getMaterialCertificate(
-                roleProof,
                 subjectCompanyWallet.address,
                 Number(materialCertificates[materialCertificates.length - 1].id)
             );
@@ -211,20 +190,16 @@ describe('CertificationManagerDriver', () => {
             const { certificationManagerDriver, roleProof } = utils1;
             const { companyWallet: subjectCompanyWallet } = utils2;
             const certificates = await certificationManagerDriver.getBaseCertificatesInfoBySubject(
-                roleProof,
                 subjectCompanyWallet.address
             );
             expect(certificates.length).toBeGreaterThan(0);
             const companyCertificates = await certificationManagerDriver.getCompanyCertificates(
-                roleProof,
                 subjectCompanyWallet.address
             );
             const scopeCertificates = await certificationManagerDriver.getScopeCertificates(
-                roleProof,
                 subjectCompanyWallet.address
             );
             const materialCertificates = await certificationManagerDriver.getMaterialCertificates(
-                roleProof,
                 subjectCompanyWallet.address
             );
             expect(certificates.length).toEqual(
@@ -247,7 +222,6 @@ describe('CertificationManagerDriver', () => {
             const { certificationManagerDriver, roleProof } = utils1;
             const { companyWallet: subjectCompanyWallet } = utils2;
             const companyCertificates = await certificationManagerDriver.getCompanyCertificates(
-                roleProof,
                 subjectCompanyWallet.address
             );
             expect(companyCertificates.length).toBeGreaterThan(0);
@@ -255,7 +229,6 @@ describe('CertificationManagerDriver', () => {
                 companyCertificates[companyCertificates.length - 1].id
             );
             const companyCertificate = await certificationManagerDriver.updateCompanyCertificate(
-                roleProof,
                 lastCompanyCertificateId,
                 assessmentStandards[1],
                 assessmentAssuranceLevels[0],
@@ -266,7 +239,6 @@ describe('CertificationManagerDriver', () => {
             expect(companyCertificate.assessmentStandard).toEqual(assessmentStandards[1]);
             const updatedCompanyCertificate =
                 await certificationManagerDriver.getCompanyCertificate(
-                    roleProof,
                     subjectCompanyWallet.address,
                     lastCompanyCertificateId
                 );
@@ -280,7 +252,6 @@ describe('CertificationManagerDriver', () => {
             const { companyWallet: subjectCompanyWallet } = utils2;
             const updatedValidUntil = new Date(new Date().setDate(new Date().getDate() + 2));
             const scopeCertificates = await certificationManagerDriver.getScopeCertificates(
-                roleProof,
                 subjectCompanyWallet.address
             );
             expect(scopeCertificates.length).toBeGreaterThan(0);
@@ -288,7 +259,6 @@ describe('CertificationManagerDriver', () => {
                 scopeCertificates[scopeCertificates.length - 1].id
             );
             const scopeCertificate = await certificationManagerDriver.updateScopeCertificate(
-                roleProof,
                 lastScopeCertificateId,
                 assessmentStandards[3],
                 assessmentAssuranceLevels[2],
@@ -299,7 +269,6 @@ describe('CertificationManagerDriver', () => {
             expect(scopeCertificate).toBeDefined();
             expect(scopeCertificate.validUntil).toEqual(BigInt(updatedValidUntil.getTime()));
             const updatedScopeCertificate = await certificationManagerDriver.getScopeCertificate(
-                roleProof,
                 subjectCompanyWallet.address,
                 lastScopeCertificateId
             );
@@ -312,7 +281,6 @@ describe('CertificationManagerDriver', () => {
             const { certificationManagerDriver, roleProof } = utils1;
             const { companyWallet: subjectCompanyWallet } = utils2;
             const materialCertificates = await certificationManagerDriver.getMaterialCertificates(
-                roleProof,
                 subjectCompanyWallet.address
             );
             expect(materialCertificates.length).toBeGreaterThan(0);
@@ -320,7 +288,6 @@ describe('CertificationManagerDriver', () => {
                 materialCertificates[materialCertificates.length - 1].id
             );
             const materialCertificate = await certificationManagerDriver.updateMaterialCertificate(
-                roleProof,
                 lastMaterialCertificateId,
                 assessmentStandards[3],
                 assessmentAssuranceLevels[4],
@@ -330,7 +297,6 @@ describe('CertificationManagerDriver', () => {
             expect(materialCertificate.assessmentStandard).toEqual(assessmentStandards[3]);
             const updatedMaterialCertificate =
                 await certificationManagerDriver.getMaterialCertificate(
-                    roleProof,
                     subjectCompanyWallet.address,
                     lastMaterialCertificateId
                 );
@@ -361,7 +327,6 @@ describe('CertificationManagerDriver', () => {
                 }
             };
             const companyCertificate = await certificationManagerDriver.registerCompanyCertificate(
-                roleProof,
                 subjectCompanyWallet.address,
                 subjectCompanyWallet.address,
                 assessmentStandards[1],
@@ -371,14 +336,9 @@ describe('CertificationManagerDriver', () => {
                 new Date(new Date().setDate(new Date().getDate() + 365))
             );
             expect(companyCertificate).toBeDefined();
-            await certificationManagerDriver.updateDocument(
-                roleProof,
-                companyCertificate.id,
-                updatedDocument
-            );
+            await certificationManagerDriver.updateDocument(companyCertificate.id, updatedDocument);
             const updatedCompanyCertificate =
                 await certificationManagerDriver.getCompanyCertificate(
-                    roleProof,
                     subjectCompanyWallet.address,
                     companyCertificate.id
                 );
@@ -392,7 +352,6 @@ describe('CertificationManagerDriver', () => {
             const { certificationManagerDriver, roleProof } = utils1;
             const { companyWallet: subjectCompanyWallet } = utils2;
             const scopeCertificates = await certificationManagerDriver.getScopeCertificates(
-                roleProof,
                 subjectCompanyWallet.address
             );
             expect(scopeCertificates.length).toBeGreaterThan(0);
@@ -400,18 +359,15 @@ describe('CertificationManagerDriver', () => {
                 scopeCertificates[scopeCertificates.length - 1].id
             );
             const scopeCertificate = await certificationManagerDriver.getScopeCertificate(
-                roleProof,
                 subjectCompanyWallet.address,
                 lastScopeCertificateId
             );
             expect(scopeCertificate.evaluationStatus).toEqual(EvaluationStatus.NOT_EVALUATED);
             await certificationManagerDriver.evaluateDocument(
-                roleProof,
                 lastScopeCertificateId,
                 EvaluationStatus.APPROVED
             );
             const evaluatedScopeCertificate = await certificationManagerDriver.getScopeCertificate(
-                roleProof,
                 subjectCompanyWallet.address,
                 lastScopeCertificateId
             );

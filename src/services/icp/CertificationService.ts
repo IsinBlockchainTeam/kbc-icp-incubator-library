@@ -1,4 +1,3 @@
-import { RoleProof } from '@kbc-lib/azle-types';
 import { FileHelpers, ICPResourceSpec } from '@blockchain-lib/common';
 import { CertificationDriver } from '../../drivers/icp/CertificationDriver';
 import {
@@ -29,7 +28,6 @@ export class CertificationService {
     }
 
     async registerCompanyCertificate(
-        roleProof: RoleProof,
         issuer: string,
         subject: string,
         assessmentStandard: string,
@@ -44,7 +42,6 @@ export class CertificationService {
             document
         );
         return this._certificationManagerDriver.registerCompanyCertificate(
-            roleProof,
             issuer,
             subject,
             assessmentStandard,
@@ -65,7 +62,6 @@ export class CertificationService {
     }
 
     async registerScopeCertificate(
-        roleProof: RoleProof,
         issuer: string,
         subject: string,
         assessmentStandard: string,
@@ -78,7 +74,6 @@ export class CertificationService {
     ): Promise<ScopeCertificate> {
         const docExternalUrl = await this._addDocument(URL_SEGMENTS.CERTIFICATION.SCOPE, document);
         return this._certificationManagerDriver.registerScopeCertificate(
-            roleProof,
             issuer,
             subject,
             assessmentStandard,
@@ -100,7 +95,6 @@ export class CertificationService {
     }
 
     async registerMaterialCertificate(
-        roleProof: RoleProof,
         issuer: string,
         subject: string,
         assessmentStandard: string,
@@ -114,7 +108,6 @@ export class CertificationService {
             document
         );
         return this._certificationManagerDriver.registerMaterialCertificate(
-            roleProof,
             issuer,
             subject,
             assessmentStandard,
@@ -133,64 +126,39 @@ export class CertificationService {
         );
     }
 
-    async getBaseCertificateById(roleProof: RoleProof, id: number): Promise<BaseCertificate> {
-        return this._certificationManagerDriver.getBaseCertificateById(roleProof, id);
+    async getBaseCertificateById(id: number): Promise<BaseCertificate> {
+        return this._certificationManagerDriver.getBaseCertificateById(id);
     }
 
-    async getBaseCertificatesInfoBySubject(
-        roleProof: RoleProof,
-        subject: string
-    ): Promise<BaseCertificate[]> {
-        return this._certificationManagerDriver.getBaseCertificatesInfoBySubject(
-            roleProof,
-            subject
-        );
+    async getBaseCertificatesInfoBySubject(subject: string): Promise<BaseCertificate[]> {
+        return this._certificationManagerDriver.getBaseCertificatesInfoBySubject(subject);
     }
 
-    async getCompanyCertificates(
-        roleProof: RoleProof,
-        subject: string
-    ): Promise<CompanyCertificate[]> {
-        return this._certificationManagerDriver.getCompanyCertificates(roleProof, subject);
+    async getCompanyCertificates(subject: string): Promise<CompanyCertificate[]> {
+        return this._certificationManagerDriver.getCompanyCertificates(subject);
     }
 
-    async getScopeCertificates(roleProof: RoleProof, subject: string): Promise<ScopeCertificate[]> {
-        return this._certificationManagerDriver.getScopeCertificates(roleProof, subject);
+    async getScopeCertificates(subject: string): Promise<ScopeCertificate[]> {
+        return this._certificationManagerDriver.getScopeCertificates(subject);
     }
 
-    async getMaterialCertificates(
-        roleProof: RoleProof,
-        subject: string
-    ): Promise<MaterialCertificate[]> {
-        return this._certificationManagerDriver.getMaterialCertificates(roleProof, subject);
+    async getMaterialCertificates(subject: string): Promise<MaterialCertificate[]> {
+        return this._certificationManagerDriver.getMaterialCertificates(subject);
     }
 
-    async getCompanyCertificate(
-        roleProof: RoleProof,
-        subject: string,
-        id: number
-    ): Promise<CompanyCertificate> {
-        return this._certificationManagerDriver.getCompanyCertificate(roleProof, subject, id);
+    async getCompanyCertificate(subject: string, id: number): Promise<CompanyCertificate> {
+        return this._certificationManagerDriver.getCompanyCertificate(subject, id);
     }
 
-    async getScopeCertificate(
-        roleProof: RoleProof,
-        subject: string,
-        id: number
-    ): Promise<ScopeCertificate> {
-        return this._certificationManagerDriver.getScopeCertificate(roleProof, subject, id);
+    async getScopeCertificate(subject: string, id: number): Promise<ScopeCertificate> {
+        return this._certificationManagerDriver.getScopeCertificate(subject, id);
     }
 
-    async getMaterialCertificate(
-        roleProof: RoleProof,
-        subject: string,
-        id: number
-    ): Promise<MaterialCertificate> {
-        return this._certificationManagerDriver.getMaterialCertificate(roleProof, subject, id);
+    async getMaterialCertificate(subject: string, id: number): Promise<MaterialCertificate> {
+        return this._certificationManagerDriver.getMaterialCertificate(subject, id);
     }
 
     async updateCompanyCertificate(
-        roleProof: RoleProof,
         certificateId: number,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
@@ -199,7 +167,6 @@ export class CertificationService {
         notes?: string
     ) {
         return this._certificationManagerDriver.updateCompanyCertificate(
-            roleProof,
             certificateId,
             assessmentStandard,
             assessmentAssuranceLevel,
@@ -210,7 +177,6 @@ export class CertificationService {
     }
 
     async updateScopeCertificate(
-        roleProof: RoleProof,
         certificateId: number,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
@@ -220,7 +186,6 @@ export class CertificationService {
         notes?: string
     ) {
         return this._certificationManagerDriver.updateScopeCertificate(
-            roleProof,
             certificateId,
             assessmentStandard,
             assessmentAssuranceLevel,
@@ -232,7 +197,6 @@ export class CertificationService {
     }
 
     async updateMaterialCertificate(
-        roleProof: RoleProof,
         certificateId: number,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
@@ -240,7 +204,6 @@ export class CertificationService {
         notes?: string
     ) {
         return this._certificationManagerDriver.updateMaterialCertificate(
-            roleProof,
             certificateId,
             assessmentStandard,
             assessmentAssuranceLevel,
@@ -249,12 +212,8 @@ export class CertificationService {
         );
     }
 
-    async updateDocument(
-        roleProof: RoleProof,
-        certificateId: number,
-        document: CertificateDocumentRequest
-    ) {
-        const baseCertificate = await this.getBaseCertificateById(roleProof, certificateId);
+    async updateDocument(certificateId: number, document: CertificateDocumentRequest) {
+        const baseCertificate = await this.getBaseCertificateById(certificateId);
         let externalUrl = baseCertificate.document.externalUrl;
         let metadata = baseCertificate.document.metadata;
         if (document.filename && document.filename !== baseCertificate.document.metadata.filename) {
@@ -271,7 +230,7 @@ export class CertificationService {
             };
         }
 
-        return this._certificationManagerDriver.updateDocument(roleProof, certificateId, {
+        return this._certificationManagerDriver.updateDocument(certificateId, {
             referenceId: document.referenceId,
             documentType: document.documentType,
             externalUrl,
@@ -279,20 +238,12 @@ export class CertificationService {
         });
     }
 
-    async evaluateDocument(
-        roleProof: RoleProof,
-        certificateId: number,
-        evaluationStatus: EvaluationStatus
-    ) {
-        return this._certificationManagerDriver.evaluateDocument(
-            roleProof,
-            certificateId,
-            evaluationStatus
-        );
+    async evaluateDocument(certificateId: number, evaluationStatus: EvaluationStatus) {
+        return this._certificationManagerDriver.evaluateDocument(certificateId, evaluationStatus);
     }
 
-    async getDocument(roleProof: RoleProof, certificateId: number): Promise<CertificateDocument> {
-        const baseCertificate = await this.getBaseCertificateById(roleProof, certificateId);
+    async getDocument(certificateId: number): Promise<CertificateDocument> {
+        const baseCertificate = await this.getBaseCertificateById(certificateId);
         const fileContent = await this._icpFileDriver.read(baseCertificate.document.externalUrl);
         return {
             ...baseCertificate.document,
