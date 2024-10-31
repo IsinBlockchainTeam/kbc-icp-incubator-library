@@ -1,12 +1,10 @@
 import { StableBTreeMap } from "azle";
 import { Organization } from "../models/types/Organization";
 import { StableMemoryId } from "../utils/stableMemory";
-import {
-    OrganizationPresentation,
-    OrganizationVisibilityLevel,
-    presentationFromOrganization,
-} from "../models/presentations/OrganizationPresentation";
+import { OrganizationPresentation } from "../models/presentations/OrganizationPresentation";
 import AuthenticationService from "./AuthenticationService";
+import { NarrowedOrganizationCreator } from "../factories/organization/NarrowedOrganizationCreator";
+import { BroadedOrganizationCreator } from "../factories/organization/BroadedOrganizationCreator";
 
 class OrganizationService {
     private static _instance: OrganizationService;
@@ -26,20 +24,22 @@ class OrganizationService {
         const organizations = this._organizations.values();
 
         return organizations.map((organization) => {
-            return presentationFromOrganization({ BROAD: null }, organization);
+            return new BroadedOrganizationCreator().fromOrganization(
+                organization,
+            );
         });
     }
 
     getOrganization(id: bigint): OrganizationPresentation {
         const authenticatedAddress =
-            AuthenticationService.instance.getAuthenticatedAddress();
+            AuthenticationService.instance.getDelegatorAddress();
 
         const organization = this._organizations.get(id);
         if (!organization) {
             throw new Error("Organization not found");
         }
 
-        return presentationFromOrganization({ BROAD: null }, organization);
+        return new BroadedOrganizationCreator().fromOrganization(organization);
     }
 
     getFreeId(): bigint {
@@ -59,7 +59,7 @@ class OrganizationService {
 
         this._organizations.insert(id, organization);
 
-        return presentationFromOrganization({ BROAD: null }, organization);
+        return new BroadedOrganizationCreator().fromOrganization(organization);
     }
 
     updateOrganization(
@@ -80,8 +80,7 @@ class OrganizationService {
 
         this._organizations.insert(id, updatedOrganization);
 
-        return presentationFromOrganization(
-            { BROAD: null },
+        return new BroadedOrganizationCreator().fromOrganization(
             updatedOrganization,
         );
     }

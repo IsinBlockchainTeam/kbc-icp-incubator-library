@@ -7,7 +7,7 @@ export class BroadedOrganizationCreator extends OrganizationCreator {
         return new BroadedOrganization(
             Number(blockchainOrganization.id),
             blockchainOrganization.name,
-            blockchainOrganization.description
+            blockchainOrganization.description[0]
         );
     }
 }

@@ -1,25 +1,24 @@
-import { Organization } from "../models/types/Organization";
 import { IDL, query, update } from "azle";
-import { OnlyEditor, OnlyViewer } from "../decorators/roles";
+import { AtLeastEditor, AtLeastViewer } from "../decorators/roles";
 import OrganizationService from "../services/OrganizationService";
 import { IDLOrganization } from "../models/idls/IDLOrganization";
 import { OrganizationPresentation } from "../models/presentations/OrganizationPresentation";
 
 class OrganizationController {
     @query([], IDL.Vec(IDLOrganization))
-    @OnlyViewer
+    @AtLeastViewer
     async getOrganizations(): Promise<OrganizationPresentation[]> {
         return OrganizationService.instance.getOrganizations();
     }
 
     @query([IDL.Nat], IDLOrganization)
-    @OnlyViewer
+    @AtLeastViewer
     async getOrganization(id: bigint): Promise<OrganizationPresentation> {
         return OrganizationService.instance.getOrganization(id);
     }
 
     @update([IDL.Text, IDL.Text], IDLOrganization)
-    @OnlyEditor
+    @AtLeastEditor
     async createOrganization(
         name: string,
         description: string,
@@ -31,7 +30,7 @@ class OrganizationController {
     }
 
     @update([IDL.Nat, IDL.Text, IDL.Text], IDLOrganization)
-    @OnlyEditor
+    @AtLeastEditor
     async updateOrganization(
         id: bigint,
         name: string,
