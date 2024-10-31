@@ -322,5 +322,16 @@ class OrderService implements HasInterestedParties {
         this._orders.insert(id, order);
         return order;
     }
+
+    async deleteOrder(id: bigint): Promise<boolean> {
+        const order = this.getOrder(id);
+        if (OrderStatusEnum.CONFIRMED in order.status) {
+            throw new Error("Order already confirmed");
+        }
+
+        this._orders.remove(id);
+
+        return true;
+    }
 }
 export default OrderService;

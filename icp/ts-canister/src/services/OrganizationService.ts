@@ -22,18 +22,18 @@ class OrganizationService {
     }
 
     isOrganizationKnown(ethAddress: string): boolean {
-        const authenticatedAddress =
+        const authenticatedCompanyEthAddress =
             AuthenticationService.instance.getDelegatorAddress();
 
         const orderBetweenParties =
             OrderService.instance.getOrdersBetweenParties(
-                authenticatedAddress,
+                authenticatedCompanyEthAddress,
                 ethAddress,
             );
 
         return (
             orderBetweenParties.length > 0 ||
-            ethAddress === authenticatedAddress
+            ethAddress === authenticatedCompanyEthAddress
         );
     }
 
@@ -74,16 +74,19 @@ class OrganizationService {
         name: string,
         description: string,
     ): OrganizationPresentation {
-        const authenticatedEthAddress =
+        const authenticatedCompanyEthAddress =
             AuthenticationService.instance.getDelegatorAddress();
 
         const organization: Organization = {
-            ethAddress: authenticatedEthAddress,
+            ethAddress: authenticatedCompanyEthAddress,
             name,
             description,
         };
 
-        this._organizations.insert(authenticatedEthAddress, organization);
+        this._organizations.insert(
+            authenticatedCompanyEthAddress,
+            organization,
+        );
 
         return new BroadedOrganizationCreator().fromOrganization(organization);
     }

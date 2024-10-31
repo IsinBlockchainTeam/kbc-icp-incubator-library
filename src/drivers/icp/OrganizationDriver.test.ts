@@ -7,11 +7,13 @@ import { BroadedOrganization } from '../../entities/organization/BroadedOrganiza
 import { Organization } from '../../entities/organization/Organization';
 import { NarrowedOrganization } from '../../entities/organization/NarrowedOrganization';
 import { OrderDriver } from './OrderDriver';
+import { ProductCategoryDriver } from './ProductCategoryDriver';
+import { Order } from '../../entities/icp/Order';
 
 // FIXME: Move this variables to a common file?
 const USER1_PRIVATE_KEY = '0c7e66e74f6666b514cc73ee2b7ffc518951cf1ca5719d6820459c4e134f2264';
 const COMPANY1_PRIVATE_KEY = '538d7d8aec31a0a83f12461b1237ce6b00d8efc1d8b1c73566c05f63ed5e6d02';
-const USER2_PRIVATE_KEY = '0c7e66e74f6666b514cc73ee2b7ffc518951cf1ca5719d6820459c4e134f2264';
+const USER2_PRIVATE_KEY = 'ec6b3634419525310628dce4da4cf2abbc866c608aebc1e5f9ee7edf6926e985';
 const COMPANY2_PRIVATE_KEY = '0c7e66e74f6666b514cc73ee2b7ffc518951cf1ca5719d6820459c4e134f2264';
 const DELEGATE_CREDENTIAL_ID_HASH =
     '0x2cc6c15c35500c4341eee2f9f5f8c39873b9c3737edb343ebc3d16424e99a0d4';
@@ -39,6 +41,8 @@ describe('OrganizationDriver', () => {
     let organizationScratch: OrganizationScratch;
     let updatedOrganizationScratch: OrganizationScratch;
     let createdOrganization: Organization;
+    let createdOrder: Order;
+    let orderDriver: OrderDriver;
 
     let user1: Login;
     let user2: Login;
@@ -87,6 +91,12 @@ describe('OrganizationDriver', () => {
             ICP_NETWORK
         );
 
+        orderDriver = new OrderDriver(
+            user1.siweIdentityProvider.identity,
+            ENTITY_MANAGER_CANISTER_ID,
+            ICP_NETWORK
+        );
+
         organizationScratch = {
             name: 'Test Organization',
             description: 'Test Description'
@@ -98,7 +108,11 @@ describe('OrganizationDriver', () => {
 
         await user1.login();
         await user2.login();
-    }, 25000);
+    }, 30000);
+
+    afterAll(async () => {
+        await orderDriver.deleteOrder(createdOrder.id);
+    });
 
     it('should get organizations', async () => {
         const organizations = await organizationDriverUser1.getOrganizations();
@@ -139,7 +153,7 @@ describe('OrganizationDriver', () => {
         expect(organization.description).toBe(organizationScratch.description);
     });
 
-    it('should get organization - founded, caller != organization, orderd not traded', async () => {
+    it('should get organization - founded, caller != organization, order not traded', async () => {
         const retrievedOrganization = await organizationDriverUser2.getOrganization(
             createdOrganization.ethAddress
         );
@@ -152,6 +166,19 @@ describe('OrganizationDriver', () => {
     });
 
     it('should simulate order between parties', async () => {
+        const productCategoryDriver = new ProductCategoryDriver(
+            user1.siweIdentityProvider.identity,
+            ENTITY_MANAGER_CANISTER_ID,
+            ICP_NETWORK
+        );
+        const productCategory = await productCategoryDriver.createProductCategory(
+            'test',
+            1,
+            'test'
+        );
+
+        expect(productCategory).toBeDefined();
+
         const date = new Date();
         const orderParams = {
             supplier: user1.companyWallet.address,
@@ -171,7 +198,7 @@ describe('OrganizationDriver', () => {
             deliveryPort: 'deliveryPort',
             lines: [
                 {
-                    productCategoryId: 0,
+                    productCategoryId: productCategory.id,
                     quantity: 1,
                     unit: 'unit',
                     price: {
@@ -183,14 +210,9 @@ describe('OrganizationDriver', () => {
         };
         date.setDate(date.getDate() + 14);
 
-        const orderDriver = new OrderDriver(
-            user1.siweIdentityProvider.identity,
-            ENTITY_MANAGER_CANISTER_ID,
-            ICP_NETWORK
-        );
-        const order = await orderDriver.createOrder(orderParams);
+        createdOrder = await orderDriver.createOrder(orderParams);
 
-        expect(order).toBeDefined();
+        expect(createdOrder).toBeDefined();
     });
 
     it('should get organization - founded, caller != organization, order traded', async () => {
