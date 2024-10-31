@@ -52,10 +52,7 @@ export class ShipmentService {
         return this._shipmentDriver.getShipmentPhase(id);
     }
 
-    async getDocumentsByType(
-        id: number,
-        documentType: DocumentType
-    ): Promise<DocumentInfo[]> {
+    async getDocumentsByType(id: number, documentType: DocumentType): Promise<DocumentInfo[]> {
         return this._shipmentDriver.getDocumentsByType(id, documentType);
     }
 
@@ -87,25 +84,28 @@ export class ShipmentService {
         );
     }
 
-    async evaluateSample(
-        id: number,
-        evaluationStatus: EvaluationStatus
-    ): Promise<Shipment> {
-        return this._shipmentDriver.evaluateSample(id, evaluationStatus);
+    async approveSample(id: number): Promise<Shipment> {
+        return this._shipmentDriver.evaluateSample(id, EvaluationStatus.APPROVED);
     }
 
-    async evaluateShipmentDetails(
-        id: number,
-        evaluationStatus: EvaluationStatus
-    ): Promise<Shipment> {
-        return this._shipmentDriver.evaluateShipmentDetails(id, evaluationStatus);
+    async rejectSample(id: number): Promise<Shipment> {
+        return this._shipmentDriver.evaluateSample(id, EvaluationStatus.NOT_APPROVED);
     }
 
-    async evaluateQuality(
-        id: number,
-        evaluationStatus: EvaluationStatus
-    ): Promise<Shipment> {
-        return this._shipmentDriver.evaluateQuality(id, evaluationStatus);
+    async approveShipmentDetails(id: number): Promise<Shipment> {
+        return this._shipmentDriver.evaluateShipmentDetails(id, EvaluationStatus.APPROVED);
+    }
+
+    async rejectShipmentDetails(id: number): Promise<Shipment> {
+        return this._shipmentDriver.evaluateShipmentDetails(id, EvaluationStatus.NOT_APPROVED);
+    }
+
+    async approveQuality(id: number): Promise<Shipment> {
+        return this._shipmentDriver.evaluateQuality(id, EvaluationStatus.APPROVED);
+    }
+
+    async rejectQuality(id: number): Promise<Shipment> {
+        return this._shipmentDriver.evaluateQuality(id, EvaluationStatus.NOT_APPROVED);
     }
 
     async depositFunds(id: number, amount: number): Promise<Shipment> {
@@ -120,10 +120,7 @@ export class ShipmentService {
         return this._shipmentDriver.unlockFunds(id);
     }
 
-    private async retrieveDocument(
-        id: number,
-        documentId: number
-    ): Promise<ShipmentDocument> {
+    private async retrieveDocument(id: number, documentId: number): Promise<ShipmentDocument> {
         try {
             const shipment = await this._shipmentDriver.getShipment(id);
             let documentInfo;
@@ -163,9 +160,7 @@ export class ShipmentService {
         }
     }
 
-    async getDocuments(
-        id: number
-    ): Promise<Map<DocumentType, ShipmentDocument[]>> {
+    async getDocuments(id: number): Promise<Map<DocumentType, ShipmentDocument[]>> {
         const unresolvedDocuments = await this._shipmentDriver.getDocuments(id);
         const resolvedDocuments = new Map<DocumentType, ShipmentDocument[]>();
         for (const [documentType, documentInfos] of unresolvedDocuments.entries()) {
@@ -178,10 +173,7 @@ export class ShipmentService {
         return resolvedDocuments;
     }
 
-    async getDocument(
-        id: number,
-        documentId: number
-    ): Promise<ShipmentDocument> {
+    async getDocument(id: number, documentId: number): Promise<ShipmentDocument> {
         return this.retrieveDocument(id, documentId);
     }
 
@@ -217,20 +209,16 @@ export class ShipmentService {
         return this._shipmentDriver.addDocument(id, documentType, spec.name);
     }
 
-    async updateDocument(
-        id: number,
-        documentId: number,
-        externalUrl: string
-    ): Promise<Shipment> {
+    async updateDocument(id: number, documentId: number, externalUrl: string): Promise<Shipment> {
         return this._shipmentDriver.updateDocument(id, documentId, externalUrl);
     }
 
-    async evaluateDocument(
-        id: number,
-        documentId: number,
-        evaluationStatus: EvaluationStatus
-    ): Promise<Shipment> {
-        return this._shipmentDriver.evaluateDocument(id, documentId, evaluationStatus);
+    async approveDocument(id: number, documentId: number): Promise<Shipment> {
+        return this._shipmentDriver.evaluateDocument(id, documentId, EvaluationStatus.APPROVED);
+    }
+
+    async rejectDocument(id: number, documentId: number): Promise<Shipment> {
+        return this._shipmentDriver.evaluateDocument(id, documentId, EvaluationStatus.NOT_APPROVED);
     }
 
     async getPhaseDocuments(phase: Phase): Promise<ShipmentPhaseDocument[]> {
