@@ -82,6 +82,12 @@ export {
     ShipmentDocumentMetadata
 } from './services/icp/ShipmentService';
 
+export { Organization } from './entities/organization/Organization';
+export { BroadedOrganization } from './entities/organization/BroadedOrganization';
+export { NarrowedOrganization } from './entities/organization/NarrowedOrganization';
+export { OrganizationDriver } from './drivers/icp/OrganizationDriver';
+export { OrganizationService } from './services/icp/OrganizationService';
+
 export {
     BaseCertificate,
     CertificateType,
