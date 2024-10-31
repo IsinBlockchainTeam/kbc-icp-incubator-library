@@ -3,17 +3,18 @@ import { IDL, query, update } from "azle";
 import { OnlyEditor, OnlyViewer } from "../decorators/roles";
 import OrganizationService from "../services/OrganizationService";
 import { IDLOrganization } from "../models/idls/IDLOrganization";
+import { OrganizationPresentation } from "../models/presentations/OrganizationPresentation";
 
 class OrganizationController {
     @query([], IDL.Vec(IDLOrganization))
     @OnlyViewer
-    async getOrganizations(): Promise<Organization[]> {
+    async getOrganizations(): Promise<OrganizationPresentation[]> {
         return OrganizationService.instance.getOrganizations();
     }
 
     @query([IDL.Nat], IDLOrganization)
     @OnlyViewer
-    async getOrganization(id: bigint): Promise<Organization> {
+    async getOrganization(id: bigint): Promise<OrganizationPresentation> {
         return OrganizationService.instance.getOrganization(id);
     }
 
@@ -22,7 +23,7 @@ class OrganizationController {
     async createOrganization(
         name: string,
         description: string,
-    ): Promise<Organization> {
+    ): Promise<OrganizationPresentation> {
         return OrganizationService.instance.createOrganization(
             name,
             description,
@@ -35,7 +36,7 @@ class OrganizationController {
         id: bigint,
         name: string,
         description: string,
-    ): Promise<Organization> {
+    ): Promise<OrganizationPresentation> {
         return OrganizationService.instance.updateOrganization(
             id,
             name,
