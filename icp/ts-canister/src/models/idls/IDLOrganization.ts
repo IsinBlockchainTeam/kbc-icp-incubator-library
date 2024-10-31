@@ -7,7 +7,7 @@ export const IDLOrganizationVisibilityLevel = IDL.Variant({
 
 export const IDLOrganization = IDL.Record({
     visibilityLevel: IDLOrganizationVisibilityLevel,
-    id: IDL.Nat,
+    ethAddress: IDL.Text,
     name: IDL.Text,
     description: IDL.Opt(IDL.Text),
 });

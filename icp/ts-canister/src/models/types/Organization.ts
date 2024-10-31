@@ -1,5 +1,5 @@
 export type Organization = {
-    id: bigint;
+    ethAddress: string;
     name: string;
     description: string;
 };

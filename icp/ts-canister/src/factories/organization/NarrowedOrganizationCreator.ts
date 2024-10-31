@@ -6,7 +6,7 @@ export class NarrowedOrganizationCreator extends OrganizationPresentationCreator
     fromOrganization(organization: Organization): OrganizationPresentation {
         return {
             visibilityLevel: { NARROW: null },
-            id: organization.id,
+            ethAddress: organization.ethAddress,
             name: organization.name,
             description: [],
         };

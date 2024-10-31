@@ -1,19 +1,19 @@
 export abstract class Organization {
-    private _id: number;
+    private _ethAddress: string;
 
     private _name: string;
 
-    protected constructor(id: number, name: string) {
-        this._id = id;
+    protected constructor(ethAddress: string, name: string) {
+        this._ethAddress = ethAddress;
         this._name = name;
     }
 
-    get id(): number {
-        return this._id;
+    get ethAddress(): string {
+        return this._ethAddress;
     }
 
-    set id(id: number) {
-        this._id = id;
+    set ethAddress(ethAddress: string) {
+        this._ethAddress = ethAddress;
     }
 
     get name(): string {

@@ -2,7 +2,7 @@ export type OrganizationVisibilityLevel = { NARROW: null } | { BROAD: null };
 
 export type OrganizationPresentation = {
     visibilityLevel: OrganizationVisibilityLevel;
-    id: bigint;
+    ethAddress: string;
     name: string;
     description: [string] | [];
 };

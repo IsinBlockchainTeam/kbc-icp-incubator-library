@@ -6,7 +6,7 @@ export class BroadedOrganizationCreator extends OrganizationPresentationCreator 
     fromOrganization(organization: Organization): OrganizationPresentation {
         return {
             visibilityLevel: { BROAD: null },
-            id: organization.id,
+            ethAddress: organization.ethAddress,
             name: organization.name,
             description: [organization.description],
         };

@@ -23,8 +23,8 @@ export class OrganizationDriver {
         );
     }
 
-    async getOrganization(id: number): Promise<Organization> {
-        const organization = await this._actor.getOrganization(BigInt(id));
+    async getOrganization(ethAddress: string): Promise<Organization> {
+        const organization = await this._actor.getOrganization(ethAddress);
 
         return new BroadedOrganizationCreator().createOrganization(organization);
     }
@@ -34,8 +34,12 @@ export class OrganizationDriver {
         return new BroadedOrganizationCreator().createOrganization(organization);
     }
 
-    async updateOrganization(id: number, name: string, description: string): Promise<Organization> {
-        const organization = await this._actor.updateOrganization(BigInt(id), name, description);
+    async updateOrganization(
+        ethAddress: string,
+        name: string,
+        description: string
+    ): Promise<Organization> {
+        const organization = await this._actor.updateOrganization(ethAddress, name, description);
         return new BroadedOrganizationCreator().createOrganization(organization);
     }
 }

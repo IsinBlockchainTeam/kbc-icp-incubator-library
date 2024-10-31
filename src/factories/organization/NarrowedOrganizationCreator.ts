@@ -5,7 +5,7 @@ import { NarrowedOrganization } from '../../entities/organization/NarrowedOrgani
 export class NarrowedOrganizationCreator extends OrganizationCreator {
     createOrganization(blockchainOrganization: any): Organization {
         return new NarrowedOrganization(
-            Number(blockchainOrganization.id),
+            blockchainOrganization.ethAddress,
             blockchainOrganization.name
         );
     }

@@ -1,17 +1,17 @@
-import {StableBTreeMap} from "azle";
+import { StableBTreeMap } from "azle";
+import { Order, ROLES, OrderLineRaw, OrderStatusEnum } from "../models/types";
+import { StableMemoryId } from "../utils/stableMemory";
 import {
-    Order,
-    ROLES,
-    OrderLineRaw,
-    OrderStatusEnum
-} from "../models/types";
-import {StableMemoryId} from "../utils/stableMemory";
-import {validateAddress, validateDeadline, validateInterestedParty, validatePositiveNumber} from "../utils/validation";
+    validateAddress,
+    validateDeadline,
+    validateInterestedParty,
+    validatePositiveNumber,
+} from "../utils/validation";
 import AuthenticationService from "./AuthenticationService";
 import ShipmentService from "./ShipmentService";
 import ProductCategoryService from "./ProductCategoryService";
 
-class OrderService implements HasInterestedParties{
+class OrderService implements HasInterestedParties {
     private static _instance: OrderService;
     private _orders = StableBTreeMap<bigint, Order>(StableMemoryId.ORDERS);
 
@@ -37,17 +37,35 @@ class OrderService implements HasInterestedParties{
     }
 
     getOrders(): Order[] {
-        const delegatorAddress = AuthenticationService.instance.getDelegatorAddress();
-        return this._orders.values().filter(order => {
-            const interestedParties = [order.supplier, order.customer, order.commissioner];
+        const delegatorAddress =
+            AuthenticationService.instance.getDelegatorAddress();
+        return this._orders.values().filter((order) => {
+            const interestedParties = [
+                order.supplier,
+                order.customer,
+                order.commissioner,
+            ];
             return interestedParties.includes(delegatorAddress);
+        });
+    }
+
+    getOrdersBetweenParties(supplier: string, customer: string): Order[] {
+        return this._orders.values().filter((order) => {
+            const interestedParties = [
+                order.supplier,
+                order.customer,
+                order.commissioner,
+            ];
+            return (
+                interestedParties.includes(supplier) &&
+                interestedParties.includes(customer)
+            );
         });
     }
 
     getOrder(id: bigint): Order {
         const result = this._orders.get(id);
-        if(!result)
-            throw new Error('Order not found');
+        if (!result) throw new Error("Order not found");
         return result;
     }
 
@@ -66,34 +84,43 @@ class OrderService implements HasInterestedParties{
         shipper: string,
         shippingPort: string,
         deliveryPort: string,
-        lines: OrderLineRaw[]
+        lines: OrderLineRaw[],
     ): Order {
-        if(supplier === customer)
-            throw new Error('Supplier and customer must be different');
-        validateAddress('Supplier', supplier);
-        validateAddress('Customer', customer);
-        validateAddress('Commissioner', commissioner);
+        if (supplier === customer)
+            throw new Error("Supplier and customer must be different");
+        validateAddress("Supplier", supplier);
+        validateAddress("Customer", customer);
+        validateAddress("Commissioner", commissioner);
         const interestedParties = [supplier, customer, commissioner];
-        const delegatorAddress = AuthenticationService.instance.getDelegatorAddress();
+        const delegatorAddress =
+            AuthenticationService.instance.getDelegatorAddress();
         const role = AuthenticationService.instance.getRole();
-        validateInterestedParty('Caller', delegatorAddress, interestedParties);
-        validateDeadline('Payment deadline', Number(paymentDeadline));
-        validateDeadline('Document delivery deadline', Number(documentDeliveryDeadline));
-        validateDeadline('Shipping deadline', Number(shippingDeadline));
-        validateDeadline('Delivery deadline', Number(deliveryDeadline));
-        validateAddress('Arbiter', arbiter);
-        validateAddress('Token', token);
-        validatePositiveNumber('Agreed amount', Number(agreedAmount));
+        validateInterestedParty("Caller", delegatorAddress, interestedParties);
+        validateDeadline("Payment deadline", Number(paymentDeadline));
+        validateDeadline(
+            "Document delivery deadline",
+            Number(documentDeliveryDeadline),
+        );
+        validateDeadline("Shipping deadline", Number(shippingDeadline));
+        validateDeadline("Delivery deadline", Number(deliveryDeadline));
+        validateAddress("Arbiter", arbiter);
+        validateAddress("Token", token);
+        validatePositiveNumber("Agreed amount", Number(agreedAmount));
         const orderLines = [];
         for (const line of lines) {
-            ProductCategoryService.instance.getProductCategory(line.productCategoryId);
-            validatePositiveNumber('Quantity', line.quantity);
-            validatePositiveNumber('Price amount', line.price.amount);
+            ProductCategoryService.instance.getProductCategory(
+                line.productCategoryId,
+            );
+            validatePositiveNumber("Quantity", line.quantity);
+            validatePositiveNumber("Price amount", line.price.amount);
             orderLines.push({
-                productCategory: ProductCategoryService.instance.getProductCategory(line.productCategoryId),
+                productCategory:
+                    ProductCategoryService.instance.getProductCategory(
+                        line.productCategoryId,
+                    ),
                 quantity: line.quantity,
                 unit: line.unit,
-                price: line.price
+                price: line.price,
             });
         }
         const id = this._orders.keys().length;
@@ -117,7 +144,7 @@ class OrderService implements HasInterestedParties{
             lines: orderLines,
             token,
             agreedAmount,
-            shipment: []
+            shipment: [],
         };
         this._orders.insert(BigInt(id), order);
         return order;
@@ -139,12 +166,13 @@ class OrderService implements HasInterestedParties{
         shipper: string,
         shippingPort: string,
         deliveryPort: string,
-        lines: OrderLineRaw[]
+        lines: OrderLineRaw[],
     ): Order {
         const order = this.getOrder(id);
-        if(OrderStatusEnum.CONFIRMED in order.status)
-            throw new Error('Order already confirmed');
-        if(order.supplier == supplier &&
+        if (OrderStatusEnum.CONFIRMED in order.status)
+            throw new Error("Order already confirmed");
+        if (
+            order.supplier == supplier &&
             order.customer == customer &&
             order.commissioner == commissioner &&
             order.paymentDeadline == paymentDeadline &&
@@ -159,40 +187,84 @@ class OrderService implements HasInterestedParties{
             order.shippingPort == shippingPort &&
             order.deliveryPort == deliveryPort &&
             //check if the lines are the same
-            order.lines.map(l => l.productCategory.id).sort().toString() == lines.map(l => l.productCategoryId).sort().toString() &&
-            order.lines.map(l => l.quantity).sort().toString() == lines.map(l => l.quantity).sort().toString() &&
-            order.lines.map(l => l.unit).sort().toString() == lines.map(l => l.unit).sort().toString() &&
-            order.lines.map(l => l.price.amount).sort().toString() == lines.map(l => l.price.amount).sort().toString() &&
-            order.lines.map(l => l.price.fiat).sort().toString() == lines.map(l => l.price.fiat).sort().toString()
+            order.lines
+                .map((l) => l.productCategory.id)
+                .sort()
+                .toString() ==
+                lines
+                    .map((l) => l.productCategoryId)
+                    .sort()
+                    .toString() &&
+            order.lines
+                .map((l) => l.quantity)
+                .sort()
+                .toString() ==
+                lines
+                    .map((l) => l.quantity)
+                    .sort()
+                    .toString() &&
+            order.lines
+                .map((l) => l.unit)
+                .sort()
+                .toString() ==
+                lines
+                    .map((l) => l.unit)
+                    .sort()
+                    .toString() &&
+            order.lines
+                .map((l) => l.price.amount)
+                .sort()
+                .toString() ==
+                lines
+                    .map((l) => l.price.amount)
+                    .sort()
+                    .toString() &&
+            order.lines
+                .map((l) => l.price.fiat)
+                .sort()
+                .toString() ==
+                lines
+                    .map((l) => l.price.fiat)
+                    .sort()
+                    .toString()
         ) {
-            throw new Error('No changes detected');
+            throw new Error("No changes detected");
         }
-        if(supplier === customer)
-            throw new Error('Supplier and customer must be different');
-        validateAddress('Supplier', supplier);
-        validateAddress('Customer', customer);
-        validateAddress('Commissioner', commissioner);
+        if (supplier === customer)
+            throw new Error("Supplier and customer must be different");
+        validateAddress("Supplier", supplier);
+        validateAddress("Customer", customer);
+        validateAddress("Commissioner", commissioner);
         const interestedParties = [supplier, customer, commissioner];
-        const delegatorAddress = AuthenticationService.instance.getDelegatorAddress();
+        const delegatorAddress =
+            AuthenticationService.instance.getDelegatorAddress();
         const role = AuthenticationService.instance.getRole();
-        validateInterestedParty('Caller', delegatorAddress, interestedParties);
-        validateDeadline('Payment deadline', Number(paymentDeadline));
-        validateDeadline('Document delivery deadline', Number(documentDeliveryDeadline));
-        validateDeadline('Shipping deadline', Number(shippingDeadline));
-        validateDeadline('Delivery deadline', Number(deliveryDeadline));
-        validateAddress('Arbiter', arbiter);
-        validateAddress('Token', token);
-        validatePositiveNumber('Agreed amount', Number(agreedAmount));
+        validateInterestedParty("Caller", delegatorAddress, interestedParties);
+        validateDeadline("Payment deadline", Number(paymentDeadline));
+        validateDeadline(
+            "Document delivery deadline",
+            Number(documentDeliveryDeadline),
+        );
+        validateDeadline("Shipping deadline", Number(shippingDeadline));
+        validateDeadline("Delivery deadline", Number(deliveryDeadline));
+        validateAddress("Arbiter", arbiter);
+        validateAddress("Token", token);
+        validatePositiveNumber("Agreed amount", Number(agreedAmount));
         const orderLines = [];
         for (const line of lines) {
-            ProductCategoryService.instance.getProductCategory(line.productCategoryId);
-            validatePositiveNumber('Quantity', line.quantity);
-            validatePositiveNumber('Price amount', line.price.amount);
+            ProductCategoryService.instance.getProductCategory(
+                line.productCategoryId,
+            );
+            validatePositiveNumber("Quantity", line.quantity);
+            validatePositiveNumber("Price amount", line.price.amount);
             orderLines.push({
-                productCategory: ProductCategoryService.instance.getProductCategory(line.productCategoryId),
+                productCategory:
+                    ProductCategoryService.instance.getProductCategory(
+                        line.productCategoryId,
+                    ),
                 quantity: line.quantity,
                 unit: line.unit,
-                price: line.price
+                price: line.price,
             });
         }
         const signatures = role === ROLES.SIGNER ? [delegatorAddress] : [];
@@ -215,7 +287,7 @@ class OrderService implements HasInterestedParties{
             lines: orderLines,
             token,
             agreedAmount,
-            shipment: []
+            shipment: [],
         };
         this._orders.insert(id, updatedOrder);
         return updatedOrder;
@@ -223,17 +295,28 @@ class OrderService implements HasInterestedParties{
 
     async signOrder(id: bigint): Promise<Order> {
         const order = this.getOrder(id);
-        if(OrderStatusEnum.CONFIRMED in order.status)
-            throw new Error('Order already confirmed');
-        const delegatorAddress = AuthenticationService.instance.getDelegatorAddress();
-        if(order.signatures.includes(delegatorAddress))
-            throw new Error('Order already signed');
+        if (OrderStatusEnum.CONFIRMED in order.status)
+            throw new Error("Order already confirmed");
+        const delegatorAddress =
+            AuthenticationService.instance.getDelegatorAddress();
+        if (order.signatures.includes(delegatorAddress))
+            throw new Error("Order already signed");
         order.signatures.push(delegatorAddress);
-        if (order.signatures.includes(order.supplier) && order.signatures.includes(order.customer)) {
+        if (
+            order.signatures.includes(order.supplier) &&
+            order.signatures.includes(order.customer)
+        ) {
             order.status = { CONFIRMED: null };
-            const duration = order.paymentDeadline - BigInt(Math.trunc(Date.now() / 1000));
-            const shipment = await ShipmentService.instance.createShipment(order.supplier, order.commissioner, true, duration, order.token);
-            console.log('new shipment id:', shipment.id);
+            const duration =
+                order.paymentDeadline - BigInt(Math.trunc(Date.now() / 1000));
+            const shipment = await ShipmentService.instance.createShipment(
+                order.supplier,
+                order.commissioner,
+                true,
+                duration,
+                order.token,
+            );
+            console.log("new shipment id:", shipment.id);
             order.shipment = [shipment];
         }
         this._orders.insert(id, order);

@@ -11,10 +11,12 @@ class OrganizationController {
         return OrganizationService.instance.getOrganizations();
     }
 
-    @query([IDL.Nat], IDLOrganization)
+    @query([IDL.Text], IDLOrganization)
     @AtLeastViewer
-    async getOrganization(id: bigint): Promise<OrganizationPresentation> {
-        return OrganizationService.instance.getOrganization(id);
+    async getOrganization(
+        ethAddress: string,
+    ): Promise<OrganizationPresentation> {
+        return OrganizationService.instance.getOrganization(ethAddress);
     }
 
     @update([IDL.Text, IDL.Text], IDLOrganization)
@@ -29,15 +31,15 @@ class OrganizationController {
         );
     }
 
-    @update([IDL.Nat, IDL.Text, IDL.Text], IDLOrganization)
+    @update([IDL.Text, IDL.Text, IDL.Text], IDLOrganization)
     @AtLeastEditor
     async updateOrganization(
-        id: bigint,
+        ethAddress: string,
         name: string,
         description: string,
     ): Promise<OrganizationPresentation> {
         return OrganizationService.instance.updateOrganization(
-            id,
+            ethAddress,
             name,
             description,
         );

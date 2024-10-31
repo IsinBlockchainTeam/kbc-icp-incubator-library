@@ -76,7 +76,7 @@ describe('OrganizationDriver', () => {
     });
 
     it('should get organization - not founded', async () => {
-        const getOrganizationFunction = async () => organizationDriver.getOrganization(-1);
+        const getOrganizationFunction = async () => organizationDriver.getOrganization('0x0');
 
         await expect(getOrganizationFunction()).rejects.toThrow();
     });
@@ -97,7 +97,7 @@ describe('OrganizationDriver', () => {
 
     it('should get organization - founded', async () => {
         const retrievedOrganization = await organizationDriver.getOrganization(
-            createdOrganization.id
+            createdOrganization.ethAddress
         );
 
         expect(retrievedOrganization).toBeInstanceOf(BroadedOrganization);
@@ -110,7 +110,7 @@ describe('OrganizationDriver', () => {
 
     it('should update organization', async () => {
         const updatedOrganization = await organizationDriver.updateOrganization(
-            createdOrganization.id,
+            createdOrganization.ethAddress,
             updatedOrganizationScratch.name,
             updatedOrganizationScratch.description
         );
@@ -125,7 +125,7 @@ describe('OrganizationDriver', () => {
 
     it('should get organization - updated', async () => {
         const retrievedOrganization = await organizationDriver.getOrganization(
-            createdOrganization.id
+            createdOrganization.ethAddress
         );
 
         expect(retrievedOrganization).toBeInstanceOf(BroadedOrganization);

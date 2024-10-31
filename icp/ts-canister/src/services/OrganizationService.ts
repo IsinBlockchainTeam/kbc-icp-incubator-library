@@ -8,7 +8,7 @@ import { BroadedOrganizationCreator } from "../factories/organization/BroadedOrg
 
 class OrganizationService {
     private static _instance: OrganizationService;
-    private _organizations = StableBTreeMap<bigint, Organization>(
+    private _organizations = StableBTreeMap<string, Organization>(
         StableMemoryId.ORGANIZATIONS,
     );
 
@@ -30,55 +30,53 @@ class OrganizationService {
         });
     }
 
-    getOrganization(id: bigint): OrganizationPresentation {
+    getOrganization(ethAddress: string): OrganizationPresentation {
         const authenticatedAddress =
             AuthenticationService.instance.getDelegatorAddress();
 
-        const organization = this._organizations.get(id);
+        const organization = this._organizations.get(ethAddress);
         if (!organization) {
             throw new Error("Organization not found");
         }
 
         return new BroadedOrganizationCreator().fromOrganization(organization);
-    }
-
-    getFreeId(): bigint {
-        return BigInt(this._organizations.keys().length);
     }
 
     createOrganization(
         name: string,
         description: string,
     ): OrganizationPresentation {
-        const id = this.getFreeId();
+        const authenticatedEthAddress =
+            AuthenticationService.instance.getDelegatorAddress();
+
         const organization: Organization = {
-            id,
+            ethAddress: authenticatedEthAddress,
             name,
             description,
         };
 
-        this._organizations.insert(id, organization);
+        this._organizations.insert(authenticatedEthAddress, organization);
 
         return new BroadedOrganizationCreator().fromOrganization(organization);
     }
 
     updateOrganization(
-        id: bigint,
+        ethAddress: string,
         name: string,
         description: string,
     ): OrganizationPresentation {
-        const organization = this._organizations.get(id);
+        const organization = this._organizations.get(ethAddress);
         if (!organization) {
             throw new Error("Organization not found");
         }
 
         const updatedOrganization: Organization = {
-            id,
+            ethAddress,
             name,
             description,
         };
 
-        this._organizations.insert(id, updatedOrganization);
+        this._organizations.insert(ethAddress, updatedOrganization);
 
         return new BroadedOrganizationCreator().fromOrganization(
             updatedOrganization,

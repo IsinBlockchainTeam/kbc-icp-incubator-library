@@ -3,8 +3,8 @@ import { Organization } from './Organization';
 export class BroadedOrganization extends Organization {
     private _description: string;
 
-    constructor(id: number, name: string, description: string) {
-        super(id, name);
+    constructor(ethAddress: string, name: string, description: string) {
+        super(ethAddress, name);
 
         this._description = description;
     }

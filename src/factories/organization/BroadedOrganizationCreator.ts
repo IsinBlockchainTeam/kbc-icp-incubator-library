@@ -5,7 +5,7 @@ import { BroadedOrganization } from '../../entities/organization/BroadedOrganiza
 export class BroadedOrganizationCreator extends OrganizationCreator {
     createOrganization(blockchainOrganization: any): Organization {
         return new BroadedOrganization(
-            Number(blockchainOrganization.id),
+            blockchainOrganization.ethAddress,
             blockchainOrganization.name,
             blockchainOrganization.description[0]
         );
