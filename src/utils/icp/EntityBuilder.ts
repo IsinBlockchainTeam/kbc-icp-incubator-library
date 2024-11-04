@@ -9,7 +9,8 @@ import {
     DocumentType as IDLDocumentType,
     DocumentInfo as IDLDocumentInfo,
     EvaluationStatus as ICPEvaluationStatus,
-    OrderStatusEnum as OrderStatus
+    OrderStatusEnum as OrderStatus,
+    Offer as ICPOffer
 } from '@kbc-lib/azle-types';
 import { Order } from '../../entities/icp/Order';
 import { Shipment , Phase, FundStatus } from '../../entities/icp/Shipment';
@@ -17,6 +18,7 @@ import { DocumentInfo, DocumentType } from '../../entities/icp/Document';
 import { EvaluationStatus } from '../../entities/icp/Evaluation';
 import { ProductCategory } from '../../entities/ProductCategory';
 import { Material } from '../../entities/Material';
+import {Offer} from "../../entities/Offer";
 
 export class EntityBuilder {
     static buildProductCategory(productCategory: ICPProductCategory) {
@@ -33,6 +35,14 @@ export class EntityBuilder {
             Number(material.id),
             this.buildProductCategory(material.productCategory)
         );
+    }
+
+    static buildOffer(offer: ICPOffer) {
+        return new Offer(
+            Number(offer.id),
+            offer.owner,
+            this.buildProductCategory(offer.productCategory)
+        )
     }
 
     static buildOrder(order: ICPOrder) {

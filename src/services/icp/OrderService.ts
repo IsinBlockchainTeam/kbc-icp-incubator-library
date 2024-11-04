@@ -1,5 +1,5 @@
-import { OrderDriver, OrderParams } from '../../drivers/icp/OrderDriver';
-import { Order } from '../../entities/icp/Order';
+import {OrderDriver, OrderParams} from "../../drivers/icp/OrderDriver";
+import {Order} from "../../entities/icp/Order";
 
 export class OrderService {
     private readonly _orderDriver: OrderDriver;

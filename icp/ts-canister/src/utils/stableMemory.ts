@@ -4,4 +4,5 @@ export enum StableMemoryId {
     PRODUCT_CATEGORIES = 2,
     ORDERS = 3,
     SHIPMENTS = 4,
+    OFFERS = 5,
 }
