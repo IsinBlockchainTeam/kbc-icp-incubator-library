@@ -30,7 +30,7 @@ describe('MaterialDriver', () => {
         materialDriver = new MaterialDriver(icpIdentity, 'canisterId');
     });
 
-    it('should retrieve product categories', async () => {
+    it('should retrieve materials', async () => {
         const rawMaterial = {name: 'test'};
         mockFn.getMaterials.mockReturnValue([rawMaterial]);
         await expect(materialDriver.getMaterials()).resolves.toEqual([defaultMaterial]);
@@ -39,7 +39,7 @@ describe('MaterialDriver', () => {
         expect(EntityBuilder.buildMaterial).toHaveBeenCalledWith(rawMaterial);
     });
 
-    it('should retrieve a product category', async () => {
+    it('should retrieve a material', async () => {
         const rawMaterial = {name: 'test'};
         mockFn.getMaterial.mockReturnValue(rawMaterial);
         await expect(materialDriver.getMaterial(1)).resolves.toEqual(defaultMaterial);
@@ -48,7 +48,7 @@ describe('MaterialDriver', () => {
         expect(EntityBuilder.buildMaterial).toHaveBeenCalledWith(rawMaterial);
     });
 
-    it('should create a product category', async () => {
+    it('should create a material', async () => {
         const rawMaterial = {name: 'test'};
         mockFn.createMaterial.mockReturnValue(rawMaterial);
         await expect(materialDriver.createMaterial(1)).resolves.toEqual(defaultMaterial);
@@ -57,7 +57,7 @@ describe('MaterialDriver', () => {
         expect(EntityBuilder.buildMaterial).toHaveBeenCalledWith(rawMaterial);
     });
 
-    it('should update a product category', async () => {
+    it('should update a material', async () => {
         const rawMaterial = {name: 'test'};
         mockFn.updateMaterial.mockReturnValue(rawMaterial);
         await expect(materialDriver.updateMaterial(1, 1)).resolves.toEqual(defaultMaterial);
