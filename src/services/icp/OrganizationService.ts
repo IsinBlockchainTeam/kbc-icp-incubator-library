@@ -1,3 +1,4 @@
+import { OrganizationRole } from '@kbc-lib/azle-types';
 import { OrganizationDriver } from '../../drivers/icp/OrganizationDriver';
 
 export class OrganizationService {
@@ -15,11 +16,61 @@ export class OrganizationService {
         return this._organizationDriver.getOrganization(ethAddress);
     }
 
-    async createOrganization(name: string, description: string) {
-        return this._organizationDriver.createOrganization(name, description);
+    async createOrganization(
+        legalName: string,
+        industrialSector: string,
+        address: string,
+        city: string,
+        postalCode: string,
+        region: string,
+        countryCode: string,
+        role: OrganizationRole,
+        telephone: string,
+        email: string,
+        image: string
+    ) {
+        return this._organizationDriver.createOrganization(
+            legalName,
+            industrialSector,
+            address,
+            city,
+            postalCode,
+            region,
+            countryCode,
+            role,
+            telephone,
+            email,
+            image
+        );
     }
 
-    async updateOrganization(ethAddress: string, name: string, description: string) {
-        return this._organizationDriver.updateOrganization(ethAddress, name, description);
+    async updateOrganization(
+        ethAddress: string,
+        legalName: string,
+        industrialSector: string,
+        address: string,
+        city: string,
+        postalCode: string,
+        region: string,
+        countryCode: string,
+        role: OrganizationRole,
+        telephone: string,
+        email: string,
+        image: string
+    ) {
+        return this._organizationDriver.updateOrganization(
+            ethAddress,
+            legalName,
+            industrialSector,
+            address,
+            city,
+            postalCode,
+            region,
+            countryCode,
+            role,
+            telephone,
+            email,
+            image
+        );
     }
 }
