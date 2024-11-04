@@ -1,18 +1,20 @@
-import {OrderStatusEnum, OrderStatusEnum as OrderStatus} from "@kbc-lib/azle-types";
-import {Shipment} from "./Shipment";
-import {ProductCategory} from "../ProductCategory";
+import { OrderStatusEnum, OrderStatusEnum as OrderStatus } from '@kbc-lib/azle-types';
+import { Shipment } from './Shipment';
+import { ProductCategory } from '../ProductCategory';
+
+export { OrderStatus };
 
 export { OrderStatus };
 export type OrderLinePrice = {
     amount: number;
     fiat: string;
-}
+};
 export type OrderLine = {
     productCategory: ProductCategory;
     quantity: number;
     unit: string;
     price: OrderLinePrice;
-}
+};
 export class Order {
     private _id: number;
 
@@ -52,8 +54,27 @@ export class Order {
 
     private _shipment: Shipment | null;
 
-
-    constructor(id: number, supplier: string, customer: string, commissioner: string, signatures: string[], status: OrderStatusEnum, paymentDeadline: Date, documentDeliveryDeadline: Date, shippingDeadline: Date, deliveryDeadline: Date, arbiter: string, incoterms: string, shipper: string, shippingPort: string, deliveryPort: string, lines: OrderLine[], token: string, agreedAmount: number, shipment: Shipment | null) {
+    constructor(
+        id: number,
+        supplier: string,
+        customer: string,
+        commissioner: string,
+        signatures: string[],
+        status: OrderStatusEnum,
+        paymentDeadline: Date,
+        documentDeliveryDeadline: Date,
+        shippingDeadline: Date,
+        deliveryDeadline: Date,
+        arbiter: string,
+        incoterms: string,
+        shipper: string,
+        shippingPort: string,
+        deliveryPort: string,
+        lines: OrderLine[],
+        token: string,
+        agreedAmount: number,
+        shipment: Shipment | null
+    ) {
         this._id = id;
         this._supplier = supplier;
         this._customer = customer;
