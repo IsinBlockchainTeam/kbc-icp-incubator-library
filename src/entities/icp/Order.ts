@@ -2,6 +2,7 @@ import {OrderStatusEnum, OrderStatusEnum as OrderStatus} from "@kbc-lib/azle-typ
 import {Shipment} from "./Shipment";
 import {ProductCategory} from "../ProductCategory";
 
+export { OrderStatus };
 export type OrderLinePrice = {
     amount: number;
     fiat: string;

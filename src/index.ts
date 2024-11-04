@@ -121,6 +121,9 @@ export { OrderService } from './services/icp/OrderService';
 export { AuthenticationDriver as ICPAuthenticationDriver } from './drivers/icp/AuthenticationDriver';
 export { AuthenticationService as ICPAuthenticationService } from './services/icp/AuthenticationService';
 
+export { OfferDriver as ICPOfferDriver } from './drivers/icp/OfferDriver';
+export { OfferService as ICPOfferService } from './services/icp/OfferService';
+
 export { ProductCategoryDriver as ICPProductCategoryDriver } from './drivers/icp/ProductCategoryDriver';
 export { ProductCategoryService as ICPProductCategoryService } from './services/icp/ProductCategoryService';
 
