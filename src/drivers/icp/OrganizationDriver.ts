@@ -8,6 +8,20 @@ import { OrganizationVisibilityLevelFactory } from '../../factories/organization
 import { NarrowedOrganizationCreator } from '../../factories/organization/NarrowedOrganizationCreator';
 import { OrganizationRoleFactory } from '../../factories/organization/OrganizationRoleFactory';
 
+export type OrganizationParams = {
+    legalName: string;
+    industrialSector: string;
+    address: string;
+    city: string;
+    postalCode: string;
+    region: string;
+    countryCode: string;
+    role: OrganizationRole;
+    telephone: string;
+    email: string;
+    image: string;
+};
+
 export class OrganizationDriver {
     private _actor: ActorSubclass<_SERVICE>;
 
@@ -46,66 +60,44 @@ export class OrganizationDriver {
         return this.castOrganization(organization);
     }
 
-    async createOrganization(
-        legalName: string,
-        industrialSector: string,
-        address: string,
-        city: string,
-        postalCode: string,
-        region: string,
-        countryCode: string,
-        role: OrganizationRole,
-        telephone: string,
-        email: string,
-        image: string
-    ): Promise<Organization> {
-        const icpRole = new OrganizationRoleFactory().toICPType(role);
+    async createOrganization(params: OrganizationParams): Promise<Organization> {
+        const icpRole = new OrganizationRoleFactory().toICPType(params.role);
 
         const organization = await this._actor.createOrganization(
-            legalName,
-            industrialSector,
-            address,
-            city,
-            postalCode,
-            region,
-            countryCode,
+            params.legalName,
+            params.industrialSector,
+            params.address,
+            params.city,
+            params.postalCode,
+            params.region,
+            params.countryCode,
             icpRole,
-            telephone,
-            email,
-            image
+            params.telephone,
+            params.email,
+            params.image
         );
         return new BroadedOrganizationCreator().createOrganization(organization);
     }
 
     async updateOrganization(
         ethAddress: string,
-        legalName: string,
-        industrialSector: string,
-        address: string,
-        city: string,
-        postalCode: string,
-        region: string,
-        countryCode: string,
-        role: OrganizationRole,
-        telephone: string,
-        email: string,
-        image: string
+        params: OrganizationParams
     ): Promise<Organization> {
-        const icpRole = new OrganizationRoleFactory().toICPType(role);
+        const icpRole = new OrganizationRoleFactory().toICPType(params.role);
 
         const organization = await this._actor.updateOrganization(
             ethAddress,
-            legalName,
-            industrialSector,
-            address,
-            city,
-            postalCode,
-            region,
-            countryCode,
+            params.legalName,
+            params.industrialSector,
+            params.address,
+            params.city,
+            params.postalCode,
+            params.region,
+            params.countryCode,
             icpRole,
-            telephone,
-            email,
-            image
+            params.telephone,
+            params.email,
+            params.image
         );
         return new BroadedOrganizationCreator().createOrganization(organization);
     }

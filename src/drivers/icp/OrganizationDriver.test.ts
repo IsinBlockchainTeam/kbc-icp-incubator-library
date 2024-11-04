@@ -1,6 +1,6 @@
 import { Wallet } from 'ethers';
 import { OrganizationRole } from '@kbc-lib/azle-types';
-import { OrganizationDriver } from './OrganizationDriver';
+import { OrganizationDriver, OrganizationParams } from './OrganizationDriver';
 import { SiweIdentityProvider } from './SiweIdentityProvider';
 import { computeRoleProof } from './proof';
 import { AuthenticationDriver } from './AuthenticationDriver';
@@ -24,20 +24,6 @@ const SIWE_CANISTER_ID = 'be2us-64aaa-aaaaa-qaabq-cai';
 const ENTITY_MANAGER_CANISTER_ID = 'bkyz2-fmaaa-aaaaa-qaaaq-cai';
 const ICP_NETWORK = 'http://127.0.0.1:4943/';
 
-type OrganizationScratch = {
-    legalName: string;
-    industrialSector: string;
-    address: string;
-    city: string;
-    postalCode: string;
-    region: string;
-    countryCode: string;
-    role: OrganizationRole;
-    telephone: string;
-    email: string;
-    image: string;
-};
-
 type Login = {
     userWallet: Wallet;
     companyWallet: Wallet;
@@ -48,8 +34,8 @@ type Login = {
 describe('OrganizationDriver', () => {
     let organizationDriverUser1: OrganizationDriver;
     let organizationDriverUser2: OrganizationDriver;
-    let organizationScratch: OrganizationScratch;
-    let updatedOrganizationScratch: OrganizationScratch;
+    let organizationScratch: OrganizationParams;
+    let updatedOrganizationScratch: OrganizationParams;
     let createdOrganization: Organization;
     let createdOrder: Order;
     let orderDriver: OrderDriver;
@@ -155,19 +141,7 @@ describe('OrganizationDriver', () => {
     });
 
     it('should create organization', async () => {
-        createdOrganization = await organizationDriverUser1.createOrganization(
-            organizationScratch.legalName,
-            organizationScratch.industrialSector,
-            organizationScratch.address,
-            organizationScratch.city,
-            organizationScratch.postalCode,
-            organizationScratch.region,
-            organizationScratch.countryCode,
-            organizationScratch.role,
-            organizationScratch.telephone,
-            organizationScratch.email,
-            organizationScratch.image
-        );
+        createdOrganization = await organizationDriverUser1.createOrganization(organizationScratch);
 
         expect(createdOrganization).toBeInstanceOf(BroadedOrganization);
 
@@ -265,17 +239,7 @@ describe('OrganizationDriver', () => {
     it('should update organization', async () => {
         const updatedOrganization = await organizationDriverUser1.updateOrganization(
             createdOrganization.ethAddress,
-            updatedOrganizationScratch.legalName,
-            updatedOrganizationScratch.industrialSector,
-            updatedOrganizationScratch.address,
-            updatedOrganizationScratch.city,
-            updatedOrganizationScratch.postalCode,
-            updatedOrganizationScratch.region,
-            updatedOrganizationScratch.countryCode,
-            updatedOrganizationScratch.role,
-            updatedOrganizationScratch.telephone,
-            updatedOrganizationScratch.email,
-            updatedOrganizationScratch.image
+            updatedOrganizationScratch
         );
 
         expect(updatedOrganization).toBeInstanceOf(BroadedOrganization);
