@@ -6,7 +6,7 @@ export class NarrowedOrganizationCreator extends OrganizationCreator {
     createOrganization(blockchainOrganization: any): Organization {
         return new NarrowedOrganization(
             blockchainOrganization.ethAddress,
-            blockchainOrganization.name
+            blockchainOrganization.legalName
         );
     }
 }

@@ -1,14 +1,15 @@
 import { Wallet } from 'ethers';
+import { OrganizationRole } from '@kbc-lib/azle-types';
 import { OrganizationDriver } from './OrganizationDriver';
 import { SiweIdentityProvider } from './SiweIdentityProvider';
 import { computeRoleProof } from './proof';
 import { AuthenticationDriver } from './AuthenticationDriver';
 import { BroadedOrganization } from '../../entities/organization/BroadedOrganization';
 import { Organization } from '../../entities/organization/Organization';
-import { NarrowedOrganization } from '../../entities/organization/NarrowedOrganization';
 import { OrderDriver } from './OrderDriver';
-import { ProductCategoryDriver } from './ProductCategoryDriver';
 import { Order } from '../../entities/icp/Order';
+import { NarrowedOrganization } from '../../entities/organization/NarrowedOrganization';
+import { ProductCategoryDriver } from './ProductCategoryDriver';
 
 // FIXME: Move this variables to a common file?
 const USER1_PRIVATE_KEY = '0c7e66e74f6666b514cc73ee2b7ffc518951cf1ca5719d6820459c4e134f2264';
@@ -24,8 +25,17 @@ const ENTITY_MANAGER_CANISTER_ID = 'bkyz2-fmaaa-aaaaa-qaaaq-cai';
 const ICP_NETWORK = 'http://127.0.0.1:4943/';
 
 type OrganizationScratch = {
-    name: string;
-    description: string;
+    legalName: string;
+    industrialSector: string;
+    address: string;
+    city: string;
+    postalCode: string;
+    region: string;
+    countryCode: string;
+    role: OrganizationRole;
+    telephone: string;
+    email: string;
+    image: string;
 };
 
 type Login = {
@@ -98,12 +108,30 @@ describe('OrganizationDriver', () => {
         );
 
         organizationScratch = {
-            name: 'Test Organization',
-            description: 'Test Description'
+            legalName: 'Test Organization',
+            industrialSector: 'Test Industrial Sector',
+            address: 'Test Address',
+            city: 'Test City',
+            postalCode: 'Test Postal Code',
+            region: 'Test Region',
+            countryCode: 'Test Country Code',
+            role: OrganizationRole.IMPORTER,
+            telephone: 'Test Telephone',
+            email: 'Test Email',
+            image: 'Test Image'
         };
         updatedOrganizationScratch = {
-            name: 'Updated Organization',
-            description: 'Updated Description'
+            legalName: 'Updated Test Organization',
+            industrialSector: 'Updated Test Industrial Sector',
+            address: 'Updated Test Address',
+            city: 'Updated Test City',
+            postalCode: 'Updated Test Postal Code',
+            region: 'Updated Test Region',
+            countryCode: 'Updated Test Country Code',
+            role: OrganizationRole.EXPORTER,
+            telephone: 'Updated Test Telephone',
+            email: 'Updated Test Email',
+            image: 'Updated Test Image'
         };
 
         await user1.login();
@@ -128,16 +156,24 @@ describe('OrganizationDriver', () => {
 
     it('should create organization', async () => {
         createdOrganization = await organizationDriverUser1.createOrganization(
-            organizationScratch.name,
-            organizationScratch.description
+            organizationScratch.legalName,
+            organizationScratch.industrialSector,
+            organizationScratch.address,
+            organizationScratch.city,
+            organizationScratch.postalCode,
+            organizationScratch.region,
+            organizationScratch.countryCode,
+            organizationScratch.role,
+            organizationScratch.telephone,
+            organizationScratch.email,
+            organizationScratch.image
         );
 
         expect(createdOrganization).toBeInstanceOf(BroadedOrganization);
 
         const organization = createdOrganization as BroadedOrganization;
 
-        expect(organization.name).toBe(organizationScratch.name);
-        expect(organization.description).toBe(organizationScratch.description);
+        expect(organization).toMatchObject(organizationScratch);
     });
 
     it('should get organization - founded, caller = organization', async () => {
@@ -149,8 +185,7 @@ describe('OrganizationDriver', () => {
 
         const organization = retrievedOrganization as BroadedOrganization;
 
-        expect(organization.name).toBe(organizationScratch.name);
-        expect(organization.description).toBe(organizationScratch.description);
+        expect(organization).toMatchObject(organizationScratch);
     });
 
     it('should get organization - founded, caller != organization, order not traded', async () => {
@@ -162,7 +197,7 @@ describe('OrganizationDriver', () => {
 
         const organization = retrievedOrganization as NarrowedOrganization;
 
-        expect(organization.name).toBe(organizationScratch.name);
+        expect(organization.legalName).toBe(organizationScratch.legalName);
     });
 
     it('should simulate order between parties', async () => {
@@ -224,23 +259,30 @@ describe('OrganizationDriver', () => {
 
         const organization = retrievedOrganization as BroadedOrganization;
 
-        expect(organization.name).toBe(organizationScratch.name);
-        expect(organization.description).toBe(organizationScratch.description);
+        expect(organization).toMatchObject(organizationScratch);
     });
 
     it('should update organization', async () => {
         const updatedOrganization = await organizationDriverUser1.updateOrganization(
             createdOrganization.ethAddress,
-            updatedOrganizationScratch.name,
-            updatedOrganizationScratch.description
+            updatedOrganizationScratch.legalName,
+            updatedOrganizationScratch.industrialSector,
+            updatedOrganizationScratch.address,
+            updatedOrganizationScratch.city,
+            updatedOrganizationScratch.postalCode,
+            updatedOrganizationScratch.region,
+            updatedOrganizationScratch.countryCode,
+            updatedOrganizationScratch.role,
+            updatedOrganizationScratch.telephone,
+            updatedOrganizationScratch.email,
+            updatedOrganizationScratch.image
         );
 
         expect(updatedOrganization).toBeInstanceOf(BroadedOrganization);
 
         const organization = updatedOrganization as BroadedOrganization;
 
-        expect(organization.name).toBe(updatedOrganizationScratch.name);
-        expect(organization.description).toBe(updatedOrganizationScratch.description);
+        expect(organization).toMatchObject(updatedOrganizationScratch);
     });
 
     it('should get organization - updated, caller = organization', async () => {
@@ -252,8 +294,7 @@ describe('OrganizationDriver', () => {
 
         const organization = retrievedOrganization as BroadedOrganization;
 
-        expect(organization.name).toBe(updatedOrganizationScratch.name);
-        expect(organization.description).toBe(updatedOrganizationScratch.description);
+        expect(organization).toMatchObject(updatedOrganizationScratch);
     });
 
     it('should delete organization', async () => {

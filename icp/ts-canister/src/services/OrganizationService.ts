@@ -1,7 +1,10 @@
 import { StableBTreeMap } from "azle";
-import { Organization } from "../models/types/Organization";
+import {
+    Organization,
+    OrganizationRoleType,
+} from "../models/types/Organization";
 import { StableMemoryId } from "../utils/stableMemory";
-import { OrganizationPresentation } from "../models/presentations/OrganizationPresentation";
+import { OrganizationPresentation } from "../models/types/presentations/OrganizationPresentation";
 import AuthenticationService from "./AuthenticationService";
 import { NarrowedOrganizationCreator } from "../factories/organization/NarrowedOrganizationCreator";
 import { BroadedOrganizationCreator } from "../factories/organization/BroadedOrganizationCreator";
@@ -71,16 +74,34 @@ class OrganizationService {
     }
 
     createOrganization(
-        name: string,
-        description: string,
+        legalName: string,
+        industrialSector: string,
+        address: string,
+        city: string,
+        postalCode: string,
+        region: string,
+        countryCode: string,
+        role: OrganizationRoleType,
+        telephone: string,
+        email: string,
+        image: string,
     ): OrganizationPresentation {
         const authenticatedCompanyEthAddress =
             AuthenticationService.instance.getDelegatorAddress();
 
         const organization: Organization = {
             ethAddress: authenticatedCompanyEthAddress,
-            name,
-            description,
+            legalName,
+            industrialSector,
+            address,
+            city,
+            postalCode,
+            region,
+            countryCode,
+            role,
+            telephone,
+            email,
+            image,
         };
 
         this._organizations.insert(
@@ -93,8 +114,17 @@ class OrganizationService {
 
     updateOrganization(
         ethAddress: string,
-        name: string,
-        description: string,
+        legalName: string,
+        industrialSector: string,
+        address: string,
+        city: string,
+        postalCode: string,
+        region: string,
+        countryCode: string,
+        role: OrganizationRoleType,
+        telephone: string,
+        email: string,
+        image: string,
     ): OrganizationPresentation {
         const organization = this._organizations.get(ethAddress);
         if (!organization) {
@@ -103,8 +133,17 @@ class OrganizationService {
 
         const updatedOrganization: Organization = {
             ethAddress,
-            name,
-            description,
+            legalName,
+            industrialSector,
+            address,
+            city,
+            postalCode,
+            region,
+            countryCode,
+            role,
+            telephone,
+            email,
+            image,
         };
 
         this._organizations.insert(ethAddress, updatedOrganization);

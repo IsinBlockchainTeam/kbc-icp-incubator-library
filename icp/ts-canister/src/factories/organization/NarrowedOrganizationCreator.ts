@@ -1,5 +1,5 @@
 import { OrganizationPresentationCreator } from "./OrganizationPresentationCreator";
-import { OrganizationPresentation } from "../../models/presentations/OrganizationPresentation";
+import { OrganizationPresentation } from "../../models/types/presentations/OrganizationPresentation";
 import { Organization } from "../../models/types/Organization";
 
 export class NarrowedOrganizationCreator extends OrganizationPresentationCreator {
@@ -7,8 +7,17 @@ export class NarrowedOrganizationCreator extends OrganizationPresentationCreator
         return {
             visibilityLevel: { NARROW: null },
             ethAddress: organization.ethAddress,
-            name: organization.name,
-            description: [],
+            legalName: organization.legalName,
+            industrialSector: [],
+            address: [],
+            city: [],
+            postalCode: [],
+            region: [],
+            countryCode: [],
+            role: [],
+            telephone: [],
+            email: [],
+            image: [],
         };
     }
 }

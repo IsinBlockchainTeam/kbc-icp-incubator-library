@@ -1,4 +1,4 @@
-import { OrganizationPresentation } from "../../models/presentations/OrganizationPresentation";
+import { OrganizationPresentation } from "../../models/types/presentations/OrganizationPresentation";
 import { Organization } from "../../models/types/Organization";
 
 export abstract class OrganizationPresentationCreator {

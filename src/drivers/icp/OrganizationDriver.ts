@@ -1,11 +1,12 @@
 import type { ActorSubclass, Identity } from '@dfinity/agent';
 import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
-import { OrganizationVisibilityLevel } from '@kbc-lib/azle-types/src/models/presentations/OrganizationPresentation';
-import { createActor } from '../../declarations/entity_manager';
+import { OrganizationRole, OrganizationVisibilityLevel } from '@kbc-lib/azle-types';
+import { createActor } from 'icp-declarations/entity_manager';
 import { Organization } from '../../entities/organization/Organization';
 import { BroadedOrganizationCreator } from '../../factories/organization/BroadedOrganizationCreator';
 import { OrganizationVisibilityLevelFactory } from '../../factories/organization/OrganizationVisibilityLevelFactory';
 import { NarrowedOrganizationCreator } from '../../factories/organization/NarrowedOrganizationCreator';
+import { OrganizationRoleFactory } from '../../factories/organization/OrganizationRoleFactory';
 
 export class OrganizationDriver {
     private _actor: ActorSubclass<_SERVICE>;
@@ -20,7 +21,7 @@ export class OrganizationDriver {
     }
 
     castOrganization(organization: any): Organization {
-        const visibilityLevel = OrganizationVisibilityLevelFactory.fromICPEnum(
+        const visibilityLevel = new OrganizationVisibilityLevelFactory().fromICPType(
             organization.visibilityLevel
         );
 
@@ -45,17 +46,67 @@ export class OrganizationDriver {
         return this.castOrganization(organization);
     }
 
-    async createOrganization(name: string, description: string): Promise<Organization> {
-        const organization = await this._actor.createOrganization(name, description);
+    async createOrganization(
+        legalName: string,
+        industrialSector: string,
+        address: string,
+        city: string,
+        postalCode: string,
+        region: string,
+        countryCode: string,
+        role: OrganizationRole,
+        telephone: string,
+        email: string,
+        image: string
+    ): Promise<Organization> {
+        const icpRole = new OrganizationRoleFactory().toICPType(role);
+
+        const organization = await this._actor.createOrganization(
+            legalName,
+            industrialSector,
+            address,
+            city,
+            postalCode,
+            region,
+            countryCode,
+            icpRole,
+            telephone,
+            email,
+            image
+        );
         return new BroadedOrganizationCreator().createOrganization(organization);
     }
 
     async updateOrganization(
         ethAddress: string,
-        name: string,
-        description: string
+        legalName: string,
+        industrialSector: string,
+        address: string,
+        city: string,
+        postalCode: string,
+        region: string,
+        countryCode: string,
+        role: OrganizationRole,
+        telephone: string,
+        email: string,
+        image: string
     ): Promise<Organization> {
-        const organization = await this._actor.updateOrganization(ethAddress, name, description);
+        const icpRole = new OrganizationRoleFactory().toICPType(role);
+
+        const organization = await this._actor.updateOrganization(
+            ethAddress,
+            legalName,
+            industrialSector,
+            address,
+            city,
+            postalCode,
+            region,
+            countryCode,
+            icpRole,
+            telephone,
+            email,
+            image
+        );
         return new BroadedOrganizationCreator().createOrganization(organization);
     }
 

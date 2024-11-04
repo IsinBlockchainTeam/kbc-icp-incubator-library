@@ -1,8 +1,12 @@
 import { IDL, query, update } from "azle";
 import { AtLeastEditor, AtLeastViewer } from "../decorators/roles";
 import OrganizationService from "../services/OrganizationService";
-import { IDLOrganization } from "../models/idls/IDLOrganization";
-import { OrganizationPresentation } from "../models/presentations/OrganizationPresentation";
+import {
+    IDLOrganization,
+    IDLOrganizationRole,
+} from "../models/idls/IDLOrganization";
+import { OrganizationPresentation } from "../models/types/presentations/OrganizationPresentation";
+import { OrganizationRoleType } from "../models/types";
 
 class OrganizationController {
     @query([], IDL.Vec(IDLOrganization))
@@ -19,29 +23,96 @@ class OrganizationController {
         return OrganizationService.instance.getOrganization(ethAddress);
     }
 
-    @update([IDL.Text, IDL.Text], IDLOrganization)
+    @update(
+        [
+            IDL.Text,
+            IDL.Text,
+            IDL.Text,
+            IDL.Text,
+            IDL.Text,
+            IDL.Text,
+            IDL.Text,
+            IDLOrganizationRole,
+            IDL.Text,
+            IDL.Text,
+            IDL.Text,
+        ],
+        IDLOrganization,
+    )
     @AtLeastEditor
     async createOrganization(
-        name: string,
-        description: string,
+        legalName: string,
+        industrialSector: string,
+        address: string,
+        city: string,
+        postalCode: string,
+        region: string,
+        countryCode: string,
+        role: OrganizationRoleType,
+        telephone: string,
+        email: string,
+        image: string,
     ): Promise<OrganizationPresentation> {
         return OrganizationService.instance.createOrganization(
-            name,
-            description,
+            legalName,
+            industrialSector,
+            address,
+            city,
+            postalCode,
+            region,
+            countryCode,
+            role,
+            telephone,
+            email,
+            image,
         );
     }
 
-    @update([IDL.Text, IDL.Text, IDL.Text], IDLOrganization)
+    @update(
+        [
+            IDL.Text,
+            IDL.Text,
+            IDL.Text,
+            IDL.Text,
+            IDL.Text,
+            IDL.Text,
+            IDL.Text,
+            IDL.Text,
+            IDLOrganizationRole,
+            IDL.Text,
+            IDL.Text,
+            IDL.Text,
+        ],
+        IDLOrganization,
+    )
     @AtLeastEditor
     async updateOrganization(
         ethAddress: string,
-        name: string,
-        description: string,
+        legalName: string,
+        industrialSector: string,
+        address: string,
+        city: string,
+        postalCode: string,
+        region: string,
+        countryCode: string,
+        role: OrganizationRoleType,
+        telephone: string,
+        email: string,
+        image: string,
     ): Promise<OrganizationPresentation> {
         return OrganizationService.instance.updateOrganization(
             ethAddress,
-            name,
-            description,
+            legalName,
+            industrialSector,
+            address,
+            city,
+            postalCode,
+            region,
+            countryCode,
+            role,
+            telephone,
+            email,
+            image,
         );
     }
 

@@ -1,11 +1,11 @@
 export abstract class Organization {
     private _ethAddress: string;
 
-    private _name: string;
+    private _legalName: string;
 
-    protected constructor(ethAddress: string, name: string) {
+    protected constructor(ethAddress: string, legalName: string) {
         this._ethAddress = ethAddress;
-        this._name = name;
+        this._legalName = legalName;
     }
 
     get ethAddress(): string {
@@ -16,11 +16,11 @@ export abstract class Organization {
         this._ethAddress = ethAddress;
     }
 
-    get name(): string {
-        return this._name;
+    get legalName(): string {
+        return this._legalName;
     }
 
-    set name(name: string) {
-        this._name = name;
+    set legalName(name: string) {
+        this._legalName = name;
     }
 }
