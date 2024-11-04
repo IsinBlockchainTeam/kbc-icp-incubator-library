@@ -1,6 +1,6 @@
 import type { ActorSubclass, Identity } from '@dfinity/agent';
 import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
-import {createActor} from "../../declarations/entity_manager";
+import {createActor} from "icp-declarations/entity_manager";
 import {Offer} from "../../entities/Offer";
 import {EntityBuilder} from "../../utils/icp/EntityBuilder";
 

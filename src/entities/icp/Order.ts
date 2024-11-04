@@ -4,7 +4,6 @@ import { ProductCategory } from '../ProductCategory';
 
 export { OrderStatus };
 
-export { OrderStatus };
 export type OrderLinePrice = {
     amount: number;
     fiat: string;
