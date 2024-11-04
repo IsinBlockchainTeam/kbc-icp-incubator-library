@@ -7,3 +7,4 @@ export {ProductCategory} from './ProductCategory';
 export {RoleProof} from './Proof';
 export {ROLES} from './Role';
 export {PhaseEnum, Phase, FundStatusEnum, FundStatus, Shipment} from './Shipment';
+export {Offer} from './Offer';

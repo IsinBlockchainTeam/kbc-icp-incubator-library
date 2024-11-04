@@ -8,3 +8,4 @@ export * from './ProductCategory';
 export * from './Proof';
 export * from './Rpc';
 export * from './Shipment';
+export * from './Offer';
