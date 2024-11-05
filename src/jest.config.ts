@@ -3,6 +3,10 @@
  * https://jestjs.io/docs/configuration
  */
 
+import { config } from 'dotenv';
+
+config({ path: '../icp/ts-canister/.env' });
+
 export default {
     // All imported modules in your tests should be mocked automatically
     // automock: false,

@@ -33,7 +33,7 @@ export async function jsonRpcRequest(body: Record<string, any>): Promise<any> {
         {
             paramIdlTypes: [IDLRpcService, IDL.Text, IDL.Nat64],
             returnIdlType: IDLRequestResult,
-            args: [jsonRpcSource, JSON.stringify(body), 1_000],
+            args: [jsonRpcSource, JSON.stringify(body), 10_000],
             payment: 1_000_000_000n
         }
     );
@@ -162,32 +162,35 @@ export async function ethSendContractTransaction(
     const abiInterface = new ethers.Interface(contractAbi);
     const data = abiInterface.encodeFunctionData(methodName, methodArgs);
     //TODO: eth_maxPriorityFeePerGas not available in hardhat
+
     // const maxPriorityFeePerGas = await ethMaxPriorityFeePerGas();
-    const maxPriorityFeePerGas = BigInt(1);
-    console.log('maxPriorityFeePerGas', maxPriorityFeePerGas);
+    // const maxPriorityFeePerGas = 0n;
+    // console.log('maxPriorityFeePerGas', maxPriorityFeePerGas);
     //TODO: eth_maxPriorityFeePerGas not available in hardhat
+
     // const baseFeePerGas = BigInt(
     //     (await ethFeeHistory()).Consistent?.Ok[0].baseFeePerGas[0]
     // );
-    const baseFeePerGas = 300_000_000n;
-    console.log('baseFeePerGas', baseFeePerGas);
-    const maxFeePerGas = baseFeePerGas * 2n + maxPriorityFeePerGas;
-    const gasLimit = 30_000_000n;
-    const nonce = await ethGetTransactionCount(canisterAddress);
-    console.log('nonce', nonce);
+    // const baseFeePerGas = 0n;
+    // console.log('baseFeePerGas', baseFeePerGas);
+    // const maxFeePerGas = baseFeePerGas * 2n + maxPriorityFeePerGas;
+    const gasLimit = 1_000_000n;
+    // const nonce = await ethGetTransactionCount(canisterAddress);
+    // console.log('nonce', nonce);
     let tx = ethers.Transaction.from({
         to: contractAddress,
-        data,
         value: 0,
-        maxPriorityFeePerGas,
-        maxFeePerGas,
         gasLimit,
-        nonce,
-        chainId: getEvmChainId()
+        gasPrice: 0,
+        type: 0,
+        data,
+        chainId: getEvmChainId(),
+        // nonce,
+        // maxPriorityFeePerGas,
+        // maxFeePerGas,
     });
     const unsignedSerializedTx = tx.unsignedSerialized;
     const unsignedSerializedTxHash = ethers.keccak256(unsignedSerializedTx);
-    console.log('unsignedSerializedTxHash', unsignedSerializedTxHash);
     const signedSerializedTxHash = await signWithEcdsa(
         [ic.id().toUint8Array()],
         ethers.getBytes(unsignedSerializedTxHash)
