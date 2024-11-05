@@ -1,5 +1,5 @@
 import { Wallet } from 'ethers';
-import { OrganizationRole } from '@kbc-lib/azle-types';
+import { OrganizationRole, OrganizationVisibilityLevel } from '@kbc-lib/azle-types';
 import { OrganizationDriver, OrganizationParams } from './OrganizationDriver';
 import { SiweIdentityProvider } from './SiweIdentityProvider';
 import { computeRoleProof } from './proof';
@@ -144,6 +144,7 @@ describe('OrganizationDriver', () => {
         createdOrganization = await organizationDriverUser1.createOrganization(organizationScratch);
 
         expect(createdOrganization).toBeInstanceOf(BroadedOrganization);
+        expect(createdOrganization.visibilityLevel).toBe(OrganizationVisibilityLevel.BROAD);
 
         const organization = createdOrganization as BroadedOrganization;
 
@@ -156,6 +157,7 @@ describe('OrganizationDriver', () => {
         );
 
         expect(retrievedOrganization).toBeInstanceOf(BroadedOrganization);
+        expect(retrievedOrganization.visibilityLevel).toBe(OrganizationVisibilityLevel.BROAD);
 
         const organization = retrievedOrganization as BroadedOrganization;
 
@@ -168,6 +170,7 @@ describe('OrganizationDriver', () => {
         );
 
         expect(retrievedOrganization).toBeInstanceOf(NarrowedOrganization);
+        expect(retrievedOrganization.visibilityLevel).toBe(OrganizationVisibilityLevel.NARROW);
 
         const organization = retrievedOrganization as NarrowedOrganization;
 
@@ -230,6 +233,7 @@ describe('OrganizationDriver', () => {
         );
 
         expect(retrievedOrganization).toBeInstanceOf(BroadedOrganization);
+        expect(retrievedOrganization.visibilityLevel).toBe(OrganizationVisibilityLevel.BROAD);
 
         const organization = retrievedOrganization as BroadedOrganization;
 
@@ -243,6 +247,7 @@ describe('OrganizationDriver', () => {
         );
 
         expect(updatedOrganization).toBeInstanceOf(BroadedOrganization);
+        expect(updatedOrganization.visibilityLevel).toBe(OrganizationVisibilityLevel.BROAD);
 
         const organization = updatedOrganization as BroadedOrganization;
 
@@ -255,6 +260,7 @@ describe('OrganizationDriver', () => {
         );
 
         expect(retrievedOrganization).toBeInstanceOf(BroadedOrganization);
+        expect(retrievedOrganization.visibilityLevel).toBe(OrganizationVisibilityLevel.BROAD);
 
         const organization = retrievedOrganization as BroadedOrganization;
 

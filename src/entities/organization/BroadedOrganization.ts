@@ -1,5 +1,7 @@
-import { OrganizationRole } from '@kbc-lib/azle-types';
+import { OrganizationRole, OrganizationVisibilityLevel } from '@kbc-lib/azle-types';
 import { Organization } from './Organization';
+
+export { OrganizationRole };
 
 export class BroadedOrganization extends Organization {
     private _industrialSector: string;
@@ -36,7 +38,7 @@ export class BroadedOrganization extends Organization {
         email: string,
         image: string
     ) {
-        super(ethAddress, legalName);
+        super(ethAddress, OrganizationVisibilityLevel.BROAD, legalName);
 
         this._industrialSector = industrialSector;
         this._address = address;
