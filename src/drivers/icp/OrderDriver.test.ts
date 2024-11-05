@@ -20,7 +20,7 @@ type Utils = {
     orderManagerDriver: OrderDriver;
     login: () => Promise<boolean>;
 };
-const ORDER_ID = 2;
+const ORDER_ID = 0;
 const PRODUCT_CATEGORY_ID = 0;
 describe('OrderDriver', () => {
     let utils1: Utils, utils2: Utils;

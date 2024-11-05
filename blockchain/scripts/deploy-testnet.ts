@@ -82,13 +82,13 @@ serial([
     //         '0x508d92D0235B2bd1060c93FA9D2c8A21D801e1d6', // DelegateManager
     //         []
     //     ]),
-    // () =>
-    //     deploy(ContractName.ESCROW_MANAGER, [
-    //         '0x508d92D0235B2bd1060c93FA9D2c8A21D801e1d6', // DelegateManager
-    //         '0x30054880e4E2fA1082C1976cA5547cC3bd185c11', // ContractsOwner
-    //         process.env.ESCROW_BASE_FEE || 20,
-    //         process.env.ESCROW_COMMISSIONER_FEE || 1
-    //     ]),
+    () =>
+        deploy(ContractName.ESCROW_MANAGER, [
+            '0x44820D887a99106510AB4fe8a52241f81a3074B7',
+            process.env.COMMISSIONER_ADMIN || '',
+            process.env.ESCROW_BASE_FEE || 20,
+            process.env.ESCROW_COMMISSIONER_FEE || 1
+        ])
     // () =>
     //     deploy(ContractName.KBC_SHIPMENT_LIBRARY),
     // () =>
