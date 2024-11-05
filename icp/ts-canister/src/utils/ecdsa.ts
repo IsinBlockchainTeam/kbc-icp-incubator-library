@@ -18,11 +18,13 @@ export async function signWithEcdsa(
                     derivation_path: derivationPath,
                     key_id: {
                         curve: { secp256k1: null },
-                        name: 'dfx_test_key'
+                        // NOTE: Use dfx_test_key if on local network, key_1 if on ic
+                        // name: 'dfx_test_key',
+                        name: 'key_1',
                     }
                 }
             ],
-            payment: 10_000_000_000n
+            payment: 30_000_000_000n
         }
     );
 
@@ -85,7 +87,9 @@ export async function ecdsaPublicKey(
                     derivation_path: derivationPath,
                     key_id: {
                         curve: { secp256k1: null },
-                        name: 'dfx_test_key'
+                        // NOTE: Use dfx_test_key if on local network, key_1 if on ic
+                        // name: 'dfx_test_key',
+                        name: 'key_1',
                     }
                 }
             ]
