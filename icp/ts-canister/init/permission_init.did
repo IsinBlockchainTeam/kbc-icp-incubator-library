@@ -1,0 +1,6 @@
+(record {
+    allowed_callers = vec {
+        "bw4dl-smaaa-aaaaa-qaacq-cai"; // ORGANIZATION_CANISTER_ID
+        "by6od-j4aaa-aaaaa-qaadq-cai" // STORAGE_CANISTER_ID
+    }
+})
