@@ -1,5 +1,14 @@
 {
   "entity_manager": {
     "ic": "gzlum-xqaaa-aaaap-akqia-cai"
+  },
+  "evm_rpc": {
+    "ic": "gqi7q-byaaa-aaaap-akqjq-cai"
+  },
+  "ic_siwe_provider": {
+    "ic": "xes56-yiaaa-aaaak-aksbq-cai"
+  },
+  "internet_identity": {
+    "ic": "gcoij-niaaa-aaaap-akqkq-cai"
   }
 }
