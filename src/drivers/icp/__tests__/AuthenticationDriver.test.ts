@@ -9,16 +9,12 @@ jest.mock('@dfinity/agent');
 describe('AuthenticationDriver', () => {
     let authenticationDriver: AuthenticationDriver;
     const mockFn = {
-        login: jest.fn(),
-        refresh: jest.fn(),
-        logout: jest.fn(),
+        authenticate: jest.fn(),
     }
 
     beforeAll(async () => {
         (createActor as jest.Mock).mockReturnValue({
-            login: mockFn.login,
-            refresh: mockFn.refresh,
-            logout: mockFn.logout,
+            authenticate: mockFn.authenticate,
         });
         const icpIdentity = {} as Identity;
         authenticationDriver = new AuthenticationDriver(icpIdentity, 'canisterId');
@@ -26,21 +22,9 @@ describe('AuthenticationDriver', () => {
 
     it('should login', async () => {
         const roleProof = {} as RoleProof;
-        mockFn.login.mockReturnValue(true);
-        await expect(authenticationDriver.login(roleProof)).resolves.toBeTruthy();
-        expect(mockFn.login).toHaveBeenCalled();
-        expect(mockFn.login).toHaveBeenCalledWith(roleProof);
-    });
-
-    it('should refresh', async () => {
-        mockFn.refresh.mockReturnValue(true);
-        await expect(authenticationDriver.refresh()).resolves.toBeTruthy();
-        expect(mockFn.refresh).toHaveBeenCalled();
-    });
-
-    it('should logout', async () => {
-        mockFn.logout.mockReturnValue(true);
-        await expect(authenticationDriver.logout()).resolves.toBeTruthy();
-        expect(mockFn.logout).toHaveBeenCalled();
+        mockFn.authenticate.mockReturnValue(true);
+        await expect(authenticationDriver.authenticate(roleProof)).resolves.toBeTruthy();
+        expect(mockFn.authenticate).toHaveBeenCalled();
+        expect(mockFn.authenticate).toHaveBeenCalledWith(roleProof);
     });
 });

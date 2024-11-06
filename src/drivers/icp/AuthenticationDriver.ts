@@ -15,15 +15,7 @@ export class AuthenticationDriver {
         });
     }
 
-    async login(roleProof: RoleProof): Promise<boolean> {
-        return this._actor.login(roleProof);
-    }
-
-    async refresh(): Promise<boolean> {
-        return this._actor.refresh();
-    }
-
-    async logout(): Promise<boolean> {
-        return this._actor.logout();
+    async authenticate(roleProof: RoleProof): Promise<boolean> {
+        return this._actor.authenticate(roleProof);
     }
 }

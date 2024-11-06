@@ -43,7 +43,7 @@ describe('ProductCategoryManagerDriver', () => {
             DELEGATOR_CREDENTIAL_ID_HASH,
             companyWallet
         );
-        const login = () => authenticationDriver.login(roleProof);
+        const login = () => authenticationDriver.authenticate(roleProof);
         return { userWallet, companyWallet, productCategoryManagerDriver, login };
     };
 

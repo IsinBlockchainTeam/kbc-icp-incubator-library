@@ -23,7 +23,7 @@ class AuthenticationService {
         return AuthenticationService._instance;
     }
 
-    async login(roleProof: RoleProof): Promise<boolean> {
+    async authenticate(roleProof: RoleProof): Promise<boolean> {
         const unixTime = Number(ic.time().toString().substring(0, 13));
         const hasValidRole = await DelegationService.instance.hasValidRoleProof(roleProof, ic.caller());
         if(!hasValidRole) return false;
@@ -35,26 +35,7 @@ class AuthenticationService {
         return true;
     }
 
-    async refresh(): Promise<boolean> {
-        const unixTime = Number(ic.time().toString().substring(0, 13));
-        const authentication = this._authentications.get(ic.caller().toText());
-        if(!authentication) return false;
-        const hasValidRole = await DelegationService.instance.hasValidRoleProof(authentication.roleProof, ic.caller());
-        if(!hasValidRole) return false;
-        this._authentications.insert(ic.caller().toText(), {
-            roleProof: authentication.roleProof,
-            expiration: unixTime + this._loginDuration
-        });
-        return true;
-    }
-
-    async logout(): Promise<boolean> {
-        if(this._authentications.containsKey(ic.caller().toText())){
-            this._authentications.remove(ic.caller().toText());
-            return true;
-        }
-        return false;
-    }
+    // TODO: periodically remove expired authentications
 
     getDelegatorAddress(caller: Principal = ic.caller()): string {
         const authentication = this._authentications.get(caller.toText());
