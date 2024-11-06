@@ -11,7 +11,7 @@ export class Shipment {
 
     private _commissioner: string;
 
-    private _escrowAddress: string;
+    private _escrowAddress: string | undefined;
 
     private _sampleEvaluationStatus: EvaluationStatus;
 
@@ -51,7 +51,7 @@ export class Shipment {
         id: number,
         supplier: string,
         commissioner: string,
-        escrowAddress: string,
+        escrowAddress: string | undefined,
         sampleEvaluationStatus: EvaluationStatus,
         detailsEvaluationStatus: EvaluationStatus,
         qualityEvaluationStatus: EvaluationStatus,
@@ -117,11 +117,11 @@ export class Shipment {
         this._commissioner = value;
     }
 
-    get escrowAddress(): string {
+    get escrowAddress(): string | undefined {
         return this._escrowAddress;
     }
 
-    set escrowAddress(value: string) {
+    set escrowAddress(value: string | undefined) {
         this._escrowAddress = value;
     }
 

@@ -13,12 +13,12 @@ import {
     Offer as ICPOffer
 } from '@kbc-lib/azle-types';
 import { Order } from '../../entities/icp/Order';
-import { Shipment , Phase, FundStatus } from '../../entities/icp/Shipment';
+import { Shipment, Phase, FundStatus } from '../../entities/icp/Shipment';
 import { DocumentInfo, DocumentType } from '../../entities/icp/Document';
 import { EvaluationStatus } from '../../entities/icp/Evaluation';
 import { ProductCategory } from '../../entities/ProductCategory';
 import { Material } from '../../entities/Material';
-import {Offer} from "../../entities/Offer";
+import { Offer } from '../../entities/Offer';
 
 export class EntityBuilder {
     static buildProductCategory(productCategory: ICPProductCategory) {
@@ -42,7 +42,7 @@ export class EntityBuilder {
             Number(offer.id),
             offer.owner,
             this.buildProductCategory(offer.productCategory)
-        )
+        );
     }
 
     static buildOrder(order: ICPOrder) {
@@ -86,14 +86,11 @@ export class EntityBuilder {
     }
 
     static buildShipment(shipment: ICPShipment): Shipment {
-        // TODO: understand how to manage escrow
-        // if (shipment.escrowAddress.length === 0) throw new Error('Invalid escrow address');
-
         return new Shipment(
             Number(shipment.id),
             shipment.supplier,
             shipment.commissioner,
-            shipment.escrowAddress[0] ? shipment.escrowAddress[0] : '',
+            shipment.escrowAddress[0] ? shipment.escrowAddress[0] : undefined,
             this.buildEvaluationStatus(shipment.sampleEvaluationStatus),
             this.buildEvaluationStatus(shipment.detailsEvaluationStatus),
             this.buildEvaluationStatus(shipment.qualityEvaluationStatus),
@@ -116,7 +113,8 @@ export class EntityBuilder {
 
     static buildShipmentDocuments = (
         icpDocuments: Array<[IDLDocumentType, IDLDocumentInfo[]]>
-    ): Map<DocumentType, DocumentInfo[]> => icpDocuments.reduce(
+    ): Map<DocumentType, DocumentInfo[]> =>
+        icpDocuments.reduce(
             (acc, [documentType, documentInfos]) =>
                 acc.set(
                     EntityBuilder.buildDocumentType(documentType),
@@ -138,9 +136,10 @@ export class EntityBuilder {
         throw new Error('Invalid phase');
     };
 
-    static buildShipmentIDLPhase = (phase: Phase): ICPPhase => ({
+    static buildShipmentIDLPhase = (phase: Phase): ICPPhase =>
+        ({
             [phase]: null
-        } as ICPPhase);
+        }) as ICPPhase;
 
     static buildFundStatus = (status: ICPFundStatus): FundStatus => {
         if (FundStatus.NOT_LOCKED in status) return FundStatus.NOT_LOCKED;
@@ -156,9 +155,10 @@ export class EntityBuilder {
         throw new Error('Invalid evaluation status');
     };
 
-    static buildIDLEvaluationStatus = (status: EvaluationStatus): ICPEvaluationStatus => ({
+    static buildIDLEvaluationStatus = (status: EvaluationStatus): ICPEvaluationStatus =>
+        ({
             [status]: null
-        } as ICPEvaluationStatus);
+        }) as ICPEvaluationStatus;
 
     static buildDocumentType = (type: IDLDocumentType): DocumentType => {
         if (DocumentType.SERVICE_GUIDE in type) return DocumentType.SERVICE_GUIDE;
@@ -189,15 +189,16 @@ export class EntityBuilder {
         throw new Error('Invalid document');
     };
 
-    static buildIDLDocumentType = (docType: DocumentType): IDLDocumentType => ({
+    static buildIDLDocumentType = (docType: DocumentType): IDLDocumentType =>
+        ({
             [docType]: null
-        } as IDLDocumentType);
+        }) as IDLDocumentType;
 
     static buildDocumentInfo = (info: IDLDocumentInfo): DocumentInfo => ({
-            id: Number(info.id),
-            documentType: this.buildDocumentType(info.documentType),
-            evaluationStatus: this.buildEvaluationStatus(info.evaluationStatus),
-            uploadedBy: info.uploadedBy,
-            externalUrl: info.externalUrl
-        });
+        id: Number(info.id),
+        documentType: this.buildDocumentType(info.documentType),
+        evaluationStatus: this.buildEvaluationStatus(info.evaluationStatus),
+        uploadedBy: info.uploadedBy,
+        externalUrl: info.externalUrl
+    });
 }
