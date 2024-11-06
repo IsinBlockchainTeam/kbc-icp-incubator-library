@@ -224,22 +224,32 @@ class ShipmentService implements HasInterestedParties{
         return shipment;
     }
 
-    async depositFunds(id: bigint, amount: bigint): Promise<Shipment> {
+    async determineEscrowAddress(id: bigint): Promise<Shipment> {
         const shipment = this.getShipment(id);
+        if (shipment.escrowAddress.length === 0) {
+            const escrowManagerAddress: string = getEvmEscrowManagerAddress();
+            const escrowAddress = await ethCallContract(escrowManagerAddress, escrowManagerAbi.abi, 'getEscrowByShipmentId', [shipment.id]);
+            shipment.escrowAddress = [escrowAddress];
+            this._shipments.insert(id, shipment);
+        }
+        return shipment;
+    }
+
+    async depositFunds(id: bigint, amount: bigint): Promise<Shipment> {
+        let shipment = this.getShipment(id);
         if (!(PhaseEnum.PHASE_3 in this.getShipmentPhase(id)))
             throw new Error('Shipment in wrong phase');
         if (!(FundStatusEnum.NOT_LOCKED in shipment.fundsStatus))
             throw new Error('Funds already locked');
 
         if (shipment.escrowAddress.length === 0) {
-            const escrowManagerAddress: string = getEvmEscrowManagerAddress();
-            const escrowAddress = await ethCallContract(escrowManagerAddress, escrowManagerAbi.abi, 'getEscrowByShipmentId', [shipment.id]);
-            shipment.escrowAddress = [escrowAddress];
+            shipment = await this.determineEscrowAddress(id);
+            if(shipment.escrowAddress.length === 0)
+                throw new Error('Escrow address not found');
         }
 
         const callerAddress = await getAddress(ic.caller());
         const escrowAddress = shipment.escrowAddress[0];
-        console.log('escrowAddress', escrowAddress);
 
         await ethSendContractTransaction(escrowAddress, escrowAbi.abi, 'deposit', [amount, callerAddress]);
 
@@ -248,16 +258,16 @@ class ShipmentService implements HasInterestedParties{
     }
 
     async lockFunds(id: bigint): Promise<Shipment> {
-        const shipment = this.getShipment(id);
+        let shipment = this.getShipment(id);
         if (!(PhaseEnum.PHASE_3 in this.getShipmentPhase(id)))
             throw new Error('Shipment in wrong phase');
         if (!(FundStatusEnum.NOT_LOCKED in shipment.fundsStatus))
             throw new Error('Funds already locked');
 
         if (shipment.escrowAddress.length === 0) {
-            const escrowManagerAddress: string = getEvmEscrowManagerAddress();
-            const escrowAddress = await ethCallContract(escrowManagerAddress, escrowManagerAbi.abi, 'getEscrowByShipmentId', [shipment.id]);
-            shipment.escrowAddress = [escrowAddress];
+            shipment = await this.determineEscrowAddress(id);
+            if(shipment.escrowAddress.length === 0)
+                throw new Error('Escrow address not found');
         }
 
         const escrowAddress = shipment.escrowAddress[0];

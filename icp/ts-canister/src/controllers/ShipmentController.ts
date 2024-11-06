@@ -95,6 +95,12 @@ class ShipmentController {
         return ShipmentService.instance.evaluateQuality(id, evaluationStatus);
     }
 
+    @update([IDL.Nat], IDLShipment)
+    @AtLeastEditor
+    async determineEscrowAddress(id: bigint): Promise<Shipment> {
+        return ShipmentService.instance.determineEscrowAddress(id);
+    }
+
     @update([IDL.Nat, IDL.Nat], IDLShipment)
     @AtLeastEditor
     async depositFunds(id: bigint, amount: bigint): Promise<Shipment> {
