@@ -29,3 +29,4 @@ export {
     OrganizationVisibilityLevelType,
 } from "./presentations/OrganizationPresentation";
 export { OrganizationRole, OrganizationRoleType } from "./Organization";
+export {Offer} from './Offer';

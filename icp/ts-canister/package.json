@@ -5,7 +5,7 @@
     "scripts": {
         "test": "jest",
         "start-network": "dfx start --clean",
-        "deploy": "set -o allexport; source .env.evm; set +o allexport && dfx deploy",
+        "deploy": "set -o allexport; source .env.custom; set +o allexport && cat dfx.template.json | envsubst > dfx.json && dfx deploy",
         "build-types": "npx tsc -p tsconfig-types.json",
         "generate": "dfx generate"
     },
