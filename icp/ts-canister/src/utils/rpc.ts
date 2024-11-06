@@ -175,8 +175,8 @@ export async function ethSendContractTransaction(
     // console.log('baseFeePerGas', baseFeePerGas);
     // const maxFeePerGas = baseFeePerGas * 2n + maxPriorityFeePerGas;
     const gasLimit = 1_000_000n;
-    // const nonce = await ethGetTransactionCount(canisterAddress);
-    // console.log('nonce', nonce);
+    const nonce = await ethGetTransactionCount(canisterAddress);
+    console.log('nonce', nonce);
     let tx = ethers.Transaction.from({
         to: contractAddress,
         value: 0,
@@ -185,7 +185,7 @@ export async function ethSendContractTransaction(
         type: 0,
         data,
         chainId: getEvmChainId(),
-        // nonce,
+        nonce,
         // maxPriorityFeePerGas,
         // maxFeePerGas,
     });

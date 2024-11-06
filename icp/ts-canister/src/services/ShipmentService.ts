@@ -18,6 +18,7 @@ import escrowAbi from '../../eth-abi/Escrow.json';
 import { StableMemoryId } from '../utils/stableMemory';
 import { ic } from 'azle/experimental';
 import AuthenticationService from "./AuthenticationService";
+import { ZeroAddress } from "ethers";
 
 class ShipmentService implements HasInterestedParties{
     private static _instance: ShipmentService;
@@ -229,8 +230,12 @@ class ShipmentService implements HasInterestedParties{
         if (shipment.escrowAddress.length === 0) {
             const escrowManagerAddress: string = getEvmEscrowManagerAddress();
             const escrowAddress = await ethCallContract(escrowManagerAddress, escrowManagerAbi.abi, 'getEscrowByShipmentId', [shipment.id]);
+            if(escrowAddress === ZeroAddress)
+                throw new Error('Escrow address not found');
             shipment.escrowAddress = [escrowAddress];
             this._shipments.insert(id, shipment);
+        } else {
+            throw new Error('Escrow address already set: ' + shipment.escrowAddress[0]);
         }
         return shipment;
     }
