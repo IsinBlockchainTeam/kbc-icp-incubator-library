@@ -3,6 +3,7 @@ import ProductCategoryController from "./ProductCategoryController";
 import OrderController from "./OrderController";
 import ShipmentController from "./ShipmentController";
 import AuthenticationController from "./AuthenticationController";
+import OrganizationController from "./OrganizationController";
 import OfferController from "./OfferController";
 import {IDL, update} from "azle";
 import {ethers} from "ethers";
@@ -15,6 +16,7 @@ export default class {
     _productCategoryController = new ProductCategoryController();
     _orderController = new OrderController();
     _shipmentController = new ShipmentController();
+    _organizationController = new OrganizationController();
     _offerController = new OfferController();
 
     @update([], IDL.Text)

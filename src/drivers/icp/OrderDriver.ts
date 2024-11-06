@@ -1,8 +1,8 @@
 import type { ActorSubclass, Identity } from '@dfinity/agent';
-import {createActor} from "icp-declarations/entity_manager";
+import { createActor } from 'icp-declarations/entity_manager';
 import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
-import {EntityBuilder} from "../../utils/icp/EntityBuilder";
-import {Order} from "../../entities/icp/Order";
+import { EntityBuilder } from '../../utils/icp/EntityBuilder';
+import { Order } from '../../entities/icp/Order';
 
 export type OrderParams = {
     supplier: string;
@@ -44,7 +44,7 @@ export class OrderDriver {
 
     async getOrders(): Promise<Order[]> {
         const resp = await this._actor.getOrders();
-        return resp.map(rawOrder => EntityBuilder.buildOrder(rawOrder));
+        return resp.map((rawOrder) => EntityBuilder.buildOrder(rawOrder));
     }
 
     async getOrder(id: number): Promise<Order> {
@@ -68,7 +68,7 @@ export class OrderDriver {
             params.shipper,
             params.shippingPort,
             params.deliveryPort,
-            params.lines.map(line => ({
+            params.lines.map((line) => ({
                 productCategoryId: BigInt(line.productCategoryId),
                 quantity: line.quantity,
                 unit: line.unit,
@@ -98,7 +98,7 @@ export class OrderDriver {
             params.shipper,
             params.shippingPort,
             params.deliveryPort,
-            params.lines.map(line => ({
+            params.lines.map((line) => ({
                 productCategoryId: BigInt(line.productCategoryId),
                 quantity: line.quantity,
                 unit: line.unit,
@@ -114,5 +114,9 @@ export class OrderDriver {
     async signOrder(id: number): Promise<Order> {
         const resp = await this._actor.signOrder(BigInt(id));
         return EntityBuilder.buildOrder(resp);
+    }
+
+    async deleteOrder(id: number): Promise<boolean> {
+        return this._actor.deleteOrder(BigInt(id));
     }
 }

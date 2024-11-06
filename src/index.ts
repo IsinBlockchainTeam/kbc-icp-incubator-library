@@ -117,6 +117,12 @@ export { computeRoleProof } from './drivers/icp/proof';
 export { OrderDriver, OrderParams } from './drivers/icp/OrderDriver';
 export { OrderService } from './services/icp/OrderService';
 
+export { Organization } from './entities/organization/Organization';
+export { BroadedOrganization, OrganizationRole } from './entities/organization/BroadedOrganization';
+export { NarrowedOrganization } from './entities/organization/NarrowedOrganization';
+export { OrganizationDriver, OrganizationParams } from './drivers/icp/OrganizationDriver';
+export { OrganizationService } from './services/icp/OrganizationService';
+
 // export {createActor} from 'icp-declarations/entity_manager'
 export { AuthenticationDriver as ICPAuthenticationDriver } from './drivers/icp/AuthenticationDriver';
 export { AuthenticationService as ICPAuthenticationService } from './services/icp/AuthenticationService';
