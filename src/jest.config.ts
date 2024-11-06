@@ -180,9 +180,7 @@ export default {
     //   "**/__tests__/**/*.[jt]s?(x)",
     //   "**/?(*.)+(spec|test).[tj]s?(x)"
     // ],
-    // FIXME: This includes all tests in the project, I want to exclude the integration-test ones
-    // testMatch: ['<rootDir>/**/?(*.)+(spec|test).[t]s?(x)']
-    testMatch: ['<rootDir>/**/__tests__/?(*.)+(spec|test).[t]s?(x)']
+    testMatch: ['<rootDir>/**/?(*.)+(spec|test).[t]s?(x)']
     // An array of regexp pattern strings that are matched against all test paths, matched tests are skipped
     // testPathIgnorePatterns: [
     //   "/node_modules/"
