@@ -78,7 +78,7 @@ serial([
     () => deploy(ContractName.DOCUMENT_MANAGER, [contractMap.get(ContractName.DELEGATE_MANAGER)!.address, [process.env.SUPPLIER_ADMIN || '']]),
     () =>
         deploy(ContractName.ESCROW_MANAGER, [
-            '0x072DeD77449d568D90C2EA87c79F3f2D0b335e67',
+            '0xcEe78B27E13a6E857d1F1d97Ff6d409Ae7E82975',
             process.env.COMMISSIONER_ADMIN || '',
             process.env.ESCROW_BASE_FEE || 20,
             process.env.ESCROW_COMMISSIONER_FEE || 1

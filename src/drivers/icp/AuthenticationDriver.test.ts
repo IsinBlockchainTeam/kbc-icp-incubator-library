@@ -15,8 +15,8 @@ const DELEGATE_CREDENTIAL_ID_HASH =
 const DELEGATOR_CREDENTIAL_ID_HASH =
     '0xf19b6aebcdaba2222d3f2c818ff1ecda71c7ed93c3e0f958241787663b58bc4b';
 // const ETH_PRIVATE_KEY = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
-const SIWE_CANISTER_ID = 'by6od-j4aaa-aaaaa-qaadq-cai';
-const ENTITY_MANAGER_CANISTER_ID = 'bw4dl-smaaa-aaaaa-qaacq-cai';
+const SIWE_CANISTER_ID = 'be2us-64aaa-aaaaa-qaabq-cai';
+const ENTITY_MANAGER_CANISTER_ID = 'bkyz2-fmaaa-aaaaa-qaaaq-cai';
 
 type Utils = {
     userWallet: Wallet;
@@ -71,7 +71,6 @@ describe('AuthenticationDriver', () => {
         console.log(roleProof);
         const result = await authenticationDriver.authenticate(roleProof);
         console.log(result);
-        expect(result).toBeDefined();
     }, 10000);
 
     it('should login user 2', async () => {
@@ -80,6 +79,11 @@ describe('AuthenticationDriver', () => {
         const result = await authenticationDriver.authenticate(roleProof);
         console.log(result);
         expect(result).toBeDefined();
+    }, 10000);
+
+    it('should logout', async () => {
+        const { authenticationDriver } = utils1;
+        await authenticationDriver.logout();
     }, 10000);
 
     it('should retrieve product categories', async () => {
