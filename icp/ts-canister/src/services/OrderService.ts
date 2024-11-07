@@ -144,7 +144,7 @@ class OrderService implements HasInterestedParties {
             lines: orderLines,
             token,
             agreedAmount,
-            shipment: [],
+            shipmentId: [],
         };
         this._orders.insert(BigInt(id), order);
         return order;
@@ -287,7 +287,7 @@ class OrderService implements HasInterestedParties {
             lines: orderLines,
             token,
             agreedAmount,
-            shipment: [],
+            shipmentId: [],
         };
         this._orders.insert(id, updatedOrder);
         return updatedOrder;
@@ -317,7 +317,7 @@ class OrderService implements HasInterestedParties {
                 order.token,
             );
             console.log("new shipment id:", shipment.id);
-            order.shipment = [shipment];
+            order.shipmentId = [shipment.id];
         }
         this._orders.insert(id, order);
         return order;

@@ -14,7 +14,13 @@ import {
 import {ethers} from "ethers";
 import {calculateRsvForTEcdsa, ecdsaPublicKey, signWithEcdsa} from "./ecdsa";
 import {ic, Principal} from 'azle/experimental';
-import {getEvmChainId, getEvmRpcCanisterId, getEvmRpcUrl, getSiweProviderCanisterId} from './env';
+import {
+    getEvmChainId,
+    getEvmRpcCanisterId,
+    getEvmRpcUrl,
+    getEvmTransactionType,
+    getSiweProviderCanisterId
+} from './env';
 
 export async function jsonRpcRequest(body: Record<string, any>): Promise<any> {
     if (process.env.CANISTER_ID_EVM_RPC === undefined) {
@@ -147,6 +153,32 @@ export async function ethSendRawTransaction(
     );
 }
 
+function buildV1Transaction(contractAddress: string, data: string, nonce: number): ethers.Transaction {
+    return ethers.Transaction.from({
+        to: contractAddress,
+        value: 0,
+        gasLimit: 1_000_000,
+        gasPrice: 0,
+        type: 0,
+        data,
+        chainId: getEvmChainId(),
+        nonce,
+    });
+}
+
+function buildV2Transaction(contractAddress: string, data: string, nonce: number) {
+    return ethers.Transaction.from({
+        to: contractAddress,
+        value: 0,
+        gasLimit: 30_000_000,
+        maxPriorityFeePerGas: 1n,
+        maxFeePerGas: 300_000_000n * 2n + 1n,
+        data,
+        chainId: getEvmChainId(),
+        nonce
+    });
+}
+
 export async function ethSendContractTransaction(
     contractAddress: string,
     contractAbi: ethers.InterfaceAbi,
@@ -174,21 +206,12 @@ export async function ethSendContractTransaction(
     // const baseFeePerGas = 0n;
     // console.log('baseFeePerGas', baseFeePerGas);
     // const maxFeePerGas = baseFeePerGas * 2n + maxPriorityFeePerGas;
-    const gasLimit = 1_000_000n;
     const nonce = await ethGetTransactionCount(canisterAddress);
     console.log('nonce', nonce);
-    let tx = ethers.Transaction.from({
-        to: contractAddress,
-        value: 0,
-        gasLimit,
-        gasPrice: 0,
-        type: 0,
-        data,
-        chainId: getEvmChainId(),
-        nonce,
-        // maxPriorityFeePerGas,
-        // maxFeePerGas,
-    });
+    let tx = getEvmTransactionType() === 'v1' ?
+        buildV1Transaction(contractAddress, data, nonce) :
+        buildV2Transaction(contractAddress, data, nonce);
+    console.log('tx', tx);
     const unsignedSerializedTx = tx.unsignedSerialized;
     const unsignedSerializedTxHash = ethers.keccak256(unsignedSerializedTx);
     const signedSerializedTxHash = await signWithEcdsa(

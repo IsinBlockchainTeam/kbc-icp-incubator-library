@@ -75,3 +75,17 @@ export function getLoginDuration(): string {
 
     throw new Error(`process.env.LOGIN_DURATION is not defined`);
 }
+export function getDfxNetwork(): string {
+    if (process.env.DFX_NETWORK !== undefined) {
+        return process.env.DFX_NETWORK;
+    }
+
+    throw new Error(`process.env.DFX_NETWORK is not defined`);
+}
+export function getEvmTransactionType(): string {
+    if (process.env.EVM_TRANSACTION_TYPE !== undefined) {
+        return process.env.EVM_TRANSACTION_TYPE;
+    }
+
+    throw new Error(`process.env.EVM_TRANSACTION_TYPE is not defined`);
+}

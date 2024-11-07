@@ -45,8 +45,7 @@ export class EntityBuilder {
         );
     }
 
-    static buildOrder(order: ICPOrder) {
-        const shipment = order.shipment.map((s) => this.buildShipment(s))[0] || null;
+    static buildOrder(order: ICPOrder, shipment: ICPShipment | null) {
         return new Order(
             Number(order.id),
             order.supplier,
@@ -74,7 +73,7 @@ export class EntityBuilder {
             })),
             order.token,
             Number(order.agreedAmount),
-            shipment
+            shipment ? this.buildShipment(shipment) : null
         );
     }
 

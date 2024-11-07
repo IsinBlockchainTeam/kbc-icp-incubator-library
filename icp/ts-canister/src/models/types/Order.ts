@@ -39,5 +39,5 @@ export type Order = {
     lines: OrderLine[];
     token: string;
     agreedAmount: bigint;
-    shipment: [Shipment] | [];
+    shipmentId: [bigint] | [];
 }

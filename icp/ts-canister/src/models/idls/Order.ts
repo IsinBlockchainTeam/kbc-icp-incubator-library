@@ -39,5 +39,5 @@ export const IDLOrder = IDL.Record({
     lines: IDL.Vec(IDLOrderLine),
     token: IDL.Text,
     agreedAmount: IDL.Nat,
-    shipment: IDL.Opt(IDLShipment),
+    shipmentId: IDL.Opt(IDL.Nat),
 });
