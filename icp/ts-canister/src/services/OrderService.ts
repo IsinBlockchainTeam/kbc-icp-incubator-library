@@ -10,6 +10,12 @@ import {validateAddress, validateDeadline, validateInterestedParty, validatePosi
 import AuthenticationService from "./AuthenticationService";
 import ShipmentService from "./ShipmentService";
 import ProductCategoryService from "./ProductCategoryService";
+import {
+    OrderAlreadyConfirmedError,
+    OrderAlreadySignedError,
+    OrderNotFoundError, OrderWithNoChangesError,
+    SameActorsError
+} from "../models/errors";
 
 class OrderService implements HasInterestedParties{
     private static _instance: OrderService;
@@ -47,7 +53,7 @@ class OrderService implements HasInterestedParties{
     getOrder(id: bigint): Order {
         const result = this._orders.get(id);
         if(!result)
-            throw new Error('Order not found');
+            throw new OrderNotFoundError();
         return result;
     }
 
@@ -69,7 +75,7 @@ class OrderService implements HasInterestedParties{
         lines: OrderLineRaw[]
     ): Order {
         if(supplier === customer)
-            throw new Error('Supplier and customer must be different');
+            throw new SameActorsError();
         validateAddress('Supplier', supplier);
         validateAddress('Customer', customer);
         validateAddress('Commissioner', commissioner);
@@ -143,7 +149,7 @@ class OrderService implements HasInterestedParties{
     ): Order {
         const order = this.getOrder(id);
         if(OrderStatusEnum.CONFIRMED in order.status)
-            throw new Error('Order already confirmed');
+            throw new OrderAlreadyConfirmedError();
         if(order.supplier == supplier &&
             order.customer == customer &&
             order.commissioner == commissioner &&
@@ -165,10 +171,10 @@ class OrderService implements HasInterestedParties{
             order.lines.map(l => l.price.amount).sort().toString() == lines.map(l => l.price.amount).sort().toString() &&
             order.lines.map(l => l.price.fiat).sort().toString() == lines.map(l => l.price.fiat).sort().toString()
         ) {
-            throw new Error('No changes detected');
+            throw new OrderWithNoChangesError();
         }
         if(supplier === customer)
-            throw new Error('Supplier and customer must be different');
+            throw new SameActorsError();
         validateAddress('Supplier', supplier);
         validateAddress('Customer', customer);
         validateAddress('Commissioner', commissioner);
@@ -224,10 +230,10 @@ class OrderService implements HasInterestedParties{
     async signOrder(id: bigint): Promise<Order> {
         const order = this.getOrder(id);
         if(OrderStatusEnum.CONFIRMED in order.status)
-            throw new Error('Order already confirmed');
+            throw new OrderAlreadyConfirmedError();
         const delegatorAddress = AuthenticationService.instance.getDelegatorAddress();
         if(order.signatures.includes(delegatorAddress))
-            throw new Error('Order already signed');
+            throw new OrderAlreadySignedError();
         order.signatures.push(delegatorAddress);
         if (order.signatures.includes(order.supplier) && order.signatures.includes(order.customer)) {
             order.status = { CONFIRMED: null };

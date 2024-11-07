@@ -1,6 +1,7 @@
 import {StableBTreeMap} from "azle";
 import {ProductCategory} from "../models/types";
 import {StableMemoryId} from "../utils/stableMemory";
+import {ProductCategoryNotFoundError} from "../models/errors";
 
 class ProductCategoryService {
     private static _instance: ProductCategoryService;
@@ -23,7 +24,7 @@ class ProductCategoryService {
         if(result) {
             return result;
         }
-        throw new Error('Product category not found');
+        throw new ProductCategoryNotFoundError();
     }
 
     productCategoryExists(id: bigint): boolean {

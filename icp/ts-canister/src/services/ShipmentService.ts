@@ -18,6 +18,20 @@ import escrowAbi from '../../eth-abi/Escrow.json';
 import { StableMemoryId } from '../utils/stableMemory';
 import { ic } from 'azle/experimental';
 import AuthenticationService from "./AuthenticationService";
+import {
+    ShipmentDetailsAlreadyApprovedError,
+    ShipmentDetailsNotSetError,
+    ShipmentDownPaymentAddressNotFound,
+    ShipmentFundsAlreadyLockedError,
+    ShipmentInWrongPhaseError,
+    ShipmentNotFoundError,
+    ShipmentQualityAlreadyApprovedError,
+    ShipmentSampleAlreadyApprovedError,
+    CallerIsTheUploaderError,
+    DocumentAlreadyApprovedError,
+    DocumentNotFoundError,
+    SameActorsError
+} from "../models/errors";
 
 class ShipmentService implements HasInterestedParties{
     private static _instance: ShipmentService;
@@ -55,7 +69,7 @@ class ShipmentService implements HasInterestedParties{
     getShipment(id: bigint): Shipment {
         const result = this._shipments.get(id);
         if (!result) {
-            throw new Error('Shipment not found');
+            throw new ShipmentNotFoundError();
         }
         return result;
     }
@@ -68,7 +82,7 @@ class ShipmentService implements HasInterestedParties{
         tokenAddress: string
     ): Promise<Shipment> {
         if (supplier === commissioner)
-            throw new Error('Supplier and commissioner must be different');
+            throw new SameActorsError();
         validateAddress('Supplier', supplier);
         validateAddress('Commissioner', commissioner);
 
@@ -165,9 +179,9 @@ class ShipmentService implements HasInterestedParties{
     ): Shipment {
         const shipment = this.getShipment(id);
         if (!(PhaseEnum.PHASE_2 in this.getShipmentPhase(id)))
-            throw new Error('Shipment in wrong phase');
+            throw new ShipmentInWrongPhaseError();
         if (EvaluationStatusEnum.APPROVED in shipment.detailsEvaluationStatus)
-            throw new Error('Details already approved');
+            throw new ShipmentDetailsAlreadyApprovedError();
 
         shipment.shipmentNumber = shipmentNumber;
         shipment.expirationDate = expirationDate;
@@ -188,10 +202,10 @@ class ShipmentService implements HasInterestedParties{
     evaluateSample(id: bigint, evaluationStatus: EvaluationStatus): Shipment {
         const shipment = this.getShipment(id);
         if (!(PhaseEnum.PHASE_1 in this.getShipmentPhase(id)))
-            throw new Error('Shipment in wrong phase');
+            throw new ShipmentInWrongPhaseError();
 
         if (EvaluationStatusEnum.APPROVED in shipment.sampleEvaluationStatus)
-            throw new Error('Sample already approved');
+            throw new ShipmentSampleAlreadyApprovedError();
         shipment.sampleEvaluationStatus = evaluationStatus;
 
         this._shipments.insert(id, shipment);
@@ -201,11 +215,11 @@ class ShipmentService implements HasInterestedParties{
     evaluateShipmentDetails(id: bigint, evaluationStatus: EvaluationStatus): Shipment {
         const shipment = this.getShipment(id);
         if (!(PhaseEnum.PHASE_2 in this.getShipmentPhase(id)))
-            throw new Error('Shipment in wrong phase');
+            throw new ShipmentInWrongPhaseError();
         if (!shipment.detailsSet)
-            throw new Error('Details not set');
+            throw new ShipmentDetailsNotSetError();
         if (EvaluationStatusEnum.APPROVED in shipment.detailsEvaluationStatus)
-            throw new Error('Details already approved');
+            throw new ShipmentDetailsAlreadyApprovedError();
         shipment.detailsEvaluationStatus = evaluationStatus;
 
         this._shipments.insert(id, shipment);
@@ -215,9 +229,9 @@ class ShipmentService implements HasInterestedParties{
     evaluateQuality(id: bigint, evaluationStatus: EvaluationStatus): Shipment {
         const shipment = this.getShipment(id);
         if (!(PhaseEnum.PHASE_5 in this.getShipmentPhase(id)))
-            throw new Error('Shipment in wrong phase');
+            throw new ShipmentInWrongPhaseError();
         if (EvaluationStatusEnum.APPROVED in shipment.qualityEvaluationStatus)
-            throw new Error('Quality already approved');
+            throw new ShipmentQualityAlreadyApprovedError();
         shipment.qualityEvaluationStatus = evaluationStatus;
 
         this._shipments.insert(id, shipment);
@@ -227,9 +241,9 @@ class ShipmentService implements HasInterestedParties{
     async depositFunds(id: bigint, amount: bigint): Promise<Shipment> {
         const shipment = this.getShipment(id);
         if (!(PhaseEnum.PHASE_3 in this.getShipmentPhase(id)))
-            throw new Error('Shipment in wrong phase');
+            throw new ShipmentInWrongPhaseError();
         if (!(FundStatusEnum.NOT_LOCKED in shipment.fundsStatus))
-            throw new Error('Funds already locked');
+            throw new ShipmentFundsAlreadyLockedError();
 
         if (shipment.escrowAddress.length === 0) {
             const escrowManagerAddress: string = getEvmEscrowManagerAddress();
@@ -250,9 +264,9 @@ class ShipmentService implements HasInterestedParties{
     async lockFunds(id: bigint): Promise<Shipment> {
         const shipment = this.getShipment(id);
         if (!(PhaseEnum.PHASE_3 in this.getShipmentPhase(id)))
-            throw new Error('Shipment in wrong phase');
+            throw new ShipmentInWrongPhaseError();
         if (!(FundStatusEnum.NOT_LOCKED in shipment.fundsStatus))
-            throw new Error('Funds already locked');
+            throw new ShipmentFundsAlreadyLockedError();
 
         if (shipment.escrowAddress.length === 0) {
             const escrowManagerAddress: string = getEvmEscrowManagerAddress();
@@ -279,7 +293,7 @@ class ShipmentService implements HasInterestedParties{
         if (PhaseEnum.PHASE_5 in this.getShipmentPhase(id) && FundStatusEnum.LOCKED in shipment.fundsStatus) {
             const escrowAddress = shipment.escrowAddress[0];
             if (!escrowAddress)
-                throw new Error('Escrow address not found');
+                throw new ShipmentDownPaymentAddressNotFound();
             await ethSendContractTransaction(escrowAddress, escrowAbi.abi, 'releaseFunds', [shipment.price]);
             shipment.fundsStatus = { RELEASED: null };
             console.log('funds released');
@@ -298,7 +312,7 @@ class ShipmentService implements HasInterestedParties{
         const shipment = this.getShipment(id);
         const document = shipment.documents.flatMap(([_, docs]) => docs).find(doc => doc.id === documentId);
         if (!document)
-            throw new Error('Document not found');
+            throw new DocumentNotFoundError();
         return document;
     }
 
@@ -310,7 +324,7 @@ class ShipmentService implements HasInterestedParties{
             || documents.length == 0
             || !(EvaluationStatusEnum.APPROVED in documents[0].evaluationStatus)
         ))
-            throw new Error('Document of this type already approved');
+            throw new DocumentAlreadyApprovedError();
         const delegatorAddress = AuthenticationService.instance.getDelegatorAddress();
         const documentInfo: DocumentInfo = {
             id: BigInt(shipment.documents.length),
@@ -339,12 +353,12 @@ class ShipmentService implements HasInterestedParties{
         const shipment = this.getShipment(id);
         const documentTuple = shipment.documents.find(([_, docs]) => docs.find(doc => doc.id === documentId));
         if (!documentTuple)
-            throw new Error('Document not found');
+            throw new DocumentNotFoundError();
         const document = documentTuple[1].find(doc => doc.id === documentId);
         if (!document)
-            throw new Error('Document not found');
+            throw new DocumentNotFoundError();
         if (EvaluationStatusEnum.APPROVED in document.evaluationStatus)
-            throw new Error('Document already approved');
+            throw new DocumentAlreadyApprovedError();
         const documentIndex = documentTuple[1].findIndex(doc => doc.id === documentId);
 
         const delegatorAddress = AuthenticationService.instance.getDelegatorAddress();
@@ -359,13 +373,13 @@ class ShipmentService implements HasInterestedParties{
         const shipment = this.getShipment(id);
         const documentTuple = shipment.documents.find(([_, docs]) => docs.find(doc => doc.id === documentId));
         if (!documentTuple)
-            throw new Error('Document not found');
+            throw new DocumentNotFoundError();
         const document = documentTuple[1][0];
         const delegatorAddress = AuthenticationService.instance.getDelegatorAddress();
         if (document.uploadedBy === delegatorAddress)
-            throw new Error('Caller is the uploader');
+            throw new CallerIsTheUploaderError();
         if (EvaluationStatusEnum.APPROVED in document.evaluationStatus)
-            throw new Error('Document already approved');
+            throw new DocumentAlreadyApprovedError();
         const documentIndex = documentTuple[1].findIndex(doc => doc.id === documentId);
         documentTuple[1][documentIndex].evaluationStatus = documentEvaluationStatus;
 
@@ -375,7 +389,7 @@ class ShipmentService implements HasInterestedParties{
         if (PhaseEnum.PHASE_5 in this.getShipmentPhase(id) && FundStatusEnum.LOCKED in shipment.fundsStatus) {
             const escrowAddress = shipment.escrowAddress[0];
             if (!escrowAddress)
-                throw new Error('Escrow address not found');
+                throw new ShipmentDownPaymentAddressNotFound();
             await ethSendContractTransaction(escrowAddress, escrowAbi.abi, 'releaseFunds', [shipment.price]);
             shipment.fundsStatus = { RELEASED: null };
             console.log('funds released');
