@@ -8,7 +8,7 @@ export function HandleIcpError() {
     ): PropertyDescriptor {
         const originalMethod = descriptor.value;
 
-        // eslint-disable-next-line no-param-reassign,consistent-return
+        // eslint-disable-next-line no-param-reassign,consistent-return,func-names
         descriptor.value = async function (...args: any[]) {
             try {
                 return await originalMethod.apply(this, args);
@@ -20,3 +20,14 @@ export function HandleIcpError() {
         return descriptor;
     };
 }
+// export function HandleIcpError(originalMethod: any, _context: any): any {
+//     async function replacementMethod(this: any, ...args: any[]) {
+//         try {
+//             return await originalMethod.apply(this, args);
+//         } catch (error: any) {
+//             handleCanisterError(error);
+//             return Promise.reject(error);
+//         }
+//     }
+//     return replacementMethod;
+// }

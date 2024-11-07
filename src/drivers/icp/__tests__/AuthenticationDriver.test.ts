@@ -20,7 +20,7 @@ describe('AuthenticationDriver', () => {
         authenticationDriver = new AuthenticationDriver(icpIdentity, 'canisterId');
     });
 
-    it('should login', async () => {
+    it('should authenticate', async () => {
         const roleProof = {} as RoleProof;
         mockFn.authenticate.mockReturnValue(true);
         await expect(authenticationDriver.authenticate(roleProof)).resolves.toBeTruthy();

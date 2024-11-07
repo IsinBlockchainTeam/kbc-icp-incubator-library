@@ -129,3 +129,6 @@ export { ProductCategoryService as ICPProductCategoryService } from './services/
 
 export { MaterialDriver as ICPMaterialDriver } from './drivers/icp/MaterialDriver';
 export { MaterialService as ICPMaterialService } from './services/icp/MaterialService';
+
+// Errors
+export { NotAuthenticatedError, NotAuthorizedError, NotValidCredentialError } from './entities/icp/errors'

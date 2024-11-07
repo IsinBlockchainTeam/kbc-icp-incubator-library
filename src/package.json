@@ -55,17 +55,17 @@
         "@dfinity/auth-client": "^1.4.0",
         "@ethersproject/providers": "^5.6.4",
         "@jest/test-sequencer": "^29.7.0",
+        "@kbc-lib/azle-types": "file:../icp/ts-canister",
         "@supercharge/promise-pool": "^3.2.0",
         "buffer": "^6.0.3",
         "crypto-js": "^4.2.0",
         "dotenv": "^16.3.1",
         "ethers": "^5.6.1",
+        "icp-declarations": "file:./declarations",
         "jest-environment-node": "^29.5.0",
         "jwt-decode": "^4.0.0",
         "node-fetch": "^2.6.1",
-        "uuid": "^9.0.1",
-        "@kbc-lib/azle-types": "file:../icp/ts-canister",
-        "icp-declarations": "file:./declarations"
+        "uuid": "^9.0.1"
     },
     "author": "ISIN Blockchain team",
     "license": "MIT"

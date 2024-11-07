@@ -3,6 +3,7 @@ import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
 import {createActor} from "icp-declarations/entity_manager";
 import {Offer} from "../../entities/Offer";
 import {EntityBuilder} from "../../utils/icp/EntityBuilder";
+import {HandleIcpError} from "../../decorators/HandleIcpError";
 
 export class OfferDriver {
     private _actor: ActorSubclass<_SERVICE>;
@@ -16,16 +17,19 @@ export class OfferDriver {
         });
     }
 
+    @HandleIcpError()
     async getOffers(): Promise<Offer[]> {
         const resp = await this._actor.getOffers();
         return resp.map(rawOffer => EntityBuilder.buildOffer(rawOffer));
     }
 
+    @HandleIcpError()
     async getOffer(id: number): Promise<Offer> {
         const resp = await this._actor.getOffer(BigInt(id));
         return EntityBuilder.buildOffer(resp);
     }
 
+    @HandleIcpError()
     async createOffer(productCategoryId: number): Promise<Offer> {
         const resp = await this._actor.createOffer(BigInt(productCategoryId));
         return EntityBuilder.buildOffer(resp);

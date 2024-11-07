@@ -1,4 +1,4 @@
-import {ErrorType} from "@kbc-lib/azle-types/src/models/types";
+import {ErrorType} from "@kbc-lib/azle-types";
 import {NotAuthenticatedError, NotAuthorizedError, NotValidCredentialError} from "../../entities/icp/errors";
 
 export const handleCanisterError = (error: unknown) => {
