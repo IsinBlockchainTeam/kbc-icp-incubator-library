@@ -88,15 +88,17 @@ source .env && dfx deploy
 Smart contracts ABIs are encoded in the project. If you want to update them, modify the `eth-abi` folder.
 
 ## Env
-
-Update the `.env.evm` file the following variables:
-
+Create a `.env.custom` file containing the following variables:
 ```bash
 EVM_RPC_URL=<RPC_URL>
 EVM_CHAIN_ID=<CHAIN_ID>
 EVM_ESCROW_MANAGER_ADDRESS=<ESCROW_MANAGER_ADDRESS>
 EVM_REVOCATION_REGISTRY_ADDRESS=<REVOCATION_REGISTRY_ADDRESS>
 EVM_MEMBERSHIP_ISSUER_ADDRESS=<MEMBERSHIP_ISSUER_ADDRESS>
+
+LOGIN_DURATION=<LOGIN_DURATION>
+
+GITLAB_TOKEN=<GITLAB_TOKEN>
 ```
 
 ## Local deployment
@@ -105,7 +107,7 @@ Inside `blockchain` folder, run:
 
 ```bash
 npx hardhat node
-npm run deploy-temp
+npm run deploy
 ```
 
 Inside `blockchain/scripts/send-eth.ts` edit the recipient address to top-up the account. Then run:
@@ -119,9 +121,7 @@ Create a ngrok tunnel to the local blockchain:
 ```bash
 ngrok http 8545
 ```
-
-Copy the ngrok URL and paste it in the `ts-canister/src/rpcUtils.ts` file. Then run:
-
+Run:
 ```bash
 dfx start --clean
 npm run deploy

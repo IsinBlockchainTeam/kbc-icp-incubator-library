@@ -68,21 +68,19 @@ export { EscrowService } from './services/EscrowService';
 export { TokenDriver } from './drivers/TokenDriver';
 export { TokenService } from './services/TokenService';
 
+export { Shipment, Phase as ShipmentPhase, FundStatus } from './entities/icp/Shipment';
+export { EvaluationStatus } from './entities/icp/Evaluation';
 export {
-    Shipment,
-    Phase as ShipmentPhase,
-    DocumentEvaluationStatus as ShipmentDocumentEvaluationStatus,
     DocumentInfo as ShipmentDocumentInfo,
-    DocumentType as ShipmentDocumentType,
-    EvaluationStatus as ShipmentEvaluationStatus,
-    FundsStatus
-} from './entities/Shipment';
-export { ShipmentDriver } from './drivers/ShipmentDriver';
+    DocumentType as ShipmentDocumentType
+} from './entities/icp/Document';
+export { ShipmentDriver } from './drivers/icp/ShipmentDriver';
 export {
     ShipmentService,
-    type ShipmentDocument,
-    type ShipmentPhaseDocument
-} from './services/ShipmentService';
+    ShipmentPhaseDocument,
+    ShipmentDocument,
+    ShipmentDocumentMetadata
+} from './services/icp/ShipmentService';
 
 export {
     BaseCertificate,
@@ -119,9 +117,18 @@ export { computeRoleProof } from './drivers/icp/proof';
 export { OrderDriver, OrderParams } from './drivers/icp/OrderDriver';
 export { OrderService } from './services/icp/OrderService';
 
+export { Organization } from './entities/organization/Organization';
+export { BroadedOrganization, OrganizationRole } from './entities/organization/BroadedOrganization';
+export { NarrowedOrganization } from './entities/organization/NarrowedOrganization';
+export { OrganizationDriver, OrganizationParams } from './drivers/icp/OrganizationDriver';
+export { OrganizationService } from './services/icp/OrganizationService';
+
 // export {createActor} from 'icp-declarations/entity_manager'
 export { AuthenticationDriver as ICPAuthenticationDriver } from './drivers/icp/AuthenticationDriver';
 export { AuthenticationService as ICPAuthenticationService } from './services/icp/AuthenticationService';
+
+export { OfferDriver as ICPOfferDriver } from './drivers/icp/OfferDriver';
+export { OfferService as ICPOfferService } from './services/icp/OfferService';
 
 export { ProductCategoryDriver as ICPProductCategoryDriver } from './drivers/icp/ProductCategoryDriver';
 export { ProductCategoryService as ICPProductCategoryService } from './services/icp/ProductCategoryService';

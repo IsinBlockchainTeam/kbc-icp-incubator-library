@@ -2,6 +2,7 @@ import { Event, Signer, utils } from 'ethers';
 import { EscrowManager, EscrowManager__factory } from '../smart-contracts';
 import { RoleProof } from '../types/RoleProof';
 
+// TODO: remove role proofs
 export class EscrowManagerDriver {
     private _contract: EscrowManager;
 

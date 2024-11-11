@@ -5,7 +5,10 @@
     "scripts": {
         "test": "jest",
         "start-network": "dfx start --clean",
-        "deploy": "set -o allexport; source .env.evm; set +o allexport && dfx deploy",
+        "deploy": "bash -c \"set -o allexport; source .env.custom; source .env; set +o allexport && cat dfx.template.json | envsubst > dfx.json && dfx deploy\"",
+        "deploy:ic": "bash -c \"set -o allexport; source .env.custom; source .env; set +o allexport && dfx deploy --ic\"",
+        "upgrade": "bash -c \"set -o allexport; source .env.custom; source .env; set +o allexport && cat dfx.template.json | envsubst > dfx.json && dfx build entity_manager && dfx canister install --mode upgrade entity_manager\"",
+        "upgrade:ic": "bash -c \"set -o allexport; source .env.custom; source .env; set +o allexport && cat dfx.template.json | envsubst > dfx.json && dfx build entity_manager --ic && dfx canister install --mode upgrade entity_manager --ic\"",
         "build-types": "npx tsc -p tsconfig-types.json",
         "lint": "eslint --fix --ext .ts .",
         "prettier": "npx prettier . --write",
@@ -15,6 +18,7 @@
         "@types/jest": "^29.5.14",
         "azle": "^0.24.1",
         "ethers": "^6.13.2",
+        "prettier": "^3.3.3",
         "ts-node": "^10.9.2"
     },
     "devDependencies": {

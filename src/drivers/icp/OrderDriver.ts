@@ -1,8 +1,9 @@
 import type { ActorSubclass, Identity } from '@dfinity/agent';
-import {createActor} from "icp-declarations/entity_manager";
+import { createActor } from 'icp-declarations/entity_manager';
 import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
-import {EntityBuilder} from "../../utils/icp/EntityBuilder";
-import {Order} from "../../entities/icp/Order";
+import { EntityBuilder } from '../../utils/icp/EntityBuilder';
+import { Order } from '../../entities/icp/Order';
+import { Order as ICPOrder } from '@kbc-lib/azle-types';
 
 export type OrderParams = {
     supplier: string;
@@ -15,7 +16,6 @@ export type OrderParams = {
     arbiter: string;
     token: string;
     agreedAmount: number;
-    escrowManager: string;
     incoterms: string;
     shipper: string;
     shippingPort: string;
@@ -43,14 +43,23 @@ export class OrderDriver {
         });
     }
 
+    private async buildOrder(order: ICPOrder): Promise<Order> {
+        const shipmentId = order.shipmentId.length > 0 ? order.shipmentId[0] : null;
+        return EntityBuilder.buildOrder(
+            order,
+            shipmentId !== undefined && shipmentId !== null
+                ? await this._actor.getShipment(shipmentId)
+                : null
+        );
+    }
+
     async getOrders(): Promise<Order[]> {
         const resp = await this._actor.getOrders();
-        return resp.map(rawOrder => EntityBuilder.buildOrder(rawOrder));
+        return await Promise.all(resp.map((rawOrder) => this.buildOrder(rawOrder)));
     }
 
     async getOrder(id: number): Promise<Order> {
-        const resp = await this._actor.getOrder(BigInt(id));
-        return EntityBuilder.buildOrder(resp);
+        return this.buildOrder(await this._actor.getOrder(BigInt(id)));
     }
 
     async createOrder(params: OrderParams): Promise<Order> {
@@ -65,12 +74,11 @@ export class OrderDriver {
             params.arbiter,
             params.token,
             BigInt(params.agreedAmount),
-            params.escrowManager,
             params.incoterms,
             params.shipper,
             params.shippingPort,
             params.deliveryPort,
-            params.lines.map(line => ({
+            params.lines.map((line) => ({
                 productCategoryId: BigInt(line.productCategoryId),
                 quantity: line.quantity,
                 unit: line.unit,
@@ -80,7 +88,7 @@ export class OrderDriver {
                 }
             }))
         );
-        return EntityBuilder.buildOrder(resp);
+        return EntityBuilder.buildOrder(resp, null);
     }
 
     async updateOrder(id: number, params: OrderParams): Promise<Order> {
@@ -96,12 +104,11 @@ export class OrderDriver {
             params.arbiter,
             params.token,
             BigInt(params.agreedAmount),
-            params.escrowManager,
             params.incoterms,
             params.shipper,
             params.shippingPort,
             params.deliveryPort,
-            params.lines.map(line => ({
+            params.lines.map((line) => ({
                 productCategoryId: BigInt(line.productCategoryId),
                 quantity: line.quantity,
                 unit: line.unit,
@@ -111,11 +118,15 @@ export class OrderDriver {
                 }
             }))
         );
-        return EntityBuilder.buildOrder(resp);
+        return this.buildOrder(resp);
     }
 
     async signOrder(id: number): Promise<Order> {
         const resp = await this._actor.signOrder(BigInt(id));
-        return EntityBuilder.buildOrder(resp);
+        return this.buildOrder(resp);
+    }
+
+    async deleteOrder(id: number): Promise<boolean> {
+        return this._actor.deleteOrder(BigInt(id));
     }
 }

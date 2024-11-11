@@ -1,10 +1,12 @@
-export enum EvaluationStatus {
-    NOT_EVALUATED = 'NOT_EVALUATED',
-    APPROVED = 'APPROVED',
-    NOT_APPROVED = 'NOT_APPROVED'
-}
+import { Document, DocumentTypeEnum as DocumentType } from '@kbc-lib/azle-types';
+import { EvaluationStatus } from './Evaluation';
 
-// export type DocumentMetadata = {
-//     filename: string;
-//     fileType: string;
-// };
+export { Document, DocumentType };
+
+export type DocumentInfo = {
+    id: number;
+    documentType: DocumentType;
+    evaluationStatus: EvaluationStatus;
+    uploadedBy: string;
+    externalUrl: string;
+};

@@ -1,5 +1,5 @@
 import { IDL } from 'azle';
-import { IDLEvaluationStatus} from './Evaluation';
+import { IDLEvaluationStatus } from './Evaluation';
 
 export const Document = IDL.Record({
     id: IDL.Nat,

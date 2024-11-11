@@ -1,8 +1,10 @@
 import OrderService from "../OrderService";
-import {Order, ROLES} from "../../models/types";
+import {Order, ROLES, Shipment} from "../../models/types";
 import {StableBTreeMap} from "azle";
 import AuthenticationService from "../AuthenticationService";
 import {validateAddress, validateDeadline, validateInterestedParty} from "../../utils/validation";
+import ShipmentService from "../ShipmentService";
+import ProductCategoryService from "../ProductCategoryService";
 
 jest.mock('azle');
 jest.mock('../../services/AuthenticationService', () => {
@@ -10,6 +12,20 @@ jest.mock('../../services/AuthenticationService', () => {
         instance: {
             getDelegatorAddress: jest.fn(),
             getRole: jest.fn()
+        }
+    };
+});
+jest.mock('../../services/ShipmentService', () => {
+    return {
+        instance: {
+            createShipment: jest.fn(),
+        }
+    };
+});
+jest.mock('../../services/ProductCategoryService', () => {
+    return {
+        instance: {
+            getProductCategory: jest.fn(),
         }
     };
 });
@@ -24,6 +40,8 @@ jest.mock('../../utils/validation', () => {
 describe("OrderService", () => {
     let orderService: OrderService;
     let authenticationServiceInstanceMock = AuthenticationService.instance as jest.Mocked<AuthenticationService>;
+    let shipmentServiceInstanceMock = ShipmentService.instance as jest.Mocked<ShipmentService>;
+    let productCategoryServiceInstanceMock = ProductCategoryService.instance as jest.Mocked<ProductCategoryService>;
     const order = {
         id: 0n,
         supplier: '0xsupplier',
@@ -43,9 +61,7 @@ describe("OrderService", () => {
         lines: [],
         token: '0xtoken',
         agreedAmount: 5n,
-        escrowManager: '0xescrowManager',
-        escrow: [],
-        shipmentId: []
+        shipment: []
     } as Order;
 
     const mockedFn = {
@@ -72,7 +88,7 @@ describe("OrderService", () => {
         expect(mockedFn.get).toHaveBeenCalled();
 
         mockedFn.get.mockReturnValue(undefined);
-        expect(orderService.getInterestedParties(1n)).toEqual([]);
+        expect(() => orderService.getInterestedParties(1n)).toThrow(new Error('Order not found'));
     });
 
     it("retrieves all orders", () => {
@@ -112,12 +128,11 @@ describe("OrderService", () => {
             order.arbiter,
             order.token,
             order.agreedAmount,
-            order.escrowManager,
             order.incoterms,
             order.shipper,
             order.shippingPort,
             order.deliveryPort,
-            order.lines
+            []
         )).toEqual(order);
         expect(mockedFn.keys).toHaveBeenCalled();
         expect(mockedFn.insert).toHaveBeenCalled();
@@ -133,12 +148,11 @@ describe("OrderService", () => {
             order.arbiter,
             order.token,
             order.agreedAmount,
-            order.escrowManager,
             order.incoterms,
             order.shipper,
             order.shippingPort,
             order.deliveryPort,
-            order.lines
+            []
         )).toThrow(new Error('Supplier and customer must be different'));
         (validateAddress as jest.Mock).mockImplementation(() => {throw new Error('Invalid address')});
         expect(() => orderService.createOrder(
@@ -152,12 +166,11 @@ describe("OrderService", () => {
             order.arbiter,
             order.token,
             order.agreedAmount,
-            order.escrowManager,
             order.incoterms,
             order.shipper,
             order.shippingPort,
             order.deliveryPort,
-            order.lines
+            []
         )).toThrow(new Error('Invalid address'));
     });
 
@@ -182,12 +195,11 @@ describe("OrderService", () => {
             order.arbiter,
             order.token,
             order.agreedAmount,
-            order.escrowManager,
             order.incoterms,
             order.shipper,
             order.shippingPort,
             order.deliveryPort,
-            order.lines
+            []
         )).toEqual({...order, commissioner: order.commissioner + 'changed'});
         expect(mockedFn.get).toHaveBeenCalled();
         expect(mockedFn.insert).toHaveBeenCalled();
@@ -205,12 +217,11 @@ describe("OrderService", () => {
             order.arbiter,
             order.token,
             order.agreedAmount,
-            order.escrowManager,
             order.incoterms,
             order.shipper,
             order.shippingPort,
             order.deliveryPort,
-            order.lines
+            []
         )).toThrow(new Error('Order not found'));
         mockedFn.get.mockReturnValue(order);
         expect(() => orderService.updateOrder(
@@ -225,12 +236,11 @@ describe("OrderService", () => {
             order.arbiter,
             order.token,
             order.agreedAmount,
-            order.escrowManager,
             order.incoterms,
             order.shipper,
             order.shippingPort,
             order.deliveryPort,
-            order.lines
+            []
         )).toThrow(new Error('No changes detected'));
         expect(() => orderService.updateOrder(
             0n,
@@ -244,12 +254,11 @@ describe("OrderService", () => {
             order.arbiter,
             order.token,
             order.agreedAmount,
-            order.escrowManager,
             order.incoterms,
             order.shipper,
             order.shippingPort,
             order.deliveryPort,
-            order.lines
+            []
         )).toThrow(new Error('Supplier and customer must be different'));
         (validateAddress as jest.Mock).mockImplementation(() => {throw new Error('Invalid address')});
         expect(() => orderService.updateOrder(
@@ -264,12 +273,11 @@ describe("OrderService", () => {
             order.arbiter,
             order.token,
             order.agreedAmount,
-            order.escrowManager,
             order.incoterms,
             order.shipper,
             order.shippingPort,
             order.deliveryPort,
-            order.lines
+            []
         )).toThrow(new Error('Invalid address'));
     });
 
@@ -277,6 +285,7 @@ describe("OrderService", () => {
         const delegatorAddress = '0xcustomer';
         authenticationServiceInstanceMock.getDelegatorAddress.mockReturnValue(delegatorAddress);
         mockedFn.get.mockReturnValue(order);
+        shipmentServiceInstanceMock.createShipment.mockResolvedValue({id: 1n} as Shipment);
         const resp = await orderService.signOrder(0n);
         expect(resp).toEqual({...order, status: { CONFIRMED: null }});
         expect(mockedFn.insert).toHaveBeenCalled();
@@ -285,7 +294,7 @@ describe("OrderService", () => {
         await expect(() => orderService.signOrder(0n)).rejects.toThrow(new Error('Order not found'));
         mockedFn.get.mockReturnValue(order);
         authenticationServiceInstanceMock.getDelegatorAddress.mockReturnValue('0xsupplier');
-        await expect(() => orderService.signOrder(0n)).rejects.toThrow(new Error('Order already signed'));
+        await expect(() => orderService.signOrder(0n)).rejects.toThrow(new Error('Order already confirmed'));
         authenticationServiceInstanceMock.getDelegatorAddress.mockReturnValue('0xother');
     });
 });

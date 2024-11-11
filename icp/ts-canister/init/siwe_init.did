@@ -8,11 +8,11 @@
     sign_in_expires_in = opt 300000000000;
     session_expires_in = opt 604800000000000;
     targets = opt vec {
-        "be2us-64aaa-aaaaa-qaabq-cai"; // SIWE
-        "bkyz2-fmaaa-aaaaa-qaaaq-cai"; // Entity Manager
-        "asrmz-lmaaa-aaaaa-qaaeq-cai"; // Storage
-        "avqkn-guaaa-aaaaa-qaaea-cai"; // Permission
-        "by6od-j4aaa-aaaaa-qaadq-cai"; // Organization
+        "by6od-j4aaa-aaaaa-qaadq-cai"; // SIWE
+        "bw4dl-smaaa-aaaaa-qaacq-cai"; // Entity Manager
+        "be2us-64aaa-aaaaa-qaabq-cai"; // Storage
+        "bd3sg-teaaa-aaaaa-qaaba-cai"; // Permission
+        "bkyz2-fmaaa-aaaaa-qaaaq-cai"; // Organization
     };
   }
 )

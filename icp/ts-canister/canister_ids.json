@@ -1,0 +1,20 @@
+{
+  "evm_rpc": {
+    "ic": "c2y56-7aaaa-aaaap-akqta-cai"
+  },
+  "entity_manager": {
+    "ic": "gzlum-xqaaa-aaaap-akqia-cai"
+  },
+  "ic_siwe_provider": {
+    "ic": "xes56-yiaaa-aaaak-aksbq-cai"
+  },
+  "organization": {
+    "ic": "o3sqy-6yaaa-aaaak-akq6q-cai"
+  },
+  "permission": {
+    "ic": "o4twm-taaaa-aaaak-akq6a-cai"
+  },
+  "storage": {
+    "ic": "osr3e-iqaaa-aaaak-akq7a-cai"
+  }
+}

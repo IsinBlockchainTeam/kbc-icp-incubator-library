@@ -1,15 +1,13 @@
-import {IDL, query, update} from "azle";
+import { IDL, query, update } from "azle";
+import { IDLOrder, IDLOrderLineRaw } from "../models/idls";
+import { Order, OrderLineRaw } from "../models/types";
 import {
-    IDLOrder,
-    IDLOrderLine
-} from "../models/idls";
-import {
-    Order,
-    OrderLine
-} from "../models/types";
-import {AtLeastEditor, AtLeastSigner, AtLeastViewer} from "../decorators/roles";
+    AtLeastEditor,
+    AtLeastSigner,
+    AtLeastViewer,
+} from "../decorators/roles";
 import OrderService from "../services/OrderService";
-import {OnlyContractParty} from "../decorators/parties";
+import { OnlyContractParty } from "../decorators/parties";
 
 class OrderController {
     @query([], IDL.Vec(IDLOrder))
@@ -25,7 +23,26 @@ class OrderController {
         return OrderService.instance.getOrder(id);
     }
 
-    @update([IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Text, IDL.Text, IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(IDLOrderLine)], IDLOrder)
+    @update(
+        [
+            IDL.Text,
+            IDL.Text,
+            IDL.Text,
+            IDL.Nat,
+            IDL.Nat,
+            IDL.Nat,
+            IDL.Nat,
+            IDL.Text,
+            IDL.Text,
+            IDL.Nat,
+            IDL.Text,
+            IDL.Text,
+            IDL.Text,
+            IDL.Text,
+            IDL.Vec(IDLOrderLineRaw),
+        ],
+        IDLOrder,
+    )
     @AtLeastEditor
     async createOrder(
         supplier: string,
@@ -38,12 +55,11 @@ class OrderController {
         arbiter: string,
         token: string,
         agreedAmount: bigint,
-        escrowManager: string,
         incoterms: string,
         shipper: string,
         shippingPort: string,
         deliveryPort: string,
-        lines: OrderLine[]
+        lines: OrderLineRaw[],
     ): Promise<Order> {
         return OrderService.instance.createOrder(
             supplier,
@@ -56,16 +72,35 @@ class OrderController {
             arbiter,
             token,
             agreedAmount,
-            escrowManager,
             incoterms,
             shipper,
             shippingPort,
             deliveryPort,
-            lines
+            lines,
         );
     }
 
-    @update([IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Nat, IDL.Text, IDL.Text, IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(IDLOrderLine)], IDLOrder)
+    @update(
+        [
+            IDL.Nat,
+            IDL.Text,
+            IDL.Text,
+            IDL.Text,
+            IDL.Nat,
+            IDL.Nat,
+            IDL.Nat,
+            IDL.Nat,
+            IDL.Text,
+            IDL.Text,
+            IDL.Nat,
+            IDL.Text,
+            IDL.Text,
+            IDL.Text,
+            IDL.Text,
+            IDL.Vec(IDLOrderLineRaw),
+        ],
+        IDLOrder,
+    )
     @AtLeastEditor
     @OnlyContractParty(OrderService.instance)
     async updateOrder(
@@ -80,12 +115,11 @@ class OrderController {
         arbiter: string,
         token: string,
         agreedAmount: bigint,
-        escrowManager: string,
         incoterms: string,
         shipper: string,
         shippingPort: string,
         deliveryPort: string,
-        lines: OrderLine[]
+        lines: OrderLineRaw[],
     ): Promise<Order> {
         return OrderService.instance.updateOrder(
             id,
@@ -99,12 +133,11 @@ class OrderController {
             arbiter,
             token,
             agreedAmount,
-            escrowManager,
             incoterms,
             shipper,
             shippingPort,
             deliveryPort,
-            lines
+            lines,
         );
     }
 
@@ -113,6 +146,12 @@ class OrderController {
     @OnlyContractParty(OrderService.instance)
     async signOrder(id: bigint): Promise<Order> {
         return OrderService.instance.signOrder(id);
+    }
+
+    @update([IDL.Nat], IDL.Bool)
+    @AtLeastEditor
+    async deleteOrder(id: bigint): Promise<boolean> {
+        return OrderService.instance.deleteOrder(id);
     }
 }
 export default OrderController;
