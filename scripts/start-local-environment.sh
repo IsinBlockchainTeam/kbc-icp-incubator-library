@@ -52,11 +52,33 @@ function wait_for_dfx() {
 function store_ngrok_url() {
     local ngrok_url=$(curl -s http://127.0.0.1:4040/api/tunnels | grep -o '"public_url":"[^"]*' | grep -o 'http[^"]*' | head -1)
 
-    PWD=$(pwd)
-    var_name="EVM_RPC_URL"
-    env_file="$PWD/icp/ts-canister/.env.custom"
+    local PWD=$(pwd)
+    local var_name="EVM_RPC_URL"
+    local env_file="$PWD/icp/ts-canister/.env.custom"
 
-    sed -i '' "s|^EVM_RPC_URL=.*|EVM_RPC_URL=$ngrok_url|" "$env_file"
+    sed -i '' "s|^$var_name=.*|$var_name=$ngrok_url|" "$env_file"
+}
+
+function wait_for_canister_address() {
+   local timeout=5
+   local entity_manager_id="bkyz2-fmaaa-aaaaa-qaaaq-cai"
+
+    until output=$(dfx canister call $entity_manager_id getCanisterAddress 2>&1) &&
+                   [[ ! "$output" =~ "Cannot find canister id" ]] &&
+                   entity_manager_canister_eth_address=$(echo "$output" | sed 's/[()]//g' | sed 's/"//g'); do
+        printf '.'
+        sleep "$timeout"
+    done
+
+    echo -e "\nEntity Manager Canister Ethereum Address: $entity_manager_canister_eth_address"
+}
+
+function store_canister_address() {
+    local PWD=$(pwd)
+    local var_name="ENTITY_MANAGER_CANISTER_ADDRESS"
+    local env_file="$PWD/blockchain/.env"
+
+    sed -i '' "s|^$var_name=.*|$var_name=$entity_manager_canister_eth_address|" "$env_file"
 }
 
 echo "Starting local environment..."
@@ -68,9 +90,6 @@ new_iterm_tab "cd '$PWD/blockchain' && npx hardhat node"
 
 echo "Waiting for hardhat node to start..."
 wait_for_connection "localhost:8545"
-
-echo "Deploying smart contracts on hardhat node..."
-new_iterm_tab "cd '$PWD/blockchain' && npm run deploy -- --network localhost"
 
 echo "Starting ngrok..."
 new_iterm_tab "ngrok http 8545"
@@ -87,5 +106,18 @@ wait_for_dfx
 
 echo "Deploying canisters on dfx..."
 new_iterm_tab "cd '$PWD/icp/ts-canister' && npm run deploy"
+
+echo "Getting entity_manager canister ethereum address..."
+entity_manager_canister_eth_address=""
+wait_for_canister_address
+store_canister_address
+
+echo "Deploying smart contracts on hardhat node..."
+new_iterm_tab "cd '$PWD/blockchain' && npm run deploy -- --network localhost"
+
+echo "Sending initial funds to entity_manager canister..."
+new_iterm_tab "cd '$PWD/blockchain' && npm run send-eth"
+#cd "$PWD/blockchain" && npm run send-eth
+#cd $PWD
 
 echo "Starting local environment... Done"
