@@ -4,7 +4,12 @@ import {StableBTreeMap} from "azle";
 import AuthenticationService from "../AuthenticationService";
 import {validateAddress, validateDeadline, validateInterestedParty} from "../../utils/validation";
 import ShipmentService from "../ShipmentService";
-import ProductCategoryService from "../ProductCategoryService";
+import {
+    OrderAlreadyConfirmedError,
+    OrderNotFoundError,
+    OrderWithNoChangesError,
+    SameActorsError
+} from "../../models/errors";
 
 jest.mock('azle');
 jest.mock('../../services/AuthenticationService', () => {
@@ -41,7 +46,6 @@ describe("OrderService", () => {
     let orderService: OrderService;
     let authenticationServiceInstanceMock = AuthenticationService.instance as jest.Mocked<AuthenticationService>;
     let shipmentServiceInstanceMock = ShipmentService.instance as jest.Mocked<ShipmentService>;
-    let productCategoryServiceInstanceMock = ProductCategoryService.instance as jest.Mocked<ProductCategoryService>;
     const order = {
         id: 0n,
         supplier: '0xsupplier',
@@ -88,7 +92,7 @@ describe("OrderService", () => {
         expect(mockedFn.get).toHaveBeenCalled();
 
         mockedFn.get.mockReturnValue(undefined);
-        expect(() => orderService.getInterestedParties(1n)).toThrow(new Error('Order not found'));
+        expect(() => orderService.getInterestedParties(1n)).toThrow(OrderNotFoundError);
     });
 
     it("retrieves all orders", () => {
@@ -105,7 +109,7 @@ describe("OrderService", () => {
         expect(mockedFn.get).toHaveBeenCalled();
 
         mockedFn.get.mockReturnValue(undefined);
-        expect(() => orderService.getOrder(1n)).toThrow(new Error('Order not found'));
+        expect(() => orderService.getOrder(1n)).toThrow(OrderNotFoundError);
     });
 
     it("creates a order", () => {
@@ -153,7 +157,7 @@ describe("OrderService", () => {
             order.shippingPort,
             order.deliveryPort,
             []
-        )).toThrow(new Error('Supplier and customer must be different'));
+        )).toThrow(SameActorsError);
         (validateAddress as jest.Mock).mockImplementation(() => {throw new Error('Invalid address')});
         expect(() => orderService.createOrder(
             order.supplier,
@@ -222,7 +226,7 @@ describe("OrderService", () => {
             order.shippingPort,
             order.deliveryPort,
             []
-        )).toThrow(new Error('Order not found'));
+        )).toThrow(OrderNotFoundError);
         mockedFn.get.mockReturnValue(order);
         expect(() => orderService.updateOrder(
             0n,
@@ -241,7 +245,7 @@ describe("OrderService", () => {
             order.shippingPort,
             order.deliveryPort,
             []
-        )).toThrow(new Error('No changes detected'));
+        )).toThrow(OrderWithNoChangesError);
         expect(() => orderService.updateOrder(
             0n,
             order.supplier,
@@ -259,7 +263,7 @@ describe("OrderService", () => {
             order.shippingPort,
             order.deliveryPort,
             []
-        )).toThrow(new Error('Supplier and customer must be different'));
+        )).toThrow(SameActorsError);
         (validateAddress as jest.Mock).mockImplementation(() => {throw new Error('Invalid address')});
         expect(() => orderService.updateOrder(
             0n,
@@ -291,10 +295,10 @@ describe("OrderService", () => {
         expect(mockedFn.insert).toHaveBeenCalled();
 
         mockedFn.get.mockReturnValue(undefined);
-        await expect(() => orderService.signOrder(0n)).rejects.toThrow(new Error('Order not found'));
+        await expect(() => orderService.signOrder(0n)).rejects.toThrow(OrderNotFoundError);
         mockedFn.get.mockReturnValue(order);
         authenticationServiceInstanceMock.getDelegatorAddress.mockReturnValue('0xsupplier');
-        await expect(() => orderService.signOrder(0n)).rejects.toThrow(new Error('Order already confirmed'));
+        await expect(() => orderService.signOrder(0n)).rejects.toThrow(OrderAlreadyConfirmedError);
         authenticationServiceInstanceMock.getDelegatorAddress.mockReturnValue('0xother');
     });
 });

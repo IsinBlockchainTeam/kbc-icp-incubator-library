@@ -1,6 +1,7 @@
 import ProductCategoryService from "../ProductCategoryService";
 import {ProductCategory} from "../../models/types";
 import {StableBTreeMap} from "azle";
+import {ProductCategoryNotFoundError} from "../../models/errors";
 jest.mock('azle');
 
 describe("ProductCategoryService", () => {
@@ -36,7 +37,7 @@ describe("ProductCategoryService", () => {
         expect(mockedFn.get).toHaveBeenCalled();
 
         mockedFn.get.mockReturnValue(undefined);
-        expect(() => productCategoryService.getProductCategory(1n)).toThrow(new Error('Product category not found'));
+        expect(() => productCategoryService.getProductCategory(1n)).toThrow(ProductCategoryNotFoundError);
     });
 
     it("checks if a product category exists", () => {
@@ -65,6 +66,6 @@ describe("ProductCategoryService", () => {
         expect(mockedFn.insert).toHaveBeenCalled();
 
         mockedFn.get.mockReturnValue(undefined);
-        expect(() => productCategoryService.updateProductCategory(0n, 'test', 1n, 'test')).toThrow(new Error('Product category not found'));
+        expect(() => productCategoryService.updateProductCategory(0n, 'test', 1n, 'test')).toThrow(ProductCategoryNotFoundError);
     });
 });
