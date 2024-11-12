@@ -8,5 +8,6 @@ export const EVM = {
     REVOCATION_REGISTRY_ADDRESS: () =>
         checkAndGetEnvironmentVariable(process.env.EVM_REVOCATION_REGISTRY_ADDRESS, 'EVM Revocation Registry Address must be defined'),
     MEMBERSHIP_ISSUER_ADDRESS: () =>
-        checkAndGetEnvironmentVariable(process.env.EVM_MEMBERSHIP_ISSUER_ADDRESS, 'EVM Membership Issuer Address must be defined')
+        checkAndGetEnvironmentVariable(process.env.EVM_MEMBERSHIP_ISSUER_ADDRESS, 'EVM Membership Issuer Address must be defined'),
+    TRANSACTION_TYPE: () => checkAndGetEnvironmentVariable(process.env.EVM_TRANSACTION_TYPE, 'EVM Transaction Type must be defined')
 };

@@ -1,5 +1,5 @@
 import { BaseCertificate, CertificateDocumentInfo, CertificateType } from './Certificate';
-import { EvaluationStatus } from './Document';
+import { EvaluationStatus } from './Evaluation';
 
 export class MaterialCertificate extends BaseCertificate {
     private _materialId: number;

@@ -12,17 +12,10 @@ import {
     IDLRpcService,
     IDLRpcServices,
     IDLGetAddressResponse
-} from "../models/idls";
-import {ethers} from "ethers";
-import {calculateRsvForTEcdsa, ecdsaPublicKey, signWithEcdsa} from "./ecdsa";
-import {ic, Principal} from 'azle/experimental';
-import {
-    getEvmChainId,
-    getEvmRpcCanisterId,
-    getEvmRpcUrl,
-    getEvmTransactionType,
-    getSiweProviderCanisterId
-} from './env';
+} from '../models/idls';
+import { calculateRsvForTEcdsa, ecdsaPublicKey, signWithEcdsa } from './ecdsa';
+import { CANISTER } from '../constants/canister';
+import { EVM } from '../constants/evm';
 
 export async function jsonRpcRequest(body: Record<string, any>): Promise<any> {
     if (process.env.CANISTER_ID_EVM_RPC === undefined) {
@@ -30,21 +23,17 @@ export async function jsonRpcRequest(body: Record<string, any>): Promise<any> {
     }
     const evmRpcCanisterId = process.env.CANISTER_ID_EVM_RPC;
     const jsonRpcSource = {
-      Custom: {
-        url: getEvmRpcUrl(),
-        headers: []
-      }
-    }
-    return await call(
-        evmRpcCanisterId,
-        'request',
-        {
-            paramIdlTypes: [IDLRpcService, IDL.Text, IDL.Nat64],
-            returnIdlType: IDLRequestResult,
-            args: [jsonRpcSource, JSON.stringify(body), 10_000],
-            payment: 1_000_000_000n
+        Custom: {
+            url: EVM.RPC_URL(),
+            headers: []
         }
-    );
+    };
+    return await call(evmRpcCanisterId, 'request', {
+        paramIdlTypes: [IDLRpcService, IDL.Text, IDL.Nat64],
+        returnIdlType: IDLRequestResult,
+        args: [jsonRpcSource, JSON.stringify(body), 10_000],
+        payment: 1_000_000_000n
+    });
 }
 export async function ethMaxPriorityFeePerGas(): Promise<bigint> {
     const response = await jsonRpcRequest({
@@ -72,13 +61,15 @@ export async function ethFeeHistory(): Promise<any> {
         rewardPercentiles: []
     };
     const rpcSource = {
-      Custom: {
-        chainId: getEvmChainId(),
-        services: [{
-          url: getEvmRpcUrl(),
-          headers: []
-        }]
-      }
+        Custom: {
+            chainId: EVM.CHAIN_ID(),
+            services: [
+                {
+                    url: EVM.RPC_URL(),
+                    headers: []
+                }
+            ]
+        }
     };
 
     // TODO improve error handling
@@ -101,13 +92,15 @@ export async function ethGetTransactionCount(address: string): Promise<number> {
         }
     };
     const rpcSource = {
-      Custom: {
-        chainId: getEvmChainId(),
-        services: [{
-          url: getEvmRpcUrl(),
-          headers: []
-        }]
-      }
+        Custom: {
+            chainId: EVM.CHAIN_ID(),
+            services: [
+                {
+                    url: EVM.RPC_URL(),
+                    headers: []
+                }
+            ]
+        }
     };
 
     const response = await call(evmRpcCanisterId, 'eth_getTransactionCount', {
@@ -125,13 +118,15 @@ export async function ethSendRawTransaction(rawTransaction: string): Promise<any
     }
     const evmRpcCanisterId = process.env.CANISTER_ID_EVM_RPC;
     const rpcSource = {
-      Custom: {
-        chainId: getEvmChainId(),
-        services: [{
-          url: getEvmRpcUrl(),
-          headers: []
-        }]
-      }
+        Custom: {
+            chainId: EVM.CHAIN_ID(),
+            services: [
+                {
+                    url: EVM.RPC_URL(),
+                    headers: []
+                }
+            ]
+        }
     };
     return await call(evmRpcCanisterId, 'eth_sendRawTransaction', {
         paramIdlTypes: [IDLRpcServices, IDL.Opt(IDLRpcConfig), IDL.Text],
@@ -149,8 +144,8 @@ function buildV1Transaction(contractAddress: string, data: string, nonce: number
         gasPrice: 0,
         type: 0,
         data,
-        chainId: getEvmChainId(),
-        nonce,
+        chainId: EVM.CHAIN_ID(),
+        nonce
     });
 }
 
@@ -162,7 +157,7 @@ function buildV2Transaction(contractAddress: string, data: string, nonce: number
         maxPriorityFeePerGas: 1n,
         maxFeePerGas: 300_000_000n * 2n + 1n,
         data,
-        chainId: getEvmChainId(),
+        chainId: EVM.CHAIN_ID(),
         nonce
     });
 }
@@ -177,12 +172,12 @@ export async function ethSendContractTransaction(
     console.log('canisterAddress', canisterAddress);
     const abiInterface = new ethers.Interface(contractAbi);
     const data = abiInterface.encodeFunctionData(methodName, methodArgs);
-    //TODO: eth_maxPriorityFeePerGas not available in hardhat
+    // TODO: eth_maxPriorityFeePerGas not available in hardhat
 
     // const maxPriorityFeePerGas = await ethMaxPriorityFeePerGas();
     // const maxPriorityFeePerGas = 0n;
     // console.log('maxPriorityFeePerGas', maxPriorityFeePerGas);
-    //TODO: eth_maxPriorityFeePerGas not available in hardhat
+    // TODO: eth_maxPriorityFeePerGas not available in hardhat
 
     // const baseFeePerGas = BigInt(
     //     (await ethFeeHistory()).Consistent?.Ok[0].baseFeePerGas[0]
@@ -192,23 +187,13 @@ export async function ethSendContractTransaction(
     // const maxFeePerGas = baseFeePerGas * 2n + maxPriorityFeePerGas;
     const nonce = await ethGetTransactionCount(canisterAddress);
     console.log('nonce', nonce);
-    let tx = getEvmTransactionType() === 'v1' ?
-        buildV1Transaction(contractAddress, data, nonce) :
-        buildV2Transaction(contractAddress, data, nonce);
+    const tx = EVM.TRANSACTION_TYPE() === 'v1' ? buildV1Transaction(contractAddress, data, nonce) : buildV2Transaction(contractAddress, data, nonce);
     console.log('tx', tx);
     const unsignedSerializedTx = tx.unsignedSerialized;
     const unsignedSerializedTxHash = ethers.keccak256(unsignedSerializedTx);
-    const signedSerializedTxHash = await signWithEcdsa(
-        [ic.id().toUint8Array()],
-        ethers.getBytes(unsignedSerializedTxHash)
-    );
-    const { r, s, v } = calculateRsvForTEcdsa(
-        getEvmChainId(),
-        canisterAddress,
-        unsignedSerializedTxHash,
-        signedSerializedTxHash
-    );
-    tx.signature = {r, s, v};
+    const signedSerializedTxHash = await signWithEcdsa([ic.id().toUint8Array()], ethers.getBytes(unsignedSerializedTxHash));
+    const { r, s, v } = calculateRsvForTEcdsa(EVM.CHAIN_ID(), canisterAddress, unsignedSerializedTxHash, signedSerializedTxHash);
+    tx.signature = { r, s, v };
     const rawTransaction = tx.serialized;
     const resp = await ethSendRawTransaction(rawTransaction);
     if (resp.Consistent.Err) {
@@ -234,22 +219,18 @@ export async function ethCallContract(contractAddress: string, contractAbi: ethe
         ],
         id: 1
     };
-  const JsonRpcSource = {
-    Custom: {
-      url: getEvmRpcUrl(),
-      headers: []
-    }
-  }
-  const resp = await call(
-    getEvmRpcCanisterId(),
-    'request',
-    {
-      paramIdlTypes: [IDLRpcService, IDL.Text, IDL.Nat64],
-      returnIdlType: IDLRequestResult,
-      args: [JsonRpcSource, JSON.stringify(jsonRpcPayload), 2048],
-      payment: 2_000_000_000n
-    }
-  );
+    const JsonRpcSource = {
+        Custom: {
+            url: EVM.RPC_URL(),
+            headers: []
+        }
+    };
+    const resp = await call(CANISTER.EVM_RPC_ID(), 'request', {
+        paramIdlTypes: [IDLRpcService, IDL.Text, IDL.Nat64],
+        returnIdlType: IDLRequestResult,
+        args: [JsonRpcSource, JSON.stringify(jsonRpcPayload), 2048],
+        payment: 2_000_000_000n
+    });
 
     if (resp.Err) throw new Error('Unable to fetch revocation registry');
 
@@ -259,15 +240,11 @@ export async function ethCallContract(contractAddress: string, contractAbi: ethe
 }
 
 export async function getAddress(principal: Principal): Promise<string> {
-  const resp = await call(
-    getSiweProviderCanisterId(),
-    'get_address',
-    {
-      paramIdlTypes: [IDL.Vec(IDL.Nat8)],
-      returnIdlType: IDLGetAddressResponse,
-      args: [principal.toUint8Array()],
-    }
-  );
-  if(resp.Err) throw new Error('Unable to fetch address');
-  return resp.Ok;
+    const resp = await call(CANISTER.IC_SIWE_PROVIDER_ID(), 'get_address', {
+        paramIdlTypes: [IDL.Vec(IDL.Nat8)],
+        returnIdlType: IDLGetAddressResponse,
+        args: [principal.toUint8Array()]
+    });
+    if (resp.Err) throw new Error('Unable to fetch address');
+    return resp.Ok;
 }

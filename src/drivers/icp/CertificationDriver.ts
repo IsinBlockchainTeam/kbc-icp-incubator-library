@@ -6,7 +6,7 @@ import { CompanyCertificate } from '../../entities/icp/CompanyCertificate';
 import { MaterialCertificate } from '../../entities/icp/MaterialCertificate';
 import { ScopeCertificate } from '../../entities/icp/ScopeCertificate';
 import { BaseCertificate, CertificateDocumentInfo } from '../../entities/icp/Certificate';
-import { EvaluationStatus } from '../../entities/icp/Document';
+import { EvaluationStatus } from '../../entities/icp/Evaluation';
 
 export class CertificationDriver {
     private _actor: ActorSubclass<_SERVICE>;

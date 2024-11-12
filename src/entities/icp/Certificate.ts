@@ -1,4 +1,4 @@
-import { EvaluationStatus } from './Document';
+import { EvaluationStatus } from './Evaluation';
 
 export enum CertificateType {
     COMPANY = 'COMPANY',
