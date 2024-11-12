@@ -52,7 +52,7 @@ export const mockOrder = (productCategoryId: number): OrderParams => ({
         {
             productCategoryId,
             quantity: 10,
-            unit: 'kg',
+            unit: 'KGM - Kilograms',
             price: {
                 amount: 1.25,
                 fiat: 'USD'

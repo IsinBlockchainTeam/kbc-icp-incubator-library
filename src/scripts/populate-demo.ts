@@ -76,15 +76,38 @@ const createOrder = async (userSiweIdentityProvider: SiweIdentityProvider, param
     return orderDriver.createOrder(params);
 };
 
+const completeOrder = async (
+    supplierSiweIdentityProvider: SiweIdentityProvider,
+    customerSiweIdentityProvider: SiweIdentityProvider,
+    orderId: number
+) => {
+    console.log('Completing order:', orderId);
+
+    const orderDriver = new OrderDriver(
+        supplierSiweIdentityProvider.identity,
+        ICP.ENTITY_MANAGER_CANISTER_ID,
+        ICP.NETWORK
+    );
+
+    await orderDriver.signOrder(orderId);
+};
+
 const main = async () => {
-    console.log('Logging in');
+    console.log('Logging in...');
 
     const user1: Login = await AuthHelper.prepareLogin(
         USERS.USER1_PRIVATE_KEY,
         USERS.COMPANY1_PRIVATE_KEY
     );
+    const user2: Login = await AuthHelper.prepareLogin(
+        USERS.USER2_PRIVATE_KEY,
+        USERS.COMPANY2_PRIVATE_KEY
+    );
 
     await user1.login();
+    await user2.login();
+
+    console.log('Logged');
 
     const createdProductCategories: ProductCategory[] = await Promise.all(
         mockProductCategories.map(async (productCategoryParams) =>
@@ -108,8 +131,14 @@ const main = async () => {
         createdProductCategories
             .slice(0, 1)
             .map(async (productCategory) =>
-                createOrder(user1.siweIdentityProvider, mockOrder(productCategory.id))
+                createOrder(user2.siweIdentityProvider, mockOrder(productCategory.id))
             )
+    );
+
+    await Promise.all(
+        createdOrders.map(async (order) =>
+            completeOrder(user1.siweIdentityProvider, user2.siweIdentityProvider, order.id)
+        )
     );
 };
 
