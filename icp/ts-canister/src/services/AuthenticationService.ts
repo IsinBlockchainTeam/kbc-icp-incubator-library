@@ -4,6 +4,7 @@ import { StableMemoryId } from "../utils/stableMemory";
 import { ic, Principal } from "azle/experimental";
 import DelegationService from "./DelegationService";
 import { getLoginDuration } from "../utils/env";
+import {NotAuthenticatedError, NotValidCredentialError} from "../models/errors";
 
 type UserAuthentication = {
     roleProof: RoleProof;
@@ -25,56 +26,36 @@ class AuthenticationService {
         return AuthenticationService._instance;
     }
 
-    async login(roleProof: RoleProof): Promise<boolean> {
+    async authenticate(roleProof: RoleProof): Promise<void> {
         const unixTime = Number(ic.time().toString().substring(0, 13));
-        const hasValidRole = await DelegationService.instance.hasValidRoleProof(
-            roleProof,
-            ic.caller(),
-        );
-        if (!hasValidRole) return false;
+        const hasValidRole = await DelegationService.instance.hasValidRoleProof(roleProof, ic.caller());
+        if(!hasValidRole) throw new NotValidCredentialError();
         const expiration = unixTime + this._loginDuration;
         this._authentications.insert(ic.caller().toText(), {
             roleProof,
             expiration,
         });
-        return true;
     }
 
-    async refresh(): Promise<boolean> {
-        const unixTime = Number(ic.time().toString().substring(0, 13));
-        const authentication = this._authentications.get(ic.caller().toText());
-        if (!authentication) return false;
-        const hasValidRole = await DelegationService.instance.hasValidRoleProof(
-            authentication.roleProof,
-            ic.caller(),
-        );
-        if (!hasValidRole) return false;
-        this._authentications.insert(ic.caller().toText(), {
-            roleProof: authentication.roleProof,
-            expiration: unixTime + this._loginDuration,
-        });
-        return true;
-    }
-
-    async logout(): Promise<boolean> {
-        if (this._authentications.containsKey(ic.caller().toText())) {
-            this._authentications.remove(ic.caller().toText());
-            return true;
+    // TODO: periodically remove expired authentications
+    async logout(): Promise<void> {
+        if(!this._authentications.containsKey(ic.caller().toText())){
+            throw new NotAuthenticatedError();
         }
-        return false;
+        this._authentications.remove(ic.caller().toText());
     }
 
     getDelegatorAddress(caller: Principal = ic.caller()): string {
         const authentication = this._authentications.get(caller.toText());
-        if (!authentication)
-            throw new Error("Access denied: user is not authenticated");
+        if(!authentication)
+            throw new NotAuthenticatedError();
         return authentication.roleProof.membershipProof.delegatorAddress;
     }
 
     getRole(caller: Principal = ic.caller()): string {
         const authentication = this._authentications.get(caller.toText());
-        if (!authentication)
-            throw new Error("Access denied: user is not authenticated");
+        if(!authentication)
+            throw new NotAuthenticatedError();
         return authentication.roleProof.role;
     }
 

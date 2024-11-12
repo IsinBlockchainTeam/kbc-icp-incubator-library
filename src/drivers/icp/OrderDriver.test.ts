@@ -18,7 +18,7 @@ type Utils = {
     userWallet: Wallet;
     companyWallet: Wallet;
     orderManagerDriver: OrderDriver;
-    login: () => Promise<boolean>;
+    authenticate: () => Promise<void>;
 };
 const ORDER_ID = 0;
 const PRODUCT_CATEGORY_ID = 0;
@@ -46,8 +46,8 @@ describe('OrderDriver', () => {
             DELEGATOR_CREDENTIAL_ID_HASH,
             companyWallet
         );
-        const login = () => authenticationDriver.login(roleProof);
-        return { userWallet, companyWallet, orderManagerDriver, login };
+        const authenticate = () => authenticationDriver.authenticate(roleProof);
+        return { userWallet, companyWallet, orderManagerDriver, authenticate };
     };
 
     beforeAll(async () => {
@@ -56,24 +56,24 @@ describe('OrderDriver', () => {
     }, 30000);
 
     it('should retrieve orders', async () => {
-        const { orderManagerDriver, login } = utils1;
-        await login();
+        const { orderManagerDriver, authenticate } = utils1;
+        await authenticate();
         const orders = await orderManagerDriver.getOrders();
         console.log(orders);
         expect(orders).toBeDefined();
     }, 30000);
 
     it('should retrieve order', async () => {
-        const { orderManagerDriver, login } = utils1;
-        await login();
+        const { orderManagerDriver, authenticate } = utils1;
+        await authenticate();
         const order = await orderManagerDriver.getOrder(0);
         console.log(order);
         expect(order).toBeDefined();
     }, 30000);
 
     it('should create order', async () => {
-        const { companyWallet: company1Wallet, orderManagerDriver, login } = utils1;
-        await login();
+        const { companyWallet: company1Wallet, orderManagerDriver, authenticate } = utils1;
+        await authenticate();
         const { companyWallet: company2Wallet } = utils2;
         const date = new Date();
         const orderParams = {
@@ -111,8 +111,8 @@ describe('OrderDriver', () => {
     }, 30000);
 
     it('should update order', async () => {
-        const { companyWallet: company1Wallet, orderManagerDriver, login } = utils1;
-        await login();
+        const { companyWallet: company1Wallet, orderManagerDriver, authenticate } = utils1;
+        await authenticate();
         const { companyWallet: company2Wallet } = utils2;
         const date = new Date();
         const orderParams = {
@@ -149,8 +149,8 @@ describe('OrderDriver', () => {
     }, 30000);
 
     it('should sign order', async () => {
-        const { orderManagerDriver, login } = utils2;
-        await login();
+        const { orderManagerDriver, authenticate } = utils2;
+        await authenticate();
         const order = await orderManagerDriver.signOrder(ORDER_ID);
         console.log(order);
         expect(order).toBeDefined();

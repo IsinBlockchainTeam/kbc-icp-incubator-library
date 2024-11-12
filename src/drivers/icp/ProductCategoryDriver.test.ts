@@ -17,7 +17,7 @@ type Utils = {
     userWallet: Wallet;
     companyWallet: Wallet;
     productCategoryManagerDriver: ProductCategoryDriver;
-    login: () => Promise<boolean>;
+    authenticate: () => Promise<void>;
 };
 describe('ProductCategoryManagerDriver', () => {
     let utils: Utils;
@@ -43,8 +43,8 @@ describe('ProductCategoryManagerDriver', () => {
             DELEGATOR_CREDENTIAL_ID_HASH,
             companyWallet
         );
-        const login = () => authenticationDriver.login(roleProof);
-        return { userWallet, companyWallet, productCategoryManagerDriver, login };
+        const authenticate = () => authenticationDriver.authenticate(roleProof);
+        return { userWallet, companyWallet, productCategoryManagerDriver, authenticate };
     };
 
     beforeAll(async () => {
@@ -52,16 +52,16 @@ describe('ProductCategoryManagerDriver', () => {
     }, 30000);
 
     it('should retrieve product categories', async () => {
-        const { productCategoryManagerDriver, login } = utils;
-        await login();
+        const { productCategoryManagerDriver, authenticate } = utils;
+        await authenticate();
         const productCategories = await productCategoryManagerDriver.getProductCategories();
         console.log(productCategories);
         expect(productCategories).toBeDefined();
     }, 30000);
 
     it('should create product category', async () => {
-        const { productCategoryManagerDriver, login } = utils;
-        await login();
+        const { productCategoryManagerDriver, authenticate } = utils;
+        await authenticate();
         const productCategory = await productCategoryManagerDriver.createProductCategory(
             'test',
             1,

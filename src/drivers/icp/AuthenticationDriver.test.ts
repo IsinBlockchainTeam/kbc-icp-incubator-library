@@ -69,31 +69,21 @@ describe('AuthenticationDriver', () => {
     it('should login user 1', async () => {
         const { authenticationDriver, roleProof } = utils1;
         console.log(roleProof);
-        const result = await authenticationDriver.login(roleProof);
+        const result = await authenticationDriver.authenticate(roleProof);
         console.log(result);
-        expect(result).toBeDefined();
     }, 10000);
 
     it('should login user 2', async () => {
         const { authenticationDriver, roleProof } = utils2;
         console.log(roleProof);
-        const result = await authenticationDriver.login(roleProof);
+        const result = await authenticationDriver.authenticate(roleProof);
         console.log(result);
         expect(result).toBeDefined();
     }, 10000);
 
     it('should logout', async () => {
         const { authenticationDriver } = utils1;
-        const result = await authenticationDriver.logout();
-        console.log(result);
-        expect(result).toBeDefined();
-    }, 10000);
-
-    it('should refresh', async () => {
-        const { authenticationDriver } = utils1;
-        const result = await authenticationDriver.refresh();
-        console.log(result);
-        expect(result).toBeDefined();
+        await authenticationDriver.logout();
     }, 10000);
 
     it('should retrieve product categories', async () => {

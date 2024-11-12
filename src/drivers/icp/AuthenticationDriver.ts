@@ -2,6 +2,7 @@ import type {ActorSubclass, Identity} from "@dfinity/agent";
 import {RoleProof} from "@kbc-lib/azle-types";
 import {_SERVICE} from "icp-declarations/entity_manager/entity_manager.did";
 import {createActor} from "icp-declarations/entity_manager";
+import {HandleIcpError} from "../../decorators/HandleIcpError";
 
 export class AuthenticationDriver {
     private _actor: ActorSubclass<_SERVICE>;
@@ -15,15 +16,13 @@ export class AuthenticationDriver {
         });
     }
 
-    async login(roleProof: RoleProof): Promise<boolean> {
-        return this._actor.login(roleProof);
+    @HandleIcpError()
+    async authenticate(roleProof: RoleProof): Promise<void> {
+        return this._actor.authenticate(roleProof);
     }
 
-    async refresh(): Promise<boolean> {
-        return this._actor.refresh();
-    }
-
-    async logout(): Promise<boolean> {
+    @HandleIcpError()
+    async logout(): Promise<void> {
         return this._actor.logout();
     }
 }

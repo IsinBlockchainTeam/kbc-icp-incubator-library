@@ -24,7 +24,7 @@ type Utils = {
     userWallet: Wallet;
     companyWallet: Wallet;
     shipmentManagerDriver: ShipmentDriver;
-    login: () => Promise<boolean>;
+    authenticate: () => Promise<void>;
 };
 const SHIPMENT_ID = 4;
 const DOCUMENT_ID = 2;
@@ -52,8 +52,8 @@ describe('ShipmentManagerDriver', () => {
             DELEGATOR_CREDENTIAL_ID_HASH,
             companyWallet
         );
-        const login = () => authenticationDriver.login(roleProof);
-        return { userWallet, companyWallet, shipmentManagerDriver, login };
+        const authenticate = () => authenticationDriver.authenticate(roleProof);
+        return { userWallet, companyWallet, shipmentManagerDriver, authenticate };
     };
 
     beforeAll(async () => {
@@ -62,32 +62,32 @@ describe('ShipmentManagerDriver', () => {
     });
 
     it('should retrieve shipments', async () => {
-        const { shipmentManagerDriver, login } = utils1;
-        await login();
+        const { shipmentManagerDriver, authenticate } = utils1;
+        await authenticate();
         const shipments = await shipmentManagerDriver.getShipments();
         console.log(shipments);
         expect(shipments).toBeDefined();
     });
 
     it('should retrieve shipment', async () => {
-        const { shipmentManagerDriver, login } = utils1;
-        await login();
+        const { shipmentManagerDriver, authenticate } = utils1;
+        await authenticate();
         const shipment = await shipmentManagerDriver.getShipment(SHIPMENT_ID);
         console.log(shipment);
         expect(shipment).toBeDefined();
     });
 
     it('should get shipment phase', async () => {
-        const { shipmentManagerDriver, login } = utils1;
-        await login();
+        const { shipmentManagerDriver, authenticate } = utils1;
+        await authenticate();
         const phase = await shipmentManagerDriver.getShipmentPhase(SHIPMENT_ID);
         console.log(phase);
         expect(phase).toBeDefined();
     });
 
     it('should get documents by type', async () => {
-        const { shipmentManagerDriver, login } = utils1;
-        await login();
+        const { shipmentManagerDriver, authenticate } = utils1;
+        await authenticate();
         const document = await shipmentManagerDriver.getDocumentsByType(
             SHIPMENT_ID,
             DocumentType.PRE_SHIPMENT_SAMPLE
@@ -97,8 +97,8 @@ describe('ShipmentManagerDriver', () => {
     });
 
     it('should set shipment details', async () => {
-        const { shipmentManagerDriver, login } = utils1;
-        await login();
+        const { shipmentManagerDriver, authenticate } = utils1;
+        await authenticate();
         const shipment = await shipmentManagerDriver.setShipmentDetails(
             SHIPMENT_ID,
             100,
@@ -117,8 +117,8 @@ describe('ShipmentManagerDriver', () => {
     });
 
     it('should evaluate sample', async () => {
-        const { shipmentManagerDriver, login } = utils2;
-        await login();
+        const { shipmentManagerDriver, authenticate } = utils2;
+        await authenticate();
         const shipment = await shipmentManagerDriver.evaluateSample(
             SHIPMENT_ID,
             EvaluationStatus.APPROVED
@@ -128,8 +128,8 @@ describe('ShipmentManagerDriver', () => {
     });
 
     it('should evaluate shipment details', async () => {
-        const { shipmentManagerDriver, login } = utils2;
-        await login();
+        const { shipmentManagerDriver, authenticate } = utils2;
+        await authenticate();
         const shipment = await shipmentManagerDriver.evaluateShipmentDetails(
             SHIPMENT_ID,
             EvaluationStatus.APPROVED
@@ -139,8 +139,8 @@ describe('ShipmentManagerDriver', () => {
     });
 
     it('should evaluate quality', async () => {
-        const { shipmentManagerDriver, login } = utils2;
-        await login();
+        const { shipmentManagerDriver, authenticate } = utils2;
+        await authenticate();
         const shipment = await shipmentManagerDriver.evaluateQuality(
             SHIPMENT_ID,
             EvaluationStatus.APPROVED
@@ -150,16 +150,16 @@ describe('ShipmentManagerDriver', () => {
     });
 
     it('should deposit funds', async () => {
-        const { shipmentManagerDriver, login } = utils2;
-        await login();
+        const { shipmentManagerDriver, authenticate } = utils2;
+        await authenticate();
         const shipment = await shipmentManagerDriver.depositFunds(SHIPMENT_ID, 100);
         console.log(shipment);
         expect(shipment).toBeDefined();
     });
 
     it('should lock funds', async () => {
-        const { shipmentManagerDriver, login } = utils1;
-        await login();
+        const { shipmentManagerDriver, authenticate } = utils1;
+        await authenticate();
         const shipment = await shipmentManagerDriver.lockFunds(SHIPMENT_ID);
         console.log(shipment);
         expect(shipment).toBeDefined();
@@ -167,24 +167,24 @@ describe('ShipmentManagerDriver', () => {
 
     // TODO: understand where funds go
     it('should unlock funds', async () => {
-        const { shipmentManagerDriver, login } = utils1;
-        await login();
+        const { shipmentManagerDriver, authenticate } = utils1;
+        await authenticate();
         const shipment = await shipmentManagerDriver.unlockFunds(SHIPMENT_ID);
         console.log(shipment);
         expect(shipment).toBeDefined();
     });
 
     it('should get documents', async () => {
-        const { shipmentManagerDriver, login } = utils1;
-        await login();
+        const { shipmentManagerDriver, authenticate } = utils1;
+        await authenticate();
         const documents = await shipmentManagerDriver.getDocuments(SHIPMENT_ID);
         console.log(documents);
         expect(documents).toBeDefined();
     });
 
     it('should add a document', async () => {
-        const { shipmentManagerDriver, login } = utils1;
-        await login();
+        const { shipmentManagerDriver, authenticate } = utils1;
+        await authenticate();
         const shipment = await shipmentManagerDriver.addDocument(
             SHIPMENT_ID,
             DocumentTypeEnum.PRE_SHIPMENT_SAMPLE,
@@ -195,8 +195,8 @@ describe('ShipmentManagerDriver', () => {
     });
 
     it('should update a document', async () => {
-        const { shipmentManagerDriver, login } = utils1;
-        await login();
+        const { shipmentManagerDriver, authenticate } = utils1;
+        await authenticate();
         const shipment = await shipmentManagerDriver.updateDocument(
             SHIPMENT_ID,
             DOCUMENT_ID,
@@ -207,8 +207,8 @@ describe('ShipmentManagerDriver', () => {
     });
 
     it('should evaluate a document', async () => {
-        const { shipmentManagerDriver, login } = utils2;
-        await login();
+        const { shipmentManagerDriver, authenticate } = utils2;
+        await authenticate();
         const shipment = await shipmentManagerDriver.evaluateDocument(
             SHIPMENT_ID,
             DOCUMENT_ID,
@@ -226,9 +226,9 @@ describe('ShipmentManagerDriver', () => {
     });
 
     it('should bring a new shipment to the 3rd phase', async () => {
-        const { shipmentManagerDriver: supplierDriver, login: supplierLogin } = utils1;
+        const { shipmentManagerDriver: supplierDriver, authenticate: supplierLogin } = utils1;
         await supplierLogin();
-        const { shipmentManagerDriver: commissionerDriver, login: commissionerLogin } = utils2;
+        const { shipmentManagerDriver: commissionerDriver, authenticate: commissionerLogin } = utils2;
         await commissionerLogin();
 
         await supplierDriver.addDocument(
@@ -275,9 +275,9 @@ describe('ShipmentManagerDriver', () => {
     });
 
     it('should bring a shipment which has just locked the escrow to the 5th phase', async () => {
-        const { shipmentManagerDriver: supplierDriver, login: supplierLogin } = utils1;
+        const { shipmentManagerDriver: supplierDriver, authenticate: supplierLogin } = utils1;
         await supplierLogin();
-        const { shipmentManagerDriver: commissionerDriver, login: commissionerLogin } = utils2;
+        const { shipmentManagerDriver: commissionerDriver, authenticate: commissionerLogin } = utils2;
         await commissionerLogin();
 
         expect(await supplierDriver.getShipmentPhase(SHIPMENT_ID)).toEqual(Phase.PHASE_3);

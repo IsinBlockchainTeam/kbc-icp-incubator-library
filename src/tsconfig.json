@@ -16,7 +16,8 @@
                 "cacheBetweenTests": false
             }
         ],
-        "types": ["jest", "node", "@types/jest"]
+        "types": ["jest", "node", "@types/jest"],
+        "experimentalDecorators": true,
     },
     "include": ["**/*", "./dfx_output/storage/*.ts"],
     "exclude": [
