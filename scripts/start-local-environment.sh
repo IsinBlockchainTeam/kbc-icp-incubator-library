@@ -1,5 +1,8 @@
 #!/bin/bash
 
+BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
+echo "BASE_DIR: $BASE_DIR"
+
 function new_iterm_tab() {
     local command=$1
     local silent=true
@@ -52,9 +55,8 @@ function wait_for_dfx() {
 function store_ngrok_url() {
     local ngrok_url=$(curl -s http://127.0.0.1:4040/api/tunnels | grep -o '"public_url":"[^"]*' | grep -o 'http[^"]*' | head -1)
 
-    local PWD=$(pwd)
     local var_name="EVM_RPC_URL"
-    local env_file="$PWD/icp/ts-canister/.env.custom"
+    local env_file="$BASE_DIR/icp/ts-canister/.env.custom"
 
     sed -i '' "s|^$var_name=.*|$var_name=$ngrok_url|" "$env_file"
 }
@@ -74,19 +76,16 @@ function wait_for_canister_address() {
 }
 
 function store_canister_address() {
-    local PWD=$(pwd)
     local var_name="ENTITY_MANAGER_CANISTER_ADDRESS"
-    local env_file="$PWD/blockchain/.env"
+    local env_file="$BASE_DIR/blockchain/.env"
 
     sed -i '' "s|^$var_name=.*|$var_name=$entity_manager_canister_eth_address|" "$env_file"
 }
 
 echo "Starting local environment..."
 
-PWD=$(pwd)
-
 echo "Starting hardhat node..."
-new_iterm_tab "cd '$PWD/blockchain' && npx hardhat node"
+new_iterm_tab "cd '$BASE_DIR/blockchain' && npx hardhat node"
 
 echo "Waiting for hardhat node to start..."
 wait_for_connection "localhost:8545"
@@ -99,13 +98,13 @@ wait_for_connection "localhost:4040"
 store_ngrok_url
 
 echo "Starting dfx..."
-new_iterm_tab "cd '$PWD/icp/ts-canister' && npm run start-network"
+new_iterm_tab "cd '$BASE_DIR/icp/ts-canister' && npm run start-network"
 
 echo "Waiting for dfx to start..."
 wait_for_dfx
 
 echo "Deploying canisters on dfx..."
-new_iterm_tab "cd '$PWD/icp/ts-canister' && npm run deploy"
+new_iterm_tab "cd '$BASE_DIR/icp/ts-canister' && npm run deploy"
 
 echo "Getting entity_manager canister ethereum address..."
 entity_manager_canister_eth_address=""
@@ -113,11 +112,9 @@ wait_for_canister_address
 store_canister_address
 
 echo "Deploying smart contracts on hardhat node..."
-new_iterm_tab "cd '$PWD/blockchain' && npm run deploy -- --network localhost"
+new_iterm_tab "cd '$BASE_DIR/blockchain' && npm run deploy -- --network localhost"
 
 echo "Sending initial funds to entity_manager canister..."
-new_iterm_tab "cd '$PWD/blockchain' && npm run send-eth"
-#cd "$PWD/blockchain" && npm run send-eth
-#cd $PWD
+new_iterm_tab "cd '$BASE_DIR/blockchain' && npm run send-eth"
 
 echo "Starting local environment... Done"
