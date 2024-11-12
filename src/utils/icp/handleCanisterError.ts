@@ -1,4 +1,4 @@
-import {ErrorType} from "@kbc-lib/azle-types";
+import { ErrorType } from '@kbc-lib/azle-types';
 import {
     DocumentAlreadyApprovedError,
     DocumentNotFoundError,
@@ -11,6 +11,7 @@ import {
     OrderAlreadySignedError,
     OrderNotFoundError,
     OrderWithNoChangesError,
+    OrganizationNotFoundError,
     ProductCategoryNotFoundError,
     SameActorsError,
     ShipmentDetailsAlreadyApprovedError,
@@ -21,7 +22,7 @@ import {
     ShipmentNotFoundError,
     ShipmentQualityAlreadyApprovedError,
     ShipmentSampleAlreadyApprovedError
-} from "../../entities/icp/errors";
+} from '../../entities/icp/errors';
 
 const errorTypeToException = {
     [ErrorType.SAME_ACTORS]: SameActorsError,
@@ -44,15 +45,13 @@ const errorTypeToException = {
     [ErrorType.SHIPMENT_QUALITY_ALREADY_APPROVED]: ShipmentQualityAlreadyApprovedError,
     [ErrorType.SHIPMENT_SAMPLE_ALREADY_APPROVED]: ShipmentSampleAlreadyApprovedError,
     [ErrorType.SHIPMENT_FUNDS_ALREADY_LOCKED]: ShipmentFundsAlreadyLockedError,
-    [ErrorType.SHIPMENT_DOWN_PAYMENT_ADDRESS_NOT_FOUND]: ShipmentDownPaymentAddressNotFound
-}
+    [ErrorType.SHIPMENT_DOWN_PAYMENT_ADDRESS_NOT_FOUND]: ShipmentDownPaymentAddressNotFound,
+    [ErrorType.ORGANIZATION_NOT_FOUND]: OrganizationNotFoundError
+};
 export const handleCanisterError = (error: unknown) => {
     const stringError = String(error);
-    Object
-        .entries(errorTypeToException)
-        .forEach(([errorType, Exc]) => {
-            if (stringError.includes(errorType))
-                throw new Exc();
-        });
+    Object.entries(errorTypeToException).forEach(([errorType, Exc]) => {
+        if (stringError.includes(errorType)) throw new Exc();
+    });
     throw error;
-}
+};

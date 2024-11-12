@@ -1,4 +1,4 @@
-export {SameActorsError} from './ActorError';
+export { SameActorsError } from './ActorError';
 export {
     NotAuthorizedError,
     NotAuthenticatedError,
@@ -9,15 +9,15 @@ export {
     DocumentAlreadyApprovedError,
     CallerIsTheUploaderError
 } from './DocumentError';
-export {MaterialNotFoundError} from './MaterialError';
-export {OfferNotFoundError} from './OfferError';
+export { MaterialNotFoundError } from './MaterialError';
+export { OfferNotFoundError } from './OfferError';
 export {
     OrderNotFoundError,
     OrderWithNoChangesError,
     OrderAlreadySignedError,
     OrderAlreadyConfirmedError
 } from './OrderError';
-export {ProductCategoryNotFoundError} from './ProductCategoryError';
+export { ProductCategoryNotFoundError } from './ProductCategoryError';
 export {
     ShipmentNotFoundError,
     ShipmentInWrongPhaseError,
@@ -28,3 +28,4 @@ export {
     ShipmentFundsAlreadyLockedError,
     ShipmentDownPaymentAddressNotFound
 } from './ShipmentError';
+export { OrganizationNotFoundError } from './OrganizationError';

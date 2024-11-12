@@ -14,6 +14,7 @@ import {
     mockOrganization,
     mockProductCategories
 } from '../../__shared__/constants/mock-data';
+import { OrganizationNotFoundError } from '../../entities/icp/errors';
 
 describe('OrganizationDriver', () => {
     let organizationDriverUser1: OrganizationDriver;
@@ -78,7 +79,7 @@ describe('OrganizationDriver', () => {
     it('should get organization - not founded', async () => {
         const getOrganizationFunction = async () => organizationDriverUser1.getOrganization('0x0');
 
-        await expect(getOrganizationFunction()).rejects.toThrow();
+        await expect(getOrganizationFunction()).rejects.toThrow(new OrganizationNotFoundError());
     });
 
     it('should create organization', async () => {
@@ -188,6 +189,6 @@ describe('OrganizationDriver', () => {
         const getOrganizationFunction = async () =>
             organizationDriverUser1.getOrganization(createdOrganization.ethAddress);
 
-        await expect(getOrganizationFunction()).rejects.toThrow();
+        await expect(getOrganizationFunction()).rejects.toThrow(new OrganizationNotFoundError());
     });
 });
