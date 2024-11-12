@@ -11,7 +11,7 @@ import { ICP, USERS } from '../../__shared__/constants/constants';
 import { AuthHelper, Login } from '../../__shared__/helpers/AuthHelper';
 import {
     mockOrder,
-    mockOrganization,
+    mockOrganizations,
     mockProductCategories
 } from '../../__shared__/constants/mock-data';
 import { OrganizationNotFoundError } from '../../entities/icp/errors';
@@ -58,8 +58,8 @@ describe('OrganizationDriver', () => {
             ICP.NETWORK
         );
 
-        organizationScratch = mockOrganization[0];
-        updatedOrganizationScratch = mockOrganization[1];
+        organizationScratch = mockOrganizations[0];
+        updatedOrganizationScratch = mockOrganizations[1];
 
         await user1.authenticate();
         await user2.authenticate();

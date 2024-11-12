@@ -61,7 +61,7 @@ export const mockOrder = (productCategoryId: number): OrderParams => ({
     ]
 });
 
-export const mockOrganization: OrganizationParams[] = [
+export const mockOrganizations: OrganizationParams[] = [
     {
         legalName: 'Global Coffee Imports GmbH',
         industrialSector: 'Coffee & Tea Processing',
