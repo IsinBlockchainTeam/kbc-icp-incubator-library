@@ -3,7 +3,7 @@ import { createActor } from 'icp-declarations/entity_manager';
 import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
 import { EntityBuilder } from '../../utils/icp/EntityBuilder';
 import { Order } from '../../entities/icp/Order';
-import {HandleIcpError} from "../../decorators/HandleIcpError";
+import { HandleIcpError } from '../../decorators/HandleIcpError';
 
 export type OrderParams = {
     supplier: string;
@@ -122,6 +122,7 @@ export class OrderDriver {
         return EntityBuilder.buildOrder(resp);
     }
 
+    @HandleIcpError()
     async deleteOrder(id: number): Promise<boolean> {
         return this._actor.deleteOrder(BigInt(id));
     }
