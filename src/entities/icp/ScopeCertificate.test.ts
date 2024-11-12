@@ -1,6 +1,6 @@
 import { ScopeCertificate } from './ScopeCertificate';
 import { CertificateType, CertificateDocumentType } from './Certificate';
-import { EvaluationStatus } from './Document';
+import { EvaluationStatus } from './Evaluation';
 
 describe('ScopeCertificate', () => {
     let scopeCertificate: ScopeCertificate;

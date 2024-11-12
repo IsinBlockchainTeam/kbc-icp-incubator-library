@@ -8,10 +8,10 @@ import {
 import { CompanyCertificate } from '../../entities/icp/CompanyCertificate';
 import { ScopeCertificate } from '../../entities/icp/ScopeCertificate';
 import { MaterialCertificate } from '../../entities/icp/MaterialCertificate';
-import { EvaluationStatus } from '../../entities/icp/Document';
 import { Document } from './DocumentService';
 import { ICPFileDriver } from '../../drivers/ICPFileDriver';
 import { URL_SEGMENTS } from '../../constants/ICP';
+import { EvaluationStatus } from '../../entities/icp/Evaluation';
 
 type CertificateDocumentRequest = Document & {
     documentType: CertificateDocumentType;

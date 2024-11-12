@@ -6,6 +6,7 @@ import {
     validateAssessmentStandard,
     validateDatesValidity,
     validateFieldValue,
+    validateMaterialById,
     validateProcessTypes
 } from '../utils/validation';
 import {
@@ -135,6 +136,7 @@ class CertificationService {
         validateAddress('Subject', subject);
         validateAssessmentStandard(assessmentStandard);
         validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
+        validateMaterialById(materialId);
         const companyAddress = AuthenticationService.instance.getDelegatorAddress();
         const certificate: MaterialCertificate = {
             id: BigInt(this._allCertificateRecords.keys().length + 1),
@@ -279,6 +281,7 @@ class CertificationService {
             AuthenticationService.instance.getDelegatorAddress(),
             'Caller is not the owner of the certificate'
         );
+        validateMaterialById(materialId);
         materialCertificate.assessmentStandard = assessmentStandard;
         materialCertificate.assessmentAssuranceLevel = assessmentAssuranceLevel;
         materialCertificate.materialId = materialId;
@@ -291,8 +294,6 @@ class CertificationService {
     updateDocument(certificateId: bigint, document: CertificateDocumentInfo): void {
         const [certificate, certificates, certificateIndex] = this._getCertificateAndInfoById<BaseCertificate>(certificateId);
         certificate.document = document;
-        console.log('certificate: ', certificate);
-        console.log('request document: ', document);
         this._updateCertificate(certificate, certificates, certificateIndex);
     }
 

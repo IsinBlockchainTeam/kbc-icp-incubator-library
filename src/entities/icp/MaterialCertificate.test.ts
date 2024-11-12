@@ -1,10 +1,13 @@
 import { MaterialCertificate } from './MaterialCertificate';
 import { CertificateType, CertificateDocumentType } from './Certificate';
-import { EvaluationStatus } from './Document';
+import { Material } from '../Material';
+import { ProductCategory } from '../ProductCategory';
+import { EvaluationStatus } from './Evaluation';
 
 describe('MaterialCertificate', () => {
     let materialCertificate: MaterialCertificate;
     const issueDate = new Date();
+    const material: Material = new Material(1, new ProductCategory(1, 'productCategory1', 88, ''));
 
     beforeAll(() => {
         materialCertificate = new MaterialCertificate(
@@ -26,7 +29,7 @@ describe('MaterialCertificate', () => {
             EvaluationStatus.NOT_EVALUATED,
             CertificateType.MATERIAL,
             issueDate,
-            3
+            material
         );
     });
 
@@ -49,7 +52,7 @@ describe('MaterialCertificate', () => {
         expect(materialCertificate.evaluationStatus).toEqual(EvaluationStatus.NOT_EVALUATED);
         expect(materialCertificate.certificateType).toEqual(CertificateType.MATERIAL);
         expect(materialCertificate.issueDate).toEqual(issueDate);
-        expect(materialCertificate.materialId).toEqual(3);
+        expect(materialCertificate.material).toEqual(material);
     });
 
     it('should correctly set the id', () => {
@@ -120,7 +123,8 @@ describe('MaterialCertificate', () => {
     });
 
     it('should correctly set the materialId', () => {
-        materialCertificate.materialId = 4;
-        expect(materialCertificate.materialId).toEqual(4);
+        const newMaterial = new Material(2, new ProductCategory(2, 'productCategory2', 88, ''));
+        materialCertificate.material = newMaterial;
+        expect(materialCertificate.material).toEqual(newMaterial);
     });
 });

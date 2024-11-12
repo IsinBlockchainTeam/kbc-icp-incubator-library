@@ -1,6 +1,6 @@
 import { CompanyCertificate } from './CompanyCertificate';
 import { CertificateType, CertificateDocumentType } from './Certificate';
-import { EvaluationStatus } from './Document';
+import { EvaluationStatus } from './Evaluation';
 
 describe('CompanyCertificate', () => {
     let companyCertificate: CompanyCertificate;

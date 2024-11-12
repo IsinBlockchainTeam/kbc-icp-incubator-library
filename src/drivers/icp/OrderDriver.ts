@@ -1,9 +1,9 @@
 import type { ActorSubclass, Identity } from '@dfinity/agent';
 import { createActor } from 'icp-declarations/entity_manager';
 import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
+import { Order as ICPOrder } from '@kbc-lib/azle-types';
 import { EntityBuilder } from '../../utils/icp/EntityBuilder';
 import { Order } from '../../entities/icp/Order';
-import { Order as ICPOrder } from '@kbc-lib/azle-types';
 
 export type OrderParams = {
     supplier: string;
@@ -43,7 +43,7 @@ export class OrderDriver {
         });
     }
 
-    private async buildOrder(order: ICPOrder): Promise<Order> {
+    private async _buildOrder(order: ICPOrder): Promise<Order> {
         const shipmentId = order.shipmentId.length > 0 ? order.shipmentId[0] : null;
         return EntityBuilder.buildOrder(
             order,
@@ -55,11 +55,11 @@ export class OrderDriver {
 
     async getOrders(): Promise<Order[]> {
         const resp = await this._actor.getOrders();
-        return await Promise.all(resp.map((rawOrder) => this.buildOrder(rawOrder)));
+        return await Promise.all(resp.map((rawOrder) => this._buildOrder(rawOrder)));
     }
 
     async getOrder(id: number): Promise<Order> {
-        return this.buildOrder(await this._actor.getOrder(BigInt(id)));
+        return this._buildOrder(await this._actor.getOrder(BigInt(id)));
     }
 
     async createOrder(params: OrderParams): Promise<Order> {
@@ -118,12 +118,12 @@ export class OrderDriver {
                 }
             }))
         );
-        return this.buildOrder(resp);
+        return this._buildOrder(resp);
     }
 
     async signOrder(id: number): Promise<Order> {
         const resp = await this._actor.signOrder(BigInt(id));
-        return this.buildOrder(resp);
+        return this._buildOrder(resp);
     }
 
     async deleteOrder(id: number): Promise<boolean> {

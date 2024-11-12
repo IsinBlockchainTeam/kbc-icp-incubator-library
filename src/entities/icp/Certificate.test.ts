@@ -1,5 +1,5 @@
 import { BaseCertificate, CertificateType, CertificateDocumentType } from './Certificate';
-import { EvaluationStatus } from './Document';
+import { EvaluationStatus } from './Evaluation';
 
 describe('Certificate', () => {
     let certificate: BaseCertificate;

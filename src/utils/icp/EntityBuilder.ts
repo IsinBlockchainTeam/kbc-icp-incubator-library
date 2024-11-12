@@ -31,10 +31,10 @@ import { CompanyCertificate } from '../../entities/icp/CompanyCertificate';
 import { ScopeCertificate } from '../../entities/icp/ScopeCertificate';
 import { MaterialCertificate } from '../../entities/icp/MaterialCertificate';
 import {
-  BaseCertificate,
-  CertificateDocumentInfo,
-  CertificateDocumentType,
-  CertificateType
+    BaseCertificate,
+    CertificateDocumentInfo,
+    CertificateDocumentType,
+    CertificateType
 } from '../../entities/icp/Certificate';
 
 export class EntityBuilder {
@@ -94,61 +94,62 @@ export class EntityBuilder {
         );
     }
 
-  static buildBaseCertificate(baseCertificate: ICPBaseCertificate): BaseCertificate {
-    return new BaseCertificate(
-      Number(baseCertificate.id),
-      baseCertificate.issuer,
-      baseCertificate.subject,
-      baseCertificate.uploadedBy,
-      baseCertificate.assessmentStandard,
-      baseCertificate.assessmentAssuranceLevel,
-      this._buildCertificateDocumentInfo(baseCertificate.document),
-      this._buildDocumentEvaluationStatus(baseCertificate.evaluationStatus),
-      this._buildCertificateType(baseCertificate.certType),
-      new Date(Number(baseCertificate.issueDate)),
-      baseCertificate.notes
-    );
-  }
+    static buildBaseCertificate(baseCertificate: ICPBaseCertificate): BaseCertificate {
+        return new BaseCertificate(
+            Number(baseCertificate.id),
+            baseCertificate.issuer,
+            baseCertificate.subject,
+            baseCertificate.uploadedBy,
+            baseCertificate.assessmentStandard,
+            baseCertificate.assessmentAssuranceLevel,
+            this._buildCertificateDocumentInfo(baseCertificate.document),
+            this._buildDocumentEvaluationStatus(baseCertificate.evaluationStatus),
+            this._buildCertificateType(baseCertificate.certType),
+            new Date(Number(baseCertificate.issueDate)),
+            baseCertificate.notes
+        );
+    }
 
-  static buildCompanyCertificate(companyCertificate: ICPCompanyCertificate): CompanyCertificate {
-    return new CompanyCertificate(
-      Number(companyCertificate.id),
-      companyCertificate.issuer,
-      companyCertificate.subject,
-      companyCertificate.uploadedBy,
-      companyCertificate.assessmentStandard,
-      companyCertificate.assessmentAssuranceLevel,
-      this._buildCertificateDocumentInfo(companyCertificate.document),
-      this._buildDocumentEvaluationStatus(companyCertificate.evaluationStatus),
-      this._buildCertificateType(companyCertificate.certType),
-      new Date(Number(companyCertificate.issueDate) / 1000),
-      new Date(Number(companyCertificate.validFrom)),
-      new Date(Number(companyCertificate.validUntil)),
-      companyCertificate.notes
-    );
-  }
+    static buildCompanyCertificate(companyCertificate: ICPCompanyCertificate): CompanyCertificate {
+        return new CompanyCertificate(
+            Number(companyCertificate.id),
+            companyCertificate.issuer,
+            companyCertificate.subject,
+            companyCertificate.uploadedBy,
+            companyCertificate.assessmentStandard,
+            companyCertificate.assessmentAssuranceLevel,
+            this._buildCertificateDocumentInfo(companyCertificate.document),
+            this._buildDocumentEvaluationStatus(companyCertificate.evaluationStatus),
+            this._buildCertificateType(companyCertificate.certType),
+            new Date(Number(companyCertificate.issueDate) / 1000),
+            new Date(Number(companyCertificate.validFrom)),
+            new Date(Number(companyCertificate.validUntil)),
+            companyCertificate.notes
+        );
+    }
 
-  static buildScopeCertificate(scopeCertificate: ICPScopeCertificate): ScopeCertificate {
-    return new ScopeCertificate(
-      Number(scopeCertificate.id),
-      scopeCertificate.issuer,
-      scopeCertificate.subject,
-      scopeCertificate.uploadedBy,
-      scopeCertificate.assessmentStandard,
-      scopeCertificate.assessmentAssuranceLevel,
-      this._buildCertificateDocumentInfo(scopeCertificate.document),
-      this._buildDocumentEvaluationStatus(scopeCertificate.evaluationStatus),
-      this._buildCertificateType(scopeCertificate.certType),
-      new Date(Number(scopeCertificate.issueDate) / 1000),
-      scopeCertificate.processTypes,
-      new Date(Number(scopeCertificate.validFrom)),
-      new Date(Number(scopeCertificate.validUntil)),
-      scopeCertificate.notes
-    );
-  }
+    static buildScopeCertificate(scopeCertificate: ICPScopeCertificate): ScopeCertificate {
+        return new ScopeCertificate(
+            Number(scopeCertificate.id),
+            scopeCertificate.issuer,
+            scopeCertificate.subject,
+            scopeCertificate.uploadedBy,
+            scopeCertificate.assessmentStandard,
+            scopeCertificate.assessmentAssuranceLevel,
+            this._buildCertificateDocumentInfo(scopeCertificate.document),
+            this._buildDocumentEvaluationStatus(scopeCertificate.evaluationStatus),
+            this._buildCertificateType(scopeCertificate.certType),
+            new Date(Number(scopeCertificate.issueDate) / 1000),
+            scopeCertificate.processTypes,
+            new Date(Number(scopeCertificate.validFrom)),
+            new Date(Number(scopeCertificate.validUntil)),
+            scopeCertificate.notes
+        );
+    }
 
     static buildMaterialCertificate(
-        materialCertificate: ICPMaterialCertificate
+        materialCertificate: ICPMaterialCertificate,
+        material: ICPMaterial
     ): MaterialCertificate {
         return new MaterialCertificate(
             Number(materialCertificate.id),
@@ -161,7 +162,7 @@ export class EntityBuilder {
             this._buildDocumentEvaluationStatus(materialCertificate.evaluationStatus),
             this._buildCertificateType(materialCertificate.certType),
             new Date(Number(materialCertificate.issueDate) / 1000),
-            Number(materialCertificate.materialId),
+            this.buildMaterial(material),
             materialCertificate.notes
         );
     }

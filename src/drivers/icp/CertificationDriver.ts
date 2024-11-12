@@ -1,6 +1,7 @@
 import { ActorSubclass, Identity } from '@dfinity/agent';
 import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
 import { createActor } from 'icp-declarations/entity_manager';
+import { MaterialCertificate as ICPMaterialCertificate } from '@kbc-lib/azle-types';
 import { EntityBuilder } from '../../utils/icp/EntityBuilder';
 import { CompanyCertificate } from '../../entities/icp/CompanyCertificate';
 import { MaterialCertificate } from '../../entities/icp/MaterialCertificate';
@@ -86,7 +87,7 @@ export class CertificationDriver {
             BigInt(materialId),
             notes || ''
         );
-        return EntityBuilder.buildMaterialCertificate(certificate);
+        return this._buildMaterialCertificate(certificate);
     }
 
     async getBaseCertificateById(id: number): Promise<BaseCertificate> {
@@ -111,7 +112,7 @@ export class CertificationDriver {
 
     async getMaterialCertificates(subject: string): Promise<MaterialCertificate[]> {
         const certificates = await this._actor.getMaterialCertificates(subject);
-        return certificates.map((cert) => EntityBuilder.buildMaterialCertificate(cert));
+        return Promise.all(certificates.map(async (cert) => this._buildMaterialCertificate(cert)));
     }
 
     async getCompanyCertificate(subject: string, id: number): Promise<CompanyCertificate> {
@@ -126,7 +127,7 @@ export class CertificationDriver {
 
     async getMaterialCertificate(subject: string, id: number): Promise<MaterialCertificate> {
         const certificate = await this._actor.getMaterialCertificate(subject, BigInt(id));
-        return EntityBuilder.buildMaterialCertificate(certificate);
+        return this._buildMaterialCertificate(certificate);
     }
 
     async updateCompanyCertificate(
@@ -136,8 +137,8 @@ export class CertificationDriver {
         validFrom: Date,
         validUntil: Date,
         notes?: string
-    ) {
-        return this._actor.updateCompanyCertificate(
+    ): Promise<CompanyCertificate> {
+        const certificate = await this._actor.updateCompanyCertificate(
             BigInt(certificateId),
             assessmentStandard,
             assessmentAssuranceLevel,
@@ -145,6 +146,7 @@ export class CertificationDriver {
             BigInt(validUntil.getTime()),
             notes || ''
         );
+        return EntityBuilder.buildCompanyCertificate(certificate);
     }
 
     async updateScopeCertificate(
@@ -155,8 +157,8 @@ export class CertificationDriver {
         validUntil: Date,
         processTypes: string[],
         notes?: string
-    ) {
-        return this._actor.updateScopeCertificate(
+    ): Promise<ScopeCertificate> {
+        const certificate = await this._actor.updateScopeCertificate(
             BigInt(certificateId),
             assessmentStandard,
             assessmentAssuranceLevel,
@@ -165,6 +167,7 @@ export class CertificationDriver {
             processTypes,
             notes || ''
         );
+        return EntityBuilder.buildScopeCertificate(certificate);
     }
 
     async updateMaterialCertificate(
@@ -173,14 +176,15 @@ export class CertificationDriver {
         assessmentAssuranceLevel: string,
         materialId: number,
         notes?: string
-    ) {
-        return this._actor.updateMaterialCertificate(
+    ): Promise<MaterialCertificate> {
+        const certificate = await this._actor.updateMaterialCertificate(
             BigInt(certificateId),
             assessmentStandard,
             assessmentAssuranceLevel,
             BigInt(materialId),
             notes || ''
         );
+        return this._buildMaterialCertificate(certificate);
     }
 
     async updateDocument(certificateId: number, document: CertificateDocumentInfo) {
@@ -194,6 +198,15 @@ export class CertificationDriver {
         await this._actor.evaluateCertificateDocument(
             BigInt(certificateId),
             EntityBuilder.buildICPEvaluationStatus(evaluationStatus)
+        );
+    }
+
+    private async _buildMaterialCertificate(
+        certificate: ICPMaterialCertificate
+    ): Promise<MaterialCertificate> {
+        return EntityBuilder.buildMaterialCertificate(
+            certificate,
+            await this._actor.getMaterial(certificate.materialId)
         );
     }
 }
