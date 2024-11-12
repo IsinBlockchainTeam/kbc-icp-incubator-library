@@ -8,7 +8,7 @@ export type Login = {
     userWallet: Wallet;
     companyWallet: Wallet;
     siweIdentityProvider: SiweIdentityProvider;
-    login: () => Promise<boolean>;
+    authenticate: () => Promise<void>;
 };
 
 export abstract class AuthHelper {
@@ -35,7 +35,7 @@ export abstract class AuthHelper {
             companyWallet
         );
 
-        const login = () => authenticationDriver.login(roleProof);
-        return { userWallet, companyWallet, siweIdentityProvider, login };
+        const authenticate = () => authenticationDriver.authenticate(roleProof);
+        return { userWallet, companyWallet, siweIdentityProvider, authenticate };
     };
 }

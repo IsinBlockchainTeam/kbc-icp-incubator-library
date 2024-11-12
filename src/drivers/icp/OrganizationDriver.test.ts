@@ -60,8 +60,8 @@ describe('OrganizationDriver', () => {
         organizationScratch = mockOrganization[0];
         updatedOrganizationScratch = mockOrganization[1];
 
-        await user1.login();
-        await user2.login();
+        await user1.authenticate();
+        await user2.authenticate();
     }, 30000);
 
     afterAll(async () => {

@@ -104,8 +104,8 @@ const main = async () => {
         USERS.COMPANY2_PRIVATE_KEY
     );
 
-    await user1.login();
-    await user2.login();
+    await user1.authenticate();
+    await user2.authenticate();
 
     console.log('Logged');
 
