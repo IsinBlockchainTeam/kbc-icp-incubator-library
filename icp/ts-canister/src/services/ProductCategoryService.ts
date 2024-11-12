@@ -23,7 +23,7 @@ class ProductCategoryService {
         if (result) {
             return result;
         }
-        throw new Error('Product category not found');
+        throw new Error("Product category not found");
     }
 
     productCategoryExists(id: bigint): boolean {
@@ -31,20 +31,45 @@ class ProductCategoryService {
         return !!result;
     }
 
-    createProductCategory(name: string, quality: bigint, description: string): ProductCategory {
+    createProductCategory(
+        name: string,
+        quality: bigint,
+        description: string,
+    ): ProductCategory {
         const id = BigInt(this._productCategories.keys().length);
-        const productCategory: ProductCategory = { id, name, quality, description };
+        const productCategory: ProductCategory = {
+            id,
+            name,
+            quality,
+            description,
+        };
         this._productCategories.insert(id, productCategory);
         return productCategory;
     }
 
-    updateProductCategory(id: bigint, name: string, quality: bigint, description: string): ProductCategory {
+    updateProductCategory(
+        id: bigint,
+        name: string,
+        quality: bigint,
+        description: string,
+    ): ProductCategory {
         const productCategory = this.getProductCategory(id);
         productCategory.name = name;
         productCategory.quality = quality;
         productCategory.description = description;
         this._productCategories.insert(id, productCategory);
         return productCategory;
+    }
+
+    deleteProductCategory(id: bigint): boolean {
+        const productCategory = this.getProductCategory(id);
+        if (!productCategory) {
+            throw new Error("Product category not found");
+        }
+
+        this._productCategories.remove(id);
+
+        return true;
     }
 }
 export default ProductCategoryService;

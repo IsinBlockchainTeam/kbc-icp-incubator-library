@@ -8,6 +8,7 @@ import { BroadedOrganization } from '../../entities/organization/BroadedOrganiza
 import { Organization } from '../../entities/organization/Organization';
 import { OrderDriver } from './OrderDriver';
 import { Order } from '../../entities/icp/Order';
+import { ProductCategory } from '../../entities/ProductCategory';
 import { NarrowedOrganization } from '../../entities/organization/NarrowedOrganization';
 import { ProductCategoryDriver } from './ProductCategoryDriver';
 
@@ -37,6 +38,8 @@ describe('OrganizationDriver', () => {
     let organizationScratch: OrganizationParams;
     let updatedOrganizationScratch: OrganizationParams;
     let createdOrganization: Organization;
+    let createdProductCategory: ProductCategory;
+    let productCategoryDriver: ProductCategoryDriver;
     let createdOrder: Order;
     let orderDriver: OrderDriver;
 
@@ -93,6 +96,12 @@ describe('OrganizationDriver', () => {
             ICP_NETWORK
         );
 
+        productCategoryDriver = new ProductCategoryDriver(
+            user1.siweIdentityProvider.identity,
+            ENTITY_MANAGER_CANISTER_ID,
+            ICP_NETWORK
+        );
+
         organizationScratch = {
             legalName: 'Test Organization',
             industrialSector: 'Test Industrial Sector',
@@ -126,6 +135,7 @@ describe('OrganizationDriver', () => {
 
     afterAll(async () => {
         await orderDriver.deleteOrder(createdOrder.id);
+        await productCategoryDriver.deleteProductCategory(createdProductCategory.id);
     });
 
     it('should get organizations', async () => {
@@ -178,18 +188,13 @@ describe('OrganizationDriver', () => {
     });
 
     it('should simulate order between parties', async () => {
-        const productCategoryDriver = new ProductCategoryDriver(
-            user1.siweIdentityProvider.identity,
-            ENTITY_MANAGER_CANISTER_ID,
-            ICP_NETWORK
-        );
-        const productCategory = await productCategoryDriver.createProductCategory(
+        createdProductCategory = await productCategoryDriver.createProductCategory(
             'test',
             1,
             'test'
         );
 
-        expect(productCategory).toBeDefined();
+        expect(createdProductCategory).toBeDefined();
 
         const date = new Date();
         const orderParams = {
@@ -210,7 +215,7 @@ describe('OrganizationDriver', () => {
             deliveryPort: 'deliveryPort',
             lines: [
                 {
-                    productCategoryId: productCategory.id,
+                    productCategoryId: createdProductCategory.id,
                     quantity: 1,
                     unit: 'unit',
                     price: {
