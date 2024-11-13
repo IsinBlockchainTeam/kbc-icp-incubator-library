@@ -1,5 +1,5 @@
-import {RoleProof} from "@kbc-lib/azle-types";
-import {AuthenticationDriver} from "../../drivers/icp/AuthenticationDriver";
+import { RoleProof } from '../../types/RoleProof';
+import { AuthenticationDriver } from '../../drivers/icp/AuthenticationDriver';
 
 export class AuthenticationService {
     private readonly _authenticationDriver: AuthenticationDriver;

@@ -52,9 +52,9 @@ export async function ethMaxPriorityFeePerGas(): Promise<bigint> {
         id: 1
     });
 
-    console.log(response)
+    console.log('ethMaxPriorityFeePerGas response:', response);
     //TODO improve error handling
-    return BigInt(response.Ok.result);
+    return BigInt(JSON.parse(response.Ok).result);
 }
 export async function ethFeeHistory(): Promise<any> {
     if (process.env.CANISTER_ID_EVM_RPC === undefined) {
@@ -63,7 +63,8 @@ export async function ethFeeHistory(): Promise<any> {
     const evmRpcCanisterId = process.env.CANISTER_ID_EVM_RPC;
 
     const jsonRpcArgs = {
-        blockCount: 1,
+        // blockCount: 1,
+        blockCount: 3,
         newestBlock: {
             Latest: null
         },
@@ -78,9 +79,9 @@ export async function ethFeeHistory(): Promise<any> {
             }]
         }
     }
+    console.log('ethFeeHistory rpcSource:', rpcSource);
 
-    // TODO improve error handling
-    return await call(
+    const result = await call(
         evmRpcCanisterId,
         'eth_feeHistory',
         {
@@ -90,6 +91,19 @@ export async function ethFeeHistory(): Promise<any> {
             payment: 1_000_000_000n
         }
     );
+    console.log('ethFeeHistory result:', result);
+    return result;
+    // // TODO improve error handling
+    // return await call(
+    //     evmRpcCanisterId,
+    //     'eth_feeHistory',
+    //     {
+    //         paramIdlTypes: [IDLRpcServices, IDL.Opt(IDLRpcConfig), IDLFeeHistoryArgs],
+    //         returnIdlType: IDLMultiFeeHistoryResult,
+    //         args: [rpcSource, [], jsonRpcArgs],
+    //         payment: 1_000_000_000n
+    //     }
+    // );
 }
 export async function ethGetTransactionCount(address: string): Promise<number> {
     if (process.env.CANISTER_ID_EVM_RPC === undefined) {
@@ -156,9 +170,9 @@ export async function ethSendRawTransaction(
 function buildV1Transaction(contractAddress: string, data: string, nonce: number): ethers.Transaction {
     return ethers.Transaction.from({
         to: contractAddress,
-        value: 0,
+        // value: 0,
         gasLimit: 1_000_000,
-        gasPrice: 0,
+        // gasPrice: 0,
         type: 0,
         data,
         chainId: getEvmChainId(),
@@ -166,13 +180,32 @@ function buildV1Transaction(contractAddress: string, data: string, nonce: number
     });
 }
 
-function buildV2Transaction(contractAddress: string, data: string, nonce: number) {
+async function buildV2Transaction(contractAddress: string, data: string, nonce: number) {
+    const maxPriorityFeePerGas = await ethMaxPriorityFeePerGas();
+    console.log('maxPriorityFeePerGas', maxPriorityFeePerGas);
+    //TODO: eth_maxPriorityFeePerGas not available in hardhat
+    //const resp = await ethFeeHistory();
+    //const baseFeePerGas = BigInt(
+    //    resp.Consistent?.Ok[0].baseFeePerGas[0]
+    // );
+    //console.log('baseFeePerGas', baseFeePerGas);
+    //const maxFeePerGas = baseFeePerGas * 2n + maxPriorityFeePerGas;
+
+    const provider = new ethers.JsonRpcProvider(getEvmRpcUrl());
+    const feeData = await provider.getFeeData();
+    const mfpg = feeData.maxFeePerGas?.toString();
+    console.log('mfpg', mfpg);
+
+    //console.log('maxFeePerGas', maxFeePerGas);
+    if(!mfpg) throw new Error('maxFeePerGas not found');
+
     return ethers.Transaction.from({
         to: contractAddress,
         value: 0,
-        gasLimit: 30_000_000,
-        maxPriorityFeePerGas: 1n,
-        maxFeePerGas: 300_000_000n * 2n + 1n,
+        gasLimit: 500_000,
+        maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
+        maxFeePerGas: feeData.maxFeePerGas,
+        gasPrice: feeData.gasPrice,
         data,
         chainId: getEvmChainId(),
         nonce
@@ -190,7 +223,11 @@ export async function ethSendContractTransaction(
             await ecdsaPublicKey([ic.id().toUint8Array()])
         )
     );
+    // TODO: remove this
+    contractAddress = '0xAf1256fE3296112A12eeBa7D4c21719bde5E3945';
+    console.log('contractAddress', contractAddress);
     console.log('canisterAddress', canisterAddress);
+    console.log('methodArgs', methodArgs);
     const abiInterface = new ethers.Interface(contractAbi);
     const data = abiInterface.encodeFunctionData(methodName, methodArgs);
     //TODO: eth_maxPriorityFeePerGas not available in hardhat
@@ -199,18 +236,25 @@ export async function ethSendContractTransaction(
     // const maxPriorityFeePerGas = 0n;
     // console.log('maxPriorityFeePerGas', maxPriorityFeePerGas);
     //TODO: eth_maxPriorityFeePerGas not available in hardhat
-
     // const baseFeePerGas = BigInt(
     //     (await ethFeeHistory()).Consistent?.Ok[0].baseFeePerGas[0]
     // );
     // const baseFeePerGas = 0n;
     // console.log('baseFeePerGas', baseFeePerGas);
     // const maxFeePerGas = baseFeePerGas * 2n + maxPriorityFeePerGas;
+
+    // const provider = new ethers.JsonRpcProvider(getEvmRpcUrl());
+    // const contract = new ethers.Contract(contractAddress, contractAbi, provider);
+    // const populatedTransaction = await contract[methodName].populateTransaction(...methodArgs);
+    // console.log('populatedTransaction', populatedTransaction);
+
     const nonce = await ethGetTransactionCount(canisterAddress);
     console.log('nonce', nonce);
     let tx = getEvmTransactionType() === 'v1' ?
         buildV1Transaction(contractAddress, data, nonce) :
-        buildV2Transaction(contractAddress, data, nonce);
+        await buildV2Transaction(contractAddress, data, nonce);
+    // const tx = ethers.Transaction.from(populatedTransaction);
+    // tx.type = 0;
     console.log('tx', tx);
     const unsignedSerializedTx = tx.unsignedSerialized;
     const unsignedSerializedTxHash = ethers.keccak256(unsignedSerializedTx);

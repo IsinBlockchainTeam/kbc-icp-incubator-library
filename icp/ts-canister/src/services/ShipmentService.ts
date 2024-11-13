@@ -99,7 +99,8 @@ class ShipmentService implements HasInterestedParties{
         };
 
         const escrowManagerAddress: string = getEvmEscrowManagerAddress();
-        await ethSendContractTransaction(escrowManagerAddress, escrowManagerAbi.abi, 'registerEscrow', [shipment.id, supplier, duration, tokenAddress]);
+        const resp = await ethSendContractTransaction(escrowManagerAddress, escrowManagerAbi.abi, 'registerEscrow', [shipment.id, supplier, duration, tokenAddress]);
+        console.log('escrow registered', resp);
 
         this._shipments.insert(BigInt(id), shipment);
         return shipment;

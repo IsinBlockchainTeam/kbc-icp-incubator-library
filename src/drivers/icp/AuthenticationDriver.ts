@@ -1,7 +1,8 @@
-import type {ActorSubclass, Identity} from "@dfinity/agent";
-import {RoleProof} from "@kbc-lib/azle-types";
-import {_SERVICE} from "icp-declarations/entity_manager/entity_manager.did";
-import {createActor} from "icp-declarations/entity_manager";
+import type { ActorSubclass, Identity } from '@dfinity/agent';
+import { RoleProof } from '../../types/RoleProof';
+import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
+import { createActor } from 'icp-declarations/entity_manager';
+import { EntityBuilder } from '../../utils/icp/EntityBuilder';
 
 export class AuthenticationDriver {
     private _actor: ActorSubclass<_SERVICE>;
@@ -16,7 +17,7 @@ export class AuthenticationDriver {
     }
 
     async login(roleProof: RoleProof): Promise<boolean> {
-        return this._actor.login(roleProof);
+        return this._actor.login(EntityBuilder.buildICPRoleProof(roleProof));
     }
 
     async refresh(): Promise<boolean> {

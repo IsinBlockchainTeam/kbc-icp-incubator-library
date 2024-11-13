@@ -1,4 +1,5 @@
 import {
+    RoleProof as ICPRoleProof,
     ProductCategory as ICPProductCategory,
     Material as ICPMaterial,
     Order as ICPOrder,
@@ -19,8 +20,29 @@ import { EvaluationStatus } from '../../entities/icp/Evaluation';
 import { ProductCategory } from '../../entities/ProductCategory';
 import { Material } from '../../entities/Material';
 import { Offer } from '../../entities/Offer';
+import { RoleProof } from '../../types/RoleProof';
 
 export class EntityBuilder {
+    static buildICPRoleProof(roleProof: RoleProof): ICPRoleProof {
+        return {
+            signedProof: roleProof.signedProof,
+            signer: roleProof.delegator,
+            delegateAddress: roleProof.delegate,
+            role: roleProof.delegateRole,
+            delegateCredentialIdHash: roleProof.delegateCredentialIdHash,
+            delegateCredentialExpiryDate: BigInt(roleProof.delegateCredentialExpiryDate),
+            membershipProof: {
+                signedProof: roleProof.membershipProof.signedProof,
+                delegatorCredentialIdHash: roleProof.membershipProof.delegatorCredentialIdHash,
+                delegatorCredentialExpiryDate: BigInt(
+                    roleProof.membershipProof.delegatorCredentialExpiryDate
+                ),
+                delegatorAddress: roleProof.delegator,
+                issuer: roleProof.membershipProof.issuer
+            }
+        };
+    }
+
     static buildProductCategory(productCategory: ICPProductCategory) {
         return new ProductCategory(
             Number(productCategory.id),

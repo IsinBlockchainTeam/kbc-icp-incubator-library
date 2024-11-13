@@ -40,6 +40,11 @@ const config: HardhatUserConfig = {
             chainId: 222,
             url: RPC_URL || '',
             accounts: PRIVATE_KEY ? [`0x${PRIVATE_KEY}`] : []
+        },
+        holesky: {
+            chainId: 17000,
+            url: 'https://1rpc.io/holesky',
+            accounts: PRIVATE_KEY ? [`0x${PRIVATE_KEY}`] : []
         }
     },
     // @ts-ignore

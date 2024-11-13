@@ -55,7 +55,7 @@ contract Escrow is AccessControl {
         _payee = payee;
         _deployedAt = block.timestamp;
         _duration = duration;
-        _token = IERC20(tokenAddress);
+        // _token = IERC20(tokenAddress);
         _feeRecipient = feeRecipient;
         _baseFee = baseFee;
         _percentageFee = percentageFee;

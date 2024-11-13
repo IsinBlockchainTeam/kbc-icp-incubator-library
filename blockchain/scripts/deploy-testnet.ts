@@ -57,6 +57,7 @@ serial([
     //         await tx.wait();
     //     }
     // },
+    // () => deploy(ContractName.REVOCATION_REGISTRY, [])
     // () => deploy(ContractName.DELEGATE_MANAGER, ['KBC Delegate Manager', '1.0.1', 222])
     // () =>
     //     deploy(
@@ -84,7 +85,7 @@ serial([
     //     ]),
     () =>
         deploy(ContractName.ESCROW_MANAGER, [
-            '0x44820D887a99106510AB4fe8a52241f81a3074B7',
+            '0xD594731AA232D7BCAf46Af12916775b395c1B7d7',
             process.env.COMMISSIONER_ADMIN || '',
             process.env.ESCROW_BASE_FEE || 20,
             process.env.ESCROW_COMMISSIONER_FEE || 1
@@ -125,9 +126,7 @@ serial([
     //         ['0x30054880e4E2fA1082C1976cA5547cC3bd185c11'], // ContractsOwner
     //         '0x8f9c47afF2E345708f104000714215d865b73C29' // ProductCategoryManager
     //     ])
-    // () => deploy(
-    //     ContractName.MY_TOKEN, [10000],
-    // ),
+    // () => deploy(ContractName.MY_TOKEN, [10000])
     // () => deploy(
     //     ContractName.ETHEREUM_DID_REGISTRY, [],
     // ),

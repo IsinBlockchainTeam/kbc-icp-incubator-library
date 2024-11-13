@@ -11,7 +11,8 @@
         "deploy": "npx hardhat run ./scripts/deploy.ts",
         "send-eth": "npx hardhat run ./scripts/send-eth.ts --network localhost",
         "send-tokens": "npx hardhat run ./scripts/send-tokens.ts --network localhost",
-        "deploy-testnet": "npx hardhat run ./scripts/deploy-testnet.ts --network threeachain",
+        "deploy-threeachain": "npx hardhat run ./scripts/deploy-testnet.ts --network threeachain",
+        "deploy-holesky": "npx hardhat run ./scripts/deploy-testnet.ts --network holesky",
         "node": "npx hardhat node --hostname 0.0.0.0",
         "lint": "eslint \"{contracts,scripts,test,utils}/**/*.ts\" --fix",
         "prettier": "npx prettier . --write"
