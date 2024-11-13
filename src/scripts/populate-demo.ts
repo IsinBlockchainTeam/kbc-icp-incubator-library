@@ -1,7 +1,8 @@
 import { DocumentTypeEnum, EvaluationStatusEnum } from '@kbc-lib/azle-types';
-import { ICPStorageDriver } from '@blockchain-lib/common';
+import { ICPResourceSpec, ICPStorageDriver } from '@blockchain-lib/common';
 import {
-    mockDocumentUrl,
+    DocumentParams,
+    mockDocument,
     mockOrder,
     mockOrganizations,
     mockProductCategories,
@@ -119,7 +120,7 @@ const uploadDocument = async (
     userSiweIdentityProvider: SiweIdentityProvider,
     shipmentId: number,
     documentTypeEnum: DocumentTypeEnum,
-    documentUrl: string,
+    document: DocumentParams,
     orderId: number
 ): Promise<Shipment> => {
     console.log('Uploading document:', documentTypeEnum);
@@ -131,23 +132,27 @@ const uploadDocument = async (
     );
     const icpStorageDriver = new ICPStorageDriver(
         userSiweIdentityProvider.identity,
-        ICP.STORAGE_CANISTER_ID
+        ICP.STORAGE_CANISTER_ID,
+        ICP.NETWORK
     );
     const icpFileDriver = new ICPFileDriver(icpStorageDriver);
     const organizationId = 0;
     const baseExternalUrl = `https://${ICP.STORAGE_CANISTER_ID}.${ICP.NETWORK}/organization/${organizationId}/transactions/${orderId}`;
     const shipmentService = new ShipmentService(shipmentDriver, icpFileDriver, baseExternalUrl);
 
-    return shipmentService.addDocument(shipmentId, documentTypeEnum, 0, documentUrl, [
-        organizationId
-    ]);
+    const fileSpec: ICPResourceSpec = {
+        name: document.name,
+        type: document.type
+    };
 
-    // detailShipment.shipment.id,
-    //     documentType,
-    //     documentReferenceId,
-    //     new Uint8Array(await new Response(fileContent).arrayBuffer()),
-    //     resourceSpec,
-    //     delegatedOrganizationIds
+    return shipmentService.addDocument(
+        shipmentId,
+        documentTypeEnum,
+        '0',
+        document.content,
+        fileSpec,
+        [organizationId]
+    );
 };
 
 const approveDocument = async (
@@ -177,7 +182,7 @@ const uploadAndApproveDocument = async (
         supplierSiweIdentityProvider,
         shipmentId,
         documentTypeEnum,
-        mockDocumentUrl,
+        mockDocument,
         orderId
     );
     await approveDocument(

@@ -24,6 +24,12 @@ export type ShipmentDetailsParams = {
     grossWeight: number;
 };
 
+export type DocumentParams = {
+    name: string;
+    type: string;
+    content: Uint8Array;
+};
+
 export const mockProductCategories: ProductCategoryParams[] = [
     {
         name: 'Ethiopian Yirgacheffe',
@@ -103,7 +109,11 @@ export const mockOrganizations: OrganizationParams[] = [
     }
 ];
 
-export const mockDocumentUrl = 'https://pdfobject.com/pdf/sample.pdf';
+export const mockDocument: DocumentParams = {
+    name: 'sampleDocument.pdf',
+    type: 'application/pdf',
+    content: new Uint8Array()
+};
 
 export const mockShipmentDetails: ShipmentDetailsParams[] = [
     {
