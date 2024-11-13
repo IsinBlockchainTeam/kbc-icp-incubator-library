@@ -7,6 +7,7 @@ import { BroadedOrganizationCreator } from '../../factories/organization/Broaded
 import { OrganizationVisibilityLevelFactory } from '../../factories/organization/OrganizationVisibilityLevelFactory';
 import { NarrowedOrganizationCreator } from '../../factories/organization/NarrowedOrganizationCreator';
 import { OrganizationRoleFactory } from '../../factories/organization/OrganizationRoleFactory';
+import { HandleIcpError } from '../../decorators/HandleIcpError';
 
 export type OrganizationParams = {
     legalName: string;
@@ -49,17 +50,20 @@ export class OrganizationDriver {
         }
     }
 
+    @HandleIcpError()
     async getOrganizations(): Promise<Organization[]> {
         const organizations = await this._actor.getOrganizations();
         return organizations.map((organization: any) => this.castOrganization(organization));
     }
 
+    @HandleIcpError()
     async getOrganization(ethAddress: string): Promise<Organization> {
         const organization = await this._actor.getOrganization(ethAddress);
 
         return this.castOrganization(organization);
     }
 
+    @HandleIcpError()
     async createOrganization(params: OrganizationParams): Promise<Organization> {
         const icpRole = new OrganizationRoleFactory().toICPType(params.role);
 
@@ -79,6 +83,7 @@ export class OrganizationDriver {
         return new BroadedOrganizationCreator().createOrganization(organization);
     }
 
+    @HandleIcpError()
     async updateOrganization(
         ethAddress: string,
         params: OrganizationParams
@@ -102,6 +107,7 @@ export class OrganizationDriver {
         return new BroadedOrganizationCreator().createOrganization(organization);
     }
 
+    @HandleIcpError()
     async deleteOrganization(ethAddress: string): Promise<boolean> {
         return this._actor.deleteOrganization(ethAddress);
     }

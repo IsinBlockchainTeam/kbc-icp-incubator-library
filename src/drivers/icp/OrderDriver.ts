@@ -3,6 +3,7 @@ import { createActor } from 'icp-declarations/entity_manager';
 import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
 import { EntityBuilder } from '../../utils/icp/EntityBuilder';
 import { Order } from '../../entities/icp/Order';
+import { HandleIcpError } from '../../decorators/HandleIcpError';
 import { Order as ICPOrder } from '@kbc-lib/azle-types';
 
 export type OrderParams = {
@@ -53,15 +54,19 @@ export class OrderDriver {
         );
     }
 
+    @HandleIcpError()
     async getOrders(): Promise<Order[]> {
         const resp = await this._actor.getOrders();
-        return await Promise.all(resp.map((rawOrder) => this.buildOrder(rawOrder)));
+        return resp.map((rawOrder) => EntityBuilder.buildOrder(rawOrder));
     }
 
+    @HandleIcpError()
     async getOrder(id: number): Promise<Order> {
-        return this.buildOrder(await this._actor.getOrder(BigInt(id)));
+        const resp = await this._actor.getOrder(BigInt(id));
+        return EntityBuilder.buildOrder(resp);
     }
 
+    @HandleIcpError()
     async createOrder(params: OrderParams): Promise<Order> {
         const resp = await this._actor.createOrder(
             params.supplier,
@@ -88,7 +93,7 @@ export class OrderDriver {
                 }
             }))
         );
-        return EntityBuilder.buildOrder(resp, null);
+        return EntityBuilder.buildOrder(resp);
     }
 
     async updateOrder(id: number, params: OrderParams): Promise<Order> {
@@ -118,12 +123,12 @@ export class OrderDriver {
                 }
             }))
         );
-        return this.buildOrder(resp);
+        return EntityBuilder.buildOrder(resp);
     }
 
     async signOrder(id: number): Promise<Order> {
         const resp = await this._actor.signOrder(BigInt(id));
-        return this.buildOrder(resp);
+        return EntityBuilder.buildOrder(resp);
     }
 
     async deleteOrder(id: number): Promise<boolean> {

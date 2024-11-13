@@ -1,10 +1,13 @@
-import {StableBTreeMap} from "azle";
-import {ProductCategory} from "../models/types";
-import {StableMemoryId} from "../utils/stableMemory";
+import { StableBTreeMap } from "azle";
+import { ProductCategory } from "../models/types";
+import { StableMemoryId } from "../utils/stableMemory";
+import {ProductCategoryNotFoundError} from "../models/errors";
 
 class ProductCategoryService {
     private static _instance: ProductCategoryService;
-    private _productCategories = StableBTreeMap<bigint, ProductCategory>(StableMemoryId.PRODUCT_CATEGORIES);
+    private _productCategories = StableBTreeMap<bigint, ProductCategory>(
+        StableMemoryId.PRODUCT_CATEGORIES,
+    );
 
     private constructor() {}
     static get instance() {
@@ -20,10 +23,10 @@ class ProductCategoryService {
 
     getProductCategory(id: bigint): ProductCategory {
         const result = this._productCategories.get(id);
-        if(result) {
+        if (result) {
             return result;
         }
-        throw new Error('Product category not found');
+        throw new ProductCategoryNotFoundError();
     }
 
     productCategoryExists(id: bigint): boolean {
@@ -31,20 +34,45 @@ class ProductCategoryService {
         return !!result;
     }
 
-    createProductCategory(name: string, quality: bigint, description: string): ProductCategory {
+    createProductCategory(
+        name: string,
+        quality: bigint,
+        description: string,
+    ): ProductCategory {
         const id = BigInt(this._productCategories.keys().length);
-        const productCategory: ProductCategory = { id, name, quality, description };
+        const productCategory: ProductCategory = {
+            id,
+            name,
+            quality,
+            description,
+        };
         this._productCategories.insert(id, productCategory);
         return productCategory;
     }
 
-    updateProductCategory(id: bigint, name: string, quality: bigint, description: string): ProductCategory {
+    updateProductCategory(
+        id: bigint,
+        name: string,
+        quality: bigint,
+        description: string,
+    ): ProductCategory {
         const productCategory = this.getProductCategory(id);
         productCategory.name = name;
         productCategory.quality = quality;
         productCategory.description = description;
         this._productCategories.insert(id, productCategory);
         return productCategory;
+    }
+
+    deleteProductCategory(id: bigint): boolean {
+        const productCategory = this.getProductCategory(id);
+        if (!productCategory) {
+            throw new Error("Product category not found");
+        }
+
+        this._productCategories.remove(id);
+
+        return true;
     }
 }
 export default ProductCategoryService;

@@ -33,7 +33,11 @@ export class ShipmentDriver {
         return EntityBuilder.buildShipmentPhase(resp);
     }
 
-    async getDocumentsByType(id: number, documentType: DocumentType): Promise<DocumentInfo[]> {
+    @HandleIcpError()
+    async getDocumentsByType(
+        id: number,
+        documentType: DocumentType
+    ): Promise<DocumentInfo[]> {
         const documents = await this._actor.getDocumentsByType(
             BigInt(id),
             EntityBuilder.buildIDLDocumentType(documentType)
@@ -70,7 +74,11 @@ export class ShipmentDriver {
         return EntityBuilder.buildShipment(resp);
     }
 
-    async evaluateSample(id: number, evaluationStatus: EvaluationStatus): Promise<Shipment> {
+    @HandleIcpError()
+    async evaluateSample(
+        id: number,
+        evaluationStatus: EvaluationStatus
+    ): Promise<Shipment> {
         const resp = await this._actor.evaluateSample(
             BigInt(id),
             EntityBuilder.buildIDLEvaluationStatus(evaluationStatus)
@@ -89,7 +97,11 @@ export class ShipmentDriver {
         return EntityBuilder.buildShipment(resp);
     }
 
-    async evaluateQuality(id: number, evaluationStatus: EvaluationStatus): Promise<Shipment> {
+    @HandleIcpError()
+    async evaluateQuality(
+        id: number,
+        evaluationStatus: EvaluationStatus
+    ): Promise<Shipment> {
         const resp = await this._actor.evaluateQuality(
             BigInt(id),
             EntityBuilder.buildIDLEvaluationStatus(evaluationStatus)
@@ -97,11 +109,7 @@ export class ShipmentDriver {
         return EntityBuilder.buildShipment(resp);
     }
 
-    async determineEscrowAddress(id: number): Promise<Shipment> {
-        const resp = await this._actor.determineEscrowAddress(BigInt(id));
-        return EntityBuilder.buildShipment(resp);
-    }
-
+    @HandleIcpError()
     async depositFunds(id: number, amount: number): Promise<Shipment> {
         const resp = await this._actor.depositFunds(BigInt(id), BigInt(amount));
         return EntityBuilder.buildShipment(resp);
@@ -117,7 +125,10 @@ export class ShipmentDriver {
         return EntityBuilder.buildShipment(resp);
     }
 
-    async getDocuments(id: number): Promise<Map<DocumentType, DocumentInfo[]>> {
+    @HandleIcpError()
+    async getDocuments(
+        id: number
+    ): Promise<Map<DocumentType, DocumentInfo[]>> {
         const documentArray = await this._actor.getDocuments(BigInt(id));
         return EntityBuilder.buildShipmentDocuments(documentArray);
     }
@@ -140,8 +151,17 @@ export class ShipmentDriver {
         return EntityBuilder.buildShipment(resp);
     }
 
-    async updateDocument(id: number, documentId: number, externalUrl: string): Promise<Shipment> {
-        const resp = await this._actor.updateDocument(BigInt(id), BigInt(documentId), externalUrl);
+    @HandleIcpError()
+    async updateDocument(
+        id: number,
+        documentId: number,
+        externalUrl: string
+    ): Promise<Shipment> {
+        const resp = await this._actor.updateDocument(
+            BigInt(id),
+            BigInt(documentId),
+            externalUrl
+        );
         return EntityBuilder.buildShipment(resp);
     }
 

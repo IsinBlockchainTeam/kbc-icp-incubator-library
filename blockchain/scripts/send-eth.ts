@@ -20,6 +20,6 @@ const main = async (address: string) => {
     // console.log(resp);
 };
 
-main(process.env.CANISTER_ADDRESS!).catch(console.error); // Canister address
+main(process.env.ENTITY_MANAGER_CANISTER_ADDRESS || '').catch(console.error); // Canister address
 main('0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123').catch(console.error); // Supplier address
 main('0x2F2e2b138006ED0CcA198e7090dce5BACF02Bf26').catch(console.error); // Commissioner address

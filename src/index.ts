@@ -46,6 +46,10 @@ export { OrderTradeService } from './services/OrderTradeService';
 export type { IConcreteTradeService } from './services/IConcreteTradeService';
 export type { URLStructure } from './types/URLStructure';
 
+export { CredentialStatus } from './types/CredentialStatus';
+export { CredentialRevocationDriver } from './drivers/CredentialRevocationDriver';
+export { CredentialRevocationService } from './services/CredentialRevocationService';
+
 export { DocumentInfo, DocumentType } from './entities/DocumentInfo';
 export {
     Document,
@@ -113,7 +117,7 @@ export { URL_SEGMENT_INDEXES } from './constants/ICP';
 // ICP refactor
 // export {createActor} from 'icp-declarations/entity_manager'
 export { Order, OrderStatus } from './entities/icp/Order';
-export { computeMembershipProof, computeRoleProof } from './drivers/icp/proof';
+export { computeRoleProof } from './drivers/icp/proof';
 export { OrderDriver, OrderParams } from './drivers/icp/OrderDriver';
 export { OrderService } from './services/icp/OrderService';
 
@@ -136,6 +140,5 @@ export { ProductCategoryService as ICPProductCategoryService } from './services/
 export { MaterialDriver as ICPMaterialDriver } from './drivers/icp/MaterialDriver';
 export { MaterialService as ICPMaterialService } from './services/icp/MaterialService';
 
-export { CredentialStatus } from './types/CredentialStatus';
-export { CredentialRevocationDriver } from './drivers/CredentialRevocationDriver';
-export { CredentialRevocationService } from './services/CredentialRevocationService';
+// Errors
+export { NotAuthenticatedError, NotAuthorizedError, NotValidCredentialError } from './entities/icp/errors'

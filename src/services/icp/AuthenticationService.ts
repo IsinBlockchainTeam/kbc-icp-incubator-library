@@ -8,15 +8,11 @@ export class AuthenticationService {
         this._authenticationDriver = authenticationDriver;
     }
 
-    async login(roleProof: RoleProof): Promise<boolean> {
-        return this._authenticationDriver.login(roleProof);
+    async authenticate(roleProof: RoleProof): Promise<void> {
+        return this._authenticationDriver.authenticate(roleProof);
     }
 
-    async refresh(): Promise<boolean> {
-        return this._authenticationDriver.refresh();
-    }
-
-    async logout(): Promise<boolean> {
+    async logout(): Promise<void> {
         return this._authenticationDriver.logout();
     }
 }

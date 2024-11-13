@@ -6,15 +6,13 @@ import {AuthenticationDriver} from "../../../drivers/icp/AuthenticationDriver";
 describe('AuthenticationService', () => {
     let authenticationService: AuthenticationService;
     const mockedFn = {
-        login: jest.fn(),
-        refresh: jest.fn(),
+        authenticate: jest.fn(),
         logout: jest.fn(),
     }
 
     beforeAll(() => {
         const authenticationDriver = createMock<AuthenticationDriver>({
-            login: mockedFn.login,
-            refresh: mockedFn.refresh,
+            authenticate: mockedFn.authenticate,
             logout: mockedFn.logout,
 
         });
@@ -24,16 +22,10 @@ describe('AuthenticationService', () => {
     it.each([
         {
             functionName: 'login',
-            serviceFunction: () => authenticationService.login({} as RoleProof),
-            driverFunction: mockedFn.login,
+            serviceFunction: () => authenticationService.authenticate({} as RoleProof),
+            driverFunction: mockedFn.authenticate,
             driverFunctionResult: true,
             driverFunctionArgs: [{} as RoleProof]
-        }, {
-            functionName: 'getMaterial',
-            serviceFunction: () => authenticationService.refresh(),
-            driverFunction: mockedFn.refresh,
-            driverFunctionResult: true,
-            driverFunctionArgs: []
         }, {
             functionName: 'createMaterial',
             serviceFunction: () => authenticationService.logout(),

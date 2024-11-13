@@ -30,3 +30,4 @@ export {
 } from "./presentations/OrganizationPresentation";
 export { OrganizationRole, OrganizationRoleType } from "./Organization";
 export {Offer} from './Offer';
+export {ErrorType} from './ErrorType';

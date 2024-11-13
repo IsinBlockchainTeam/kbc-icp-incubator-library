@@ -2,6 +2,7 @@ import { Wallet } from 'ethers';
 import { OrganizationRole, OrganizationVisibilityLevel } from '@kbc-lib/azle-types';
 import { OrganizationDriver, OrganizationParams } from './OrganizationDriver';
 import { SiweIdentityProvider } from './SiweIdentityProvider';
+import { computeRoleProof } from './proof';
 import { AuthenticationDriver } from './AuthenticationDriver';
 import { BroadedOrganization } from '../../entities/organization/BroadedOrganization';
 import { Organization } from '../../entities/organization/Organization';
@@ -9,23 +10,14 @@ import { OrderDriver } from './OrderDriver';
 import { Order } from '../../entities/icp/Order';
 import { NarrowedOrganization } from '../../entities/organization/NarrowedOrganization';
 import { ProductCategoryDriver } from './ProductCategoryDriver';
-import { createRoleProof } from '../../__testUtils__/proof';
-
-// FIXME: Move this variables to a common file?
-const USER1_PRIVATE_KEY = '0c7e66e74f6666b514cc73ee2b7ffc518951cf1ca5719d6820459c4e134f2264';
-const COMPANY1_PRIVATE_KEY = '538d7d8aec31a0a83f12461b1237ce6b00d8efc1d8b1c73566c05f63ed5e6d02';
-const USER2_PRIVATE_KEY = 'ec6b3634419525310628dce4da4cf2abbc866c608aebc1e5f9ee7edf6926e985';
-const COMPANY2_PRIVATE_KEY = '0c7e66e74f6666b514cc73ee2b7ffc518951cf1ca5719d6820459c4e134f2264';
-const SIWE_CANISTER_ID = 'be2us-64aaa-aaaaa-qaabq-cai';
-const ENTITY_MANAGER_CANISTER_ID = 'bkyz2-fmaaa-aaaaa-qaaaq-cai';
-const ICP_NETWORK = 'http://127.0.0.1:4943/';
-
-type Login = {
-    userWallet: Wallet;
-    companyWallet: Wallet;
-    siweIdentityProvider: SiweIdentityProvider;
-    login: () => Promise<boolean>;
-};
+import { ICP, USERS } from '../../__shared__/constants/constants';
+import { AuthHelper, Login } from '../../__shared__/helpers/AuthHelper';
+import {
+    mockOrder,
+    mockOrganizations,
+    mockProductCategories
+} from '../../__shared__/constants/mock-data';
+import { OrganizationNotFoundError } from '../../entities/icp/errors';
 
 describe('OrganizationDriver', () => {
     let organizationDriverUser1: OrganizationDriver;
@@ -38,28 +30,6 @@ describe('OrganizationDriver', () => {
 
     let user1: Login;
     let user2: Login;
-
-    // FIXME: Move this variables to a common file?
-    const prepareLogin = async (
-        userPrivateKey: string,
-        companyPrivateKey: string
-    ): Promise<Login> => {
-        const userWallet = new Wallet(userPrivateKey);
-        const companyWallet = new Wallet(companyPrivateKey);
-        const siweIdentityProvider = new SiweIdentityProvider(userWallet, SIWE_CANISTER_ID);
-        await siweIdentityProvider.createIdentity();
-
-        const authenticationDriver = new AuthenticationDriver(
-            siweIdentityProvider.identity,
-            ENTITY_MANAGER_CANISTER_ID,
-            ICP_NETWORK
-        );
-
-        const roleProof = await createRoleProof(userWallet.address, companyWallet);
-
-        const login = () => authenticationDriver.login(roleProof);
-        return { userWallet, companyWallet, siweIdentityProvider, login };
-    };
 
     beforeAll(async () => {
         user1 = await prepareLogin(USER1_PRIVATE_KEY, COMPANY1_PRIVATE_KEY);

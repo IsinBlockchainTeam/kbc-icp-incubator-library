@@ -18,6 +18,20 @@ import escrowAbi from '../../eth-abi/Escrow.json';
 import { StableMemoryId } from '../utils/stableMemory';
 import { ic } from 'azle/experimental';
 import AuthenticationService from "./AuthenticationService";
+import {
+    ShipmentDetailsAlreadyApprovedError,
+    ShipmentDetailsNotSetError,
+    ShipmentDownPaymentAddressNotFound,
+    ShipmentFundsAlreadyLockedError,
+    ShipmentInWrongPhaseError,
+    ShipmentNotFoundError,
+    ShipmentQualityAlreadyApprovedError,
+    ShipmentSampleAlreadyApprovedError,
+    CallerIsTheUploaderError,
+    DocumentAlreadyApprovedError,
+    DocumentNotFoundError,
+    SameActorsError
+} from "../models/errors";
 import { ZeroAddress } from "ethers";
 
 class ShipmentService implements HasInterestedParties{
@@ -99,8 +113,7 @@ class ShipmentService implements HasInterestedParties{
         };
 
         const escrowManagerAddress: string = getEvmEscrowManagerAddress();
-        const resp = await ethSendContractTransaction(escrowManagerAddress, escrowManagerAbi.abi, 'registerEscrow', [shipment.id, supplier, duration, tokenAddress]);
-        console.log('escrow registered', resp);
+        await ethSendContractTransaction(escrowManagerAddress, escrowManagerAbi.abi, 'registerEscrow', [shipment.id, supplier, duration, tokenAddress]);
 
         this._shipments.insert(BigInt(id), shipment);
         return shipment;
@@ -226,36 +239,22 @@ class ShipmentService implements HasInterestedParties{
         return shipment;
     }
 
-    async determineEscrowAddress(id: bigint): Promise<Shipment> {
-        const shipment = this.getShipment(id);
-        if (shipment.escrowAddress.length === 0) {
-            const escrowManagerAddress: string = getEvmEscrowManagerAddress();
-            const escrowAddress = await ethCallContract(escrowManagerAddress, escrowManagerAbi.abi, 'getEscrowByShipmentId', [shipment.id]);
-            if(escrowAddress === ZeroAddress)
-                throw new Error('Escrow address not found');
-            shipment.escrowAddress = [escrowAddress];
-            this._shipments.insert(id, shipment);
-        } else {
-            throw new Error('Escrow address already set: ' + shipment.escrowAddress[0]);
-        }
-        return shipment;
-    }
-
     async depositFunds(id: bigint, amount: bigint): Promise<Shipment> {
-        let shipment = this.getShipment(id);
+        const shipment = this.getShipment(id);
         if (!(PhaseEnum.PHASE_3 in this.getShipmentPhase(id)))
             throw new Error('Shipment in wrong phase');
         if (!(FundStatusEnum.NOT_LOCKED in shipment.fundsStatus))
             throw new Error('Funds already locked');
 
         if (shipment.escrowAddress.length === 0) {
-            shipment = await this.determineEscrowAddress(id);
-            if(shipment.escrowAddress.length === 0)
-                throw new Error('Escrow address not found');
+            const escrowManagerAddress: string = getEvmEscrowManagerAddress();
+            const escrowAddress = await ethCallContract(escrowManagerAddress, escrowManagerAbi.abi, 'getEscrowByShipmentId', [shipment.id]);
+            shipment.escrowAddress = [escrowAddress];
         }
 
         const callerAddress = await getAddress(ic.caller());
         const escrowAddress = shipment.escrowAddress[0];
+        console.log('escrowAddress', escrowAddress);
 
         await ethSendContractTransaction(escrowAddress, escrowAbi.abi, 'deposit', [amount, callerAddress]);
 
@@ -264,16 +263,16 @@ class ShipmentService implements HasInterestedParties{
     }
 
     async lockFunds(id: bigint): Promise<Shipment> {
-        let shipment = this.getShipment(id);
+        const shipment = this.getShipment(id);
         if (!(PhaseEnum.PHASE_3 in this.getShipmentPhase(id)))
             throw new Error('Shipment in wrong phase');
         if (!(FundStatusEnum.NOT_LOCKED in shipment.fundsStatus))
             throw new Error('Funds already locked');
 
         if (shipment.escrowAddress.length === 0) {
-            shipment = await this.determineEscrowAddress(id);
-            if(shipment.escrowAddress.length === 0)
-                throw new Error('Escrow address not found');
+            const escrowManagerAddress: string = getEvmEscrowManagerAddress();
+            const escrowAddress = await ethCallContract(escrowManagerAddress, escrowManagerAbi.abi, 'getEscrowByShipmentId', [shipment.id]);
+            shipment.escrowAddress = [escrowAddress];
         }
 
         const escrowAddress = shipment.escrowAddress[0];
