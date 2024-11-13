@@ -1,8 +1,8 @@
 import { Wallet } from 'ethers';
 import { SiweIdentityProvider } from '../../drivers/icp/SiweIdentityProvider';
-import { ICP, USERS } from '../constants/constants';
+import { ICP } from '../constants/constants';
 import { AuthenticationDriver } from '../../drivers/icp/AuthenticationDriver';
-import { computeRoleProof } from '../../drivers/icp/proof';
+import { createRoleProof } from '../../__testUtils__/proof';
 
 export type Login = {
     userWallet: Wallet;
@@ -27,13 +27,7 @@ export abstract class AuthHelper {
             ICP.NETWORK
         );
 
-        const roleProof = await computeRoleProof(
-            userWallet.address,
-            'Signer',
-            USERS.DELEGATE_CREDENTIAL_ID_HASH,
-            USERS.DELEGATOR_CREDENTIAL_ID_HASH,
-            companyWallet
-        );
+        const roleProof = await createRoleProof(userWallet.address, companyWallet);
 
         const authenticate = () => authenticationDriver.authenticate(roleProof);
         return { userWallet, companyWallet, siweIdentityProvider, authenticate };

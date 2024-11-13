@@ -1,24 +1,20 @@
 import { Wallet } from 'ethers';
 import { OrderDriver } from './OrderDriver';
 import { SiweIdentityProvider } from './SiweIdentityProvider';
-import { computeRoleProof } from './proof';
 import { AuthenticationDriver } from './AuthenticationDriver';
+import { createRoleProof } from '../../__testUtils__/proof';
 
 const USER1_PRIVATE_KEY = '0c7e66e74f6666b514cc73ee2b7ffc518951cf1ca5719d6820459c4e134f2264';
 const COMPANY1_PRIVATE_KEY = '538d7d8aec31a0a83f12461b1237ce6b00d8efc1d8b1c73566c05f63ed5e6d02';
 const USER2_PRIVATE_KEY = 'ec6b3634419525310628dce4da4cf2abbc866c608aebc1e5f9ee7edf6926e985';
 const COMPANY2_PRIVATE_KEY = '0c7e66e74f6666b514cc73ee2b7ffc518951cf1ca5719d6820459c4e134f2264';
-const DELEGATE_CREDENTIAL_ID_HASH =
-    '0x2cc6c15c35500c4341eee2f9f5f8c39873b9c3737edb343ebc3d16424e99a0d4';
-const DELEGATOR_CREDENTIAL_ID_HASH =
-    '0xf19b6aebcdaba2222d3f2c818ff1ecda71c7ed93c3e0f958241787663b58bc4b';
 const SIWE_CANISTER_ID = 'be2us-64aaa-aaaaa-qaabq-cai';
 const ENTITY_MANAGER_CANISTER_ID = 'bkyz2-fmaaa-aaaaa-qaaaq-cai';
 type Utils = {
     userWallet: Wallet;
     companyWallet: Wallet;
     orderManagerDriver: OrderDriver;
-    login: () => Promise<boolean>;
+    authenticate: () => Promise<void>;
 };
 const ORDER_ID = 0;
 const PRODUCT_CATEGORY_ID = 0;
@@ -42,15 +38,6 @@ describe('OrderDriver', () => {
         const roleProof = await createRoleProof(userWallet.address, companyWallet);
         const authenticate = () => authenticationDriver.authenticate(roleProof);
         return { userWallet, companyWallet, orderManagerDriver, authenticate };
-        const roleProof = await computeRoleProof(
-            userWallet.address,
-            'Signer',
-            DELEGATE_CREDENTIAL_ID_HASH,
-            DELEGATOR_CREDENTIAL_ID_HASH,
-            companyWallet
-        );
-        const authenticate = () => authenticationDriver.authenticate(roleProof);
-        return { userWallet, companyWallet, orderManagerDriver, authenticate };
     };
 
     beforeAll(async () => {
@@ -59,24 +46,24 @@ describe('OrderDriver', () => {
     }, 30000);
 
     it('should retrieve orders', async () => {
-        const { orderManagerDriver, login } = utils1;
-        await login();
+        const { orderManagerDriver, authenticate } = utils1;
+        await authenticate();
         const orders = await orderManagerDriver.getOrders();
         console.log(orders);
         expect(orders).toBeDefined();
     }, 30000);
 
     it('should retrieve order', async () => {
-        const { orderManagerDriver, login } = utils1;
-        await login();
+        const { orderManagerDriver, authenticate } = utils1;
+        await authenticate();
         const order = await orderManagerDriver.getOrder(0);
         console.log(order);
         expect(order).toBeDefined();
     }, 30000);
 
     it('should create order', async () => {
-        const { companyWallet: company1Wallet, orderManagerDriver, login } = utils1;
-        await login();
+        const { companyWallet: company1Wallet, orderManagerDriver, authenticate } = utils1;
+        await authenticate();
         const { companyWallet: company2Wallet } = utils2;
         const date = new Date();
         const orderParams = {
@@ -114,8 +101,8 @@ describe('OrderDriver', () => {
     }, 30000);
 
     it('should update order', async () => {
-        const { companyWallet: company1Wallet, orderManagerDriver, login } = utils1;
-        await login();
+        const { companyWallet: company1Wallet, orderManagerDriver, authenticate } = utils1;
+        await authenticate();
         const { companyWallet: company2Wallet } = utils2;
         const date = new Date();
         const orderParams = {
@@ -152,8 +139,8 @@ describe('OrderDriver', () => {
     }, 30000);
 
     it('should sign order', async () => {
-        const { orderManagerDriver, login } = utils2;
-        await login();
+        const { orderManagerDriver, authenticate } = utils2;
+        await authenticate();
         const order = await orderManagerDriver.signOrder(ORDER_ID);
         console.log(order);
         expect(order).toBeDefined();

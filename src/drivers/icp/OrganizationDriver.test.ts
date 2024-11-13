@@ -1,9 +1,5 @@
-import { Wallet } from 'ethers';
 import { OrganizationRole, OrganizationVisibilityLevel } from '@kbc-lib/azle-types';
 import { OrganizationDriver, OrganizationParams } from './OrganizationDriver';
-import { SiweIdentityProvider } from './SiweIdentityProvider';
-import { computeRoleProof } from './proof';
-import { AuthenticationDriver } from './AuthenticationDriver';
 import { BroadedOrganization } from '../../entities/organization/BroadedOrganization';
 import { Organization } from '../../entities/organization/Organization';
 import { OrderDriver } from './OrderDriver';
@@ -12,12 +8,6 @@ import { NarrowedOrganization } from '../../entities/organization/NarrowedOrgani
 import { ProductCategoryDriver } from './ProductCategoryDriver';
 import { ICP, USERS } from '../../__shared__/constants/constants';
 import { AuthHelper, Login } from '../../__shared__/helpers/AuthHelper';
-import {
-    mockOrder,
-    mockOrganizations,
-    mockProductCategories
-} from '../../__shared__/constants/mock-data';
-import { OrganizationNotFoundError } from '../../entities/icp/errors';
 
 describe('OrganizationDriver', () => {
     let organizationDriverUser1: OrganizationDriver;
@@ -32,25 +22,25 @@ describe('OrganizationDriver', () => {
     let user2: Login;
 
     beforeAll(async () => {
-        user1 = await prepareLogin(USER1_PRIVATE_KEY, COMPANY1_PRIVATE_KEY);
-        user2 = await prepareLogin(USER2_PRIVATE_KEY, COMPANY2_PRIVATE_KEY);
+        user1 = await AuthHelper.prepareLogin(USERS.USER1_PRIVATE_KEY, USERS.COMPANY1_PRIVATE_KEY);
+        user2 = await AuthHelper.prepareLogin(USERS.USER2_PRIVATE_KEY, USERS.COMPANY2_PRIVATE_KEY);
 
         organizationDriverUser1 = new OrganizationDriver(
             user1.siweIdentityProvider.identity,
-            ENTITY_MANAGER_CANISTER_ID,
-            ICP_NETWORK
+            ICP.ENTITY_MANAGER_CANISTER_ID,
+            ICP.NETWORK
         );
 
         organizationDriverUser2 = new OrganizationDriver(
             user2.siweIdentityProvider.identity,
-            ENTITY_MANAGER_CANISTER_ID,
-            ICP_NETWORK
+            ICP.ENTITY_MANAGER_CANISTER_ID,
+            ICP.NETWORK
         );
 
         orderDriver = new OrderDriver(
             user1.siweIdentityProvider.identity,
-            ENTITY_MANAGER_CANISTER_ID,
-            ICP_NETWORK
+            ICP.ENTITY_MANAGER_CANISTER_ID,
+            ICP.NETWORK
         );
 
         organizationScratch = {
@@ -80,8 +70,8 @@ describe('OrganizationDriver', () => {
             image: 'Updated Test Image'
         };
 
-        await user1.login();
-        await user2.login();
+        await user1.authenticate();
+        await user2.authenticate();
     }, 30000);
 
     afterAll(async () => {
@@ -140,8 +130,8 @@ describe('OrganizationDriver', () => {
     it('should simulate order between parties', async () => {
         const productCategoryDriver = new ProductCategoryDriver(
             user1.siweIdentityProvider.identity,
-            ENTITY_MANAGER_CANISTER_ID,
-            ICP_NETWORK
+            ICP.ENTITY_MANAGER_CANISTER_ID,
+            ICP.NETWORK
         );
         const productCategory = await productCategoryDriver.createProductCategory(
             'test',

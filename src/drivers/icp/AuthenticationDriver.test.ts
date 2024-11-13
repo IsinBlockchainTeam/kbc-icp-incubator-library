@@ -20,6 +20,8 @@ type Utils = {
     roleProof: RoleProof;
 };
 
+jest.setTimeout(30000);
+
 describe('AuthenticationDriver', () => {
     let utils1: Utils, utils2: Utils;
 
@@ -52,14 +54,14 @@ describe('AuthenticationDriver', () => {
     beforeAll(async () => {
         utils1 = await getUtils(USER1_PRIVATE_KEY, COMPANY1_PRIVATE_KEY);
         utils2 = await getUtils(USER2_PRIVATE_KEY, COMPANY2_PRIVATE_KEY);
-    }, 10000);
+    });
 
     it('should login user 1', async () => {
         const { authenticationDriver, roleProof } = utils1;
         console.log(roleProof);
         const result = await authenticationDriver.authenticate(roleProof);
         console.log(result);
-    }, 10000);
+    });
 
     it('should login user 2', async () => {
         const { authenticationDriver, roleProof } = utils2;
@@ -67,12 +69,12 @@ describe('AuthenticationDriver', () => {
         const result = await authenticationDriver.authenticate(roleProof);
         console.log(result);
         expect(result).toBeDefined();
-    }, 10000);
+    });
 
     it('should logout', async () => {
         const { authenticationDriver } = utils1;
         await authenticationDriver.logout();
-    }, 10000);
+    });
 
     it('should retrieve product categories', async () => {
         const { productCategoryDriver } = utils1;

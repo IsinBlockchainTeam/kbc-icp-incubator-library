@@ -57,13 +57,12 @@ export class OrderDriver {
     @HandleIcpError()
     async getOrders(): Promise<Order[]> {
         const resp = await this._actor.getOrders();
-        return resp.map((rawOrder) => EntityBuilder.buildOrder(rawOrder));
+        return await Promise.all(resp.map((rawOrder) => this.buildOrder(rawOrder)));
     }
 
     @HandleIcpError()
     async getOrder(id: number): Promise<Order> {
-        const resp = await this._actor.getOrder(BigInt(id));
-        return EntityBuilder.buildOrder(resp);
+        return this.buildOrder(await this._actor.getOrder(BigInt(id)));
     }
 
     @HandleIcpError()
@@ -93,7 +92,7 @@ export class OrderDriver {
                 }
             }))
         );
-        return EntityBuilder.buildOrder(resp);
+        return EntityBuilder.buildOrder(resp, null);
     }
 
     async updateOrder(id: number, params: OrderParams): Promise<Order> {
@@ -123,12 +122,12 @@ export class OrderDriver {
                 }
             }))
         );
-        return EntityBuilder.buildOrder(resp);
+        return this.buildOrder(resp);
     }
 
     async signOrder(id: number): Promise<Order> {
         const resp = await this._actor.signOrder(BigInt(id));
-        return EntityBuilder.buildOrder(resp);
+        return this.buildOrder(resp);
     }
 
     async deleteOrder(id: number): Promise<boolean> {
