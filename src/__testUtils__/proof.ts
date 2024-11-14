@@ -32,7 +32,6 @@ export const createRoleProof = async (
 
     return {
         signedProof: roleProof.signedProof,
-        delegate: userAddress,
         delegateRole: ROLE,
         delegateCredentialIdHash: DELEGATE_CREDENTIAL_ID_HASH,
         delegateCredentialExpiryDate: EXPIRY_DATE,

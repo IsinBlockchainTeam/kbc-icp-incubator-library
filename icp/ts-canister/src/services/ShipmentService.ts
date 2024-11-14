@@ -239,6 +239,20 @@ class ShipmentService implements HasInterestedParties{
         return shipment;
     }
 
+    async determineEscrowAddress(id: bigint): Promise<Shipment> {
+        const shipment = this.getShipment(id);
+
+        if(shipment.escrowAddress.length > 0)
+            throw new ShipmentDownPaymentAddressNotFound();
+
+        const escrowManagerAddress: string = getEvmEscrowManagerAddress();
+        const escrowAddress = await ethCallContract(escrowManagerAddress, escrowManagerAbi.abi, 'getEscrowByShipmentId', [shipment.id]);
+        shipment.escrowAddress = [escrowAddress];
+
+        this._shipments.insert(id, shipment);
+        return shipment;
+    }
+
     async depositFunds(id: bigint, amount: bigint): Promise<Shipment> {
         const shipment = this.getShipment(id);
         if (!(PhaseEnum.PHASE_3 in this.getShipmentPhase(id)))

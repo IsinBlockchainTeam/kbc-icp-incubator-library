@@ -27,7 +27,6 @@ export class EntityBuilder {
         return {
             signedProof: roleProof.signedProof,
             signer: roleProof.delegator,
-            delegateAddress: roleProof.delegate,
             role: roleProof.delegateRole,
             delegateCredentialIdHash: roleProof.delegateCredentialIdHash,
             delegateCredentialExpiryDate: BigInt(roleProof.delegateCredentialExpiryDate),

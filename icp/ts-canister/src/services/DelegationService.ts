@@ -38,8 +38,9 @@ class DelegationService {
         const { signedProof, signer: expectedSigner, ...data} = proof;
 
         const delegateCredentialExpiryDate = Number(data.delegateCredentialExpiryDate);
+        const delegateAddress = await this.getAddress(caller);
         const roleProofStringifiedData = JSON.stringify({
-            delegateAddress: data.delegateAddress,
+            delegateAddress,
             role: data.role,
             delegateCredentialIdHash: data.delegateCredentialIdHash,
             delegateCredentialExpiryDate: delegateCredentialExpiryDate,
@@ -49,8 +50,6 @@ class DelegationService {
         if(roleProofSigner !== expectedSigner) return false;
         // If the delegate credential has expired, the delegate is not valid
         if(data.delegateCredentialExpiryDate < unixTime) return false;
-        // If the caller is not the delegate address, the proof is invalid
-        if(await this.getAddress(caller) !== data.delegateAddress) return false;
         // If the delegate credential has been revoked, the delegate is not valid
         if(await this.isRevoked(roleProofSigner, data.delegateCredentialIdHash)) return false;
 

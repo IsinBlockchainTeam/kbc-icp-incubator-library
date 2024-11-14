@@ -8,7 +8,6 @@ export type MembershipProof = {
 export type RoleProof = {
     signedProof: string,
     signer: string,
-    delegateAddress: string,
     role: string,
     delegateCredentialIdHash: string,
     delegateCredentialExpiryDate: bigint,
