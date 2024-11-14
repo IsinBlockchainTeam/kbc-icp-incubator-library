@@ -117,7 +117,7 @@ export { URL_SEGMENT_INDEXES } from './constants/ICP';
 // ICP refactor
 // export {createActor} from 'icp-declarations/entity_manager'
 export { Order, OrderStatus } from './entities/icp/Order';
-export { computeRoleProof } from './drivers/icp/proof';
+export { computeRoleProof, computeMembershipProof } from './drivers/icp/proof';
 export { OrderDriver, OrderParams } from './drivers/icp/OrderDriver';
 export { OrderService } from './services/icp/OrderService';
 
@@ -141,4 +141,8 @@ export { MaterialDriver as ICPMaterialDriver } from './drivers/icp/MaterialDrive
 export { MaterialService as ICPMaterialService } from './services/icp/MaterialService';
 
 // Errors
-export { NotAuthenticatedError, NotAuthorizedError, NotValidCredentialError } from './entities/icp/errors'
+export {
+    NotAuthenticatedError,
+    NotAuthorizedError,
+    NotValidCredentialError
+} from './entities/icp/errors';
