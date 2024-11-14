@@ -146,3 +146,4 @@ export {
     NotAuthorizedError,
     NotValidCredentialError
 } from './entities/icp/errors';
+export * from '@kbc-lib/azle-types';
