@@ -9,16 +9,16 @@ class AssessmentStandardController {
         return AssessmentStandardService.instance.getAllValues();
     }
 
-    @update([IDL.Text])
+    @update([IDL.Text], IDL.Text)
     @AtLeastSigner
-    async addAssessmentStandard(value: string): Promise<void> {
-        AssessmentStandardService.instance.addValue(value);
+    async addAssessmentStandard(value: string): Promise<string> {
+        return AssessmentStandardService.instance.addValue(value);
     }
 
-    @update([IDL.Text])
+    @update([IDL.Text], IDL.Text)
     @AtLeastSigner
-    async removeAssessmentStandard(value: string): Promise<void> {
-        AssessmentStandardService.instance.removeValue(value);
+    async removeAssessmentStandard(value: string): Promise<string> {
+        return AssessmentStandardService.instance.removeValue(value);
     }
 
     @query([IDL.Text], IDL.Bool)

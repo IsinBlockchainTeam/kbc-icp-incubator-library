@@ -8,13 +8,13 @@ jest.mock('azle');
 jest.mock('../../decorators/roles');
 jest.mock('../../models/idls');
 jest.mock('../../services/MaterialService', () => ({
-        instance: {
-            getMaterials: jest.fn(),
-            getMaterial: jest.fn(),
-            createMaterial: jest.fn(),
-            updateMaterial: jest.fn()
-        }
-    }));
+    instance: {
+        getMaterials: jest.fn(),
+        getMaterial: jest.fn(),
+        createMaterial: jest.fn(),
+        updateMaterial: jest.fn()
+    }
+}));
 describe('MaterialController', () => {
     const materialServiceInstanceMock = MaterialService.instance as jest.Mocked<MaterialService>;
     const materialController = new MaterialController();
@@ -48,7 +48,7 @@ describe('MaterialController', () => {
             expectedResult: { id: 1n } as Material,
             expectedDecorators: [update, AtLeastEditor]
         }
-    ])('should cass service $serviceFunctionName', async ({ controllerFunction, serviceFunction, expectedResult, expectedDecorators }) => {
+    ])('should pass service $serviceFunctionName', async ({ controllerFunction, serviceFunction, expectedResult, expectedDecorators }) => {
         serviceFunction.mockReturnValue(expectedResult as any);
         await expect(controllerFunction()).resolves.toEqual(expectedResult);
         expect(serviceFunction).toHaveBeenCalled();

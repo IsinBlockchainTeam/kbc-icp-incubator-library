@@ -9,16 +9,16 @@ class AssessmentAssuranceLevelController {
         return AssessmentAssuranceLevelService.instance.getAllValues();
     }
 
-    @update([IDL.Text])
+    @update([IDL.Text], IDL.Text)
     @AtLeastSigner
-    async addAssessmentAssuranceLevel(value: string): Promise<void> {
-        AssessmentAssuranceLevelService.instance.addValue(value);
+    async addAssessmentAssuranceLevel(value: string): Promise<string> {
+        return AssessmentAssuranceLevelService.instance.addValue(value);
     }
 
-    @update([IDL.Text])
+    @update([IDL.Text], IDL.Text)
     @AtLeastSigner
-    async removeAssessmentAssuranceLevel(value: string): Promise<void> {
-        AssessmentAssuranceLevelService.instance.removeValue(value);
+    async removeAssessmentAssuranceLevel(value: string): Promise<string> {
+        return AssessmentAssuranceLevelService.instance.removeValue(value);
     }
 
     @query([IDL.Text], IDL.Bool)

@@ -8,13 +8,13 @@ jest.mock('azle');
 jest.mock('../../decorators/roles');
 jest.mock('../../models/idls');
 jest.mock('../../services/ProductCategoryService', () => ({
-        instance: {
-            getProductCategories: jest.fn(),
-            getProductCategory: jest.fn(),
-            createProductCategory: jest.fn(),
-            updateProductCategory: jest.fn()
-        }
-    }));
+    instance: {
+        getProductCategories: jest.fn(),
+        getProductCategory: jest.fn(),
+        createProductCategory: jest.fn(),
+        updateProductCategory: jest.fn()
+    }
+}));
 describe('ProductCategoryController', () => {
     const productCategoryServiceInstanceMock = ProductCategoryService.instance as jest.Mocked<ProductCategoryService>;
     const productCategoryController = new ProductCategoryController();
@@ -48,7 +48,7 @@ describe('ProductCategoryController', () => {
             expectedResult: { name: 'test' } as ProductCategory,
             expectedDecorators: [update, AtLeastEditor]
         }
-    ])('should cass service $serviceFunctionName', async ({ controllerFunction, serviceFunction, expectedResult, expectedDecorators }) => {
+    ])('should pass service $serviceFunctionName', async ({ controllerFunction, serviceFunction, expectedResult, expectedDecorators }) => {
         serviceFunction.mockReturnValue(expectedResult as any);
         await expect(controllerFunction()).resolves.toEqual(expectedResult);
         expect(serviceFunction).toHaveBeenCalled();

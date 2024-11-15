@@ -9,16 +9,16 @@ class ProcessTypeController {
         return ProcessTypeService.instance.getAllValues();
     }
 
-    @update([IDL.Text])
+    @update([IDL.Text], IDL.Text)
     @AtLeastSigner
-    async addProcessType(value: string): Promise<void> {
-        ProcessTypeService.instance.addValue(value);
+    async addProcessType(value: string): Promise<string> {
+        return ProcessTypeService.instance.addValue(value);
     }
 
-    @update([IDL.Text])
+    @update([IDL.Text], IDL.Text)
     @AtLeastSigner
-    async removeProcessType(value: string): Promise<void> {
-        ProcessTypeService.instance.removeValue(value);
+    async removeProcessType(value: string): Promise<string> {
+        return ProcessTypeService.instance.removeValue(value);
     }
 
     @query([IDL.Text], IDL.Bool)

@@ -9,16 +9,16 @@ class FiatController {
         return FiatService.instance.getAllValues();
     }
 
-    @update([IDL.Text])
+    @update([IDL.Text], IDL.Text)
     @AtLeastSigner
-    async addFiat(value: string): Promise<void> {
-        FiatService.instance.addValue(value);
+    async addFiat(value: string): Promise<string> {
+        return FiatService.instance.addValue(value);
     }
 
-    @update([IDL.Text])
+    @update([IDL.Text], IDL.Text)
     @AtLeastSigner
-    async removeFiat(value: string): Promise<void> {
-        FiatService.instance.removeValue(value);
+    async removeFiat(value: string): Promise<string> {
+        return FiatService.instance.removeValue(value);
     }
 
     @query([IDL.Text], IDL.Bool)

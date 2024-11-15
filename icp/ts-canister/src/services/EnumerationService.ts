@@ -20,17 +20,19 @@ abstract class EnumerationService {
         return this._enumerations.get(this._valuesKey) || [];
     }
 
-    addValue(value: string): void {
+    addValue(value: string): string {
         if (this.hasValue(value)) throw new Error('Enumeration value already exists');
         this._enumerations.insert(this._valuesKey, [...this.getAllValues(), value]);
+        return value;
     }
 
-    removeValue(value: string): void {
+    removeValue(value: string): string {
         if (!this.hasValue(value)) throw new Error('Enumeration value does not exist');
         this._enumerations.insert(
             this._valuesKey,
             this.getAllValues().filter((v) => v !== value)
         );
+        return value;
     }
 
     hasValue(value: string): boolean {
