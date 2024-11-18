@@ -18,11 +18,11 @@ export class ProcessTypeDriver {
         return this._actor.getAllProcessTypes();
     }
 
-    async addValue(value: string): Promise<void> {
+    async addValue(value: string): Promise<string> {
         return this._actor.addProcessType(value);
     }
 
-    async removeValue(value: string): Promise<void> {
+    async removeValue(value: string): Promise<string> {
         return this._actor.removeProcessType(value);
     }
 

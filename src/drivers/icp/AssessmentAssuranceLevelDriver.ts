@@ -18,11 +18,11 @@ export class AssessmentAssuranceLevelDriver {
         return this._actor.getAllAssessmentAssuranceLevels();
     }
 
-    async addValue(value: string): Promise<void> {
+    async addValue(value: string): Promise<string> {
         return this._actor.addAssessmentAssuranceLevel(value);
     }
 
-    async removeValue(value: string): Promise<void> {
+    async removeValue(value: string): Promise<string> {
         return this._actor.removeAssessmentAssuranceLevel(value);
     }
 

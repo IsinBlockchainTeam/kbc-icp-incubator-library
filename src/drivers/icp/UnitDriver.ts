@@ -18,11 +18,11 @@ export class UnitDriver {
         return this._actor.getAllUnits();
     }
 
-    async addValue(value: string): Promise<void> {
+    async addValue(value: string): Promise<string> {
         return this._actor.addUnit(value);
     }
 
-    async removeValue(value: string): Promise<void> {
+    async removeValue(value: string): Promise<string> {
         return this._actor.removeUnit(value);
     }
 

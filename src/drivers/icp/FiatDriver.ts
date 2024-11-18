@@ -18,11 +18,11 @@ export class FiatDriver {
         return this._actor.getAllFiats();
     }
 
-    async addValue(value: string): Promise<void> {
+    async addValue(value: string): Promise<string> {
         return this._actor.addFiat(value);
     }
 
-    async removeValue(value: string): Promise<void> {
+    async removeValue(value: string): Promise<string> {
         return this._actor.removeFiat(value);
     }
 

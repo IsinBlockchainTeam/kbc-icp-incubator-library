@@ -18,11 +18,11 @@ export class AssessmentStandardDriver {
         return this._actor.getAllAssessmentStandards();
     }
 
-    async addValue(value: string): Promise<void> {
+    async addValue(value: string): Promise<string> {
         return this._actor.addAssessmentStandard(value);
     }
 
-    async removeValue(value: string): Promise<void> {
+    async removeValue(value: string): Promise<string> {
         return this._actor.removeAssessmentStandard(value);
     }
 
