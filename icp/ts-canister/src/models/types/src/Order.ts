@@ -1,25 +1,27 @@
-import {Price} from "./Price";
-import {Shipment} from "./Shipment";
-import {ProductCategory} from "./ProductCategory";
+import { Price } from "./Price";
+import { ProductCategory } from "./ProductCategory";
 
 export enum OrderStatusEnum {
-    PENDING = 'PENDING',
-    CONFIRMED = 'CONFIRMED',
-    EXPIRED = 'EXPIRED',
+    PENDING = "PENDING",
+    CONFIRMED = "CONFIRMED",
+    EXPIRED = "EXPIRED",
 }
-export type OrderStatus = { PENDING: null } | { CONFIRMED: null } | { EXPIRED: null };
+export type OrderStatus =
+    | { PENDING: null }
+    | { CONFIRMED: null }
+    | { EXPIRED: null };
 export type OrderLineRaw = {
     productCategoryId: bigint;
     quantity: number;
     unit: string;
     price: Price;
-}
+};
 export type OrderLine = {
     productCategory: ProductCategory;
     quantity: number;
     unit: string;
     price: Price;
-}
+};
 export type Order = {
     id: bigint;
     supplier: string;
@@ -40,4 +42,4 @@ export type Order = {
     token: string;
     agreedAmount: bigint;
     shipmentId: [bigint] | [];
-}
+};
