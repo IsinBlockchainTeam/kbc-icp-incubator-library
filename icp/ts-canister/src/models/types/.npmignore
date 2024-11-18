@@ -1,0 +1,6 @@
+# this overrides th .gitignore when pubblishing to npm/node_modules
+./src
+.gitignore
+.npmrc.template
+index.ts
+tsconfig.json

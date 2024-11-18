@@ -3,31 +3,31 @@ export {
     DocumentInfo,
     DocumentType,
     DocumentTypeEnum,
-} from "./Document";
-export { EvaluationStatus, EvaluationStatusEnum } from "./Evaluation";
-export { Material } from "./Material";
+} from "./src/Document";
+export { EvaluationStatus, EvaluationStatusEnum } from "./src/Evaluation";
+export { Material } from "./src/Material";
 export {
     Order,
     OrderLine,
     OrderLineRaw,
     OrderStatusEnum,
     OrderStatus,
-} from "./Order";
-export { Price } from "./Price";
-export { ProductCategory } from "./ProductCategory";
-export { RoleProof } from "./Proof";
-export { ROLES } from "./Role";
+} from "./src/Order";
+export { Price } from "./src/Price";
+export { ProductCategory } from "./src/ProductCategory";
+export { RoleProof } from "./src/Proof";
+export { ROLES } from "./src/Role";
 export {
     PhaseEnum,
     Phase,
     FundStatusEnum,
     FundStatus,
     Shipment,
-} from "./Shipment";
+} from "./src/Shipment";
 export {
     OrganizationVisibilityLevel,
     OrganizationVisibilityLevelType,
-} from "./presentations/OrganizationPresentation";
-export { OrganizationRole, OrganizationRoleType } from "./Organization";
-export {Offer} from './Offer';
-export {ErrorType} from './ErrorType';
+} from "./src/presentations/OrganizationPresentation";
+export { OrganizationRole, OrganizationRoleType } from "./src/Organization";
+export {Offer} from './src/Offer';
+export {ErrorType} from './src/ErrorType';

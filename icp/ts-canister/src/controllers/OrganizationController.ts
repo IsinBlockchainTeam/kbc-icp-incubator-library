@@ -5,7 +5,7 @@ import {
     IDLOrganization,
     IDLOrganizationRole,
 } from "../models/idls/IDLOrganization";
-import { OrganizationPresentation } from "../models/types/presentations/OrganizationPresentation";
+import { OrganizationPresentation } from "../models/types/src/presentations/OrganizationPresentation";
 import { OrganizationRoleType } from "../models/types";
 
 class OrganizationController {

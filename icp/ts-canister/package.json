@@ -1,5 +1,6 @@
 {
     "name": "@kbc-lib/azle-types",
+    "version": "0.0.1",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "scripts": {
@@ -10,7 +11,7 @@
         "upgrade": "bash -c \"set -o allexport; source .env.custom; source .env; set +o allexport && cat dfx.template.json | envsubst > dfx.json && dfx build entity_manager && dfx canister install --mode upgrade entity_manager\"",
         "upgrade:ic": "bash -c \"set -o allexport; source .env.custom; source .env; set +o allexport && cat dfx.template.json | envsubst > dfx.json && dfx build entity_manager --ic && dfx canister install --mode upgrade entity_manager --ic\"",
         "reinstall": "bash -c \"set -o allexport; source .env.custom; source .env; set +o allexport && cat dfx.template.json | envsubst > dfx.json && dfx build entity_manager && dfx canister install --mode reinstall entity_manager\"",
-        "build-types": "npx tsc -p tsconfig-types.json",
+        "build-types": "npx tsc -p src/models/types/tsconfig.json",
         "generate": "dfx generate"
     },
     "dependencies": {

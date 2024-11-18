@@ -2,9 +2,9 @@ import { StableBTreeMap } from "azle";
 import {
     Organization,
     OrganizationRoleType,
-} from "../models/types/Organization";
+} from "../models/types/src/Organization";
 import { StableMemoryId } from "../utils/stableMemory";
-import { OrganizationPresentation } from "../models/types/presentations/OrganizationPresentation";
+import { OrganizationPresentation } from "../models/types/src/presentations/OrganizationPresentation";
 import AuthenticationService from "./AuthenticationService";
 import { NarrowedOrganizationCreator } from "../factories/organization/NarrowedOrganizationCreator";
 import { BroadedOrganizationCreator } from "../factories/organization/BroadedOrganizationCreator";
