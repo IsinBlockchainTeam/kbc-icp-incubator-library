@@ -50,7 +50,6 @@ describe('OrderController', () => {
                     '0xarbiter',
                     '0xtoken',
                     5n,
-                    '0xescrowManager',
                     'incoterms',
                     '0xshipper',
                     'shippingPort',
@@ -76,7 +75,6 @@ describe('OrderController', () => {
                     '0xarbiter',
                     '0xtoken',
                     5n,
-                    '0xescrowManager',
                     'incoterms',
                     '0xshipper',
                     'shippingPort',
@@ -94,7 +92,7 @@ describe('OrderController', () => {
             expectedResult: { id: 1n } as Order,
             expectedDecorators: [update, AtLeastSigner]
         }
-    ])('should pass service $serviceFunctionName', async ({ controllerFunction, serviceFunction, expectedResult, expectedDecorators }) => {
+    ])('should pass service $controllerFunctionName', async ({ controllerFunction, serviceFunction, expectedResult, expectedDecorators }) => {
         serviceFunction.mockReturnValue(expectedResult as any);
         await expect(controllerFunction()).resolves.toEqual(expectedResult);
         expect(serviceFunction).toHaveBeenCalled();

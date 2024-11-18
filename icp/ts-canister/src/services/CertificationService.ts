@@ -51,13 +51,13 @@ class CertificationService {
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
         document: CertificateDocumentInfo,
-        validFrom: number,
-        validUntil: number,
+        validFrom: bigint,
+        validUntil: bigint,
         notes: string
     ): CompanyCertificate {
         validateAddress('Issuer', issuer);
         validateAddress('Subject', subject);
-        validateDatesValidity(validFrom, validUntil);
+        validateDatesValidity(Number(validFrom), Number(validUntil));
         validateAssessmentStandard(assessmentStandard);
         validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
         const companyAddress = AuthenticationService.instance.getDelegatorAddress();
@@ -89,14 +89,14 @@ class CertificationService {
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
         document: CertificateDocumentInfo,
-        validFrom: number,
-        validUntil: number,
+        validFrom: bigint,
+        validUntil: bigint,
         processTypes: string[],
         notes: string
     ): ScopeCertificate {
         validateAddress('Issuer', issuer);
         validateAddress('Subject', subject);
-        validateDatesValidity(validFrom, validUntil);
+        validateDatesValidity(Number(validFrom), Number(validUntil));
         validateAssessmentStandard(assessmentStandard);
         validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
         validateProcessTypes(processTypes);
@@ -179,6 +179,11 @@ class CertificationService {
         }));
     }
 
+    getBaseCertificateById(certificateId: bigint): BaseCertificate {
+        const [certificate] = this._getCertificateAndInfoById<BaseCertificate>(certificateId);
+        return certificate;
+    }
+
     getCompanyCertificates(subject: string): CompanyCertificate[] {
         return this._companyCertificates.get(subject) || [];
     }
@@ -213,11 +218,11 @@ class CertificationService {
         certificateId: bigint,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
-        validFrom: number,
-        validUntil: number,
+        validFrom: bigint,
+        validUntil: bigint,
         notes: string
     ): CompanyCertificate {
-        validateDatesValidity(validFrom, validUntil);
+        validateDatesValidity(Number(validFrom), Number(validUntil));
         validateAssessmentStandard(assessmentStandard);
         validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
         const [companyCertificate, companyCertificates, certificateIndex] = this._getCertificateAndInfoById<CompanyCertificate>(certificateId);
@@ -240,12 +245,12 @@ class CertificationService {
         certificateId: bigint,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
-        validFrom: number,
-        validUntil: number,
+        validFrom: bigint,
+        validUntil: bigint,
         processTypes: string[],
         notes: string
     ): ScopeCertificate {
-        validateDatesValidity(validFrom, validUntil);
+        validateDatesValidity(Number(validFrom), Number(validUntil));
         validateAssessmentStandard(assessmentStandard);
         validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
         validateProcessTypes(processTypes);
@@ -291,21 +296,18 @@ class CertificationService {
         return materialCertificate;
     }
 
-    updateDocument(certificateId: bigint, document: CertificateDocumentInfo): void {
+    updateDocument(certificateId: bigint, document: CertificateDocumentInfo): BaseCertificate {
         const [certificate, certificates, certificateIndex] = this._getCertificateAndInfoById<BaseCertificate>(certificateId);
         certificate.document = document;
         this._updateCertificate(certificate, certificates, certificateIndex);
+        return certificate;
     }
 
-    evaluateDocument(certificateId: bigint, evaluation: EvaluationStatus): void {
+    evaluateDocument(certificateId: bigint, evaluation: EvaluationStatus): BaseCertificate {
         if (EvaluationStatusEnum.NOT_EVALUATED in evaluation) throw new Error('Invalid evaluation status');
         const [certificate, certificates, certificateIndex] = this._getCertificateAndInfoById<BaseCertificate>(certificateId);
         certificate.evaluationStatus = evaluation;
         this._updateCertificate(certificate, certificates, certificateIndex);
-    }
-
-    getBaseCertificateById(certificateId: bigint): BaseCertificate {
-        const [certificate] = this._getCertificateAndInfoById<BaseCertificate>(certificateId);
         return certificate;
     }
 

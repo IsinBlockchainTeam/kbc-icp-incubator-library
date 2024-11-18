@@ -1,4 +1,4 @@
-import { IDL, update } from 'azle';
+import { IDL, query, update } from 'azle';
 import {
     CertificateDocumentInfo,
     MaterialCertificate,
@@ -27,8 +27,8 @@ class CertificationController {
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
         document: CertificateDocumentInfo,
-        validFrom: number,
-        validUntil: number,
+        validFrom: bigint,
+        validUntil: bigint,
         notes: string
     ): Promise<CompanyCertificate> {
         return CertificationService.instance.registerCompanyCertificate(
@@ -51,8 +51,8 @@ class CertificationController {
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
         document: CertificateDocumentInfo,
-        validFrom: number,
-        validUntil: number,
+        validFrom: bigint,
+        validUntil: bigint,
         processTypes: string[],
         notes: string
     ): Promise<ScopeCertificate> {
@@ -91,49 +91,49 @@ class CertificationController {
         );
     }
 
-    @update([IDL.Nat], IDLBaseCertificate)
+    @query([IDL.Nat], IDLBaseCertificate)
     @AtLeastViewer
     async getBaseCertificateById(id: bigint): Promise<BaseCertificate> {
         return CertificationService.instance.getBaseCertificateById(id);
     }
 
-    @update([IDL.Text], IDL.Vec(IDLBaseCertificate))
+    @query([IDL.Text], IDL.Vec(IDLBaseCertificate))
     @AtLeastViewer
     async getBaseCertificatesInfoBySubject(subject: string): Promise<BaseCertificate[]> {
         return CertificationService.instance.getBaseCertificatesInfoBySubject(subject);
     }
 
-    @update([IDL.Text], IDL.Vec(IDLCompanyCertificate))
+    @query([IDL.Text], IDL.Vec(IDLCompanyCertificate))
     @AtLeastViewer
     async getCompanyCertificates(subject: string): Promise<CompanyCertificate[]> {
         return CertificationService.instance.getCompanyCertificates(subject);
     }
 
-    @update([IDL.Text], IDL.Vec(IDLScopeCertificate))
+    @query([IDL.Text], IDL.Vec(IDLScopeCertificate))
     @AtLeastViewer
     async getScopeCertificates(subject: string): Promise<ScopeCertificate[]> {
         return CertificationService.instance.getScopeCertificates(subject);
     }
 
-    @update([IDL.Text], IDL.Vec(IDLMaterialCertificate))
+    @query([IDL.Text], IDL.Vec(IDLMaterialCertificate))
     @AtLeastViewer
     async getMaterialCertificates(subject: string): Promise<MaterialCertificate[]> {
         return CertificationService.instance.getMaterialCertificates(subject);
     }
 
-    @update([IDL.Text, IDL.Nat], IDLCompanyCertificate)
+    @query([IDL.Text, IDL.Nat], IDLCompanyCertificate)
     @AtLeastViewer
     async getCompanyCertificate(subject: string, id: bigint): Promise<CompanyCertificate> {
         return CertificationService.instance.getCompanyCertificate(subject, id);
     }
 
-    @update([IDL.Text, IDL.Nat], IDLScopeCertificate)
+    @query([IDL.Text, IDL.Nat], IDLScopeCertificate)
     @AtLeastViewer
     async getScopeCertificate(subject: string, id: bigint): Promise<ScopeCertificate> {
         return CertificationService.instance.getScopeCertificate(subject, id);
     }
 
-    @update([IDL.Text, IDL.Nat], IDLMaterialCertificate)
+    @query([IDL.Text, IDL.Nat], IDLMaterialCertificate)
     @AtLeastViewer
     async getMaterialCertificate(subject: string, id: bigint): Promise<MaterialCertificate> {
         return CertificationService.instance.getMaterialCertificate(subject, id);
@@ -145,8 +145,8 @@ class CertificationController {
         certificateId: bigint,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
-        validFrom: number,
-        validUntil: number,
+        validFrom: bigint,
+        validUntil: bigint,
         notes: string
     ): Promise<CompanyCertificate> {
         return CertificationService.instance.updateCompanyCertificate(
@@ -165,8 +165,8 @@ class CertificationController {
         certificateId: bigint,
         assessmentStandard: string,
         assessmentAssuranceLevel: string,
-        validFrom: number,
-        validUntil: number,
+        validFrom: bigint,
+        validUntil: bigint,
         processTypes: string[],
         notes: string
     ): Promise<ScopeCertificate> {
@@ -199,15 +199,15 @@ class CertificationController {
         );
     }
 
-    @update([IDL.Nat, IDLCertificateDocumentInfo])
+    @update([IDL.Nat, IDLCertificateDocumentInfo], IDLBaseCertificate)
     @AtLeastEditor
-    async updateCertificateDocument(certificateId: bigint, document: CertificateDocumentInfo): Promise<void> {
+    async updateCertificateDocument(certificateId: bigint, document: CertificateDocumentInfo): Promise<BaseCertificate> {
         return CertificationService.instance.updateDocument(certificateId, document);
     }
 
-    @update([IDL.Nat, IDLEvaluationStatus])
+    @update([IDL.Nat, IDLEvaluationStatus], IDLBaseCertificate)
     @AtLeastEditor
-    async evaluateCertificateDocument(certificateId: bigint, evaluation: EvaluationStatus): Promise<void> {
+    async evaluateCertificateDocument(certificateId: bigint, evaluation: EvaluationStatus): Promise<BaseCertificate> {
         return CertificationService.instance.evaluateDocument(certificateId, evaluation);
     }
 }

@@ -40,7 +40,7 @@ describe('OfferController', () => {
             expectedResult: { id: 1n } as Offer,
             expectedDecorators: [update, AtLeastEditor]
         }
-    ])('should pass service $serviceFunctionName', async ({ controllerFunction, serviceFunction, expectedResult, expectedDecorators }) => {
+    ])('should pass service $controllerFunctionName', async ({ controllerFunction, serviceFunction, expectedResult, expectedDecorators }) => {
         serviceFunction.mockReturnValue(expectedResult as any);
         await expect(controllerFunction()).resolves.toEqual(expectedResult);
         expect(serviceFunction).toHaveBeenCalled();
