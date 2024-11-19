@@ -11,11 +11,11 @@ export class UnitService {
         return this._unitDriver.getAllValues();
     }
 
-    async addValue(value: string): Promise<void> {
+    async addValue(value: string): Promise<string> {
         return this._unitDriver.addValue(value);
     }
 
-    async removeValue(value: string): Promise<void> {
+    async removeValue(value: string): Promise<string> {
         return this._unitDriver.removeValue(value);
     }
 

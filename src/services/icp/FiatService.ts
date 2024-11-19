@@ -11,11 +11,11 @@ export class FiatService {
         return this._fiatDriver.getAllValues();
     }
 
-    async addValue(value: string): Promise<void> {
+    async addValue(value: string): Promise<string> {
         return this._fiatDriver.addValue(value);
     }
 
-    async removeValue(value: string): Promise<void> {
+    async removeValue(value: string): Promise<string> {
         return this._fiatDriver.removeValue(value);
     }
 

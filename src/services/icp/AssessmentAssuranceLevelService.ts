@@ -11,11 +11,11 @@ export class AssessmentAssuranceLevelService {
         return this._assessmentAssuranceLevelDriver.getAllValues();
     }
 
-    async addValue(value: string): Promise<void> {
+    async addValue(value: string): Promise<string> {
         return this._assessmentAssuranceLevelDriver.addValue(value);
     }
 
-    async removeValue(value: string): Promise<void> {
+    async removeValue(value: string): Promise<string> {
         return this._assessmentAssuranceLevelDriver.removeValue(value);
     }
 

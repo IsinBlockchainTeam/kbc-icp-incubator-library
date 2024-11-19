@@ -11,11 +11,11 @@ export class AssessmentStandardService {
         return this._assessmentStandardDriver.getAllValues();
     }
 
-    async addValue(value: string): Promise<void> {
+    async addValue(value: string): Promise<string> {
         return this._assessmentStandardDriver.addValue(value);
     }
 
-    async removeValue(value: string): Promise<void> {
+    async removeValue(value: string): Promise<string> {
         return this._assessmentStandardDriver.removeValue(value);
     }
 

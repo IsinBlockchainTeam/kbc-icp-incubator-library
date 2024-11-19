@@ -11,11 +11,11 @@ export class ProcessTypeService {
         return this._processTypeDriver.getAllValues();
     }
 
-    async addValue(value: string): Promise<void> {
+    async addValue(value: string): Promise<string> {
         return this._processTypeDriver.addValue(value);
     }
 
-    async removeValue(value: string): Promise<void> {
+    async removeValue(value: string): Promise<string> {
         return this._processTypeDriver.removeValue(value);
     }
 

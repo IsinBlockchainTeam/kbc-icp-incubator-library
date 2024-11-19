@@ -192,59 +192,6 @@ export class EntityBuilder {
         } as ICPCertificateDocumentType;
     }
 
-    static _buildCertificateDocumentType(
-        documentType: ICPCertificateDocumentType
-    ): CertificateDocumentType {
-        if (CertificateDocumentType.CERTIFICATE_OF_CONFORMITY in documentType)
-            return CertificateDocumentType.CERTIFICATE_OF_CONFORMITY;
-        if (CertificateDocumentType.COUNTRY_OF_ORIGIN in documentType)
-            return CertificateDocumentType.COUNTRY_OF_ORIGIN;
-        if (CertificateDocumentType.SWISS_DECODE in documentType)
-            return CertificateDocumentType.SWISS_DECODE;
-        if (CertificateDocumentType.PRODUCTION_REPORT in documentType)
-            return CertificateDocumentType.PRODUCTION_REPORT;
-        if (CertificateDocumentType.PRODUCTION_FACILITY_LICENSE in documentType)
-            return CertificateDocumentType.PRODUCTION_FACILITY_LICENSE;
-        throw new Error('Invalid document type');
-    }
-
-    static _buildDocumentEvaluationStatus(
-        documentEvaluationStatus: ICPEvaluationStatus
-    ): EvaluationStatus {
-        if (ICPEvaluationStatusEnum.NOT_EVALUATED in documentEvaluationStatus)
-            return EvaluationStatus.NOT_EVALUATED;
-        if (ICPEvaluationStatusEnum.APPROVED in documentEvaluationStatus)
-            return EvaluationStatus.APPROVED;
-        if (ICPEvaluationStatusEnum.NOT_APPROVED in documentEvaluationStatus)
-            return EvaluationStatus.NOT_APPROVED;
-        throw new Error('Invalid document evaluation status');
-    }
-
-    static _buildCertificateType(certificateType: ICPCertificateType): CertificateType {
-        if (CertificateType.COMPANY in certificateType) return CertificateType.COMPANY;
-        if (CertificateType.SCOPE in certificateType) return CertificateType.SCOPE;
-        if (CertificateType.MATERIAL in certificateType) return CertificateType.MATERIAL;
-        throw new Error('Invalid certificate type');
-    }
-
-    static _buildCertificateDocumentInfo(
-        document: ICPCertificateDocumentInfo
-    ): CertificateDocumentInfo {
-        return {
-            referenceId: document.referenceId,
-            documentType: this._buildCertificateDocumentType(document.documentType),
-            externalUrl: document.externalUrl,
-            metadata: document.metadata
-        };
-    }
-
-    static _buildOrderStatus(orderStatus: ICPOrderStatus): OrderStatus {
-        if (OrderStatus.PENDING in orderStatus) return OrderStatus.PENDING;
-        if (OrderStatus.CONFIRMED in orderStatus) return OrderStatus.CONFIRMED;
-        if (OrderStatus.EXPIRED in orderStatus) return OrderStatus.EXPIRED;
-        throw new Error('Invalid document type');
-    }
-
     static buildShipment(shipment: ICPShipment): Shipment {
         return new Shipment(
             Number(shipment.id),
@@ -361,4 +308,57 @@ export class EntityBuilder {
         uploadedBy: info.uploadedBy,
         externalUrl: info.externalUrl
     });
+
+    static _buildCertificateDocumentType(
+        documentType: ICPCertificateDocumentType
+    ): CertificateDocumentType {
+        if (CertificateDocumentType.CERTIFICATE_OF_CONFORMITY in documentType)
+            return CertificateDocumentType.CERTIFICATE_OF_CONFORMITY;
+        if (CertificateDocumentType.COUNTRY_OF_ORIGIN in documentType)
+            return CertificateDocumentType.COUNTRY_OF_ORIGIN;
+        if (CertificateDocumentType.SWISS_DECODE in documentType)
+            return CertificateDocumentType.SWISS_DECODE;
+        if (CertificateDocumentType.PRODUCTION_REPORT in documentType)
+            return CertificateDocumentType.PRODUCTION_REPORT;
+        if (CertificateDocumentType.PRODUCTION_FACILITY_LICENSE in documentType)
+            return CertificateDocumentType.PRODUCTION_FACILITY_LICENSE;
+        throw new Error('Invalid document type');
+    }
+
+    static _buildDocumentEvaluationStatus(
+        documentEvaluationStatus: ICPEvaluationStatus
+    ): EvaluationStatus {
+        if (ICPEvaluationStatusEnum.NOT_EVALUATED in documentEvaluationStatus)
+            return EvaluationStatus.NOT_EVALUATED;
+        if (ICPEvaluationStatusEnum.APPROVED in documentEvaluationStatus)
+            return EvaluationStatus.APPROVED;
+        if (ICPEvaluationStatusEnum.NOT_APPROVED in documentEvaluationStatus)
+            return EvaluationStatus.NOT_APPROVED;
+        throw new Error('Invalid document evaluation status');
+    }
+
+    static _buildCertificateType(certificateType: ICPCertificateType): CertificateType {
+        if (CertificateType.COMPANY in certificateType) return CertificateType.COMPANY;
+        if (CertificateType.SCOPE in certificateType) return CertificateType.SCOPE;
+        if (CertificateType.MATERIAL in certificateType) return CertificateType.MATERIAL;
+        throw new Error('Invalid certificate type');
+    }
+
+    static _buildCertificateDocumentInfo(
+        document: ICPCertificateDocumentInfo
+    ): CertificateDocumentInfo {
+        return {
+            referenceId: document.referenceId,
+            documentType: this._buildCertificateDocumentType(document.documentType),
+            externalUrl: document.externalUrl,
+            metadata: document.metadata
+        };
+    }
+
+    static _buildOrderStatus(orderStatus: ICPOrderStatus): OrderStatus {
+        if (OrderStatus.PENDING in orderStatus) return OrderStatus.PENDING;
+        if (OrderStatus.CONFIRMED in orderStatus) return OrderStatus.CONFIRMED;
+        if (OrderStatus.EXPIRED in orderStatus) return OrderStatus.EXPIRED;
+        throw new Error('Invalid document type');
+    }
 }
