@@ -187,18 +187,26 @@ export class CertificationDriver {
         return this._buildMaterialCertificate(certificate);
     }
 
-    async updateDocument(certificateId: number, document: CertificateDocumentInfo) {
-        return this._actor.updateCertificateDocument(
+    async updateDocument(
+        certificateId: number,
+        document: CertificateDocumentInfo
+    ): Promise<BaseCertificate> {
+        const baseCertificate = await this._actor.updateCertificateDocument(
             BigInt(certificateId),
             EntityBuilder.buildICPCertificateDocumentInfo(document)
         );
+        return EntityBuilder.buildBaseCertificate(baseCertificate);
     }
 
-    async evaluateDocument(certificateId: number, evaluationStatus: EvaluationStatus) {
-        await this._actor.evaluateCertificateDocument(
+    async evaluateDocument(
+        certificateId: number,
+        evaluationStatus: EvaluationStatus
+    ): Promise<BaseCertificate> {
+        const baseCertificate = await this._actor.evaluateCertificateDocument(
             BigInt(certificateId),
             EntityBuilder.buildICPEvaluationStatus(evaluationStatus)
         );
+        return EntityBuilder.buildBaseCertificate(baseCertificate);
     }
 
     private async _buildMaterialCertificate(
