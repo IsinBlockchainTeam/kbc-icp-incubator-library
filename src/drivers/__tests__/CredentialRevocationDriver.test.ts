@@ -1,7 +1,7 @@
-import { CredentialRevocationDriver, METHOD_NAME } from './CredentialRevocationDriver';
+import { CredentialRevocationDriver, METHOD_NAME } from '../CredentialRevocationDriver';
 import { BigNumber, BytesLike, Signer } from 'ethers';
 import { createMock } from 'ts-auto-mock';
-import { RevocationRegistry, RevocationRegistry__factory } from '../smart-contracts';
+import { RevocationRegistry, RevocationRegistry__factory } from '../../smart-contracts';
 import { jwtDecode } from 'jwt-decode';
 import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
 

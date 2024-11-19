@@ -1,7 +1,7 @@
 import { createMock } from 'ts-auto-mock';
 import { BigNumber, ethers, Signer } from 'ethers';
-import {MyToken, MyToken__factory} from '../smart-contracts';
-import { TokenDriver } from './TokenDriver';
+import { MyToken, MyToken__factory } from '../../smart-contracts';
+import { TokenDriver } from '../TokenDriver';
 
 describe('TokenDriver', () => {
     const testAddress = '0x6C9E9ADB5F57952434A4148b401502d9c6C70318';
@@ -37,9 +37,7 @@ describe('TokenDriver', () => {
         const mockedToken = createMock<MyToken>({
             connect: mockedTokenConnect
         });
-        jest.spyOn(MyToken__factory, 'connect').mockReturnValue(
-            mockedToken
-        );
+        jest.spyOn(MyToken__factory, 'connect').mockReturnValue(mockedToken);
 
         mockedSigner = createMock<Signer>();
         tokenDriver = new TokenDriver(mockedSigner, testAddress);
@@ -51,16 +49,11 @@ describe('TokenDriver', () => {
 
     it('should call balanceOf', async () => {
         mockedReadFunction.mockResolvedValue(BigNumber.from(100));
-        const resp = await tokenDriver.balanceOf(
-            companyA.address,
-        );
+        const resp = await tokenDriver.balanceOf(companyA.address);
 
         expect(resp).toEqual(100);
         expect(mockedReadFunction).toHaveBeenCalledTimes(1);
-        expect(mockedReadFunction).toHaveBeenNthCalledWith(
-            1,
-            companyA.address,
-        );
+        expect(mockedReadFunction).toHaveBeenNthCalledWith(1, companyA.address);
     });
 
     it('should call symbol', async () => {
@@ -75,11 +68,7 @@ describe('TokenDriver', () => {
         await tokenDriver.approve(companyA.address, 1000);
 
         expect(mockedWriteFunction).toHaveBeenCalledTimes(1);
-        expect(mockedWriteFunction).toHaveBeenNthCalledWith(
-            1,
-            companyA.address,
-            1000,
-        );
+        expect(mockedWriteFunction).toHaveBeenNthCalledWith(1, companyA.address, 1000);
         expect(mockedWait).toHaveBeenCalledTimes(1);
     });
 
@@ -87,11 +76,7 @@ describe('TokenDriver', () => {
         await tokenDriver.transfer(companyA.address, 1000);
 
         expect(mockedWriteFunction).toHaveBeenCalledTimes(1);
-        expect(mockedWriteFunction).toHaveBeenNthCalledWith(
-            1,
-            companyA.address,
-            1000,
-        );
+        expect(mockedWriteFunction).toHaveBeenNthCalledWith(1, companyA.address, 1000);
         expect(mockedWait).toHaveBeenCalledTimes(1);
     });
 });

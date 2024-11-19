@@ -1,8 +1,8 @@
 import { Signer, Wallet } from 'ethers';
 import { createMock } from 'ts-auto-mock';
-import { EscrowDriver } from './EscrowDriver';
-import { Escrow as EscrowContract, Escrow__factory } from '../smart-contracts';
-import { EscrowStatus } from '../types/EscrowStatus';
+import { EscrowDriver } from '../EscrowDriver';
+import { Escrow as EscrowContract, Escrow__factory } from '../../smart-contracts';
+import { EscrowStatus } from '../../types/EscrowStatus';
 
 describe('EscrowDriver', () => {
     let escrowDriver: EscrowDriver;
@@ -74,7 +74,7 @@ describe('EscrowDriver', () => {
         deposit: mockedWriteFunction,
         withdraw: mockedWriteFunction,
         addAdmin: mockedWriteFunction,
-        removeAdmin: mockedWriteFunction,
+        removeAdmin: mockedWriteFunction
     });
 
     beforeAll(() => {
@@ -287,7 +287,9 @@ describe('EscrowDriver', () => {
         expect(mockedContract.getWithdrawableAmount).toHaveBeenNthCalledWith(1, payee);
         expect(mockedToNumber).toHaveBeenCalledTimes(1);
 
-        await expect(escrowDriver.getWithdrawableAmount('0xpayer')).rejects.toThrow('Not an address');
+        await expect(escrowDriver.getWithdrawableAmount('0xpayer')).rejects.toThrow(
+            'Not an address'
+        );
     });
     it('should correctly retrieve refundable amount', async () => {
         const response = await escrowDriver.getRefundableAmount(1, payee);
@@ -298,8 +300,12 @@ describe('EscrowDriver', () => {
         expect(mockedContract.getRefundableAmount).toHaveBeenNthCalledWith(1, 1, payee);
         expect(mockedToNumber).toHaveBeenCalledTimes(1);
 
-        await expect(escrowDriver.getRefundableAmount(-1, payee)).rejects.toThrow('Amount must be greater than 0');
-        await expect(escrowDriver.getRefundableAmount(1, '0xpayer')).rejects.toThrow('Not an address');
+        await expect(escrowDriver.getRefundableAmount(-1, payee)).rejects.toThrow(
+            'Amount must be greater than 0'
+        );
+        await expect(escrowDriver.getRefundableAmount(1, '0xpayer')).rejects.toThrow(
+            'Not an address'
+        );
     });
     it('should correctly update fee recipient', async () => {
         await escrowDriver.updateFeeRecipient(payee);
@@ -319,7 +325,9 @@ describe('EscrowDriver', () => {
         expect(mockedWriteFunction).toHaveBeenCalledTimes(1);
         expect(mockedWait).toHaveBeenCalledTimes(1);
 
-        await expect(escrowDriver.updateBaseFee(-1)).rejects.toThrow('Base fee must be greater than or equal to 0');
+        await expect(escrowDriver.updateBaseFee(-1)).rejects.toThrow(
+            'Base fee must be greater than or equal to 0'
+        );
     });
     it('should correctly update percentage fee', async () => {
         await escrowDriver.updatePercentageFee(1);
@@ -329,7 +337,9 @@ describe('EscrowDriver', () => {
         expect(mockedWriteFunction).toHaveBeenCalledTimes(1);
         expect(mockedWait).toHaveBeenCalledTimes(1);
 
-        await expect(escrowDriver.updatePercentageFee(-1)).rejects.toThrow('Percentage fee must be between 0 and 100');
+        await expect(escrowDriver.updatePercentageFee(-1)).rejects.toThrow(
+            'Percentage fee must be between 0 and 100'
+        );
     });
     it('should correctly check if expired', async () => {
         const response = await escrowDriver.isExpired();
@@ -358,7 +368,9 @@ describe('EscrowDriver', () => {
         expect(mockedWriteFunction).toHaveBeenCalledTimes(1);
         expect(mockedWait).toHaveBeenCalledTimes(1);
 
-        await expect(escrowDriver.releaseFunds(-1)).rejects.toThrow('Amount must be greater than 0');
+        await expect(escrowDriver.releaseFunds(-1)).rejects.toThrow(
+            'Amount must be greater than 0'
+        );
     });
     it('should correctly refund funds', async () => {
         await escrowDriver.refundFunds(1);
@@ -378,7 +390,9 @@ describe('EscrowDriver', () => {
         expect(mockedWriteFunction).toHaveBeenCalledTimes(1);
         expect(mockedWait).toHaveBeenCalledTimes(1);
 
-        await expect(escrowDriver.deposit(-1, payee)).rejects.toThrow('Amount must be greater than or equal to 0');
+        await expect(escrowDriver.deposit(-1, payee)).rejects.toThrow(
+            'Amount must be greater than or equal to 0'
+        );
         await expect(escrowDriver.deposit(1, '0xpayer')).rejects.toThrow('Not an address');
     });
     it('should correctly withdraw', async () => {
@@ -389,7 +403,9 @@ describe('EscrowDriver', () => {
         expect(mockedWriteFunction).toHaveBeenCalledTimes(1);
         expect(mockedWait).toHaveBeenCalledTimes(1);
 
-        await expect(escrowDriver.withdraw(-1)).rejects.toThrow('Amount must be greater than or equal to 0');
+        await expect(escrowDriver.withdraw(-1)).rejects.toThrow(
+            'Amount must be greater than or equal to 0'
+        );
     });
     it('should correctly add admin', async () => {
         await escrowDriver.addAdmin(payee);

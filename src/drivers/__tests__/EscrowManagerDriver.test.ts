@@ -1,8 +1,8 @@
 import { BigNumber, Signer, Wallet } from 'ethers';
 import { createMock } from 'ts-auto-mock';
-import { EscrowManagerDriver } from './EscrowManagerDriver';
-import { EscrowManager, EscrowManager__factory } from '../smart-contracts';
-import { RoleProof } from '../types/RoleProof';
+import { EscrowManagerDriver } from '../EscrowManagerDriver';
+import { EscrowManager, EscrowManager__factory } from '../../smart-contracts';
+import { RoleProof } from '../../types/RoleProof';
 
 describe('EscrowManagerDriver', () => {
     let escrowManagerDriver: EscrowManagerDriver;
@@ -129,13 +129,7 @@ describe('EscrowManagerDriver', () => {
     });
     it('should correctly register a new Escrow - FAIL(Duration below 0)', async () => {
         await expect(
-            escrowManagerDriver.registerEscrow(
-                roleProof,
-                admin,
-                payee,
-                -1,
-                contractAddress
-            )
+            escrowManagerDriver.registerEscrow(roleProof, admin, payee, -1, contractAddress)
         ).rejects.toThrow(new Error('Duration must be greater than 0'));
 
         expect(mockedContract.registerEscrow).toHaveBeenCalledTimes(0);

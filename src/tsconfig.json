@@ -2,31 +2,29 @@
     "extends": "@tsconfig/node16/tsconfig.json",
     "compilerOptions": {
         "strictNullChecks": true,
-        "module": "commonjs",
-        "target": "es6",
+        "module": "NodeNext", // Supports both ES Modules and CommonJS
+        "target": "ES6",
         "noImplicitAny": true,
         "outDir": "dist",
-        // "sourceMap": true,Ok
         "inlineSourceMap": true,
         "esModuleInterop": true,
-        "declaration": true, // This tells TypeScript to emit an .d.ts definitions file along with your compiled JavaScript,
-        "plugins": [
-            {
-                "transform": "ts-auto-mock/transformer",
-                "cacheBetweenTests": false
-            }
-        ],
-        "types": ["jest", "node", "@types/jest"],
+        "declaration": true,
+        "types": ["jest", "node"], // Ensure Node.js and Jest types are available
         "experimentalDecorators": true,
+        "skipLibCheck": true, // Helps avoid module resolution errors with third-party packages
+        "moduleResolution": "Node16", // Ensures compatibility with ESM packages
+        "allowSyntheticDefaultImports": true // Useful for React and other modern libraries
     },
-    "include": ["**/*", "./dfx_output/storage/*.ts", "../icp/ts-canister/dist"],
+    "include": [
+        "**/*",
+        "./dfx_output/storage/*.ts",
+        "../icp/ts-canister/dist"
+    ],
     "exclude": [
         "node_modules",
         "dist",
-        // Activate if you don't want to run integration-test during building phase
-        // "integration-test",
         "**/*.spec.ts",
-        // "**/*.test.ts",
+        "**/*.test.ts",
         "**/*.dev.ts",
         "**/__mocks__/**/*.ts",
         "**/__tests__/**/*.ts",

@@ -1,6 +1,6 @@
 import { Wallet } from 'ethers';
 import { RoleProof } from '../types/RoleProof';
-import { computeMembershipProof, computeRoleProof } from '../drivers/icp/proof';
+import { computeMembershipProof, computeRoleProof } from '../drivers/proof';
 
 const ISSUER_WALLET = new Wallet(
     'ec6b3634419525310628dce4da4cf2abbc866c608aebc1e5f9ee7edf6926e985'

@@ -1,95 +1,43 @@
-import { BigNumber, Event, Signer } from 'ethers';
-import {
-    MaterialManager,
-    MaterialManager__factory,
-    ProductCategoryManager,
-    ProductCategoryManager__factory
-} from '../smart-contracts';
-import { EntityBuilder } from '../utils/EntityBuilder';
-import { Material } from '../entities/Material';
-import { RoleProof } from '../types/RoleProof';
+import type { ActorSubclass, Identity } from '@dfinity/agent';
+import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
+import { createActor } from 'icp-declarations/entity_manager';
+import {EntityBuilder} from "../../utils/icp/EntityBuilder";
+import {Material} from "../../entities/Material";
+import {HandleIcpError} from "../../decorators/HandleIcpError";
 
 export class MaterialDriver {
-    private _materialContract: MaterialManager;
+    private _actor: ActorSubclass<_SERVICE>;
 
-    private _productCategoryContract: ProductCategoryManager;
-
-    constructor(
-        signer: Signer,
-        materialManagerAddress: string,
-        productCategoryManagerAddress: string
-    ) {
-        this._materialContract = MaterialManager__factory.connect(
-            materialManagerAddress,
-            signer.provider!
-        ).connect(signer);
-        this._productCategoryContract = ProductCategoryManager__factory.connect(
-            productCategoryManagerAddress,
-            signer.provider!
-        ).connect(signer);
+    public constructor(icpIdentity: Identity, canisterId: string, host?: string) {
+        this._actor = createActor(canisterId, {
+            agentOptions: {
+                identity: icpIdentity,
+                ...(host && { host })
+            }
+        });
     }
 
-    async getMaterialsCounter(roleProof: RoleProof): Promise<number> {
-        const counter = await this._materialContract.getMaterialsCounter(roleProof);
-        return counter.toNumber();
+    @HandleIcpError()
+    async getMaterials(): Promise<Material[]> {
+        const resp = await this._actor.getMaterials();
+        return resp.map(rawMaterial => EntityBuilder.buildMaterial(rawMaterial));
     }
 
-    async getMaterialExists(roleProof: RoleProof, id: number): Promise<boolean> {
-        return this._materialContract.getMaterialExists(roleProof, id);
+    @HandleIcpError()
+    async getMaterial(id: number): Promise<Material> {
+        const resp = await this._actor.getMaterial(BigInt(id));
+        return EntityBuilder.buildMaterial(resp);
     }
 
-    async getMaterial(roleProof: RoleProof, id: number): Promise<Material> {
-        const material = await this._materialContract.getMaterial(roleProof, id);
-        const productCategory = await this._productCategoryContract.getProductCategory(
-            roleProof,
-            material.productCategoryId
-        );
-        return EntityBuilder.buildMaterial(material, productCategory);
+    @HandleIcpError()
+    async createMaterial(productCategoryId: number): Promise<Material> {
+        const resp = await this._actor.createMaterial(BigInt(productCategoryId));
+        return EntityBuilder.buildMaterial(resp);
     }
 
-    async getMaterials(roleProof: RoleProof): Promise<Material[]> {
-        const counter: number = await this.getMaterialsCounter(roleProof);
-
-        const promises = [];
-        for (let i = 1; i <= counter; i++) {
-            promises.push(this.getMaterial(roleProof, i));
-        }
-
-        return Promise.all(promises);
-    }
-
-    async getMaterialsOfCreator(roleProof: RoleProof, creator: string): Promise<Material[]> {
-        const ids: number[] = (
-            await this._materialContract.getMaterialIdsOfCreator(roleProof, creator)
-        ).map((id: BigNumber) => id.toNumber());
-
-        const promises = ids.map((id: number) => this.getMaterial(roleProof, id));
-
-        return Promise.all(promises);
-    }
-
-    async registerMaterial(roleProof: RoleProof, productCategoryId: number): Promise<number> {
-        const tx: any = await this._materialContract.registerMaterial(roleProof, productCategoryId);
-        const { events } = await tx.wait();
-
-        if (!events) {
-            throw new Error('Error during material registration, no events found');
-        }
-        return events
-            .find((event: Event) => event.event === 'MaterialRegistered')
-            .args.id.toNumber();
-    }
-
-    async updateMaterial(
-        roleProof: RoleProof,
-        id: number,
-        productCategoryId: number
-    ): Promise<void> {
-        const tx: any = await this._materialContract.updateMaterial(
-            roleProof,
-            id,
-            productCategoryId
-        );
-        await tx.wait();
+    @HandleIcpError()
+    async updateMaterial(id: number, productCategoryId: number) {
+        const resp = await this._actor.updateMaterial(BigInt(id), BigInt(productCategoryId));
+        return EntityBuilder.buildMaterial(resp);
     }
 }
