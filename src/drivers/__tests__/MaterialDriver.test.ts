@@ -1,12 +1,12 @@
 import { createActor } from 'icp-declarations/entity_manager';
-import type {Identity} from "@dfinity/agent";
-import {MaterialDriver} from "../MaterialDriver";
-import {EntityBuilder} from "../../../utils/icp/EntityBuilder";
-import {Material} from "../../../entities/Material";
+import type { Identity } from '@dfinity/agent';
+import { MaterialDriver } from '../MaterialDriver';
+import { EntityBuilder } from '../../utils/EntityBuilder';
+import { Material } from '../../entities/Material';
 
 jest.mock('icp-declarations/entity_manager');
 jest.mock('@dfinity/agent');
-jest.mock('../../../utils/icp/EntityBuilder');
+jest.mock('../../utils/EntityBuilder');
 
 describe('MaterialDriver', () => {
     let materialDriver: MaterialDriver;
@@ -15,8 +15,8 @@ describe('MaterialDriver', () => {
         getMaterial: jest.fn(),
         createMaterial: jest.fn(),
         updateMaterial: jest.fn()
-    }
-    const defaultMaterial = {id: 0} as Material;
+    };
+    const defaultMaterial = { id: 0 } as Material;
 
     beforeAll(async () => {
         (createActor as jest.Mock).mockReturnValue({
@@ -31,7 +31,7 @@ describe('MaterialDriver', () => {
     });
 
     it('should retrieve materials', async () => {
-        const rawMaterial = {name: 'test'};
+        const rawMaterial = { name: 'test' };
         mockFn.getMaterials.mockReturnValue([rawMaterial]);
         await expect(materialDriver.getMaterials()).resolves.toEqual([defaultMaterial]);
         expect(mockFn.getMaterials).toHaveBeenCalled();
@@ -40,7 +40,7 @@ describe('MaterialDriver', () => {
     });
 
     it('should retrieve a material', async () => {
-        const rawMaterial = {name: 'test'};
+        const rawMaterial = { name: 'test' };
         mockFn.getMaterial.mockReturnValue(rawMaterial);
         await expect(materialDriver.getMaterial(1)).resolves.toEqual(defaultMaterial);
         expect(mockFn.getMaterial).toHaveBeenCalled();
@@ -49,7 +49,7 @@ describe('MaterialDriver', () => {
     });
 
     it('should create a material', async () => {
-        const rawMaterial = {name: 'test'};
+        const rawMaterial = { name: 'test' };
         mockFn.createMaterial.mockReturnValue(rawMaterial);
         await expect(materialDriver.createMaterial(1)).resolves.toEqual(defaultMaterial);
         expect(mockFn.createMaterial).toHaveBeenCalled();
@@ -58,7 +58,7 @@ describe('MaterialDriver', () => {
     });
 
     it('should update a material', async () => {
-        const rawMaterial = {name: 'test'};
+        const rawMaterial = { name: 'test' };
         mockFn.updateMaterial.mockReturnValue(rawMaterial);
         await expect(materialDriver.updateMaterial(1, 1)).resolves.toEqual(defaultMaterial);
         expect(mockFn.updateMaterial).toHaveBeenCalled();

@@ -1,12 +1,12 @@
-import { createActor } from 'src/declarations/entity_manager';
+import { createActor } from '../../declarations/entity_manager';
 import type { Identity } from '@dfinity/agent';
 import { OfferDriver } from '../OfferDriver';
-import { EntityBuilder } from '../../../utils/icp/EntityBuilder';
-import { Offer } from '../../../entities/Offer';
+import { EntityBuilder } from '../../utils/EntityBuilder';
+import { Offer } from '../../entities/Offer';
 
 jest.mock('icp-declarations/entity_manager');
 jest.mock('@dfinity/agent');
-jest.mock('../../../utils/icp/EntityBuilder');
+jest.mock('../../utils/EntityBuilder');
 
 describe('OfferDriver', () => {
     let offerDriver: OfferDriver;

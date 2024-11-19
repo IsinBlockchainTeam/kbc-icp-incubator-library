@@ -1,7 +1,7 @@
 import type { ActorSubclass, Identity } from '@dfinity/agent';
 import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
 import { createActor } from 'icp-declarations/entity_manager';
-import { EntityBuilder } from '../utils/icp/EntityBuilder';
+import { EntityBuilder } from '../utils/EntityBuilder';
 import { ProductCategory } from '../entities/ProductCategory';
 import { HandleIcpError } from '../decorators/HandleIcpError';
 

@@ -90,7 +90,6 @@ describe('EscrowManagerDriver', () => {
         expect(mockedContract.registerEscrow).toHaveBeenCalledTimes(1);
         expect(mockedContract.registerEscrow).toHaveBeenNthCalledWith(
             1,
-            roleProof,
             admin,
             payee,
             1000,
@@ -167,7 +166,7 @@ describe('EscrowManagerDriver', () => {
         expect(response).toEqual(1);
 
         expect(mockedContract.getEscrowCounter).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getEscrowCounter).toHaveBeenNthCalledWith(1, roleProof);
+        expect(mockedContract.getEscrowCounter).toHaveBeenNthCalledWith(1);
     });
     it('should correctly retrieve fee recipient', async () => {
         const response = await escrowManagerDriver.getFeeRecipient(roleProof);
@@ -175,7 +174,7 @@ describe('EscrowManagerDriver', () => {
         expect(response).toEqual(feeRecipient);
 
         expect(mockedContract.getFeeRecipient).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getFeeRecipient).toHaveBeenNthCalledWith(1, roleProof);
+        expect(mockedContract.getFeeRecipient).toHaveBeenNthCalledWith(1);
         expect(mockedGetFeeRecipient).toHaveBeenCalledTimes(1);
     });
     it('should correctly retrieve base fee', async () => {
@@ -184,7 +183,7 @@ describe('EscrowManagerDriver', () => {
         expect(response).toEqual(baseFee);
 
         expect(mockedContract.getBaseFee).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getBaseFee).toHaveBeenNthCalledWith(1, roleProof);
+        expect(mockedContract.getBaseFee).toHaveBeenNthCalledWith(1);
         expect(mockedGetBaseFee).toHaveBeenCalledTimes(1);
     });
     it('should correctly retrieve percentage fee', async () => {
@@ -193,7 +192,7 @@ describe('EscrowManagerDriver', () => {
         expect(response).toEqual(percentageFee);
 
         expect(mockedContract.getPercentageFee).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getPercentageFee).toHaveBeenNthCalledWith(1, roleProof);
+        expect(mockedContract.getPercentageFee).toHaveBeenNthCalledWith(1);
         expect(mockedGetPercentageFee).toHaveBeenCalledTimes(1);
     });
     it('should correctly update fee recipient', async () => {
@@ -244,7 +243,7 @@ describe('EscrowManagerDriver', () => {
         expect(response).toEqual(escrowAddress);
 
         expect(mockedContract.getEscrow).toHaveBeenCalledTimes(1);
-        expect(mockedContract.getEscrow).toHaveBeenNthCalledWith(1, roleProof, 1);
+        expect(mockedContract.getEscrow).toHaveBeenNthCalledWith(1, 1);
         expect(mockedGetEscrow).toHaveBeenCalledTimes(1);
     });
     it('should correctly add an admin', async () => {

@@ -1,9 +1,9 @@
 import type { ActorSubclass, Identity } from '@dfinity/agent';
 import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
-import {createActor} from "icp-declarations/entity_manager";
-import {Offer} from "../../entities/Offer";
-import {EntityBuilder} from "../../utils/icp/EntityBuilder";
-import {HandleIcpError} from "../../decorators/HandleIcpError";
+import { createActor } from 'icp-declarations/entity_manager';
+import { Offer } from '../entities/Offer';
+import { EntityBuilder } from '../utils/EntityBuilder';
+import { HandleIcpError } from '../decorators/HandleIcpError';
 
 export class OfferDriver {
     private _actor: ActorSubclass<_SERVICE>;
@@ -20,7 +20,7 @@ export class OfferDriver {
     @HandleIcpError()
     async getOffers(): Promise<Offer[]> {
         const resp = await this._actor.getOffers();
-        return resp.map(rawOffer => EntityBuilder.buildOffer(rawOffer));
+        return resp.map((rawOffer) => EntityBuilder.buildOffer(rawOffer));
     }
 
     @HandleIcpError()

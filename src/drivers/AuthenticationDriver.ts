@@ -3,7 +3,7 @@ import { RoleProof } from '../types/RoleProof';
 import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
 import { createActor } from 'icp-declarations/entity_manager';
 import { HandleIcpError } from '../decorators/HandleIcpError';
-import { EntityBuilder } from '../utils/icp/EntityBuilder';
+import { EntityBuilder } from '../utils/EntityBuilder';
 
 export class AuthenticationDriver {
     private _actor: ActorSubclass<_SERVICE>;

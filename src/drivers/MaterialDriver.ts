@@ -1,9 +1,9 @@
 import type { ActorSubclass, Identity } from '@dfinity/agent';
 import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
 import { createActor } from 'icp-declarations/entity_manager';
-import {EntityBuilder} from "../../utils/icp/EntityBuilder";
-import {Material} from "../../entities/Material";
-import {HandleIcpError} from "../../decorators/HandleIcpError";
+import { EntityBuilder } from '../utils/EntityBuilder';
+import { Material } from '../entities/Material';
+import { HandleIcpError } from '../decorators/HandleIcpError';
 
 export class MaterialDriver {
     private _actor: ActorSubclass<_SERVICE>;
@@ -20,7 +20,7 @@ export class MaterialDriver {
     @HandleIcpError()
     async getMaterials(): Promise<Material[]> {
         const resp = await this._actor.getMaterials();
-        return resp.map(rawMaterial => EntityBuilder.buildMaterial(rawMaterial));
+        return resp.map((rawMaterial) => EntityBuilder.buildMaterial(rawMaterial));
     }
 
     @HandleIcpError()

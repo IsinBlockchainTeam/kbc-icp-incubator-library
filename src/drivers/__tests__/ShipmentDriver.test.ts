@@ -5,14 +5,14 @@ import {
 } from '@kbc-lib/azle-types';
 import { Identity } from '@dfinity/agent';
 import { ShipmentDriver } from '../ShipmentDriver';
-import { FundStatus, Shipment, Phase } from '../../../entities/icp/Shipment';
-import { EntityBuilder } from '../../../utils/icp/EntityBuilder';
-import { DocumentInfo, DocumentType } from '../../../entities/icp/Document';
-import { EvaluationStatus } from '../../../entities/icp/Evaluation';
+import { FundStatus, Shipment, Phase } from '../../entities/Shipment';
+import { EntityBuilder } from '../../utils/EntityBuilder';
+import { DocumentInfo, DocumentType } from '../../entities/Document';
+import { EvaluationStatus } from '../../entities/Evaluation';
 
 jest.mock('icp-declarations/entity_manager');
 jest.mock('@dfinity/agent');
-jest.mock('../../../utils/icp/EntityBuilder');
+jest.mock('../../utils/EntityBuilder');
 
 describe('ShipmentDriver', () => {
     let shipmentDriver: ShipmentDriver;
@@ -89,9 +89,7 @@ describe('ShipmentDriver', () => {
 
     it('should retrieve shipments', async () => {
         mockFn.getShipments.mockReturnValue([defaultEntities.shipment]);
-        await expect(shipmentDriver.getShipments()).resolves.toEqual([
-            defaultEntities.shipment
-        ]);
+        await expect(shipmentDriver.getShipments()).resolves.toEqual([defaultEntities.shipment]);
         expect(mockFn.getShipments).toHaveBeenCalledTimes(1);
         expect(mockFn.getShipments).toHaveBeenCalledWith();
         expect(EntityBuilder.buildShipment).toHaveBeenCalledTimes(1);
@@ -100,9 +98,7 @@ describe('ShipmentDriver', () => {
 
     it('should retrieve a shipment', async () => {
         mockFn.getShipment.mockReturnValue(defaultEntities.shipment);
-        await expect(shipmentDriver.getShipment(0)).resolves.toEqual(
-            defaultEntities.shipment
-        );
+        await expect(shipmentDriver.getShipment(0)).resolves.toEqual(defaultEntities.shipment);
         expect(mockFn.getShipment).toHaveBeenCalledTimes(1);
         expect(mockFn.getShipment).toHaveBeenCalledWith(BigInt(0));
         expect(EntityBuilder.buildShipment).toHaveBeenCalledTimes(1);
@@ -223,9 +219,7 @@ describe('ShipmentDriver', () => {
 
     it('should deposit funds', async () => {
         mockFn.depositFunds.mockReturnValue(defaultEntities.shipment);
-        await expect(shipmentDriver.depositFunds(0, 0)).resolves.toEqual(
-            defaultEntities.shipment
-        );
+        await expect(shipmentDriver.depositFunds(0, 0)).resolves.toEqual(defaultEntities.shipment);
         expect(mockFn.depositFunds).toHaveBeenCalledTimes(1);
         expect(mockFn.depositFunds).toHaveBeenCalledWith(BigInt(0), BigInt(0));
         expect(EntityBuilder.buildShipment).toHaveBeenCalledTimes(1);
@@ -234,9 +228,7 @@ describe('ShipmentDriver', () => {
 
     it('should lock funds', async () => {
         mockFn.lockFunds.mockReturnValue(defaultEntities.shipment);
-        await expect(shipmentDriver.lockFunds(0)).resolves.toEqual(
-            defaultEntities.shipment
-        );
+        await expect(shipmentDriver.lockFunds(0)).resolves.toEqual(defaultEntities.shipment);
         expect(mockFn.lockFunds).toHaveBeenCalledTimes(1);
         expect(mockFn.lockFunds).toHaveBeenCalledWith(BigInt(0));
         expect(EntityBuilder.buildShipment).toHaveBeenCalledTimes(1);
@@ -245,9 +237,7 @@ describe('ShipmentDriver', () => {
 
     it('should unlock funds', async () => {
         mockFn.unlockFunds.mockReturnValue(defaultEntities.shipment);
-        await expect(shipmentDriver.unlockFunds(0)).resolves.toEqual(
-            defaultEntities.shipment
-        );
+        await expect(shipmentDriver.unlockFunds(0)).resolves.toEqual(defaultEntities.shipment);
         expect(mockFn.unlockFunds).toHaveBeenCalledTimes(1);
         expect(mockFn.unlockFunds).toHaveBeenCalledWith(BigInt(0));
         expect(EntityBuilder.buildShipment).toHaveBeenCalledTimes(1);
@@ -261,9 +251,7 @@ describe('ShipmentDriver', () => {
         (EntityBuilder.buildShipmentDocuments as jest.Mock).mockReturnValue(
             defaultEntities.documents
         );
-        await expect(shipmentDriver.getDocuments(0)).resolves.toEqual(
-            defaultEntities.documents
-        );
+        await expect(shipmentDriver.getDocuments(0)).resolves.toEqual(defaultEntities.documents);
         expect(mockFn.getDocuments).toHaveBeenCalledTimes(1);
         expect(mockFn.getDocuments).toHaveBeenCalledWith(BigInt(0));
         expect(EntityBuilder.buildShipmentDocuments).toHaveBeenCalledTimes(1);

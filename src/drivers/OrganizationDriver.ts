@@ -2,12 +2,12 @@ import type { ActorSubclass, Identity } from '@dfinity/agent';
 import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
 import { OrganizationRole, OrganizationVisibilityLevel } from '@kbc-lib/azle-types';
 import { createActor } from 'icp-declarations/entity_manager';
-import { Organization } from '../../entities/organization/Organization';
-import { BroadedOrganizationCreator } from '../../factories/organization/BroadedOrganizationCreator';
-import { OrganizationVisibilityLevelFactory } from '../../factories/organization/OrganizationVisibilityLevelFactory';
-import { NarrowedOrganizationCreator } from '../../factories/organization/NarrowedOrganizationCreator';
-import { OrganizationRoleFactory } from '../../factories/organization/OrganizationRoleFactory';
-import { HandleIcpError } from '../../decorators/HandleIcpError';
+import { Organization } from '../entities/organization/Organization';
+import { BroadedOrganizationCreator } from '../factories/organization/BroadedOrganizationCreator';
+import { OrganizationVisibilityLevelFactory } from '../factories/organization/OrganizationVisibilityLevelFactory';
+import { NarrowedOrganizationCreator } from '../factories/organization/NarrowedOrganizationCreator';
+import { OrganizationRoleFactory } from '../factories/organization/OrganizationRoleFactory';
+import { HandleIcpError } from '../decorators/HandleIcpError';
 
 export type OrganizationParams = {
     legalName: string;

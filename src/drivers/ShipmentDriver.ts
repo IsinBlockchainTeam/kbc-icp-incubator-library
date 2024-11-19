@@ -1,11 +1,11 @@
 import type { ActorSubclass, Identity } from '@dfinity/agent';
 import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
 import { createActor } from 'icp-declarations/entity_manager';
-import { Phase, Shipment } from '../../entities/icp/Shipment';
-import { EntityBuilder } from '../../utils/icp/EntityBuilder';
-import { DocumentInfo, DocumentType } from '../../entities/icp/Document';
-import { EvaluationStatus } from '../../entities/icp/Evaluation';
-import { HandleIcpError } from '../../decorators/HandleIcpError';
+import { Phase, Shipment } from '../entities/Shipment';
+import { EntityBuilder } from '../utils/EntityBuilder';
+import { DocumentInfo, DocumentType } from '../entities/Document';
+import { EvaluationStatus } from '../entities/Evaluation';
+import { HandleIcpError } from '../decorators/HandleIcpError';
 
 export class ShipmentDriver {
     private _actor: ActorSubclass<_SERVICE>;

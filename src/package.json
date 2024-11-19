@@ -5,7 +5,7 @@
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "scripts": {
-        "icp-build": "cp -r ../icp/ts-canister/declarations/ ./declarations && node transform-declarations.js",
+        "postinstall": "cp -r ../icp/ts-canister/declarations/ ./declarations && node transform-declarations.js",
         "build": "npx tsc",
         "test": "jest",
         "lint": "eslint *.ts --fix",
