@@ -165,7 +165,7 @@ export class CertificationService {
         validFrom: Date,
         validUntil: Date,
         notes?: string
-    ) {
+    ): Promise<CompanyCertificate> {
         return this._certificationManagerDriver.updateCompanyCertificate(
             certificateId,
             assessmentStandard,
@@ -184,7 +184,7 @@ export class CertificationService {
         validUntil: Date,
         processTypes: string[],
         notes?: string
-    ) {
+    ): Promise<ScopeCertificate> {
         return this._certificationManagerDriver.updateScopeCertificate(
             certificateId,
             assessmentStandard,
@@ -202,7 +202,7 @@ export class CertificationService {
         assessmentAssuranceLevel: string,
         materialId: number,
         notes?: string
-    ) {
+    ): Promise<MaterialCertificate> {
         return this._certificationManagerDriver.updateMaterialCertificate(
             certificateId,
             assessmentStandard,
@@ -212,7 +212,10 @@ export class CertificationService {
         );
     }
 
-    async updateDocument(certificateId: number, document: CertificateDocumentRequest) {
+    async updateDocument(
+        certificateId: number,
+        document: CertificateDocumentRequest
+    ): Promise<BaseCertificate> {
         const baseCertificate = await this.getBaseCertificateById(certificateId);
         let externalUrl = baseCertificate.document.externalUrl;
         let metadata = baseCertificate.document.metadata;
@@ -238,7 +241,10 @@ export class CertificationService {
         });
     }
 
-    async evaluateDocument(certificateId: number, evaluationStatus: EvaluationStatus) {
+    async evaluateDocument(
+        certificateId: number,
+        evaluationStatus: EvaluationStatus
+    ): Promise<BaseCertificate> {
         return this._certificationManagerDriver.evaluateDocument(certificateId, evaluationStatus);
     }
 
