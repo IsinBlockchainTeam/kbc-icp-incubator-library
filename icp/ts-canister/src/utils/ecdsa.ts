@@ -19,7 +19,7 @@ export async function signWithEcdsa(
                     derivation_path: derivationPath,
                     key_id: {
                         curve: { secp256k1: null },
-                        name: getDfxNetwork() === 'local' ? 'dfx_test_key' : 'key1',
+                        name: getDfxNetwork() === 'local' ? 'dfx_test_key' : 'key_1',
                     }
                 }
             ],
@@ -86,7 +86,7 @@ export async function ecdsaPublicKey(
                     derivation_path: derivationPath,
                     key_id: {
                         curve: { secp256k1: null },
-                        name: getDfxNetwork() === 'local' ? 'dfx_test_key' : 'key1',
+                        name: getDfxNetwork() === 'local' ? 'dfx_test_key' : 'key_1',
                     }
                 }
             ]
