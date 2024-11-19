@@ -3,5 +3,4 @@
 /smart-contracts
 .env
 ../.npmrc
-package-lock.json
 .npmrc
