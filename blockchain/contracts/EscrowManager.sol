@@ -30,6 +30,7 @@ contract EscrowManager is AccessControl {
     mapping(uint256 => Escrow) private _escrowsByShipmentId;
 
     constructor(address admin, address feeRecipient, uint256 baseFee, uint256 percentageFee) {
+        require(admin != address(0), "EscrowManager: admin is the zero address");
         require(feeRecipient != address(0), "EscrowManager: fee recipient is the zero address");
         require(percentageFee <= 100, "EscrowManager: percentage fee cannot be greater than 100");
 
