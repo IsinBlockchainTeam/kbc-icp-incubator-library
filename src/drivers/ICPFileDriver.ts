@@ -1,4 +1,4 @@
-import { ICPResourceSpec, ICPStorageDriver } from '@blockchain-lib/common';
+import { ICPResourceSpec, ICPStorageDriver } from '@isinblockchainteam/kbc-icp-incubator-common';
 import { URL_SEGMENT_INDEXES } from '../constants/ICP';
 
 export class ICPFileDriver {

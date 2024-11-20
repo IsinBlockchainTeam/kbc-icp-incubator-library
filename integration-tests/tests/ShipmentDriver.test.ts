@@ -1,12 +1,12 @@
 import { Wallet } from 'ethers';
-import { DocumentTypeEnum } from '@kbc-lib/azle-types';
-import { SiweIdentityProvider } from '../drivers/SiweIdentityProvider';
-import { ShipmentDriver } from '../drivers/ShipmentDriver';
-import { DocumentType } from '../entities/Document';
-import { EvaluationStatus } from '../entities/Evaluation';
-import { Phase } from '../entities/Shipment';
-import { AuthenticationDriver } from '../drivers/AuthenticationDriver';
-import { createRoleProof } from '../__testUtils__/proof';
+import { DocumentTypeEnum } from '../../icp/ts-canister/src/models/types';
+import { SiweIdentityProvider } from '@isinblockchainteam/kbc-icp-incubator-library/drivers/SiweIdentityProvider';
+import { ShipmentDriver } from '@isinblockchainteam/kbc-icp-incubator-library/drivers/ShipmentDriver';
+import { DocumentType } from '@isinblockchainteam/kbc-icp-incubator-library/entities/Document';
+import { EvaluationStatus } from '@isinblockchainteam/kbc-icp-incubator-library/entities/Evaluation';
+import { Phase } from '@isinblockchainteam/kbc-icp-incubator-library/entities/Shipment';
+import { AuthenticationDriver } from '@isinblockchainteam/kbc-icp-incubator-library/drivers/AuthenticationDriver';
+import { createRoleProof } from '../../src/__testUtils__/proof';
 
 jest.setTimeout(300000);
 

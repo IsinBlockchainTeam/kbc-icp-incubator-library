@@ -3,4 +3,3 @@
 /node_modules
 /typechain-types
 .env
-.npmrc

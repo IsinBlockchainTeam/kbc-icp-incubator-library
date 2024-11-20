@@ -1,13 +1,13 @@
-import { OrganizationRole, OrganizationVisibilityLevel } from '@kbc-lib/azle-types';
-import { OrganizationDriver, OrganizationParams } from '../drivers/OrganizationDriver';
-import { Organization } from '../entities/organization/Organization';
-import { OrderDriver } from '../drivers/OrderDriver';
-import { Order } from '../entities/Order';
-import { NarrowedOrganization } from '../entities/organization/NarrowedOrganization';
-import { ProductCategoryDriver } from '../drivers/ProductCategoryDriver';
-import { ICP, USERS } from '../__shared__/constants/constants';
-import { AuthHelper, Login } from '../__shared__/helpers/AuthHelper';
-import { BroadedOrganization } from '../entities/organization/BroadedOrganization';
+import { OrganizationRole, OrganizationVisibilityLevel } from '../../icp/ts-canister/src/models/types';
+import { OrganizationDriver, OrganizationParams } from '@isinblockchainteam/kbc-icp-incubator-library/drivers/OrganizationDriver';
+import { Organization } from '@isinblockchainteam/kbc-icp-incubator-library/entities/organization/Organization';
+import { OrderDriver } from '@isinblockchainteam/kbc-icp-incubator-library/drivers/OrderDriver';
+import { Order } from '@isinblockchainteam/kbc-icp-incubator-library/entities/Order';
+import { NarrowedOrganization } from '@isinblockchainteam/kbc-icp-incubator-library/entities/organization/NarrowedOrganization';
+import { ProductCategoryDriver } from '@isinblockchainteam/kbc-icp-incubator-library/drivers/ProductCategoryDriver';
+import { ICP, USERS } from '../../src/__shared__/constants/constants';
+import { AuthHelper, Login } from '../../src/__shared__/helpers/AuthHelper';
+import { BroadedOrganization } from '@isinblockchainteam/kbc-icp-incubator-library/entities/organization/BroadedOrganization';
 
 describe('OrganizationDriver', () => {
     let organizationDriverUser1: OrganizationDriver;

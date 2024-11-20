@@ -32,7 +32,6 @@ export default {
     // An array of regexp pattern strings used to skip coverage collection
     coveragePathIgnorePatterns: [
         'smart-contracts/*',
-        'integration-test/*',
         'types/*',
         '.config.ts',
         '.interface.ts',
@@ -63,7 +62,6 @@ export default {
     setupFiles: ['<rootDir>/ts-config.ts'],
     testPathIgnorePatterns: [
         '<rootDir>/smart-contracts',
-        '<rootDir>/integrationTests/',
         '<rootDir>/dist/',
         '<rootDir>/types/'
     ],

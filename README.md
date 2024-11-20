@@ -3,6 +3,8 @@
 This project defines the logic responsible for managing the on-chain operations of the KBC Coffee Trading Project.
 
 The module is composed of _Solidity_ smart contracts, _ICP_ canisters and a _NodeJs_ library that wraps the decentralized logic, offering the user a set of user-friendly methods.
+In addition, it also offers a suite of integration tests that can be run using the IDE.
+
 The packages make use of a common library that contains logic shared between similar projects. This library is hosted on a private _npm_ registry.
 
 ## Prerequisites
@@ -19,6 +21,7 @@ The packages make use of a common library that contains logic shared between sim
 4. Navigate to the `blockchain` and follow the instructions in the [`README.md`](blockchain/README.md) file
 5. Navigate to the `icp/ts-canister` and follow the instructions in the [`README.md`](icp/ts-canister/README.md) file
 6. Navigate to the `src` folder and follow the instructions in the [`README.md`](src/README.md) file
+7. Navigate to the `integration-tests` folder and follow the instructions in the [`README.md`](integration-tests/README.md) file
 
 ## Contact
 

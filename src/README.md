@@ -8,17 +8,20 @@ It uses an _Entity-Driver-Service_ model for creating a scalable and maintainabl
 
 1. Follow the instructions in the `README.md` file inside the `blockchain` folder
 2. Move inside the `src` with `cd src`
-3. Rename the `.npmrc.template` file to `.npmrc` and fill in the missing information
+3. Rename the `.npmrc.template` file to `.npmrc` and fill in the missing information. Check the [npmrc Configuration](#npmrc-configuration) section for more information
 4. Run `npm install` to install the required dependencies
-5. Rename the `.env.template` file to `.env` and fill in the missing information
-6. Run `npm run build` to build the package
+5. Make sure to copy the declarations from the `icp` project by running `npm run get-declarations`
+6. Rename the `.env.template` file to `.env` and fill in the missing information
+7. Run `npm run build` to build the package
 
 ### `npmrc` Configuration
 
-| Registry name              | Description                                                                                                                                                                                                     |
-|----------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `@kbc-lib:registry`        | Needed only for **contributing** to this repo. It's an access token with write access to this package's private npm registry                                                                                    |
-| `@blockchain-lib:registry` | Needed for **installing** dependencies. It's an access token with read access to the [common](https://gitlab-core.supsi.ch/dti-isin/giuliano.gremlich/blockchain/one_lib_to_rule_them_all) private npm registry |
+If you only need to install packages from the `@isinblockchainteam` scope, create an `.npmrc` file with this content:
+```
+@isinblockchainteam:registry=https://npm.pkg.github.com/
+```
+
+If you also need to push packages to the `@isinblockchainteam` scope, use the format described in the `.npmrc.template` file and fill in the missing information.
 
 ## Local development
 

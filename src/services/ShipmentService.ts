@@ -1,4 +1,4 @@
-import { FileHelpers, ICPResourceSpec } from '@blockchain-lib/common';
+import { FileHelpers, ICPResourceSpec } from '@isinblockchainteam/kbc-icp-incubator-common';
 import { ShipmentDriver } from '../drivers/ShipmentDriver';
 import { Shipment, Phase } from '../entities/Shipment';
 import { DocumentType, DocumentInfo } from '../entities/Document';

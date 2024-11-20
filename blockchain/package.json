@@ -1,5 +1,5 @@
 {
-    "name": "coffee-trading-management-lib-contracts",
+    "name": "@isinblockchainteam/kbc-icp-incubator-library",
     "version": "1.0.0",
     "scripts": {
         "clear": "npx hardhat clean &&  rm -rf ./cache ./artifacts ./typechain-types ../src/smart-contracts",
@@ -34,7 +34,7 @@
         "prettier": "3.3.1"
     },
     "dependencies": {
-        "@blockchain-lib/blockchain-common": "1.1.0",
+        "@isinblockchainteam/blockchain-common": "1.0.0",
         "@defi-wonderland/smock": "2.3.5",
         "@ethersproject/providers": "^5.7.2",
         "@openzeppelin/contracts": "4.8.2",
@@ -42,7 +42,6 @@
         "dotenv": "^16.0.3",
         "ethers": "5.7.2",
         "hardhat": "2.13.0",
-        "hardhat-ethernal": "3.1.0",
         "ts-mocha": "^10.0.0"
     }
 }

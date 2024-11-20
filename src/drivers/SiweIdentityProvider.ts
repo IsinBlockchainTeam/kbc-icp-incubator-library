@@ -1,4 +1,4 @@
-import { ICPSiweDriver, SIWE_IDENTITY_SERVICE } from '@blockchain-lib/common';
+import { ICPSiweDriver, SIWE_IDENTITY_SERVICE } from '@isinblockchainteam/kbc-icp-incubator-common';
 import type { ActorSubclass, Identity } from '@dfinity/agent';
 import { Wallet } from 'ethers';
 import { DelegationIdentity, Ed25519KeyIdentity } from '@dfinity/identity';

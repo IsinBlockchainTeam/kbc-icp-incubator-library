@@ -1,2 +1,2 @@
-@kbc-lib:registry=https://gitlab-core.supsi.ch/api/v4/projects/490/packages/npm/
-//gitlab-core.supsi.ch/api/v4/projects/490/packages/npm/:_authToken=<access_token>
+@isinblockchainteam:registry=https://npm.pkg.github.com/
+//npm.pkg.github.com/:_authToken=YOUR_ACCESS_TOKEN

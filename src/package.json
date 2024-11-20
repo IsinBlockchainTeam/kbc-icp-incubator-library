@@ -1,24 +1,16 @@
 {
-    "name": "@kbc-lib/coffee-trading-management-lib",
-    "version": "1.16.14",
+    "name": "@isinblockchainteam/kbc-icp-incubator-common",
+    "version": "1.0.0",
     "description": "",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "scripts": {
-        "postinstall": "cp -r ../icp/ts-canister/declarations/ ./declarations && node transform-declarations.js",
+        "get-declarations": "cp -r ../icp/ts-canister/declarations/ ./declarations && node transform-declarations.js",
         "build": "npx tsc",
         "test": "jest",
         "lint": "eslint *.ts --fix",
         "prettier": "npx prettier . --write",
         "populate-demo": "ts-node ./scripts/populate-demo.ts"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://gitlab-core.supsi.ch/dti-isin/giuliano.gremlich/blockchain/one-lib-to-rule-them-all/coffee-trading-management-lib.git"
-    },
-    "publishConfig": {
-        "registry": "https://gitlab-core.supsi.ch/api/v4/projects/490/packages/npm/",
-        "tag": "latest"
     },
     "keywords": [
         "Decentralized",
@@ -53,7 +45,7 @@
         "ttypescript": "1.5.15"
     },
     "dependencies": {
-        "@blockchain-lib/common": "2.0.5",
+        "@isinblockchainteam/kbc-icp-incubator-common": "1.0.0",
         "@dfinity/auth-client": "^1.4.0",
         "@ethersproject/providers": "^5.6.4",
         "@jest/test-sequencer": "^29.7.0",
