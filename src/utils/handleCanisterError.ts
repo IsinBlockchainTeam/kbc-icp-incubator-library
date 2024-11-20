@@ -1,4 +1,4 @@
-import { ErrorType } from '@kbc-lib/azle-types';
+import { ErrorType } from '@isinblockchainteam/azle-types';
 import {
     DocumentAlreadyApprovedError,
     DocumentNotFoundError,

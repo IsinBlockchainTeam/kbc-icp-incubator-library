@@ -1,4 +1,4 @@
-import { OrganizationVisibilityLevel } from '@kbc-lib/azle-types';
+import { OrganizationVisibilityLevel } from '@isinblockchainteam/azle-types';
 
 export abstract class Organization {
     private _ethAddress: string;

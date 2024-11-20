@@ -2,7 +2,7 @@ it('', () => {
     expect(true).toBe(true);
 });
 // import { createMock } from 'ts-auto-mock';
-// import { DocumentTypeEnum, EvaluationStatusEnum } from '@kbc-lib/azle-types';
+// import { DocumentTypeEnum, EvaluationStatusEnum } from '@isinblockchainteam/azle-types';
 // import { ShipmentService } from '../ShipmentService';
 // import { ShipmentDriver } from '../../../drivers/icp/ShipmentDriver';
 // import { Shipment } from '../../../entities/icp/Shipment';

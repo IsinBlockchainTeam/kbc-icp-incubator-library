@@ -1,4 +1,4 @@
-import { PhaseEnum as Phase, FundStatusEnum as FundStatus } from '@kbc-lib/azle-types';
+import { PhaseEnum as Phase, FundStatusEnum as FundStatus } from '@isinblockchainteam/azle-types';
 import { DocumentInfo, DocumentType } from './Document';
 import { EvaluationStatus } from './Evaluation';
 

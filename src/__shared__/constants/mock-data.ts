@@ -1,4 +1,4 @@
-import { OrganizationRole } from '@kbc-lib/azle-types';
+import { OrganizationRole } from '@isinblockchainteam/azle-types';
 import { OrderParams } from '../../drivers/OrderDriver';
 import { ETHEUREUM, USERS } from './constants';
 import { EthereumHelper } from '../helpers/EthereumHelper';

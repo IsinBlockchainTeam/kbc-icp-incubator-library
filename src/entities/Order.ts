@@ -1,4 +1,4 @@
-import { OrderStatusEnum, OrderStatusEnum as OrderStatus } from '@kbc-lib/azle-types';
+import { OrderStatusEnum, OrderStatusEnum as OrderStatus } from '@isinblockchainteam/azle-types';
 import { Shipment } from './Shipment';
 import { ProductCategory } from './ProductCategory';
 

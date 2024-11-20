@@ -4,7 +4,7 @@ import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
 import { EntityBuilder } from '../utils/EntityBuilder';
 import { Order } from '../entities/Order';
 import { HandleIcpError } from '../decorators/HandleIcpError';
-import { Order as ICPOrder } from '@kbc-lib/azle-types';
+import { Order as ICPOrder } from '@isinblockchainteam/azle-types';
 
 export type OrderParams = {
     supplier: string;

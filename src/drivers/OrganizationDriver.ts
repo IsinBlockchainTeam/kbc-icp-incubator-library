@@ -1,6 +1,6 @@
 import type { ActorSubclass, Identity } from '@dfinity/agent';
 import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
-import { OrganizationRole, OrganizationVisibilityLevel } from '@kbc-lib/azle-types';
+import { OrganizationRole, OrganizationVisibilityLevel } from '@isinblockchainteam/azle-types';
 import { createActor } from 'icp-declarations/entity_manager';
 import { Organization } from '../entities/organization/Organization';
 import { BroadedOrganizationCreator } from '../factories/organization/BroadedOrganizationCreator';

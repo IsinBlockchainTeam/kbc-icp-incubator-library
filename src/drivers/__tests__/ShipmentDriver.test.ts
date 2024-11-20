@@ -2,7 +2,7 @@ import { createActor } from 'icp-declarations/entity_manager';
 import {
     DocumentType as IDLDocumentType,
     EvaluationStatus as ICPEvaluationStatus
-} from '@kbc-lib/azle-types';
+} from '@isinblockchainteam/azle-types';
 import { Identity } from '@dfinity/agent';
 import { ShipmentDriver } from '../ShipmentDriver';
 import { FundStatus, Shipment, Phase } from '../../entities/Shipment';

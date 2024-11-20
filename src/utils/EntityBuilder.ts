@@ -12,7 +12,7 @@ import {
     EvaluationStatus as ICPEvaluationStatus,
     OrderStatusEnum as OrderStatus,
     Offer as ICPOffer
-} from '@kbc-lib/azle-types';
+} from '@isinblockchainteam/azle-types';
 import { Order } from '../entities/Order';
 import { Shipment, Phase, FundStatus } from '../entities/Shipment';
 import { DocumentInfo, DocumentType } from '../entities/Document';

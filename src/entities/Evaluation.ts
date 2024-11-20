@@ -1,1 +1,1 @@
-export { EvaluationStatusEnum as EvaluationStatus } from '@kbc-lib/azle-types';
+export { EvaluationStatusEnum as EvaluationStatus } from '@isinblockchainteam/azle-types';

@@ -1,4 +1,4 @@
-import { Document, DocumentTypeEnum as DocumentType } from '@kbc-lib/azle-types';
+import { Document, DocumentTypeEnum as DocumentType } from '@isinblockchainteam/azle-types';
 import { EvaluationStatus } from './Evaluation';
 
 export { Document, DocumentType };

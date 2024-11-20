@@ -1,4 +1,4 @@
-import { OrganizationRole, OrganizationRoleType } from '@kbc-lib/azle-types';
+import { OrganizationRole, OrganizationRoleType } from '@isinblockchainteam/azle-types';
 import { ICPEnumFactory } from '../ICPEnumFactory';
 
 export class OrganizationRoleFactory extends ICPEnumFactory<

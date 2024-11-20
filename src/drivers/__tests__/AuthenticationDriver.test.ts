@@ -3,7 +3,7 @@ import type { Identity } from '@dfinity/agent';
 import { RoleProof } from '../../types/RoleProof';
 import { AuthenticationDriver } from '../AuthenticationDriver';
 import { EntityBuilder } from '../../utils/EntityBuilder';
-import { RoleProof as ICPRoleProof } from '@kbc-lib/azle-types';
+import { RoleProof as ICPRoleProof } from '@isinblockchainteam/azle-types';
 
 jest.mock('icp-declarations/entity_manager');
 jest.mock('@dfinity/agent');
