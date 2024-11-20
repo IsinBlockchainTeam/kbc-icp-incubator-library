@@ -4,3 +4,5 @@
 .env
 ../.npmrc
 .npmrc
+/coverage
+/declarations

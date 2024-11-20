@@ -19,3 +19,7 @@ The packages make use of a common library that contains logic shared between sim
 4. Navigate to the `blockchain` and follow the instructions in the [`README.md`](blockchain/README.md) file
 5. Navigate to the `icp/ts-canister` and follow the instructions in the [`README.md`](icp/ts-canister/README.md) file
 6. Navigate to the `src` folder and follow the instructions in the [`README.md`](src/README.md) file
+
+## Contact
+
+For any questions, please contact the [project team](mailto:isin-blockchain@supsi.ch).

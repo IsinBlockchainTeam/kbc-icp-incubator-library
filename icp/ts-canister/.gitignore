@@ -2,3 +2,8 @@ dist
 coverage
 dfx.json
 .env.custom
+.env
+node_modules
+.azle
+.dfx
+declarations
