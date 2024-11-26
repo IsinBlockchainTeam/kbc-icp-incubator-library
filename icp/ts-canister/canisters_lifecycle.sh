@@ -57,7 +57,7 @@ deploy_canisters() {
         npm run generate
         cp .env ../../src/
         cd ../../src
-        npm run icp-build
+        npm run postinstall
     else
         echo "Error deploying canisters. Exiting script."
         exit 1

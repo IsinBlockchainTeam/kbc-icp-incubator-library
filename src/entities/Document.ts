@@ -3,6 +3,12 @@ import { EvaluationStatus } from './Evaluation';
 
 export { Document, DocumentType };
 
+export enum DocumentStatus {
+    NOT_EVALUATED,
+    APPROVED,
+    NOT_APPROVED
+}
+
 export type DocumentInfo = {
     id: number;
     documentType: DocumentType;

@@ -14,6 +14,14 @@ export type OrderLine = {
     unit: string;
     price: OrderLinePrice;
 };
+
+export type OrderLineRequest = {
+    productCategoryId: number;
+    quantity: number;
+    unit: string;
+    price: OrderLinePrice;
+};
+
 export class Order {
     private _id: number;
 

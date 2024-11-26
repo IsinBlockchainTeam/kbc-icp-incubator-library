@@ -20,7 +20,7 @@ export { CredentialStatus } from './types/CredentialStatus';
 export { CredentialRevocationDriver } from './drivers/CredentialRevocationDriver';
 export { CredentialRevocationService } from './services/CredentialRevocationService';
 
-export { Document, DocumentInfo } from './entities/Document';
+export { Document, DocumentInfo, DocumentStatus } from './entities/Document';
 
 export { Offer } from './entities/Offer';
 export { OfferDriver } from './drivers/OfferDriver';
@@ -56,7 +56,7 @@ export { URL_SEGMENT_INDEXES } from './constants/ICP';
 
 // ICP refactor
 // export {createActor} from 'icp-declarations/entity_manager'
-export { Order, OrderStatus } from './entities/Order';
+export { Order, OrderLineRequest, OrderLine, OrderLinePrice, OrderStatus } from './entities/Order';
 export { computeRoleProof, computeMembershipProof } from './drivers/proof';
 export { OrderDriver, OrderParams } from './drivers/OrderDriver';
 export { OrderService } from './services/OrderService';
