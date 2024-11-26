@@ -1,7 +1,8 @@
-import { StableBTreeMap } from 'azle';
-import { Material } from '../models/types';
-import ProductCategoryService from './ProductCategoryService';
-import { StableMemoryId } from '../utils/stableMemory';
+import {StableBTreeMap} from "azle";
+import {Material} from "../models/types";
+import ProductCategoryService from "./ProductCategoryService";
+import {StableMemoryId} from "../utils/stableMemory";
+import {MaterialNotFoundError, ProductCategoryNotFoundError} from "../models/errors";
 
 class MaterialService {
     private static _instance: MaterialService;
@@ -26,12 +27,12 @@ class MaterialService {
         if (result) {
             return result;
         }
-        throw new Error('Material not found');
+        throw new MaterialNotFoundError();
     }
 
     createMaterial(productCategoryId: bigint): Material {
         if (!this._productCategoryService.productCategoryExists(productCategoryId)) {
-            throw new Error('Product category not found');
+            throw new ProductCategoryNotFoundError();
         }
         const productCategory = this._productCategoryService.getProductCategory(productCategoryId);
         const id = BigInt(this._materials.keys().length);
@@ -43,7 +44,7 @@ class MaterialService {
     updateMaterial(id: bigint, productCategoryId: bigint): Material {
         const material = this.getMaterial(id);
         if (!this._productCategoryService.productCategoryExists(productCategoryId)) {
-            throw new Error('Product category not found');
+            throw new ProductCategoryNotFoundError();
         }
         material.productCategory = this._productCategoryService.getProductCategory(productCategoryId);
         this._materials.insert(id, material);

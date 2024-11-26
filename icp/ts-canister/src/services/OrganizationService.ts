@@ -2,13 +2,14 @@ import { StableBTreeMap } from "azle";
 import {
     Organization,
     OrganizationRoleType,
-} from "../models/types/Organization";
+} from "../models/types/src/Organization";
 import { StableMemoryId } from "../utils/stableMemory";
-import { OrganizationPresentation } from "../models/types/presentations/OrganizationPresentation";
+import { OrganizationPresentation } from "../models/types/src/presentations/OrganizationPresentation";
 import AuthenticationService from "./AuthenticationService";
 import { NarrowedOrganizationCreator } from "../factories/organization/NarrowedOrganizationCreator";
 import { BroadedOrganizationCreator } from "../factories/organization/BroadedOrganizationCreator";
 import OrderService from "./OrderService";
+import { OrganizationNotFoundError } from "../models/errors";
 
 class OrganizationService {
     private static _instance: OrganizationService;
@@ -67,7 +68,7 @@ class OrganizationService {
     getOrganization(ethAddress: string): OrganizationPresentation {
         const organization = this._organizations.get(ethAddress);
         if (!organization) {
-            throw new Error("Organization not found");
+            throw new OrganizationNotFoundError();
         }
 
         return this.getOrganizationPresentation(organization);
@@ -128,7 +129,7 @@ class OrganizationService {
     ): OrganizationPresentation {
         const organization = this._organizations.get(ethAddress);
         if (!organization) {
-            throw new Error("Organization not found");
+            throw new OrganizationNotFoundError();
         }
 
         const updatedOrganization: Organization = {
@@ -156,7 +157,7 @@ class OrganizationService {
     deleteOrganization(ethAddress: string): boolean {
         const organization = this._organizations.get(ethAddress);
         if (!organization) {
-            throw new Error("Organization not found");
+            throw new OrganizationNotFoundError();
         }
 
         this._organizations.remove(ethAddress);

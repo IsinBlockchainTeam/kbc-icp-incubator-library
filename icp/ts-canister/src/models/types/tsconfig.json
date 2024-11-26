@@ -1,0 +1,28 @@
+{
+    "compilerOptions": {
+        "declaration": true,
+        "emitDeclarationOnly": false,
+        "strict": true,
+        "module": "commonjs",
+        "target": "es6",
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "outDir": "./dist",
+    },
+    "include": [
+        "./index.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist",
+        "**/*.spec.ts",
+        "**/*.test.ts",
+        "**/*.dev.ts",
+        "**/__mocks__/**/*.ts",
+        "**/__tests__/**/*.ts",
+        "**/__dev__/*",
+        "ts-config.ts",
+        "jest.config.ts"
+    ]
+}

@@ -10,7 +10,6 @@ export const IDLMembershipProof = IDL.Record({
 export const IDLRoleProof = IDL.Record({
     signedProof: IDL.Text,
     signer: IDL.Text,
-    delegateAddress: IDL.Text,
     role: IDL.Text,
     delegateCredentialIdHash: IDL.Text,
     delegateCredentialExpiryDate: IDL.Nat,

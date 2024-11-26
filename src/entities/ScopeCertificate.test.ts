@@ -1,11 +1,12 @@
 import { ScopeCertificate } from './ScopeCertificate';
-import { CertificateType, DocumentEvaluationStatus, DocumentType } from './Certificate';
+import { CertificateType, CertificateDocumentType } from './Certificate';
+import { EvaluationStatus } from './Evaluation';
 
 describe('ScopeCertificate', () => {
     let scopeCertificate: ScopeCertificate;
-    const issueDate = new Date().getTime();
-    const validFrom = new Date().getTime();
-    const validUntil = new Date().getTime();
+    const issueDate = new Date();
+    const validFrom = new Date();
+    const validUntil = new Date();
     const processTypes = ['processType1', 'processType2'];
 
     beforeAll(() => {
@@ -13,9 +14,19 @@ describe('ScopeCertificate', () => {
             0,
             'issuer',
             'subject',
+            'uploadedBy',
             'assessmentStandard',
-            { id: 1, documentType: DocumentType.CERTIFICATE_OF_CONFORMITY },
-            DocumentEvaluationStatus.NOT_EVALUATED,
+            'assessmentAssuranceLevel',
+            {
+                referenceId: 'referenceId',
+                documentType: CertificateDocumentType.CERTIFICATE_OF_CONFORMITY,
+                externalUrl: 'externalUrl',
+                metadata: {
+                    filename: 'file.pdf',
+                    fileType: 'application/pdf'
+                }
+            },
+            EvaluationStatus.NOT_EVALUATED,
             CertificateType.SCOPE,
             issueDate,
             processTypes,
@@ -28,12 +39,19 @@ describe('ScopeCertificate', () => {
         expect(scopeCertificate.id).toEqual(0);
         expect(scopeCertificate.issuer).toEqual('issuer');
         expect(scopeCertificate.subject).toEqual('subject');
+        expect(scopeCertificate.uploadedBy).toEqual('uploadedBy');
         expect(scopeCertificate.assessmentStandard).toEqual('assessmentStandard');
+        expect(scopeCertificate.assessmentAssuranceLevel).toEqual('assessmentAssuranceLevel');
         expect(scopeCertificate.document).toEqual({
-            id: 1,
-            documentType: DocumentType.CERTIFICATE_OF_CONFORMITY
+            referenceId: 'referenceId',
+            documentType: CertificateDocumentType.CERTIFICATE_OF_CONFORMITY,
+            externalUrl: 'externalUrl',
+            metadata: {
+                filename: 'file.pdf',
+                fileType: 'application/pdf'
+            }
         });
-        expect(scopeCertificate.evaluationStatus).toEqual(DocumentEvaluationStatus.NOT_EVALUATED);
+        expect(scopeCertificate.evaluationStatus).toEqual(EvaluationStatus.NOT_EVALUATED);
         expect(scopeCertificate.certificateType).toEqual(CertificateType.SCOPE);
         expect(scopeCertificate.issueDate).toEqual(issueDate);
         expect(scopeCertificate.processTypes).toEqual(processTypes);
@@ -56,22 +74,45 @@ describe('ScopeCertificate', () => {
         expect(scopeCertificate.subject).toEqual('newSubject');
     });
 
+    it('should correctly set the uploadedBy', () => {
+        scopeCertificate.uploadedBy = 'newUploadedBy';
+        expect(scopeCertificate.uploadedBy).toEqual('newUploadedBy');
+    });
+
     it('should correctly set the assessmentStandard', () => {
         scopeCertificate.assessmentStandard = 'newAssessmentStandard';
         expect(scopeCertificate.assessmentStandard).toEqual('newAssessmentStandard');
     });
 
+    it('should correctly set the assessmentAssuranceLevel', () => {
+        scopeCertificate.assessmentAssuranceLevel = 'newAssessmentAssuranceLevel';
+        expect(scopeCertificate.assessmentAssuranceLevel).toEqual('newAssessmentAssuranceLevel');
+    });
+
     it('should correctly set the document', () => {
-        scopeCertificate.document = { id: 2, documentType: DocumentType.COUNTRY_OF_ORIGIN };
+        scopeCertificate.document = {
+            referenceId: 'newReferenceId',
+            documentType: CertificateDocumentType.COUNTRY_OF_ORIGIN,
+            externalUrl: 'newExternalUrl',
+            metadata: {
+                filename: 'file_updated.pdf',
+                fileType: 'application/pdf'
+            }
+        };
         expect(scopeCertificate.document).toEqual({
-            id: 2,
-            documentType: DocumentType.COUNTRY_OF_ORIGIN
+            referenceId: 'newReferenceId',
+            documentType: CertificateDocumentType.COUNTRY_OF_ORIGIN,
+            externalUrl: 'newExternalUrl',
+            metadata: {
+                filename: 'file_updated.pdf',
+                fileType: 'application/pdf'
+            }
         });
     });
 
     it('should correctly set the evaluationStatus', () => {
-        scopeCertificate.evaluationStatus = DocumentEvaluationStatus.APPROVED;
-        expect(scopeCertificate.evaluationStatus).toEqual(DocumentEvaluationStatus.APPROVED);
+        scopeCertificate.evaluationStatus = EvaluationStatus.APPROVED;
+        expect(scopeCertificate.evaluationStatus).toEqual(EvaluationStatus.APPROVED);
     });
 
     it('should correctly set the certificateType', () => {
@@ -85,19 +126,19 @@ describe('ScopeCertificate', () => {
     });
 
     it('should correctly set the validFrom', () => {
-        const newValidFrom = new Date().getTime();
+        const newValidFrom = new Date();
         scopeCertificate.validFrom = newValidFrom;
         expect(scopeCertificate.validFrom).toEqual(newValidFrom);
     });
 
     it('should correctly set the validUntil', () => {
-        const newValidUntil = new Date().getTime();
+        const newValidUntil = new Date();
         scopeCertificate.validUntil = newValidUntil;
         expect(scopeCertificate.validUntil).toEqual(newValidUntil);
     });
 
     it('should correctly set the issueDate', () => {
-        const newIssueDate = new Date().getTime();
+        const newIssueDate = new Date();
         scopeCertificate.issueDate = newIssueDate;
         expect(scopeCertificate.issueDate).toEqual(newIssueDate);
     });

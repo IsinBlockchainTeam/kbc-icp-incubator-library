@@ -1,15 +1,16 @@
 {
     "name": "@kbc-lib/coffee-trading-management-lib",
-    "version": "1.16.5",
+    "version": "1.16.14",
     "description": "",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "scripts": {
-        "icp-build": "cp -r ../icp/ts-canister/declarations/ ./declarations && node transform-declarations.js",
+        "postinstall": "cp -r ../icp/ts-canister/declarations/ ./declarations && node transform-declarations.js",
         "build": "npx tsc",
         "test": "jest",
         "lint": "eslint *.ts --fix",
-        "prettier": "npx prettier . --write"
+        "prettier": "npx prettier . --write",
+        "populate-demo": "ts-node ./scripts/populate-demo.ts"
     },
     "repository": {
         "type": "git",
@@ -56,7 +57,7 @@
         "@dfinity/auth-client": "^1.4.0",
         "@ethersproject/providers": "^5.6.4",
         "@jest/test-sequencer": "^29.7.0",
-        "@kbc-lib/azle-types": "file:../icp/ts-canister",
+        "@kbc-lib/azle-types": "file:../icp/ts-canister/src/models/types",
         "@supercharge/promise-pool": "^3.2.0",
         "buffer": "^6.0.3",
         "crypto-js": "^4.2.0",

@@ -1,21 +1,35 @@
 import { MaterialCertificate } from './MaterialCertificate';
-import { CertificateType, DocumentEvaluationStatus, DocumentType } from './Certificate';
+import { CertificateType, CertificateDocumentType } from './Certificate';
+import { Material } from './Material';
+import { ProductCategory } from './ProductCategory';
+import { EvaluationStatus } from './Evaluation';
 
 describe('MaterialCertificate', () => {
     let materialCertificate: MaterialCertificate;
-    const issueDate = new Date().getTime();
+    const issueDate = new Date();
+    const material: Material = new Material(1, new ProductCategory(1, 'productCategory1', 88, ''));
 
     beforeAll(() => {
         materialCertificate = new MaterialCertificate(
             0,
             'issuer',
             'subject',
+            'uploadedBy',
             'assessmentStandard',
-            { id: 1, documentType: DocumentType.PRODUCTION_REPORT },
-            DocumentEvaluationStatus.NOT_EVALUATED,
+            'assessmentAssuranceLevel',
+            {
+                referenceId: 'referenceId',
+                documentType: CertificateDocumentType.PRODUCTION_REPORT,
+                externalUrl: 'externalUrl',
+                metadata: {
+                    filename: 'file.pdf',
+                    fileType: 'application/pdf'
+                }
+            },
+            EvaluationStatus.NOT_EVALUATED,
             CertificateType.MATERIAL,
             issueDate,
-            3
+            material
         );
     });
 
@@ -23,17 +37,22 @@ describe('MaterialCertificate', () => {
         expect(materialCertificate.id).toEqual(0);
         expect(materialCertificate.issuer).toEqual('issuer');
         expect(materialCertificate.subject).toEqual('subject');
+        expect(materialCertificate.uploadedBy).toEqual('uploadedBy');
         expect(materialCertificate.assessmentStandard).toEqual('assessmentStandard');
+        expect(materialCertificate.assessmentAssuranceLevel).toEqual('assessmentAssuranceLevel');
         expect(materialCertificate.document).toEqual({
-            id: 1,
-            documentType: DocumentType.PRODUCTION_REPORT
+            referenceId: 'referenceId',
+            documentType: CertificateDocumentType.PRODUCTION_REPORT,
+            externalUrl: 'externalUrl',
+            metadata: {
+                filename: 'file.pdf',
+                fileType: 'application/pdf'
+            }
         });
-        expect(materialCertificate.evaluationStatus).toEqual(
-            DocumentEvaluationStatus.NOT_EVALUATED
-        );
+        expect(materialCertificate.evaluationStatus).toEqual(EvaluationStatus.NOT_EVALUATED);
         expect(materialCertificate.certificateType).toEqual(CertificateType.MATERIAL);
         expect(materialCertificate.issueDate).toEqual(issueDate);
-        expect(materialCertificate.materialId).toEqual(3);
+        expect(materialCertificate.material).toEqual(material);
     });
 
     it('should correctly set the id', () => {
@@ -51,25 +70,45 @@ describe('MaterialCertificate', () => {
         expect(materialCertificate.subject).toEqual('newSubject');
     });
 
+    it('should correctly set the uploadedBy', () => {
+        materialCertificate.uploadedBy = 'newUploadedBy';
+        expect(materialCertificate.uploadedBy).toEqual('newUploadedBy');
+    });
+
     it('should correctly set the assessmentStandard', () => {
         materialCertificate.assessmentStandard = 'newAssessmentStandard';
         expect(materialCertificate.assessmentStandard).toEqual('newAssessmentStandard');
     });
 
+    it('should correctly set the assessmentAssuranceLevel', () => {
+        materialCertificate.assessmentAssuranceLevel = 'newAssessmentAssuranceLevel';
+        expect(materialCertificate.assessmentAssuranceLevel).toEqual('newAssessmentAssuranceLevel');
+    });
+
     it('should correctly set the document', () => {
         materialCertificate.document = {
-            id: 2,
-            documentType: DocumentType.PRODUCTION_FACILITY_LICENSE
+            referenceId: 'newReferenceId',
+            documentType: CertificateDocumentType.PRODUCTION_FACILITY_LICENSE,
+            externalUrl: 'newExternalUrl',
+            metadata: {
+                filename: 'file_updated.pdf',
+                fileType: 'application/pdf'
+            }
         };
         expect(materialCertificate.document).toEqual({
-            id: 2,
-            documentType: DocumentType.PRODUCTION_FACILITY_LICENSE
+            referenceId: 'newReferenceId',
+            documentType: CertificateDocumentType.PRODUCTION_FACILITY_LICENSE,
+            externalUrl: 'newExternalUrl',
+            metadata: {
+                filename: 'file_updated.pdf',
+                fileType: 'application/pdf'
+            }
         });
     });
 
     it('should correctly set the evaluationStatus', () => {
-        materialCertificate.evaluationStatus = DocumentEvaluationStatus.APPROVED;
-        expect(materialCertificate.evaluationStatus).toEqual(DocumentEvaluationStatus.APPROVED);
+        materialCertificate.evaluationStatus = EvaluationStatus.APPROVED;
+        expect(materialCertificate.evaluationStatus).toEqual(EvaluationStatus.APPROVED);
     });
 
     it('should correctly set the certificateType', () => {
@@ -78,13 +117,14 @@ describe('MaterialCertificate', () => {
     });
 
     it('should correctly set the issueDate', () => {
-        const newDate = new Date().getTime();
+        const newDate = new Date();
         materialCertificate.issueDate = newDate;
         expect(materialCertificate.issueDate).toEqual(newDate);
     });
 
     it('should correctly set the materialId', () => {
-        materialCertificate.materialId = 4;
-        expect(materialCertificate.materialId).toEqual(4);
+        const newMaterial = new Material(2, new ProductCategory(2, 'productCategory2', 88, ''));
+        materialCertificate.material = newMaterial;
+        expect(materialCertificate.material).toEqual(newMaterial);
     });
 });

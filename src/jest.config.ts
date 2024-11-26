@@ -63,7 +63,7 @@ export default {
     setupFiles: ['<rootDir>/ts-config.ts'],
     testPathIgnorePatterns: [
         '<rootDir>/smart-contracts',
-        '<rootDir>/integration-test/',
+        '<rootDir>/integrationTests/',
         '<rootDir>/dist/',
         '<rootDir>/types/'
     ],
@@ -185,10 +185,6 @@ export default {
     //   "**/?(*.)+(spec|test).[tj]s?(x)"
     // ],
     testMatch: ['<rootDir>/**/?(*.)+(spec|test).[t]s?(x)']
-    // An array of regexp pattern strings that are matched against all test paths, matched tests are skipped
-    // testPathIgnorePatterns: [
-    //   "/node_modules/"
-    // ],
 
     // The regexp pattern or array of patterns that Jest uses to detect test files
     // testRegex: [],

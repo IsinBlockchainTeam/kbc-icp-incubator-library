@@ -1,22 +1,28 @@
-import {
-    BaseCertificate,
-    CertificateType,
-    DocumentEvaluationStatus,
-    DocumentType
-} from './Certificate';
+import { BaseCertificate, CertificateType, CertificateDocumentType } from './Certificate';
+import { EvaluationStatus } from './Evaluation';
 
 describe('Certificate', () => {
     let certificate: BaseCertificate;
-    const issueDate = new Date().getTime();
+    const issueDate = new Date();
 
     beforeAll(() => {
         certificate = new BaseCertificate(
             0,
             'issuer',
             'subject',
+            'uploadedBy',
             'assessmentStandard',
-            { id: 1, documentType: DocumentType.CERTIFICATE_OF_CONFORMITY },
-            DocumentEvaluationStatus.NOT_EVALUATED,
+            'assessmentAssuranceLevel',
+            {
+                referenceId: 'referenceId',
+                documentType: CertificateDocumentType.CERTIFICATE_OF_CONFORMITY,
+                externalUrl: 'externalUrl',
+                metadata: {
+                    filename: 'file.pdf',
+                    fileType: 'application/pdf'
+                }
+            },
+            EvaluationStatus.NOT_EVALUATED,
             CertificateType.COMPANY,
             issueDate
         );
@@ -28,10 +34,15 @@ describe('Certificate', () => {
         expect(certificate.subject).toEqual('subject');
         expect(certificate.assessmentStandard).toEqual('assessmentStandard');
         expect(certificate.document).toEqual({
-            id: 1,
-            documentType: DocumentType.CERTIFICATE_OF_CONFORMITY
+            referenceId: 'referenceId',
+            documentType: CertificateDocumentType.CERTIFICATE_OF_CONFORMITY,
+            externalUrl: 'externalUrl',
+            metadata: {
+                filename: 'file.pdf',
+                fileType: 'application/pdf'
+            }
         });
-        expect(certificate.evaluationStatus).toEqual(DocumentEvaluationStatus.NOT_EVALUATED);
+        expect(certificate.evaluationStatus).toEqual(EvaluationStatus.NOT_EVALUATED);
         expect(certificate.certificateType).toEqual(CertificateType.COMPANY);
         expect(certificate.issueDate).toEqual(issueDate);
     });
@@ -51,22 +62,45 @@ describe('Certificate', () => {
         expect(certificate.subject).toEqual('newSubject');
     });
 
+    it('should correctly set the uploadedBy', () => {
+        certificate.uploadedBy = 'newUploadedBy';
+        expect(certificate.uploadedBy).toEqual('newUploadedBy');
+    });
+
     it('should correctly set the assessmentStandard', () => {
         certificate.assessmentStandard = 'newAssessmentStandard';
         expect(certificate.assessmentStandard).toEqual('newAssessmentStandard');
     });
 
+    it('should correctly set the assessmentAssuranceLevel', () => {
+        certificate.assessmentAssuranceLevel = 'newAssessmentAssuranceLevel';
+        expect(certificate.assessmentAssuranceLevel).toEqual('newAssessmentAssuranceLevel');
+    });
+
     it('should correctly set the document', () => {
-        certificate.document = { id: 2, documentType: DocumentType.COUNTRY_OF_ORIGIN };
+        certificate.document = {
+            referenceId: 'newReferenceId',
+            documentType: CertificateDocumentType.COUNTRY_OF_ORIGIN,
+            externalUrl: 'newExternalUrl',
+            metadata: {
+                filename: 'file_updated.pdf',
+                fileType: 'application/pdf'
+            }
+        };
         expect(certificate.document).toEqual({
-            id: 2,
-            documentType: DocumentType.COUNTRY_OF_ORIGIN
+            referenceId: 'newReferenceId',
+            documentType: CertificateDocumentType.COUNTRY_OF_ORIGIN,
+            externalUrl: 'newExternalUrl',
+            metadata: {
+                filename: 'file_updated.pdf',
+                fileType: 'application/pdf'
+            }
         });
     });
 
     it('should correctly set the evaluationStatus', () => {
-        certificate.evaluationStatus = DocumentEvaluationStatus.APPROVED;
-        expect(certificate.evaluationStatus).toEqual(DocumentEvaluationStatus.APPROVED);
+        certificate.evaluationStatus = EvaluationStatus.APPROVED;
+        expect(certificate.evaluationStatus).toEqual(EvaluationStatus.APPROVED);
     });
 
     it('should correctly set the certificateType', () => {
@@ -75,7 +109,7 @@ describe('Certificate', () => {
     });
 
     it('should correctly set the issueDate', () => {
-        const newIssueDate = new Date().getTime();
+        const newIssueDate = new Date();
         certificate.issueDate = newIssueDate;
         expect(certificate.issueDate).toEqual(newIssueDate);
     });

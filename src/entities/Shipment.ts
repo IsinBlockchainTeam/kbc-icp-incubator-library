@@ -1,106 +1,17 @@
-export enum DocumentType {
-    SERVICE_GUIDE,
-    SENSORY_EVALUATION_ANALYSIS_REPORT,
-    SUBJECT_TO_APPROVAL_OF_SAMPLE,
-    PRE_SHIPMENT_SAMPLE,
-    SHIPPING_INSTRUCTIONS,
-    SHIPPING_NOTE,
-    BOOKING_CONFIRMATION,
-    CARGO_COLLECTION_ORDER,
-    EXPORT_INVOICE,
-    TRANSPORT_CONTRACT,
-    TO_BE_FREED_SINGLE_EXPORT_DECLARATION,
-    EXPORT_CONFIRMATION,
-    FREED_SINGLE_EXPORT_DECLARATION,
-    CONTAINER_PROOF_OF_DELIVERY,
-    PHYTOSANITARY_CERTIFICATE,
-    BILL_OF_LADING,
-    ORIGIN_CERTIFICATE_ICO,
-    WEIGHT_CERTIFICATE,
-    GENERIC
-}
-export enum DocumentEvaluationStatus {
-    NOT_EVALUATED,
-    APPROVED,
-    NOT_APPROVED
-}
-export class DocumentInfo {
+import { PhaseEnum as Phase, FundStatusEnum as FundStatus } from '@kbc-lib/azle-types';
+import { DocumentInfo, DocumentType } from './Document';
+import { EvaluationStatus } from './Evaluation';
+
+export { Phase, FundStatus };
+
+export class Shipment {
     private _id: number;
 
-    private _type: DocumentType;
+    private _supplier: string;
 
-    private _status: DocumentEvaluationStatus;
+    private _commissioner: string;
 
-    private _uploader: string;
-
-    constructor(id: number, type: DocumentType, status: DocumentEvaluationStatus, uploader: string) {
-        this._id = id;
-        this._type = type;
-        this._status = status;
-        this._uploader = uploader;
-    }
-
-    get id(): number {
-        return this._id;
-    }
-
-    set id(value: number) {
-        this._id = value;
-    }
-
-    get type(): DocumentType {
-        return this._type;
-    }
-
-    set type(value: DocumentType) {
-        this._type = value;
-    }
-
-    get status(): DocumentEvaluationStatus {
-        return this._status;
-    }
-
-    set status(value: DocumentEvaluationStatus) {
-        this._status = value;
-    }
-
-    get uploader(): string {
-        return this._uploader;
-    }
-
-    set uploader(value: string) {
-        this._uploader = value;
-    }
-}
-export enum Phase {
-    PHASE_1,
-    PHASE_2,
-    PHASE_3,
-    PHASE_4,
-    PHASE_5,
-    CONFIRMED,
-    ARBITRATION
-}
-export enum EvaluationStatus {
-    NOT_EVALUATED,
-    APPROVED,
-    NOT_APPROVED
-}
-export enum FundsStatus {
-    NOT_LOCKED,
-    LOCKED,
-    RELEASED
-}
-export class Shipment {
-    private _supplierAddress: string;
-
-    private _commissionerAddress: string;
-
-    private _externalUrl: string;
-
-    private _escrowAddress: string;
-
-    private _documentManagerAddress: string;
+    private _escrowAddress: string | undefined;
 
     private _sampleEvaluationStatus: EvaluationStatus;
 
@@ -108,9 +19,11 @@ export class Shipment {
 
     private _qualityEvaluationStatus: EvaluationStatus;
 
-    private _fundsStatus: FundsStatus;
+    private _fundsStatus: FundStatus;
 
     private _detailsSet: boolean;
+
+    private _sampleApprovalRequired: boolean;
 
     private _shipmentNumber: number;
 
@@ -132,18 +45,41 @@ export class Shipment {
 
     private _grossWeight: number;
 
+    private _documents: Map<DocumentType, DocumentInfo[]>;
 
-    constructor(supplierAddress: string, commissionerAddress: string, externalUrl: string, escrowAddress: string, documentManagerAddress: string, sampleEvaluationStatus: EvaluationStatus, detailsEvaluationStatus: EvaluationStatus, qualityEvaluationStatus: EvaluationStatus, fundsStatus: FundsStatus, detailsSet: boolean, shipmentNumber: number, expirationDate: Date, fixingDate: Date, targetExchange: string, differentialApplied: number, price: number, quantity: number, containersNumber: number, netWeight: number, grossWeight: number) {
-        this._supplierAddress = supplierAddress;
-        this._commissionerAddress = commissionerAddress;
-        this._externalUrl = externalUrl;
+    constructor(
+        id: number,
+        supplier: string,
+        commissioner: string,
+        escrowAddress: string | undefined,
+        sampleEvaluationStatus: EvaluationStatus,
+        detailsEvaluationStatus: EvaluationStatus,
+        qualityEvaluationStatus: EvaluationStatus,
+        fundsStatus: FundStatus,
+        detailsSet: boolean,
+        sampleApprovalRequired: boolean,
+        shipmentNumber: number,
+        expirationDate: Date,
+        fixingDate: Date,
+        targetExchange: string,
+        differentialApplied: number,
+        price: number,
+        quantity: number,
+        containersNumber: number,
+        netWeight: number,
+        grossWeight: number,
+        documents: Map<DocumentType, DocumentInfo[]>
+    ) {
+        this._id = id;
+        this._supplier = supplier;
+        this._commissioner = commissioner;
         this._escrowAddress = escrowAddress;
-        this._documentManagerAddress = documentManagerAddress;
         this._sampleEvaluationStatus = sampleEvaluationStatus;
         this._detailsEvaluationStatus = detailsEvaluationStatus;
         this._qualityEvaluationStatus = qualityEvaluationStatus;
         this._fundsStatus = fundsStatus;
         this._detailsSet = detailsSet;
+        this._sampleApprovalRequired = sampleApprovalRequired;
         this._shipmentNumber = shipmentNumber;
         this._expirationDate = expirationDate;
         this._fixingDate = fixingDate;
@@ -154,47 +90,39 @@ export class Shipment {
         this._containersNumber = containersNumber;
         this._netWeight = netWeight;
         this._grossWeight = grossWeight;
+        this._documents = documents;
     }
 
-
-    get supplierAddress(): string {
-        return this._supplierAddress;
+    get id(): number {
+        return this._id;
     }
 
-    set supplierAddress(value: string) {
-        this._supplierAddress = value;
+    set id(value: number) {
+        this._id = value;
     }
 
-    get commissionerAddress(): string {
-        return this._commissionerAddress;
+    get supplier(): string {
+        return this._supplier;
     }
 
-    set commissionerAddress(value: string) {
-        this._commissionerAddress = value;
+    set supplier(value: string) {
+        this._supplier = value;
     }
 
-    get externalUrl(): string {
-        return this._externalUrl;
+    get commissioner(): string {
+        return this._commissioner;
     }
 
-    set externalUrl(value: string) {
-        this._externalUrl = value;
+    set commissioner(value: string) {
+        this._commissioner = value;
     }
 
-    get escrowAddress(): string {
+    get escrowAddress(): string | undefined {
         return this._escrowAddress;
     }
 
-    set escrowAddress(value: string) {
+    set escrowAddress(value: string | undefined) {
         this._escrowAddress = value;
-    }
-
-    get documentManagerAddress(): string {
-        return this._documentManagerAddress;
-    }
-
-    set documentManagerAddress(value: string) {
-        this._documentManagerAddress = value;
     }
 
     get sampleEvaluationStatus(): EvaluationStatus {
@@ -221,11 +149,11 @@ export class Shipment {
         this._qualityEvaluationStatus = value;
     }
 
-    get fundsStatus(): FundsStatus {
+    get fundsStatus(): FundStatus {
         return this._fundsStatus;
     }
 
-    set fundsStatus(value: FundsStatus) {
+    set fundsStatus(value: FundStatus) {
         this._fundsStatus = value;
     }
 
@@ -235,6 +163,14 @@ export class Shipment {
 
     set detailsSet(value: boolean) {
         this._detailsSet = value;
+    }
+
+    get sampleApprovalRequired(): boolean {
+        return this._sampleApprovalRequired;
+    }
+
+    set sampleApprovalRequired(value: boolean) {
+        this._sampleApprovalRequired = value;
     }
 
     get shipmentNumber(): number {
@@ -317,5 +253,11 @@ export class Shipment {
         this._grossWeight = value;
     }
 
+    get documents(): Map<DocumentType, DocumentInfo[]> {
+        return this._documents;
+    }
 
+    set documents(value: Map<DocumentType, DocumentInfo[]>) {
+        this._documents = value;
+    }
 }

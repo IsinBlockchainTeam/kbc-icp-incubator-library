@@ -1,80 +1,54 @@
-import { BigNumber, Event, Signer } from 'ethers';
-import { ProductCategoryManager, ProductCategoryManager__factory } from '../smart-contracts';
-import { ProductCategory } from '../entities/ProductCategory';
+import type { ActorSubclass, Identity } from '@dfinity/agent';
+import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
+import { createActor } from 'icp-declarations/entity_manager';
 import { EntityBuilder } from '../utils/EntityBuilder';
-import { RoleProof } from '../types/RoleProof';
+import { ProductCategory } from '../entities/ProductCategory';
+import { HandleIcpError } from '../decorators/HandleIcpError';
 
 export class ProductCategoryDriver {
-    private _contract: ProductCategoryManager;
+    private _actor: ActorSubclass<_SERVICE>;
 
-    constructor(signer: Signer, productCategoryManagerAddress: string) {
-        this._contract = ProductCategoryManager__factory.connect(
-            productCategoryManagerAddress,
-            signer.provider!
-        ).connect(signer);
+    public constructor(icpIdentity: Identity, canisterId: string, host?: string) {
+        this._actor = createActor(canisterId, {
+            agentOptions: {
+                identity: icpIdentity,
+                ...(host && { host })
+            }
+        });
     }
 
-    async getProductCategoryCounter(roleProof: RoleProof): Promise<number> {
-        const counter: BigNumber = await this._contract.getProductCategoriesCounter(roleProof);
-        return counter.toNumber();
+    @HandleIcpError()
+    async getProductCategories(): Promise<ProductCategory[]> {
+        const resp = await this._actor.getProductCategories();
+        return resp.map((rawProductCategory) =>
+            EntityBuilder.buildProductCategory(rawProductCategory)
+        );
     }
 
-    async getProductCategoryExists(roleProof: RoleProof, id: number): Promise<boolean> {
-        return this._contract.getProductCategoryExists(roleProof, id);
+    @HandleIcpError()
+    async getProductCategory(id: number): Promise<ProductCategory> {
+        const resp = await this._actor.getProductCategory(BigInt(id));
+        return EntityBuilder.buildProductCategory(resp);
     }
 
-    async getProductCategory(roleProof: RoleProof, id: number): Promise<ProductCategory> {
-        const result = await this._contract.getProductCategory(roleProof, id);
-        return EntityBuilder.buildProductCategory(result);
+    @HandleIcpError()
+    async createProductCategory(name: string, quality: number, description: string) {
+        const resp = await this._actor.createProductCategory(name, BigInt(quality), description);
+        return EntityBuilder.buildProductCategory(resp);
     }
 
-    async getProductCategories(roleProof: RoleProof): Promise<ProductCategory[]> {
-        const counter: number = await this.getProductCategoryCounter(roleProof);
-
-        const promises = [];
-        for (let i = 1; i <= counter; i++) {
-            promises.push(this.getProductCategory(roleProof, i));
-        }
-
-        return Promise.all(promises);
-    }
-
-    async registerProductCategory(
-        roleProof: RoleProof,
-        name: string,
-        quality: number,
-        description: string
-    ): Promise<number> {
-        const tx: any = await this._contract.registerProductCategory(
-            roleProof,
+    @HandleIcpError()
+    async updateProductCategory(id: number, name: string, quality: number, description: string) {
+        const resp = await this._actor.updateProductCategory(
+            BigInt(id),
             name,
-            quality,
+            BigInt(quality),
             description
         );
-        const { events } = await tx.wait();
-
-        if (!events) {
-            throw new Error('Error during product category registration, no events found');
-        }
-        return events
-            .find((event: Event) => event.event === 'ProductCategoryRegistered')
-            .args.id.toNumber();
+        return EntityBuilder.buildProductCategory(resp);
     }
 
-    async updateProductCategory(
-        roleProof: RoleProof,
-        id: number,
-        name: string,
-        quality: number,
-        description: string
-    ): Promise<void> {
-        const tx: any = await this._contract.updateProductCategory(
-            roleProof,
-            id,
-            name,
-            quality,
-            description
-        );
-        await tx.wait();
+    async deleteProductCategory(id: number): Promise<boolean> {
+        return this._actor.deleteProductCategory(BigInt(id));
     }
 }

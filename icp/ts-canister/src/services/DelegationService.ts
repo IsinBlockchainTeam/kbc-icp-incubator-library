@@ -30,12 +30,13 @@ class DelegationService {
     }
 
     async hasValidRoleProof(proof: RoleProof, caller: Principal): Promise<boolean> {
-        const unixTime = Number(ic.time().toString().substring(0, 13));
-        const { signedProof, signer: expectedSigner, ...data } = proof;
+        const unixTime = Math.floor(Number(ic.time().toString().substring(0, 13)) / 1000);
+        const { signedProof, signer: expectedSigner, ...data} = proof;
 
         const delegateCredentialExpiryDate = Number(data.delegateCredentialExpiryDate);
+        const delegateAddress = await this.getAddress(caller);
         const roleProofStringifiedData = JSON.stringify({
-            delegateAddress: data.delegateAddress,
+            delegateAddress,
             role: data.role,
             delegateCredentialIdHash: data.delegateCredentialIdHash,
             delegateCredentialExpiryDate
@@ -44,9 +45,7 @@ class DelegationService {
         // If signedProof is different from the reconstructed proof, the two signers are different
         if (roleProofSigner !== expectedSigner) return false;
         // If the delegate credential has expired, the delegate is not valid
-        if (data.delegateCredentialExpiryDate < unixTime) return false;
-        // If the caller is not the delegate address, the proof is invalid
-        if ((await this.getAddress(caller)) !== data.delegateAddress) return false;
+        if(data.delegateCredentialExpiryDate < unixTime) return false;
         // If the delegate credential has been revoked, the delegate is not valid
         if (await this.isRevoked(roleProofSigner, data.delegateCredentialIdHash)) return false;
 

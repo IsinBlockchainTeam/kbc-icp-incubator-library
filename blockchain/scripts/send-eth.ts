@@ -1,10 +1,8 @@
 import { ethers } from 'hardhat';
-import { Contract } from 'ethers';
+import { getRequiredEnvs } from '../utils/env';
 
-async function getAttachedContract(contractName: string, contractAddress: string): Promise<Contract> {
-    const ContractFactory = await ethers.getContractFactory(contractName);
-    return ContractFactory.attach(contractAddress);
-}
+const env = getRequiredEnvs('ENTITY_MANAGER_CANISTER_ADDRESS', 'SUPPLIER_ADDRESS', 'COMMISSIONER_ADDRESS');
+
 const main = async (address: string) => {
     const [_, owner] = await ethers.getSigners();
     const tx = await owner.sendTransaction({
@@ -13,13 +11,8 @@ const main = async (address: string) => {
     });
     const resp = await tx.wait();
     console.log(resp);
-
-    // const contract = await getAttachedContract('EscrowManager', '0xb880b74bc2f24ad7c7fB9bc739039c51Dd6077f0');
-    // const tx = await contract.addAdminTemp(owner.address);
-    // const resp = await tx.wait();
-    // console.log(resp);
 };
 
-main(process.env.ENTITY_MANAGER_CANISTER_ADDRESS || '').catch(console.error); // Canister address
-main('0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123').catch(console.error); // Supplier address
-main('0x2F2e2b138006ED0CcA198e7090dce5BACF02Bf26').catch(console.error); // Commissioner address
+main(env.ENTITY_MANAGER_CANISTER_ADDRESS).catch(console.error);
+main(env.SUPPLIER_ADDRESS).catch(console.error);
+main(env.COMMISSIONER_ADDRESS).catch(console.error);

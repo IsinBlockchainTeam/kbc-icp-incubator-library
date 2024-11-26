@@ -1,6 +1,6 @@
 import { OrganizationPresentationCreator } from "./OrganizationPresentationCreator";
-import { Organization } from "../../models/types/Organization";
-import { OrganizationPresentation } from "../../models/types/presentations/OrganizationPresentation";
+import { Organization } from "../../models/types/src/Organization";
+import { OrganizationPresentation } from "../../models/types/src/presentations/OrganizationPresentation";
 
 export class BroadedOrganizationCreator extends OrganizationPresentationCreator {
     fromOrganization(organization: Organization): OrganizationPresentation {

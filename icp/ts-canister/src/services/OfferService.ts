@@ -3,6 +3,7 @@ import {Offer} from "../models/types";
 import {StableMemoryId} from "../utils/stableMemory";
 import ProductCategoryService from "./ProductCategoryService";
 import AuthenticationService from "./AuthenticationService";
+import {ProductCategoryNotFoundError, OfferNotFoundError} from "../models/errors";
 
 class OfferService {
     private static _instance: OfferService;
@@ -27,12 +28,12 @@ class OfferService {
         if(result) {
             return result;
         }
-        throw new Error('Offer not found');
+        throw new OfferNotFoundError();
     }
 
     createOffer(productCategoryId: bigint): Offer {
         if (!this._productCategoryService.productCategoryExists(productCategoryId)) {
-            throw new Error('Product category not found');
+            throw new ProductCategoryNotFoundError();
         }
         const productCategory = this._productCategoryService.getProductCategory(productCategoryId);
         const id = BigInt(this._offers.keys().length);

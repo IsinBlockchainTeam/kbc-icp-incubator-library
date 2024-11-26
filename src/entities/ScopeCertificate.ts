@@ -1,39 +1,41 @@
-import {
-    BaseCertificate,
-    CertificateDocumentInfo,
-    CertificateType,
-    DocumentEvaluationStatus
-} from './Certificate';
+import { BaseCertificate, CertificateDocumentInfo, CertificateType } from './Certificate';
+import { EvaluationStatus } from './Evaluation';
 
 export class ScopeCertificate extends BaseCertificate {
     private _processTypes: string[];
 
-    private _validFrom: number;
+    private _validFrom: Date;
 
-    private _validUntil: number;
+    private _validUntil: Date;
 
     constructor(
         id: number,
         issuer: string,
         subject: string,
+        uploadedBy: string,
         assessmentStandard: string,
+        assessmentAssuranceLevel: string,
         document: CertificateDocumentInfo,
-        evaluationStatus: DocumentEvaluationStatus,
+        evaluationStatus: EvaluationStatus,
         certificateType: CertificateType,
-        issueDate: number,
+        issueDate: Date,
         processTypes: string[],
-        validFrom: number,
-        validUntil: number
+        validFrom: Date,
+        validUntil: Date,
+        notes?: string
     ) {
         super(
             id,
             issuer,
             subject,
+            uploadedBy,
             assessmentStandard,
+            assessmentAssuranceLevel,
             document,
             evaluationStatus,
             certificateType,
-            issueDate
+            issueDate,
+            notes
         );
         this._processTypes = processTypes;
         this._validFrom = validFrom;
@@ -48,19 +50,19 @@ export class ScopeCertificate extends BaseCertificate {
         this._processTypes = value;
     }
 
-    get validFrom(): number {
+    get validFrom(): Date {
         return this._validFrom;
     }
 
-    set validFrom(value: number) {
+    set validFrom(value: Date) {
         this._validFrom = value;
     }
 
-    get validUntil(): number {
+    get validUntil(): Date {
         return this._validUntil;
     }
 
-    set validUntil(value: number) {
+    set validUntil(value: Date) {
         this._validUntil = value;
     }
 }

@@ -10,6 +10,7 @@
         "inlineSourceMap": true,
         "esModuleInterop": true,
         "declaration": true, // This tells TypeScript to emit an .d.ts definitions file along with your compiled JavaScript,
+        "experimentalDecorators": true,
         "plugins": [
             {
                 "transform": "ts-auto-mock/transformer",

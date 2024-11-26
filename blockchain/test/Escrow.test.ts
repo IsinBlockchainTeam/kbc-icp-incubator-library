@@ -4,7 +4,7 @@ import { ethers } from 'hardhat';
 import { Contract, ContractFactory } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
-import { ContractName } from '../utils/constants';
+import { ContractName } from '../constants/contracts';
 
 describe('Escrow.sol', () => {
     let escrowContract: Contract;
@@ -222,9 +222,7 @@ describe('Escrow.sol', () => {
         });
         it('should not be able to lock more tokens then the amount deposited', async () => {
             await deposit(admin, depositAmount);
-            await expect(lockFunds(admin, depositAmount + 10)).to.be.revertedWith(
-                'Escrow: can only lock up to the balance'
-            );
+            await expect(lockFunds(admin, depositAmount + 10)).to.be.revertedWith('Escrow: can only lock up to the balance');
         });
     });
     describe('Release funds', () => {
@@ -308,7 +306,9 @@ describe('Escrow.sol', () => {
         it('should fail updating fee recipient address if in wrong state', async () => {
             await deposit(admin, depositAmount);
             await lockFunds(admin, depositAmount);
-            await expect(escrowContract.connect(admin).updateFeeRecipient(payer1.address)).to.be.revertedWith('Escrow: can only edit while no funds are locked');
+            await expect(escrowContract.connect(admin).updateFeeRecipient(payer1.address)).to.be.revertedWith(
+                'Escrow: can only edit while no funds are locked'
+            );
         });
         it('should fail updating fee recipient address if caller is not admin', async () => {
             await expect(escrowContract.connect(payer1).updateFeeRecipient(payer1.address)).to.be.revertedWith('Escrow: caller is not the admin');
