@@ -8,20 +8,20 @@ import {
     ScopeCertificate as ICPScopeCertificate,
     MaterialCertificate as ICPMaterialCertificate
 } from '@kbc-lib/azle-types';
-import { EntityBuilder } from './EntityBuilder';
-import { ProductCategory } from '../../entities/ProductCategory';
-import { Material } from '../../entities/Material';
-import { Offer } from '../../entities/Offer';
-import { Order, OrderStatus } from '../../entities/icp/Order';
+import { EntityBuilder } from '../EntityBuilder';
+import { ProductCategory } from '../../../entities/ProductCategory';
+import { Material } from '../../../entities/Material';
+import { Offer } from '../../../entities/Offer';
+import { Order, OrderStatus } from '../../../entities/icp/Order';
 import {
     BaseCertificate,
     CertificateDocumentType,
     CertificateType
-} from '../../entities/icp/Certificate';
-import { EvaluationStatus } from '../../entities/icp/Evaluation';
-import { CompanyCertificate } from '../../entities/icp/CompanyCertificate';
-import { ScopeCertificate } from '../../entities/icp/ScopeCertificate';
-import { MaterialCertificate } from '../../entities/icp/MaterialCertificate';
+} from '../../../entities/icp/Certificate';
+import { EvaluationStatus } from '../../../entities/icp/Evaluation';
+import { CompanyCertificate } from '../../../entities/icp/CompanyCertificate';
+import { ScopeCertificate } from '../../../entities/icp/ScopeCertificate';
+import { MaterialCertificate } from '../../../entities/icp/MaterialCertificate';
 
 describe('EntityBuilder', () => {
     describe('buildProductCategory', () => {
