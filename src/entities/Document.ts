@@ -1,7 +1,7 @@
 import { Document, DocumentTypeEnum as DocumentType } from '@kbc-lib/azle-types';
 import { EvaluationStatus } from './Evaluation';
 
-export { Document, DocumentType };
+export { type Document, DocumentType };
 
 export enum DocumentStatus {
     NOT_EVALUATED,

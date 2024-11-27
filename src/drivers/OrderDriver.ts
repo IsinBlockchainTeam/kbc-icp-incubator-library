@@ -1,10 +1,10 @@
 import type { ActorSubclass, Identity } from '@dfinity/agent';
 import { createActor } from 'icp-declarations/entity_manager';
 import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
+import { Order as ICPOrder } from '@kbc-lib/azle-types';
 import { EntityBuilder } from '../utils/EntityBuilder';
 import { Order } from '../entities/Order';
 import { HandleIcpError } from '../decorators/HandleIcpError';
-import { Order as ICPOrder } from '@kbc-lib/azle-types';
 
 export type OrderParams = {
     supplier: string;

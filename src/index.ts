@@ -16,11 +16,16 @@ export { NegotiationStatus } from './types/NegotiationStatus';
 export { TradeType } from './types/TradeType';
 export type { URLStructure } from './types/URLStructure';
 
-export { CredentialStatus } from './types/CredentialStatus';
+export { type CredentialStatus } from './types/CredentialStatus';
 export { CredentialRevocationDriver } from './drivers/CredentialRevocationDriver';
 export { CredentialRevocationService } from './services/CredentialRevocationService';
 
-export { Document, DocumentInfo, DocumentStatus } from './entities/Document';
+export {
+    type Document,
+    type DocumentInfo,
+    DocumentType,
+    DocumentStatus
+} from './entities/Document';
 
 export { Offer } from './entities/Offer';
 export { OfferDriver } from './drivers/OfferDriver';
@@ -36,16 +41,12 @@ export { TokenService } from './services/TokenService';
 
 export { Shipment, Phase as ShipmentPhase, FundStatus } from './entities/Shipment';
 export { EvaluationStatus } from './entities/Evaluation';
-export {
-    DocumentInfo as ShipmentDocumentInfo,
-    DocumentType as ShipmentDocumentType
-} from './entities/Document';
 export { ShipmentDriver } from './drivers/ShipmentDriver';
 export {
     ShipmentService,
-    ShipmentPhaseDocument,
-    ShipmentDocument,
-    ShipmentDocumentMetadata
+    type ShipmentPhaseDocument,
+    type ShipmentDocument,
+    type ShipmentDocumentMetadata
 } from './services/ShipmentService';
 
 export { ICPFileDriver } from './drivers/ICPFileDriver';
@@ -56,15 +57,21 @@ export { URL_SEGMENT_INDEXES } from './constants/ICP';
 
 // ICP refactor
 // export {createActor} from 'icp-declarations/entity_manager'
-export { Order, OrderLineRequest, OrderLine, OrderLinePrice, OrderStatus } from './entities/Order';
+export {
+    Order,
+    type OrderLineRequest,
+    type OrderLine,
+    type OrderLinePrice,
+    OrderStatus
+} from './entities/Order';
 export { computeRoleProof, computeMembershipProof } from './drivers/proof';
-export { OrderDriver, OrderParams } from './drivers/OrderDriver';
+export { OrderDriver, type OrderParams } from './drivers/OrderDriver';
 export { OrderService } from './services/OrderService';
 
 export { Organization } from './entities/organization/Organization';
 export { BroadedOrganization, OrganizationRole } from './entities/organization/BroadedOrganization';
 export { NarrowedOrganization } from './entities/organization/NarrowedOrganization';
-export { OrganizationDriver, OrganizationParams } from './drivers/OrganizationDriver';
+export { OrganizationDriver, type OrganizationParams } from './drivers/OrganizationDriver';
 export { OrganizationService } from './services/OrganizationService';
 
 // export {createActor} from 'icp-declarations/entity_manager'
@@ -94,8 +101,8 @@ export {
     BaseCertificate as ICPBaseCertificate,
     CertificateType as ICPCertificateType,
     CertificateDocumentType as ICPCertificateDocumentType,
-    CertificateDocumentInfo as ICPCertificateDocumentInfo,
-    CertificateDocument as ICPCertificateDocument
+    type CertificateDocumentInfo as ICPCertificateDocumentInfo,
+    type CertificateDocument as ICPCertificateDocument
 } from './entities/Certificate';
 export { CompanyCertificate as ICPCompanyCertificate } from './entities/CompanyCertificate';
 export { ScopeCertificate as ICPScopeCertificate } from './entities/ScopeCertificate';
