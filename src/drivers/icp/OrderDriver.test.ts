@@ -108,7 +108,7 @@ describe('OrderDriver', () => {
         const orderParams = {
             supplier: company1Wallet.address,
             customer: company2Wallet.address,
-            commissioner: company1Wallet.address,
+            commissioner: company2Wallet.address,
             paymentDeadline: date,
             documentDeliveryDeadline: date,
             shippingDeadline: date,

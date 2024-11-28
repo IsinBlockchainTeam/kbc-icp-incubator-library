@@ -1,5 +1,5 @@
-import { getEvmEscrowManagerAddress } from '../utils/env';
-import { StableBTreeMap } from 'azle';
+import { getEvmEscrowManagerAddress } from "../utils/env";
+import { StableBTreeMap } from "azle";
 import {
     FundStatusEnum,
     Phase,
@@ -9,14 +9,18 @@ import {
     EvaluationStatusEnum,
     DocumentInfo,
     DocumentType,
-    DocumentTypeEnum
-} from '../models/types';
-import { validateAddress } from '../utils/validation';
-import { ethCallContract, ethSendContractTransaction, getAddress } from '../utils/rpc';
-import escrowManagerAbi from '../../eth-abi/EscrowManager.json';
-import escrowAbi from '../../eth-abi/Escrow.json';
-import { StableMemoryId } from '../utils/stableMemory';
-import { ic } from 'azle/experimental';
+    DocumentTypeEnum,
+} from "../models/types";
+import { validateAddress } from "../utils/validation";
+import {
+    ethCallContract,
+    ethSendContractTransaction,
+    getAddress,
+} from "../utils/rpc";
+import escrowManagerAbi from "../../eth-abi/EscrowManager.json";
+import escrowAbi from "../../eth-abi/Escrow.json";
+import { StableMemoryId } from "../utils/stableMemory";
+import { ic } from "azle/experimental";
 import AuthenticationService from "./AuthenticationService";
 import {
     ShipmentDetailsAlreadyApprovedError,
@@ -30,13 +34,15 @@ import {
     CallerIsTheUploaderError,
     DocumentAlreadyApprovedError,
     DocumentNotFoundError,
-    SameActorsError
+    SameActorsError,
 } from "../models/errors";
 import { ZeroAddress } from "ethers";
 
-class ShipmentService implements HasInterestedParties{
+class ShipmentService implements HasInterestedParties {
     private static _instance: ShipmentService;
-    private _shipments = StableBTreeMap<bigint, Shipment>(StableMemoryId.SHIPMENTS);
+    private _shipments = StableBTreeMap<bigint, Shipment>(
+        StableMemoryId.SHIPMENTS,
+    );
 
     private constructor() {}
     static get instance() {
@@ -60,9 +66,13 @@ class ShipmentService implements HasInterestedParties{
     }
 
     getShipments(): Shipment[] {
-        const delegatorAddress = AuthenticationService.instance.getDelegatorAddress();
-        return this._shipments.values().filter(shipment => {
-            const interestedParties = [shipment.supplier, shipment.commissioner];
+        const delegatorAddress =
+            AuthenticationService.instance.getDelegatorAddress();
+        return this._shipments.values().filter((shipment) => {
+            const interestedParties = [
+                shipment.supplier,
+                shipment.commissioner,
+            ];
             return interestedParties.includes(delegatorAddress);
         });
     }
@@ -70,7 +80,7 @@ class ShipmentService implements HasInterestedParties{
     getShipment(id: bigint): Shipment {
         const result = this._shipments.get(id);
         if (!result) {
-            throw new Error('Shipment not found');
+            throw new Error("Shipment not found");
         }
         return result;
     }
@@ -80,12 +90,12 @@ class ShipmentService implements HasInterestedParties{
         commissioner: string,
         sampleApprovalRequired: boolean,
         duration: bigint,
-        tokenAddress: string
+        tokenAddress: string,
     ): Promise<Shipment> {
         if (supplier === commissioner)
-            throw new Error('Supplier and commissioner must be different');
-        validateAddress('Supplier', supplier);
-        validateAddress('Commissioner', commissioner);
+            throw new Error("Supplier and commissioner must be different");
+        validateAddress("Supplier", supplier);
+        validateAddress("Commissioner", commissioner);
 
         const id = BigInt(this._shipments.keys().length);
         const shipment: Shipment = {
@@ -102,18 +112,23 @@ class ShipmentService implements HasInterestedParties{
             shipmentNumber: 0n,
             expirationDate: 0n,
             fixingDate: 0n,
-            targetExchange: '',
+            targetExchange: "",
             differentialApplied: 0n,
             price: 0n,
             quantity: 0n,
             containersNumber: 0n,
             netWeight: 0n,
             grossWeight: 0n,
-            documents: []
+            documents: [],
         };
 
         const escrowManagerAddress: string = getEvmEscrowManagerAddress();
-        await ethSendContractTransaction(escrowManagerAddress, escrowManagerAbi.abi, 'registerEscrow', [shipment.id, supplier, duration, tokenAddress]);
+        await ethSendContractTransaction(
+            escrowManagerAddress,
+            escrowManagerAbi.abi,
+            "registerEscrow",
+            [shipment.id, supplier, duration, tokenAddress],
+        );
 
         this._shipments.insert(BigInt(id), shipment);
         return shipment;
@@ -121,27 +136,60 @@ class ShipmentService implements HasInterestedParties{
 
     getShipmentPhase(id: bigint): Phase {
         const shipment = this.getShipment(id);
-        if (!this.areDocumentsUploadedAndApproved(id, this.getPhase1RequiredDocuments()))
+        if (
+            !this.areDocumentsUploadedAndApproved(
+                id,
+                this.getPhase1RequiredDocuments(),
+            )
+        )
             return { PHASE_1: null };
-        if (shipment.sampleApprovalRequired && !(EvaluationStatusEnum.APPROVED in shipment.sampleEvaluationStatus))
+        if (
+            shipment.sampleApprovalRequired &&
+            !(EvaluationStatusEnum.APPROVED in shipment.sampleEvaluationStatus)
+        )
             return { PHASE_1: null };
 
-        if (!this.areDocumentsUploadedAndApproved(id, this.getPhase2RequiredDocuments()))
+        if (
+            !this.areDocumentsUploadedAndApproved(
+                id,
+                this.getPhase2RequiredDocuments(),
+            )
+        )
             return { PHASE_2: null };
-        if (!(EvaluationStatusEnum.APPROVED in shipment.detailsEvaluationStatus))
+        if (
+            !(EvaluationStatusEnum.APPROVED in shipment.detailsEvaluationStatus)
+        )
             return { PHASE_2: null };
 
-        if (!this.areDocumentsUploadedAndApproved(id, this.getPhase3RequiredDocuments()))
+        if (
+            !this.areDocumentsUploadedAndApproved(
+                id,
+                this.getPhase3RequiredDocuments(),
+            )
+        )
             return { PHASE_3: null };
         if (FundStatusEnum.NOT_LOCKED in shipment.fundsStatus)
             return { PHASE_3: null };
 
-        if (!this.areDocumentsUploadedAndApproved(id, this.getPhase4RequiredDocuments()))
+        if (
+            !this.areDocumentsUploadedAndApproved(
+                id,
+                this.getPhase4RequiredDocuments(),
+            )
+        )
             return { PHASE_4: null };
 
-        if (!this.areDocumentsUploadedAndApproved(id, this.getPhase5RequiredDocuments()))
+        if (
+            !this.areDocumentsUploadedAndApproved(
+                id,
+                this.getPhase5RequiredDocuments(),
+            )
+        )
             return { PHASE_5: null };
-        if (EvaluationStatusEnum.NOT_EVALUATED in shipment.qualityEvaluationStatus)
+        if (
+            EvaluationStatusEnum.NOT_EVALUATED in
+            shipment.qualityEvaluationStatus
+        )
             return { PHASE_5: null };
 
         if (EvaluationStatusEnum.APPROVED in shipment.qualityEvaluationStatus)
@@ -150,10 +198,16 @@ class ShipmentService implements HasInterestedParties{
         return { ARBITRATION: null };
     }
 
-    private areDocumentsUploadedAndApproved(id: bigint, requiredDocuments: DocumentType[]): boolean {
+    private areDocumentsUploadedAndApproved(
+        id: bigint,
+        requiredDocuments: DocumentType[],
+    ): boolean {
         for (const documentType of requiredDocuments) {
             const document = this.getDocumentsByType(id, documentType);
-            if (document.length === 0 || !(EvaluationStatusEnum.APPROVED in document[0].evaluationStatus))
+            if (
+                document.length === 0 ||
+                !(EvaluationStatusEnum.APPROVED in document[0].evaluationStatus)
+            )
                 return false;
         }
         return true;
@@ -161,7 +215,9 @@ class ShipmentService implements HasInterestedParties{
 
     getDocumentsByType(id: bigint, documentType: DocumentType): DocumentInfo[] {
         const shipment = this.getShipment(id);
-        const documentInfos = shipment.documents.find(([type]) => Object.keys(documentType)[0] in type);
+        const documentInfos = shipment.documents.find(
+            ([type]) => Object.keys(documentType)[0] in type,
+        );
         return documentInfos ? documentInfos[1] : [];
     }
 
@@ -176,13 +232,13 @@ class ShipmentService implements HasInterestedParties{
         quantity: bigint,
         containersNumber: bigint,
         netWeight: bigint,
-        grossWeight: bigint
+        grossWeight: bigint,
     ): Shipment {
         const shipment = this.getShipment(id);
         if (!(PhaseEnum.PHASE_2 in this.getShipmentPhase(id)))
-            throw new Error('Shipment in wrong phase');
+            throw new Error("Shipment in wrong phase");
         if (EvaluationStatusEnum.APPROVED in shipment.detailsEvaluationStatus)
-            throw new Error('Details already approved');
+            throw new Error("Details already approved");
 
         shipment.shipmentNumber = shipmentNumber;
         shipment.expirationDate = expirationDate;
@@ -203,24 +259,26 @@ class ShipmentService implements HasInterestedParties{
     evaluateSample(id: bigint, evaluationStatus: EvaluationStatus): Shipment {
         const shipment = this.getShipment(id);
         if (!(PhaseEnum.PHASE_1 in this.getShipmentPhase(id)))
-            throw new Error('Shipment in wrong phase');
+            throw new Error("Shipment in wrong phase");
 
         if (EvaluationStatusEnum.APPROVED in shipment.sampleEvaluationStatus)
-            throw new Error('Sample already approved');
+            throw new Error("Sample already approved");
         shipment.sampleEvaluationStatus = evaluationStatus;
 
         this._shipments.insert(id, shipment);
         return shipment;
     }
 
-    evaluateShipmentDetails(id: bigint, evaluationStatus: EvaluationStatus): Shipment {
+    evaluateShipmentDetails(
+        id: bigint,
+        evaluationStatus: EvaluationStatus,
+    ): Shipment {
         const shipment = this.getShipment(id);
         if (!(PhaseEnum.PHASE_2 in this.getShipmentPhase(id)))
-            throw new Error('Shipment in wrong phase');
-        if (!shipment.detailsSet)
-            throw new Error('Details not set');
+            throw new Error("Shipment in wrong phase");
+        if (!shipment.detailsSet) throw new Error("Details not set");
         if (EvaluationStatusEnum.APPROVED in shipment.detailsEvaluationStatus)
-            throw new Error('Details already approved');
+            throw new Error("Details already approved");
         shipment.detailsEvaluationStatus = evaluationStatus;
 
         this._shipments.insert(id, shipment);
@@ -230,9 +288,9 @@ class ShipmentService implements HasInterestedParties{
     evaluateQuality(id: bigint, evaluationStatus: EvaluationStatus): Shipment {
         const shipment = this.getShipment(id);
         if (!(PhaseEnum.PHASE_5 in this.getShipmentPhase(id)))
-            throw new Error('Shipment in wrong phase');
+            throw new Error("Shipment in wrong phase");
         if (EvaluationStatusEnum.APPROVED in shipment.qualityEvaluationStatus)
-            throw new Error('Quality already approved');
+            throw new Error("Quality already approved");
         shipment.qualityEvaluationStatus = evaluationStatus;
 
         this._shipments.insert(id, shipment);
@@ -242,11 +300,19 @@ class ShipmentService implements HasInterestedParties{
     async determineEscrowAddress(id: bigint): Promise<Shipment> {
         const shipment = this.getShipment(id);
 
-        if(shipment.escrowAddress.length > 0)
+        if (shipment.escrowAddress.length > 0)
             throw new ShipmentDownPaymentAddressNotFound();
 
         const escrowManagerAddress: string = getEvmEscrowManagerAddress();
-        const escrowAddress = await ethCallContract(escrowManagerAddress, escrowManagerAbi.abi, 'getEscrowByShipmentId', [shipment.id]);
+        const escrowAddress = await ethCallContract(
+            escrowManagerAddress,
+            escrowManagerAbi.abi,
+            "getEscrowByShipmentId",
+            [shipment.id],
+        );
+        if (escrowAddress === ZeroAddress) {
+            throw new Error("Escrow address not found");
+        }
         shipment.escrowAddress = [escrowAddress];
 
         this._shipments.insert(id, shipment);
@@ -256,21 +322,31 @@ class ShipmentService implements HasInterestedParties{
     async depositFunds(id: bigint, amount: bigint): Promise<Shipment> {
         const shipment = this.getShipment(id);
         if (!(PhaseEnum.PHASE_3 in this.getShipmentPhase(id)))
-            throw new Error('Shipment in wrong phase');
+            throw new Error("Shipment in wrong phase");
         if (!(FundStatusEnum.NOT_LOCKED in shipment.fundsStatus))
-            throw new Error('Funds already locked');
+            throw new Error("Funds already locked");
 
         if (shipment.escrowAddress.length === 0) {
             const escrowManagerAddress: string = getEvmEscrowManagerAddress();
-            const escrowAddress = await ethCallContract(escrowManagerAddress, escrowManagerAbi.abi, 'getEscrowByShipmentId', [shipment.id]);
+            const escrowAddress = await ethCallContract(
+                escrowManagerAddress,
+                escrowManagerAbi.abi,
+                "getEscrowByShipmentId",
+                [shipment.id],
+            );
             shipment.escrowAddress = [escrowAddress];
         }
 
         const callerAddress = await getAddress(ic.caller());
         const escrowAddress = shipment.escrowAddress[0];
-        console.log('escrowAddress', escrowAddress);
+        console.log("escrowAddress", escrowAddress);
 
-        await ethSendContractTransaction(escrowAddress, escrowAbi.abi, 'deposit', [amount, callerAddress]);
+        await ethSendContractTransaction(
+            escrowAddress,
+            escrowAbi.abi,
+            "deposit",
+            [amount, callerAddress],
+        );
 
         this._shipments.insert(id, shipment);
         return shipment;
@@ -279,24 +355,44 @@ class ShipmentService implements HasInterestedParties{
     async lockFunds(id: bigint): Promise<Shipment> {
         const shipment = this.getShipment(id);
         if (!(PhaseEnum.PHASE_3 in this.getShipmentPhase(id)))
-            throw new Error('Shipment in wrong phase');
+            throw new Error("Shipment in wrong phase");
         if (!(FundStatusEnum.NOT_LOCKED in shipment.fundsStatus))
-            throw new Error('Funds already locked');
+            throw new Error("Funds already locked");
 
         if (shipment.escrowAddress.length === 0) {
             const escrowManagerAddress: string = getEvmEscrowManagerAddress();
-            const escrowAddress = await ethCallContract(escrowManagerAddress, escrowManagerAbi.abi, 'getEscrowByShipmentId', [shipment.id]);
+            const escrowAddress = await ethCallContract(
+                escrowManagerAddress,
+                escrowManagerAbi.abi,
+                "getEscrowByShipmentId",
+                [shipment.id],
+            );
             shipment.escrowAddress = [escrowAddress];
         }
 
         const escrowAddress = shipment.escrowAddress[0];
-        const totalLockedFunds = await ethCallContract(escrowAddress, escrowAbi.abi, 'getLockedAmount', []);
+        const totalLockedFunds = await ethCallContract(
+            escrowAddress,
+            escrowAbi.abi,
+            "getLockedAmount",
+            [],
+        );
         const requiredAmount = shipment.price;
-        const totalDepositedAmount = await ethCallContract(escrowAddress, escrowAbi.abi, 'getTotalDepositedAmount', []);
+        const totalDepositedAmount = await ethCallContract(
+            escrowAddress,
+            escrowAbi.abi,
+            "getTotalDepositedAmount",
+            [],
+        );
         if (totalDepositedAmount >= totalLockedFunds + requiredAmount) {
-            await ethSendContractTransaction(escrowAddress, escrowAbi.abi, 'lockFunds', [requiredAmount]);
+            await ethSendContractTransaction(
+                escrowAddress,
+                escrowAbi.abi,
+                "lockFunds",
+                [requiredAmount],
+            );
             shipment.fundsStatus = { LOCKED: null };
-            console.log('funds locked');
+            console.log("funds locked");
         }
 
         this._shipments.insert(id, shipment);
@@ -305,13 +401,20 @@ class ShipmentService implements HasInterestedParties{
 
     async unlockFunds(id: bigint): Promise<Shipment> {
         const shipment = this.getShipment(id);
-        if (PhaseEnum.PHASE_5 in this.getShipmentPhase(id) && FundStatusEnum.LOCKED in shipment.fundsStatus) {
+        if (
+            PhaseEnum.PHASE_5 in this.getShipmentPhase(id) &&
+            FundStatusEnum.LOCKED in shipment.fundsStatus
+        ) {
             const escrowAddress = shipment.escrowAddress[0];
-            if (!escrowAddress)
-                throw new Error('Escrow address not found');
-            await ethSendContractTransaction(escrowAddress, escrowAbi.abi, 'releaseFunds', [shipment.price]);
+            if (!escrowAddress) throw new Error("Escrow address not found");
+            await ethSendContractTransaction(
+                escrowAddress,
+                escrowAbi.abi,
+                "releaseFunds",
+                [shipment.price],
+            );
             shipment.fundsStatus = { RELEASED: null };
-            console.log('funds released');
+            console.log("funds released");
         }
 
         this._shipments.insert(id, shipment);
@@ -325,36 +428,56 @@ class ShipmentService implements HasInterestedParties{
 
     getDocument(id: bigint, documentId: bigint): DocumentInfo {
         const shipment = this.getShipment(id);
-        const document = shipment.documents.flatMap(([_, docs]) => docs).find(doc => doc.id === documentId);
-        if (!document)
-            throw new Error('Document not found');
+        const document = shipment.documents
+            .flatMap(([_, docs]) => docs)
+            .find((doc) => doc.id === documentId);
+        if (!document) throw new Error("Document not found");
         return document;
     }
 
-    async addDocument(id: bigint, documentType: DocumentType, externalUrl: string): Promise<Shipment> {
+    async addDocument(
+        id: bigint,
+        documentType: DocumentType,
+        externalUrl: string,
+    ): Promise<Shipment> {
         const shipment = this.getShipment(id);
         const documents = this.getDocumentsByType(id, documentType);
-        if (!(
-            DocumentTypeEnum.GENERIC in documentType
-            || documents.length == 0
-            || !(EvaluationStatusEnum.APPROVED in documents[0].evaluationStatus)
-        ))
-            throw new Error('Document of this type already approved');
-        const delegatorAddress = AuthenticationService.instance.getDelegatorAddress();
+        if (
+            !(
+                DocumentTypeEnum.GENERIC in documentType ||
+                documents.length == 0 ||
+                !(
+                    EvaluationStatusEnum.APPROVED in
+                    documents[0].evaluationStatus
+                )
+            )
+        )
+            throw new Error("Document of this type already approved");
+        const delegatorAddress =
+            AuthenticationService.instance.getDelegatorAddress();
         const documentInfo: DocumentInfo = {
             id: BigInt(shipment.documents.length),
             documentType,
             evaluationStatus: { NOT_EVALUATED: null },
             uploadedBy: delegatorAddress,
-            externalUrl
+            externalUrl,
         };
         if (DocumentTypeEnum.GENERIC in documentType) {
-            const genericDocuments = shipment.documents.find(([type]) => 'GENERIC' in type);
-            genericDocuments ? genericDocuments[1].push(documentInfo) : shipment.documents.push([documentType, [documentInfo]]);
+            const genericDocuments = shipment.documents.find(
+                ([type]) => "GENERIC" in type,
+            );
+            genericDocuments
+                ? genericDocuments[1].push(documentInfo)
+                : shipment.documents.push([documentType, [documentInfo]]);
         } else {
-            const documentTupleIndex = shipment.documents.findIndex(([type]) => Object.keys(documentType)[0] in type);
+            const documentTupleIndex = shipment.documents.findIndex(
+                ([type]) => Object.keys(documentType)[0] in type,
+            );
             if (documentTupleIndex !== -1) {
-                shipment.documents[documentTupleIndex] = [documentType, [documentInfo]];
+                shipment.documents[documentTupleIndex] = [
+                    documentType,
+                    [documentInfo],
+                ];
             } else {
                 shipment.documents.push([documentType, [documentInfo]]);
             }
@@ -364,19 +487,26 @@ class ShipmentService implements HasInterestedParties{
         return shipment;
     }
 
-    async updateDocument(id: bigint, documentId: bigint, externalUrl: string): Promise<Shipment> {
+    async updateDocument(
+        id: bigint,
+        documentId: bigint,
+        externalUrl: string,
+    ): Promise<Shipment> {
         const shipment = this.getShipment(id);
-        const documentTuple = shipment.documents.find(([_, docs]) => docs.find(doc => doc.id === documentId));
-        if (!documentTuple)
-            throw new Error('Document not found');
-        const document = documentTuple[1].find(doc => doc.id === documentId);
-        if (!document)
-            throw new Error('Document not found');
+        const documentTuple = shipment.documents.find(([_, docs]) =>
+            docs.find((doc) => doc.id === documentId),
+        );
+        if (!documentTuple) throw new Error("Document not found");
+        const document = documentTuple[1].find((doc) => doc.id === documentId);
+        if (!document) throw new Error("Document not found");
         if (EvaluationStatusEnum.APPROVED in document.evaluationStatus)
-            throw new Error('Document already approved');
-        const documentIndex = documentTuple[1].findIndex(doc => doc.id === documentId);
+            throw new Error("Document already approved");
+        const documentIndex = documentTuple[1].findIndex(
+            (doc) => doc.id === documentId,
+        );
 
-        const delegatorAddress = AuthenticationService.instance.getDelegatorAddress();
+        const delegatorAddress =
+            AuthenticationService.instance.getDelegatorAddress();
         documentTuple[1][documentIndex].externalUrl = externalUrl;
         documentTuple[1][documentIndex].uploadedBy = delegatorAddress;
 
@@ -384,30 +514,45 @@ class ShipmentService implements HasInterestedParties{
         return shipment;
     }
 
-    async evaluateDocument(id: bigint, documentId: bigint, documentEvaluationStatus: EvaluationStatus): Promise<Shipment> {
+    async evaluateDocument(
+        id: bigint,
+        documentId: bigint,
+        documentEvaluationStatus: EvaluationStatus,
+    ): Promise<Shipment> {
         const shipment = this.getShipment(id);
-        const documentTuple = shipment.documents.find(([_, docs]) => docs.find(doc => doc.id === documentId));
-        if (!documentTuple)
-            throw new Error('Document not found');
+        const documentTuple = shipment.documents.find(([_, docs]) =>
+            docs.find((doc) => doc.id === documentId),
+        );
+        if (!documentTuple) throw new Error("Document not found");
         const document = documentTuple[1][0];
-        const delegatorAddress = AuthenticationService.instance.getDelegatorAddress();
+        const delegatorAddress =
+            AuthenticationService.instance.getDelegatorAddress();
         if (document.uploadedBy === delegatorAddress)
-            throw new Error('Caller is the uploader');
+            throw new Error("Caller is the uploader");
         if (EvaluationStatusEnum.APPROVED in document.evaluationStatus)
-            throw new Error('Document already approved');
-        const documentIndex = documentTuple[1].findIndex(doc => doc.id === documentId);
-        documentTuple[1][documentIndex].evaluationStatus = documentEvaluationStatus;
+            throw new Error("Document already approved");
+        const documentIndex = documentTuple[1].findIndex(
+            (doc) => doc.id === documentId,
+        );
+        documentTuple[1][documentIndex].evaluationStatus =
+            documentEvaluationStatus;
 
-
-        console.log('phase', this.getShipmentPhase(id));
-        console.log('fundStatus', shipment.fundsStatus);
-        if (PhaseEnum.PHASE_5 in this.getShipmentPhase(id) && FundStatusEnum.LOCKED in shipment.fundsStatus) {
+        console.log("phase", this.getShipmentPhase(id));
+        console.log("fundStatus", shipment.fundsStatus);
+        if (
+            PhaseEnum.PHASE_5 in this.getShipmentPhase(id) &&
+            FundStatusEnum.LOCKED in shipment.fundsStatus
+        ) {
             const escrowAddress = shipment.escrowAddress[0];
-            if (!escrowAddress)
-                throw new Error('Escrow address not found');
-            await ethSendContractTransaction(escrowAddress, escrowAbi.abi, 'releaseFunds', [shipment.price]);
+            if (!escrowAddress) throw new Error("Escrow address not found");
+            await ethSendContractTransaction(
+                escrowAddress,
+                escrowAbi.abi,
+                "releaseFunds",
+                [shipment.price],
+            );
             shipment.fundsStatus = { RELEASED: null };
-            console.log('funds released');
+            console.log("funds released");
         }
 
         this._shipments.insert(id, shipment);
@@ -447,85 +592,118 @@ class ShipmentService implements HasInterestedParties{
     }
 
     getPhase1Documents() {
-        return [{
-            SERVICE_GUIDE: null
-        }, {
-            SENSORY_EVALUATION_ANALYSIS_REPORT: null
-        }, {
-            SUBJECT_TO_APPROVAL_OF_SAMPLE: null
-        }, {
-            PRE_SHIPMENT_SAMPLE: null
-        }];
+        return [
+            {
+                SERVICE_GUIDE: null,
+            },
+            {
+                SENSORY_EVALUATION_ANALYSIS_REPORT: null,
+            },
+            {
+                SUBJECT_TO_APPROVAL_OF_SAMPLE: null,
+            },
+            {
+                PRE_SHIPMENT_SAMPLE: null,
+            },
+        ];
     }
 
     getPhase1RequiredDocuments() {
-        return [{
-            PRE_SHIPMENT_SAMPLE: null
-        }];
+        return [
+            {
+                PRE_SHIPMENT_SAMPLE: null,
+            },
+        ];
     }
 
     getPhase2Documents() {
-        return [{
-            SHIPPING_INSTRUCTIONS: null
-        }, {
-            SHIPPING_NOTE: null
-        }];
+        return [
+            {
+                SHIPPING_INSTRUCTIONS: null,
+            },
+            {
+                SHIPPING_NOTE: null,
+            },
+        ];
     }
 
     getPhase2RequiredDocuments() {
-        return [{
-            SHIPPING_INSTRUCTIONS: null
-        }, {
-            SHIPPING_NOTE: null
-        }];
+        return [
+            {
+                SHIPPING_INSTRUCTIONS: null,
+            },
+            {
+                SHIPPING_NOTE: null,
+            },
+        ];
     }
 
     getPhase3Documents() {
-        return [{
-            BOOKING_CONFIRMATION: null
-        }, {
-            CARGO_COLLECTION_ORDER: null
-        }, {
-            EXPORT_INVOICE: null
-        }, {
-            TRANSPORT_CONTRACT: null
-        }, {
-            TO_BE_FREED_SINGLE_EXPORT_DECLARATION: null
-        }];
+        return [
+            {
+                BOOKING_CONFIRMATION: null,
+            },
+            {
+                CARGO_COLLECTION_ORDER: null,
+            },
+            {
+                EXPORT_INVOICE: null,
+            },
+            {
+                TRANSPORT_CONTRACT: null,
+            },
+            {
+                TO_BE_FREED_SINGLE_EXPORT_DECLARATION: null,
+            },
+        ];
     }
 
     getPhase3RequiredDocuments() {
-        return [{
-            BOOKING_CONFIRMATION: null
-        }];
+        return [
+            {
+                BOOKING_CONFIRMATION: null,
+            },
+        ];
     }
 
     getPhase4Documents() {
-        return [{
-            EXPORT_CONFIRMATION: null
-        }, {
-            FREED_SINGLE_EXPORT_DECLARATION: null
-        }, {
-            CONTAINER_PROOF_OF_DELIVERY: null
-        }, {
-            PHYTOSANITARY_CERTIFICATE: null
-        }, {
-            BILL_OF_LADING: null
-        }, {
-            ORIGIN_CERTIFICATE_ICO: null
-        }, {
-            WEIGHT_CERTIFICATE: null
-        }];
+        return [
+            {
+                EXPORT_CONFIRMATION: null,
+            },
+            {
+                FREED_SINGLE_EXPORT_DECLARATION: null,
+            },
+            {
+                CONTAINER_PROOF_OF_DELIVERY: null,
+            },
+            {
+                PHYTOSANITARY_CERTIFICATE: null,
+            },
+            {
+                BILL_OF_LADING: null,
+            },
+            {
+                ORIGIN_CERTIFICATE_ICO: null,
+            },
+            {
+                WEIGHT_CERTIFICATE: null,
+            },
+        ];
     }
 
     getPhase4RequiredDocuments() {
-        return [{
-            PHYTOSANITARY_CERTIFICATE: null
-        }, {
-            BILL_OF_LADING: null
-        }, {
-            ORIGIN_CERTIFICATE_ICO: null
-        }];
+        return [
+            {
+                PHYTOSANITARY_CERTIFICATE: null,
+            },
+            {
+                BILL_OF_LADING: null,
+            },
+            {
+                ORIGIN_CERTIFICATE_ICO: null,
+            },
+        ];
     }
 
     getPhase5Documents() {
