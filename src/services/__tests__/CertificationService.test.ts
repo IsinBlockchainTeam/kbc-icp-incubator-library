@@ -1,14 +1,14 @@
 import { createMock } from 'ts-auto-mock';
 import { FileHelpers } from '@blockchain-lib/common';
 import { CertificationService } from '../CertificationService';
-import { CertificationDriver } from '../../../drivers/icp/CertificationDriver';
-import { ICPFileDriver } from '../../../drivers/ICPFileDriver';
-import { BaseCertificate, CertificateDocumentType } from '../../../entities/icp/Certificate';
-import { CompanyCertificate } from '../../../entities/icp/CompanyCertificate';
-import { URL_SEGMENTS } from '../../../constants/ICP';
-import { ScopeCertificate } from '../../../entities/icp/ScopeCertificate';
-import { MaterialCertificate } from '../../../entities/icp/MaterialCertificate';
-import { EvaluationStatus } from '../../../entities/icp/Evaluation';
+import { BaseCertificate, CertificateDocumentType } from '../../entities/Certificate';
+import { URL_SEGMENTS } from '../../constants/ICP';
+import { CertificationDriver } from '../../drivers/CertificationDriver';
+import { ICPFileDriver } from '../../drivers/ICPFileDriver';
+import { CompanyCertificate } from '../../entities/CompanyCertificate';
+import { ScopeCertificate } from '../../entities/ScopeCertificate';
+import { MaterialCertificate } from '../../entities/MaterialCertificate';
+import { EvaluationStatus } from '../../entities/Evaluation';
 
 jest.mock('@blockchain-lib/common');
 

@@ -1,6 +1,6 @@
 import { createMock } from 'ts-auto-mock';
 import { FiatService } from '../FiatService';
-import { FiatDriver } from '../../../drivers/icp/FiatDriver';
+import { FiatDriver } from '../../drivers/FiatDriver';
 
 jest.mock('@blockchain-lib/common');
 

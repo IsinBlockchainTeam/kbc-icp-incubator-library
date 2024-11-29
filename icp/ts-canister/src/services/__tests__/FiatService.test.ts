@@ -1,6 +1,7 @@
 import { StableBTreeMap } from 'azle';
 import FiatService from '../FiatService';
 import { StableMemoryId } from '../../utils/stableMemory';
+import { ErrorType } from '../../models/types';
 
 jest.mock('azle');
 
@@ -44,7 +45,7 @@ describe('FiatService', () => {
 
     it('add a value - error (Enumeration value already exists)', () => {
         mockedFn.get.mockReturnValueOnce(['value']);
-        expect(() => fiatService.addValue('value')).toThrow(new Error('Enumeration value already exists'));
+        expect(() => fiatService.addValue('value')).toThrow(new Error(`(${ErrorType.ENUMERATION_ALREADY_EXISTS}) Enumeration value already exists.`));
     });
 
     it('remove a value', () => {
@@ -57,7 +58,7 @@ describe('FiatService', () => {
     });
 
     it('remove a value - error (Enumeration value does not exist)', () => {
-        expect(() => fiatService.removeValue('value')).toThrow(new Error('Enumeration value does not exist'));
+        expect(() => fiatService.removeValue('value')).toThrow(new Error(`(${ErrorType.ENUMERATION_NOT_FOUND}) Enumeration value does not exist.`));
         expect(mockedFn.get).toHaveBeenCalled();
         expect(mockedFn.get).toHaveBeenCalledWith(BigInt(StableMemoryId.FIAT_ENUM));
     });

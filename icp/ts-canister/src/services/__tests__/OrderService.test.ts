@@ -1,6 +1,6 @@
 import { StableBTreeMap } from 'azle';
 import OrderService from '../OrderService';
-import { Order, ROLES, Shipment } from '../../models/types';
+import { ErrorType, Order, ROLES, Shipment } from '../../models/types';
 import AuthenticationService from '../AuthenticationService';
 import { validateAddress, validateDeadline, validateInterestedParty } from '../../utils/validation';
 import ShipmentService from '../ShipmentService';
@@ -80,7 +80,7 @@ describe('OrderService', () => {
         expect(mockedFn.get).toHaveBeenCalled();
 
         mockedFn.get.mockReturnValue(undefined);
-        expect(() => orderService.getInterestedParties(1n)).toThrow(new Error('Order not found'));
+        expect(() => orderService.getInterestedParties(1n)).toThrow(new Error(`(${ErrorType.ORDER_NOT_FOUND}) Order not found.`));
     });
 
     it('retrieves all orders', () => {
@@ -97,7 +97,7 @@ describe('OrderService', () => {
         expect(mockedFn.get).toHaveBeenCalled();
 
         mockedFn.get.mockReturnValue(undefined);
-        expect(() => orderService.getOrder(1n)).toThrow(new Error('Order not found'));
+        expect(() => orderService.getOrder(1n)).toThrow(new Error(`(${ErrorType.ORDER_NOT_FOUND}) Order not found.`));
     });
 
     it('creates a order', () => {
@@ -149,7 +149,7 @@ describe('OrderService', () => {
                 order.deliveryPort,
                 []
             )
-        ).toThrow(new Error('Supplier and customer must be different'));
+        ).toThrow(new Error(`(${ErrorType.SAME_ACTORS}) Actors are the same.`));
         (validateAddress as jest.Mock).mockImplementation(() => {
             throw new Error('Invalid address');
         });
@@ -226,7 +226,7 @@ describe('OrderService', () => {
                 order.deliveryPort,
                 []
             )
-        ).toThrow(new Error('Order not found'));
+        ).toThrow(new Error(`(${ErrorType.ORDER_NOT_FOUND}) Order not found.`));
         mockedFn.get.mockReturnValue(order);
         expect(() =>
             orderService.updateOrder(
@@ -247,7 +247,7 @@ describe('OrderService', () => {
                 order.deliveryPort,
                 []
             )
-        ).toThrow(new Error('No changes detected'));
+        ).toThrow(new Error(`(${ErrorType.ORDER_NO_CHANGES}) Order with no changes.`));
         expect(() =>
             orderService.updateOrder(
                 0n,
@@ -267,7 +267,7 @@ describe('OrderService', () => {
                 order.deliveryPort,
                 []
             )
-        ).toThrow(new Error('Supplier and customer must be different'));
+        ).toThrow(new Error(`(${ErrorType.SAME_ACTORS}) Actors are the same.`));
         (validateAddress as jest.Mock).mockImplementation(() => {
             throw new Error('Invalid address');
         });
@@ -303,10 +303,10 @@ describe('OrderService', () => {
         expect(mockedFn.insert).toHaveBeenCalled();
 
         mockedFn.get.mockReturnValue(undefined);
-        await expect(() => orderService.signOrder(0n)).rejects.toThrow(new Error('Order not found'));
+        await expect(() => orderService.signOrder(0n)).rejects.toThrow(new Error(`(${ErrorType.ORDER_NOT_FOUND}) Order not found.`));
         mockedFn.get.mockReturnValue(order);
         authenticationServiceInstanceMock.getDelegatorAddress.mockReturnValue('0xsupplier');
-        await expect(() => orderService.signOrder(0n)).rejects.toThrow(new Error('Order already confirmed'));
+        await expect(() => orderService.signOrder(0n)).rejects.toThrow(new Error(`(${ErrorType.ORDER_ALREADY_CONFIRMED}) Order already confirmed.`));
         authenticationServiceInstanceMock.getDelegatorAddress.mockReturnValue('0xother');
     });
 });

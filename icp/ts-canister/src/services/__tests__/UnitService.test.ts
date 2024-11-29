@@ -1,6 +1,7 @@
 import { StableBTreeMap } from 'azle';
 import UnitService from '../UnitService';
 import { StableMemoryId } from '../../utils/stableMemory';
+import { ErrorType } from '../../models/types';
 
 jest.mock('azle');
 
@@ -44,7 +45,9 @@ describe('UnitService', () => {
 
     it('add a value - error (Enumeration value already exists)', () => {
         mockedFn.get.mockReturnValueOnce(['value']);
-        expect(() => processTypeService.addValue('value')).toThrow(new Error('Enumeration value already exists'));
+        expect(() => processTypeService.addValue('value')).toThrow(
+            new Error(`(${ErrorType.ENUMERATION_ALREADY_EXISTS}) Enumeration value already exists.`)
+        );
     });
 
     it('remove a value', () => {
@@ -57,7 +60,9 @@ describe('UnitService', () => {
     });
 
     it('remove a value - error (Enumeration value does not exist)', () => {
-        expect(() => processTypeService.removeValue('value')).toThrow(new Error('Enumeration value does not exist'));
+        expect(() => processTypeService.removeValue('value')).toThrow(
+            new Error(`(${ErrorType.ENUMERATION_NOT_FOUND}) Enumeration value does not exist.`)
+        );
         expect(mockedFn.get).toHaveBeenCalled();
         expect(mockedFn.get).toHaveBeenCalledWith(BigInt(StableMemoryId.UNIT_ENUM));
     });

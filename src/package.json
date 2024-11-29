@@ -10,7 +10,8 @@
         "test": "jest",
         "lint": "eslint *.ts --fix",
         "prettier": "npx prettier . --write",
-        "populate-demo": "ts-node ./scripts/populate-demo.ts"
+        "populate-demo": "ts-node ./scripts/populate-demo.ts",
+        "populate": "ts-node ./scripts/populate.ts"
     },
     "repository": {
         "type": "git",

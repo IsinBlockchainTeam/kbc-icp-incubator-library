@@ -1,15 +1,15 @@
 import { StableBTreeMap } from 'azle';
 import MaterialService from '../MaterialService';
-import { Material, ProductCategory } from '../../models/types';
+import { ErrorType, Material, ProductCategory } from '../../models/types';
 import ProductCategoryService from '../ProductCategoryService';
 
 jest.mock('azle');
 jest.mock('../../services/ProductCategoryService', () => ({
-        instance: {
-            productCategoryExists: jest.fn(),
-            getProductCategory: jest.fn()
-        }
-    }));
+    instance: {
+        productCategoryExists: jest.fn(),
+        getProductCategory: jest.fn()
+    }
+}));
 
 describe('MaterialService', () => {
     let materialService: MaterialService;
@@ -46,7 +46,7 @@ describe('MaterialService', () => {
         expect(mockedFn.get).toHaveBeenCalled();
 
         mockedFn.get.mockReturnValue(undefined);
-        expect(() => materialService.getMaterial(1n)).toThrow(new Error('Material not found'));
+        expect(() => materialService.getMaterial(1n)).toThrow(new Error(`(${ErrorType.MATERIAL_NOT_FOUND}) Material not found.`));
     });
 
     it('creates a material', () => {
@@ -59,7 +59,7 @@ describe('MaterialService', () => {
         expect(mockedFn.insert).toHaveBeenCalled();
 
         productCategoryServiceInstanceMock.productCategoryExists.mockReturnValue(false);
-        expect(() => materialService.createMaterial(0n)).toThrow(new Error('Product category not found'));
+        expect(() => materialService.createMaterial(0n)).toThrow(new Error(`(${ErrorType.PRODUCT_CATEGORY_NOT_FOUND}) Product category not found.`));
     });
 
     it('updates a material', () => {
@@ -72,9 +72,11 @@ describe('MaterialService', () => {
         expect(mockedFn.insert).toHaveBeenCalled();
 
         mockedFn.get.mockReturnValue(undefined);
-        expect(() => materialService.updateMaterial(0n, 0n)).toThrow(new Error('Material not found'));
+        expect(() => materialService.updateMaterial(0n, 0n)).toThrow(new Error(`(${ErrorType.MATERIAL_NOT_FOUND}) Material not found.`));
         mockedFn.get.mockReturnValue(expectedResponse);
         productCategoryServiceInstanceMock.productCategoryExists.mockReturnValue(false);
-        expect(() => materialService.updateMaterial(0n, 0n)).toThrow(new Error('Product category not found'));
+        expect(() => materialService.updateMaterial(0n, 0n)).toThrow(
+            new Error(`(${ErrorType.PRODUCT_CATEGORY_NOT_FOUND}) Product category not found.`)
+        );
     });
 });

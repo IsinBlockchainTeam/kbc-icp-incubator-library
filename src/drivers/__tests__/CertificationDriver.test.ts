@@ -9,16 +9,16 @@ import {
     BaseCertificate,
     CertificateDocumentInfo,
     CertificateDocumentType
-} from '../../../entities/icp/Certificate';
-import { CompanyCertificate } from '../../../entities/icp/CompanyCertificate';
-import { ScopeCertificate } from '../../../entities/icp/ScopeCertificate';
-import { MaterialCertificate } from '../../../entities/icp/MaterialCertificate';
-import { EntityBuilder } from '../../../utils/icp/EntityBuilder';
-import { EvaluationStatus } from '../../../entities/icp/Evaluation';
+} from '../../entities/Certificate';
+import { CompanyCertificate } from '../../entities/CompanyCertificate';
+import { ScopeCertificate } from '../../entities/ScopeCertificate';
+import { MaterialCertificate } from '../../entities/MaterialCertificate';
+import { EntityBuilder } from '../../utils/EntityBuilder';
+import { EvaluationStatus } from '../../entities/Evaluation';
 
 jest.mock('icp-declarations/entity_manager');
 jest.mock('@dfinity/agent');
-jest.mock('../../../utils/icp/EntityBuilder');
+jest.mock('../../utils/EntityBuilder');
 
 describe('CertificationDriver', () => {
     let certificationDriver: CertificationDriver;

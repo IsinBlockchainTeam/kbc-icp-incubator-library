@@ -1,6 +1,6 @@
 import { IDL, query, update } from 'azle';
 import UnitService from '../services/UnitService';
-import { AtLeastSigner, AtLeastViewer } from '../decorators/roles';
+import { AtLeastViewer } from '../decorators/roles';
 
 class UnitController {
     @query([], IDL.Vec(IDL.Text))
@@ -10,13 +10,11 @@ class UnitController {
     }
 
     @update([IDL.Text], IDL.Text)
-    @AtLeastSigner
     async addUnit(value: string): Promise<string> {
         return UnitService.instance.addValue(value);
     }
 
     @update([IDL.Text], IDL.Text)
-    @AtLeastSigner
     async removeUnit(value: string): Promise<string> {
         return UnitService.instance.removeValue(value);
     }

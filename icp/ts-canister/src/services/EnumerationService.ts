@@ -1,5 +1,6 @@
 import { StableBTreeMap } from 'azle';
 import { StableMemoryId } from '../utils/stableMemory';
+import { EnumerationAlreadyExistsError, EnumerationNotFoundError } from '../models/errors/EnumerationError';
 
 abstract class EnumerationService {
     protected _enumerations;
@@ -21,13 +22,13 @@ abstract class EnumerationService {
     }
 
     addValue(value: string): string {
-        if (this.hasValue(value)) throw new Error('Enumeration value already exists');
+        if (this.hasValue(value)) throw new EnumerationAlreadyExistsError();
         this._enumerations.insert(this._valuesKey, [...this.getAllValues(), value]);
         return value;
     }
 
     removeValue(value: string): string {
-        if (!this.hasValue(value)) throw new Error('Enumeration value does not exist');
+        if (!this.hasValue(value)) throw new EnumerationNotFoundError();
         this._enumerations.insert(
             this._valuesKey,
             this.getAllValues().filter((v) => v !== value)
