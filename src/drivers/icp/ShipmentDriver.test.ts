@@ -22,8 +22,8 @@ type Utils = {
     shipmentManagerDriver: ShipmentDriver;
     authenticate: () => Promise<void>;
 };
-const SHIPMENT_ID = 4;
-const DOCUMENT_ID = 2;
+const SHIPMENT_ID = 0;
+const DOCUMENT_ID = 0;
 describe('ShipmentManagerDriver', () => {
     let utils1: Utils, utils2: Utils;
     const getUtils = async (userPrivateKey: string, companyPrivateKey: string) => {

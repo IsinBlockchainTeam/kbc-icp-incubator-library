@@ -173,7 +173,7 @@ function buildV1Transaction(
     return ethers.Transaction.from({
         to: contractAddress,
         // value: 0,
-        gasLimit: 1_000_000,
+        gasLimit: 10_000_000,
         // gasPrice: 0,
         type: 0,
         data,
