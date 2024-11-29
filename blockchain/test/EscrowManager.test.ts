@@ -17,7 +17,7 @@ describe('EscrowManager.sol', () => {
         [admin, payee, payer1, other, feeRecipient] = await ethers.getSigners();
 
         const EscrowManager = await ethers.getContractFactory('EscrowManager');
-        escrowManagerContract = await EscrowManager.deploy(feeRecipient.address, baseFee, percentageFee);
+        escrowManagerContract = await EscrowManager.deploy(admin.address, feeRecipient.address, baseFee, percentageFee);
         await escrowManagerContract.deployed();
 
         const Token = await ethers.getContractFactory('MyToken');
@@ -33,15 +33,21 @@ describe('EscrowManager.sol', () => {
     }
 
     describe('EscrowManager creation', () => {
+        it('should fail creating an escrow manager if admin is the zero address', async () => {
+            const EscrowManager = await ethers.getContractFactory('EscrowManager');
+            await expect(EscrowManager.deploy(ethers.constants.AddressZero, feeRecipient.address, baseFee, percentageFee)).to.be.revertedWith(
+                'EscrowManager: admin is the zero address'
+            );
+        });
         it('should fail creating an escrow manager if fee recipient is the zero address', async () => {
             const EscrowManager = await ethers.getContractFactory('EscrowManager');
-            await expect(EscrowManager.deploy(ethers.constants.AddressZero, baseFee, percentageFee)).to.be.revertedWith(
+            await expect(EscrowManager.deploy(admin.address, ethers.constants.AddressZero, baseFee, percentageFee)).to.be.revertedWith(
                 'EscrowManager: fee recipient is the zero address'
             );
         });
         it('should fail creating an escrow manager if commissioner is percentageFee is greater than 100', async () => {
             const EscrowManager = await ethers.getContractFactory('EscrowManager');
-            await expect(EscrowManager.deploy(feeRecipient.address, baseFee, 101)).to.be.revertedWith(
+            await expect(EscrowManager.deploy(admin.address, feeRecipient.address, baseFee, 101)).to.be.revertedWith(
                 'EscrowManager: percentage fee cannot be greater than 100'
             );
         });

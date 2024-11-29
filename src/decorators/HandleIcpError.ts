@@ -1,4 +1,4 @@
-import {handleCanisterError} from "../utils/icp/handleCanisterError";
+import { handleCanisterError } from '../utils/handleCanisterError';
 
 export function HandleIcpError() {
     return function (

@@ -1,17 +1,19 @@
-import {StableBTreeMap} from "azle";
-import {Offer} from "../models/types";
-import {StableMemoryId} from "../utils/stableMemory";
-import ProductCategoryService from "./ProductCategoryService";
-import AuthenticationService from "./AuthenticationService";
-import {ProductCategoryNotFoundError, OfferNotFoundError} from "../models/errors";
+import { StableBTreeMap } from 'azle';
+import { Offer } from '../models/types';
+import { StableMemoryId } from '../utils/stableMemory';
+import ProductCategoryService from './ProductCategoryService';
+import AuthenticationService from './AuthenticationService';
+import { ProductCategoryNotFoundError, OfferNotFoundError } from '../models/errors';
 
 class OfferService {
     private static _instance: OfferService;
+
     private _offers = StableBTreeMap<bigint, Offer>(StableMemoryId.OFFERS);
+
     private _productCategoryService = ProductCategoryService.instance;
+
     private _authenticationService = AuthenticationService.instance;
 
-    private constructor() {}
     static get instance(): OfferService {
         if (!OfferService._instance) {
             OfferService._instance = new OfferService();
@@ -25,7 +27,7 @@ class OfferService {
 
     getOffer(id: bigint): Offer {
         const result = this._offers.get(id);
-        if(result) {
+        if (result) {
             return result;
         }
         throw new OfferNotFoundError();

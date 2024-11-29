@@ -1,9 +1,9 @@
 import { OrganizationRole } from '@kbc-lib/azle-types';
-import { OrderParams } from '../../drivers/icp/OrderDriver';
+import { OrderParams } from '../../drivers/OrderDriver';
 import { ETHEUREUM, USERS } from './constants';
 import { EthereumHelper } from '../helpers/EthereumHelper';
 import { DateHelper } from '../helpers/DateHelper';
-import { OrganizationParams } from '../../drivers/icp/OrganizationDriver';
+import { OrganizationParams } from '../../drivers/OrganizationDriver';
 
 export type ProductCategoryParams = {
     name: string;

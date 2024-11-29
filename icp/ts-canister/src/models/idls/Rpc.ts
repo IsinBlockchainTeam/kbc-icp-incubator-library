@@ -1,4 +1,4 @@
-import {IDL} from "azle";
+import { IDL } from 'azle';
 
 const IDLJsonRpcError = IDL.Record({ 'code' : IDL.Int64, 'message' : IDL.Text });
 const IDLProviderError = IDL.Variant({

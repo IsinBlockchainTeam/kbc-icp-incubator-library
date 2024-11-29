@@ -10,16 +10,16 @@
         "inlineSourceMap": true,
         "esModuleInterop": true,
         "declaration": true, // This tells TypeScript to emit an .d.ts definitions file along with your compiled JavaScript,
+        "experimentalDecorators": true,
         "plugins": [
             {
                 "transform": "ts-auto-mock/transformer",
                 "cacheBetweenTests": false
             }
         ],
-        "types": ["jest", "node", "@types/jest"],
-        "experimentalDecorators": true,
+        "types": ["jest", "node", "@types/jest"]
     },
-    "include": ["**/*", "./dfx_output/storage/*.ts", "../icp/ts-canister/dist"],
+    "include": ["**/*", "./dfx_output/storage/*.ts"],
     "exclude": [
         "node_modules",
         "dist",
@@ -32,7 +32,6 @@
         "**/__tests__/**/*.ts",
         "**/__dev__/*",
         "ts-config.ts",
-        "jest.config.ts",
-        "__shared__"
+        "jest.config.ts"
     ]
 }

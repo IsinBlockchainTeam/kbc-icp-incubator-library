@@ -8,13 +8,20 @@ export enum PhaseEnum {
     PHASE_4 = 'PHASE_4',
     PHASE_5 = 'PHASE_5',
     CONFIRMED = 'CONFIRMED',
-    ARBITRATION = 'ARBITRATION',
+    ARBITRATION = 'ARBITRATION'
 }
-export type Phase = { PHASE_1: null } | { PHASE_2: null } | { PHASE_3: null } | { PHASE_4: null } | { PHASE_5: null } | { CONFIRMED: null } | { ARBITRATION: null };
+export type Phase =
+    | { PHASE_1: null }
+    | { PHASE_2: null }
+    | { PHASE_3: null }
+    | { PHASE_4: null }
+    | { PHASE_5: null }
+    | { CONFIRMED: null }
+    | { ARBITRATION: null };
 export enum FundStatusEnum {
     NOT_LOCKED = 'NOT_LOCKED',
     LOCKED = 'LOCKED',
-    RELEASED = 'RELEASED',
+    RELEASED = 'RELEASED'
 }
 export type FundStatus = { NOT_LOCKED: null } | { LOCKED: null } | { RELEASED: null };
 export type Shipment = {
@@ -38,5 +45,5 @@ export type Shipment = {
     containersNumber: bigint;
     netWeight: bigint;
     grossWeight: bigint;
-    documents: Array<[DocumentType, DocumentInfo[]]>,
+    documents: Array<[DocumentType, DocumentInfo[]]>;
 };

@@ -1,6 +1,12 @@
 import { IDL } from 'azle';
 import { IDLEvaluationStatus } from './Evaluation';
 
+export const Document = IDL.Record({
+    id: IDL.Nat,
+    externalUrl: IDL.Text,
+    contentHash: IDL.Text,
+    uploadedBy: IDL.Text
+});
 export const IDLDocumentType = IDL.Variant({
     SERVICE_GUIDE: IDL.Null,
     SENSORY_EVALUATION_ANALYSIS_REPORT: IDL.Null,
@@ -27,5 +33,5 @@ export const IDLDocumentInfo = IDL.Record({
     documentType: IDLDocumentType,
     evaluationStatus: IDLEvaluationStatus,
     uploadedBy: IDL.Text,
-    externalUrl: IDL.Text,
+    externalUrl: IDL.Text
 });

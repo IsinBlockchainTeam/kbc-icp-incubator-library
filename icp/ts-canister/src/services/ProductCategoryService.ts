@@ -5,11 +5,9 @@ import {ProductCategoryNotFoundError} from "../models/errors";
 
 class ProductCategoryService {
     private static _instance: ProductCategoryService;
-    private _productCategories = StableBTreeMap<bigint, ProductCategory>(
-        StableMemoryId.PRODUCT_CATEGORIES,
-    );
 
-    private constructor() {}
+    private _productCategories = StableBTreeMap<bigint, ProductCategory>(StableMemoryId.PRODUCT_CATEGORIES);
+
     static get instance() {
         if (!ProductCategoryService._instance) {
             ProductCategoryService._instance = new ProductCategoryService();

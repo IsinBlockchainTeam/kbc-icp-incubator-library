@@ -167,7 +167,8 @@ describe('CertificateManager', () => {
                         assessmentStandards[1],
                         issueDate,
                         new Date(new Date(validFrom).getDate() + 1).getTime(),
-                        new Date(new Date(validUntil).getDate() + 1).getTime()
+                        new Date(new Date(validUntil).getDate() + 1).getTime(),
+                        1
                     );
                 await updateTx.wait();
 
@@ -176,6 +177,7 @@ describe('CertificateManager', () => {
                 expect(updatedCertificate.baseInfo.issueDate).to.be.equal(issueDate);
                 expect(updatedCertificate.validFrom).to.be.equal(new Date(validFrom).getDate() + 1);
                 expect(updatedCertificate.validUntil).to.be.equal(new Date(validUntil).getDate() + 1);
+                expect(updatedCertificate.baseInfo.document.documentType).to.be.equal(1);
             });
 
             it('should update a company certificate - FAIL (CertificateManager: Only the uploader can update the certificate)', async () => {
@@ -196,7 +198,7 @@ describe('CertificateManager', () => {
                 await expect(
                     certificateManagerContract
                         .connect(issuer)
-                        .updateCompanyCertificate(roleProof, certificateIds[0], assessmentStandards[1], issueDate, validFrom, validUntil)
+                        .updateCompanyCertificate(roleProof, certificateIds[0], assessmentStandards[1], issueDate, validFrom, validUntil, 1)
                 ).to.be.revertedWith('CertificateManager: Only the uploader can update the certificate');
             });
 
@@ -204,7 +206,7 @@ describe('CertificateManager', () => {
                 await expect(
                     certificateManagerContract
                         .connect(consignee)
-                        .updateCompanyCertificate(roleProof, 15, assessmentStandards[1], issueDate, validFrom, validUntil)
+                        .updateCompanyCertificate(roleProof, 15, assessmentStandards[1], issueDate, validFrom, validUntil, 1)
                 ).to.be.revertedWith('CertificateManager: Company certificate does not exist');
             });
 
@@ -230,7 +232,7 @@ describe('CertificateManager', () => {
                 await expect(
                     certificateManagerContract
                         .connect(consignee)
-                        .updateCompanyCertificate(roleProof, certificateIds[0], assessmentStandards[1], issueDate, validFrom, validUntil)
+                        .updateCompanyCertificate(roleProof, certificateIds[0], assessmentStandards[1], issueDate, validFrom, validUntil, 1)
                 ).to.be.revertedWith('CertificateManager: Certificate has already been evaluated');
             });
         });
@@ -364,6 +366,7 @@ describe('CertificateManager', () => {
                         issueDate,
                         new Date(new Date(validFrom).getDate() + 1).getTime(),
                         new Date(new Date(validUntil).getDate() + 1).getTime(),
+                        2,
                         [processTypes[0]]
                     );
                 await updateTx.wait();
@@ -373,6 +376,7 @@ describe('CertificateManager', () => {
                 expect(updatedCertificate.baseInfo.issueDate).to.be.equal(issueDate);
                 expect(updatedCertificate.validFrom).to.be.equal(new Date(validFrom).getDate() + 1);
                 expect(updatedCertificate.validUntil).to.be.equal(new Date(validUntil).getDate() + 1);
+                expect(updatedCertificate.baseInfo.document.documentType).to.be.equal(2);
                 expect(updatedCertificate.processTypes).to.be.deep.equal([processTypes[0]]);
             });
 
@@ -402,6 +406,7 @@ describe('CertificateManager', () => {
                             issueDate,
                             new Date(new Date(validFrom).getDate() + 1).getTime(),
                             new Date(new Date(validUntil).getDate() + 1).getTime(),
+                            2,
                             [processTypes[0]]
                         )
                 ).to.be.revertedWith('CertificateManager: Only the uploader can update the certificate');
@@ -418,6 +423,7 @@ describe('CertificateManager', () => {
                             issueDate,
                             new Date(new Date(validFrom).getDate() + 1).getTime(),
                             new Date(new Date(validUntil).getDate() + 1).getTime(),
+                            2,
                             [processTypes[0]]
                         )
                 ).to.be.revertedWith('CertificateManager: Scope certificate does not exist');
@@ -453,6 +459,7 @@ describe('CertificateManager', () => {
                             issueDate,
                             new Date(new Date(validFrom).getDate() + 1).getTime(),
                             new Date(new Date(validUntil).getDate() + 1).getTime(),
+                            2,
                             [processTypes[0]]
                         )
                 ).to.be.revertedWith('CertificateManager: Certificate has already been evaluated');
@@ -487,6 +494,7 @@ describe('CertificateManager', () => {
                             issueDate,
                             new Date(new Date(validFrom).getDate() + 1).getTime(),
                             new Date(new Date(validUntil).getDate() + 1).getTime(),
+                            2,
                             [...processTypes, 'custom process type']
                         )
                 ).to.be.revertedWith('CertificateManager: Process type does not exist');
@@ -598,7 +606,7 @@ describe('CertificateManager', () => {
 
                 const updateTx = await certificateManagerContract
                     .connect(consignee)
-                    .updateMaterialCertificate(roleProof, certificateIds[0], assessmentStandards[1], issueDate, 4);
+                    .updateMaterialCertificate(roleProof, certificateIds[0], assessmentStandards[1], issueDate, 2, 4);
                 await updateTx.wait();
 
                 const updatedCertificate = await certificateManagerContract.getMaterialCertificate(roleProof, certificateIds[0]);
@@ -627,7 +635,7 @@ describe('CertificateManager', () => {
                 await expect(
                     certificateManagerContract
                         .connect(issuer)
-                        .updateMaterialCertificate(roleProof, certificateIds[0], assessmentStandards[1], issueDate, 3)
+                        .updateMaterialCertificate(roleProof, certificateIds[0], assessmentStandards[1], issueDate, 2, 3)
                 ).to.be.revertedWith('CertificateManager: Only the uploader can update the certificate');
             });
 
@@ -651,7 +659,7 @@ describe('CertificateManager', () => {
                 await expect(
                     certificateManagerContract
                         .connect(consignee)
-                        .updateMaterialCertificate(roleProof, certificateIds[0], assessmentStandards[1], issueDate, 0)
+                        .updateMaterialCertificate(roleProof, certificateIds[0], assessmentStandards[1], issueDate, 2, 0)
                 ).to.be.revertedWith('CertificateManager: Material does not exist');
             });
         });

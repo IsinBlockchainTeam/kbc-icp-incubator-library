@@ -1,134 +1,231 @@
-import { Signer } from 'ethers';
-import { Shipment as ShipmentContract, Shipment__factory } from '../smart-contracts';
-import {
-    DocumentEvaluationStatus,
-    DocumentInfo,
-    DocumentType,
-    EvaluationStatus,
-    Phase,
-    Shipment
-} from '../entities/Shipment';
-import { RoleProof } from '../types/RoleProof';
+import type { ActorSubclass, Identity } from '@dfinity/agent';
+import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
+import { createActor } from 'icp-declarations/entity_manager';
+import { Phase, Shipment } from '../entities/Shipment';
+import { EntityBuilder } from '../utils/EntityBuilder';
+import { DocumentInfo, DocumentType } from '../entities/Document';
+import { EvaluationStatus } from '../entities/Evaluation';
+import { HandleIcpError } from '../decorators/HandleIcpError';
 
 export class ShipmentDriver {
-    private _contract: ShipmentContract;
+    private _actor: ActorSubclass<_SERVICE>;
 
-    constructor(signer: Signer, shipmentAddress: string) {
-        this._contract = Shipment__factory.connect(shipmentAddress, signer.provider!).connect(
-            signer
+    public constructor(icpIdentity: Identity, canisterId: string, host?: string) {
+        this._actor = createActor(canisterId, {
+            agentOptions: {
+                identity: icpIdentity,
+                ...(host && { host })
+            }
+        });
+    }
+
+    async getShipments(): Promise<Shipment[]> {
+        const resp = await this._actor.getShipments();
+        return resp.map((rawShipment) => EntityBuilder.buildShipment(rawShipment));
+    }
+
+    async getShipment(id: number): Promise<Shipment> {
+        const resp = await this._actor.getShipment(BigInt(id));
+        return EntityBuilder.buildShipment(resp);
+    }
+
+    async getShipmentPhase(id: number): Promise<Phase> {
+        const resp = await this._actor.getShipmentPhase(BigInt(id));
+        return EntityBuilder.buildShipmentPhase(resp);
+    }
+
+    @HandleIcpError()
+    async getDocumentsByType(id: number, documentType: DocumentType): Promise<DocumentInfo[]> {
+        const documents = await this._actor.getDocumentsByType(
+            BigInt(id),
+            EntityBuilder.buildIDLDocumentType(documentType)
         );
+        return documents.map((document) => EntityBuilder.buildDocumentInfo(document));
     }
 
-    async getShipment(roleProof: RoleProof): Promise<Shipment> {
-        const result = await this._contract.getShipment(roleProof);
-        return new Shipment(
-            result[0], // supplier
-            result[1], // commissioner
-            result[2], // externalUrl
-            result[3], // escrowAddress
-            result[4], // documentManagerAddress
-            result[5], // sampleEvaluationStatus
-            result[6], // detailsEvaluationStatus
-            result[7], // qualityEvaluationStatus
-            result[8], // fundsStatus
-            result[9], // detailsSet
-            result[10].toNumber(), // shipmentNumber
-            new Date(result[11].toNumber()), // expirationDate
-            new Date(result[12].toNumber()), // fixingDate
-            result[13], // targetExchange
-            result[14].toNumber(), // differentialApplied
-            result[15].toNumber(), // price
-            result[16].toNumber(), // quantity
-            result[17].toNumber(), // containersNumber
-            result[18].toNumber(), // netWeight
-            result[19].toNumber(), // grossWeight
+    async setShipmentDetails(
+        id: number,
+        shipmentNumber: number,
+        expirationDate: Date,
+        fixingDate: Date,
+        targetExchange: string,
+        differentialApplied: number,
+        price: number,
+        quantity: number,
+        containersNumber: number,
+        netWeight: number,
+        grossWeight: number
+    ): Promise<Shipment> {
+        const resp = await this._actor.setShipmentDetails(
+            BigInt(id),
+            BigInt(shipmentNumber),
+            BigInt(expirationDate.getTime()),
+            BigInt(fixingDate.getTime()),
+            targetExchange,
+            BigInt(differentialApplied),
+            BigInt(price),
+            BigInt(quantity),
+            BigInt(containersNumber),
+            BigInt(netWeight),
+            BigInt(grossWeight)
         );
+        return EntityBuilder.buildShipment(resp);
     }
 
-    async getPhase(roleProof: RoleProof): Promise<Phase> {
-        return this._contract.getPhase(roleProof);
-    }
-
-    async getDocumentsIds(roleProof: RoleProof, documentType: DocumentType): Promise<number[]> {
-        return (await this._contract.getDocumentsIds(roleProof, documentType)).map((value) =>
-            value.toNumber()
+    @HandleIcpError()
+    async evaluateSample(id: number, evaluationStatus: EvaluationStatus): Promise<Shipment> {
+        const resp = await this._actor.evaluateSample(
+            BigInt(id),
+            EntityBuilder.buildICPEvaluationStatus(evaluationStatus)
         );
+        return EntityBuilder.buildShipment(resp);
     }
 
-    async getDocumentInfo(roleProof: RoleProof, documentId: number): Promise<DocumentInfo | null> {
-        if (documentId < 0) {
-            throw new Error('Document ID must be greater than or equal to 0');
-        }
-        const result = await this._contract.getDocumentInfo(roleProof, documentId);
-        if(!result[4])
-            return null;
-        return new DocumentInfo(result[0].toNumber(), result[1], result[2], result[3]);
-    }
-
-    async setDetails(roleProof: RoleProof, shipmentNumber: number, expirationDate: Date, fixingDate: Date, targetExchange: string, differentialApplied: number, price: number, quantity: number, containersNumber: number, netWeight: number, grossWeight: number): Promise<void> {
-        if (shipmentNumber < 0 || price < 0 || quantity < 0 || containersNumber < 0 || netWeight < 0 || grossWeight < 0 || differentialApplied < 0) {
-            throw new Error('Invalid arguments');
-        }
-        const tx = await this._contract.setDetails(roleProof, shipmentNumber, expirationDate.getTime(), fixingDate.getTime(), targetExchange, differentialApplied, price, quantity, containersNumber, netWeight, grossWeight);
-        await tx.wait();
-    }
-
-    async evaluateSample(roleProof: RoleProof, evaluationStatus: EvaluationStatus): Promise<void> {
-        const tx = await this._contract.evaluateSample(roleProof, evaluationStatus);
-        await tx.wait();
-    }
-
-    async evaluateDetails(roleProof: RoleProof, evaluationStatus: EvaluationStatus): Promise<void> {
-        const tx = await this._contract.evaluateDetails(roleProof, evaluationStatus);
-        await tx.wait();
-    }
-
-    async evaluateQuality(roleProof: RoleProof, evaluationStatus: EvaluationStatus): Promise<void> {
-        const tx = await this._contract.evaluateQuality(roleProof, evaluationStatus);
-        await tx.wait();
-    }
-
-    async depositFunds(roleProof: RoleProof, amount: number): Promise<void> {
-        if (amount <= 0) {
-            throw new Error('Amount must be greater than 0');
-        }
-        const tx = await this._contract.depositFunds(roleProof, amount);
-        await tx.wait();
-    }
-
-    async addDocument(roleProof: RoleProof, documentType: DocumentType, externalUrl: string, documentHash: string): Promise<void> {
-        const tx = await this._contract.addDocument(
-            roleProof,
-            documentType,
-            externalUrl,
-            documentHash
+    async evaluateShipmentDetails(
+        id: number,
+        evaluationStatus: EvaluationStatus
+    ): Promise<Shipment> {
+        const resp = await this._actor.evaluateShipmentDetails(
+            BigInt(id),
+            EntityBuilder.buildICPEvaluationStatus(evaluationStatus)
         );
-        await tx.wait();
+        return EntityBuilder.buildShipment(resp);
     }
 
-    async updateDocument(roleProof: RoleProof, documentId: number, externalUrl: string, documentHash: string): Promise<void> {
-        const tx = await this._contract.updateDocument(
-            roleProof,
-            documentId,
-            externalUrl,
-            documentHash
+    @HandleIcpError()
+    async evaluateQuality(id: number, evaluationStatus: EvaluationStatus): Promise<Shipment> {
+        const resp = await this._actor.evaluateQuality(
+            BigInt(id),
+            EntityBuilder.buildICPEvaluationStatus(evaluationStatus)
         );
-        await tx.wait();
+        return EntityBuilder.buildShipment(resp);
     }
 
-    async evaluateDocument(roleProof: RoleProof, documentId: number, documentEvaluationStatus: DocumentEvaluationStatus): Promise<void> {
-        if (documentId < 0) {
-            throw new Error('Document ID must be greater than or equal to 0');
-        }
-        const tx = await this._contract.evaluateDocument(roleProof, documentId, documentEvaluationStatus);
-        await tx.wait();
+    async determineEscrowAddress(id: number): Promise<Shipment> {
+        const resp = await this._actor.determineEscrowAddress(BigInt(id));
+        return EntityBuilder.buildShipment(resp);
+    }
+
+    @HandleIcpError()
+    async depositFunds(id: number, amount: number): Promise<Shipment> {
+        const resp = await this._actor.depositFunds(BigInt(id), BigInt(amount));
+        return EntityBuilder.buildShipment(resp);
+    }
+
+    async lockFunds(id: number): Promise<Shipment> {
+        const resp = await this._actor.lockFunds(BigInt(id));
+        return EntityBuilder.buildShipment(resp);
+    }
+
+    async unlockFunds(id: number): Promise<Shipment> {
+        const resp = await this._actor.unlockFunds(BigInt(id));
+        return EntityBuilder.buildShipment(resp);
+    }
+
+    @HandleIcpError()
+    async getDocuments(id: number): Promise<Map<DocumentType, DocumentInfo[]>> {
+        const documentArray = await this._actor.getDocuments(BigInt(id));
+        return EntityBuilder.buildShipmentDocuments(documentArray);
+    }
+
+    async getDocument(id: number, documentId: number): Promise<DocumentInfo> {
+        const document = await this._actor.getDocument(BigInt(id), BigInt(documentId));
+        return EntityBuilder.buildDocumentInfo(document);
+    }
+
+    async addDocument(
+        id: number,
+        documentType: DocumentType,
+        externalUrl: string
+    ): Promise<Shipment> {
+        const resp = await this._actor.addDocument(
+            BigInt(id),
+            EntityBuilder.buildIDLDocumentType(documentType),
+            externalUrl
+        );
+        return EntityBuilder.buildShipment(resp);
+    }
+
+    @HandleIcpError()
+    async updateDocument(id: number, documentId: number, externalUrl: string): Promise<Shipment> {
+        const resp = await this._actor.updateDocument(BigInt(id), BigInt(documentId), externalUrl);
+        return EntityBuilder.buildShipment(resp);
+    }
+
+    async evaluateDocument(
+        id: number,
+        documentId: number,
+        evaluationStatus: EvaluationStatus
+    ): Promise<Shipment> {
+        const resp = await this._actor.evaluateDocument(
+            BigInt(id),
+            BigInt(documentId),
+            EntityBuilder.buildICPEvaluationStatus(evaluationStatus)
+        );
+        return EntityBuilder.buildShipment(resp);
     }
 
     async getUploadableDocuments(phase: Phase): Promise<DocumentType[]> {
-        return this._contract.getUploadableDocuments(phase);
+        const documents = await this._actor.getUploadableDocuments(
+            EntityBuilder.buildShipmentIDLPhase(phase)
+        );
+        return documents.map((document) => EntityBuilder.buildDocumentType(document));
     }
 
     async getRequiredDocuments(phase: Phase): Promise<DocumentType[]> {
-        return this._contract.getRequiredDocuments(phase);
+        const documents = await this._actor.getRequiredDocuments(
+            EntityBuilder.buildShipmentIDLPhase(phase)
+        );
+        return documents.map((document) => EntityBuilder.buildDocumentType(document));
+    }
+
+    async getPhase1Documents(): Promise<DocumentType[]> {
+        const documents = await this._actor.getPhase1Documents();
+        return documents.map((document) => EntityBuilder.buildDocumentType(document));
+    }
+
+    async getPhase1RequiredDocuments(): Promise<DocumentType[]> {
+        const documents = await this._actor.getPhase1RequiredDocuments();
+        return documents.map((document) => EntityBuilder.buildDocumentType(document));
+    }
+
+    async getPhase2Documents(): Promise<DocumentType[]> {
+        const documents = await this._actor.getPhase2Documents();
+        return documents.map((document) => EntityBuilder.buildDocumentType(document));
+    }
+
+    async getPhase2RequiredDocuments(): Promise<DocumentType[]> {
+        const documents = await this._actor.getPhase2RequiredDocuments();
+        return documents.map((document) => EntityBuilder.buildDocumentType(document));
+    }
+
+    async getPhase3Documents(): Promise<DocumentType[]> {
+        const documents = await this._actor.getPhase3Documents();
+        return documents.map((document) => EntityBuilder.buildDocumentType(document));
+    }
+
+    async getPhase3RequiredDocuments(): Promise<DocumentType[]> {
+        const documents = await this._actor.getPhase3RequiredDocuments();
+        return documents.map((document) => EntityBuilder.buildDocumentType(document));
+    }
+
+    async getPhase4Documents(): Promise<DocumentType[]> {
+        const documents = await this._actor.getPhase4Documents();
+        return documents.map((document) => EntityBuilder.buildDocumentType(document));
+    }
+
+    async getPhase4RequiredDocuments(): Promise<DocumentType[]> {
+        const documents = await this._actor.getPhase4RequiredDocuments();
+        return documents.map((document) => EntityBuilder.buildDocumentType(document));
+    }
+
+    async getPhase5Documents(): Promise<DocumentType[]> {
+        const documents = await this._actor.getPhase5Documents();
+        return documents.map((document) => EntityBuilder.buildDocumentType(document));
+    }
+
+    async getPhase5RequiredDocuments(): Promise<DocumentType[]> {
+        const documents = await this._actor.getPhase5RequiredDocuments();
+        return documents.map((document) => EntityBuilder.buildDocumentType(document));
     }
 }

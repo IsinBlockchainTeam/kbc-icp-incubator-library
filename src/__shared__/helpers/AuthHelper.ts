@@ -1,7 +1,7 @@
 import { Wallet } from 'ethers';
-import { SiweIdentityProvider } from '../../drivers/icp/SiweIdentityProvider';
+import { SiweIdentityProvider } from '../../drivers/SiweIdentityProvider';
 import { ICP } from '../constants/constants';
-import { AuthenticationDriver } from '../../drivers/icp/AuthenticationDriver';
+import { AuthenticationDriver } from '../../drivers/AuthenticationDriver';
 import { createRoleProof } from '../../__testUtils__/proof';
 
 export type Login = {

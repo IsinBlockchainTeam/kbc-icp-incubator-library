@@ -6,7 +6,7 @@ import {IDLProductCategory} from "./ProductCategory";
 export const IDLOrderStatus = IDL.Variant({
     PENDING: IDL.Null,
     CONFIRMED: IDL.Null,
-    EXPIRED: IDL.Null,
+    EXPIRED: IDL.Null
 });
 export const IDLOrderLineRaw = IDL.Record({
     productCategoryId: IDL.Nat,

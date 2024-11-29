@@ -1,23 +1,18 @@
-import { StableBTreeMap } from "azle";
-import {
-    Organization,
-    OrganizationRoleType,
-} from "../models/types/src/Organization";
-import { StableMemoryId } from "../utils/stableMemory";
-import { OrganizationPresentation } from "../models/types/src/presentations/OrganizationPresentation";
-import AuthenticationService from "./AuthenticationService";
-import { NarrowedOrganizationCreator } from "../factories/organization/NarrowedOrganizationCreator";
-import { BroadedOrganizationCreator } from "../factories/organization/BroadedOrganizationCreator";
-import OrderService from "./OrderService";
-import { OrganizationNotFoundError } from "../models/errors";
+import { StableBTreeMap } from 'azle';
+import { Organization, OrganizationRoleType } from '../models/types/src/Organization';
+import { StableMemoryId } from '../utils/stableMemory';
+import { OrganizationPresentation } from '../models/types/src/presentations/OrganizationPresentation';
+import AuthenticationService from './AuthenticationService';
+import { NarrowedOrganizationCreator } from '../factories/organization/NarrowedOrganizationCreator';
+import { BroadedOrganizationCreator } from '../factories/organization/BroadedOrganizationCreator';
+import OrderService from './OrderService';
+import { OrganizationNotFoundError } from '../models/errors';
 
 class OrganizationService {
     private static _instance: OrganizationService;
-    private _organizations = StableBTreeMap<string, Organization>(
-        StableMemoryId.ORGANIZATIONS,
-    );
 
-    private constructor() {}
+    private _organizations = StableBTreeMap<string, Organization>(StableMemoryId.ORGANIZATIONS);
+
     static get instance() {
         if (!OrganizationService._instance) {
             OrganizationService._instance = new OrganizationService();
@@ -26,32 +21,18 @@ class OrganizationService {
     }
 
     isOrganizationKnown(ethAddress: string): boolean {
-        const authenticatedCompanyEthAddress =
-            AuthenticationService.instance.getDelegatorAddress();
+        const authenticatedCompanyEthAddress = AuthenticationService.instance.getDelegatorAddress();
 
-        const orderBetweenParties =
-            OrderService.instance.getOrdersBetweenParties(
-                authenticatedCompanyEthAddress,
-                ethAddress,
-            );
+        const orderBetweenParties = OrderService.instance.getOrdersBetweenParties(authenticatedCompanyEthAddress, ethAddress);
 
-        return (
-            orderBetweenParties.length > 0 ||
-            ethAddress === authenticatedCompanyEthAddress
-        );
+        return orderBetweenParties.length > 0 || ethAddress === authenticatedCompanyEthAddress;
     }
 
-    getOrganizationPresentation(
-        organization: Organization,
-    ): OrganizationPresentation {
-        const isOrganizationKnown = this.isOrganizationKnown(
-            organization.ethAddress,
-        );
+    getOrganizationPresentation(organization: Organization): OrganizationPresentation {
+        const isOrganizationKnown = this.isOrganizationKnown(organization.ethAddress);
 
         if (!isOrganizationKnown) {
-            return new NarrowedOrganizationCreator().fromOrganization(
-                organization,
-            );
+            return new NarrowedOrganizationCreator().fromOrganization(organization);
         }
 
         return new BroadedOrganizationCreator().fromOrganization(organization);
@@ -60,9 +41,7 @@ class OrganizationService {
     getOrganizations(): OrganizationPresentation[] {
         const organizations = this._organizations.values();
 
-        return organizations.map((organization) => {
-            return this.getOrganizationPresentation(organization);
-        });
+        return organizations.map((organization) => this.getOrganizationPresentation(organization));
     }
 
     getOrganization(ethAddress: string): OrganizationPresentation {
@@ -85,10 +64,9 @@ class OrganizationService {
         role: OrganizationRoleType,
         telephone: string,
         email: string,
-        image: string,
+        image: string
     ): OrganizationPresentation {
-        const authenticatedCompanyEthAddress =
-            AuthenticationService.instance.getDelegatorAddress();
+        const authenticatedCompanyEthAddress = AuthenticationService.instance.getDelegatorAddress();
 
         const organization: Organization = {
             ethAddress: authenticatedCompanyEthAddress,
@@ -102,13 +80,10 @@ class OrganizationService {
             role,
             telephone,
             email,
-            image,
+            image
         };
 
-        this._organizations.insert(
-            authenticatedCompanyEthAddress,
-            organization,
-        );
+        this._organizations.insert(authenticatedCompanyEthAddress, organization);
 
         return new BroadedOrganizationCreator().fromOrganization(organization);
     }
@@ -125,7 +100,7 @@ class OrganizationService {
         role: OrganizationRoleType,
         telephone: string,
         email: string,
-        image: string,
+        image: string
     ): OrganizationPresentation {
         const organization = this._organizations.get(ethAddress);
         if (!organization) {
@@ -144,14 +119,12 @@ class OrganizationService {
             role,
             telephone,
             email,
-            image,
+            image
         };
 
         this._organizations.insert(ethAddress, updatedOrganization);
 
-        return new BroadedOrganizationCreator().fromOrganization(
-            updatedOrganization,
-        );
+        return new BroadedOrganizationCreator().fromOrganization(updatedOrganization);
     }
 
     deleteOrganization(ethAddress: string): boolean {

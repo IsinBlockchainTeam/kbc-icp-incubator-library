@@ -1,7 +1,7 @@
-import {RoleProof} from "../models/types";
-import {update} from "azle";
-import {IDLRoleProof} from "../models/idls";
-import AuthenticationService from "../services/AuthenticationService";
+import { update } from 'azle';
+import { RoleProof } from '../models/types';
+import { IDLRoleProof } from '../models/idls';
+import AuthenticationService from '../services/AuthenticationService';
 
 class AuthenticationController {
     @update([IDLRoleProof])
@@ -11,7 +11,7 @@ class AuthenticationController {
 
     @update([])
     async logout(): Promise<void> {
-        return AuthenticationService.instance.logout();
+        await AuthenticationService.instance.logout();
     }
 }
 export default AuthenticationController;

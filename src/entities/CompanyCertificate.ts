@@ -1,9 +1,5 @@
-import {
-    BaseCertificate,
-    CertificateDocumentInfo,
-    CertificateType,
-    DocumentEvaluationStatus
-} from './Certificate';
+import { BaseCertificate, CertificateDocumentInfo, CertificateType } from './Certificate';
+import { EvaluationStatus } from './Evaluation';
 
 export class CompanyCertificate extends BaseCertificate {
     private _validFrom: Date;
@@ -14,23 +10,29 @@ export class CompanyCertificate extends BaseCertificate {
         id: number,
         issuer: string,
         subject: string,
+        uploadedBy: string,
         assessmentStandard: string,
+        assessmentAssuranceLevel: string,
         document: CertificateDocumentInfo,
-        evaluationStatus: DocumentEvaluationStatus,
+        evaluationStatus: EvaluationStatus,
         certificateType: CertificateType,
         issueDate: Date,
         validFrom: Date,
-        validUntil: Date
+        validUntil: Date,
+        notes?: string
     ) {
         super(
             id,
             issuer,
             subject,
+            uploadedBy,
             assessmentStandard,
+            assessmentAssuranceLevel,
             document,
             evaluationStatus,
             certificateType,
-            issueDate
+            issueDate,
+            notes
         );
         this._validFrom = validFrom;
         this._validUntil = validUntil;

@@ -3,17 +3,17 @@ import {
     mockProductCategories,
     ProductCategoryParams
 } from '../__shared__/constants/mock-data';
-import { ProductCategoryDriver } from '../drivers/icp/ProductCategoryDriver';
-import { SiweIdentityProvider } from '../drivers/icp/SiweIdentityProvider';
+import { ProductCategoryDriver } from '../drivers/ProductCategoryDriver';
+import { SiweIdentityProvider } from '../drivers/SiweIdentityProvider';
 import { ICP, USERS } from '../__shared__/constants/constants';
 import { ProductCategory } from '../entities/ProductCategory';
 import { AuthHelper, Login } from '../__shared__/helpers/AuthHelper';
 import { Material } from '../entities/Material';
-import { MaterialDriver } from '../drivers/icp/MaterialDriver';
-import { OfferDriver } from '../drivers/icp/OfferDriver';
+import { MaterialDriver } from '../drivers/MaterialDriver';
+import { OfferDriver } from '../drivers/OfferDriver';
 import { Offer } from '../entities/Offer';
-import { OrderDriver, OrderParams } from '../drivers/icp/OrderDriver';
-import { Order } from '../entities/icp/Order';
+import { OrderDriver, OrderParams } from '../drivers/OrderDriver';
+import { Order } from '../entities/Order';
 
 const createProductCategory = async (
     userSiweIdentityProvider: SiweIdentityProvider,

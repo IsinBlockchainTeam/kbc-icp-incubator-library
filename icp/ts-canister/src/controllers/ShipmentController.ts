@@ -1,10 +1,9 @@
-import {IDL, query, update} from "azle";
+import { IDL, query, update } from 'azle';
 import {
     IDLPhase,
     IDLShipment,
     IDLEvaluationStatus,
-    IDLDocumentInfo,
-    IDLDocumentType
+    IDLDocumentInfo, IDLDocumentType
 } from "../models/idls";
 import {
     Phase, Shipment,

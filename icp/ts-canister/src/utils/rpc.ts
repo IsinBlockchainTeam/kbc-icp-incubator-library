@@ -1,4 +1,6 @@
-import { call, IDL } from "azle";
+import { call, IDL } from 'azle';
+import { ethers } from 'ethers';
+import { ic, Principal } from 'azle/experimental';
 import {
     IDLFeeHistoryArgs,
     IDLGetTransactionCountArgs,
@@ -9,52 +11,45 @@ import {
     IDLRpcConfig,
     IDLRpcService,
     IDLRpcServices,
-    IDLGetAddressResponse,
+    IDLGetAddressResponse
 } from "../models/idls";
-import { ethers } from "ethers";
-import { calculateRsvForTEcdsa, ecdsaPublicKey, signWithEcdsa } from "./ecdsa";
-import { ic, Principal } from "azle/experimental";
-import {
-    getEvmChainId,
-    getEvmRpcCanisterId,
-    getEvmRpcUrl,
-    getEvmTransactionType,
-    getSiweProviderCanisterId,
-} from "./env";
+import {calculateRsvForTEcdsa, ecdsaPublicKey, signWithEcdsa} from "./ecdsa";
+import { EVM } from '../constants/evm';
+import { CANISTER } from '../constants/canister';
 
 export async function jsonRpcRequest(body: Record<string, any>): Promise<any> {
     if (process.env.CANISTER_ID_EVM_RPC === undefined) {
-        throw new Error("process.env.CANISTER_ID_EVM_RPC is not defined");
+        throw new Error('process.env.CANISTER_ID_EVM_RPC is not defined');
     }
     const evmRpcCanisterId = process.env.CANISTER_ID_EVM_RPC;
     const jsonRpcSource = {
         Custom: {
-            url: getEvmRpcUrl(),
-            headers: [],
-        },
+            url: EVM.RPC_URL(),
+            headers: []
+        }
     };
-    return await call(evmRpcCanisterId, "request", {
+    return await call(evmRpcCanisterId, 'request', {
         paramIdlTypes: [IDLRpcService, IDL.Text, IDL.Nat64],
         returnIdlType: IDLRequestResult,
         args: [jsonRpcSource, JSON.stringify(body), 10_000],
-        payment: 1_000_000_000n,
+        payment: 1_000_000_000n
     });
 }
 export async function ethMaxPriorityFeePerGas(): Promise<bigint> {
     const response = await jsonRpcRequest({
-        jsonrpc: "2.0",
-        method: "eth_maxPriorityFeePerGas",
+        jsonrpc: '2.0',
+        method: 'eth_maxPriorityFeePerGas',
         params: [],
-        id: 1,
+        id: 1
     });
 
-    console.log("ethMaxPriorityFeePerGas response:", response);
-    //TODO improve error handling
+    console.log('ethMaxPriorityFeePerGas response:', response);
+    // TODO: improve error handling
     return BigInt(JSON.parse(response.Ok).result);
 }
 export async function ethFeeHistory(): Promise<any> {
     if (process.env.CANISTER_ID_EVM_RPC === undefined) {
-        throw new Error("process.env.CANISTER_ID_EVM_RPC is not defined");
+        throw new Error('process.env.CANISTER_ID_EVM_RPC is not defined');
     }
     const evmRpcCanisterId = process.env.CANISTER_ID_EVM_RPC;
 
@@ -62,34 +57,30 @@ export async function ethFeeHistory(): Promise<any> {
         // blockCount: 1,
         blockCount: 3,
         newestBlock: {
-            Latest: null,
+            Latest: null
         },
-        rewardPercentiles: [],
+        rewardPercentiles: []
     };
     const rpcSource = {
         Custom: {
-            chainId: getEvmChainId(),
+            chainId: EVM.CHAIN_ID(),
             services: [
                 {
-                    url: getEvmRpcUrl(),
-                    headers: [],
-                },
-            ],
-        },
+                    url: EVM.RPC_URL(),
+                    headers: []
+                }
+            ]
+        }
     };
-    console.log("ethFeeHistory rpcSource:", rpcSource);
+    console.log('ethFeeHistory rpcSource:', rpcSource);
 
-    const result = await call(evmRpcCanisterId, "eth_feeHistory", {
-        paramIdlTypes: [
-            IDLRpcServices,
-            IDL.Opt(IDLRpcConfig),
-            IDLFeeHistoryArgs,
-        ],
+    const result = await call(evmRpcCanisterId, 'eth_feeHistory', {
+        paramIdlTypes: [IDLRpcServices, IDL.Opt(IDLRpcConfig), IDLFeeHistoryArgs],
         returnIdlType: IDLMultiFeeHistoryResult,
         args: [rpcSource, [], jsonRpcArgs],
-        payment: 1_000_000_000n,
+        payment: 1_000_000_000n
     });
-    console.log("ethFeeHistory result:", result);
+    console.log('ethFeeHistory result:', result);
     return result;
     // // TODO improve error handling
     // return await call(
@@ -105,63 +96,57 @@ export async function ethFeeHistory(): Promise<any> {
 }
 export async function ethGetTransactionCount(address: string): Promise<number> {
     if (process.env.CANISTER_ID_EVM_RPC === undefined) {
-        throw new Error("process.env.CANISTER_ID_EVM_RPC is not defined");
+        throw new Error('process.env.CANISTER_ID_EVM_RPC is not defined');
     }
     const evmRpcCanisterId = process.env.CANISTER_ID_EVM_RPC;
     const jsonRpcArgs = {
         address,
         block: {
-            Latest: null,
-        },
+            Latest: null
+        }
     };
     const rpcSource = {
         Custom: {
-            chainId: getEvmChainId(),
+            chainId: EVM.CHAIN_ID(),
             services: [
                 {
-                    url: getEvmRpcUrl(),
-                    headers: [],
-                },
-            ],
-        },
+                    url: EVM.RPC_URL(),
+                    headers: []
+                }
+            ]
+        }
     };
 
-    const response = await call(evmRpcCanisterId, "eth_getTransactionCount", {
-        paramIdlTypes: [
-            IDLRpcServices,
-            IDL.Opt(IDLRpcConfig),
-            IDLGetTransactionCountArgs,
-        ],
+    const response = await call(evmRpcCanisterId, 'eth_getTransactionCount', {
+        paramIdlTypes: [IDLRpcServices, IDL.Opt(IDLRpcConfig), IDLGetTransactionCountArgs],
         returnIdlType: IDLMultiGetTransactionCountResult,
         args: [rpcSource, [], jsonRpcArgs],
-        payment: 1_000_000_000n,
+        payment: 1_000_000_000n
     });
     return Number(response.Consistent.Ok);
 }
 
-export async function ethSendRawTransaction(
-    rawTransaction: string,
-): Promise<any> {
+export async function ethSendRawTransaction(rawTransaction: string): Promise<any> {
     if (process.env.CANISTER_ID_EVM_RPC === undefined) {
-        throw new Error("process.env.CANISTER_ID_EVM_RPC is not defined");
+        throw new Error('process.env.CANISTER_ID_EVM_RPC is not defined');
     }
     const evmRpcCanisterId = process.env.CANISTER_ID_EVM_RPC;
     const rpcSource = {
         Custom: {
-            chainId: getEvmChainId(),
+            chainId: EVM.CHAIN_ID(),
             services: [
                 {
-                    url: getEvmRpcUrl(),
-                    headers: [],
-                },
-            ],
-        },
+                    url: EVM.RPC_URL(),
+                    headers: []
+                }
+            ]
+        }
     };
-    return await call(evmRpcCanisterId, "eth_sendRawTransaction", {
+    return await call(evmRpcCanisterId, 'eth_sendRawTransaction', {
         paramIdlTypes: [IDLRpcServices, IDL.Opt(IDLRpcConfig), IDL.Text],
         returnIdlType: IDLMultiSendRawTransactionResult,
         args: [rpcSource, [], rawTransaction],
-        payment: 1_000_000_000n,
+        payment: 1_000_000_000n
     });
 }
 
@@ -177,8 +162,8 @@ function buildV1Transaction(
         // gasPrice: 0,
         type: 0,
         data,
-        chainId: getEvmChainId(),
-        nonce,
+        chainId: EVM.CHAIN_ID(),
+        nonce
     });
 }
 
@@ -187,13 +172,8 @@ async function buildV2Transaction(
     data: string,
     nonce: number,
 ) {
-    const provider = new ethers.JsonRpcProvider(getEvmRpcUrl());
+    const provider = new ethers.JsonRpcProvider(EVM.RPC_URL());
     const feeData = await provider.getFeeData();
-    const mfpg = feeData.maxFeePerGas?.toString();
-    console.log("mfpg", mfpg);
-
-    //console.log('maxFeePerGas', maxFeePerGas);
-    if (!mfpg) throw new Error("maxFeePerGas not found");
 
     return ethers.Transaction.from({
         to: contractAddress,
@@ -203,8 +183,8 @@ async function buildV2Transaction(
         maxFeePerGas: feeData.maxFeePerGas,
         gasPrice: feeData.gasPrice,
         data,
-        chainId: getEvmChainId(),
-        nonce,
+        chainId: EVM.CHAIN_ID(),
+        nonce
     });
 }
 
@@ -217,37 +197,29 @@ export async function ethSendContractTransaction(
     const canisterAddress = ethers.computeAddress(
         ethers.hexlify(await ecdsaPublicKey([ic.id().toUint8Array()])),
     );
-    console.log("contractAddress", contractAddress);
-    console.log("canisterAddress", canisterAddress);
-    console.log("methodArgs", methodArgs);
+    console.log('contractAddress', contractAddress);
+    console.log('canisterAddress', canisterAddress);
+    console.log('methodArgs', methodArgs);
     const abiInterface = new ethers.Interface(contractAbi);
     const data = abiInterface.encodeFunctionData(methodName, methodArgs);
 
     const nonce = await ethGetTransactionCount(canisterAddress);
-    console.log("nonce", nonce);
+    console.log('nonce', nonce);
     let tx =
-        getEvmTransactionType() === "v1"
+        EVM.TRANSACTION_TYPE() === 'v1'
             ? buildV1Transaction(contractAddress, data, nonce)
             : await buildV2Transaction(contractAddress, data, nonce);
-    console.log("tx", tx);
+    console.log('tx', tx);
     const unsignedSerializedTx = tx.unsignedSerialized;
     const unsignedSerializedTxHash = ethers.keccak256(unsignedSerializedTx);
-    const signedSerializedTxHash = await signWithEcdsa(
-        [ic.id().toUint8Array()],
-        ethers.getBytes(unsignedSerializedTxHash),
-    );
-    const { r, s, v } = calculateRsvForTEcdsa(
-        getEvmChainId(),
-        canisterAddress,
-        unsignedSerializedTxHash,
-        signedSerializedTxHash,
-    );
+    const signedSerializedTxHash = await signWithEcdsa([ic.id().toUint8Array()], ethers.getBytes(unsignedSerializedTxHash));
+    const { r, s, v } = calculateRsvForTEcdsa(EVM.CHAIN_ID(), canisterAddress, unsignedSerializedTxHash, signedSerializedTxHash);
     tx.signature = { r, s, v };
     const rawTransaction = tx.serialized;
     const resp = await ethSendRawTransaction(rawTransaction);
     if (resp.Consistent.Err) {
-        console.log("Response", resp.Consistent.Err);
-        throw new Error("Received error when sending transaction.");
+        console.log('Response', resp.Consistent.Err);
+        throw new Error('Received error when sending transaction.');
     }
     return resp;
 }
@@ -262,32 +234,31 @@ export async function ethCallContract(
     const data = abiInterface.encodeFunctionData(methodName, methodArgs);
 
     const jsonRpcPayload = {
-        jsonrpc: "2.0",
-        method: "eth_call",
+        jsonrpc: '2.0',
+        method: 'eth_call',
         params: [
             {
                 to: contractAddress,
-                data: data,
+                data
             },
-            "latest",
+            'latest'
         ],
-        id: 1,
+        id: 1
     };
     const JsonRpcSource = {
         Custom: {
-            url: getEvmRpcUrl(),
-            headers: [],
-        },
+            url: EVM.RPC_URL(),
+            headers: []
+        }
     };
-    const resp = await call(getEvmRpcCanisterId(), "request", {
+    const resp = await call(CANISTER.EVM_RPC_ID(), 'request', {
         paramIdlTypes: [IDLRpcService, IDL.Text, IDL.Nat64],
         returnIdlType: IDLRequestResult,
         args: [JsonRpcSource, JSON.stringify(jsonRpcPayload), 2048],
-        payment: 2_000_000_000n,
+        payment: 2_000_000_000n
     });
-    console.log("Response", resp);
 
-    if (resp.Err) throw new Error("Unable to fetch revocation registry");
+    if (resp.Err) throw new Error('Unable to fetch revocation registry');
 
     const decodedResult = abiInterface.decodeFunctionResult(
         methodName,
@@ -298,11 +269,11 @@ export async function ethCallContract(
 }
 
 export async function getAddress(principal: Principal): Promise<string> {
-    const resp = await call(getSiweProviderCanisterId(), "get_address", {
+    const resp = await call(CANISTER.IC_SIWE_PROVIDER_ID(), 'get_address', {
         paramIdlTypes: [IDL.Vec(IDL.Nat8)],
         returnIdlType: IDLGetAddressResponse,
-        args: [principal.toUint8Array()],
+        args: [principal.toUint8Array()]
     });
-    if (resp.Err) throw new Error("Unable to fetch address");
+    if (resp.Err) throw new Error('Unable to fetch address');
     return resp.Ok;
 }

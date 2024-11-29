@@ -1,26 +1,32 @@
+import { EvaluationStatus } from './Evaluation';
+
 export enum CertificateType {
-    COMPANY,
-    SCOPE,
-    MATERIAL
+    COMPANY = 'COMPANY',
+    SCOPE = 'SCOPE',
+    MATERIAL = 'MATERIAL'
 }
 
-export enum DocumentType {
-    CERTIFICATE_OF_CONFORMITY,
-    COUNTRY_OF_ORIGIN,
-    SWISS_DECODE,
-    PRODUCTION_REPORT,
-    PRODUCTION_FACILITY_LICENSE
+export enum CertificateDocumentType {
+    CERTIFICATE_OF_CONFORMITY = 'CERTIFICATE_OF_CONFORMITY',
+    COUNTRY_OF_ORIGIN = 'COUNTRY_OF_ORIGIN',
+    SWISS_DECODE = 'SWISS_DECODE',
+    PRODUCTION_REPORT = 'PRODUCTION_REPORT',
+    PRODUCTION_FACILITY_LICENSE = 'PRODUCTION_FACILITY_LICENSE'
 }
 
-export enum DocumentEvaluationStatus {
-    NOT_EVALUATED,
-    APPROVED,
-    NOT_APPROVED
-}
+export type DocumentMetadata = {
+    filename: string;
+    fileType: string;
+};
 
 export type CertificateDocumentInfo = {
-    id: number;
-    documentType: DocumentType;
+    referenceId: string;
+    documentType: CertificateDocumentType;
+    externalUrl: string;
+    metadata: DocumentMetadata;
+};
+export type CertificateDocument = CertificateDocumentInfo & {
+    fileContent: Uint8Array;
 };
 
 export class BaseCertificate {
@@ -30,34 +36,46 @@ export class BaseCertificate {
 
     private _subject: string;
 
+    private _uploadedBy: string;
+
     private _assessmentStandard: string;
+
+    private _assessmentAssuranceLevel: string;
 
     private _document: CertificateDocumentInfo;
 
-    private _evaluationStatus: DocumentEvaluationStatus;
+    private _evaluationStatus: EvaluationStatus;
 
     private _certificateType: CertificateType;
 
     private _issueDate: Date;
 
+    private _notes?: string;
+
     constructor(
         id: number,
         issuer: string,
         subject: string,
+        uploadedBy: string,
         assessmentStandard: string,
+        assessmentAssuranceLevel: string,
         document: CertificateDocumentInfo,
-        evaluationStatus: DocumentEvaluationStatus,
+        evaluationStatus: EvaluationStatus,
         certificateType: CertificateType,
-        issueDate: Date
+        issueDate: Date,
+        notes?: string
     ) {
         this._id = id;
         this._issuer = issuer;
         this._subject = subject;
+        this._uploadedBy = uploadedBy;
         this._assessmentStandard = assessmentStandard;
+        this._assessmentAssuranceLevel = assessmentAssuranceLevel;
         this._document = document;
         this._evaluationStatus = evaluationStatus;
         this._certificateType = certificateType;
         this._issueDate = issueDate;
+        this._notes = notes;
     }
 
     get id(): number {
@@ -84,12 +102,28 @@ export class BaseCertificate {
         this._subject = value;
     }
 
+    get uploadedBy(): string {
+        return this._uploadedBy;
+    }
+
+    set uploadedBy(value: string) {
+        this._uploadedBy = value;
+    }
+
     get assessmentStandard(): string {
         return this._assessmentStandard;
     }
 
     set assessmentStandard(value: string) {
         this._assessmentStandard = value;
+    }
+
+    get assessmentAssuranceLevel(): string {
+        return this._assessmentAssuranceLevel;
+    }
+
+    set assessmentAssuranceLevel(value: string) {
+        this._assessmentAssuranceLevel = value;
     }
 
     get document(): CertificateDocumentInfo {
@@ -100,11 +134,11 @@ export class BaseCertificate {
         this._document = value;
     }
 
-    get evaluationStatus(): DocumentEvaluationStatus {
+    get evaluationStatus(): EvaluationStatus {
         return this._evaluationStatus;
     }
 
-    set evaluationStatus(value: DocumentEvaluationStatus) {
+    set evaluationStatus(value: EvaluationStatus) {
         this._evaluationStatus = value;
     }
 
@@ -122,5 +156,13 @@ export class BaseCertificate {
 
     set issueDate(value: Date) {
         this._issueDate = value;
+    }
+
+    get notes(): string | undefined {
+        return this._notes;
+    }
+
+    set notes(value: string | undefined) {
+        this._notes = value;
     }
 }

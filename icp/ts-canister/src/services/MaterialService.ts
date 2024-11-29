@@ -6,10 +6,11 @@ import {MaterialNotFoundError, ProductCategoryNotFoundError} from "../models/err
 
 class MaterialService {
     private static _instance: MaterialService;
+
     private _materials = StableBTreeMap<bigint, Material>(StableMemoryId.MATERIALS);
+
     private _productCategoryService = ProductCategoryService.instance;
 
-    private constructor() {}
     static get instance() {
         if (!MaterialService._instance) {
             MaterialService._instance = new MaterialService();
@@ -23,7 +24,7 @@ class MaterialService {
 
     getMaterial(id: bigint): Material {
         const result = this._materials.get(id);
-        if(result) {
+        if (result) {
             return result;
         }
         throw new MaterialNotFoundError();

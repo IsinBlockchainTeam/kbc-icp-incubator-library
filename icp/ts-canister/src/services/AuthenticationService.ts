@@ -1,10 +1,10 @@
-import { RoleProof, ROLES } from "../models/types";
-import { StableBTreeMap } from "azle";
-import { StableMemoryId } from "../utils/stableMemory";
-import { ic, Principal } from "azle/experimental";
-import DelegationService from "./DelegationService";
-import { getLoginDuration } from "../utils/env";
-import {NotAuthenticatedError, NotValidCredentialError} from "../models/errors";
+import { StableBTreeMap } from 'azle';
+import { ic, Principal } from 'azle/experimental';
+import { RoleProof, ROLES } from '../models/types';
+import { StableMemoryId } from '../utils/stableMemory';
+import DelegationService from './DelegationService';
+import { NotAuthenticatedError, NotValidCredentialError } from '../models/errors';
+import { LOGIN_DURATION } from '../constants/misc';
 
 type UserAuthentication = {
     roleProof: RoleProof;
@@ -12,13 +12,13 @@ type UserAuthentication = {
 };
 class AuthenticationService {
     private static _instance: AuthenticationService;
-    private _authentications = StableBTreeMap<string, UserAuthentication>(
-        StableMemoryId.AUTHENTICATION,
-    );
-    private _loginDuration: number = Number(getLoginDuration());
+
+    private _authentications = StableBTreeMap<string, UserAuthentication>(StableMemoryId.AUTHENTICATION);
+
+    private _loginDuration: number = Number(LOGIN_DURATION());
+
     private _incrementalRoles = [ROLES.VIEWER, ROLES.EDITOR, ROLES.SIGNER];
 
-    private constructor() {}
     static get instance() {
         if (!AuthenticationService._instance) {
             AuthenticationService._instance = new AuthenticationService();
@@ -29,17 +29,17 @@ class AuthenticationService {
     async authenticate(roleProof: RoleProof): Promise<void> {
         const unixTime = Number(ic.time().toString().substring(0, 13));
         const hasValidRole = await DelegationService.instance.hasValidRoleProof(roleProof, ic.caller());
-        if(!hasValidRole) throw new NotValidCredentialError();
+        if (!hasValidRole) throw new NotValidCredentialError();
         const expiration = unixTime + this._loginDuration;
         this._authentications.insert(ic.caller().toText(), {
             roleProof,
-            expiration,
+            expiration
         });
     }
 
     // TODO: periodically remove expired authentications
     async logout(): Promise<void> {
-        if(!this._authentications.containsKey(ic.caller().toText())){
+        if (!this._authentications.containsKey(ic.caller().toText())) {
             throw new NotAuthenticatedError();
         }
         this._authentications.remove(ic.caller().toText());
@@ -47,15 +47,13 @@ class AuthenticationService {
 
     getDelegatorAddress(caller: Principal = ic.caller()): string {
         const authentication = this._authentications.get(caller.toText());
-        if(!authentication)
-            throw new NotAuthenticatedError();
+        if (!authentication) throw new NotAuthenticatedError();
         return authentication.roleProof.membershipProof.delegatorAddress;
     }
 
     getRole(caller: Principal = ic.caller()): string {
         const authentication = this._authentications.get(caller.toText());
-        if(!authentication)
-            throw new NotAuthenticatedError();
+        if (!authentication) throw new NotAuthenticatedError();
         return authentication.roleProof.role;
     }
 
@@ -69,13 +67,9 @@ class AuthenticationService {
     isAtLeast(caller: Principal, minimumRole: string): boolean {
         const authentication = this._authentications.get(caller.toText());
         const unixTime = Number(ic.time().toString().substring(0, 13));
-        if (!authentication || authentication.expiration <= unixTime)
-            return false;
+        if (!authentication || authentication.expiration <= unixTime) return false;
         const actualRole = authentication.roleProof.role;
-        return (
-            this._incrementalRoles.indexOf(actualRole) >=
-            this._incrementalRoles.indexOf(minimumRole)
-        );
+        return this._incrementalRoles.indexOf(actualRole) >= this._incrementalRoles.indexOf(minimumRole);
     }
 }
 export default AuthenticationService;

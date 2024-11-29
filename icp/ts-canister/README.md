@@ -1,99 +1,44 @@
-# Azle Hello World
+# ICP Canisters
+This repository contains the source code for the ICP Canisters used inside the KBC project. The canisters are written using Azle CKD and are deployed on the Internet Computer.
 
--   [Installation](#installation)
--   [Deployment](#deployment)
-
-Azle helps you to build secure decentralized/replicated servers in TypeScript or JavaScript on [ICP](https://internetcomputer.org/). The current replication factor is [13-40 times](https://dashboard.internetcomputer.org/subnets).
-
-Please remember that Azle is in beta and thus it may have unknown security vulnerabilities due to the following:
-
--   Azle is built with various software packages that have not yet reached maturity
--   Azle does not yet have multiple independent security reviews/audits
--   Azle does not yet have many live, successful, continuously operating applications deployed to ICP
-
-## Installation
-
-> Windows is only supported through a Linux virtual environment of some kind, such as [WSL](https://learn.microsoft.com/en-us/windows/wsl/install)
-
-You will need [Node.js 20](#nodejs-20) and [dfx](#dfx) to develop ICP applications with Azle:
-
-### Node.js 20
-
-It's recommended to use nvm to install Node.js 20:
-
-```bash
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-```
-
-Restart your terminal and then run:
-
-```bash
-nvm install 20
-```
-
-Check that the installation went smoothly by looking for clean output from the following command:
-
-```bash
-node --version
-```
-
-### dfx
-
-Install the dfx command line tools for managing ICP applications:
-
+## Getting started
 ```bash
 DFX_VERSION=0.22.0 sh -ci "$(curl -fsSL https://internetcomputer.org/install.sh)"
 ```
+1. Enter the following folder using `cd icp/ts-canister`
+2. Rename the `.env.custom.template` file to `.env.custom` and fill in the required values.
+3. Install the dependencies using `npm install`
+4. In a separate terminal, start the local Internet Computer environment using `dfx start --clean`
+5. Deploy the canisters using `npm run deploy`
+6. Generate the canister declarations using `npm run generate`
+7. Build the package types using `npm run build-types`
 
-Check that the installation went smoothly by looking for clean output from the following command:
+### Getting started - by script
+1. Move inside the `ts-canister` folder, where there are Typescript files that defines the canisters' logic
+2. Run `npm i` to install the required dependencies
+3. Run the script `./canisters_lifecycle.sh`. It will:
+    - Start the local ICP network
+    - Create a `.env` file with the required environment variables
+    - Deploy the canisters
+    - Populate the canisters with some initial data
+    - Build the canisters and generate the `declarations` folder in which there is the Typescript code that can be used to interact with the canisters
+4. After the script has finished there are 3 options:
+    - Press `u` will update the canisters in case of changes in logic, without losing any data
+    - Press `t` will re-create a local network and re-deploy the canisters. This will delete all the data stored in the canisters and start with a clean state
+    - Press `q` will quit the script
 
-```bash
-dfx --version
-```
-
-## Env
-
-To deploy the canister:
-
-```bash
-source .env && dfx deploy
-```
-
-## Note
-Smart contracts ABIs are encoded in the project. If you want to update them, modify the `eth-abi` folder.
-
-## Env
-Create a `.env.custom` file containing the following variables:
-```bash
-EVM_RPC_URL=<RPC_URL>
-EVM_CHAIN_ID=<CHAIN_ID>
-EVM_ESCROW_MANAGER_ADDRESS=<ESCROW_MANAGER_ADDRESS>
-EVM_REVOCATION_REGISTRY_ADDRESS=<REVOCATION_REGISTRY_ADDRESS>
-EVM_MEMBERSHIP_ISSUER_ADDRESS=<MEMBERSHIP_ISSUER_ADDRESS>
-
-LOGIN_DURATION=<LOGIN_DURATION>
-
-GITLAB_TOKEN=<GITLAB_TOKEN>
-```
+The point **3** will work also if the console doesn't show the options, you can press the keys and the script will react accordingly.
 
 
-## Local deployment
-Inside `blockchain` folder, run:
-```bash
-npx hardhat node
-npm run deploy
-```
+### Environment Variables Configuration
+| Variable                          | Description                                                                                                                                  |
+|-----------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
+| `EVM_RPC_URL`                     | The URL of the RPC node to where smart contracts have been deployed                                                                          |
+| `EVM_CHAIN_ID`                    | The chain ID of the EVM network where smart contracts have been deployed                                                                     |
+| `EVM_ESCROW_MANAGER_ADDRESS`      | The address of the escrow manager contract                                                                                                   |
+| `EVM_REVOCATION_REGISTRY_ADDRESS` | The address of the revocation registry contract                                                                                              |
+| `EVM_MEMBERSHIP_ISSUER_ADDRESS`   | The address of the issuer of the membership VC                                                                                               |
+| `EVM_TRANSACTION_TYPE`            | The type of the EVM transaction to be used (v1/v2)                                                                                           |
+| `LOGIN_DURATION`                  | The duration of the login session in milliseconds                                                                                            |
+| `GITLAB_TOKEN`                    | The token for the ['common' private repository](https://gitlab-core.supsi.ch/dti-isin/giuliano.gremlich/blockchain/one_lib_to_rule_them_all) |
 
-Inside `blockchain/scripts/send-eth.ts` edit the recipient address to top-up the account. Then run:
-```bash
-npm run send-eth 
-```
-Create a ngrok tunnel to the local blockchain:
-```bash
-ngrok http 8545
-```
-Run:
-```bash
-dfx start --clean
-npm run deploy
-```

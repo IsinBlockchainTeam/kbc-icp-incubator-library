@@ -1,53 +1,45 @@
-import OrderService from "../OrderService";
-import {Order, ROLES, Shipment} from "../../models/types";
-import {StableBTreeMap} from "azle";
-import AuthenticationService from "../AuthenticationService";
-import {validateAddress, validateDeadline, validateInterestedParty} from "../../utils/validation";
-import ShipmentService from "../ShipmentService";
-import ProductCategoryService from "../ProductCategoryService";
+import { StableBTreeMap } from 'azle';
+import OrderService from '../OrderService';
+import { Order, ROLES, Shipment } from '../../models/types';
+import AuthenticationService from '../AuthenticationService';
+import { validateAddress, validateDeadline, validateInterestedParty } from '../../utils/validation';
+import ShipmentService from '../ShipmentService';
+import ProductCategoryService from '../ProductCategoryService';
 
 jest.mock('azle');
-jest.mock('../../services/AuthenticationService', () => {
-    return {
-        instance: {
-            getDelegatorAddress: jest.fn(),
-            getRole: jest.fn()
-        }
-    };
-});
-jest.mock('../../services/ShipmentService', () => {
-    return {
-        instance: {
-            createShipment: jest.fn(),
-        }
-    };
-});
-jest.mock('../../services/ProductCategoryService', () => {
-    return {
-        instance: {
-            getProductCategory: jest.fn(),
-        }
-    };
-});
-jest.mock('../../utils/validation', () => {
-    return {
-        validateAddress: jest.fn(),
-        validateDeadline: jest.fn(),
-        validateInterestedParty: jest.fn(),
-        validatePositiveNumber: jest.fn()
-    };
-});
-describe("OrderService", () => {
+jest.mock('../../services/AuthenticationService', () => ({
+    instance: {
+        getDelegatorAddress: jest.fn(),
+        getRole: jest.fn()
+    }
+}));
+jest.mock('../../services/ShipmentService', () => ({
+    instance: {
+        createShipment: jest.fn()
+    }
+}));
+jest.mock('../../services/ProductCategoryService', () => ({
+    instance: {
+        getProductCategory: jest.fn()
+    }
+}));
+jest.mock('../../utils/validation', () => ({
+    validateAddress: jest.fn(),
+    validateDeadline: jest.fn(),
+    validateInterestedParty: jest.fn(),
+    validatePositiveNumber: jest.fn()
+}));
+describe('OrderService', () => {
     let orderService: OrderService;
-    let authenticationServiceInstanceMock = AuthenticationService.instance as jest.Mocked<AuthenticationService>;
-    let shipmentServiceInstanceMock = ShipmentService.instance as jest.Mocked<ShipmentService>;
-    let productCategoryServiceInstanceMock = ProductCategoryService.instance as jest.Mocked<ProductCategoryService>;
+    const authenticationServiceInstanceMock = AuthenticationService.instance as jest.Mocked<AuthenticationService>;
+    const shipmentServiceInstanceMock = ShipmentService.instance as jest.Mocked<ShipmentService>;
+    const productCategoryServiceInstanceMock = ProductCategoryService.instance as jest.Mocked<ProductCategoryService>;
     const order = {
         id: 0n,
         supplier: '0xsupplier',
         customer: '0xcustomer',
         commissioner: '0xcommissioner',
-        status: { PENDING: null},
+        status: { PENDING: null },
         signatures: ['0xsupplier'],
         paymentDeadline: 1n,
         documentDeliveryDeadline: 2n,
@@ -61,7 +53,7 @@ describe("OrderService", () => {
         lines: [],
         token: '0xtoken',
         agreedAmount: 5n,
-        shipment: []
+        shipmentId: []
     } as Order;
 
     const mockedFn = {
@@ -81,8 +73,8 @@ describe("OrderService", () => {
         orderService = OrderService.instance;
     });
 
-    it("retrieves interested parties", () => {
-        const response = {id: 1n, supplier: '0xsupplier', customer: '0xcustomer', commissioner: '0xcommissioner'} as Order;
+    it('retrieves interested parties', () => {
+        const response = { id: 1n, supplier: '0xsupplier', customer: '0xcustomer', commissioner: '0xcommissioner' } as Order;
         mockedFn.get.mockReturnValue(response);
         expect(orderService.getInterestedParties(1n)).toEqual(['0xsupplier', '0xcustomer', '0xcommissioner']);
         expect(mockedFn.get).toHaveBeenCalled();
@@ -91,15 +83,15 @@ describe("OrderService", () => {
         expect(() => orderService.getInterestedParties(1n)).toThrow(new Error('Order not found'));
     });
 
-    it("retrieves all orders", () => {
-        const expectedResponse = [{id: 1n} as Order];
+    it('retrieves all orders', () => {
+        const expectedResponse = [{ id: 1n } as Order];
         mockedFn.values.mockReturnValue(expectedResponse);
         expect(orderService.getOrders()).toEqual(expectedResponse);
         expect(mockedFn.values).toHaveBeenCalled();
     });
 
-    it("retrieves a order by id", () => {
-        const expectedResponse = {id: 1n} as Order;
+    it('retrieves a order by id', () => {
+        const expectedResponse = { id: 1n } as Order;
         mockedFn.get.mockReturnValue(expectedResponse);
         expect(orderService.getOrder(1n)).toEqual(expectedResponse);
         expect(mockedFn.get).toHaveBeenCalled();
@@ -108,7 +100,7 @@ describe("OrderService", () => {
         expect(() => orderService.getOrder(1n)).toThrow(new Error('Order not found'));
     });
 
-    it("creates a order", () => {
+    it('creates a order', () => {
         const delegatorAddress = '0xsupplier';
         const role = ROLES.SIGNER;
         (validateAddress as jest.Mock).mockReturnValue(true);
@@ -117,64 +109,72 @@ describe("OrderService", () => {
         authenticationServiceInstanceMock.getDelegatorAddress.mockReturnValue(delegatorAddress);
         authenticationServiceInstanceMock.getRole.mockReturnValue(role);
         mockedFn.keys.mockReturnValue([]);
-        expect(orderService.createOrder(
-            order.supplier,
-            order.customer,
-            order.commissioner,
-            order.paymentDeadline,
-            order.documentDeliveryDeadline,
-            order.shippingDeadline,
-            order.deliveryDeadline,
-            order.arbiter,
-            order.token,
-            order.agreedAmount,
-            order.incoterms,
-            order.shipper,
-            order.shippingPort,
-            order.deliveryPort,
-            []
-        )).toEqual(order);
+        expect(
+            orderService.createOrder(
+                order.supplier,
+                order.customer,
+                order.commissioner,
+                order.paymentDeadline,
+                order.documentDeliveryDeadline,
+                order.shippingDeadline,
+                order.deliveryDeadline,
+                order.arbiter,
+                order.token,
+                order.agreedAmount,
+                order.incoterms,
+                order.shipper,
+                order.shippingPort,
+                order.deliveryPort,
+                []
+            )
+        ).toEqual(order);
         expect(mockedFn.keys).toHaveBeenCalled();
         expect(mockedFn.insert).toHaveBeenCalled();
 
-        expect(() => orderService.createOrder(
-            order.supplier,
-            order.supplier,
-            order.commissioner,
-            order.paymentDeadline,
-            order.documentDeliveryDeadline,
-            order.shippingDeadline,
-            order.deliveryDeadline,
-            order.arbiter,
-            order.token,
-            order.agreedAmount,
-            order.incoterms,
-            order.shipper,
-            order.shippingPort,
-            order.deliveryPort,
-            []
-        )).toThrow(new Error('Supplier and customer must be different'));
-        (validateAddress as jest.Mock).mockImplementation(() => {throw new Error('Invalid address')});
-        expect(() => orderService.createOrder(
-            order.supplier,
-            order.customer,
-            order.commissioner,
-            order.paymentDeadline,
-            order.documentDeliveryDeadline,
-            order.shippingDeadline,
-            order.deliveryDeadline,
-            order.arbiter,
-            order.token,
-            order.agreedAmount,
-            order.incoterms,
-            order.shipper,
-            order.shippingPort,
-            order.deliveryPort,
-            []
-        )).toThrow(new Error('Invalid address'));
+        expect(() =>
+            orderService.createOrder(
+                order.supplier,
+                order.supplier,
+                order.commissioner,
+                order.paymentDeadline,
+                order.documentDeliveryDeadline,
+                order.shippingDeadline,
+                order.deliveryDeadline,
+                order.arbiter,
+                order.token,
+                order.agreedAmount,
+                order.incoterms,
+                order.shipper,
+                order.shippingPort,
+                order.deliveryPort,
+                []
+            )
+        ).toThrow(new Error('Supplier and customer must be different'));
+        (validateAddress as jest.Mock).mockImplementation(() => {
+            throw new Error('Invalid address');
+        });
+        expect(() =>
+            orderService.createOrder(
+                order.supplier,
+                order.customer,
+                order.commissioner,
+                order.paymentDeadline,
+                order.documentDeliveryDeadline,
+                order.shippingDeadline,
+                order.deliveryDeadline,
+                order.arbiter,
+                order.token,
+                order.agreedAmount,
+                order.incoterms,
+                order.shipper,
+                order.shippingPort,
+                order.deliveryPort,
+                []
+            )
+        ).toThrow(new Error('Invalid address'));
     });
 
-    it("updates a order", () => {
+    it('updates a order', () => {
         const delegatorAddress = '0xsupplier';
         const role = ROLES.SIGNER;
         (validateAddress as jest.Mock).mockReturnValue(true);
@@ -183,111 +183,123 @@ describe("OrderService", () => {
         authenticationServiceInstanceMock.getDelegatorAddress.mockReturnValue(delegatorAddress);
         authenticationServiceInstanceMock.getRole.mockReturnValue(role);
         mockedFn.get.mockReturnValue(order);
-        expect(orderService.updateOrder(
-            0n,
-            order.supplier,
-            order.customer,
-            order.commissioner + 'changed',
-            order.paymentDeadline,
-            order.documentDeliveryDeadline,
-            order.shippingDeadline,
-            order.deliveryDeadline,
-            order.arbiter,
-            order.token,
-            order.agreedAmount,
-            order.incoterms,
-            order.shipper,
-            order.shippingPort,
-            order.deliveryPort,
-            []
-        )).toEqual({...order, commissioner: order.commissioner + 'changed'});
+        expect(
+            orderService.updateOrder(
+                0n,
+                order.supplier,
+                order.customer,
+                `${order.commissioner}changed`,
+                order.paymentDeadline,
+                order.documentDeliveryDeadline,
+                order.shippingDeadline,
+                order.deliveryDeadline,
+                order.arbiter,
+                order.token,
+                order.agreedAmount,
+                order.incoterms,
+                order.shipper,
+                order.shippingPort,
+                order.deliveryPort,
+                []
+            )
+        ).toEqual({ ...order, commissioner: `${order.commissioner}changed` });
         expect(mockedFn.get).toHaveBeenCalled();
         expect(mockedFn.insert).toHaveBeenCalled();
 
         mockedFn.get.mockReturnValue(undefined);
-        expect(() => orderService.updateOrder(
-            0n,
-            order.supplier,
-            order.customer,
-            order.commissioner,
-            order.paymentDeadline,
-            order.documentDeliveryDeadline,
-            order.shippingDeadline,
-            order.deliveryDeadline,
-            order.arbiter,
-            order.token,
-            order.agreedAmount,
-            order.incoterms,
-            order.shipper,
-            order.shippingPort,
-            order.deliveryPort,
-            []
-        )).toThrow(new Error('Order not found'));
+        expect(() =>
+            orderService.updateOrder(
+                0n,
+                order.supplier,
+                order.customer,
+                order.commissioner,
+                order.paymentDeadline,
+                order.documentDeliveryDeadline,
+                order.shippingDeadline,
+                order.deliveryDeadline,
+                order.arbiter,
+                order.token,
+                order.agreedAmount,
+                order.incoterms,
+                order.shipper,
+                order.shippingPort,
+                order.deliveryPort,
+                []
+            )
+        ).toThrow(new Error('Order not found'));
         mockedFn.get.mockReturnValue(order);
-        expect(() => orderService.updateOrder(
-            0n,
-            order.supplier,
-            order.customer,
-            order.commissioner,
-            order.paymentDeadline,
-            order.documentDeliveryDeadline,
-            order.shippingDeadline,
-            order.deliveryDeadline,
-            order.arbiter,
-            order.token,
-            order.agreedAmount,
-            order.incoterms,
-            order.shipper,
-            order.shippingPort,
-            order.deliveryPort,
-            []
-        )).toThrow(new Error('No changes detected'));
-        expect(() => orderService.updateOrder(
-            0n,
-            order.supplier,
-            order.supplier,
-            order.commissioner + 'changed',
-            order.paymentDeadline,
-            order.documentDeliveryDeadline,
-            order.shippingDeadline,
-            order.deliveryDeadline,
-            order.arbiter,
-            order.token,
-            order.agreedAmount,
-            order.incoterms,
-            order.shipper,
-            order.shippingPort,
-            order.deliveryPort,
-            []
-        )).toThrow(new Error('Supplier and customer must be different'));
-        (validateAddress as jest.Mock).mockImplementation(() => {throw new Error('Invalid address')});
-        expect(() => orderService.updateOrder(
-            0n,
-            order.supplier,
-            order.customer,
-            order.commissioner + 'changed',
-            order.paymentDeadline,
-            order.documentDeliveryDeadline,
-            order.shippingDeadline,
-            order.deliveryDeadline,
-            order.arbiter,
-            order.token,
-            order.agreedAmount,
-            order.incoterms,
-            order.shipper,
-            order.shippingPort,
-            order.deliveryPort,
-            []
-        )).toThrow(new Error('Invalid address'));
+        expect(() =>
+            orderService.updateOrder(
+                0n,
+                order.supplier,
+                order.customer,
+                order.commissioner,
+                order.paymentDeadline,
+                order.documentDeliveryDeadline,
+                order.shippingDeadline,
+                order.deliveryDeadline,
+                order.arbiter,
+                order.token,
+                order.agreedAmount,
+                order.incoterms,
+                order.shipper,
+                order.shippingPort,
+                order.deliveryPort,
+                []
+            )
+        ).toThrow(new Error('No changes detected'));
+        expect(() =>
+            orderService.updateOrder(
+                0n,
+                order.supplier,
+                order.supplier,
+                `${order.commissioner}changed`,
+                order.paymentDeadline,
+                order.documentDeliveryDeadline,
+                order.shippingDeadline,
+                order.deliveryDeadline,
+                order.arbiter,
+                order.token,
+                order.agreedAmount,
+                order.incoterms,
+                order.shipper,
+                order.shippingPort,
+                order.deliveryPort,
+                []
+            )
+        ).toThrow(new Error('Supplier and customer must be different'));
+        (validateAddress as jest.Mock).mockImplementation(() => {
+            throw new Error('Invalid address');
+        });
+        expect(() =>
+            orderService.updateOrder(
+                0n,
+                order.supplier,
+                order.customer,
+                `${order.commissioner}changed`,
+                order.paymentDeadline,
+                order.documentDeliveryDeadline,
+                order.shippingDeadline,
+                order.deliveryDeadline,
+                order.arbiter,
+                order.token,
+                order.agreedAmount,
+                order.incoterms,
+                order.shipper,
+                order.shippingPort,
+                order.deliveryPort,
+                []
+            )
+        ).toThrow(new Error('Invalid address'));
     });
 
-    it("signs a order", async () => {
+    it('signs a order', async () => {
         const delegatorAddress = '0xcustomer';
         authenticationServiceInstanceMock.getDelegatorAddress.mockReturnValue(delegatorAddress);
         mockedFn.get.mockReturnValue(order);
-        shipmentServiceInstanceMock.createShipment.mockResolvedValue({id: 1n} as Shipment);
+        shipmentServiceInstanceMock.createShipment.mockResolvedValue({ id: 1n } as Shipment);
         const resp = await orderService.signOrder(0n);
-        expect(resp).toEqual({...order, status: { CONFIRMED: null }});
+        expect(resp).toEqual({ ...order, status: { CONFIRMED: null } });
         expect(mockedFn.insert).toHaveBeenCalled();
 
         mockedFn.get.mockReturnValue(undefined);
