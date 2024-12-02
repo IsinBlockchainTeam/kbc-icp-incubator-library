@@ -1,6 +1,5 @@
 import {IDL} from "azle";
-import {IDLPrice as IDLPrice} from "./Price";
-import {IDLShipment} from "./Shipment";
+import {IDLPrice} from "./Price";
 import {IDLProductCategory} from "./ProductCategory";
 
 export const IDLOrderStatus = IDL.Variant({

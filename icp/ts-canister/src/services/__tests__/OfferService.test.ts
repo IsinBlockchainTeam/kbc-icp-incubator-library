@@ -1,30 +1,26 @@
+import {StableBTreeMap} from "azle";
 import OfferService from "../OfferService";
 import {Offer, ProductCategory} from "../../models/types";
-import {StableBTreeMap} from "azle";
 import ProductCategoryService from "../ProductCategoryService";
 import AuthenticationService from "../AuthenticationService";
 import {OfferNotFoundError, ProductCategoryNotFoundError} from "../../models/errors";
 
 jest.mock('azle');
-jest.mock('../../services/ProductCategoryService', () => {
-    return {
+jest.mock('../../services/ProductCategoryService', () => ({
         instance: {
             productCategoryExists: jest.fn(),
             getProductCategory: jest.fn()
         }
-    };
-});
-jest.mock('../../services/AuthenticationService', () => {
-    return {
+    }));
+jest.mock('../../services/AuthenticationService', () => ({
         instance: {
             getDelegatorAddress: jest.fn(),
         }
-    };
-});
+    }));
 
 describe("OfferService", () => {
     let offerService: OfferService;
-    let productCategoryServiceInstanceMock = ProductCategoryService.instance as jest.Mocked<ProductCategoryService>;
+    const productCategoryServiceInstanceMock = ProductCategoryService.instance as jest.Mocked<ProductCategoryService>;
 
     const mockedFn = {
         values: jest.fn(),

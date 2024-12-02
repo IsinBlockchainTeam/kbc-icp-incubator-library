@@ -1,22 +1,20 @@
+import {StableBTreeMap} from "azle";
 import MaterialService from "../MaterialService";
 import {Material, ProductCategory} from "../../models/types";
-import {StableBTreeMap} from "azle";
 import ProductCategoryService from "../ProductCategoryService";
 import {MaterialNotFoundError, ProductCategoryNotFoundError} from "../../models/errors";
 
 jest.mock('azle');
-jest.mock('../../services/ProductCategoryService', () => {
-    return {
+jest.mock('../../services/ProductCategoryService', () => ({
         instance: {
             productCategoryExists: jest.fn(),
             getProductCategory: jest.fn()
         }
-    };
-});
+    }));
 
 describe("MaterialService", () => {
     let materialService: MaterialService;
-    let productCategoryServiceInstanceMock = ProductCategoryService.instance as jest.Mocked<ProductCategoryService>;
+    const productCategoryServiceInstanceMock = ProductCategoryService.instance as jest.Mocked<ProductCategoryService>;
 
     const mockedFn = {
         values: jest.fn(),

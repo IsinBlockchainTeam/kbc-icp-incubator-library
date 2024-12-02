@@ -28,7 +28,7 @@ export async function jsonRpcRequest(body: Record<string, any>): Promise<any> {
             headers: []
         }
     };
-    return await call(evmRpcCanisterId, 'request', {
+    return call(evmRpcCanisterId, 'request', {
         paramIdlTypes: [IDLRpcService, IDL.Text, IDL.Nat64],
         returnIdlType: IDLRequestResult,
         args: [jsonRpcSource, JSON.stringify(body), 10_000],
@@ -142,7 +142,7 @@ export async function ethSendRawTransaction(rawTransaction: string): Promise<any
             ]
         }
     };
-    return await call(evmRpcCanisterId, 'eth_sendRawTransaction', {
+    return call(evmRpcCanisterId, 'eth_sendRawTransaction', {
         paramIdlTypes: [IDLRpcServices, IDL.Opt(IDLRpcConfig), IDL.Text],
         returnIdlType: IDLMultiSendRawTransactionResult,
         args: [rpcSource, [], rawTransaction],

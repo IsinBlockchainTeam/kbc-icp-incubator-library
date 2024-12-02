@@ -1,7 +1,8 @@
+import {StableBTreeMap} from "azle";
 import ProductCategoryService from "../ProductCategoryService";
 import {ProductCategory} from "../../models/types";
-import {StableBTreeMap} from "azle";
 import {ProductCategoryNotFoundError} from "../../models/errors";
+
 jest.mock('azle');
 
 describe("ProductCategoryService", () => {

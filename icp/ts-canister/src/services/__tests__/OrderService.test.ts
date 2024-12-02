@@ -1,6 +1,6 @@
+import {StableBTreeMap} from "azle";
 import OrderService from "../OrderService";
 import {Order, ROLES, Shipment} from "../../models/types";
-import {StableBTreeMap} from "azle";
 import AuthenticationService from "../AuthenticationService";
 import {validateAddress, validateDeadline, validateInterestedParty} from "../../utils/validation";
 import ShipmentService from "../ShipmentService";
@@ -12,40 +12,32 @@ import {
 } from "../../models/errors";
 
 jest.mock('azle');
-jest.mock('../../services/AuthenticationService', () => {
-    return {
+jest.mock('../../services/AuthenticationService', () => ({
         instance: {
             getDelegatorAddress: jest.fn(),
             getRole: jest.fn()
         }
-    };
-});
-jest.mock('../../services/ShipmentService', () => {
-    return {
+    }));
+jest.mock('../../services/ShipmentService', () => ({
         instance: {
             createShipment: jest.fn(),
         }
-    };
-});
-jest.mock('../../services/ProductCategoryService', () => {
-    return {
+    }));
+jest.mock('../../services/ProductCategoryService', () => ({
         instance: {
             getProductCategory: jest.fn(),
         }
-    };
-});
-jest.mock('../../utils/validation', () => {
-    return {
+    }));
+jest.mock('../../utils/validation', () => ({
         validateAddress: jest.fn(),
         validateDeadline: jest.fn(),
         validateInterestedParty: jest.fn(),
         validatePositiveNumber: jest.fn()
-    };
-});
+    }));
 describe("OrderService", () => {
     let orderService: OrderService;
-    let authenticationServiceInstanceMock = AuthenticationService.instance as jest.Mocked<AuthenticationService>;
-    let shipmentServiceInstanceMock = ShipmentService.instance as jest.Mocked<ShipmentService>;
+    const authenticationServiceInstanceMock = AuthenticationService.instance as jest.Mocked<AuthenticationService>;
+    const shipmentServiceInstanceMock = ShipmentService.instance as jest.Mocked<ShipmentService>;
     const order = {
         id: 0n,
         supplier: '0xsupplier',
@@ -191,7 +183,7 @@ describe("OrderService", () => {
             0n,
             order.supplier,
             order.customer,
-            order.commissioner + 'changed',
+            `${order.commissioner  }changed`,
             order.paymentDeadline,
             order.documentDeliveryDeadline,
             order.shippingDeadline,
@@ -204,7 +196,7 @@ describe("OrderService", () => {
             order.shippingPort,
             order.deliveryPort,
             []
-        )).toEqual({...order, commissioner: order.commissioner + 'changed'});
+        )).toEqual({...order, commissioner: `${order.commissioner  }changed`});
         expect(mockedFn.get).toHaveBeenCalled();
         expect(mockedFn.insert).toHaveBeenCalled();
 
@@ -250,7 +242,7 @@ describe("OrderService", () => {
             0n,
             order.supplier,
             order.supplier,
-            order.commissioner + 'changed',
+            `${order.commissioner  }changed`,
             order.paymentDeadline,
             order.documentDeliveryDeadline,
             order.shippingDeadline,
@@ -269,7 +261,7 @@ describe("OrderService", () => {
             0n,
             order.supplier,
             order.customer,
-            order.commissioner + 'changed',
+            `${order.commissioner  }changed`,
             order.paymentDeadline,
             order.documentDeliveryDeadline,
             order.shippingDeadline,

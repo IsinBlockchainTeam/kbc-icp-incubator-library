@@ -1,21 +1,20 @@
+import {update} from "azle";
 import AuthenticationController from "../AuthenticationController";
 import AuthenticationService from "../../services/AuthenticationService";
 import {RoleProof} from "../../models/types";
-import {update} from "azle";
+
 jest.mock('azle');
 jest.mock('../../decorators/roles');
 jest.mock('../../models/idls');
-jest.mock('../../services/AuthenticationService', () => {
-    return {
+jest.mock('../../services/AuthenticationService', () => ({
         instance: {
             authenticate: jest.fn(),
             logout: jest.fn()
         }
-    };
-});
+    }));
 describe('AuthenticationController', () => {
-    let authenticationServiceInstanceMock = AuthenticationService.instance as jest.Mocked<AuthenticationService>;
-    let authenticationController = new AuthenticationController();
+    const authenticationServiceInstanceMock = AuthenticationService.instance as jest.Mocked<AuthenticationService>;
+    const authenticationController = new AuthenticationController();
 
     it.each([
         {

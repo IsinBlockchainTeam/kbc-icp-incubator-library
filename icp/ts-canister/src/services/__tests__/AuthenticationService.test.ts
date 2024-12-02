@@ -1,36 +1,30 @@
-import AuthenticationService from "../AuthenticationService";
 import {StableBTreeMap} from "azle";
+import {ic} from "azle/experimental";
+import AuthenticationService from "../AuthenticationService";
 import DelegationService from "../DelegationService";
 import {RoleProof, ROLES} from "../../models/types";
-import {ic} from "azle/experimental";
 import {getLoginDuration} from "../../utils/env";
 import {NotAuthenticatedError, NotValidCredentialError} from "../../models/errors";
 
 jest.mock('azle');
-jest.mock('azle/experimental', () => {
-    return {
+jest.mock('azle/experimental', () => ({
         ic: {
             time: jest.fn(),
             caller: jest.fn()
         }
-    };
-});
-jest.mock('../../services/DelegationService', () => {
-    return {
+    }));
+jest.mock('../../services/DelegationService', () => ({
         instance: {
             hasValidRoleProof: jest.fn(),
         }
-    };
-});
-jest.mock('../../utils/env', () => {
-    return {
+    }));
+jest.mock('../../utils/env', () => ({
         getLoginDuration: jest.fn()
-    };
-});
+    }));
 
 describe("AuthenticationService", () => {
     let authenticationService: AuthenticationService;
-    let delegationServiceInstanceMock = DelegationService.instance as jest.Mocked<DelegationService>;
+    const delegationServiceInstanceMock = DelegationService.instance as jest.Mocked<DelegationService>;
 
     const mockedFn = {
         values: jest.fn(),
