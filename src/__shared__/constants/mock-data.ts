@@ -11,6 +11,25 @@ export type ProductCategoryParams = {
     description: string;
 };
 
+export type ShipmentDetailsParams = {
+    shipmentNumber: number;
+    expirationDate: Date;
+    fixingDate: Date;
+    targetExchange: string;
+    differentialApplied: number;
+    price: number;
+    quantity: number;
+    containersNumber: number;
+    netWeight: number;
+    grossWeight: number;
+};
+
+export type DocumentParams = {
+    name: string;
+    type: string;
+    content: Uint8Array;
+};
+
 export const mockProductCategories: ProductCategoryParams[] = [
     {
         name: 'Ethiopian Yirgacheffe',
@@ -63,19 +82,6 @@ export const mockOrder = (productCategoryId: number): OrderParams => ({
 
 export const mockOrganizations: OrganizationParams[] = [
     {
-        legalName: 'Global Coffee Imports GmbH',
-        industrialSector: 'Coffee & Tea Processing',
-        address: 'Hafenstrasse 123',
-        city: 'Hamburg',
-        postalCode: '20457',
-        region: 'Hamburg',
-        countryCode: 'DE',
-        role: OrganizationRole.IMPORTER,
-        telephone: '+49-40-555-0123',
-        email: 'info@globalcoffeeimports.de',
-        image: '/company-logos/gci-logo.png'
-    },
-    {
         legalName: 'Colombian Coffee Exporters S.A.',
         industrialSector: 'Coffee Production & Export',
         address: 'Calle 72 #10-07',
@@ -86,6 +92,40 @@ export const mockOrganizations: OrganizationParams[] = [
         role: OrganizationRole.EXPORTER,
         telephone: '+57-1-234-5678',
         email: 'contact@colombiancoffee.co',
-        image: '/company-logos/cce-logo.png'
+        image: 'https://1000logos.net/wp-content/uploads/2024/02/Dunder-Mifflin-Logo.png'
+    },
+    {
+        legalName: 'Global Coffee Imports GmbH',
+        industrialSector: 'Coffee & Tea Processing',
+        address: 'Hafenstrasse 123',
+        city: 'Hamburg',
+        postalCode: '20457',
+        region: 'Hamburg',
+        countryCode: 'DE',
+        role: OrganizationRole.IMPORTER,
+        telephone: '+49-40-555-0123',
+        email: 'info@globalcoffeeimports.de',
+        image: 'https://gioconda.supsi.ch/images/ISIN_logo.jpg'
+    }
+];
+
+export const mockDocument: DocumentParams = {
+    name: 'sampleDocument.pdf',
+    type: 'application/pdf',
+    content: new Uint8Array()
+};
+
+export const mockShipmentDetails: ShipmentDetailsParams[] = [
+    {
+        shipmentNumber: 12345,
+        expirationDate: shippingDeadline,
+        fixingDate: deliveryDeadline,
+        targetExchange: 'NYBOT',
+        differentialApplied: 0,
+        price: 3250,
+        quantity: 350,
+        containersNumber: 5,
+        netWeight: 17500,
+        grossWeight: 18200
     }
 ];

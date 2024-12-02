@@ -10,15 +10,15 @@ import { IDLGetAddressResponse, IDLRequestResult, IDLRpcService } from '../model
 class DelegationService {
     private static _instance: DelegationService;
 
-    private _evmRpcCanisterId: string = CANISTER.EVM_RPC_ID();
+    private _evmRpcCanisterId: string = CANISTER.EVM_RPC_ID;
 
-    private _siweProviderCanisterId: string = CANISTER.IC_SIWE_PROVIDER_ID();
+    private _siweProviderCanisterId: string = CANISTER.IC_SIWE_PROVIDER_ID;
 
-    private _evmRpcUrl: string = EVM.RPC_URL();
+    private _evmRpcUrl: string = EVM.RPC_URL;
 
-    private _evmRevocationRegistryAddress: string = EVM.REVOCATION_REGISTRY_ADDRESS();
+    private _evmRevocationRegistryAddress: string = EVM.REVOCATION_REGISTRY_ADDRESS;
 
-    private _evmMembershipIssuerAddress: string = EVM.MEMBERSHIP_ISSUER_ADDRESS();
+    private _evmMembershipIssuerAddress: string = EVM.MEMBERSHIP_ISSUER_ADDRESS;
 
     private _incrementalRoles = [ROLES.VIEWER, ROLES.EDITOR, ROLES.SIGNER];
 
@@ -31,7 +31,7 @@ class DelegationService {
 
     async hasValidRoleProof(proof: RoleProof, caller: Principal): Promise<boolean> {
         const unixTime = Math.floor(Number(ic.time().toString().substring(0, 13)) / 1000);
-        const { signedProof, signer: expectedSigner, ...data} = proof;
+        const { signedProof, signer: expectedSigner, ...data } = proof;
 
         const delegateCredentialExpiryDate = Number(data.delegateCredentialExpiryDate);
         const delegateAddress = await this.getAddress(caller);
@@ -45,7 +45,7 @@ class DelegationService {
         // If signedProof is different from the reconstructed proof, the two signers are different
         if (roleProofSigner !== expectedSigner) return false;
         // If the delegate credential has expired, the delegate is not valid
-        if(data.delegateCredentialExpiryDate < unixTime) return false;
+        if (data.delegateCredentialExpiryDate < unixTime) return false;
         // If the delegate credential has been revoked, the delegate is not valid
         if (await this.isRevoked(roleProofSigner, data.delegateCredentialIdHash)) return false;
 

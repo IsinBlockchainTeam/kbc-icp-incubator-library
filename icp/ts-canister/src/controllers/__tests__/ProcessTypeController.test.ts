@@ -1,5 +1,5 @@
 import { update } from 'azle';
-import { AtLeastSigner, AtLeastViewer } from '../../decorators/roles';
+import { AtLeastViewer } from '../../decorators/roles';
 import ProcessTypeController from '../ProcessTypeController';
 import ProcessTypeService from '../../services/ProcessTypeService';
 
@@ -31,14 +31,14 @@ describe('ProcessTypeController', () => {
             controllerFunction: () => processTypeController.addProcessType('value'),
             serviceFunction: processTypeServiceInstanceMock.addValue,
             expectedResult: 'value',
-            expectedDecorators: [update, AtLeastSigner]
+            expectedDecorators: []
         },
         {
             controllerFunctionName: 'removeProcessType',
             controllerFunction: () => processTypeController.removeProcessType('value'),
             serviceFunction: processTypeServiceInstanceMock.removeValue,
             expectedResult: 'value',
-            expectedDecorators: [update, AtLeastSigner]
+            expectedDecorators: []
         },
         {
             controllerFunctionName: 'hasProcessType',

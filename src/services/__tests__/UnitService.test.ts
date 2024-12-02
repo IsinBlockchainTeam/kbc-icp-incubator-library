@@ -1,6 +1,6 @@
 import { createMock } from 'ts-auto-mock';
 import { UnitService } from '../UnitService';
-import { UnitDriver } from '../../../drivers/icp/UnitDriver';
+import { UnitDriver } from '../../drivers/UnitDriver';
 
 jest.mock('@blockchain-lib/common');
 

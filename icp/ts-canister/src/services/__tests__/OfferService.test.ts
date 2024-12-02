@@ -1,29 +1,26 @@
+import {StableBTreeMap} from "azle";
 import OfferService from "../OfferService";
 import {Offer, ProductCategory} from "../../models/types";
-import {StableBTreeMap} from "azle";
 import ProductCategoryService from "../ProductCategoryService";
 import AuthenticationService from "../AuthenticationService";
+import {OfferNotFoundError, ProductCategoryNotFoundError} from "../../models/errors";
 
 jest.mock('azle');
-jest.mock('../../services/ProductCategoryService', () => {
-    return {
+jest.mock('../../services/ProductCategoryService', () => ({
         instance: {
             productCategoryExists: jest.fn(),
             getProductCategory: jest.fn()
         }
-    };
-});
-jest.mock('../../services/AuthenticationService', () => {
-    return {
+    }));
+jest.mock('../../services/AuthenticationService', () => ({
         instance: {
             getDelegatorAddress: jest.fn(),
         }
-    };
-});
+    }));
 
 describe("OfferService", () => {
     let offerService: OfferService;
-    let productCategoryServiceInstanceMock = ProductCategoryService.instance as jest.Mocked<ProductCategoryService>;
+    const productCategoryServiceInstanceMock = ProductCategoryService.instance as jest.Mocked<ProductCategoryService>;
 
     const mockedFn = {
         values: jest.fn(),
@@ -56,7 +53,7 @@ describe("OfferService", () => {
         expect(mockedFn.get).toHaveBeenCalled();
 
         mockedFn.get.mockReturnValue(undefined);
-        expect(() => offerService.getOffer(1n)).toThrow(new Error('Offer not found'));
+        expect(() => offerService.getOffer(1n)).toThrow(OfferNotFoundError);
     });
 
     it("creates a offer", () => {
@@ -70,6 +67,6 @@ describe("OfferService", () => {
         expect(mockedFn.insert).toHaveBeenCalled();
 
         productCategoryServiceInstanceMock.productCategoryExists.mockReturnValue(false);
-        expect(() => offerService.createOffer(0n)).toThrow(new Error('Product category not found'));
+        expect(() => offerService.createOffer(0n)).toThrow(ProductCategoryNotFoundError);
     });
 });

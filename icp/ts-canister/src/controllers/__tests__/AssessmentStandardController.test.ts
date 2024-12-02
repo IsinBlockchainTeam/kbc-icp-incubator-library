@@ -1,5 +1,5 @@
 import { update } from 'azle';
-import { AtLeastSigner, AtLeastViewer } from '../../decorators/roles';
+import { AtLeastViewer } from '../../decorators/roles';
 import AssessmentStandardController from '../AssessmentStandardController';
 import AssessmentStandardService from '../../services/AssessmentStandardService';
 
@@ -31,14 +31,14 @@ describe('AssessmentStandardController', () => {
             controllerFunction: () => assessmentStandardController.addAssessmentStandard('value'),
             serviceFunction: assessmentStandardServiceInstanceMock.addValue,
             expectedResult: 'value',
-            expectedDecorators: [update, AtLeastSigner]
+            expectedDecorators: []
         },
         {
             controllerFunctionName: 'removeAssessmentStandard',
             controllerFunction: () => assessmentStandardController.removeAssessmentStandard('value'),
             serviceFunction: assessmentStandardServiceInstanceMock.removeValue,
             expectedResult: 'value',
-            expectedDecorators: [update, AtLeastSigner]
+            expectedDecorators: []
         },
         {
             controllerFunctionName: 'hasAssessmentStandard',

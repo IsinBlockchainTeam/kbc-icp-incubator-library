@@ -12,8 +12,8 @@ import {
     IDLRpcService,
     IDLRpcServices,
     IDLGetAddressResponse
-} from "../models/idls";
-import {calculateRsvForTEcdsa, ecdsaPublicKey, signWithEcdsa} from "./ecdsa";
+} from '../models/idls';
+import { calculateRsvForTEcdsa, ecdsaPublicKey, signWithEcdsa } from './ecdsa';
 import { EVM } from '../constants/evm';
 import { CANISTER } from '../constants/canister';
 
@@ -44,7 +44,7 @@ export async function ethMaxPriorityFeePerGas(): Promise<bigint> {
     });
 
     console.log('ethMaxPriorityFeePerGas response:', response);
-    // TODO: improve error handling
+    // TODO improve error handling
     return BigInt(JSON.parse(response.Ok).result);
 }
 export async function ethFeeHistory(): Promise<any> {
@@ -150,15 +150,11 @@ export async function ethSendRawTransaction(rawTransaction: string): Promise<any
     });
 }
 
-function buildV1Transaction(
-    contractAddress: string,
-    data: string,
-    nonce: number,
-): ethers.Transaction {
+function buildV1Transaction(contractAddress: string, data: string, nonce: number): ethers.Transaction {
     return ethers.Transaction.from({
         to: contractAddress,
         // value: 0,
-        gasLimit: 10_000_000,
+        gasLimit: 1_000_000,
         // gasPrice: 0,
         type: 0,
         data,
@@ -174,11 +170,16 @@ async function buildV2Transaction(
 ) {
     const provider = new ethers.JsonRpcProvider(EVM.RPC_URL());
     const feeData = await provider.getFeeData();
+    const mfpg = feeData.maxFeePerGas?.toString();
+    console.log('mfpg', mfpg);
+
+    // console.log('maxFeePerGas', maxFeePerGas);
+    if (!mfpg) throw new Error('maxFeePerGas not found');
 
     return ethers.Transaction.from({
         to: contractAddress,
         value: 0,
-        gasLimit: 5_000_000,
+        gasLimit: 500_000,
         maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
         maxFeePerGas: feeData.maxFeePerGas,
         gasPrice: feeData.gasPrice,
@@ -192,11 +193,11 @@ export async function ethSendContractTransaction(
     contractAddress: string,
     contractAbi: ethers.InterfaceAbi,
     methodName: string,
-    methodArgs: any[],
+    methodArgs: any[]
 ): Promise<any> {
-    const canisterAddress = ethers.computeAddress(
-        ethers.hexlify(await ecdsaPublicKey([ic.id().toUint8Array()])),
-    );
+    const canisterAddress = ethers.computeAddress(ethers.hexlify(await ecdsaPublicKey([ic.id().toUint8Array()])));
+    // TODO: remove this
+    contractAddress = '0xAf1256fE3296112A12eeBa7D4c21719bde5E3945';
     console.log('contractAddress', contractAddress);
     console.log('canisterAddress', canisterAddress);
     console.log('methodArgs', methodArgs);
@@ -224,12 +225,7 @@ export async function ethSendContractTransaction(
     return resp;
 }
 
-export async function ethCallContract(
-    contractAddress: string,
-    contractAbi: ethers.InterfaceAbi,
-    methodName: string,
-    methodArgs: any[],
-) {
+export async function ethCallContract(contractAddress: string, contractAbi: ethers.InterfaceAbi, methodName: string, methodArgs: any[]) {
     const abiInterface = new ethers.Interface(contractAbi);
     const data = abiInterface.encodeFunctionData(methodName, methodArgs);
 
@@ -260,10 +256,7 @@ export async function ethCallContract(
 
     if (resp.Err) throw new Error('Unable to fetch revocation registry');
 
-    const decodedResult = abiInterface.decodeFunctionResult(
-        methodName,
-        JSON.parse(resp.Ok).result,
-    );
+    const decodedResult = abiInterface.decodeFunctionResult(methodName, JSON.parse(resp.Ok).result);
     console.log(decodedResult);
     return decodedResult[0];
 }

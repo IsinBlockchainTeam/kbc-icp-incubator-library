@@ -1,6 +1,6 @@
 import { createMock } from 'ts-auto-mock';
 import { AssessmentAssuranceLevelService } from '../AssessmentAssuranceLevelService';
-import { AssessmentAssuranceLevelDriver } from '../../../drivers/icp/AssessmentAssuranceLevelDriver';
+import { AssessmentAssuranceLevelDriver } from '../../drivers/AssessmentAssuranceLevelDriver';
 
 jest.mock('@blockchain-lib/common');
 

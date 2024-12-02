@@ -1,6 +1,6 @@
 import { IDL, query, update } from 'azle';
 import AssessmentStandardService from '../services/AssessmentStandardService';
-import { AtLeastSigner, AtLeastViewer } from '../decorators/roles';
+import { AtLeastViewer } from '../decorators/roles';
 
 class AssessmentStandardController {
     @query([], IDL.Vec(IDL.Text))
@@ -10,13 +10,11 @@ class AssessmentStandardController {
     }
 
     @update([IDL.Text], IDL.Text)
-    @AtLeastSigner
     async addAssessmentStandard(value: string): Promise<string> {
         return AssessmentStandardService.instance.addValue(value);
     }
 
     @update([IDL.Text], IDL.Text)
-    @AtLeastSigner
     async removeAssessmentStandard(value: string): Promise<string> {
         return AssessmentStandardService.instance.removeValue(value);
     }

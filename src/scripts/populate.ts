@@ -10,15 +10,13 @@ import { FiatDriver } from '../drivers/FiatDriver';
 import { UnitService } from '../services/UnitService';
 import { UnitDriver } from '../drivers/UnitDriver';
 import { AuthHelper, Login } from '../__shared__/helpers/AuthHelper';
-import { USERS } from '../__shared__/constants/constants';
-
-const ENTITY_MANAGER_CANISTER_ID = 'bkyz2-fmaaa-aaaaa-qaaaq-cai';
-const ICP_HOST = 'http://127.0.0.1:4943/';
+import { ICP, USERS } from '../__shared__/constants/constants';
 
 const login = async () => {
+    console.log('Logging in...');
     const user: Login = await AuthHelper.prepareLogin(
-        USERS.USER1_PRIVATE_KEY,
-        USERS.COMPANY1_PRIVATE_KEY
+        USERS.OTHER_USER_PRIVATE_KEY,
+        USERS.OTHER_COMPANY_PRIVATE_KEY
     );
     await user.authenticate();
 
@@ -28,7 +26,7 @@ const login = async () => {
 const processTypePopulate = async (identity: Identity) => {
     console.log('Loading process types...');
     const processTypeService = new ProcessTypeService(
-        new ProcessTypeDriver(identity, ENTITY_MANAGER_CANISTER_ID, ICP_HOST)
+        new ProcessTypeDriver(identity, ICP.ENTITY_MANAGER_CANISTER_ID, ICP.NETWORK)
     );
     const processTypes = ['33 - Collecting', '38 - Harvesting'];
     await Promise.all(
@@ -41,7 +39,7 @@ const processTypePopulate = async (identity: Identity) => {
 const assessmentStandardPopulate = async (identity: Identity) => {
     console.log('Loading assessment standards...');
     const assessmentStandardService = new AssessmentStandardService(
-        new AssessmentStandardDriver(identity, ENTITY_MANAGER_CANISTER_ID, ICP_HOST)
+        new AssessmentStandardDriver(identity, ICP.ENTITY_MANAGER_CANISTER_ID, ICP.NETWORK)
     );
     const assessmentStandards = [
         'Chemical use assessment',
@@ -60,7 +58,7 @@ const assessmentStandardPopulate = async (identity: Identity) => {
 const assessmentAssuranceLevelPopulate = async (identity: Identity) => {
     console.log('Loading assessment assurance levels...');
     const assessmentAssuranceLevelService = new AssessmentAssuranceLevelService(
-        new AssessmentAssuranceLevelDriver(identity, ENTITY_MANAGER_CANISTER_ID, ICP_HOST)
+        new AssessmentAssuranceLevelDriver(identity, ICP.ENTITY_MANAGER_CANISTER_ID, ICP.NETWORK)
     );
     const assessmentAssuranceLevels = [
         'Reviewed by peer members',
@@ -79,7 +77,7 @@ const assessmentAssuranceLevelPopulate = async (identity: Identity) => {
 const fiatPopulate = async (identity: Identity) => {
     console.log('Loading fiats...');
     const fiatService = new FiatService(
-        new FiatDriver(identity, ENTITY_MANAGER_CANISTER_ID, ICP_HOST)
+        new FiatDriver(identity, ICP.ENTITY_MANAGER_CANISTER_ID, ICP.NETWORK)
     );
     const fiats = ['CHF', 'USD', 'EUR'];
     await Promise.all(
@@ -92,7 +90,7 @@ const fiatPopulate = async (identity: Identity) => {
 const unitPopulate = async (identity: Identity) => {
     console.log('Loading units...');
     const unitService = new UnitService(
-        new UnitDriver(identity, ENTITY_MANAGER_CANISTER_ID, ICP_HOST)
+        new UnitDriver(identity, ICP.ENTITY_MANAGER_CANISTER_ID, ICP.NETWORK)
     );
     const units = ['BG - Bags', 'KGM - Kilograms', 'H87 - Pieces'];
     await Promise.all(

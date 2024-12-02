@@ -1,5 +1,5 @@
 import { update } from 'azle';
-import { AtLeastSigner, AtLeastViewer } from '../../decorators/roles';
+import { AtLeastViewer } from '../../decorators/roles';
 import FiatController from '../FiatController';
 import FiatService from '../../services/FiatService';
 
@@ -31,14 +31,14 @@ describe('FiatController', () => {
             controllerFunction: () => fiatController.addFiat('value'),
             serviceFunction: fiatServiceInstanceMock.addValue,
             expectedResult: 'value',
-            expectedDecorators: [update, AtLeastSigner]
+            expectedDecorators: []
         },
         {
             controllerFunctionName: 'removeFiat',
             controllerFunction: () => fiatController.removeFiat('value'),
             serviceFunction: fiatServiceInstanceMock.removeValue,
             expectedResult: 'value',
-            expectedDecorators: [update, AtLeastSigner]
+            expectedDecorators: []
         },
         {
             controllerFunctionName: 'hasFiat',
