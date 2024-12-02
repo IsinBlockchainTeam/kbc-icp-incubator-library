@@ -1,16 +1,14 @@
 import { createMock } from 'ts-auto-mock';
-import { FileHelpers } from '@blockchain-lib/common';
 import { CertificationService } from '../CertificationService';
 import { BaseCertificate, CertificateDocumentType } from '../../entities/Certificate';
 import { URL_SEGMENTS } from '../../constants/ICP';
 import { CertificationDriver } from '../../drivers/CertificationDriver';
-import { ICPFileDriver } from '../../drivers/ICPFileDriver';
+import { FileDriver } from '../../drivers/FileDriver';
 import { CompanyCertificate } from '../../entities/CompanyCertificate';
 import { ScopeCertificate } from '../../entities/ScopeCertificate';
 import { MaterialCertificate } from '../../entities/MaterialCertificate';
 import { EvaluationStatus } from '../../entities/Evaluation';
-
-jest.mock('@blockchain-lib/common');
+import FileHelpers from '../../utils/FileHelpers';
 
 describe('CertificationService', () => {
     let certificationService: CertificationService;
@@ -92,7 +90,7 @@ describe('CertificationService', () => {
             updateDocument: mockedCertificationDriverFn.updateDocument,
             evaluateDocument: mockedCertificationDriverFn.evaluateDocument
         });
-        const icpFileDriver = createMock<ICPFileDriver>({
+        const icpFileDriver = createMock<FileDriver>({
             create: mockedICPFileDriverFn.create,
             read: mockedICPFileDriverFn.read
         });

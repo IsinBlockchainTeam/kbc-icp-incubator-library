@@ -2,8 +2,6 @@ import { createMock } from 'ts-auto-mock';
 import { ProcessTypeService } from '../ProcessTypeService';
 import { ProcessTypeDriver } from '../../drivers/ProcessTypeDriver';
 
-jest.mock('@blockchain-lib/common');
-
 describe('ProcessTypeService', () => {
     let processTypeService: ProcessTypeService;
     const mockedDriverFn = {

@@ -24,10 +24,6 @@ const config: HardhatUserConfig = {
             viaIR: true
         }
     },
-    // @ts-ignore
-    dependencyCompiler: {
-        paths: ['@blockchain-lib/blockchain-common/contracts/EnumerableType.sol']
-    },
     defaultNetwork: process.env.NODE_ENV === 'test' ? 'hardhat' : env.DEFAULT_DEPLOY_NETWORK,
     networks: {
         hardhat: {

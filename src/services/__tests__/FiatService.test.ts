@@ -2,8 +2,6 @@ import { createMock } from 'ts-auto-mock';
 import { FiatService } from '../FiatService';
 import { FiatDriver } from '../../drivers/FiatDriver';
 
-jest.mock('@blockchain-lib/common');
-
 describe('FiatService', () => {
     let fiatService: FiatService;
     const mockedDriverFn = {

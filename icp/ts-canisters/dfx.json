@@ -58,9 +58,9 @@
         },
         "permission": {
             "specified_id": "b77ix-eeaaa-aaaaa-qaada-cai",
-            "candid": "https://oauth2:$GITLAB_TOKEN@gitlab-core.supsi.ch/api/v4/projects/230/packages/generic/canister/0.0.2/permission.did",
+            "candid": "../rust-canisters/src/declarations/permission/permission.did",
             "type": "custom",
-            "wasm": "https://oauth2:$GITLAB_TOKEN@gitlab-core.supsi.ch/api/v4/projects/230/packages/generic/canister/0.0.2/permission.wasm.gz",
+            "wasm": "../rust-canisters/target/wasm32-unknown-unknown/release/permission.wasm",
             "init_arg_file": "./init/permission_init.did",
             "declarations": {
                 "output": "declarations/permission",
@@ -69,9 +69,9 @@
         },
         "storage": {
             "specified_id": "by6od-j4aaa-aaaaa-qaadq-cai",
-            "candid": "https://oauth2:$GITLAB_TOKEN@gitlab-core.supsi.ch/api/v4/projects/230/packages/generic/canister/0.0.2/storage.did",
+            "candid": "../rust-canisters/src/declarations/storage/storage.did",
             "type": "custom",
-            "wasm": "https://oauth2:$GITLAB_TOKEN@gitlab-core.supsi.ch/api/v4/projects/230/packages/generic/canister/0.0.2/storage.wasm.gz",
+            "wasm": "../rust-canisters/target/wasm32-unknown-unknown/release/storage.wasm",
             "init_arg_file": "./init/storage_init.did",
             "declarations": {
                 "output": "declarations/storage",

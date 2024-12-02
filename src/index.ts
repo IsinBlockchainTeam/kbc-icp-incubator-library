@@ -50,7 +50,7 @@ export {
 } from './services/ShipmentService';
 export { DocumentTypeEnum } from '@kbc-lib/azle-types';
 
-export { ICPFileDriver } from './drivers/ICPFileDriver';
+export { FileDriver } from './drivers/FileDriver';
 
 export { serial } from './utils/utils';
 export { URL_SEGMENTS } from './constants/ICP';

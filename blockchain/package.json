@@ -35,7 +35,6 @@
         "prettier": "3.3.1"
     },
     "dependencies": {
-        "@blockchain-lib/blockchain-common": "1.1.0",
         "@defi-wonderland/smock": "2.3.5",
         "@ethersproject/providers": "^5.7.2",
         "@openzeppelin/contracts": "4.8.2",

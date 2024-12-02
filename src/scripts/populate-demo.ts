@@ -1,5 +1,4 @@
 import { DocumentTypeEnum, EvaluationStatusEnum } from '@kbc-lib/azle-types';
-import { ICPResourceSpec, ICPStorageDriver } from '@blockchain-lib/common';
 import {
     DocumentParams,
     mockDocument,
@@ -18,7 +17,7 @@ import { AuthHelper, Login } from '../__shared__/helpers/AuthHelper';
 import { Organization } from '../entities/organization/Organization';
 import { Material } from '../entities/Material';
 import { Offer } from '../entities/Offer';
-import { ICPFileDriver } from '../drivers/ICPFileDriver';
+import { FileDriver } from '../drivers/FileDriver';
 import { MaterialDriver } from '../drivers/MaterialDriver';
 import { OfferDriver } from '../drivers/OfferDriver';
 import { OrganizationDriver, OrganizationParams } from '../drivers/OrganizationDriver';
@@ -27,6 +26,8 @@ import { Shipment } from '../entities/Shipment';
 import { ShipmentDriver } from '../drivers/ShipmentDriver';
 import { ShipmentService } from '../services/ShipmentService';
 import { Order } from '../entities/Order';
+import { StorageDriver } from '../drivers/StorageDriver';
+import { ResourceSpec } from '../types/ResourceSpec';
 
 const createProductCategory = async (
     userSiweIdentityProvider: SiweIdentityProvider,
@@ -130,17 +131,17 @@ const uploadDocument = async (
         ICP.ENTITY_MANAGER_CANISTER_ID,
         ICP.NETWORK
     );
-    const icpStorageDriver = new ICPStorageDriver(
+    const icpStorageDriver = new StorageDriver(
         userSiweIdentityProvider.identity,
         ICP.STORAGE_CANISTER_ID,
         ICP.NETWORK
     );
-    const icpFileDriver = new ICPFileDriver(icpStorageDriver);
+    const icpFileDriver = new FileDriver(icpStorageDriver);
     const organizationId = 0;
     const baseExternalUrl = `https://${ICP.STORAGE_CANISTER_ID}.${ICP.NETWORK}/organization/${organizationId}/transactions/${orderId}`;
     const shipmentService = new ShipmentService(shipmentDriver, icpFileDriver, baseExternalUrl);
 
-    const fileSpec: ICPResourceSpec = {
+    const fileSpec: ResourceSpec = {
         name: document.name,
         type: document.type
     };

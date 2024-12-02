@@ -10,10 +10,10 @@
 /coverage/
 /credentials/gitlab_write_token
 
-icp/ts-canister/.azle
-icp/ts-canister/.dfx
-icp/ts-canister/declarations
-icp/ts-canister/.env.custom
+icp/ts-canisters/.azle
+icp/ts-canisters/.dfx
+icp/ts-canisters/declarations
+icp/ts-canisters/.env.custom
 
 
 /blockchain/**/artifacts/

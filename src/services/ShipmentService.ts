@@ -1,10 +1,11 @@
-import { FileHelpers, ICPResourceSpec } from '@blockchain-lib/common';
 import { ShipmentDriver } from '../drivers/ShipmentDriver';
 import { Shipment, Phase } from '../entities/Shipment';
 import { DocumentType, DocumentInfo } from '../entities/Document';
 import { EvaluationStatus } from '../entities/Evaluation';
-import { ICPFileDriver } from '../drivers/ICPFileDriver';
+import { FileDriver } from '../drivers/FileDriver';
 import { URL_SEGMENTS } from '../constants/ICP';
+import FileHelpers from '../utils/FileHelpers';
+import { ResourceSpec } from '../types/ResourceSpec';
 
 export type ShipmentPhaseDocument = {
     documentType: DocumentType;
@@ -26,13 +27,13 @@ export type ShipmentDocumentMetadata = {
 export class ShipmentService {
     private readonly _shipmentDriver: ShipmentDriver;
 
-    private readonly _icpFileDriver: ICPFileDriver;
+    private readonly _icpFileDriver: FileDriver;
 
     private readonly _baseExternalUrl?: string;
 
     constructor(
         shipmentDriver: ShipmentDriver,
-        icpFileDriver: ICPFileDriver,
+        icpFileDriver: FileDriver,
         baseExternalUrl?: string
     ) {
         this._shipmentDriver = shipmentDriver;
@@ -186,7 +187,7 @@ export class ShipmentService {
         documentType: DocumentType,
         documentReferenceId: string,
         fileContent: Uint8Array,
-        resourceSpec: ICPResourceSpec,
+        resourceSpec: ResourceSpec,
         delegatedOrganizationIds: number[] = []
     ): Promise<Shipment> {
         // const externalUrl = `https://<storage_principal_id>.localhost:4943/organization/0/transactions/${id}`;

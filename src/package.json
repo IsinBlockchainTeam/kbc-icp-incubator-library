@@ -5,7 +5,7 @@
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "scripts": {
-        "get-declarations": "cp -r ../icp/ts-canister/declarations/ ./declarations && node transform-declarations.js",
+        "get-declarations": "cp -r ../icp/ts-canisters/declarations/ ./declarations && node transform-declarations.js",
         "build": "npx tsc",
         "test": "jest",
         "lint": "eslint *.ts --fix",
@@ -54,7 +54,6 @@
         "ttypescript": "1.5.15"
     },
     "dependencies": {
-        "@blockchain-lib/common": "2.0.5",
         "@dfinity/auth-client": "^1.4.0",
         "@ethersproject/providers": "^5.6.4",
         "@jest/test-sequencer": "^29.7.0",

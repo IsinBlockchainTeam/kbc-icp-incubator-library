@@ -14,12 +14,6 @@ It uses the [Hardhat](https://hardhat.org/) framework as a development environme
 6. In a new terminal, run `npm run node` for starting the local Hardhat blockchain
 7. Deploy the smart contracts with `npm run deploy -- --network localhost`
 
-### `npmrc` Configuration
-
-| Registry name              | Description                                                                                                                                                                                                       |
-|----------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `@blockchain-lib:registry` | Needed for **installing** dependencies. It's an access token with read access to the ['common' private npm registry](https://gitlab-core.supsi.ch/dti-isin/giuliano.gremlich/blockchain/one_lib_to_rule_them_all) |
-
 ### Environment Variables Configuration
 
 | Variable                          | Description                                                                                                                                        |

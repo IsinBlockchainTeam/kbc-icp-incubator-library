@@ -1,17 +1,18 @@
-import { FileHelpers, ICPResourceSpec } from '@blockchain-lib/common';
 import { CertificationDriver } from '../drivers/CertificationDriver';
 import {
     BaseCertificate,
     CertificateDocument,
     CertificateDocumentType
 } from '../entities/Certificate';
-import { ICPFileDriver } from '../drivers/ICPFileDriver';
+import { FileDriver } from '../drivers/FileDriver';
 import { CompanyCertificate } from '../entities/CompanyCertificate';
 import { URL_SEGMENTS } from '../constants/ICP';
 import { ScopeCertificate } from '../entities/ScopeCertificate';
 import { MaterialCertificate } from '../entities/MaterialCertificate';
 import { EvaluationStatus } from '../entities/Evaluation';
 import { URLStructure } from '../types/URLStructure';
+import FileHelpers from '../utils/FileHelpers';
+import { ResourceSpec } from '../types/ResourceSpec';
 
 // TODO: definire una struttura Document generica che vada bene per tutte le forme di documento della piattaforma
 type Document = {
@@ -21,7 +22,7 @@ type Document = {
     fileContent: Uint8Array;
     storageConfig: {
         urlStructure: URLStructure;
-        resourceSpec: ICPResourceSpec;
+        resourceSpec: ResourceSpec;
         delegatedOrganizationIds: number[];
     };
 };
@@ -33,9 +34,9 @@ type CertificateDocumentRequest = Document & {
 export class CertificationService {
     private readonly _certificationManagerDriver: CertificationDriver;
 
-    private readonly _icpFileDriver: ICPFileDriver;
+    private readonly _icpFileDriver: FileDriver;
 
-    constructor(certificationManagerDriver: CertificationDriver, icpFileDriver: ICPFileDriver) {
+    constructor(certificationManagerDriver: CertificationDriver, icpFileDriver: FileDriver) {
         this._certificationManagerDriver = certificationManagerDriver;
         this._icpFileDriver = icpFileDriver;
     }
@@ -273,7 +274,7 @@ export class CertificationService {
     async _addDocumentToExtStorage(
         baseExternalUrl: string,
         document: Document,
-        resourceSpec: ICPResourceSpec,
+        resourceSpec: ResourceSpec,
         delegatedOrganizationIds: number[] = []
     ): Promise<string> {
         await this._icpFileDriver.create(
