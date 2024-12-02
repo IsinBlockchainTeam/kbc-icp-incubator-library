@@ -98,7 +98,7 @@ class ShipmentService implements HasInterestedParties {
             documents: []
         };
 
-        const escrowManagerAddress: string = EVM.ESCROW_MANAGER_ADDRESS();
+        const escrowManagerAddress: string = EVM.ESCROW_MANAGER_ADDRESS;
         await ethSendContractTransaction(escrowManagerAddress, escrowManagerAbi.abi, 'registerEscrow', [
             shipment.id,
             supplier,
@@ -215,7 +215,7 @@ class ShipmentService implements HasInterestedParties {
 
         if (shipment.escrowAddress.length > 0) throw new ShipmentDownPaymentAddressNotFound();
 
-        const escrowManagerAddress: string = EVM.ESCROW_MANAGER_ADDRESS();
+        const escrowManagerAddress: string = EVM.ESCROW_MANAGER_ADDRESS;
         const escrowAddress = await ethCallContract(escrowManagerAddress, escrowManagerAbi.abi, 'getEscrowByShipmentId', [shipment.id]);
         shipment.escrowAddress = [escrowAddress];
 
@@ -229,7 +229,7 @@ class ShipmentService implements HasInterestedParties {
         if (!(FundStatusEnum.NOT_LOCKED in shipment.fundsStatus)) throw new Error('Funds already locked');
 
         if (shipment.escrowAddress.length === 0) {
-            const escrowManagerAddress: string = EVM.ESCROW_MANAGER_ADDRESS();
+            const escrowManagerAddress: string = EVM.ESCROW_MANAGER_ADDRESS;
             const escrowAddress = await ethCallContract(escrowManagerAddress, escrowManagerAbi.abi, 'getEscrowByShipmentId', [shipment.id]);
             shipment.escrowAddress = [escrowAddress];
         }
@@ -250,7 +250,7 @@ class ShipmentService implements HasInterestedParties {
         if (!(FundStatusEnum.NOT_LOCKED in shipment.fundsStatus)) throw new Error('Funds already locked');
 
         if (shipment.escrowAddress.length === 0) {
-            const escrowManagerAddress: string = EVM.ESCROW_MANAGER_ADDRESS();
+            const escrowManagerAddress: string = EVM.ESCROW_MANAGER_ADDRESS;
             const escrowAddress = await ethCallContract(escrowManagerAddress, escrowManagerAbi.abi, 'getEscrowByShipmentId', [shipment.id]);
             shipment.escrowAddress = [escrowAddress];
         }

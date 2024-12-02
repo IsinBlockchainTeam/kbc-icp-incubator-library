@@ -15,7 +15,7 @@ class AuthenticationService {
 
     private _authentications = StableBTreeMap<string, UserAuthentication>(StableMemoryId.AUTHENTICATION);
 
-    private _loginDuration: number = Number(LOGIN_DURATION());
+    private _loginDuration: number = Number(LOGIN_DURATION);
 
     private _incrementalRoles = [ROLES.VIEWER, ROLES.EDITOR, ROLES.SIGNER];
 

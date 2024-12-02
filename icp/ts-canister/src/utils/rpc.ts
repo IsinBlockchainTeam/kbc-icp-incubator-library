@@ -24,7 +24,7 @@ export async function jsonRpcRequest(body: Record<string, any>): Promise<any> {
     const evmRpcCanisterId = process.env.CANISTER_ID_EVM_RPC;
     const jsonRpcSource = {
         Custom: {
-            url: EVM.RPC_URL(),
+            url: EVM.RPC_URL,
             headers: []
         }
     };
@@ -63,10 +63,10 @@ export async function ethFeeHistory(): Promise<any> {
     };
     const rpcSource = {
         Custom: {
-            chainId: EVM.CHAIN_ID(),
+            chainId: EVM.CHAIN_ID,
             services: [
                 {
-                    url: EVM.RPC_URL(),
+                    url: EVM.RPC_URL,
                     headers: []
                 }
             ]
@@ -107,10 +107,10 @@ export async function ethGetTransactionCount(address: string): Promise<number> {
     };
     const rpcSource = {
         Custom: {
-            chainId: EVM.CHAIN_ID(),
+            chainId: EVM.CHAIN_ID,
             services: [
                 {
-                    url: EVM.RPC_URL(),
+                    url: EVM.RPC_URL,
                     headers: []
                 }
             ]
@@ -133,10 +133,10 @@ export async function ethSendRawTransaction(rawTransaction: string): Promise<any
     const evmRpcCanisterId = process.env.CANISTER_ID_EVM_RPC;
     const rpcSource = {
         Custom: {
-            chainId: EVM.CHAIN_ID(),
+            chainId: EVM.CHAIN_ID,
             services: [
                 {
-                    url: EVM.RPC_URL(),
+                    url: EVM.RPC_URL,
                     headers: []
                 }
             ]
@@ -158,7 +158,7 @@ function buildV1Transaction(contractAddress: string, data: string, nonce: number
         // gasPrice: 0,
         type: 0,
         data,
-        chainId: EVM.CHAIN_ID(),
+        chainId: EVM.CHAIN_ID,
         nonce
     });
 }
@@ -174,7 +174,7 @@ async function buildV2Transaction(contractAddress: string, data: string, nonce: 
     // console.log('baseFeePerGas', baseFeePerGas);
     // const maxFeePerGas = baseFeePerGas * 2n + maxPriorityFeePerGas;
 
-    const provider = new ethers.JsonRpcProvider(EVM.RPC_URL());
+    const provider = new ethers.JsonRpcProvider(EVM.RPC_URL);
     const feeData = await provider.getFeeData();
     const mfpg = feeData.maxFeePerGas?.toString();
     console.log('mfpg', mfpg);
@@ -190,7 +190,7 @@ async function buildV2Transaction(contractAddress: string, data: string, nonce: 
         maxFeePerGas: feeData.maxFeePerGas,
         gasPrice: feeData.gasPrice,
         data,
-        chainId: EVM.CHAIN_ID(),
+        chainId: EVM.CHAIN_ID,
         nonce
     });
 }
@@ -222,7 +222,7 @@ export async function ethSendContractTransaction(
     // console.log('baseFeePerGas', baseFeePerGas);
     // const maxFeePerGas = baseFeePerGas * 2n + maxPriorityFeePerGas;
 
-    // const provider = new ethers.JsonRpcProvider(EVM.RPC_URL());
+    // const provider = new ethers.JsonRpcProvider(EVM.RPC_URL);
     // const contract = new ethers.Contract(contractAddress, contractAbi, provider);
     // const populatedTransaction = await contract[methodName].populateTransaction(...methodArgs);
     // console.log('populatedTransaction', populatedTransaction);
@@ -230,14 +230,14 @@ export async function ethSendContractTransaction(
     const nonce = await ethGetTransactionCount(canisterAddress);
     console.log('nonce', nonce);
     const tx =
-        EVM.TRANSACTION_TYPE() === 'v1' ? buildV1Transaction(contractAddress, data, nonce) : await buildV2Transaction(contractAddress, data, nonce);
+        EVM.TRANSACTION_TYPE === 'v1' ? buildV1Transaction(contractAddress, data, nonce) : await buildV2Transaction(contractAddress, data, nonce);
     // const tx = ethers.Transaction.from(populatedTransaction);
     // tx.type = 0;
     console.log('tx', tx);
     const unsignedSerializedTx = tx.unsignedSerialized;
     const unsignedSerializedTxHash = ethers.keccak256(unsignedSerializedTx);
     const signedSerializedTxHash = await signWithEcdsa([ic.id().toUint8Array()], ethers.getBytes(unsignedSerializedTxHash));
-    const { r, s, v } = calculateRsvForTEcdsa(EVM.CHAIN_ID(), canisterAddress, unsignedSerializedTxHash, signedSerializedTxHash);
+    const { r, s, v } = calculateRsvForTEcdsa(EVM.CHAIN_ID, canisterAddress, unsignedSerializedTxHash, signedSerializedTxHash);
     tx.signature = { r, s, v };
     const rawTransaction = tx.serialized;
     const resp = await ethSendRawTransaction(rawTransaction);
@@ -266,11 +266,11 @@ export async function ethCallContract(contractAddress: string, contractAbi: ethe
     };
     const JsonRpcSource = {
         Custom: {
-            url: EVM.RPC_URL(),
+            url: EVM.RPC_URL,
             headers: []
         }
     };
-    const resp = await call(CANISTER.EVM_RPC_ID(), 'request', {
+    const resp = await call(CANISTER.EVM_RPC_ID, 'request', {
         paramIdlTypes: [IDLRpcService, IDL.Text, IDL.Nat64],
         returnIdlType: IDLRequestResult,
         args: [JsonRpcSource, JSON.stringify(jsonRpcPayload), 2048],
@@ -285,7 +285,7 @@ export async function ethCallContract(contractAddress: string, contractAbi: ethe
 }
 
 export async function getAddress(principal: Principal): Promise<string> {
-    const resp = await call(CANISTER.IC_SIWE_PROVIDER_ID(), 'get_address', {
+    const resp = await call(CANISTER.IC_SIWE_PROVIDER_ID, 'get_address', {
         paramIdlTypes: [IDL.Vec(IDL.Nat8)],
         returnIdlType: IDLGetAddressResponse,
         args: [principal.toUint8Array()]
