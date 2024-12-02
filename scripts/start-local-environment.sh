@@ -56,7 +56,7 @@ function store_ngrok_url() {
     local ngrok_url=$(curl -s http://127.0.0.1:4040/api/tunnels | grep -o '"public_url":"[^"]*' | grep -o 'http[^"]*' | head -1)
 
     local var_name="EVM_RPC_URL"
-    local env_file="$BASE_DIR/icp/ts-canister/.env.custom"
+    local env_file="$BASE_DIR/icp/ts-canisters/.env.custom"
 
     sed -i '' "s|^$var_name=.*|$var_name=$ngrok_url|" "$env_file"
 }
@@ -98,13 +98,14 @@ wait_for_connection "localhost:4040/api/tunnels"
 store_ngrok_url
 
 echo "Starting dfx..."
-new_iterm_tab "cd '$BASE_DIR/icp/ts-canister' && npm run start-network"
+new_iterm_tab "cd '$BASE_DIR/icp/ts-canisters' && npm run start-network"
 
 echo "Waiting for dfx to start..."
 wait_for_dfx
 
 echo "Deploying canisters on dfx..."
-new_iterm_tab "cd '$BASE_DIR/icp/ts-canister' && npm run deploy"
+new_iterm_tab "cd '$BASE_DIR/icp/scripts' && ./deploy-local.sh"
+#new_iterm_tab "cd '$BASE_DIR/icp/ts-canisters' && npm run deploy"
 
 echo "Getting entity_manager canister ethereum address..."
 entity_manager_canister_eth_address=""

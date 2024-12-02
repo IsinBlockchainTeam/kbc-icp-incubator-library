@@ -15,6 +15,7 @@ export { ProductCategoryService } from './services/ProductCategoryService';
 export { NegotiationStatus } from './types/NegotiationStatus';
 export { TradeType } from './types/TradeType';
 export type { URLStructure } from './types/URLStructure';
+export type { ResourceSpec } from './types/ResourceSpec';
 
 export { type CredentialStatus } from './types/CredentialStatus';
 export { CredentialRevocationDriver } from './drivers/CredentialRevocationDriver';
@@ -122,3 +123,14 @@ export { AssessmentAssuranceLevelDriver as ICPAssessmentAssuranceLevelDriver } f
 export { AssessmentAssuranceLevelService as ICPAssessmentAssuranceLevelService } from './services/AssessmentAssuranceLevelService';
 
 export { SiweIdentityProvider } from './drivers/SiweIdentityProvider';
+export { IdentityDriver } from './drivers/IdentityDriver';
+export { StorageDriver } from './drivers/StorageDriver';
+export {
+    SiweDriver,
+    type SiweIdentityContextType,
+    type LoginOkResponse,
+    type SIWE_IDENTITY_SERVICE,
+    type ISignedDelegation,
+    type State
+} from './drivers/SiweDriver';
+export { FileHelpers } from './utils/FileHelpers';

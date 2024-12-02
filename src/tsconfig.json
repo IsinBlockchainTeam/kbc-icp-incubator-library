@@ -3,9 +3,10 @@
     "compilerOptions": {
         "strictNullChecks": true,
         "module": "commonjs",
-        "target": "es6",
+        "target": "ES2022",
         "noImplicitAny": true,
         "outDir": "dist",
+        "lib": ["dom"],
         // "sourceMap": true,Ok
         "inlineSourceMap": true,
         "esModuleInterop": true,

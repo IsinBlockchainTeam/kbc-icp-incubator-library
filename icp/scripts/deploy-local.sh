@@ -2,6 +2,7 @@ cd "$(dirname "$0")"
 cd ../rust-canisters
 dfx canister create --all
 dfx build --all
+dfx generate
 
 cd ../ts-canisters
 set -o allexport
