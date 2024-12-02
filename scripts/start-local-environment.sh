@@ -94,7 +94,7 @@ echo "Starting ngrok..."
 new_iterm_tab "ngrok http 8545"
 
 echo "Waiting for ngrok to start..."
-wait_for_connection "localhost:4040"
+wait_for_connection "localhost:4040/api/tunnels"
 store_ngrok_url
 
 echo "Starting dfx..."
@@ -115,6 +115,6 @@ echo "Deploying smart contracts on hardhat node..."
 new_iterm_tab "cd '$BASE_DIR/blockchain' && npm run deploy -- --network localhost"
 
 echo "Sending initial funds to entity_manager canister..."
-new_iterm_tab "cd '$BASE_DIR/blockchain' && npm run send-eth"
+new_iterm_tab "cd '$BASE_DIR/blockchain' && npm run send-eth && npm run send-tokens && npm run approve-token-transfer"
 
 echo "Starting local environment... Done"
