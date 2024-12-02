@@ -1,8 +1,8 @@
 export const USERS = {
-    USER1_PRIVATE_KEY: '0c7e66e74f6666b514cc73ee2b7ffc518951cf1ca5719d6820459c4e134f2264',
+    USER1_PRIVATE_KEY: '538d7d8aec31a0a83f12461b1237ce6b00d8efc1d8b1c73566c05f63ed5e6d02',
     COMPANY1_PRIVATE_KEY: '538d7d8aec31a0a83f12461b1237ce6b00d8efc1d8b1c73566c05f63ed5e6d02',
 
-    USER2_PRIVATE_KEY: 'ec6b3634419525310628dce4da4cf2abbc866c608aebc1e5f9ee7edf6926e985',
+    USER2_PRIVATE_KEY: '0c7e66e74f6666b514cc73ee2b7ffc518951cf1ca5719d6820459c4e134f2264',
     COMPANY2_PRIVATE_KEY: '0c7e66e74f6666b514cc73ee2b7ffc518951cf1ca5719d6820459c4e134f2264',
 
     DELEGATE_CREDENTIAL_ID_HASH:
@@ -18,7 +18,8 @@ export const ICP = {
     NETWORK: 'http://127.0.0.1:4943/',
 
     SIWE_CANISTER_ID: 'be2us-64aaa-aaaaa-qaabq-cai',
-    ENTITY_MANAGER_CANISTER_ID: 'bkyz2-fmaaa-aaaaa-qaaaq-cai'
+    ENTITY_MANAGER_CANISTER_ID: 'bkyz2-fmaaa-aaaaa-qaaaq-cai',
+    STORAGE_CANISTER_ID: 'by6od-j4aaa-aaaaa-qaadq-cai'
 };
 
 export const ETHEUREUM = {
