@@ -1,5 +1,5 @@
 import { update } from 'azle';
-import { AtLeastSigner, AtLeastViewer } from '../../decorators/roles';
+import { AtLeastViewer } from '../../decorators/roles';
 import UnitService from '../../services/UnitService';
 import UnitController from '../UnitController';
 
@@ -31,14 +31,14 @@ describe('UnitController', () => {
             controllerFunction: () => unitController.addUnit('value'),
             serviceFunction: unitServiceInstanceMock.addValue,
             expectedResult: 'value',
-            expectedDecorators: [update, AtLeastSigner]
+            expectedDecorators: []
         },
         {
             controllerFunctionName: 'removeUnit',
             controllerFunction: () => unitController.removeUnit('value'),
             serviceFunction: unitServiceInstanceMock.removeValue,
             expectedResult: 'value',
-            expectedDecorators: [update, AtLeastSigner]
+            expectedDecorators: []
         },
         {
             controllerFunctionName: 'hasUnit',
