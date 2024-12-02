@@ -4,10 +4,10 @@ import { ethers } from 'hardhat';
 import { ContractName } from '../constants/contracts';
 import { getRequiredEnvs } from '../utils/env';
 
-const env = getRequiredEnvs('TOKEN_OWNER_PRIVATE_KEY', 'RPC_URL', 'TOKEN_ADDRESS', 'ESCROW_ADDRESS');
+const env = getRequiredEnvs('COMMISSIONER_PRIVATE_KEY', 'RPC_URL', 'TOKEN_ADDRESS', 'ESCROW_ADDRESS');
 
 const main = async (amount: number) => {
-    const wallet = new Wallet(env.TOKEN_OWNER_PRIVATE_KEY, new JsonRpcProvider(env.RPC_URL)); // Commissioner
+    const wallet = new Wallet(env.COMMISSIONER_PRIVATE_KEY, new JsonRpcProvider(env.RPC_URL)); // Commissioner
     const MyToken = await ethers.getContractFactory(ContractName.MY_TOKEN);
     const myToken = MyToken.attach(env.TOKEN_ADDRESS);
     const tx = await myToken.connect(wallet).approve(env.ESCROW_ADDRESS, amount);

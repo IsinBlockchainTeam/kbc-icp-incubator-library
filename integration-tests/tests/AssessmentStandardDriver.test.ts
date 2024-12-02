@@ -1,8 +1,8 @@
 import { Wallet } from 'ethers';
-import { SiweIdentityProvider } from '../drivers/SiweIdentityProvider';
-import { UnitDriver } from '../drivers/UnitDriver';
-import { createRoleProof } from '../__testUtils__/proof';
-import { AuthenticationDriver } from '../drivers/AuthenticationDriver';
+import { SiweIdentityProvider } from '../../src/drivers/SiweIdentityProvider';
+import { AssessmentStandardDriver } from '../../src/drivers/AssessmentStandardDriver';
+import { AuthenticationDriver } from '../../src/drivers/AuthenticationDriver';
+import { createRoleProof } from '../../src/__testUtils__/proof';
 
 const USER1_PRIVATE_KEY = '0c7e66e74f6666b514cc73ee2b7ffc518951cf1ca5719d6820459c4e134f2264';
 const COMPANY1_PRIVATE_KEY = '538d7d8aec31a0a83f12461b1237ce6b00d8efc1d8b1c73566c05f63ed5e6d02';
@@ -12,11 +12,11 @@ const ENTITY_MANAGER_CANISTER_ID = process.env.CANISTER_ID_ENTITY_MANAGER!;
 type Utils = {
     userWallet: Wallet;
     companyWallet: Wallet;
-    unitDriver: UnitDriver;
+    assessmentStandardDriver: AssessmentStandardDriver;
     authenticate: () => Promise<void>;
 };
 
-describe('UnitDriver', () => {
+describe('AssessmentStandardDriver', () => {
     let utils1: Utils;
 
     const getUtils = async (userPrivateKey: string, companyPrivateKey: string) => {
@@ -29,14 +29,14 @@ describe('UnitDriver', () => {
             ENTITY_MANAGER_CANISTER_ID,
             'http://127.0.0.1:4943/'
         );
-        const unitDriver = new UnitDriver(
+        const assessmentStandardDriver = new AssessmentStandardDriver(
             siweIdentityProvider.identity,
             ENTITY_MANAGER_CANISTER_ID,
             'http://127.0.0.1:4943/'
         );
         const roleProof = await createRoleProof(userWallet.address, companyWallet);
         const authenticate = () => authenticationDriver.authenticate(roleProof);
-        return { userWallet, companyWallet, unitDriver, authenticate };
+        return { userWallet, companyWallet, assessmentStandardDriver, authenticate };
     };
 
     beforeAll(async () => {
@@ -44,32 +44,36 @@ describe('UnitDriver', () => {
     });
 
     it('should add enumeration value', async () => {
-        const { unitDriver, authenticate } = utils1;
+        const { assessmentStandardDriver, authenticate } = utils1;
         await authenticate();
-        const unitCount = (await unitDriver.getAllValues()).length;
-        await unitDriver.addValue(`unit${unitCount + 1}`);
 
-        const units = await unitDriver.getAllValues();
-        expect(units).toContain(`unit${unitCount + 1}`);
+        const assessmentStandardCount = (await assessmentStandardDriver.getAllValues()).length;
+        await assessmentStandardDriver.addValue(`assessmentStandard${assessmentStandardCount + 1}`);
+
+        const assessmentStandards = await assessmentStandardDriver.getAllValues();
+        expect(assessmentStandards).toContain(`assessmentStandard${assessmentStandardCount + 1}`);
     });
 
     it('should check if enumeration value exists', async () => {
-        const { unitDriver, authenticate } = utils1;
+        const { assessmentStandardDriver, authenticate } = utils1;
         await authenticate();
-        const unitCount = (await unitDriver.getAllValues()).length;
 
-        const hasUnit = await unitDriver.hasValue(`unit${unitCount}`);
+        const assessmentStandardCount = (await assessmentStandardDriver.getAllValues()).length;
+
+        const hasUnit = await assessmentStandardDriver.hasValue(
+            `assessmentStandard${assessmentStandardCount}`
+        );
         expect(hasUnit).toBeTruthy();
     });
 
     it('should remove enumeration value', async () => {
-        const { unitDriver, authenticate } = utils1;
+        const { assessmentStandardDriver, authenticate } = utils1;
         await authenticate();
 
-        const unitCount = (await unitDriver.getAllValues()).length;
-        await unitDriver.removeValue(`unit${unitCount}`);
+        const assessmentStandardCount = (await assessmentStandardDriver.getAllValues()).length;
+        await assessmentStandardDriver.removeValue(`assessmentStandard${assessmentStandardCount}`);
 
-        const units = await unitDriver.getAllValues();
-        expect(units).not.toContain(`unit${unitCount}`);
+        const assessmentStandards = await assessmentStandardDriver.getAllValues();
+        expect(assessmentStandards).not.toContain(`assessmentStandard${assessmentStandardCount}`);
     });
 });

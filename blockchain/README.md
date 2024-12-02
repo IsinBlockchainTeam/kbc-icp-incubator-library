@@ -8,7 +8,7 @@ It uses the [Hardhat](https://hardhat.org/) framework as a development environme
 
 1. Move inside the `blockchain` with `cd blockchain`
 2. Rename the `.npmrc.template` file to `.npmrc` and fill in the missing information
-3. Run `npm i --force` to install the required dependencies
+3. Run `npm install` to install the required dependencies
 4. Rename the `.env.template` file to `.env` and fill in the missing information
 5. Compile smart contracts with `npm run compile`
 6. In a new terminal, run `npm run node` for starting the local Hardhat blockchain

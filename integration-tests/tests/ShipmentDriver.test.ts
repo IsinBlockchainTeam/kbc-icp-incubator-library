@@ -1,12 +1,6 @@
 import { Wallet } from 'ethers';
-import { DocumentTypeEnum } from '@kbc-lib/azle-types';
-import { SiweIdentityProvider } from '../drivers/SiweIdentityProvider';
-import { ShipmentDriver } from '../drivers/ShipmentDriver';
-import { AuthenticationDriver } from '../drivers/AuthenticationDriver';
-import { createRoleProof } from '../__testUtils__/proof';
-import { DocumentType } from '../entities/Document';
-import { EvaluationStatus } from '../entities/Evaluation';
-import { Phase } from '../entities/Shipment';
+import { DocumentTypeEnum, SiweIdentityProvider, ShipmentDriver, ICPAuthenticationDriver, DocumentType, EvaluationStatus, ShipmentPhase } from '@kbc-lib/coffee-trading-management-lib';
+import { createRoleProof } from '../../src/__testUtils__/proof';
 
 jest.setTimeout(300000);
 
@@ -31,7 +25,7 @@ describe('ShipmentManagerDriver', () => {
         const companyWallet = new Wallet(companyPrivateKey);
         const siweIdentityProvider = new SiweIdentityProvider(userWallet, SIWE_CANISTER_ID);
         await siweIdentityProvider.createIdentity();
-        const authenticationDriver = new AuthenticationDriver(
+        const authenticationDriver = new ICPAuthenticationDriver(
             siweIdentityProvider.identity,
             ENTITY_MANAGER_CANISTER_ID,
             'http://127.0.0.1:4943/'
@@ -273,7 +267,7 @@ describe('ShipmentManagerDriver', () => {
         await commissionerDriver.evaluateDocument(SHIPMENT_ID, 2, EvaluationStatus.APPROVED);
         console.log('shipping note');
 
-        expect(await supplierDriver.getShipmentPhase(SHIPMENT_ID)).toEqual(Phase.PHASE_3);
+        expect(await supplierDriver.getShipmentPhase(SHIPMENT_ID)).toEqual(ShipmentPhase.PHASE_3);
     });
 
     it('should bring a shipment which has just locked the escrow to the 5th phase', async () => {
@@ -283,7 +277,7 @@ describe('ShipmentManagerDriver', () => {
             utils2;
         await commissionerLogin();
 
-        expect(await supplierDriver.getShipmentPhase(SHIPMENT_ID)).toEqual(Phase.PHASE_3);
+        expect(await supplierDriver.getShipmentPhase(SHIPMENT_ID)).toEqual(ShipmentPhase.PHASE_3);
         await supplierDriver.addDocument(
             SHIPMENT_ID,
             DocumentType.BOOKING_CONFIRMATION,

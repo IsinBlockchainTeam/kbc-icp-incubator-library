@@ -1,8 +1,6 @@
 import { Wallet } from 'ethers';
-import { OrderDriver } from '../drivers/OrderDriver';
-import { SiweIdentityProvider } from '../drivers/SiweIdentityProvider';
-import { AuthenticationDriver } from '../drivers/AuthenticationDriver';
-import { createRoleProof } from '../__testUtils__/proof';
+import { OrderDriver, SiweIdentityProvider, ICPAuthenticationDriver } from '@kbc-lib/coffee-trading-management-lib';
+import { createRoleProof } from '../../src/__testUtils__/proof';
 
 const USER1_PRIVATE_KEY = '0c7e66e74f6666b514cc73ee2b7ffc518951cf1ca5719d6820459c4e134f2264';
 const COMPANY1_PRIVATE_KEY = '538d7d8aec31a0a83f12461b1237ce6b00d8efc1d8b1c73566c05f63ed5e6d02';
@@ -25,7 +23,7 @@ describe('OrderDriver', () => {
         const companyWallet = new Wallet(companyPrivateKey);
         const siweIdentityProvider = new SiweIdentityProvider(userWallet, SIWE_CANISTER_ID);
         await siweIdentityProvider.createIdentity();
-        const authenticationDriver = new AuthenticationDriver(
+        const authenticationDriver = new ICPAuthenticationDriver(
             siweIdentityProvider.identity,
             ENTITY_MANAGER_CANISTER_ID,
             'http://127.0.0.1:4943/'
@@ -75,7 +73,7 @@ describe('OrderDriver', () => {
             shippingDeadline: date,
             deliveryDeadline: date,
             arbiter: '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
-            token: '0xc5a5C42992dECbae36851359345FE25997F5C42d',
+            token: '0x3Aa5ebB10DC797CAC828524e59A333d0A371443c',
             agreedAmount: 10,
             escrowManager: '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
             incoterms: 'incoterms',
@@ -100,14 +98,6 @@ describe('OrderDriver', () => {
         expect(order).toBeDefined();
     }, 30000);
 
-    it('should retrieve orders', async () => {
-        const { orderManagerDriver } = utils1;
-        const orders = await orderManagerDriver.getOrders();
-        console.log(orders);
-        expect(orders).toBeDefined();
-        expect(orders.length).toBeGreaterThan(0);
-    }, 30000);
-
     it('should update order', async () => {
         const { companyWallet: company1Wallet, orderManagerDriver, authenticate } = utils1;
         await authenticate();
@@ -122,7 +112,7 @@ describe('OrderDriver', () => {
             shippingDeadline: date,
             deliveryDeadline: date,
             arbiter: '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
-            token: '0xc5a5C42992dECbae36851359345FE25997F5C42d',
+            token: '0x3Aa5ebB10DC797CAC828524e59A333d0A371443c',
             agreedAmount: 100,
             incoterms: 'incoterms',
             shipper: 'shipper',

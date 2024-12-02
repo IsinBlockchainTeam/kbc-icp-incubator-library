@@ -1,9 +1,7 @@
 import { Wallet } from 'ethers';
-import { RoleProof } from '../types/RoleProof';
-import { ProductCategoryDriver } from '../drivers/ProductCategoryDriver';
-import { SiweIdentityProvider } from '../drivers/SiweIdentityProvider';
-import { AuthenticationDriver } from '../drivers/AuthenticationDriver';
-import { createRoleProof } from '../__testUtils__/proof';
+import { RoleProof } from '../../src/types/RoleProof';
+import { ProductCategoryDriver, SiweIdentityProvider, ICPAuthenticationDriver } from '@kbc-lib/coffee-trading-management-lib';
+import { createRoleProof } from '../../src/__testUtils__/proof';
 
 const USER1_PRIVATE_KEY = '0c7e66e74f6666b514cc73ee2b7ffc518951cf1ca5719d6820459c4e134f2264';
 const COMPANY1_PRIVATE_KEY = '538d7d8aec31a0a83f12461b1237ce6b00d8efc1d8b1c73566c05f63ed5e6d02';
@@ -15,7 +13,7 @@ const ENTITY_MANAGER_CANISTER_ID = 'bkyz2-fmaaa-aaaaa-qaaaq-cai';
 type Utils = {
     userWallet: Wallet;
     companyWallet: Wallet;
-    authenticationDriver: AuthenticationDriver;
+    authenticationDriver: ICPAuthenticationDriver;
     productCategoryDriver: ProductCategoryDriver;
     roleProof: RoleProof;
 };
@@ -30,7 +28,7 @@ describe('AuthenticationDriver', () => {
         const companyWallet = new Wallet(companyPrivateKey);
         const siweIdentityProvider = new SiweIdentityProvider(userWallet, SIWE_CANISTER_ID);
         await siweIdentityProvider.createIdentity();
-        const authenticationDriver = new AuthenticationDriver(
+        const authenticationDriver = new ICPAuthenticationDriver(
             siweIdentityProvider.identity,
             ENTITY_MANAGER_CANISTER_ID,
             'http://127.0.0.1:4943/'

@@ -45,9 +45,10 @@ export { ShipmentDriver } from './drivers/ShipmentDriver';
 export {
     ShipmentService,
     type ShipmentPhaseDocument,
-    type ShipmentDocument,
+    type ShipmentDocument as ShipmentDocumentType,
     type ShipmentDocumentMetadata
 } from './services/ShipmentService';
+export { DocumentTypeEnum } from '@kbc-lib/azle-types';
 
 export { ICPFileDriver } from './drivers/ICPFileDriver';
 
@@ -119,3 +120,5 @@ export { AssessmentStandardDriver as ICPAssessmentStandardDriver } from './drive
 export { AssessmentStandardService as ICPAssessmentStandardService } from './services/AssessmentStandardService';
 export { AssessmentAssuranceLevelDriver as ICPAssessmentAssuranceLevelDriver } from './drivers/AssessmentAssuranceLevelDriver';
 export { AssessmentAssuranceLevelService as ICPAssessmentAssuranceLevelService } from './services/AssessmentAssuranceLevelService';
+
+export { SiweIdentityProvider } from './drivers/SiweIdentityProvider';

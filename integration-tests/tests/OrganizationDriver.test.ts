@@ -1,13 +1,13 @@
-import { OrganizationRole, OrganizationVisibilityLevel } from '@kbc-lib/azle-types';
-import { OrganizationDriver, OrganizationParams } from '../drivers/OrganizationDriver';
-import { Organization } from '../entities/organization/Organization';
-import { Order } from '../entities/Order';
-import { OrderDriver } from '../drivers/OrderDriver';
-import { AuthHelper, Login } from '../__shared__/helpers/AuthHelper';
-import { ICP, USERS } from '../__shared__/constants/constants';
-import { BroadedOrganization } from '../entities/organization/BroadedOrganization';
-import { NarrowedOrganization } from '../entities/organization/NarrowedOrganization';
-import { ProductCategoryDriver } from '../drivers/ProductCategoryDriver';
+import { OrganizationRole, OrganizationVisibilityLevel } from 'icp/ts-canister/src/models/types/index';
+import { OrganizationDriver, OrganizationParams } from '../../src/drivers/OrganizationDriver';
+import { Organization } from '../../src/entities/organization/Organization';
+import { Order } from '../../src/entities/Order';
+import { OrderDriver } from '../../src/drivers/OrderDriver';
+import { AuthHelper, Login } from '../../src/__shared__/helpers/AuthHelper';
+import { ICP, USERS } from '../../src/__shared__/constants/constants';
+import { BroadedOrganization } from '../../src/entities/organization/BroadedOrganization';
+import { NarrowedOrganization } from '../../src/entities/organization/NarrowedOrganization';
+import { ProductCategoryDriver } from '../../src/drivers/ProductCategoryDriver';
 
 describe('OrganizationDriver', () => {
     let organizationDriverUser1: OrganizationDriver;

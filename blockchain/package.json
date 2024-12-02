@@ -11,8 +11,9 @@
         "deploy": "npx hardhat run ./scripts/deploy.ts",
         "send-eth": "npx hardhat run ./scripts/send-eth.ts --network localhost",
         "send-tokens": "npx hardhat run ./scripts/send-tokens.ts --network localhost",
-        "deploy-threeachain": "npx hardhat run ./scripts/deploy-testnet.ts --network threeachain",
-        "deploy-holesky": "npx hardhat run ./scripts/deploy-testnet.ts --network holesky",
+        "approve-token-transfer": "npx hardhat run ./scripts/approve-token-transfer.ts --network localhost",
+        "deploy-threeachain": "npm run deploy -- --network threeachain",
+        "deploy-holesky": "npm run deploy -- --network holesky",
         "node": "npx hardhat node --hostname 0.0.0.0",
         "lint": "eslint \"{contracts,scripts,test,utils}/**/*.ts\" --fix",
         "prettier": "npx prettier . --write"
@@ -42,7 +43,6 @@
         "dotenv": "^16.0.3",
         "ethers": "5.7.2",
         "hardhat": "2.13.0",
-        "hardhat-ethernal": "3.1.0",
         "ts-mocha": "^10.0.0"
     }
 }
