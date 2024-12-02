@@ -15,18 +15,18 @@ import { SiweIdentityProvider } from '../drivers/SiweIdentityProvider';
 import { ICP, USERS } from '../__shared__/constants/constants';
 import { ProductCategory } from '../entities/ProductCategory';
 import { AuthHelper, Login } from '../__shared__/helpers/AuthHelper';
-import { MaterialDriver } from '../drivers/icp/MaterialDriver';
-import { OfferDriver } from '../drivers/icp/OfferDriver';
-import { OrderDriver, OrderParams } from '../drivers/icp/OrderDriver';
-import { OrganizationDriver, OrganizationParams } from '../drivers/icp/OrganizationDriver';
 import { Organization } from '../entities/organization/Organization';
 import { Material } from '../entities/Material';
 import { Offer } from '../entities/Offer';
-import { Order } from '../entities/icp/Order';
-import { ShipmentDriver } from '../drivers/icp/ShipmentDriver';
-import { Shipment } from '../entities/icp/Shipment';
-import { ShipmentService } from '../services/icp/ShipmentService';
 import { ICPFileDriver } from '../drivers/ICPFileDriver';
+import { MaterialDriver } from '../drivers/MaterialDriver';
+import { OfferDriver } from '../drivers/OfferDriver';
+import { OrganizationDriver, OrganizationParams } from '../drivers/OrganizationDriver';
+import { OrderDriver, OrderParams } from '../drivers/OrderDriver';
+import { Shipment } from '../entities/Shipment';
+import { ShipmentDriver } from '../drivers/ShipmentDriver';
+import { ShipmentService } from '../services/ShipmentService';
+import { Order } from '../entities/Order';
 
 const createProductCategory = async (
     userSiweIdentityProvider: SiweIdentityProvider,

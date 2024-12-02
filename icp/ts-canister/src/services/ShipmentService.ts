@@ -18,11 +18,11 @@ import escrowAbi from '../../eth-abi/Escrow.json';
 import { StableMemoryId } from '../utils/stableMemory';
 import AuthenticationService from './AuthenticationService';
 import { ShipmentDownPaymentAddressNotFound } from '../models/errors';
-import { EVM } from '../constants/evm';
+import { Evm } from '../constants/evm';
 import { HasInterestedParties } from './interfaces/HasInterestedParties';
-import { ZeroAddress } from "ethers";
+import { ZeroAddress } from 'ethers';
 
-class ShipmentService implements HasInterestedParties{
+class ShipmentService implements HasInterestedParties {
     private static _instance: ShipmentService;
 
     private _shipments = StableBTreeMap<bigint, Shipment>(StableMemoryId.SHIPMENTS);
@@ -100,7 +100,7 @@ class ShipmentService implements HasInterestedParties{
             documents: []
         };
 
-        const escrowManagerAddress: string = EVM.ESCROW_MANAGER_ADDRESS;
+        const escrowManagerAddress: string = Evm.ESCROW_MANAGER_ADDRESS;
         await ethSendContractTransaction(escrowManagerAddress, escrowManagerAbi.abi, 'registerEscrow', [
             shipment.id,
             supplier,
@@ -128,8 +128,7 @@ class ShipmentService implements HasInterestedParties{
         if (!this.areDocumentsUploadedAndApproved(id, this.getPhase5RequiredDocuments())) return { PHASE_5: null };
         if (EvaluationStatusEnum.NOT_EVALUATED in shipment.qualityEvaluationStatus) return { PHASE_5: null };
 
-        if (EvaluationStatusEnum.APPROVED in shipment.qualityEvaluationStatus)
-            return { CONFIRMED: null };
+        if (EvaluationStatusEnum.APPROVED in shipment.qualityEvaluationStatus) return { CONFIRMED: null };
 
         return { ARBITRATION: null };
     }
@@ -218,8 +217,10 @@ class ShipmentService implements HasInterestedParties{
 
         if (shipment.escrowAddress.length > 0) throw new ShipmentDownPaymentAddressNotFound();
 
-        const escrowManagerAddress: string = EVM.ESCROW_MANAGER_ADDRESS;
+        const escrowManagerAddress: string = Evm.ESCROW_MANAGER_ADDRESS;
         const escrowAddress = await ethCallContract(escrowManagerAddress, escrowManagerAbi.abi, 'getEscrowByShipmentId', [shipment.id]);
+
+        if (escrowAddress === ZeroAddress) throw new Error('Unable to determine escrow address');
         shipment.escrowAddress = [escrowAddress];
 
         this._shipments.insert(id, shipment);
@@ -232,12 +233,13 @@ class ShipmentService implements HasInterestedParties{
         if (!(FundStatusEnum.NOT_LOCKED in shipment.fundsStatus)) throw new Error('Funds already locked');
 
         if (shipment.escrowAddress.length === 0) {
-            const escrowManagerAddress: string = EVM.ESCROW_MANAGER_ADDRESS;
+            const escrowManagerAddress: string = Evm.ESCROW_MANAGER_ADDRESS;
             const escrowAddress = await ethCallContract(escrowManagerAddress, escrowManagerAbi.abi, 'getEscrowByShipmentId', [shipment.id]);
             shipment.escrowAddress = [escrowAddress];
         }
 
         const callerAddress = await getAddress(ic.caller());
+        console.log('callerAddress', callerAddress);
         const escrowAddress = shipment.escrowAddress[0];
         console.log('escrowAddress', escrowAddress);
 
@@ -253,7 +255,7 @@ class ShipmentService implements HasInterestedParties{
         if (!(FundStatusEnum.NOT_LOCKED in shipment.fundsStatus)) throw new Error('Funds already locked');
 
         if (shipment.escrowAddress.length === 0) {
-            const escrowManagerAddress: string = EVM.ESCROW_MANAGER_ADDRESS;
+            const escrowManagerAddress: string = Evm.ESCROW_MANAGER_ADDRESS;
             const escrowAddress = await ethCallContract(escrowManagerAddress, escrowManagerAbi.abi, 'getEscrowByShipmentId', [shipment.id]);
             shipment.escrowAddress = [escrowAddress];
         }
@@ -274,10 +276,7 @@ class ShipmentService implements HasInterestedParties{
 
     async unlockFunds(id: bigint): Promise<Shipment> {
         const shipment = this.getShipment(id);
-        if (
-            PhaseEnum.PHASE_5 in this.getShipmentPhase(id) &&
-            FundStatusEnum.LOCKED in shipment.fundsStatus
-        ) {
+        if (PhaseEnum.PHASE_5 in this.getShipmentPhase(id) && FundStatusEnum.LOCKED in shipment.fundsStatus) {
             const escrowAddress = shipment.escrowAddress[0];
             if (!escrowAddress) throw new Error('Escrow address not found');
             await ethSendContractTransaction(escrowAddress, escrowAbi.abi, 'releaseFunds', [shipment.price]);
@@ -296,33 +295,17 @@ class ShipmentService implements HasInterestedParties{
 
     getDocument(id: bigint, documentId: bigint): DocumentInfo {
         const shipment = this.getShipment(id);
-        const document = shipment.documents
-            .flatMap(([_, docs]) => docs)
-            .find((doc) => doc.id === documentId);
+        const document = shipment.documents.flatMap(([_, docs]) => docs).find((doc) => doc.id === documentId);
         if (!document) throw new Error('Document not found');
         return document;
     }
 
-    async addDocument(
-        id: bigint,
-        documentType: DocumentType,
-        externalUrl: string,
-    ): Promise<Shipment> {
+    async addDocument(id: bigint, documentType: DocumentType, externalUrl: string): Promise<Shipment> {
         const shipment = this.getShipment(id);
         const documents = this.getDocumentsByType(id, documentType);
-        if (
-            !(
-                DocumentTypeEnum.GENERIC in documentType ||
-                documents.length == 0 ||
-                !(
-                    EvaluationStatusEnum.APPROVED in
-                    documents[0].evaluationStatus
-                )
-            )
-        )
+        if (!(DocumentTypeEnum.GENERIC in documentType || documents.length == 0 || !(EvaluationStatusEnum.APPROVED in documents[0].evaluationStatus)))
             throw new Error('Document of this type already approved');
-        const delegatorAddress =
-            AuthenticationService.instance.getDelegatorAddress();
+        const delegatorAddress = AuthenticationService.instance.getDelegatorAddress();
         const documentInfo: DocumentInfo = {
             id: BigInt(shipment.documents.length),
             documentType,

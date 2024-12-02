@@ -3,22 +3,22 @@ import { ethers } from 'ethers';
 import { call, IDL } from 'azle';
 import { RoleProof, ROLES } from '../models/types';
 import revocationRegistryAbi from '../../eth-abi/RevocationRegistry.json';
-import { CANISTER } from '../constants/canister';
-import { EVM } from '../constants/evm';
+import { Canister } from '../constants/canister';
+import { Evm } from '../constants/evm';
 import { IDLGetAddressResponse, IDLRequestResult, IDLRpcService } from '../models/idls';
 
 class DelegationService {
     private static _instance: DelegationService;
 
-    private _evmRpcCanisterId: string = CANISTER.EVM_RPC_ID;
+    private _evmRpcCanisterId: string = Canister.EVM_RPC_ID;
 
-    private _siweProviderCanisterId: string = CANISTER.IC_SIWE_PROVIDER_ID;
+    private _siweProviderCanisterId: string = Canister.IC_SIWE_PROVIDER_ID;
 
-    private _evmRpcUrl: string = EVM.RPC_URL;
+    private _evmRpcUrl: string = Evm.RPC_URL;
 
-    private _evmRevocationRegistryAddress: string = EVM.REVOCATION_REGISTRY_ADDRESS;
+    private _evmRevocationRegistryAddress: string = Evm.REVOCATION_REGISTRY_ADDRESS;
 
-    private _evmMembershipIssuerAddress: string = EVM.MEMBERSHIP_ISSUER_ADDRESS;
+    private _evmMembershipIssuerAddress: string = Evm.MEMBERSHIP_ISSUER_ADDRESS;
 
     private _incrementalRoles = [ROLES.VIEWER, ROLES.EDITOR, ROLES.SIGNER];
 

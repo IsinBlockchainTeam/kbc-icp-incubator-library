@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import { call } from 'azle';
 import { EcdsaPublicKeyArgs, EcdsaPublicKeyResult, SignWithEcdsaArgs, SignWithEcdsaResult } from 'azle/canisters/management';
-import { DFX_NETWORK } from '../constants/misc';
+import { Misc } from '../constants/misc';
 
 const MANAGEMENT_CANISTER_ID = 'aaaaa-aa';
 export async function signWithEcdsa(derivationPath: Uint8Array[], messageHash: Uint8Array): Promise<Uint8Array> {
@@ -14,7 +14,7 @@ export async function signWithEcdsa(derivationPath: Uint8Array[], messageHash: U
                 derivation_path: derivationPath,
                 key_id: {
                     curve: { secp256k1: null },
-                    name: DFX_NETWORK() === 'local' ? 'dfx_test_key' : 'key1'
+                    name: Misc.DFX_NETWORK === 'local' ? 'dfx_test_key' : 'key1'
                 }
             }
         ],
@@ -64,7 +64,7 @@ export async function ecdsaPublicKey(derivationPath: Uint8Array[]): Promise<Uint
                 derivation_path: derivationPath,
                 key_id: {
                     curve: { secp256k1: null },
-                    name: DFX_NETWORK() === 'local' ? 'dfx_test_key' : 'key1'
+                    name: Misc.DFX_NETWORK === 'local' ? 'dfx_test_key' : 'key1'
                 }
             }
         ]

@@ -9,6 +9,7 @@
         "environment-down": "../scripts/stop-local-environment.sh"
     },
     "devDependencies": {
+        "@kbc-lib/azle-types": "file:../icp/ts-canister/src/models/types",
         "@kbc-lib/coffee-trading-management-lib": "file:../src",
         "@types/jest": "^29.4.0",
         "ethers": "^5.6.1",

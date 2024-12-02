@@ -4,7 +4,7 @@ import { RoleProof, ROLES } from '../models/types';
 import { StableMemoryId } from '../utils/stableMemory';
 import DelegationService from './DelegationService';
 import { NotAuthenticatedError, NotValidCredentialError } from '../models/errors';
-import { LOGIN_DURATION } from '../constants/misc';
+import { Misc } from '../constants/misc';
 
 type UserAuthentication = {
     roleProof: RoleProof;
@@ -15,7 +15,7 @@ class AuthenticationService {
 
     private _authentications = StableBTreeMap<string, UserAuthentication>(StableMemoryId.AUTHENTICATION);
 
-    private _loginDuration: number = Number(LOGIN_DURATION);
+    private _loginDuration: number = Number(Misc.LOGIN_DURATION);
 
     private _incrementalRoles = [ROLES.VIEWER, ROLES.EDITOR, ROLES.SIGNER];
 

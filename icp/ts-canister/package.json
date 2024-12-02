@@ -15,7 +15,7 @@
         "build-types": "npx tsc -p src/models/types/tsconfig.json",
         "lint": "eslint --fix --ext .ts .",
         "prettier": "npx prettier . --write",
-        "generate": "dfx generate"
+        "generate": "bash -c \"set -o allexport; source .env.custom; source .env; set +o allexport && cat dfx.template.json | envsubst > dfx.json && dfx generate\""
     },
     "dependencies": {
         "@types/jest": "^29.5.14",
@@ -27,7 +27,6 @@
     "devDependencies": {
         "@typescript-eslint/eslint-plugin": "^6.3.0",
         "@typescript-eslint/parser": "^6.3.0",
-        "dotenv": "^16.4.5",
         "eslint": "^8.46.0",
         "eslint-config-airbnb-base": "^15.0.0",
         "eslint-config-prettier": "^9.1.0",

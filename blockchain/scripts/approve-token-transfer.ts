@@ -13,6 +13,7 @@ const main = async (amount: number) => {
     const tx = await myToken.connect(wallet).approve(env.ESCROW_ADDRESS, amount);
     const receipt = await tx.wait();
     console.log('receipt:', receipt);
+    console.log('Allowed:', await myToken.allowance(wallet.address, env.ESCROW_ADDRESS));
     console.log('Balance', await myToken.connect(wallet).balanceOf(wallet.address));
 };
 
