@@ -3,6 +3,10 @@
  * https://jestjs.io/docs/configuration
  */
 
+import { config } from 'dotenv';
+
+config({ path: '../icp/ts-canister/.env' });
+
 export default {
     // All imported modules in your tests should be mocked automatically
     // automock: false,
@@ -59,7 +63,7 @@ export default {
     setupFiles: ['<rootDir>/ts-config.ts'],
     testPathIgnorePatterns: [
         '<rootDir>/smart-contracts',
-        '<rootDir>/integration-test/',
+        '<rootDir>/integrationTests/',
         '<rootDir>/dist/',
         '<rootDir>/types/'
     ],
@@ -158,7 +162,7 @@ export default {
     // setupFiles: [],
 
     // A list of paths to modules that run some code to configure or set up the testing framework before each test
-    // setupFilesAfterEnv: [],
+    setupFilesAfterEnv: ['dotenv/config'],
 
     // The number of seconds after which a test is considered as slow and reported as such in the results.
     // slowTestThreshold: 5,
@@ -181,10 +185,6 @@ export default {
     //   "**/?(*.)+(spec|test).[tj]s?(x)"
     // ],
     testMatch: ['<rootDir>/**/?(*.)+(spec|test).[t]s?(x)']
-    // An array of regexp pattern strings that are matched against all test paths, matched tests are skipped
-    // testPathIgnorePatterns: [
-    //   "/node_modules/"
-    // ],
 
     // The regexp pattern or array of patterns that Jest uses to detect test files
     // testRegex: [],

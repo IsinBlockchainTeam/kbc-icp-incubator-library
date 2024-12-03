@@ -7,6 +7,7 @@ export type MembershipProof = {
 
 export type RoleProof = {
     signedProof: string;
+    delegateRole: string;
     delegateCredentialIdHash: string;
     delegateCredentialExpiryDate: number;
     delegator: string;

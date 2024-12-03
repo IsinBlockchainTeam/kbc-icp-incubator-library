@@ -9,7 +9,11 @@
         "compileOnly": "npx hardhat compile",
         "compile": "npx hardhat compile && rm -rf ../src/smart-contracts && cp -R ./typechain-types ../src/smart-contracts",
         "deploy": "npx hardhat run ./scripts/deploy.ts",
-        "deploy-testnet": "npx hardhat run ./scripts/deploy-testnet.ts --network threeachain",
+        "send-eth": "npx hardhat run ./scripts/send-eth.ts --network localhost",
+        "send-tokens": "npx hardhat run ./scripts/send-tokens.ts --network localhost",
+        "approve-token-transfer": "npx hardhat run ./scripts/approve-token-transfer.ts --network localhost",
+        "deploy-threeachain": "npm run deploy -- --network threeachain",
+        "deploy-holesky": "npm run deploy -- --network holesky",
         "node": "npx hardhat node --hostname 0.0.0.0",
         "lint": "eslint \"{contracts,scripts,test,utils}/**/*.ts\" --fix",
         "prettier": "npx prettier . --write"
@@ -27,10 +31,10 @@
         "eslint-config-prettier": "^9.1.0",
         "eslint-plugin-mocha": "^10.1.0",
         "eslint-plugin-prettier": "^5.1.3",
+        "hardhat-dependency-compiler": "^1.2.1",
         "prettier": "3.3.1"
     },
     "dependencies": {
-        "@blockchain-lib/blockchain-common": "1.1.0",
         "@defi-wonderland/smock": "2.3.5",
         "@ethersproject/providers": "^5.7.2",
         "@openzeppelin/contracts": "4.8.2",
@@ -38,7 +42,6 @@
         "dotenv": "^16.0.3",
         "ethers": "5.7.2",
         "hardhat": "2.13.0",
-        "hardhat-ethernal": "3.1.0",
         "ts-mocha": "^10.0.0"
     }
 }

@@ -1,9 +1,5 @@
-import {
-    BaseCertificate,
-    CertificateDocumentInfo,
-    CertificateType,
-    DocumentEvaluationStatus
-} from './Certificate';
+import { BaseCertificate, CertificateDocumentInfo, CertificateType } from './Certificate';
+import { EvaluationStatus } from './Evaluation';
 
 export class ScopeCertificate extends BaseCertificate {
     private _processTypes: string[];
@@ -16,24 +12,30 @@ export class ScopeCertificate extends BaseCertificate {
         id: number,
         issuer: string,
         subject: string,
+        uploadedBy: string,
         assessmentStandard: string,
+        assessmentAssuranceLevel: string,
         document: CertificateDocumentInfo,
-        evaluationStatus: DocumentEvaluationStatus,
+        evaluationStatus: EvaluationStatus,
         certificateType: CertificateType,
         issueDate: Date,
         processTypes: string[],
         validFrom: Date,
-        validUntil: Date
+        validUntil: Date,
+        notes?: string
     ) {
         super(
             id,
             issuer,
             subject,
+            uploadedBy,
             assessmentStandard,
+            assessmentAssuranceLevel,
             document,
             evaluationStatus,
             certificateType,
-            issueDate
+            issueDate,
+            notes
         );
         this._processTypes = processTypes;
         this._validFrom = validFrom;

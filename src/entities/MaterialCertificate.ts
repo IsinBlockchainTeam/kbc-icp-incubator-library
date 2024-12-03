@@ -1,42 +1,45 @@
-import {
-    BaseCertificate,
-    CertificateDocumentInfo,
-    CertificateType,
-    DocumentEvaluationStatus
-} from './Certificate';
+import { BaseCertificate, CertificateDocumentInfo, CertificateType } from './Certificate';
+import { EvaluationStatus } from './Evaluation';
+import { Material } from './Material';
 
 export class MaterialCertificate extends BaseCertificate {
-    private _materialId: number;
+    private _material: Material;
 
     constructor(
         id: number,
         issuer: string,
         subject: string,
+        uploadedBy: string,
         assessmentStandard: string,
+        assessmentAssuranceLevel: string,
         document: CertificateDocumentInfo,
-        evaluationStatus: DocumentEvaluationStatus,
+        evaluationStatus: EvaluationStatus,
         certificateType: CertificateType,
         issueDate: Date,
-        materialId: number
+        material: Material,
+        notes?: string
     ) {
         super(
             id,
             issuer,
             subject,
+            uploadedBy,
             assessmentStandard,
+            assessmentAssuranceLevel,
             document,
             evaluationStatus,
             certificateType,
-            issueDate
+            issueDate,
+            notes
         );
-        this._materialId = materialId;
+        this._material = material;
     }
 
-    get materialId(): number {
-        return this._materialId;
+    get material(): Material {
+        return this._material;
     }
 
-    set materialId(value: number) {
-        this._materialId = value;
+    set material(value: Material) {
+        this._material = value;
     }
 }

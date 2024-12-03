@@ -3,13 +3,15 @@
     "compilerOptions": {
         "strictNullChecks": true,
         "module": "commonjs",
-        "target": "es6",
+        "target": "ES2022",
         "noImplicitAny": true,
         "outDir": "dist",
+        "lib": ["dom"],
         // "sourceMap": true,Ok
         "inlineSourceMap": true,
         "esModuleInterop": true,
         "declaration": true, // This tells TypeScript to emit an .d.ts definitions file along with your compiled JavaScript,
+        "experimentalDecorators": true,
         "plugins": [
             {
                 "transform": "ts-auto-mock/transformer",

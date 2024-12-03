@@ -5,10 +5,13 @@
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "scripts": {
+        "get-declarations": "cp -r ../icp/ts-canisters/declarations/ ./declarations && node transform-declarations.js",
         "build": "npx tsc",
         "test": "jest",
         "lint": "eslint *.ts --fix",
-        "prettier": "npx prettier . --write"
+        "prettier": "npx prettier . --write",
+        "populate-demo": "ts-node ./scripts/populate-demo.ts",
+        "populate": "ts-node ./scripts/populate.ts"
     },
     "repository": {
         "type": "git",
@@ -25,7 +28,10 @@
         "Token"
     ],
     "devDependencies": {
-        "@dfinity/identity-secp256k1": "1.4.0",
+        "@babel/cli": "^7.25.6",
+        "@babel/core": "^7.25.2",
+        "@babel/plugin-transform-modules-commonjs": "^7.24.8",
+        "@babel/preset-env": "^7.25.4",
         "@dfinity/agent": "1.4.0",
         "@types/crypto-js": "^4.2.2",
         "@types/jest": "^29.4.0",
@@ -33,6 +39,7 @@
         "@types/uuid": "^9.0.8",
         "@typescript-eslint/eslint-plugin": "^6.3.0",
         "@typescript-eslint/parser": "^6.3.0",
+        "dotenv": "^16.4.5",
         "eslint": "^8.46.0",
         "eslint-config-airbnb-base": "^15.0.0",
         "eslint-config-prettier": "^9.1.0",
@@ -46,14 +53,15 @@
         "ttypescript": "1.5.15"
     },
     "dependencies": {
-        "@blockchain-lib/common": "2.0.5",
+        "@dfinity/auth-client": "^1.4.0",
         "@ethersproject/providers": "^5.6.4",
         "@jest/test-sequencer": "^29.7.0",
+        "@kbc-lib/azle-types": "file:../icp/ts-canisters/src/models/types",
         "@supercharge/promise-pool": "^3.2.0",
         "buffer": "^6.0.3",
         "crypto-js": "^4.2.0",
-        "dotenv": "^16.3.1",
         "ethers": "^5.6.1",
+        "icp-declarations": "file:./declarations",
         "jest-environment-node": "^29.5.0",
         "jwt-decode": "^4.0.0",
         "node-fetch": "^2.6.1",

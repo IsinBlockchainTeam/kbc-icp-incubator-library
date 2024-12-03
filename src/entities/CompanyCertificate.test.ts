@@ -1,5 +1,6 @@
 import { CompanyCertificate } from './CompanyCertificate';
-import { CertificateType, DocumentEvaluationStatus, DocumentType } from './Certificate';
+import { CertificateType, CertificateDocumentType } from './Certificate';
+import { EvaluationStatus } from './Evaluation';
 
 describe('CompanyCertificate', () => {
     let companyCertificate: CompanyCertificate;
@@ -12,9 +13,19 @@ describe('CompanyCertificate', () => {
             0,
             'issuer',
             'subject',
+            'uploadedBy',
             'assessmentStandard',
-            { id: 1, documentType: DocumentType.CERTIFICATE_OF_CONFORMITY },
-            DocumentEvaluationStatus.NOT_EVALUATED,
+            'assessmentAssuranceLevel',
+            {
+                referenceId: 'referenceId',
+                documentType: CertificateDocumentType.CERTIFICATE_OF_CONFORMITY,
+                externalUrl: 'externalUrl',
+                metadata: {
+                    filename: 'file.pdf',
+                    fileType: 'application/pdf'
+                }
+            },
+            EvaluationStatus.NOT_EVALUATED,
             CertificateType.COMPANY,
             issueDate,
             validFrom,
@@ -26,12 +37,19 @@ describe('CompanyCertificate', () => {
         expect(companyCertificate.id).toEqual(0);
         expect(companyCertificate.issuer).toEqual('issuer');
         expect(companyCertificate.subject).toEqual('subject');
+        expect(companyCertificate.uploadedBy).toEqual('uploadedBy');
         expect(companyCertificate.assessmentStandard).toEqual('assessmentStandard');
+        expect(companyCertificate.assessmentAssuranceLevel).toEqual('assessmentAssuranceLevel');
         expect(companyCertificate.document).toEqual({
-            id: 1,
-            documentType: DocumentType.CERTIFICATE_OF_CONFORMITY
+            referenceId: 'referenceId',
+            documentType: CertificateDocumentType.CERTIFICATE_OF_CONFORMITY,
+            externalUrl: 'externalUrl',
+            metadata: {
+                filename: 'file.pdf',
+                fileType: 'application/pdf'
+            }
         });
-        expect(companyCertificate.evaluationStatus).toEqual(DocumentEvaluationStatus.NOT_EVALUATED);
+        expect(companyCertificate.evaluationStatus).toEqual(EvaluationStatus.NOT_EVALUATED);
         expect(companyCertificate.certificateType).toEqual(CertificateType.COMPANY);
         expect(companyCertificate.issueDate).toEqual(issueDate);
         expect(companyCertificate.validFrom).toEqual(validFrom);
@@ -53,22 +71,45 @@ describe('CompanyCertificate', () => {
         expect(companyCertificate.subject).toEqual('newSubject');
     });
 
+    it('should correctly set the uploadedBy', () => {
+        companyCertificate.uploadedBy = 'newUploadedBy';
+        expect(companyCertificate.uploadedBy).toEqual('newUploadedBy');
+    });
+
     it('should correctly set the assessmentStandard', () => {
         companyCertificate.assessmentStandard = 'newAssessmentStandard';
         expect(companyCertificate.assessmentStandard).toEqual('newAssessmentStandard');
     });
 
+    it('should correctly set the assessmentAssuranceLevel', () => {
+        companyCertificate.assessmentAssuranceLevel = 'newAssessmentAssuranceLevel';
+        expect(companyCertificate.assessmentAssuranceLevel).toEqual('newAssessmentAssuranceLevel');
+    });
+
     it('should correctly set the document', () => {
-        companyCertificate.document = { id: 2, documentType: DocumentType.COUNTRY_OF_ORIGIN };
+        companyCertificate.document = {
+            referenceId: 'newReferenceId',
+            documentType: CertificateDocumentType.COUNTRY_OF_ORIGIN,
+            externalUrl: 'newExternalUrl',
+            metadata: {
+                filename: 'file_updated.pdf',
+                fileType: 'application/pdf'
+            }
+        };
         expect(companyCertificate.document).toEqual({
-            id: 2,
-            documentType: DocumentType.COUNTRY_OF_ORIGIN
+            referenceId: 'newReferenceId',
+            documentType: CertificateDocumentType.COUNTRY_OF_ORIGIN,
+            externalUrl: 'newExternalUrl',
+            metadata: {
+                filename: 'file_updated.pdf',
+                fileType: 'application/pdf'
+            }
         });
     });
 
     it('should correctly set the evaluationStatus', () => {
-        companyCertificate.evaluationStatus = DocumentEvaluationStatus.APPROVED;
-        expect(companyCertificate.evaluationStatus).toEqual(DocumentEvaluationStatus.APPROVED);
+        companyCertificate.evaluationStatus = EvaluationStatus.APPROVED;
+        expect(companyCertificate.evaluationStatus).toEqual(EvaluationStatus.APPROVED);
     });
 
     it('should correctly set the certificateType', () => {

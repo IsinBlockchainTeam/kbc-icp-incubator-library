@@ -1,0 +1,67 @@
+{
+    "_format": "hh-sol-artifact-1",
+    "contractName": "RevocationRegistry",
+    "sourceName": "contracts/RevocationRegistry.sol",
+    "abi": [
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": false,
+                    "internalType": "address",
+                    "name": "issuer",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "bytes32",
+                    "name": "digest",
+                    "type": "bytes32"
+                }
+            ],
+            "name": "Revoked",
+            "type": "event"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "digest",
+                    "type": "bytes32"
+                }
+            ],
+            "name": "revoke",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "issuer",
+                    "type": "address"
+                },
+                {
+                    "internalType": "bytes32",
+                    "name": "digest",
+                    "type": "bytes32"
+                }
+            ],
+            "name": "revoked",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        }
+    ],
+    "bytecode": "0x6080806040523461001657610126908161001c8239f35b600080fdfe608060408181526004361015601357600080fd5b600091823560e01c908163b75c7dc614607d575063e46e384614603557600080fd5b34607957806003193601126079576004356001600160a01b0381169081900360755760209282916024358252818552828220908252845220549051908152f35b8280fd5b5080fd5b919050346075576020918260031936011260ec5760043580855284845282852033865284528285205460e8577f6e70be4be1a4aebd688b5523bd8b6278acac3963d71ebf2bd5ea50757047664b9381865285815283862033875281524384872055338352820152a180f35b8480fd5b8380fdfea2646970667358221220ae35422d75892e79776ca79d037772f71749914720ac46eacbb6ba972fbb91ca64736f6c63430008130033",
+    "deployedBytecode": "0x608060408181526004361015601357600080fd5b600091823560e01c908163b75c7dc614607d575063e46e384614603557600080fd5b34607957806003193601126079576004356001600160a01b0381169081900360755760209282916024358252818552828220908252845220549051908152f35b8280fd5b5080fd5b919050346075576020918260031936011260ec5760043580855284845282852033865284528285205460e8577f6e70be4be1a4aebd688b5523bd8b6278acac3963d71ebf2bd5ea50757047664b9381865285815283862033875281524384872055338352820152a180f35b8480fd5b8380fdfea2646970667358221220ae35422d75892e79776ca79d037772f71749914720ac46eacbb6ba972fbb91ca64736f6c63430008130033",
+    "linkReferences": {},
+    "deployedLinkReferences": {}
+}

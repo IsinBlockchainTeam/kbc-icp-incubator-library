@@ -4,4 +4,3 @@
 /typechain-types
 .env
 .npmrc
-package-lock.json

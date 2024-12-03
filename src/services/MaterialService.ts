@@ -1,43 +1,26 @@
 import { MaterialDriver } from '../drivers/MaterialDriver';
 import { Material } from '../entities/Material';
-import { RoleProof } from '../types/RoleProof';
 
 export class MaterialService {
-    private _materialDriver: MaterialDriver;
+    private readonly _materialDriver: MaterialDriver;
 
-    constructor(supplyChainDriver: MaterialDriver) {
-        this._materialDriver = supplyChainDriver;
+    constructor(productCategoryDriver: MaterialDriver) {
+        this._materialDriver = productCategoryDriver;
     }
 
-    async getMaterialsCounter(roleProof: RoleProof): Promise<number> {
-        return this._materialDriver.getMaterialsCounter(roleProof);
+    async getMaterials(): Promise<Material[]> {
+        return this._materialDriver.getMaterials();
     }
 
-    async getMaterialExists(roleProof: RoleProof, id: number): Promise<boolean> {
-        return this._materialDriver.getMaterialExists(roleProof, id);
+    async getMaterial(id: number): Promise<Material> {
+        return this._materialDriver.getMaterial(id);
     }
 
-    async getMaterial(roleProof: RoleProof, id: number): Promise<Material> {
-        return this._materialDriver.getMaterial(roleProof, id);
+    async createMaterial(productCategoryId: number): Promise<Material> {
+        return this._materialDriver.createMaterial(productCategoryId);
     }
 
-    async getMaterials(roleProof: RoleProof): Promise<Material[]> {
-        return this._materialDriver.getMaterials(roleProof);
-    }
-
-    async getMaterialsOfCreator(roleProof: RoleProof, creator: string): Promise<Material[]> {
-        return this._materialDriver.getMaterialsOfCreator(roleProof, creator);
-    }
-
-    async registerMaterial(roleProof: RoleProof, productCategoryId: number): Promise<number> {
-        return this._materialDriver.registerMaterial(roleProof, productCategoryId);
-    }
-
-    async updateMaterial(
-        roleProof: RoleProof,
-        id: number,
-        productCategoryId: number
-    ): Promise<void> {
-        return this._materialDriver.updateMaterial(roleProof, id, productCategoryId);
+    async updateMaterial(id: number, productCategoryId: number) {
+        return this._materialDriver.updateMaterial(id, productCategoryId);
     }
 }
