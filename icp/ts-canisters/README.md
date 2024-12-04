@@ -1,6 +1,9 @@
 # ICP Canisters
 This repository contains the source code for the ICP Canisters used inside the KBC project. The canisters are written using Azle CKD and are deployed on the Internet Computer.
 
+## Prerequisites
+- Canisters in `rust-canisters` need to have been built and their declarations generated
+
 ## Getting started
 ```bash
 DFX_VERSION=0.22.0 sh -ci "$(curl -fsSL https://internetcomputer.org/install.sh)"

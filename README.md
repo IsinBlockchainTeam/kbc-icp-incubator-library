@@ -9,6 +9,8 @@ The packages make use of a common library that contains logic shared between sim
 
 - [Git](https://git-scm.com/)
 - [Nodejs](https://nodejs.org/en) (v.20.x recommended)
+- [Rust](https://www.rust-lang.org/tools/install)
+- [DFX](https://sdk.dfinity.org/docs/quickstart/local-quickstart.html)
 - An access token for the ['common' private npm registry](https://gitlab-core.supsi.ch/dti-isin/giuliano.gremlich/blockchain/one_lib_to_rule_them_all)
 
 ## Getting Started
@@ -16,7 +18,7 @@ The packages make use of a common library that contains logic shared between sim
 1. Clone this repository using command `git clone https://gitlab-core.supsi.ch/dti-isin/giuliano.gremlich/blockchain/one-lib-to-rule-them-all/coffee-trading-management-lib.git`
 2. Enter the newly created folder using `cd coffee-trading-management-lib`
 3. Change branch to `dev` using command `git checkout dev`
-4. Navigate to the `blockchain` and follow the instructions in the [`README.md`](blockchain/README.md) file
-5. Navigate to the `icp/ts-canister` and follow the instructions in the [`README.md`](icp/ts-canisters/README.md) file
-6. Navigate to the `src` folder and follow the instructions in the [`README.md`](src/README.md) file
-7. Navigate to the `integration-tests` folder and follow the instructions in the [`README.md`](integration-tests/README.md) file
+4. Navigate to `blockchain` and follow the instructions in the [`README.md`](blockchain/README.md) file
+5. Navigate to `icp` and follow the instructions in the [`README.md`](icp/README.md) file
+6. Navigate to `src` folder and follow the instructions in the [`README.md`](src/README.md) file
+7. Navigate to `integration-tests` folder and follow the instructions in the [`README.md`](integration-tests/README.md) file

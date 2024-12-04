@@ -7,12 +7,11 @@ It uses the [Hardhat](https://hardhat.org/) framework as a development environme
 ## Getting Started
 
 1. Move inside the `blockchain` with `cd blockchain`
-2. Rename the `.npmrc.template` file to `.npmrc` and fill in the missing information
-3. Run `npm install` to install the required dependencies
-4. Rename the `.env.template` file to `.env` and fill in the missing information
-5. Compile smart contracts with `npm run compile`
-6. In a new terminal, run `npm run node` for starting the local Hardhat blockchain
-7. Deploy the smart contracts with `npm run deploy -- --network localhost`
+2. Run `npm install` to install the required dependencies
+3. Rename the `.env.template` file to `.env` and fill in the missing information
+4. Compile smart contracts with `npm run compile`
+5. In a new terminal, run `npm run node` for starting the local Hardhat blockchain
+6. Deploy the smart contracts with `npm run deploy -- --network localhost`
 
 ### Environment Variables Configuration
 
@@ -29,6 +28,7 @@ It uses the [Hardhat](https://hardhat.org/) framework as a development environme
 | `ESCROW_ADDRESS`                  | The address of the escrow contract                                                                                                                 |
 | `SUPPLIER_ADDRESS`                | The address of the supplier                                                                                                                        |
 | `COMMISSIONER_ADDRESS`            | The address of the commissioner                                                                                                                    |
+| `COMMISSIONER_PRIVATE_KEY`        | The private key of the commissioner                                                                                                                |
 | `DEFAULT_DEPLOY_NETWORK`          | The network where the smart contracts will be deployed. Check options in `hardhat.config.ts`                                                       |
 
 

@@ -4,15 +4,18 @@ This package consists of a _NodeJs_ library that creates TypeScript classes for 
 
 It uses an _Entity-Driver-Service_ model for creating a scalable and maintainable codebase.
 
+## Prerequisites
+- Modules `blockchain` correctly setup
+- Modules `icp` correctly setup
+
 ## Getting Started
 
-1. Follow the instructions in the `README.md` file inside the `blockchain` folder
-2. Move inside the `src` with `cd src`
-3. Rename the `.npmrc.template` file to `.npmrc` and fill in the missing information. Check the [npmrc Configuration section](#npmrc-configuration) for more information
-4. Run `npm install` to install the required dependencies 
-5. Make sure to copy the declarations from the icp project by running `npm run get-declarations`
-6. Rename the `.env.template` file to `.env` and fill in the missing information
-7. Run `npm run build` to build the package
+1. Move inside the `src` with `cd src`
+2. Rename the `.npmrc.template` file to `.npmrc` and fill in the missing information. Check the [npmrc Configuration section](#npmrc-configuration) for more information
+3. Run `npm install` to install the required dependencies 
+4. Make sure to copy the declarations from the icp project by running `npm run get-declarations`
+5. Rename the `.env.template` file to `.env` and fill in the missing information
+6. Run `npm run build` to build the package
 
 ### `npmrc` Configuration
 

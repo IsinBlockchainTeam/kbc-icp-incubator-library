@@ -10,3 +10,4 @@ source .env.custom
 source .env
 set +o allexport && dfx deploy
 dfx generate
+npm run build-types
