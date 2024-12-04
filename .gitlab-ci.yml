@@ -1,0 +1,76 @@
+stages:
+  - setup
+  - build
+  - test
+  - deploy
+
+image: node:20
+
+# VARIABLES
+
+variables:
+  ICP_PATH: "$CI_PROJECT_DIR/icp"
+  BUILD_TYPES_PATH: "$ICP_PATH/ts-canisters/models/types/dist/"
+
+cache:
+  key: $CI_COMMIT_REF_SLUG
+  paths:
+    - "ICP_PATH/ts-canisters/node_modules/"
+  policy: pull-push
+
+# RULES
+
+.rules_dev:
+  rules:
+    - if: $CI_COMMIT_BRANCH == "dev"
+      when: always
+
+.rules_force_deploy:
+  rules:
+    - if: $CI_COMMIT_BRANCH == "force-deploy"
+      when: always
+
+# TEMPLATE JOBS
+
+.build_job_template:
+  stage: build
+#  rules:
+#    - !reference [ .rules_dev, rules ]
+#    - !reference [ .rules_force_deploy, rules ]
+
+.test_job_template:
+  stage: test
+#  rules:
+#    - !reference [ .rules_dev, rules ]
+
+.deploy_job_template:
+  stage: deploy
+#  rules:
+#    - !reference [ .rules_dev, rules ]
+#    - !reference [ .rules_force_deploy, rules ]
+
+# JOBS
+
+setup_dfx_job:
+  stage: setup
+  script:
+    - sh -ci "$(curl -fsSL https://internetcomputer.org/install.sh)"
+    - dfx --version
+
+build_icp_canisters_job:
+  extends: .build_job_template
+  script:
+    - cd $ICP_PATH/ts-canisters
+    - npm install
+    - npm run build-types
+  artifacts:
+    paths:
+      - $BUILD_TYPES_PATH
+    expire_in: 15 min
+
+deploy_icp_canisters_job:
+  extends: .deploy_job_template
+  script:
+      - cd $ICP_PATH/scripts
+  dependencies:
+    - setup_dfx_job

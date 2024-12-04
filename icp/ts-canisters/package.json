@@ -7,7 +7,7 @@
         "test": "jest",
         "start-network": "dfx start --clean",
         "deploy": "bash -c \"set -o allexport; source ./.env.custom; source .env; set +o allexport && dfx deploy\"",
-        "deploy:ic": "bash -c \"set -o allexport; source ./.env.custom; source .env; set +o allexport && dfx deploy --ic\"",
+        "deploy:ic": "bash -c \"set -o allexport; source ./env.ci; set +o allexport && dfx deploy --ic\"",
         "upgrade": "bash -c \"set -o allexport; source ./.env.custom; source .env; set +o allexport && dfx build entity_manager && dfx canister install --mode upgrade entity_manager\"",
         "upgrade:ic": "bash -c \"set -o allexport; source ./.env.custom; source .env; set +o allexport && dfx build entity_manager --ic && dfx canister install --mode upgrade entity_manager --ic\"",
         "reinstall": "bash -c \"set -o allexport; source ./.env.custom; source .env; set +o allexport && dfx build entity_manager && dfx canister install --mode reinstall entity_manager\"",
