@@ -8,8 +8,8 @@ image: node:20
 # VARIABLES
 
 variables:
-  CI_SCRIPTS: "ci/scripts"
-  ICP_PATH: "icp"
+  CI_SCRIPTS: "$CI_PROJECT_DIR/ci/scripts"
+  ICP_PATH: "$CI_PROJECT_DIR/icp"
   BUILD_TYPES_PATH: "icp/ts-canisters/src/models/types/dist/"
   TYPESCRIPT_NODE_MODULES_PATH: "icp/ts-canisters/node_modules/"
   ICP_DECLARATIONS_PATH: "icp/ts-canisters/declarations/"
