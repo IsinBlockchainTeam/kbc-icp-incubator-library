@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Install Cargo
-curl https://sh.rustup.rs -sSf | sh
+curl https://sh.rustup.rs -sSf | sh -s -- -y
 
 # Install dfx
 export DFXVM_INIT_YES=true
