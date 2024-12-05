@@ -58,8 +58,8 @@ cache:
 
 before_script:
   - cd $CI_SCRIPTS
-  - chmod +x install-dfx.sh
-  - ./install-dfx.sh
+  - chmod +x install-dependencies.sh
+  - ./install-dependencies.sh
   - export PATH=$PATH:$DFX_INSTALLATION_PATH
 
 build_icp_canisters_job:

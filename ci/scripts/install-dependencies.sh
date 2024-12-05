@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Install Cargo
+curl https://sh.rustup.rs -sSf | sh
+
 # Install dfx
 export DFXVM_INIT_YES=true
 sh -ci "$(curl -fsSL https://internetcomputer.org/install.sh)"
