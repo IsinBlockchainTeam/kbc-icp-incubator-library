@@ -52,14 +52,15 @@ cache:
 
 # JOBS
 
+before_script:
+  - cd $CI_SCRIPTS
+  - chmod +x install-dfx.sh
+  - ./install-dfx.sh
+  - export PATH=$PATH:$DFX_INSTALLATION_PATH
+
 build_icp_canisters_job:
   extends: .build_job_template
-  before_script:
-    - cd $CI_SCRIPTS
-    - chmod +x install-dfx.sh
-    - ./install-dfx.sh
   script:
-    - export PATH=$PATH:$DFX_INSTALLATION_PATH
     - cd $ICP_PATH/ts-canisters
     - npm install
     - cd ../scripts
@@ -72,11 +73,6 @@ build_icp_canisters_job:
 
 deploy_icp_canisters_job:
   extends: .deploy_job_template
-  before_script:
-    - cd $CI_SCRIPTS
-    - chmod +x install-dfx.sh
-    - ./install-dfx.sh
   script:
-    - export PATH=$PATH:$DFX_INSTALLATION_PATH
     - cd $ICP_PATH/ts-canisters
     - dfx --version
