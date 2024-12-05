@@ -8,18 +8,19 @@ image: node:20
 # VARIABLES
 
 variables:
-  CI_SCRIPTS: "$CI_PROJECT_DIR/ci/scripts"
-  ICP_PATH: "$CI_PROJECT_DIR/icp"
-  BUILD_TYPES_PATH: "$ICP_PATH/ts-canisters/src/models/types/dist/"
-  ICP_DECLARATIONS_PATH: "$ICP_PATH/ts-canisters/declarations/"
-  ICP_RUST_DECLARATIONS_PATH: "$ICP_PATH/rust-canisters/src/declarations/"
-  ICP_RUST_WASM_PATH: "$ICP_PATH/rust-canisters/target/wasm32-unknown-unknown/release/"
+  CI_SCRIPTS: "ci/scripts"
+  ICP_PATH: "icp"
+  BUILD_TYPES_PATH: "icp/ts-canisters/src/models/types/dist/"
+  TYPESCRIPT_NODE_MODULES_PATH: "icp/ts-canisters/node_modules/"
+  ICP_DECLARATIONS_PATH: "icp/ts-canisters/declarations/"
+  ICP_RUST_DECLARATIONS_PATH: "icp/rust-canisters/src/declarations/"
+  ICP_RUST_WASM_PATH: "icp/rust-canisters/target/wasm32-unknown-unknown/release/"
   DFX_INSTALLATION_PATH: "/root/.local/share/dfx/bin"
 
 cache:
   key: $CI_COMMIT_REF_SLUG
   paths:
-    - "ICP_PATH/ts-canisters/node_modules/"
+    - "$TYPESCRIPT_NODE_MODULES_PATH"
   policy: pull-push
 
 # RULES
