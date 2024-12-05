@@ -10,15 +10,15 @@ import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract Escrow is AccessControl {
+contract DownPayment is AccessControl {
     using Address for address;
     using SafeERC20 for IERC20;
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
-    event EscrowDeposited(address depositorAddress, uint256 amount);
-    event EscrowWithdrawn(address withDrawerAddress, uint256 amount);
-    event EscrowRefunded(address refundedAddress, uint256 amount);
+    event DownPaymentDeposited(address depositorAddress, uint256 amount);
+    event DownPaymentWithdrawn(address withDrawerAddress, uint256 amount);
+    event DownPaymentRefunded(address refundedAddress, uint256 amount);
 
     address private _owner;
     address private _payee;
@@ -42,12 +42,12 @@ contract Escrow is AccessControl {
     uint256 private _totalRefundedAmount;
 
     constructor(address admin, address payee, uint256 duration, address tokenAddress, address feeRecipient, uint256 baseFee, uint256 percentageFee) {
-        require(admin != address(0), "Escrow: admin is the zero address");
-        require(payee != address(0), "Escrow: payee is the zero address");
-        require(duration != 0, "Escrow: duration is zero");
-        require(tokenAddress != address(0), "Escrow: token address is the zero address");
-        require(feeRecipient != address(0), "Escrow: fee recipient is the zero address");
-        require(percentageFee <= 100, "Escrow: percentage fee cannot be greater than 100");
+        require(admin != address(0), "DownPayment: admin is the zero address");
+        require(payee != address(0), "DownPayment: payee is the zero address");
+        require(duration != 0, "DownPayment: duration is zero");
+        require(tokenAddress != address(0), "DownPayment: token address is the zero address");
+        require(feeRecipient != address(0), "DownPayment: fee recipient is the zero address");
+        require(percentageFee <= 100, "DownPayment: percentage fee cannot be greater than 100");
 
         _setupRole(ADMIN_ROLE, admin);
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
@@ -70,11 +70,11 @@ contract Escrow is AccessControl {
 
     // Modifiers
     modifier editable() {
-        require(_lockedAmount == 0, "Escrow: can only edit while no funds are locked");
+        require(_lockedAmount == 0, "DownPayment: can only edit while no funds are locked");
         _;
     }
     modifier onlyAdmin() {
-        require(hasRole(ADMIN_ROLE, _msgSender()), "Escrow: caller is not the admin");
+        require(hasRole(ADMIN_ROLE, _msgSender()), "DownPayment: caller is not the admin");
         _;
     }
 
@@ -170,15 +170,15 @@ contract Escrow is AccessControl {
 
     // Updates
     function updateFeeRecipient(address feeRecipient) public onlyAdmin editable {
-        require(feeRecipient != address(0), "Escrow: fee recipient is the zero address");
-        require(feeRecipient != _feeRecipient, "Escrow: new fee recipient is the same of the current one");
+        require(feeRecipient != address(0), "DownPayment: fee recipient is the zero address");
+        require(feeRecipient != _feeRecipient, "DownPayment: new fee recipient is the same of the current one");
         _feeRecipient = feeRecipient;
     }
     function updateBaseFee(uint256 baseFee) public onlyAdmin editable {
         _baseFee = baseFee;
     }
     function updatePercentageFee(uint256 percentageFee) public onlyAdmin editable {
-        require(percentageFee <= 100, "Escrow: percentage fee cannot be greater than 100");
+        require(percentageFee <= 100, "DownPayment: percentage fee cannot be greater than 100");
         _percentageFee = percentageFee;
     }
 
@@ -189,14 +189,14 @@ contract Escrow is AccessControl {
 
     // Actions
     function lockFunds(uint256 amount) public onlyAdmin {
-        require(amount > 0, "Escrow: can only lock positive amount");
-        require(_lockedAmount + amount <= getBalance(), "Escrow: can only lock up to the balance");
+        require(amount > 0, "DownPayment: can only lock positive amount");
+        require(_lockedAmount + amount <= getBalance(), "DownPayment: can only lock up to the balance");
 
         _lockedAmount += amount;
     }
     function releaseFunds(uint256 amount) public onlyAdmin {
-        require(amount > 0, "Escrow: can only release positive amount");
-        require(amount <= _lockedAmount, "Escrow: can only release up to the locked amount");
+        require(amount > 0, "DownPayment: can only release positive amount");
+        require(amount <= _lockedAmount, "DownPayment: can only release up to the locked amount");
 
         uint256 fees = getFees(amount);
         uint256 payment = amount - fees;
@@ -207,11 +207,11 @@ contract Escrow is AccessControl {
 
         _lockedAmount -= amount;
         _releasedAmount += amount;
-        emit EscrowWithdrawn(_payee, payment);
+        emit DownPaymentWithdrawn(_payee, payment);
     }
     function refundFunds(uint256 amount) public onlyAdmin {
-        require(amount > 0, "Escrow: can only refund positive amount");
-        require(amount <= _lockedAmount, "Escrow: can only refund up to the locked amount");
+        require(amount > 0, "DownPayment: can only refund positive amount");
+        require(amount <= _lockedAmount, "DownPayment: can only refund up to the locked amount");
         // for each payer, calculate the refundable amount and refund it
         for (uint256 i = 0; i < _payers.length; i++) {
             address payer = _payers[i];
@@ -227,12 +227,12 @@ contract Escrow is AccessControl {
                 _refundedAmount[payer] += refundableAmount;
                 _totalRefundedAmount += refundableAmount;
                 _lockedAmount -= refundableAmount;
-                emit EscrowRefunded(payer, payment);
+                emit DownPaymentRefunded(payer, payment);
             }
         }
     }
     function deposit(uint256 amount, address payer) public onlyAdmin {
-        require(amount > 0, "Escrow: can only deposit positive amount");
+        require(amount > 0, "DownPayment: can only deposit positive amount");
 
         _token.safeTransferFrom(payer, address(this), amount);
 
@@ -242,11 +242,11 @@ contract Escrow is AccessControl {
 
         _depositedAmount[payer] += amount;
         _totalDepositedAmount += amount;
-        emit EscrowDeposited(payer, amount);
+        emit DownPaymentDeposited(payer, amount);
     }
     function withdraw(uint256 amount) public {
-        require(amount > 0, "Escrow: can only withdraw positive amount");
-        require(amount <= getWithdrawableAmount(_msgSender()), "Escrow: can only withdraw up to the withdrawable amount");
+        require(amount > 0, "DownPayment: can only withdraw positive amount");
+        require(amount <= getWithdrawableAmount(_msgSender()), "DownPayment: can only withdraw up to the withdrawable amount");
 
         _token.approve(address(this), amount);
         _token.safeTransferFrom(address(this), _msgSender(), amount);
@@ -264,16 +264,16 @@ contract Escrow is AccessControl {
         }
 
         _totalDepositedAmount -= amount;
-        emit EscrowWithdrawn(_msgSender(), amount);
+        emit DownPaymentWithdrawn(_msgSender(), amount);
     }
 
     // Roles
     function addAdmin(address admin) public onlyAdmin {
-        require(admin != address(0), "Escrow: admin is the zero address");
+        require(admin != address(0), "DownPayment: admin is the zero address");
         grantRole(ADMIN_ROLE, admin);
     }
     function removeAdmin(address admin) public onlyAdmin {
-        require(admin != address(0), "Escrow: admin is the zero address");
+        require(admin != address(0), "DownPayment: admin is the zero address");
         revokeRole(ADMIN_ROLE, admin);
     }
 }

@@ -6,7 +6,7 @@ export class Evm {
     }
 
     public static get ESCROW_MANAGER_ADDRESS(): string {
-        return checkAndGetEnvironmentVariable(process.env.EVM_ESCROW_MANAGER_ADDRESS, 'EVM Escrow Manager Address must be defined');
+        return checkAndGetEnvironmentVariable(process.env.EVM_ESCROW_MANAGER_ADDRESS, 'EVM DownPayment.sol Manager Address must be defined');
     }
 
     public static get CHAIN_ID(): number {

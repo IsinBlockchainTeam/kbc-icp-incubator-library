@@ -278,7 +278,7 @@ class ShipmentService implements HasInterestedParties {
         const shipment = this.getShipment(id);
         if (PhaseEnum.PHASE_5 in this.getShipmentPhase(id) && FundStatusEnum.LOCKED in shipment.fundsStatus) {
             const escrowAddress = shipment.escrowAddress[0];
-            if (!escrowAddress) throw new Error('Escrow address not found');
+            if (!escrowAddress) throw new Error('DownPayment.sol address not found');
             await ethSendContractTransaction(escrowAddress, escrowAbi.abi, 'releaseFunds', [shipment.price]);
             shipment.fundsStatus = { RELEASED: null };
             console.log('funds released');
@@ -361,7 +361,7 @@ class ShipmentService implements HasInterestedParties {
         console.log('fundStatus', shipment.fundsStatus);
         if (PhaseEnum.PHASE_5 in this.getShipmentPhase(id) && FundStatusEnum.LOCKED in shipment.fundsStatus) {
             const escrowAddress = shipment.escrowAddress[0];
-            if (!escrowAddress) throw new Error('Escrow address not found');
+            if (!escrowAddress) throw new Error('DownPayment.sol address not found');
             await ethSendContractTransaction(escrowAddress, escrowAbi.abi, 'releaseFunds', [shipment.price]);
             shipment.fundsStatus = { RELEASED: null };
             console.log('funds released');
