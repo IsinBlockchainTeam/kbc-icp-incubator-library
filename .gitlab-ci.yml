@@ -4,15 +4,15 @@ stages:
   - test
   - deploy
 
-image: node:20
+image: ./ci/Dockerfile
 
 # VARIABLES
 
 variables:
-  CI_SCRIPTS: "$CI_PROJECT_DIR/ci-scripts"
+  CI_SCRIPTS: "$CI_PROJECT_DIR/ci"
   ICP_PATH: "$CI_PROJECT_DIR/icp"
   BUILD_TYPES_PATH: "$ICP_PATH/ts-canisters/src/models/types/dist/"
-  DFX_INSTALL_PATH: "/root/.local/share/dfx/bin"
+  DFX_INSTALLATION_PATH: "/root/.local/share/dfx/bin"
 
 cache:
   key: $CI_COMMIT_REF_SLUG
@@ -61,7 +61,7 @@ setup_dfx_job:
       - ./install-dfx.sh
   artifacts:
       paths:
-      - $DFX_INSTALL_PATH
+      - $DFX_INSTALLATION_PATH
       expire_in: 15 min
 
 build_icp_canisters_job:
@@ -80,7 +80,7 @@ build_icp_canisters_job:
 deploy_icp_canisters_job:
   extends: .deploy_job_template
   script:
-    - export PATH=$PATH:$DFX_INSTALL_PATH
+    - export PATH=$PATH:$DFX_INSTALLATION_PATH
     - cd $ICP_PATH/scripts
     - dfx --version
   dependencies:
