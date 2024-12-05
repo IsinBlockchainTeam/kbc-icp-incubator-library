@@ -86,5 +86,4 @@ deploy_icp_canisters_job:
     - cd $ICP_PATH/ts-canisters
     - npm ci
     - dfx deploy --network ic
-  when:
-    - manual
+  when: manual
