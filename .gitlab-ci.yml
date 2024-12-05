@@ -58,6 +58,7 @@ cache:
 # JOBS
 
 before_script:
+  - apt update
   - cd $CI_SCRIPTS
   - chmod +x install-dependencies.sh
   - ./install-dependencies.sh
@@ -84,6 +85,6 @@ deploy_icp_canisters_job:
   script:
     - cd $ICP_PATH/ts-canisters
     - npm ci
-    - dfx start --background
-    - dfx deploy
-    - dfx stop
+    - dfx deploy --network ic
+  when:
+    - manual
