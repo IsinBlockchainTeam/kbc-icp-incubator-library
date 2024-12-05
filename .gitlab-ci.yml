@@ -16,6 +16,7 @@ variables:
   ICP_RUST_DECLARATIONS_PATH: "$ICP_PATH/rust-canisters/src/declarations/"
   ICP_RUST_WASM_PATH: "$ICP_PATH/rust-canisters/target/wasm32-unknown-unknown/release/"
   DFX_INSTALLATION_PATH: "/root/.local/share/dfx/bin"
+  CARGO_INSTALLATION_PATH: "/root/.cargo/bin"
 
 cache:
   key: $CI_COMMIT_REF_SLUG
@@ -60,7 +61,7 @@ before_script:
   - cd $CI_SCRIPTS
   - chmod +x install-dependencies.sh
   - ./install-dependencies.sh
-  - export PATH=$PATH:$DFX_INSTALLATION_PATH
+  - export PATH=$PATH:$DFX_INSTALLATION_PATH:$CARGO_INSTALLATION_PATH
 
 build_icp_canisters_job:
   extends: .build_job_template

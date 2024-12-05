@@ -7,8 +7,9 @@ curl https://sh.rustup.rs -sSf | sh -s -- -y
 export DFXVM_INIT_YES=true
 sh -ci "$(curl -fsSL https://internetcomputer.org/install.sh)"
 
-# Add dfx to PATH
-export PATH=$PATH:/root/.local/share/dfx/bin
+# Add cargo and dfx to PATH
+export PATH=$PATH:/root/.local/share/dfx/bin:/root/.cargo/bin
 
 # Verify installation
+cargo --version
 dfx --version
