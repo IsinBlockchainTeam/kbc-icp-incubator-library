@@ -64,11 +64,9 @@ build_icp_canisters_job:
 
 deploy_icp_canisters_job:
   extends: .deploy_job_template
-#  before_script:
-#    - cd $CI_SCRIPTS
-#    - ./install-dfx.sh
+  before_script:
+    - cd $CI_SCRIPTS
+    - ./install-dfx.sh
   script:
       - cd $ICP_PATH/scripts
       - dfx start --clean
-  dependencies:
-    - setup_dfx_job
