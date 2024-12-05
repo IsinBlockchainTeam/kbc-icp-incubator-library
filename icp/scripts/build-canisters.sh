@@ -19,9 +19,6 @@ generate_declarations
 
 # Build ts canisters
 cd "$BASE_DIR/ts-canisters"
-set -o allexport
-source .env.ci
-set +o allexport
 generate_declarations
 npm run build-types
 
