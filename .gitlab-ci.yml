@@ -1,15 +1,14 @@
 stages:
-  - setup
   - build
   - test
   - deploy
 
-image: ./ci/Dockerfile
+image: node:20
 
 # VARIABLES
 
 variables:
-  CI_SCRIPTS: "$CI_PROJECT_DIR/ci"
+  CI_SCRIPTS: "$CI_PROJECT_DIR/ci/scripts"
   ICP_PATH: "$CI_PROJECT_DIR/icp"
   BUILD_TYPES_PATH: "$ICP_PATH/ts-canisters/src/models/types/dist/"
   DFX_INSTALLATION_PATH: "/root/.local/share/dfx/bin"
@@ -53,25 +52,19 @@ cache:
 
 # JOBS
 
-setup_dfx_job:
-  stage: setup
-  script:
-      - cd $CI_SCRIPTS
-      - chmod +x ./install-dfx.sh
-      - ./install-dfx.sh
-  artifacts:
-      paths:
-      - $DFX_INSTALLATION_PATH
-      expire_in: 15 min
-
 build_icp_canisters_job:
   extends: .build_job_template
+  before_script:
+    - cd $CI_SCRIPTS
+    - chmod +x install-dfx.sh
+    - ./install-dfx.sh
   script:
+    - export PATH=$PATH:$DFX_INSTALLATION_PATH
     - cd $ICP_PATH/ts-canisters
     - npm install
-    - npm run build-types
-  dependencies:
-    - setup_dfx_job
+    - cd ../scripts
+    - chmod +x build-canisters.sh
+    - ./build-canisters.sh
   artifacts:
     paths:
       - $BUILD_TYPES_PATH
@@ -79,9 +72,11 @@ build_icp_canisters_job:
 
 deploy_icp_canisters_job:
   extends: .deploy_job_template
+  before_script:
+    - cd $CI_SCRIPTS
+    - chmod +x install-dfx.sh
+    - ./install-dfx.sh
   script:
     - export PATH=$PATH:$DFX_INSTALLATION_PATH
-    - cd $ICP_PATH/scripts
+    - cd $ICP_PATH/ts-canisters
     - dfx --version
-  dependencies:
-    - setup_dfx_job
