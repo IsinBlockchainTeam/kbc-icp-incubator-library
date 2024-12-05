@@ -4,8 +4,7 @@ BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
 echo "BASE_DIR: $BASE_DIR"
 
 function generate_declarations() {
-  touch .env
-  dfx deploy --no-wallet --all
+  dfx deploy
   dfx generate
 }
 
