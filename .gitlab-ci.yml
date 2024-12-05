@@ -84,5 +84,7 @@ deploy_icp_canisters_job:
   script:
     - cd $ICP_PATH/ts-canisters
     - npm ci
-    - dfx deploy --network ic
+    - cd ../scripts
+    - chmod +x deploy-ic.sh
+    - ./deploy-ic.sh
 #  when: manual
