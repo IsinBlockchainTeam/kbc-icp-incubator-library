@@ -1,5 +1,4 @@
 stages:
-  - setup
   - build
   - test
   - deploy
@@ -9,6 +8,7 @@ image: node:20
 # VARIABLES
 
 variables:
+  CI_SCRIPTS: "$CI_PROJECT_DIR/ci-scripts"
   ICP_PATH: "$CI_PROJECT_DIR/icp"
   BUILD_TYPES_PATH: "$ICP_PATH/ts-canisters/models/types/dist/"
 
@@ -51,14 +51,6 @@ cache:
 
 # JOBS
 
-setup_dfx_job:
-  stage: setup
-  script:
-    - export DFXVM_INIT_YES=true
-    - sh -ci "$(curl -fsSL https://internetcomputer.org/install.sh)"
-    - export PATH=$PATH:/root/.local/share/dfx/bin
-    - dfx --version
-
 build_icp_canisters_job:
   extends: .build_job_template
   script:
@@ -72,6 +64,9 @@ build_icp_canisters_job:
 
 deploy_icp_canisters_job:
   extends: .deploy_job_template
+  before_script:
+    - cd $CI_SCRIPTS
+    - ./install-dfx.sh
   script:
       - cd $ICP_PATH/scripts
       - dfx start --clean
