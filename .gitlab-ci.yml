@@ -68,6 +68,8 @@ deploy_icp_canisters_job:
     - cd $CI_SCRIPTS
     - chmod +x ./install-dfx.sh
     - ./install-dfx.sh
+    - echo $PATH
   script:
-      - cd $ICP_PATH/scripts
-      - dfx start --clean
+    - echo $PATH
+    - cd $ICP_PATH/scripts
+    - dfx --version
