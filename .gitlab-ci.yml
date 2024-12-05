@@ -11,6 +11,7 @@ variables:
   CI_SCRIPTS: "$CI_PROJECT_DIR/ci-scripts"
   ICP_PATH: "$CI_PROJECT_DIR/icp"
   BUILD_TYPES_PATH: "$ICP_PATH/ts-canisters/models/types/dist/"
+  DFX_INSTALL_PATH: "/root/.local/share/dfx/bin"
 
 cache:
   key: $CI_COMMIT_REF_SLUG
@@ -69,5 +70,6 @@ deploy_icp_canisters_job:
     - chmod +x ./install-dfx.sh
     - ./install-dfx.sh
   script:
+    - echo PATH=$PATH:$DFX_INSTALL_PATH
     - cd $ICP_PATH/scripts
     - dfx --version
