@@ -1,24 +1,21 @@
 import { Event, Signer, utils } from 'ethers';
-import { EscrowManager, EscrowManager__factory } from '../smart-contracts';
-import { RoleProof } from '../types/RoleProof';
+import { DownPaymentManager, DownPaymentManager__factory } from '../smart-contracts';
 
-// TODO: remove role proofs
-export class EscrowManagerDriver {
-    private _contract: EscrowManager;
+export class DownPaymentManagerDriver {
+    private _contract: DownPaymentManager;
 
-    constructor(signer: Signer, escrowManagerAddress: string) {
-        this._contract = EscrowManager__factory.connect(
-            escrowManagerAddress,
+    constructor(signer: Signer, downPaymentManagerAddress: string) {
+        this._contract = DownPaymentManager__factory.connect(
+            downPaymentManagerAddress,
             signer.provider!
         ).connect(signer);
     }
 
-    async getEscrowCounter(roleProof: RoleProof): Promise<number> {
-        return (await this._contract.getEscrowCounter()).toNumber();
+    async getDownPaymentCounter(): Promise<number> {
+        return (await this._contract.getDownPaymentCounter()).toNumber();
     }
 
-    async registerEscrow(
-        roleProof: RoleProof,
+    async registerDownPayment(
         admin: string,
         payee: string,
         duration: number,
@@ -30,33 +27,33 @@ export class EscrowManagerDriver {
         if (duration <= 0) {
             throw new Error('Duration must be greater than 0');
         }
-        const tx = await this._contract.registerEscrow(admin, payee, duration, tokenAddress);
+        const tx = await this._contract.registerDownPayment(admin, payee, duration, tokenAddress);
         const { events, transactionHash } = await tx.wait();
         if (!events) {
-            throw new Error('Error during escrow registration, no events found');
+            throw new Error('Error during down payment registration, no events found');
         }
-        const eventArgs = events.find((e: Event) => e.event === 'EscrowRegistered')?.args;
+        const eventArgs = events.find((e: Event) => e.event === 'DownPaymentRegistered')?.args;
         if (!eventArgs) {
-            throw new Error('Error during escrow registration, escrow not registered');
+            throw new Error('Error during down payment registration, down payment not registered');
         }
 
-        return [eventArgs.id.toNumber(), eventArgs.escrowAddress, transactionHash];
+        return [eventArgs.id.toNumber(), eventArgs.downPaymentAddress, transactionHash];
     }
 
-    async getFeeRecipient(roleProof: RoleProof): Promise<string> {
+    async getFeeRecipient(): Promise<string> {
         return this._contract.getFeeRecipient();
     }
 
-    async getBaseFee(roleProof: RoleProof): Promise<number> {
+    async getBaseFee(): Promise<number> {
         return (await this._contract.getBaseFee()).toNumber();
     }
 
-    async getPercentageFee(roleProof: RoleProof): Promise<number> {
+    async getPercentageFee(): Promise<number> {
         return (await this._contract.getPercentageFee()).toNumber();
     }
 
-    async getEscrow(roleProof: RoleProof, id: number): Promise<string> {
-        return this._contract.getEscrow(id);
+    async getDownPayment(id: number): Promise<string> {
+        return this._contract.getDownPayment(id);
     }
 
     async updateFeeRecipient(newFeeRecipient: string): Promise<void> {

@@ -128,12 +128,12 @@ describe('ShipmentManagerDriver', () => {
         expect(shipment).toBeDefined();
     });
 
-    it('should determine escrow address', async () => {
+    it('should determine down payment address', async () => {
         const { shipmentManagerDriver, authenticate } = utils1;
         await authenticate();
-        const escrowAddress = await shipmentManagerDriver.determineEscrowAddress(SHIPMENT_ID);
-        console.log(escrowAddress);
-        expect(escrowAddress).toBeDefined();
+        const downPaymentAddress = await shipmentManagerDriver.determineDownPaymentAddress(SHIPMENT_ID);
+        console.log(downPaymentAddress);
+        expect(downPaymentAddress).toBeDefined();
     });
 
     it('should deposit funds', async () => {
@@ -265,7 +265,7 @@ describe('ShipmentManagerDriver', () => {
         expect(await supplierDriver.getShipmentPhase(SHIPMENT_ID)).toEqual(ShipmentPhase.PHASE_3);
     });
 
-    it('should bring a shipment which has just locked the escrow to the 5th phase', async () => {
+    it('should bring a shipment which has just locked the down payment to the 5th phase', async () => {
         const { shipmentManagerDriver: supplierDriver, authenticate: supplierLogin } = utils1;
         await supplierLogin();
         const { shipmentManagerDriver: commissionerDriver, authenticate: commissionerLogin } =

@@ -1,18 +1,9 @@
 import { IDL, query, update } from 'azle';
-import {
-    IDLPhase,
-    IDLShipment,
-    IDLEvaluationStatus,
-    IDLDocumentInfo, IDLDocumentType
-} from "../models/idls";
-import {
-    Phase, Shipment,
-    EvaluationStatus,
-    DocumentInfo, DocumentType
-} from "../models/types";
-import ShipmentService from "../services/ShipmentService";
-import {AtLeastEditor, AtLeastViewer} from "../decorators/roles";
-import {OnlyCommissioner, OnlyContractParty, OnlySupplier} from "../decorators/parties";
+import { IDLPhase, IDLShipment, IDLEvaluationStatus, IDLDocumentInfo, IDLDocumentType } from '../models/idls';
+import { Phase, Shipment, EvaluationStatus, DocumentInfo, DocumentType } from '../models/types';
+import ShipmentService from '../services/ShipmentService';
+import { AtLeastEditor, AtLeastViewer } from '../decorators/roles';
+import { OnlyCommissioner, OnlyContractParty, OnlySupplier } from '../decorators/parties';
 
 class ShipmentController {
     @query([], IDL.Vec(IDLShipment))
@@ -96,8 +87,8 @@ class ShipmentController {
 
     @update([IDL.Nat], IDLShipment)
     @AtLeastEditor
-    async determineEscrowAddress(id: bigint): Promise<Shipment> {
-        return ShipmentService.instance.determineEscrowAddress(id);
+    async determineDownPaymentAddress(id: bigint): Promise<Shipment> {
+        return ShipmentService.instance.determineDownPaymentAddress(id);
     }
 
     @update([IDL.Nat, IDL.Nat], IDLShipment)

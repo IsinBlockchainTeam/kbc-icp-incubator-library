@@ -1,11 +1,11 @@
 import { Signer, Wallet } from 'ethers';
 import { createMock } from 'ts-auto-mock';
-import { EscrowDriver } from '../EscrowDriver';
-import { Escrow as EscrowContract, Escrow__factory } from '../../smart-contracts';
-import { EscrowStatus } from '../../types/EscrowStatus';
+import { DownPaymentDriver } from '../DownPaymentDriver';
+import { DownPayment as DownPaymentContract, DownPayment__factory } from '../../smart-contracts';
+import { DownPaymentStatus } from '../../types/DownPaymentStatus';
 
-describe('EscrowDriver', () => {
-    let escrowDriver: EscrowDriver;
+describe('DownPaymentDriver', () => {
+    let downPaymentDriver: DownPaymentDriver;
     const payee: string = Wallet.createRandom().address;
     const contractAddress: string = Wallet.createRandom().address;
     const feeRecipient: string = Wallet.createRandom().address;
@@ -13,7 +13,7 @@ describe('EscrowDriver', () => {
 
     let mockedSigner: Signer;
 
-    const mockedEscrowConnect = jest.fn();
+    const mockedDownPaymentConnect = jest.fn();
     const mockedWait = jest.fn();
     const mockedToNumber = jest.fn();
 
@@ -36,12 +36,12 @@ describe('EscrowDriver', () => {
     mockedGetOwner.mockReturnValue(payee);
     mockedGetPayee.mockReturnValue(payee);
     mockedGetPayers.mockReturnValue([payee]);
-    mockedGetState.mockReturnValue(EscrowStatus.ACTIVE);
+    mockedGetState.mockReturnValue(DownPaymentStatus.ACTIVE);
     mockedGetTokenAddress.mockReturnValue(contractAddress);
     mockedGetFeeRecipient.mockReturnValue(feeRecipient);
     mockedGetBoolean.mockReturnValue(boolean);
 
-    const mockedContract = createMock<EscrowContract>({
+    const mockedContract = createMock<DownPaymentContract>({
         getOwner: mockedGetOwner,
         getPayee: mockedGetPayee,
         getPayers: mockedGetPayers,
@@ -80,20 +80,20 @@ describe('EscrowDriver', () => {
     beforeAll(() => {
         mockedToNumber.mockReturnValue(1);
 
-        mockedEscrowConnect.mockReturnValue(mockedContract);
-        const mockedEscrowContract = createMock<EscrowContract>({
-            connect: mockedEscrowConnect
+        mockedDownPaymentConnect.mockReturnValue(mockedContract);
+        const mockedDownPaymentContract = createMock<DownPaymentContract>({
+            connect: mockedDownPaymentConnect
         });
-        jest.spyOn(Escrow__factory, 'connect').mockReturnValue(mockedEscrowContract);
+        jest.spyOn(DownPayment__factory, 'connect').mockReturnValue(mockedDownPaymentContract);
 
         mockedSigner = createMock<Signer>();
-        escrowDriver = new EscrowDriver(mockedSigner, contractAddress);
+        downPaymentDriver = new DownPaymentDriver(mockedSigner, contractAddress);
     });
 
     afterEach(() => jest.clearAllMocks());
 
     it('should correctly retrieve owner', async () => {
-        const response = await escrowDriver.getOwner();
+        const response = await downPaymentDriver.getOwner();
 
         expect(response).toEqual(payee);
 
@@ -102,7 +102,7 @@ describe('EscrowDriver', () => {
         expect(mockedGetOwner).toHaveBeenCalledTimes(1);
     });
     it('should correctly retrieve payee', async () => {
-        const response = await escrowDriver.getPayee();
+        const response = await downPaymentDriver.getPayee();
 
         expect(response).toEqual(payee);
 
@@ -111,7 +111,7 @@ describe('EscrowDriver', () => {
         expect(mockedGetPayee).toHaveBeenCalledTimes(1);
     });
     it('should correctly retrieve payers', async () => {
-        const response = await escrowDriver.getPayers();
+        const response = await downPaymentDriver.getPayers();
 
         expect(response).toEqual([payee]);
 
@@ -120,7 +120,7 @@ describe('EscrowDriver', () => {
         expect(mockedGetPayers).toHaveBeenCalledTimes(1);
     });
     it('should correctly retrieve deployed at', async () => {
-        const response = await escrowDriver.getDeployedAt();
+        const response = await downPaymentDriver.getDeployedAt();
 
         expect(response).toEqual(1);
 
@@ -129,7 +129,7 @@ describe('EscrowDriver', () => {
         expect(mockedToNumber).toHaveBeenCalledTimes(1);
     });
     it('should correctly retrieve duration', async () => {
-        const response = await escrowDriver.getDuration();
+        const response = await downPaymentDriver.getDuration();
 
         expect(response).toEqual(1);
 
@@ -138,7 +138,7 @@ describe('EscrowDriver', () => {
         expect(mockedToNumber).toHaveBeenCalledTimes(1);
     });
     it('should correctly retrieve deadline', async () => {
-        const response = await escrowDriver.getDeadline();
+        const response = await downPaymentDriver.getDeadline();
 
         expect(response).toEqual(1);
 
@@ -147,7 +147,7 @@ describe('EscrowDriver', () => {
         expect(mockedToNumber).toHaveBeenCalledTimes(1);
     });
     it('should correctly retrieve token address', async () => {
-        const response = await escrowDriver.getTokenAddress();
+        const response = await downPaymentDriver.getTokenAddress();
 
         expect(response).toEqual(contractAddress);
 
@@ -156,7 +156,7 @@ describe('EscrowDriver', () => {
         expect(mockedGetTokenAddress).toHaveBeenCalledTimes(1);
     });
     it('should correctly retrieve fee recipient', async () => {
-        const response = await escrowDriver.getFeeRecipient();
+        const response = await downPaymentDriver.getFeeRecipient();
 
         expect(response).toEqual(feeRecipient);
 
@@ -165,7 +165,7 @@ describe('EscrowDriver', () => {
         expect(mockedGetFeeRecipient).toHaveBeenCalledTimes(1);
     });
     it('should correctly retrieve base fee', async () => {
-        const response = await escrowDriver.getBaseFee();
+        const response = await downPaymentDriver.getBaseFee();
 
         expect(response).toEqual(1);
 
@@ -174,7 +174,7 @@ describe('EscrowDriver', () => {
         expect(mockedToNumber).toHaveBeenCalledTimes(1);
     });
     it('should correctly retrieve percentage fee', async () => {
-        const response = await escrowDriver.getPercentageFee();
+        const response = await downPaymentDriver.getPercentageFee();
 
         expect(response).toEqual(1);
 
@@ -183,7 +183,7 @@ describe('EscrowDriver', () => {
         expect(mockedToNumber).toHaveBeenCalledTimes(1);
     });
     it('should correctly retrieve fees', async () => {
-        const response = await escrowDriver.getFees(10);
+        const response = await downPaymentDriver.getFees(10);
 
         expect(response).toEqual(1);
 
@@ -191,10 +191,12 @@ describe('EscrowDriver', () => {
         expect(mockedContract.getFees).toHaveBeenNthCalledWith(1, 10);
         expect(mockedToNumber).toHaveBeenCalledTimes(1);
 
-        await expect(escrowDriver.getFees(-1)).rejects.toThrow('Amount must be greater than 0');
+        await expect(downPaymentDriver.getFees(-1)).rejects.toThrow(
+            'Amount must be greater than 0'
+        );
     });
     it('should correctly retrieve total deposited amount', async () => {
-        const response = await escrowDriver.getTotalDepositedAmount();
+        const response = await downPaymentDriver.getTotalDepositedAmount();
 
         expect(response).toEqual(1);
 
@@ -203,7 +205,7 @@ describe('EscrowDriver', () => {
         expect(mockedToNumber).toHaveBeenCalledTimes(1);
     });
     it('should correctly retrieve deposited amount', async () => {
-        const response = await escrowDriver.getDepositedAmount(payee);
+        const response = await downPaymentDriver.getDepositedAmount(payee);
 
         expect(response).toEqual(1);
 
@@ -211,10 +213,12 @@ describe('EscrowDriver', () => {
         expect(mockedContract.getDepositedAmount).toHaveBeenNthCalledWith(1, payee);
         expect(mockedToNumber).toHaveBeenCalledTimes(1);
 
-        await expect(escrowDriver.getDepositedAmount('0xpayer')).rejects.toThrow('Not an address');
+        await expect(downPaymentDriver.getDepositedAmount('0xpayer')).rejects.toThrow(
+            'Not an address'
+        );
     });
     it('should correctly retrieve locked amount', async () => {
-        const response = await escrowDriver.getLockedAmount();
+        const response = await downPaymentDriver.getLockedAmount();
 
         expect(response).toEqual(1);
 
@@ -223,7 +227,7 @@ describe('EscrowDriver', () => {
         expect(mockedToNumber).toHaveBeenCalledTimes(1);
     });
     it('should correctly retrieve releasable amount', async () => {
-        const response = await escrowDriver.getReleasableAmount();
+        const response = await downPaymentDriver.getReleasableAmount();
 
         expect(response).toEqual(1);
 
@@ -232,7 +236,7 @@ describe('EscrowDriver', () => {
         expect(mockedToNumber).toHaveBeenCalledTimes(1);
     });
     it('should correctly retrieve released amount', async () => {
-        const response = await escrowDriver.getReleasedAmount();
+        const response = await downPaymentDriver.getReleasedAmount();
 
         expect(response).toEqual(1);
 
@@ -241,7 +245,7 @@ describe('EscrowDriver', () => {
         expect(mockedToNumber).toHaveBeenCalledTimes(1);
     });
     it('should correctly retrieve total refundable amount', async () => {
-        const response = await escrowDriver.getTotalRefundableAmount();
+        const response = await downPaymentDriver.getTotalRefundableAmount();
 
         expect(response).toEqual(1);
 
@@ -250,7 +254,7 @@ describe('EscrowDriver', () => {
         expect(mockedToNumber).toHaveBeenCalledTimes(1);
     });
     it('should correctly retrieve refunded amount', async () => {
-        const response = await escrowDriver.getRefundedAmount(payee);
+        const response = await downPaymentDriver.getRefundedAmount(payee);
 
         expect(response).toEqual(1);
 
@@ -258,10 +262,12 @@ describe('EscrowDriver', () => {
         expect(mockedContract.getRefundedAmount).toHaveBeenNthCalledWith(1, payee);
         expect(mockedToNumber).toHaveBeenCalledTimes(1);
 
-        await expect(escrowDriver.getRefundedAmount('0xpayer')).rejects.toThrow('Not an address');
+        await expect(downPaymentDriver.getRefundedAmount('0xpayer')).rejects.toThrow(
+            'Not an address'
+        );
     });
     it('should correctly retrieve total refunded amount', async () => {
-        const response = await escrowDriver.getTotalRefundedAmount();
+        const response = await downPaymentDriver.getTotalRefundedAmount();
 
         expect(response).toEqual(1);
 
@@ -270,7 +276,7 @@ describe('EscrowDriver', () => {
         expect(mockedToNumber).toHaveBeenCalledTimes(1);
     });
     it('should correctly retrieve balance', async () => {
-        const response = await escrowDriver.getBalance();
+        const response = await downPaymentDriver.getBalance();
 
         expect(response).toEqual(1);
 
@@ -279,7 +285,7 @@ describe('EscrowDriver', () => {
         expect(mockedToNumber).toHaveBeenCalledTimes(1);
     });
     it('should correctly retrieve withdrawable amount', async () => {
-        const response = await escrowDriver.getWithdrawableAmount(payee);
+        const response = await downPaymentDriver.getWithdrawableAmount(payee);
 
         expect(response).toEqual(1);
 
@@ -287,12 +293,12 @@ describe('EscrowDriver', () => {
         expect(mockedContract.getWithdrawableAmount).toHaveBeenNthCalledWith(1, payee);
         expect(mockedToNumber).toHaveBeenCalledTimes(1);
 
-        await expect(escrowDriver.getWithdrawableAmount('0xpayer')).rejects.toThrow(
+        await expect(downPaymentDriver.getWithdrawableAmount('0xpayer')).rejects.toThrow(
             'Not an address'
         );
     });
     it('should correctly retrieve refundable amount', async () => {
-        const response = await escrowDriver.getRefundableAmount(1, payee);
+        const response = await downPaymentDriver.getRefundableAmount(1, payee);
 
         expect(response).toEqual(1);
 
@@ -300,49 +306,51 @@ describe('EscrowDriver', () => {
         expect(mockedContract.getRefundableAmount).toHaveBeenNthCalledWith(1, 1, payee);
         expect(mockedToNumber).toHaveBeenCalledTimes(1);
 
-        await expect(escrowDriver.getRefundableAmount(-1, payee)).rejects.toThrow(
+        await expect(downPaymentDriver.getRefundableAmount(-1, payee)).rejects.toThrow(
             'Amount must be greater than 0'
         );
-        await expect(escrowDriver.getRefundableAmount(1, '0xpayer')).rejects.toThrow(
+        await expect(downPaymentDriver.getRefundableAmount(1, '0xpayer')).rejects.toThrow(
             'Not an address'
         );
     });
     it('should correctly update fee recipient', async () => {
-        await escrowDriver.updateFeeRecipient(payee);
+        await downPaymentDriver.updateFeeRecipient(payee);
 
         expect(mockedContract.updateFeeRecipient).toHaveBeenCalledTimes(1);
         expect(mockedContract.updateFeeRecipient).toHaveBeenNthCalledWith(1, payee);
         expect(mockedWriteFunction).toHaveBeenCalledTimes(1);
         expect(mockedWait).toHaveBeenCalledTimes(1);
 
-        await expect(escrowDriver.updateFeeRecipient('0xpayer')).rejects.toThrow('Not an address');
+        await expect(downPaymentDriver.updateFeeRecipient('0xpayer')).rejects.toThrow(
+            'Not an address'
+        );
     });
     it('should correctly update base fee', async () => {
-        await escrowDriver.updateBaseFee(1);
+        await downPaymentDriver.updateBaseFee(1);
 
         expect(mockedContract.updateBaseFee).toHaveBeenCalledTimes(1);
         expect(mockedContract.updateBaseFee).toHaveBeenNthCalledWith(1, 1);
         expect(mockedWriteFunction).toHaveBeenCalledTimes(1);
         expect(mockedWait).toHaveBeenCalledTimes(1);
 
-        await expect(escrowDriver.updateBaseFee(-1)).rejects.toThrow(
+        await expect(downPaymentDriver.updateBaseFee(-1)).rejects.toThrow(
             'Base fee must be greater than or equal to 0'
         );
     });
     it('should correctly update percentage fee', async () => {
-        await escrowDriver.updatePercentageFee(1);
+        await downPaymentDriver.updatePercentageFee(1);
 
         expect(mockedContract.updatePercentageFee).toHaveBeenCalledTimes(1);
         expect(mockedContract.updatePercentageFee).toHaveBeenNthCalledWith(1, 1);
         expect(mockedWriteFunction).toHaveBeenCalledTimes(1);
         expect(mockedWait).toHaveBeenCalledTimes(1);
 
-        await expect(escrowDriver.updatePercentageFee(-1)).rejects.toThrow(
+        await expect(downPaymentDriver.updatePercentageFee(-1)).rejects.toThrow(
             'Percentage fee must be between 0 and 100'
         );
     });
     it('should correctly check if expired', async () => {
-        const response = await escrowDriver.isExpired();
+        const response = await downPaymentDriver.isExpired();
 
         expect(response).toEqual(boolean);
 
@@ -351,80 +359,84 @@ describe('EscrowDriver', () => {
         expect(mockedGetBoolean).toHaveBeenCalledTimes(1);
     });
     it('should correctly lock funds', async () => {
-        await escrowDriver.lockFunds(1);
+        await downPaymentDriver.lockFunds(1);
 
         expect(mockedContract.lockFunds).toHaveBeenCalledTimes(1);
         expect(mockedContract.lockFunds).toHaveBeenNthCalledWith(1, 1);
         expect(mockedWriteFunction).toHaveBeenCalledTimes(1);
         expect(mockedWait).toHaveBeenCalledTimes(1);
 
-        await expect(escrowDriver.lockFunds(-1)).rejects.toThrow('Amount must be greater than 0');
+        await expect(downPaymentDriver.lockFunds(-1)).rejects.toThrow(
+            'Amount must be greater than 0'
+        );
     });
     it('should correctly release funds', async () => {
-        await escrowDriver.releaseFunds(1);
+        await downPaymentDriver.releaseFunds(1);
 
         expect(mockedContract.releaseFunds).toHaveBeenCalledTimes(1);
         expect(mockedContract.releaseFunds).toHaveBeenNthCalledWith(1, 1);
         expect(mockedWriteFunction).toHaveBeenCalledTimes(1);
         expect(mockedWait).toHaveBeenCalledTimes(1);
 
-        await expect(escrowDriver.releaseFunds(-1)).rejects.toThrow(
+        await expect(downPaymentDriver.releaseFunds(-1)).rejects.toThrow(
             'Amount must be greater than 0'
         );
     });
     it('should correctly refund funds', async () => {
-        await escrowDriver.refundFunds(1);
+        await downPaymentDriver.refundFunds(1);
 
         expect(mockedContract.refundFunds).toHaveBeenCalledTimes(1);
         expect(mockedContract.refundFunds).toHaveBeenNthCalledWith(1, 1);
         expect(mockedWriteFunction).toHaveBeenCalledTimes(1);
         expect(mockedWait).toHaveBeenCalledTimes(1);
 
-        await expect(escrowDriver.refundFunds(-1)).rejects.toThrow('Amount must be greater than 0');
+        await expect(downPaymentDriver.refundFunds(-1)).rejects.toThrow(
+            'Amount must be greater than 0'
+        );
     });
     it('should correctly deposit', async () => {
-        await escrowDriver.deposit(1, payee);
+        await downPaymentDriver.deposit(1, payee);
 
         expect(mockedContract.deposit).toHaveBeenCalledTimes(1);
         expect(mockedContract.deposit).toHaveBeenNthCalledWith(1, 1, payee);
         expect(mockedWriteFunction).toHaveBeenCalledTimes(1);
         expect(mockedWait).toHaveBeenCalledTimes(1);
 
-        await expect(escrowDriver.deposit(-1, payee)).rejects.toThrow(
+        await expect(downPaymentDriver.deposit(-1, payee)).rejects.toThrow(
             'Amount must be greater than or equal to 0'
         );
-        await expect(escrowDriver.deposit(1, '0xpayer')).rejects.toThrow('Not an address');
+        await expect(downPaymentDriver.deposit(1, '0xpayer')).rejects.toThrow('Not an address');
     });
     it('should correctly withdraw', async () => {
-        await escrowDriver.withdraw(1);
+        await downPaymentDriver.withdraw(1);
 
         expect(mockedContract.withdraw).toHaveBeenCalledTimes(1);
         expect(mockedContract.withdraw).toHaveBeenNthCalledWith(1, 1);
         expect(mockedWriteFunction).toHaveBeenCalledTimes(1);
         expect(mockedWait).toHaveBeenCalledTimes(1);
 
-        await expect(escrowDriver.withdraw(-1)).rejects.toThrow(
+        await expect(downPaymentDriver.withdraw(-1)).rejects.toThrow(
             'Amount must be greater than or equal to 0'
         );
     });
     it('should correctly add admin', async () => {
-        await escrowDriver.addAdmin(payee);
+        await downPaymentDriver.addAdmin(payee);
 
         expect(mockedContract.addAdmin).toHaveBeenCalledTimes(1);
         expect(mockedContract.addAdmin).toHaveBeenNthCalledWith(1, payee);
         expect(mockedWriteFunction).toHaveBeenCalledTimes(1);
         expect(mockedWait).toHaveBeenCalledTimes(1);
 
-        await expect(escrowDriver.addAdmin('0xpayer')).rejects.toThrow('Not an address');
+        await expect(downPaymentDriver.addAdmin('0xpayer')).rejects.toThrow('Not an address');
     });
     it('should correctly remove admin', async () => {
-        await escrowDriver.removeAdmin(payee);
+        await downPaymentDriver.removeAdmin(payee);
 
         expect(mockedContract.removeAdmin).toHaveBeenCalledTimes(1);
         expect(mockedContract.removeAdmin).toHaveBeenNthCalledWith(1, payee);
         expect(mockedWriteFunction).toHaveBeenCalledTimes(1);
         expect(mockedWait).toHaveBeenCalledTimes(1);
 
-        await expect(escrowDriver.removeAdmin('0xpayer')).rejects.toThrow('Not an address');
+        await expect(downPaymentDriver.removeAdmin('0xpayer')).rejects.toThrow('Not an address');
     });
 });

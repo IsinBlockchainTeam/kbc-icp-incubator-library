@@ -1,6 +1,6 @@
-import { EscrowStatus } from '../types/EscrowStatus';
+import { DownPaymentStatus } from '../types/DownPaymentStatus';
 
-export class Escrow {
+export class DownPayment {
     private _payee: string;
 
     private _deployedAt: number;
@@ -9,7 +9,7 @@ export class Escrow {
 
     private _tokenAddress: string;
 
-    private _state: EscrowStatus;
+    private _state: DownPaymentStatus;
 
     private _feeRecipient: string;
 
@@ -22,7 +22,7 @@ export class Escrow {
         deployedAt: number,
         duration: number,
         tokenAddress: string,
-        state: EscrowStatus,
+        state: DownPaymentStatus,
         feeRecipient: string,
         baseFee: number,
         percentageFee: number
@@ -69,11 +69,11 @@ export class Escrow {
         this._tokenAddress = value;
     }
 
-    get state(): EscrowStatus {
+    get state(): DownPaymentStatus {
         return this._state;
     }
 
-    set state(value: EscrowStatus) {
+    set state(value: DownPaymentStatus) {
         this._state = value;
     }
 

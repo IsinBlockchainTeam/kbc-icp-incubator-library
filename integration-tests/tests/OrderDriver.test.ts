@@ -1,13 +1,8 @@
 import { Wallet } from 'ethers';
 import { OrderDriver, SiweIdentityProvider, ICPAuthenticationDriver } from '@kbc-lib/coffee-trading-management-lib';
 import { createRoleProof } from '../../src/__testUtils__/proof';
+import { ICP, USERS } from '@kbc-lib/coffee-trading-management-lib/dist/__shared__/constants/constants';
 
-const USER1_PRIVATE_KEY = '0c7e66e74f6666b514cc73ee2b7ffc518951cf1ca5719d6820459c4e134f2264';
-const COMPANY1_PRIVATE_KEY = '538d7d8aec31a0a83f12461b1237ce6b00d8efc1d8b1c73566c05f63ed5e6d02';
-const USER2_PRIVATE_KEY = 'ec6b3634419525310628dce4da4cf2abbc866c608aebc1e5f9ee7edf6926e985';
-const COMPANY2_PRIVATE_KEY = '0c7e66e74f6666b514cc73ee2b7ffc518951cf1ca5719d6820459c4e134f2264';
-const SIWE_CANISTER_ID = 'be2us-64aaa-aaaaa-qaabq-cai';
-const ENTITY_MANAGER_CANISTER_ID = 'bkyz2-fmaaa-aaaaa-qaaaq-cai';
 type Utils = {
     userWallet: Wallet;
     companyWallet: Wallet;
@@ -21,17 +16,17 @@ describe('OrderDriver', () => {
     const getUtils = async (userPrivateKey: string, companyPrivateKey: string) => {
         const userWallet = new Wallet(userPrivateKey);
         const companyWallet = new Wallet(companyPrivateKey);
-        const siweIdentityProvider = new SiweIdentityProvider(userWallet, SIWE_CANISTER_ID);
+        const siweIdentityProvider = new SiweIdentityProvider(userWallet, ICP.SIWE_CANISTER_ID);
         await siweIdentityProvider.createIdentity();
         const authenticationDriver = new ICPAuthenticationDriver(
             siweIdentityProvider.identity,
-            ENTITY_MANAGER_CANISTER_ID,
-            'http://127.0.0.1:4943/'
+            ICP.ENTITY_MANAGER_CANISTER_ID,
+            ICP.NETWORK
         );
         const orderManagerDriver = new OrderDriver(
             siweIdentityProvider.identity,
-            ENTITY_MANAGER_CANISTER_ID,
-            'http://127.0.0.1:4943/'
+            ICP.ENTITY_MANAGER_CANISTER_ID,
+            ICP.NETWORK
         );
         const roleProof = await createRoleProof(userWallet.address, companyWallet);
         const authenticate = () => authenticationDriver.authenticate(roleProof);
@@ -39,8 +34,8 @@ describe('OrderDriver', () => {
     };
 
     beforeAll(async () => {
-        utils1 = await getUtils(USER1_PRIVATE_KEY, COMPANY1_PRIVATE_KEY);
-        utils2 = await getUtils(USER2_PRIVATE_KEY, COMPANY2_PRIVATE_KEY);
+        utils1 = await getUtils(USERS.USER1_PRIVATE_KEY, USERS.COMPANY1_PRIVATE_KEY);
+        utils2 = await getUtils(USERS.USER2_PRIVATE_KEY, USERS.COMPANY2_PRIVATE_KEY);
     }, 30000);
 
     it('should retrieve orders', async () => {
@@ -75,7 +70,7 @@ describe('OrderDriver', () => {
             arbiter: '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
             token: '0x3Aa5ebB10DC797CAC828524e59A333d0A371443c',
             agreedAmount: 10,
-            escrowManager: '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
+            downPaymentManager: '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
             incoterms: 'incoterms',
             shipper: 'shipper',
             shippingPort: 'shippingPort',

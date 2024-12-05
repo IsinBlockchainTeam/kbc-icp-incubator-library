@@ -1,4 +1,4 @@
-export enum EscrowStatus {
+export enum DownPaymentStatus {
     ACTIVE,
     WITHDRAWING,
     REFUNDING

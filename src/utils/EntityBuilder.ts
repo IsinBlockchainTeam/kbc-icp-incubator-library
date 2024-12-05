@@ -120,7 +120,7 @@ export class EntityBuilder {
             Number(shipment.id),
             shipment.supplier,
             shipment.commissioner,
-            shipment.escrowAddress[0] ? shipment.escrowAddress[0] : undefined,
+            shipment.downPaymentAddress[0] ? shipment.downPaymentAddress[0] : undefined,
             this.buildEvaluationStatus(shipment.sampleEvaluationStatus),
             this.buildEvaluationStatus(shipment.detailsEvaluationStatus),
             this.buildEvaluationStatus(shipment.qualityEvaluationStatus),

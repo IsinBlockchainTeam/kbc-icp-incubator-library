@@ -15,7 +15,7 @@
                     "CANISTER_ID_IC_SIWE_PROVIDER",
                     "CANISTER_ID_EVM_RPC",
                     "EVM_RPC_URL",
-                    "EVM_ESCROW_MANAGER_ADDRESS",
+                    "EVM_DOWN_PAYMENT_MANAGER_ADDRESS",
                     "EVM_REVOCATION_REGISTRY_ADDRESS",
                     "EVM_MEMBERSHIP_ISSUER_ADDRESS",
                     "EVM_CHAIN_ID",

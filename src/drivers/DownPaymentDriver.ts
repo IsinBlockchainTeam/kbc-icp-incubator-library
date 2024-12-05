@@ -1,11 +1,13 @@
 import { Signer, utils } from 'ethers';
-import { Escrow as EscrowContract, Escrow__factory } from '../smart-contracts';
+import { DownPayment as DownPaymentContract, DownPayment__factory } from '../smart-contracts';
 
-export class EscrowDriver {
-    private _contract: EscrowContract;
+export class DownPaymentDriver {
+    private _contract: DownPaymentContract;
 
-    constructor(signer: Signer, escrowAddress: string) {
-        this._contract = Escrow__factory.connect(escrowAddress, signer.provider!).connect(signer);
+    constructor(signer: Signer, downPaymentAddress: string) {
+        this._contract = DownPayment__factory.connect(downPaymentAddress, signer.provider!).connect(
+            signer
+        );
     }
 
     async getOwner(): Promise<string> {
