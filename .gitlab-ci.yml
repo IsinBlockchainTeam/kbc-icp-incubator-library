@@ -11,6 +11,9 @@ variables:
   CI_SCRIPTS: "$CI_PROJECT_DIR/ci/scripts"
   ICP_PATH: "$CI_PROJECT_DIR/icp"
   BUILD_TYPES_PATH: "$ICP_PATH/ts-canisters/src/models/types/dist/"
+  ICP_DECLARATIONS_PATH: "$ICP_PATH/ts-canisters/declarations/"
+  ICP_RUST_DECLARATIONS_PATH: "$ICP_PATH/rust-canisters/src/declarations/"
+  ICP_RUST_WASM_PATH: "$ICP_PATH/rust-canisters/target/wasm32-unknown-unknown/release/"
   DFX_INSTALLATION_PATH: "/root/.local/share/dfx/bin"
 
 cache:
@@ -69,10 +72,15 @@ build_icp_canisters_job:
   artifacts:
     paths:
       - $BUILD_TYPES_PATH
+      - $ICP_DECLARATIONS_PATH
+      - $ICP_RUST_DECLARATIONS_PATH
+      - $ICP_RUST_WASM_PATH
     expire_in: 15 min
 
 deploy_icp_canisters_job:
   extends: .deploy_job_template
   script:
     - cd $ICP_PATH/ts-canisters
-    - dfx --version
+    - dfx start --background
+    - dfx deploy
+    - dfx stop
