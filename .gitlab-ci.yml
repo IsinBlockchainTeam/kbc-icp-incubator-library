@@ -74,5 +74,6 @@ deploy_icp_canisters_job:
   extends: .deploy_job_template
   script:
       - cd $ICP_PATH/scripts
+      - dfx start --clean
   dependencies:
     - setup_dfx_job
