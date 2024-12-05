@@ -59,6 +59,10 @@ setup_dfx_job:
       - cd $CI_SCRIPTS
       - chmod +x ./install-dfx.sh
       - ./install-dfx.sh
+  artifacts:
+      paths:
+      - $DFX_INSTALL_PATH
+      expire_in: 15 min
 
 build_icp_canisters_job:
   extends: .build_job_template
@@ -66,6 +70,8 @@ build_icp_canisters_job:
     - cd $ICP_PATH/ts-canisters
     - npm install
     - npm run build-types
+  dependencies:
+    - setup_dfx_job
   artifacts:
     paths:
       - $BUILD_TYPES_PATH
