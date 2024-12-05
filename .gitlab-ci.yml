@@ -54,6 +54,7 @@ cache:
 setup_dfx_job:
   stage: setup
   script:
+    - export DFXVM_INIT_YES=true
     - sh -ci "$(curl -fsSL https://internetcomputer.org/install.sh)"
     - dfx --version
 
