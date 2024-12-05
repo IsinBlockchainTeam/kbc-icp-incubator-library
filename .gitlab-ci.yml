@@ -56,6 +56,7 @@ setup_dfx_job:
   script:
     - export DFXVM_INIT_YES=true
     - sh -ci "$(curl -fsSL https://internetcomputer.org/install.sh)"
+    - export /root/.local/share/dfx/bin
     - dfx --version
 
 build_icp_canisters_job:
