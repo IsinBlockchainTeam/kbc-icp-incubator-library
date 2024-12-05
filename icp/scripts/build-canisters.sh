@@ -4,7 +4,9 @@ BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
 echo "BASE_DIR: $BASE_DIR"
 
 function generate_declarations() {
-  dfx deploy
+  cargo --version
+  dfx canister create --all
+  dfx build --all
   dfx generate
 }
 
