@@ -65,7 +65,7 @@ build_icp_canisters_job:
   extends: .build_job_template
   script:
     - cd $ICP_PATH/ts-canisters
-    - npm install
+    - npm ci
     - cd ../scripts
     - chmod +x build-canisters.sh
     - ./build-canisters.sh
@@ -81,7 +81,7 @@ deploy_icp_canisters_job:
   extends: .deploy_job_template
   script:
     - cd $ICP_PATH/ts-canisters
-    - npm install
+    - npm ci
     - dfx start --background
     - dfx deploy
     - dfx stop

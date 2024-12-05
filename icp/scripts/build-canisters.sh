@@ -4,6 +4,7 @@ BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
 echo "BASE_DIR: $BASE_DIR"
 
 function generate_declarations() {
+  touch .env
   dfx canister create --all
   dfx build --all
   dfx generate
