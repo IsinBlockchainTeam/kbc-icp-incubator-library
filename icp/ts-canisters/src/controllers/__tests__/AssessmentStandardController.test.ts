@@ -1,12 +1,12 @@
 import { update } from 'azle';
 import { AtLeastViewer } from '../../decorators/roles';
 import AssessmentStandardController from '../AssessmentStandardController';
-import AssessmentStandardService from '../../services/AssessmentStandardService';
+import AssessmentReferenceStandardService from '../../services/AssessmentReferenceStandardService';
 
 jest.mock('azle');
 jest.mock('../../decorators/roles');
 jest.mock('../../models/idls');
-jest.mock('../../services/AssessmentStandardService', () => ({
+jest.mock('../../services/AssessmentReferenceStandardService', () => ({
     instance: {
         getAllValues: jest.fn(),
         addValue: jest.fn(),
@@ -15,7 +15,7 @@ jest.mock('../../services/AssessmentStandardService', () => ({
     }
 }));
 describe('AssessmentStandardController', () => {
-    const assessmentStandardServiceInstanceMock = AssessmentStandardService.instance as jest.Mocked<AssessmentStandardService>;
+    const assessmentStandardServiceInstanceMock = AssessmentReferenceStandardService.instance as jest.Mocked<AssessmentReferenceStandardService>;
     const assessmentStandardController = new AssessmentStandardController();
 
     it.each([

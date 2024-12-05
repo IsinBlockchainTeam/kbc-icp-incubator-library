@@ -2,12 +2,23 @@ import { StableBTreeMap } from 'azle';
 import { StableMemoryId } from '../utils/stableMemory';
 import { EnumerationAlreadyExistsError, EnumerationNotFoundError } from '../models/errors/EnumerationError';
 
+export enum EnumerationType {
+    ASSESSMENT_ASSURANCE_LEVEL = 'Assessment Assurance Level',
+    FIAT = 'Fiat',
+    PROCESS_TYPE = 'Process Type',
+    SUSTAINABILITY_CRITERIA = 'Sustainability Criteria',
+    UNIT = 'Unit'
+}
+
 abstract class EnumerationService {
     protected _enumerations;
 
+    private readonly _type: EnumerationType;
+
     private readonly _valuesKey: bigint;
 
-    protected constructor(mapId: StableMemoryId) {
+    protected constructor(mapId: StableMemoryId, type: EnumerationType) {
+        this._type = type;
         this._enumerations = StableBTreeMap<bigint, string[]>(mapId);
         this._valuesKey = BigInt(mapId.valueOf());
         this._enumerations.insert(this._valuesKey, []);
@@ -28,7 +39,7 @@ abstract class EnumerationService {
     }
 
     removeValue(value: string): string {
-        if (!this.hasValue(value)) throw new EnumerationNotFoundError();
+        if (!this.hasValue(value)) throw new EnumerationNotFoundError(this._type);
         this._enumerations.insert(
             this._valuesKey,
             this.getAllValues().filter((v) => v !== value)

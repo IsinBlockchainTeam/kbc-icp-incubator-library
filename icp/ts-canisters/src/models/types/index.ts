@@ -22,3 +22,4 @@ export {
     ScopeCertificate,
     MaterialCertificate
 } from './src/Certificate';
+export { AssessmentReferenceStandard } from './src/AssessmentReferenceStandard';

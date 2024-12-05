@@ -10,17 +10,23 @@ import {
     validateProcessTypes
 } from '../utils/validation';
 import {
+    BaseCertificate,
     CertificateDocumentInfo,
     CertificateType,
-    CompanyCertificate,
-    MaterialCertificate,
-    ScopeCertificate,
-    BaseCertificate,
     CertificateTypeEnum,
+    CompanyCertificate,
     EvaluationStatus,
-    EvaluationStatusEnum
+    EvaluationStatusEnum,
+    MaterialCertificate,
+    ScopeCertificate
 } from '../models/types';
 import AuthenticationService from './AuthenticationService';
+import {
+    CertificateNotFoundError,
+    CertificateTypeMismatchError,
+    EvaluationStatusError,
+    InvalidCertificateTypeError
+} from '../models/errors/CertificationError';
 
 type CertificationRecord = {
     subject: string;
@@ -198,19 +204,19 @@ class CertificationService {
 
     getCompanyCertificate(subject: string, id: bigint): CompanyCertificate {
         const certificate = this._companyCertificates.get(subject)?.find((cert) => BigInt(cert.id) === id);
-        if (!certificate) throw new Error('Company certificate not found');
+        if (!certificate) throw new CertificateNotFoundError(CertificateTypeEnum.COMPANY);
         return certificate;
     }
 
     getScopeCertificate(subject: string, id: bigint): ScopeCertificate {
         const certificate = this._scopeCertificates.get(subject)?.find((cert) => BigInt(cert.id) === id);
-        if (!certificate) throw new Error('Scope certificate not found');
+        if (!certificate) throw new CertificateNotFoundError(CertificateTypeEnum.SCOPE);
         return certificate;
     }
 
     getMaterialCertificate(subject: string, id: bigint): MaterialCertificate {
         const certificate = this._materialCertificates.get(subject)?.find((cert) => BigInt(cert.id) === id);
-        if (!certificate) throw new Error('Material certificate not found');
+        if (!certificate) throw new CertificateNotFoundError(CertificateTypeEnum.MATERIAL);
         return certificate;
     }
 
@@ -304,7 +310,7 @@ class CertificationService {
     }
 
     evaluateDocument(certificateId: bigint, evaluation: EvaluationStatus): BaseCertificate {
-        if (EvaluationStatusEnum.NOT_EVALUATED in evaluation) throw new Error('Invalid evaluation status');
+        if (EvaluationStatusEnum.NOT_EVALUATED in evaluation) throw new EvaluationStatusError();
         const [certificate, certificates, certificateIndex] = this._getCertificateAndInfoById<BaseCertificate>(certificateId);
         certificate.evaluationStatus = evaluation;
         this._updateCertificate(certificate, certificates, certificateIndex);
@@ -313,7 +319,7 @@ class CertificationService {
 
     private _getCertificateAndInfoById<T extends BaseCertificate>(certificateId: bigint): [T, T[], number] {
         const certificateRecord = this._allCertificateRecords.get(certificateId);
-        if (!certificateRecord) throw new Error('Certificate not found');
+        if (!certificateRecord) throw new CertificateNotFoundError();
         let certificates: T[] | null;
 
         if (CertificateTypeEnum.COMPANY in certificateRecord.certType) {
@@ -323,12 +329,12 @@ class CertificationService {
         } else if (CertificateTypeEnum.MATERIAL in certificateRecord.certType) {
             certificates = this._materialCertificates.get(certificateRecord.subject) as unknown as T[];
         } else {
-            throw new Error('Invalid certificate type');
+            throw new InvalidCertificateTypeError();
         }
 
         const index = certificates.findIndex((cert) => cert.id === certificateId);
         const certificate = index !== -1 ? certificates[index] : undefined;
-        if (!certificate) throw new Error('The provided certificate ID does not match the certificate type');
+        if (!certificate) throw new CertificateTypeMismatchError();
 
         return [certificate, certificates, index];
     }

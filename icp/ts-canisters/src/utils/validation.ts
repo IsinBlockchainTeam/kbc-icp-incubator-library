@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import AssessmentStandardService from '../services/AssessmentStandardService';
+import AssessmentReferenceStandardService from '../services/AssessmentReferenceStandardService';
 import ProcessTypeService from '../services/ProcessTypeService';
 import AssessmentAssuranceLevelService from '../services/AssessmentAssuranceLevelService';
 import { Material } from '../models/types';
@@ -27,7 +27,7 @@ export const validateFieldValue = (value: any, valueToCompare: any, message: str
 
 // Validation based on ICP canisters' logic
 export const validateAssessmentStandard = (assessmentStandardValue: string) => {
-    if (!AssessmentStandardService.instance.hasValue(assessmentStandardValue)) throw new Error('Assessment standard not found');
+    if (!AssessmentReferenceStandardService.instance.hasValue(assessmentStandardValue)) throw new Error('Assessment standard not found');
 };
 export const validateProcessTypes = (processTypeValues: string[]) => {
     processTypeValues.map(async (processTypeValue) => {

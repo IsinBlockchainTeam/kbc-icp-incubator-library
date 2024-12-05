@@ -15,6 +15,7 @@ import UnitController from './UnitController';
 import ProcessTypeController from './ProcessTypeController';
 import AssessmentStandardController from './AssessmentStandardController';
 import AssessmentAssuranceLevelController from './AssessmentAssuranceLevelController';
+import SustainabilityCriteriaController from './SustainabilityCriteriaController';
 
 export default class {
     _authenticationController = new AuthenticationController();
@@ -42,6 +43,8 @@ export default class {
     _organizationController = new OrganizationController();
 
     _offerController = new OfferController();
+
+    _sustainabilityCriteriaController = new SustainabilityCriteriaController();
 
     @update([], IDL.Text)
     async getCanisterAddress(): Promise<string> {

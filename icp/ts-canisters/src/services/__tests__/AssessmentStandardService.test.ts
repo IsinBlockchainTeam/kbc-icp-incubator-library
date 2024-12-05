@@ -1,12 +1,12 @@
 import { StableBTreeMap } from 'azle';
-import AssessmentStandardService from '../AssessmentStandardService';
+import AssessmentReferenceStandardService from '../AssessmentReferenceStandardService';
 import { StableMemoryId } from '../../utils/stableMemory';
 import { ErrorType } from '../../models/types';
 
 jest.mock('azle');
 
 describe('AssessmentStandardService', () => {
-    let assessmentStandardService: AssessmentStandardService;
+    let assessmentStandardService: AssessmentReferenceStandardService;
 
     const mockedFn = {
         values: jest.fn(),
@@ -22,7 +22,7 @@ describe('AssessmentStandardService', () => {
             keys: mockedFn.keys,
             insert: mockedFn.insert
         });
-        assessmentStandardService = AssessmentStandardService.instance;
+        assessmentStandardService = AssessmentReferenceStandardService.instance;
     });
 
     afterEach(() => {
@@ -32,15 +32,15 @@ describe('AssessmentStandardService', () => {
     it('retrieves all values', () => {
         assessmentStandardService.getAllValues();
         expect(mockedFn.get).toHaveBeenCalled();
-        expect(mockedFn.get).toHaveBeenCalledWith(BigInt(StableMemoryId.ASSESSMENT_STANDARD_ENUM));
+        expect(mockedFn.get).toHaveBeenCalledWith(BigInt(StableMemoryId.ASSESSMENT_STANDARD));
     });
 
     it('add a value', () => {
         assessmentStandardService.addValue('value');
         expect(mockedFn.get).toHaveBeenCalled();
-        expect(mockedFn.get).toHaveBeenCalledWith(BigInt(StableMemoryId.ASSESSMENT_STANDARD_ENUM));
+        expect(mockedFn.get).toHaveBeenCalledWith(BigInt(StableMemoryId.ASSESSMENT_STANDARD));
         expect(mockedFn.insert).toHaveBeenCalled();
-        expect(mockedFn.insert).toHaveBeenCalledWith(BigInt(StableMemoryId.ASSESSMENT_STANDARD_ENUM), ['value']);
+        expect(mockedFn.insert).toHaveBeenCalledWith(BigInt(StableMemoryId.ASSESSMENT_STANDARD), ['value']);
     });
 
     it('add a value - error (Enumeration value already exists)', () => {
@@ -54,9 +54,9 @@ describe('AssessmentStandardService', () => {
         mockedFn.get.mockReturnValueOnce(['value']);
         assessmentStandardService.removeValue('value');
         expect(mockedFn.get).toHaveBeenCalled();
-        expect(mockedFn.get).toHaveBeenCalledWith(BigInt(StableMemoryId.ASSESSMENT_STANDARD_ENUM));
+        expect(mockedFn.get).toHaveBeenCalledWith(BigInt(StableMemoryId.ASSESSMENT_STANDARD));
         expect(mockedFn.insert).toHaveBeenCalled();
-        expect(mockedFn.insert).toHaveBeenCalledWith(BigInt(StableMemoryId.ASSESSMENT_STANDARD_ENUM), []);
+        expect(mockedFn.insert).toHaveBeenCalledWith(BigInt(StableMemoryId.ASSESSMENT_STANDARD), []);
     });
 
     it('remove a value - error (Enumeration value does not exist)', () => {
@@ -64,7 +64,7 @@ describe('AssessmentStandardService', () => {
             new Error(`(${ErrorType.ENUMERATION_NOT_FOUND}) Enumeration value does not exist.`)
         );
         expect(mockedFn.get).toHaveBeenCalled();
-        expect(mockedFn.get).toHaveBeenCalledWith(BigInt(StableMemoryId.ASSESSMENT_STANDARD_ENUM));
+        expect(mockedFn.get).toHaveBeenCalledWith(BigInt(StableMemoryId.ASSESSMENT_STANDARD));
     });
 
     it('checks if a value exists', () => {

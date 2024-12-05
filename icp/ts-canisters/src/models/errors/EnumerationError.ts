@@ -1,4 +1,5 @@
 import { ErrorType } from '../types';
+import { EnumerationType } from '../../services/EnumerationService';
 
 export class EnumerationAlreadyExistsError extends Error {
     constructor() {
@@ -7,8 +8,8 @@ export class EnumerationAlreadyExistsError extends Error {
     }
 }
 export class EnumerationNotFoundError extends Error {
-    constructor() {
-        super(`(${ErrorType.ENUMERATION_NOT_FOUND}) Enumeration value does not exist.`);
+    constructor(type: EnumerationType) {
+        super(`(${ErrorType.ENUMERATION_NOT_FOUND}) ${type} value does not exist.`);
         this.name = 'EnumerationNotFoundError';
     }
 }
