@@ -1,24 +1,24 @@
 import { IDL, query, update } from 'azle';
 import AssessmentReferenceStandardService from '../services/AssessmentReferenceStandardService';
 import { AtLeastViewer } from '../decorators/roles';
-import { IDLAssessmentReferenceStandard } from '../models/idls/AssessmentReferenceStandard';
-import { AssessmentReferenceStandard } from '../models/types/src/AssessmentReferenceStandard';
+import { IDLAssessmentReferenceStandard } from '../models/idls';
+import { AssessmentReferenceStandard } from '../models/types';
 
-class AssessmentStandardController {
+class AssessmentReferenceStandardController {
     @query([], IDL.Vec(IDLAssessmentReferenceStandard))
     @AtLeastViewer
-    async getAllAssessmentStandards(): Promise<AssessmentReferenceStandard[]> {
+    async getAllAssessmentReferenceStandards(): Promise<AssessmentReferenceStandard[]> {
         return AssessmentReferenceStandardService.instance.getAll();
     }
 
     @query([IDL.Nat], IDLAssessmentReferenceStandard)
     @AtLeastViewer
-    async getAssessmentStandard(id: bigint): Promise<AssessmentReferenceStandard | null> {
+    async getAssessmentReferenceStandard(id: bigint): Promise<AssessmentReferenceStandard> {
         return AssessmentReferenceStandardService.instance.getById(id);
     }
 
     @update([IDL.Text, IDL.Text, IDL.Text, IDL.Text], IDLAssessmentReferenceStandard)
-    async addAssessmentStandard(
+    async addAssessmentReferenceStandard(
         name: string,
         sustainabilityCriteria: string,
         logoUrl: string,
@@ -28,7 +28,7 @@ class AssessmentStandardController {
     }
 
     @update([IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text], IDLAssessmentReferenceStandard)
-    async updateAssessmentStandard(
+    async updateAssessmentReferenceStandard(
         id: bigint,
         name: string,
         sustainabilityCriteria: string,
@@ -39,9 +39,9 @@ class AssessmentStandardController {
     }
 
     @update([IDL.Nat], IDLAssessmentReferenceStandard)
-    async removeAssessmentStandard(id: bigint): Promise<AssessmentReferenceStandard> {
+    async removeAssessmentReferenceStandard(id: bigint): Promise<AssessmentReferenceStandard> {
         return AssessmentReferenceStandardService.instance.remove(id);
     }
 }
 
-export default AssessmentStandardController;
+export default AssessmentReferenceStandardController;

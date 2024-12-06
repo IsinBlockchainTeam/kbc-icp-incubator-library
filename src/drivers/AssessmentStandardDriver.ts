@@ -1,6 +1,8 @@
 import { ActorSubclass, Identity } from '@dfinity/agent';
 import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
 import { createActor } from 'icp-declarations/entity_manager';
+import { AssessmentReferenceStandard } from '../entities/AssessmentReferenceStandard';
+import { EntityBuilder } from '../utils/EntityBuilder';
 
 export class AssessmentStandardDriver {
     private _actor: ActorSubclass<_SERVICE>;
@@ -14,19 +16,54 @@ export class AssessmentStandardDriver {
         });
     }
 
-    async getAllValues(): Promise<string[]> {
-        return this._actor.getAllAssessmentStandards();
+    async getAll(): Promise<AssessmentReferenceStandard[]> {
+        const assessmentReferenceStandards = await this._actor.getAllAssessmentReferenceStandards();
+        return assessmentReferenceStandards.map(EntityBuilder.buildAssessmentReferenceStandard);
     }
 
-    async addValue(value: string): Promise<string> {
-        return this._actor.addAssessmentStandard(value);
+    async getById(id: number): Promise<AssessmentReferenceStandard> {
+        return EntityBuilder.buildAssessmentReferenceStandard(
+            await this._actor.getAssessmentReferenceStandard(BigInt(id))
+        );
     }
 
-    async removeValue(value: string): Promise<string> {
-        return this._actor.removeAssessmentStandard(value);
+    async add(
+        name: string,
+        sustainabilityCriteria: string,
+        logoUrl: string,
+        siteUrl: string
+    ): Promise<AssessmentReferenceStandard> {
+        return EntityBuilder.buildAssessmentReferenceStandard(
+            await this._actor.addAssessmentReferenceStandard(
+                name,
+                sustainabilityCriteria,
+                logoUrl,
+                siteUrl
+            )
+        );
     }
 
-    async hasValue(value: string): Promise<boolean> {
-        return this._actor.hasAssessmentStandard(value);
+    async update(
+        id: number,
+        name: string,
+        sustainabilityCriteria: string,
+        logoUrl: string,
+        siteUrl: string
+    ): Promise<AssessmentReferenceStandard> {
+        return EntityBuilder.buildAssessmentReferenceStandard(
+            await this._actor.updateAssessmentReferenceStandard(
+                BigInt(id),
+                name,
+                sustainabilityCriteria,
+                logoUrl,
+                siteUrl
+            )
+        );
+    }
+
+    async removeById(id: number): Promise<AssessmentReferenceStandard> {
+        return EntityBuilder.buildAssessmentReferenceStandard(
+            await this._actor.removeAssessmentReferenceStandard(BigInt(id))
+        );
     }
 }

@@ -11,6 +11,8 @@ import { UnitService } from '../services/UnitService';
 import { UnitDriver } from '../drivers/UnitDriver';
 import { AuthHelper, Login } from '../__shared__/helpers/AuthHelper';
 import { ICP, USERS } from '../__shared__/constants/constants';
+import { SustainabilityCriteriaService } from '../services/SustainabilityCriteriaService';
+import { SustainabilityCriteriaDriver } from '../drivers/SustainabilityCriteriaDriver';
 
 const login = async () => {
     console.log('Logging in...');
@@ -36,21 +38,93 @@ const processTypePopulate = async (identity: Identity) => {
     );
 };
 
+const sustainabilityCriteriaPopulate = async (identity: Identity) => {
+    console.log('Loading sustainability criteria...');
+    const sustainabilityCriteriaService = new SustainabilityCriteriaService(
+        new SustainabilityCriteriaDriver(identity, ICP.ENTITY_MANAGER_CANISTER_ID, ICP.NETWORK)
+    );
+    const sustainabilityCriteria = [
+        'Use of chemicals',
+        'Origin',
+        'Social/environmental performance'
+    ];
+    await Promise.all(
+        sustainabilityCriteria.map(async (criteria) => {
+            await sustainabilityCriteriaService.addValue(criteria);
+        })
+    );
+};
+
 const assessmentStandardPopulate = async (identity: Identity) => {
     console.log('Loading assessment standards...');
     const assessmentStandardService = new AssessmentStandardService(
         new AssessmentStandardDriver(identity, ICP.ENTITY_MANAGER_CANISTER_ID, ICP.NETWORK)
     );
+
     const assessmentStandards = [
-        'Chemical use assessment',
-        'Environment assessment',
-        'Origin assessment',
-        'Quality assessment',
-        'Swiss Decode'
+        {
+            name: 'B CORP',
+            sustainabilityCriteria: 'Social/environmental performance',
+            siteUrl: 'https://www.bcorporation.net/en-us/standards',
+            logoUrl:
+                'https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Certified_B_Corporation_B_Corp_Logo_2022_Black_RGB.svg/220px-Certified_B_Corporation_B_Corp_Logo_2022_Black_RGB.svg.png'
+        },
+        {
+            name: 'EU Ecolabel',
+            sustainabilityCriteria: 'Social/environmental performance',
+            siteUrl: 'https://environment.ec.europa.eu/topics/circular-economy/eu-ecolabel-home_en',
+            logoUrl:
+                'https://upload.wikimedia.org/wikipedia/en/thumb/3/34/EU_Ecolabel_logo.svg/220px-EU_Ecolabel_logo.svg.png'
+        },
+        {
+            name: 'FSLM Facility Social Labor Module',
+            sustainabilityCriteria: 'Social/environmental performance',
+            siteUrl: 'https://howtohigg.org/higg-fslm-verification-program/',
+            logoUrl: 'https://qltysys.com/wp-content/uploads/2020/12/HI_Logo_WHT.png'
+        },
+        {
+            name: 'ISO9001',
+            sustainabilityCriteria: 'Origin',
+            siteUrl: 'https://www.iso.org/iso-9001-quality-management.html',
+            logoUrl:
+                'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/ISO_9001-2015.svg/595px-ISO_9001-2015.svg.png?20200218083857'
+        },
+        {
+            name: 'AEO FULL',
+            sustainabilityCriteria: 'Origin',
+            siteUrl: 'https://www.adm.gov.it/portale/ee/trader/aeo-authorized-economic-operator',
+            logoUrl: 'https://thyracont-vacuum.com/wp-content/uploads/2018/07/aeo-logo-farbe.jpg'
+        },
+        {
+            name: 'EOV',
+            sustainabilityCriteria: 'Use of chemicals',
+            siteUrl: 'https://www.landtomarket.com/eov',
+            logoUrl:
+                'https://savory.global/wp-content/uploads/2021/02/Screen-Shot-2021-02-18-at-2.50.38-PM-768x829.png'
+        },
+        {
+            name: 'Supplier to Zero',
+            sustainabilityCriteria: 'Use of chemicals',
+            siteUrl: 'https://www.implementation-hub.org/supplier-to-zero',
+            logoUrl:
+                'https://uploads-ssl.webflow.com/5c6a740b46b3672a86f5552b/5ed68bd87b5de42ebccd0fb7_flp.png'
+        },
+        {
+            name: 'RFA - Rain Forest Alliance',
+            sustainabilityCriteria: 'Social/environmental performance',
+            siteUrl: 'https://www.rainforest-alliance.org/',
+            logoUrl:
+                'https://www.wwf.ch/sites/default/files/styles/guide_item_image_labels/public/2023-06/logo-rainforest-alliance-people-nature_c.jpg'
+        }
     ];
     await Promise.all(
         assessmentStandards.map(async (assessmentStandard) => {
-            await assessmentStandardService.addValue(assessmentStandard);
+            await assessmentStandardService.add(
+                assessmentStandard.name,
+                assessmentStandard.sustainabilityCriteria,
+                assessmentStandard.logoUrl,
+                assessmentStandard.siteUrl
+            );
         })
     );
 };
@@ -102,6 +176,7 @@ const unitPopulate = async (identity: Identity) => {
 
 (async () => {
     const identity = await login();
+    await sustainabilityCriteriaPopulate(identity);
     await processTypePopulate(identity);
     await assessmentStandardPopulate(identity);
     await assessmentAssuranceLevelPopulate(identity);

@@ -1,6 +1,6 @@
 import { update } from 'azle';
 import { AtLeastViewer } from '../../decorators/roles';
-import AssessmentStandardController from '../AssessmentStandardController';
+import AssessmentReferenceStandardController from '../AssessmentReferenceStandardController';
 import AssessmentReferenceStandardService from '../../services/AssessmentReferenceStandardService';
 
 jest.mock('azle');
@@ -16,26 +16,26 @@ jest.mock('../../services/AssessmentReferenceStandardService', () => ({
 }));
 describe('AssessmentStandardController', () => {
     const assessmentStandardServiceInstanceMock = AssessmentReferenceStandardService.instance as jest.Mocked<AssessmentReferenceStandardService>;
-    const assessmentStandardController = new AssessmentStandardController();
+    const assessmentStandardController = new AssessmentReferenceStandardController();
 
     it.each([
         {
             controllerFunctionName: 'getAllAssessmentStandards',
-            controllerFunction: () => assessmentStandardController.getAllAssessmentStandards(),
+            controllerFunction: () => assessmentStandardController.getAllAssessmentReferenceStandards(),
             serviceFunction: assessmentStandardServiceInstanceMock.getAllValues,
             expectedResult: [],
             expectedDecorators: [update, AtLeastViewer]
         },
         {
             controllerFunctionName: 'addAssessmentStandard',
-            controllerFunction: () => assessmentStandardController.addAssessmentStandard('value'),
+            controllerFunction: () => assessmentStandardController.addAssessmentReferenceStandard('value'),
             serviceFunction: assessmentStandardServiceInstanceMock.addValue,
             expectedResult: 'value',
             expectedDecorators: []
         },
         {
             controllerFunctionName: 'removeAssessmentStandard',
-            controllerFunction: () => assessmentStandardController.removeAssessmentStandard('value'),
+            controllerFunction: () => assessmentStandardController.removeAssessmentReferenceStandard('value'),
             serviceFunction: assessmentStandardServiceInstanceMock.removeValue,
             expectedResult: 'value',
             expectedDecorators: []

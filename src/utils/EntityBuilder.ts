@@ -19,7 +19,8 @@ import {
     BaseCertificate as ICPBaseCertificate,
     CompanyCertificate as ICPCompanyCertificate,
     ScopeCertificate as ICPScopeCertificate,
-    MaterialCertificate as ICPMaterialCertificate
+    MaterialCertificate as ICPMaterialCertificate,
+    AssessmentReferenceStandard as ICPAssessmentReferenceStandard
 } from '@kbc-lib/azle-types';
 import { Order } from '../entities/Order';
 import { Shipment, Phase, FundStatus } from '../entities/Shipment';
@@ -38,6 +39,7 @@ import {
 import { CompanyCertificate } from '../entities/CompanyCertificate';
 import { ScopeCertificate } from '../entities/ScopeCertificate';
 import { MaterialCertificate } from '../entities/MaterialCertificate';
+import { AssessmentReferenceStandard } from '../entities/AssessmentReferenceStandard';
 
 export class EntityBuilder {
     static buildICPRoleProof(roleProof: RoleProof): ICPRoleProof {
@@ -323,6 +325,17 @@ export class EntityBuilder {
         uploadedBy: info.uploadedBy,
         externalUrl: info.externalUrl
     });
+
+    static buildAssessmentReferenceStandard = (
+        assessmentReferenceStandard: ICPAssessmentReferenceStandard
+    ): AssessmentReferenceStandard =>
+        new AssessmentReferenceStandard(
+            Number(assessmentReferenceStandard.id),
+            assessmentReferenceStandard.name,
+            assessmentReferenceStandard.sustainabilityCriteria,
+            assessmentReferenceStandard.logoUrl,
+            assessmentReferenceStandard.siteUrl
+        );
 
     static _buildCertificateDocumentType(
         documentType: ICPCertificateDocumentType

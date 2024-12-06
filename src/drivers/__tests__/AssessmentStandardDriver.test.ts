@@ -28,7 +28,7 @@ describe('AssessmentStandardDriver', () => {
 
     it('should retrieve all values', async () => {
         mockedActor.getAllAssessmentStandards.mockReturnValue([assessmentStandard]);
-        await expect(assessmentStandardDriver.getAllValues()).resolves.toEqual([
+        await expect(assessmentStandardDriver.getAll()).resolves.toEqual([
             assessmentStandard
         ]);
         expect(mockedActor.getAllAssessmentStandards).toHaveBeenCalled();
@@ -37,7 +37,7 @@ describe('AssessmentStandardDriver', () => {
     it('should add a value', async () => {
         const newAssessmentStandard = 'newAssessmentStandard';
         mockedActor.addAssessmentStandard.mockReturnValue(newAssessmentStandard);
-        await expect(assessmentStandardDriver.addValue(newAssessmentStandard)).resolves.toEqual(
+        await expect(assessmentStandardDriver.add(newAssessmentStandard)).resolves.toEqual(
             newAssessmentStandard
         );
         expect(mockedActor.addAssessmentStandard).toHaveBeenCalled();
@@ -47,7 +47,7 @@ describe('AssessmentStandardDriver', () => {
     it('should remove a value', async () => {
         const toRemove = 'assessmentStandard';
         mockedActor.removeAssessmentStandard.mockReturnValue(toRemove);
-        await expect(assessmentStandardDriver.removeValue(toRemove)).resolves.toEqual(toRemove);
+        await expect(assessmentStandardDriver.removeById(toRemove)).resolves.toEqual(toRemove);
         expect(mockedActor.removeAssessmentStandard).toHaveBeenCalled();
         expect(mockedActor.removeAssessmentStandard).toHaveBeenCalledWith(toRemove);
     });

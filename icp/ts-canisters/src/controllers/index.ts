@@ -13,7 +13,7 @@ import CertificationController from './CertificationController';
 import FiatController from './FiatController';
 import UnitController from './UnitController';
 import ProcessTypeController from './ProcessTypeController';
-import AssessmentStandardController from './AssessmentStandardController';
+import AssessmentReferenceStandardController from './AssessmentReferenceStandardController';
 import AssessmentAssuranceLevelController from './AssessmentAssuranceLevelController';
 import SustainabilityCriteriaController from './SustainabilityCriteriaController';
 
@@ -36,7 +36,7 @@ export default class {
 
     _processTypeController = new ProcessTypeController();
 
-    _assessmentStandardController = new AssessmentStandardController();
+    _assessmentReferenceStandardController = new AssessmentReferenceStandardController();
 
     _assessmentAssuranceLevelController = new AssessmentAssuranceLevelController();
 

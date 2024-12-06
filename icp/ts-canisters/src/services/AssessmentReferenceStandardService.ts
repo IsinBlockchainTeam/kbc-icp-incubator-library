@@ -22,8 +22,10 @@ class AssessmentReferenceStandardService {
         return this._assessmentStandards.values();
     }
 
-    getById(id: bigint): AssessmentReferenceStandard | null {
-        return this._assessmentStandards.get(id);
+    getById(id: bigint): AssessmentReferenceStandard {
+        const assessmentReferenceStandard = this._assessmentStandards.get(id);
+        if (!assessmentReferenceStandard) throw new AssessmentReferenceStandardNotFoundError(id);
+        return assessmentReferenceStandard;
     }
 
     add(name: string, sustainabilityCriteria: string, logoUrl: string, siteUrl: string): AssessmentReferenceStandard {

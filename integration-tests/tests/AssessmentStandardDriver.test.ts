@@ -47,10 +47,10 @@ describe('AssessmentStandardDriver', () => {
         const { assessmentStandardDriver, authenticate } = utils1;
         await authenticate();
 
-        const assessmentStandardCount = (await assessmentStandardDriver.getAllValues()).length;
-        await assessmentStandardDriver.addValue(`assessmentStandard${assessmentStandardCount + 1}`);
+        const assessmentStandardCount = (await assessmentStandardDriver.getAll()).length;
+        await assessmentStandardDriver.add(`assessmentStandard${assessmentStandardCount + 1}`);
 
-        const assessmentStandards = await assessmentStandardDriver.getAllValues();
+        const assessmentStandards = await assessmentStandardDriver.getAll();
         expect(assessmentStandards).toContain(`assessmentStandard${assessmentStandardCount + 1}`);
     });
 
@@ -58,7 +58,7 @@ describe('AssessmentStandardDriver', () => {
         const { assessmentStandardDriver, authenticate } = utils1;
         await authenticate();
 
-        const assessmentStandardCount = (await assessmentStandardDriver.getAllValues()).length;
+        const assessmentStandardCount = (await assessmentStandardDriver.getAll()).length;
 
         const hasUnit = await assessmentStandardDriver.hasValue(
             `assessmentStandard${assessmentStandardCount}`
@@ -70,10 +70,10 @@ describe('AssessmentStandardDriver', () => {
         const { assessmentStandardDriver, authenticate } = utils1;
         await authenticate();
 
-        const assessmentStandardCount = (await assessmentStandardDriver.getAllValues()).length;
-        await assessmentStandardDriver.removeValue(`assessmentStandard${assessmentStandardCount}`);
+        const assessmentStandardCount = (await assessmentStandardDriver.getAll()).length;
+        await assessmentStandardDriver.removeById(`assessmentStandard${assessmentStandardCount}`);
 
-        const assessmentStandards = await assessmentStandardDriver.getAllValues();
+        const assessmentStandards = await assessmentStandardDriver.getAll();
         expect(assessmentStandards).not.toContain(`assessmentStandard${assessmentStandardCount}`);
     });
 });

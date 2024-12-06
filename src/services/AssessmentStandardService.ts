@@ -1,4 +1,5 @@
 import { AssessmentStandardDriver } from '../drivers/AssessmentStandardDriver';
+import { AssessmentReferenceStandard } from '../entities/AssessmentReferenceStandard';
 
 export class AssessmentStandardService {
     private readonly _assessmentStandardDriver: AssessmentStandardDriver;
@@ -7,19 +8,40 @@ export class AssessmentStandardService {
         this._assessmentStandardDriver = assessmentStandardDriver;
     }
 
-    async getAllValues(): Promise<string[]> {
-        return this._assessmentStandardDriver.getAllValues();
+    async getAll(): Promise<AssessmentReferenceStandard[]> {
+        return this._assessmentStandardDriver.getAll();
     }
 
-    async addValue(value: string): Promise<string> {
-        return this._assessmentStandardDriver.addValue(value);
+    async getById(id: number): Promise<AssessmentReferenceStandard> {
+        return this._assessmentStandardDriver.getById(id);
     }
 
-    async removeValue(value: string): Promise<string> {
-        return this._assessmentStandardDriver.removeValue(value);
+    async add(
+        name: string,
+        sustainabilityCriteria: string,
+        logoUrl: string,
+        siteUrl: string
+    ): Promise<AssessmentReferenceStandard> {
+        return this._assessmentStandardDriver.add(name, sustainabilityCriteria, logoUrl, siteUrl);
     }
 
-    async hasValue(value: string): Promise<boolean> {
-        return this._assessmentStandardDriver.hasValue(value);
+    async update(
+        id: number,
+        name: string,
+        sustainabilityCriteria: string,
+        logoUrl: string,
+        siteUrl: string
+    ): Promise<AssessmentReferenceStandard> {
+        return this._assessmentStandardDriver.update(
+            id,
+            name,
+            sustainabilityCriteria,
+            logoUrl,
+            siteUrl
+        );
+    }
+
+    async removeById(id: number): Promise<AssessmentReferenceStandard> {
+        return this._assessmentStandardDriver.removeById(id);
     }
 }

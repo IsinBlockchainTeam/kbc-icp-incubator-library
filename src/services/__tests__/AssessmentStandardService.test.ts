@@ -13,9 +13,9 @@ describe('AssessmentStandardService', () => {
 
     beforeAll(() => {
         const assessmentStandardDriver = createMock<AssessmentStandardDriver>({
-            getAllValues: mockedDriverFn.getAllValues,
-            addValue: mockedDriverFn.addValue,
-            removeValue: mockedDriverFn.removeValue,
+            getAll: mockedDriverFn.getAllValues,
+            add: mockedDriverFn.addValue,
+            removeById: mockedDriverFn.removeValue,
             hasValue: mockedDriverFn.hasValue
         });
         assessmentStandardService = new AssessmentStandardService(assessmentStandardDriver);
@@ -24,21 +24,21 @@ describe('AssessmentStandardService', () => {
     it.each([
         {
             functionName: 'getAllValues',
-            serviceFunction: () => assessmentStandardService.getAllValues(),
+            serviceFunction: () => assessmentStandardService.getAll(),
             driverFunction: mockedDriverFn.getAllValues,
             driverFunctionResult: ['value1', 'value2'],
             driverFunctionArgs: []
         },
         {
             functionName: 'addValue',
-            serviceFunction: () => assessmentStandardService.addValue('value'),
+            serviceFunction: () => assessmentStandardService.add('value'),
             driverFunction: mockedDriverFn.addValue,
             driverFunctionResult: 'value',
             driverFunctionArgs: ['value']
         },
         {
             functionName: 'removeValue',
-            serviceFunction: () => assessmentStandardService.removeValue('value'),
+            serviceFunction: () => assessmentStandardService.removeById('value'),
             driverFunction: mockedDriverFn.removeValue,
             driverFunctionResult: 'value',
             driverFunctionArgs: ['value']
