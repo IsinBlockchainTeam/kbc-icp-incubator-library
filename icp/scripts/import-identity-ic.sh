@@ -8,7 +8,7 @@ PEM_FILE_PATH="$BASE_DIR/identity.pem"
 # Read pem file
 cat $CI_CD_ICP_IDENTITY_PEM
 cat $CI_CD_ICP_IDENTITY_PEM > "$PEM_FILE_PATH"
-chmod 600 "$PEM_FILE_PATH"
+chmod +x "$PEM_FILE_PATH"
 
 # Import identity
 dfx identity import ci-cd "$PEM_FILE_PATH"
