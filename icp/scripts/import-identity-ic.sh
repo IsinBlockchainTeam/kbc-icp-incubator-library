@@ -11,7 +11,7 @@ cat $PEM_FILE_PATH
 
 # Import identity
 # --storage-mode plaintext is used to store the identity in plaintext, useful for CI/CD
-dfx identity import ci-cd "$PEM_FILE_PATH" --storage-mode plaintext
+dfx identity import ci-cd "$CI_CD_ICP_IDENTITY_PEM" --storage-mode plaintext
 dfx identity list
 dfx identity use ci-cd
 
