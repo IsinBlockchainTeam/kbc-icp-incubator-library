@@ -7,6 +7,7 @@ echo "BASE_DIR: $BASE_DIR"
 dfx ping ic
 
 # Source .env.ci
+cd "$BASE_DIR/icp/ts-canisters"
 set -o allexport
 source .env.ci
 set +o allexport
