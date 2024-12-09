@@ -14,4 +14,4 @@ set +o allexport
 
 # Deploy canisters
 cd "$BASE_DIR/ts-canisters"
-dfx deploy --ic --yes
+dfx canister install --mode 'reinstall'  --ic --yes

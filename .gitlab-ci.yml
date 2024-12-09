@@ -87,5 +87,16 @@ deploy_icp_canisters_job:
     - cd ../scripts
     - chmod +x import-identity-ic.sh deploy-ic.sh
     - ./import-identity-ic.sh
-#    - ./deploy-ic.sh
-#  when: manual
+    - ./deploy-ic.sh
+  when: manual
+
+reinstall_icp_canisters_job:
+  extends: .deploy_job_template
+  script:
+    - cd $ICP_PATH/ts-canisters
+    - npm ci
+    - cd ../scripts
+    - chmod +x import-identity-ic.sh reinstall-ic.sh
+    - ./import-identity-ic.sh
+    - ./reinstall-ic.sh
+  when: manual
