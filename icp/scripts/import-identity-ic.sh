@@ -6,12 +6,12 @@ echo "BASE_DIR: $BASE_DIR"
 PEM_FILE_PATH="$BASE_DIR/identity.pem"
 
 # Read pem file
-cat $CI_CD_ICP_IDENTITY_PEM
 cat $CI_CD_ICP_IDENTITY_PEM > "$PEM_FILE_PATH"
 cat $PEM_FILE_PATH
 
 # Import identity
-dfx identity import ci-cd "$PEM_FILE_PATH"
+# --storage-mode plaintext is used to store the identity in plaintext, useful for CI/CD
+dfx identity import ci-cd "$PEM_FILE_PATH" --storage-mode plaintext
 dfx identity list
 dfx identity use ci-cd
 
