@@ -4,10 +4,12 @@ BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
 echo "BASE_DIR: $BASE_DIR"
 
 # Read pem file
-CI_CD_ICP_IDENTITY_PEM="${!FILE_VARIABLE_NAME}"
+echo $CI_CD_ICP_IDENTITY_PEM
+echo echo "${!$CI_CD_ICP_IDENTITY_PEM}" > "$BASE_DIR/icp/identity.pem"
+cat "$BASE_DIR/icp/identity.pem"
 
 # Import identity
-dfx identity import ci-cd $CI_CD_ICP_IDENTITY_PEM
+dfx identity import ci-cd "$BASE_DIR/icp/identity.pem"
 dfx identity list
 dfx identity use ci-cd
 

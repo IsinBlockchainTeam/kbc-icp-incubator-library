@@ -63,27 +63,27 @@ before_script:
   - ./install-dependencies.sh
   - export PATH=$PATH:$DFX_INSTALLATION_PATH:$CARGO_INSTALLATION_PATH
 
-build_icp_canisters_job:
-  extends: .build_job_template
-  script:
-    - cd $ICP_PATH/ts-canisters
-    - npm ci
-    - cd ../scripts
-    - chmod +x build-canisters.sh
-    - ./build-canisters.sh
-  artifacts:
-    paths:
-      - $BUILD_TYPES_PATH
-      - $ICP_DECLARATIONS_PATH
-      - $ICP_RUST_DECLARATIONS_PATH
-      - $ICP_RUST_WASM_PATH
-    expire_in: 15 min
+#build_icp_canisters_job:
+#  extends: .build_job_template
+#  script:
+#    - cd $ICP_PATH/ts-canisters
+#    - npm ci
+#    - cd ../scripts
+#    - chmod +x build-canisters.sh
+#    - ./build-canisters.sh
+#  artifacts:
+#    paths:
+#      - $BUILD_TYPES_PATH
+#      - $ICP_DECLARATIONS_PATH
+#      - $ICP_RUST_DECLARATIONS_PATH
+#      - $ICP_RUST_WASM_PATH
+#    expire_in: 15 min
 
 deploy_icp_canisters_job:
   extends: .deploy_job_template
   script:
-    - cd $ICP_PATH/ts-canisters
-    - npm ci
+#    - cd $ICP_PATH/ts-canisters
+#    - npm ci
     - cd ../scripts
     - chmod +x import-identity-ic.sh deploy-ic.sh
     - ./import-identity-ic.sh
