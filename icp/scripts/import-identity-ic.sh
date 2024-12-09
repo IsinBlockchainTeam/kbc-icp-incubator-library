@@ -4,8 +4,8 @@ BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
 echo "BASE_DIR: $BASE_DIR"
 
 # Read pem file
-echo $CI_CD_ICP_IDENTITY_PEM
-echo echo "${!$CI_CD_ICP_IDENTITY_PEM}" > "$BASE_DIR/icp/identity.pem"
+cat $CI_CD_ICP_IDENTITY_PEM
+cat $CI_CD_ICP_IDENTITY_PEM > "$BASE_DIR/icp/identity.pem"
 cat "$BASE_DIR/icp/identity.pem"
 
 # Import identity
