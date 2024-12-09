@@ -3,6 +3,9 @@
 BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
 echo "BASE_DIR: $BASE_DIR"
 
+# Read pem file
+CI_CD_ICP_IDENTITY_PEM="${!FILE_VARIABLE_NAME}"
+
 # Import identity
 dfx identity import ci-cd $CI_CD_ICP_IDENTITY_PEM
 dfx identity list
