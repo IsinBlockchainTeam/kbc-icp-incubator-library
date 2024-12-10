@@ -5,7 +5,7 @@ import { ErrorType } from '../../models/types';
 
 jest.mock('azle');
 
-describe('AssessmentStandardService', () => {
+describe('AssessmentReferenceStandardService', () => {
     let assessmentStandardService: AssessmentReferenceStandardService;
 
     const mockedFn = {

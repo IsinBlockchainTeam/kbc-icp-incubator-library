@@ -18,12 +18,12 @@ export class SustainabilityCriteriaDriver {
         return this._actor.getAllSustainabilityCriteria();
     }
 
-    async addValue(value: string): Promise<string> {
-        return this._actor.addSustainabilityCriteria(value);
+    async addValue(value: string, industrialSector?: string): Promise<string> {
+        return this._actor.addSustainabilityCriteria(value, industrialSector || '');
     }
 
-    async removeValue(value: string): Promise<string> {
-        return this._actor.removeSustainabilityCriteria(value);
+    async removeValue(value: string, industrialSector?: string): Promise<string> {
+        return this._actor.removeSustainabilityCriteria(value, industrialSector || '');
     }
 
     async hasValue(value: string): Promise<boolean> {

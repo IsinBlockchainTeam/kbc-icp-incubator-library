@@ -1,6 +1,6 @@
 import { Wallet } from 'ethers';
 import { SiweIdentityProvider } from '../../src/drivers/SiweIdentityProvider';
-import { AssessmentStandardDriver } from '../../src/drivers/AssessmentStandardDriver';
+import { AssessmentReferenceStandardDriver } from '../../src/drivers/AssessmentReferenceStandardDriver';
 import { AuthenticationDriver } from '../../src/drivers/AuthenticationDriver';
 import { createRoleProof } from '../../src/__testUtils__/proof';
 
@@ -12,7 +12,7 @@ const ENTITY_MANAGER_CANISTER_ID = process.env.CANISTER_ID_ENTITY_MANAGER!;
 type Utils = {
     userWallet: Wallet;
     companyWallet: Wallet;
-    assessmentStandardDriver: AssessmentStandardDriver;
+    assessmentStandardDriver: AssessmentReferenceStandardDriver;
     authenticate: () => Promise<void>;
 };
 
@@ -29,7 +29,7 @@ describe('AssessmentStandardDriver', () => {
             ENTITY_MANAGER_CANISTER_ID,
             'http://127.0.0.1:4943/'
         );
-        const assessmentStandardDriver = new AssessmentStandardDriver(
+        const assessmentStandardDriver = new AssessmentReferenceStandardDriver(
             siweIdentityProvider.identity,
             ENTITY_MANAGER_CANISTER_ID,
             'http://127.0.0.1:4943/'

@@ -1,9 +1,9 @@
 import { createMock } from 'ts-auto-mock';
-import { AssessmentStandardService } from '../AssessmentStandardService';
-import { AssessmentStandardDriver } from '../../drivers/AssessmentStandardDriver';
+import { AssessmentReferenceStandardService } from '../AssessmentReferenceStandardService';
+import { AssessmentReferenceStandardDriver } from '../../drivers/AssessmentReferenceStandardDriver';
 
 describe('AssessmentStandardService', () => {
-    let assessmentStandardService: AssessmentStandardService;
+    let assessmentStandardService: AssessmentReferenceStandardService;
     const mockedDriverFn = {
         getAllValues: jest.fn(),
         addValue: jest.fn(),
@@ -12,13 +12,13 @@ describe('AssessmentStandardService', () => {
     };
 
     beforeAll(() => {
-        const assessmentStandardDriver = createMock<AssessmentStandardDriver>({
+        const assessmentStandardDriver = createMock<AssessmentReferenceStandardDriver>({
             getAll: mockedDriverFn.getAllValues,
             add: mockedDriverFn.addValue,
             removeById: mockedDriverFn.removeValue,
             hasValue: mockedDriverFn.hasValue
         });
-        assessmentStandardService = new AssessmentStandardService(assessmentStandardDriver);
+        assessmentStandardService = new AssessmentReferenceStandardService(assessmentStandardDriver);
     });
 
     it.each([

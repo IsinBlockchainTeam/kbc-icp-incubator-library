@@ -4,7 +4,7 @@ import { createActor } from 'icp-declarations/entity_manager';
 import { AssessmentReferenceStandard } from '../entities/AssessmentReferenceStandard';
 import { EntityBuilder } from '../utils/EntityBuilder';
 
-export class AssessmentStandardDriver {
+export class AssessmentReferenceStandardDriver {
     private _actor: ActorSubclass<_SERVICE>;
 
     public constructor(icpIdentity: Identity, canisterId: string, host?: string) {
@@ -31,39 +31,23 @@ export class AssessmentStandardDriver {
         name: string,
         sustainabilityCriteria: string,
         logoUrl: string,
-        siteUrl: string
+        siteUrl: string,
+        industrialSector?: string
     ): Promise<AssessmentReferenceStandard> {
         return EntityBuilder.buildAssessmentReferenceStandard(
             await this._actor.addAssessmentReferenceStandard(
                 name,
                 sustainabilityCriteria,
                 logoUrl,
-                siteUrl
+                siteUrl,
+                industrialSector || ''
             )
         );
     }
 
-    async update(
-        id: number,
-        name: string,
-        sustainabilityCriteria: string,
-        logoUrl: string,
-        siteUrl: string
-    ): Promise<AssessmentReferenceStandard> {
+    async removeById(id: number, industrialSector?: string): Promise<AssessmentReferenceStandard> {
         return EntityBuilder.buildAssessmentReferenceStandard(
-            await this._actor.updateAssessmentReferenceStandard(
-                BigInt(id),
-                name,
-                sustainabilityCriteria,
-                logoUrl,
-                siteUrl
-            )
-        );
-    }
-
-    async removeById(id: number): Promise<AssessmentReferenceStandard> {
-        return EntityBuilder.buildAssessmentReferenceStandard(
-            await this._actor.removeAssessmentReferenceStandard(BigInt(id))
+            await this._actor.removeAssessmentReferenceStandard(BigInt(id), industrialSector || '')
         );
     }
 }

@@ -20,6 +20,14 @@ class OrganizationService {
         return OrganizationService._instance;
     }
 
+    getRawOrganization(ethAddress: string): Organization {
+        const organization = this._organizations.get(ethAddress);
+        if (!organization) {
+            throw new OrganizationNotFoundError();
+        }
+        return organization;
+    }
+
     isOrganizationKnown(ethAddress: string): boolean {
         const authenticatedCompanyEthAddress = AuthenticationService.instance.getDelegatorAddress();
 

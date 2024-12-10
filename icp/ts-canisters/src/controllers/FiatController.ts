@@ -9,14 +9,14 @@ class FiatController {
         return FiatService.instance.getAllValues();
     }
 
-    @update([IDL.Text], IDL.Text)
-    async addFiat(value: string): Promise<string> {
-        return FiatService.instance.addValue(value);
+    @update([IDL.Text, IDL.Text], IDL.Text)
+    async addFiat(value: string, industrialSector: string): Promise<string> {
+        return FiatService.instance.addValue(value, industrialSector);
     }
 
-    @update([IDL.Text], IDL.Text)
-    async removeFiat(value: string): Promise<string> {
-        return FiatService.instance.removeValue(value);
+    @update([IDL.Text, IDL.Text], IDL.Text)
+    async removeFiat(value: string, industrialSector: string): Promise<string> {
+        return FiatService.instance.removeValue(value, industrialSector);
     }
 
     @query([IDL.Text], IDL.Bool)

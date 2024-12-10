@@ -9,14 +9,14 @@ class SustainabilityCriteriaController {
         return SustainabilityCriteriaService.instance.getAllValues();
     }
 
-    @update([IDL.Text], IDL.Text)
-    async addSustainabilityCriteria(value: string): Promise<string> {
-        return SustainabilityCriteriaService.instance.addValue(value);
+    @update([IDL.Text, IDL.Text], IDL.Text)
+    async addSustainabilityCriteria(value: string, industrialSector: string): Promise<string> {
+        return SustainabilityCriteriaService.instance.addValue(value, industrialSector);
     }
 
-    @update([IDL.Text], IDL.Text)
-    async removeSustainabilityCriteria(value: string): Promise<string> {
-        return SustainabilityCriteriaService.instance.removeValue(value);
+    @update([IDL.Text, IDL.Text], IDL.Text)
+    async removeSustainabilityCriteria(value: string, industrialSector: string): Promise<string> {
+        return SustainabilityCriteriaService.instance.removeValue(value, industrialSector);
     }
 
     @query([IDL.Text], IDL.Bool)

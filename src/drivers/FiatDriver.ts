@@ -18,12 +18,12 @@ export class FiatDriver {
         return this._actor.getAllFiats();
     }
 
-    async addValue(value: string): Promise<string> {
-        return this._actor.addFiat(value);
+    async addValue(value: string, industrialSector?: string): Promise<string> {
+        return this._actor.addFiat(value, industrialSector || '');
     }
 
-    async removeValue(value: string): Promise<string> {
-        return this._actor.removeFiat(value);
+    async removeValue(value: string, industrialSector?: string): Promise<string> {
+        return this._actor.removeFiat(value, industrialSector || '');
     }
 
     async hasValue(value: string): Promise<boolean> {

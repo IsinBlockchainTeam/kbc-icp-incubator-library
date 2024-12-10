@@ -17,30 +17,20 @@ class AssessmentReferenceStandardController {
         return AssessmentReferenceStandardService.instance.getById(id);
     }
 
-    @update([IDL.Text, IDL.Text, IDL.Text, IDL.Text], IDLAssessmentReferenceStandard)
+    @update([IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text], IDLAssessmentReferenceStandard)
     async addAssessmentReferenceStandard(
         name: string,
         sustainabilityCriteria: string,
         logoUrl: string,
-        siteUrl: string
+        siteUrl: string,
+        industrialSector: string
     ): Promise<AssessmentReferenceStandard> {
-        return AssessmentReferenceStandardService.instance.add(name, sustainabilityCriteria, logoUrl, siteUrl);
+        return AssessmentReferenceStandardService.instance.add(name, sustainabilityCriteria, logoUrl, siteUrl, industrialSector);
     }
 
-    @update([IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text], IDLAssessmentReferenceStandard)
-    async updateAssessmentReferenceStandard(
-        id: bigint,
-        name: string,
-        sustainabilityCriteria: string,
-        logoUrl: string,
-        siteUrl: string
-    ): Promise<AssessmentReferenceStandard> {
-        return AssessmentReferenceStandardService.instance.update(id, name, sustainabilityCriteria, logoUrl, siteUrl);
-    }
-
-    @update([IDL.Nat], IDLAssessmentReferenceStandard)
-    async removeAssessmentReferenceStandard(id: bigint): Promise<AssessmentReferenceStandard> {
-        return AssessmentReferenceStandardService.instance.remove(id);
+    @update([IDL.Nat, IDL.Text], IDLAssessmentReferenceStandard)
+    async removeAssessmentReferenceStandard(id: bigint, industrialSector: string): Promise<AssessmentReferenceStandard> {
+        return AssessmentReferenceStandardService.instance.remove(id, industrialSector);
     }
 }
 

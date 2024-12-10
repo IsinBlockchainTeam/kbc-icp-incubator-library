@@ -1,5 +1,6 @@
 import { IDL } from 'azle';
 import { IDLEvaluationStatus } from './Evaluation';
+import { IDLAssessmentReferenceStandard } from './AssessmentReferenceStandard';
 
 export const IDLCertificateDocumentType = IDL.Variant({
     CERTIFICATE_OF_CONFORMITY: IDL.Null,
@@ -30,7 +31,7 @@ const BaseCertificateType = {
     issuer: IDL.Text,
     subject: IDL.Text,
     uploadedBy: IDL.Text,
-    assessmentStandard: IDL.Text,
+    assessmentReferenceStandard: IDLAssessmentReferenceStandard,
     assessmentAssuranceLevel: IDL.Text,
     document: IDLCertificateDocumentInfo,
     evaluationStatus: IDLEvaluationStatus,

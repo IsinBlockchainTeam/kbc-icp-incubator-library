@@ -1,8 +1,9 @@
 import { Identity } from '@dfinity/agent';
+import { IndustrialSectorEnum, OrganizationRole } from '@kbc-lib/azle-types';
 import { ProcessTypeService } from '../services/ProcessTypeService';
 import { ProcessTypeDriver } from '../drivers/ProcessTypeDriver';
-import { AssessmentStandardService } from '../services/AssessmentStandardService';
-import { AssessmentStandardDriver } from '../drivers/AssessmentStandardDriver';
+import { AssessmentReferenceStandardService } from '../services/AssessmentReferenceStandardService';
+import { AssessmentReferenceStandardDriver } from '../drivers/AssessmentReferenceStandardDriver';
 import { AssessmentAssuranceLevelService } from '../services/AssessmentAssuranceLevelService';
 import { AssessmentAssuranceLevelDriver } from '../drivers/AssessmentAssuranceLevelDriver';
 import { FiatService } from '../services/FiatService';
@@ -13,6 +14,8 @@ import { AuthHelper, Login } from '../__shared__/helpers/AuthHelper';
 import { ICP, USERS } from '../__shared__/constants/constants';
 import { SustainabilityCriteriaService } from '../services/SustainabilityCriteriaService';
 import { SustainabilityCriteriaDriver } from '../drivers/SustainabilityCriteriaDriver';
+import { OrganizationService } from '../services/OrganizationService';
+import { OrganizationDriver } from '../drivers/OrganizationDriver';
 
 const login = async () => {
     console.log('Logging in...');
@@ -21,8 +24,26 @@ const login = async () => {
         USERS.OTHER_COMPANY_PRIVATE_KEY
     );
     await user.authenticate();
+    const userIdentity = user.siweIdentityProvider.identity;
 
-    return user.siweIdentityProvider.identity;
+    const organizationService = new OrganizationService(
+        new OrganizationDriver(userIdentity, ICP.ENTITY_MANAGER_CANISTER_ID, ICP.NETWORK)
+    );
+    await organizationService.createOrganization({
+        legalName: 'KBC',
+        industrialSector: IndustrialSectorEnum.DEFAULT,
+        address: 'KBC Address',
+        city: 'KBC city',
+        postalCode: '12345',
+        region: 'KBC region',
+        countryCode: 'CH',
+        role: OrganizationRole.ADMIN,
+        telephone: '123456789',
+        email: 'kbc@mail.ch',
+        image: 'https://www.kbc.com'
+    });
+
+    return userIdentity;
 };
 
 const processTypePopulate = async (identity: Identity) => {
@@ -30,10 +51,19 @@ const processTypePopulate = async (identity: Identity) => {
     const processTypeService = new ProcessTypeService(
         new ProcessTypeDriver(identity, ICP.ENTITY_MANAGER_CANISTER_ID, ICP.NETWORK)
     );
-    const processTypes = ['33 - Collecting', '38 - Harvesting'];
+    const processTypes: { name: string; industrialSector?: string }[] = [
+        { name: '28 - Trading' },
+        { name: '33 - Collecting' },
+        { name: '37 - Manufacturing' },
+        { name: '137 - Splitting/shaving/sorting', industrialSector: 'coffee' },
+        { name: '38 - Harvesting', industrialSector: 'coffee' },
+        { name: '137 - Splitting/shaving/sorting', industrialSector: 'cotton' },
+        { name: '38 - Harvesting', industrialSector: 'cotton' },
+        { name: '113 - Finishing/Branding', industrialSector: 'cotton' }
+    ];
     await Promise.all(
         processTypes.map(async (processType) => {
-            await processTypeService.addValue(processType);
+            await processTypeService.addValue(processType.name, processType.industrialSector);
         })
     );
 };
@@ -57,11 +87,17 @@ const sustainabilityCriteriaPopulate = async (identity: Identity) => {
 
 const assessmentStandardPopulate = async (identity: Identity) => {
     console.log('Loading assessment standards...');
-    const assessmentStandardService = new AssessmentStandardService(
-        new AssessmentStandardDriver(identity, ICP.ENTITY_MANAGER_CANISTER_ID, ICP.NETWORK)
+    const assessmentStandardService = new AssessmentReferenceStandardService(
+        new AssessmentReferenceStandardDriver(identity, ICP.ENTITY_MANAGER_CANISTER_ID, ICP.NETWORK)
     );
 
-    const assessmentStandards = [
+    const assessmentStandards: {
+        name: string;
+        sustainabilityCriteria: string;
+        siteUrl: string;
+        logoUrl: string;
+        industrialSector?: string;
+    }[] = [
         {
             name: 'B CORP',
             sustainabilityCriteria: 'Social/environmental performance',
@@ -114,16 +150,25 @@ const assessmentStandardPopulate = async (identity: Identity) => {
             sustainabilityCriteria: 'Social/environmental performance',
             siteUrl: 'https://www.rainforest-alliance.org/',
             logoUrl:
-                'https://www.wwf.ch/sites/default/files/styles/guide_item_image_labels/public/2023-06/logo-rainforest-alliance-people-nature_c.jpg'
+                'https://www.wwf.ch/sites/default/files/styles/guide_item_image_labels/public/2023-06/logo-rainforest-alliance-people-nature_c.jpg',
+            industrialSector: 'coffee'
+        },
+        {
+            name: 'Haelixa DNA origin standard',
+            sustainabilityCriteria: 'Origin',
+            siteUrl: 'https://www.haelixa.com/',
+            logoUrl:
+                'https://res-5.cloudinary.com/crunchbase-production/image/upload/c_lpad,h_170,w_170,f_auto,b_white,q_auto:eco/itcxeonqx6revolmtvhz',
+            industrialSector: 'cotton'
         }
     ];
     await Promise.all(
-        assessmentStandards.map(async (assessmentStandard) => {
+        assessmentStandards.map(async (assessmentReferenceStandard) => {
             await assessmentStandardService.add(
-                assessmentStandard.name,
-                assessmentStandard.sustainabilityCriteria,
-                assessmentStandard.logoUrl,
-                assessmentStandard.siteUrl
+                assessmentReferenceStandard.name,
+                assessmentReferenceStandard.sustainabilityCriteria,
+                assessmentReferenceStandard.logoUrl,
+                assessmentReferenceStandard.siteUrl
             );
         })
     );
@@ -166,10 +211,16 @@ const unitPopulate = async (identity: Identity) => {
     const unitService = new UnitService(
         new UnitDriver(identity, ICP.ENTITY_MANAGER_CANISTER_ID, ICP.NETWORK)
     );
-    const units = ['BG - Bags', 'KGM - Kilograms', 'H87 - Pieces'];
+    const units: { name: string; industrialSector?: string }[] = [
+        { name: 'KGM - Kilograms' },
+        { name: 'BG - Bags', industrialSector: 'coffee' },
+        { name: 'H87 - Pieces', industrialSector: 'coffee' },
+        { name: 'MTK - Square meters', industrialSector: 'cotton' },
+        { name: 'MT - Meters', industrialSector: 'cotton' }
+    ];
     await Promise.all(
         units.map(async (unit) => {
-            await unitService.addValue(unit);
+            await unitService.addValue(unit.name, unit.industrialSector);
         })
     );
 };

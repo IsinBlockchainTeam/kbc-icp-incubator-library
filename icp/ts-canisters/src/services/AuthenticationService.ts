@@ -5,6 +5,8 @@ import { StableMemoryId } from '../utils/stableMemory';
 import DelegationService from './DelegationService';
 import { NotAuthenticatedError, NotValidCredentialError } from '../models/errors';
 import { Misc } from '../constants/misc';
+import { Organization } from '../models/types/src/Organization';
+import OrganizationService from './OrganizationService';
 
 type UserAuthentication = {
     roleProof: RoleProof;
@@ -43,6 +45,10 @@ class AuthenticationService {
             throw new NotAuthenticatedError();
         }
         this._authentications.remove(ic.caller().toText());
+    }
+
+    getLoggedOrganization(): Organization {
+        return OrganizationService.instance.getRawOrganization(this.getDelegatorAddress());
     }
 
     getDelegatorAddress(caller: Principal = ic.caller()): string {

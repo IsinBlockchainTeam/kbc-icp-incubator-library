@@ -1,15 +1,20 @@
 import { StableBTreeMap } from 'azle';
-import { AssessmentReferenceStandard } from '../models/types/src/AssessmentReferenceStandard';
+import { AssessmentReferenceStandard, IndustrialSectorEnum, industrialSectorsAvailable } from '../models/types';
 import { StableMemoryId } from '../utils/stableMemory';
 import { AssessmentReferenceStandardNotFoundError } from '../models/errors/AssessmentReferenceStandardError';
 import SustainabilityCriteriaService from './SustainabilityCriteriaService';
 import { EnumerationNotFoundError } from '../models/errors/EnumerationError';
 import { EnumerationType } from './EnumerationService';
+import AuthenticationService from './AuthenticationService';
+import { InvalidIndustrialSectorError } from '../models/errors/OrganizationError';
 
 class AssessmentReferenceStandardService {
     private static _instance: AssessmentReferenceStandardService;
 
-    private _assessmentStandards = StableBTreeMap<bigint, AssessmentReferenceStandard>(StableMemoryId.ASSESSMENT_STANDARD);
+    // map<industrial_code_value, assessment_reference_standard[]>
+    private _assessmentReferenceStandards = StableBTreeMap<string, AssessmentReferenceStandard[]>(StableMemoryId.ASSESSMENT_STANDARD);
+
+    private readonly _industrialSectorCode: IndustrialSectorEnum;
 
     static get instance(): AssessmentReferenceStandardService {
         if (!this._instance) {
@@ -18,51 +23,61 @@ class AssessmentReferenceStandardService {
         return this._instance;
     }
 
+    constructor() {
+        this._industrialSectorCode = AuthenticationService.instance.getLoggedOrganization().industrialSector as IndustrialSectorEnum;
+    }
+
     getAll(): AssessmentReferenceStandard[] {
-        return this._assessmentStandards.values();
+        return [...this._getDefaultIndustrialSectorValues(), ...this._getIndustrialSectorValues()];
     }
 
     getById(id: bigint): AssessmentReferenceStandard {
-        const assessmentReferenceStandard = this._assessmentStandards.get(id);
-        if (!assessmentReferenceStandard) throw new AssessmentReferenceStandardNotFoundError(id);
-        return assessmentReferenceStandard;
+        const standard = this.getAll().find((s) => s.id === id);
+        if (!standard) throw new AssessmentReferenceStandardNotFoundError(id);
+        return standard;
     }
 
-    add(name: string, sustainabilityCriteria: string, logoUrl: string, siteUrl: string): AssessmentReferenceStandard {
+    // TODO: industrial sector argument is needed to let the admin able to add assessment standards for other industrial sectors
+    add(name: string, sustainabilityCriteria: string, logoUrl: string, siteUrl: string, industrialSector: string): AssessmentReferenceStandard {
         if (!SustainabilityCriteriaService.instance.hasValue(sustainabilityCriteria))
             throw new EnumerationNotFoundError(EnumerationType.SUSTAINABILITY_CRITERIA);
         const standard = {
-            id: BigInt(this._assessmentStandards.keys().length + 1),
+            id: BigInt(this._assessmentReferenceStandards.keys().length + 1),
             name,
             sustainabilityCriteria,
             logoUrl,
             siteUrl
         };
-        this._assessmentStandards.insert(BigInt(standard.id), standard);
+        if (industrialSector && industrialSectorsAvailable.includes(industrialSector)) throw new InvalidIndustrialSectorError();
+        if (industrialSector) this._assessmentReferenceStandards.insert(industrialSector, [...this._getIndustrialSectorValues(), standard]);
+        else this._assessmentReferenceStandards.insert(IndustrialSectorEnum.DEFAULT, [...this._getDefaultIndustrialSectorValues(), standard]);
         return standard;
     }
 
-    update(id: bigint, name: string, sustainabilityCriteria: string, logoUrl: string, siteUrl: string): AssessmentReferenceStandard {
-        if (!SustainabilityCriteriaService.instance.hasValue(sustainabilityCriteria))
-            throw new EnumerationNotFoundError(EnumerationType.SUSTAINABILITY_CRITERIA);
-        const standard = this._assessmentStandards.get(id);
+    remove(id: bigint, industrialSector: string): AssessmentReferenceStandard {
+        const standard = this.getAll().find((s) => s.id === id);
         if (!standard) throw new AssessmentReferenceStandardNotFoundError(id);
 
-        standard.name = name;
-        standard.sustainabilityCriteria = sustainabilityCriteria;
-        standard.logoUrl = logoUrl;
-        standard.siteUrl = siteUrl;
-
-        this._assessmentStandards.insert(id, standard);
+        if (industrialSector && industrialSectorsAvailable.includes(industrialSector)) throw new InvalidIndustrialSectorError();
+        if (industrialSector)
+            this._assessmentReferenceStandards.insert(
+                industrialSector,
+                this._getIndustrialSectorValues().filter((s) => s.id !== id)
+            );
+        else
+            this._assessmentReferenceStandards.insert(
+                IndustrialSectorEnum.DEFAULT,
+                this._getDefaultIndustrialSectorValues().filter((s) => s.id !== id)
+            );
         return standard;
     }
 
-    remove(id: bigint): AssessmentReferenceStandard {
-        const standard = this._assessmentStandards.get(id);
-        if (!standard) throw new AssessmentReferenceStandardNotFoundError(id);
+    private _getDefaultIndustrialSectorValues(): AssessmentReferenceStandard[] {
+        return this._assessmentReferenceStandards.get(IndustrialSectorEnum.DEFAULT) || [];
+    }
 
-        this._assessmentStandards.remove(id);
-        return standard;
+    private _getIndustrialSectorValues(): AssessmentReferenceStandard[] {
+        return this._assessmentReferenceStandards.get(this._industrialSectorCode) || [];
     }
 }
 

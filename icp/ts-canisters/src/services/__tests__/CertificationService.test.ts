@@ -42,7 +42,7 @@ describe('CertificationService', () => {
         issuer: '0xissuer',
         subject,
         uploadedBy: '0xuploadedBy',
-        assessmentStandard: 'assessmentStandard',
+        assessmentReferenceStandard: 'assessmentReferenceStandard',
         assessmentAssuranceLevel: 'assessmentAssuranceLevel',
         document: {
             referenceId: 'referenceId',
@@ -107,7 +107,7 @@ describe('CertificationService', () => {
         const certificateRegistered = certificationService.registerCompanyCertificate(
             companyCertificate.issuer,
             companyCertificate.subject,
-            companyCertificate.assessmentStandard,
+            companyCertificate.assessmentReferenceStandard,
             companyCertificate.assessmentAssuranceLevel,
             companyCertificate.document,
             companyCertificate.validFrom,
@@ -130,7 +130,7 @@ describe('CertificationService', () => {
         const certificateRegistered = certificationService.registerScopeCertificate(
             scopeCertificate.issuer,
             scopeCertificate.subject,
-            scopeCertificate.assessmentStandard,
+            scopeCertificate.assessmentReferenceStandard,
             scopeCertificate.assessmentAssuranceLevel,
             scopeCertificate.document,
             scopeCertificate.validFrom,
@@ -155,7 +155,7 @@ describe('CertificationService', () => {
         const certificateRegistered = certificationService.registerMaterialCertificate(
             materialCertificate.issuer,
             materialCertificate.subject,
-            materialCertificate.assessmentStandard,
+            materialCertificate.assessmentReferenceStandard,
             materialCertificate.assessmentAssuranceLevel,
             materialCertificate.document,
             materialCertificate.materialId,
@@ -185,7 +185,7 @@ describe('CertificationService', () => {
                 uploadedBy: certificate.uploadedBy,
                 issuer: certificate.issuer,
                 subject: certificate.subject,
-                assessmentStandard: certificate.assessmentStandard,
+                assessmentReferenceStandard: certificate.assessmentReferenceStandard,
                 assessmentAssuranceLevel: certificate.assessmentAssuranceLevel,
                 document: certificate.document,
                 evaluationStatus: certificate.evaluationStatus,
@@ -283,7 +283,7 @@ describe('CertificationService', () => {
         mockedFn.get.mockReturnValue([companyCertificate]);
         const updatedCertificate = certificationService.updateCompanyCertificate(
             companyCertificate.id,
-            'new assessmentStandard',
+            'new assessmentReferenceStandard',
             companyCertificate.assessmentAssuranceLevel,
             companyCertificate.validFrom,
             987654n,
@@ -299,7 +299,7 @@ describe('CertificationService', () => {
 
         expect(updatedCertificate).toEqual({
             ...companyCertificate,
-            assessmentStandard: 'new assessmentStandard',
+            assessmentReferenceStandard: 'new assessmentReferenceStandard',
             validUntil: 987654n
         });
     });
@@ -309,7 +309,7 @@ describe('CertificationService', () => {
         mockedFn.get.mockReturnValue([scopeCertificate]);
         const updatedCertificate = certificationService.updateScopeCertificate(
             scopeCertificate.id,
-            scopeCertificate.assessmentStandard,
+            scopeCertificate.assessmentReferenceStandard,
             'new assessmentAssuranceLevel',
             56789n,
             scopeCertificate.validUntil,
@@ -338,7 +338,7 @@ describe('CertificationService', () => {
         mockedFn.get.mockReturnValue([materialCertificate]);
         const updatedCertificate = certificationService.updateMaterialCertificate(
             materialCertificate.id,
-            materialCertificate.assessmentStandard,
+            materialCertificate.assessmentReferenceStandard,
             materialCertificate.assessmentAssuranceLevel,
             5n,
             'new notes'

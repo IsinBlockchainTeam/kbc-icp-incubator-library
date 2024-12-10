@@ -3,7 +3,6 @@ import { StableMemoryId } from '../utils/stableMemory';
 import {
     validateAddress,
     validateAssessmentAssuranceLevel,
-    validateAssessmentStandard,
     validateDatesValidity,
     validateFieldValue,
     validateMaterialById,
@@ -27,6 +26,7 @@ import {
     EvaluationStatusError,
     InvalidCertificateTypeError
 } from '../models/errors/CertificationError';
+import AssessmentReferenceStandardService from './AssessmentReferenceStandardService';
 
 type CertificationRecord = {
     subject: string;
@@ -54,7 +54,7 @@ class CertificationService {
     registerCompanyCertificate(
         issuer: string,
         subject: string,
-        assessmentStandard: string,
+        assessmentReferenceStandardId: bigint,
         assessmentAssuranceLevel: string,
         document: CertificateDocumentInfo,
         validFrom: bigint,
@@ -64,7 +64,6 @@ class CertificationService {
         validateAddress('Issuer', issuer);
         validateAddress('Subject', subject);
         validateDatesValidity(Number(validFrom), Number(validUntil));
-        validateAssessmentStandard(assessmentStandard);
         validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
         const companyAddress = AuthenticationService.instance.getDelegatorAddress();
 
@@ -73,7 +72,7 @@ class CertificationService {
             uploadedBy: companyAddress,
             issuer,
             subject,
-            assessmentStandard,
+            assessmentReferenceStandard: AssessmentReferenceStandardService.instance.getById(assessmentReferenceStandardId),
             assessmentAssuranceLevel,
             document,
             evaluationStatus: { NOT_EVALUATED: null },
@@ -92,7 +91,7 @@ class CertificationService {
     registerScopeCertificate(
         issuer: string,
         subject: string,
-        assessmentStandard: string,
+        assessmentReferenceStandardId: bigint,
         assessmentAssuranceLevel: string,
         document: CertificateDocumentInfo,
         validFrom: bigint,
@@ -103,7 +102,6 @@ class CertificationService {
         validateAddress('Issuer', issuer);
         validateAddress('Subject', subject);
         validateDatesValidity(Number(validFrom), Number(validUntil));
-        validateAssessmentStandard(assessmentStandard);
         validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
         validateProcessTypes(processTypes);
         const companyAddress = AuthenticationService.instance.getDelegatorAddress();
@@ -112,7 +110,7 @@ class CertificationService {
             uploadedBy: companyAddress,
             issuer,
             subject,
-            assessmentStandard,
+            assessmentReferenceStandard: AssessmentReferenceStandardService.instance.getById(assessmentReferenceStandardId),
             assessmentAssuranceLevel,
             document,
             evaluationStatus: { NOT_EVALUATED: null },
@@ -132,7 +130,7 @@ class CertificationService {
     registerMaterialCertificate(
         issuer: string,
         subject: string,
-        assessmentStandard: string,
+        assessmentReferenceStandardId: bigint,
         assessmentAssuranceLevel: string,
         document: CertificateDocumentInfo,
         materialId: bigint,
@@ -140,7 +138,6 @@ class CertificationService {
     ): MaterialCertificate {
         validateAddress('Issuer', issuer);
         validateAddress('Subject', subject);
-        validateAssessmentStandard(assessmentStandard);
         validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
         validateMaterialById(materialId);
         const companyAddress = AuthenticationService.instance.getDelegatorAddress();
@@ -149,7 +146,7 @@ class CertificationService {
             uploadedBy: companyAddress,
             issuer,
             subject,
-            assessmentStandard,
+            assessmentReferenceStandard: AssessmentReferenceStandardService.instance.getById(assessmentReferenceStandardId),
             assessmentAssuranceLevel,
             document,
             evaluationStatus: { NOT_EVALUATED: null },
@@ -175,7 +172,7 @@ class CertificationService {
             uploadedBy: certificate.uploadedBy,
             issuer: certificate.issuer,
             subject: certificate.subject,
-            assessmentStandard: certificate.assessmentStandard,
+            assessmentReferenceStandard: certificate.assessmentReferenceStandard,
             assessmentAssuranceLevel: certificate.assessmentAssuranceLevel,
             document: certificate.document,
             evaluationStatus: certificate.evaluationStatus,
@@ -222,14 +219,13 @@ class CertificationService {
 
     updateCompanyCertificate(
         certificateId: bigint,
-        assessmentStandard: string,
+        assessmentReferenceStandardId: bigint,
         assessmentAssuranceLevel: string,
         validFrom: bigint,
         validUntil: bigint,
         notes: string
     ): CompanyCertificate {
         validateDatesValidity(Number(validFrom), Number(validUntil));
-        validateAssessmentStandard(assessmentStandard);
         validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
         const [companyCertificate, companyCertificates, certificateIndex] = this._getCertificateAndInfoById<CompanyCertificate>(certificateId);
         validateFieldValue(
@@ -237,7 +233,7 @@ class CertificationService {
             AuthenticationService.instance.getDelegatorAddress(),
             'Caller is not the owner of the certificate'
         );
-        companyCertificate.assessmentStandard = assessmentStandard;
+        companyCertificate.assessmentReferenceStandard = AssessmentReferenceStandardService.instance.getById(assessmentReferenceStandardId);
         companyCertificate.assessmentAssuranceLevel = assessmentAssuranceLevel;
         companyCertificate.validFrom = BigInt(validFrom);
         companyCertificate.validUntil = BigInt(validUntil);
@@ -249,7 +245,7 @@ class CertificationService {
 
     updateScopeCertificate(
         certificateId: bigint,
-        assessmentStandard: string,
+        assessmentReferenceStandardId: bigint,
         assessmentAssuranceLevel: string,
         validFrom: bigint,
         validUntil: bigint,
@@ -257,7 +253,6 @@ class CertificationService {
         notes: string
     ): ScopeCertificate {
         validateDatesValidity(Number(validFrom), Number(validUntil));
-        validateAssessmentStandard(assessmentStandard);
         validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
         validateProcessTypes(processTypes);
         const [scopeCertificate, scopeCertificates, certificateIndex] = this._getCertificateAndInfoById<ScopeCertificate>(certificateId);
@@ -266,7 +261,7 @@ class CertificationService {
             AuthenticationService.instance.getDelegatorAddress(),
             'Caller is not the owner of the certificate'
         );
-        scopeCertificate.assessmentStandard = assessmentStandard;
+        scopeCertificate.assessmentReferenceStandard = AssessmentReferenceStandardService.instance.getById(assessmentReferenceStandardId);
         scopeCertificate.assessmentAssuranceLevel = assessmentAssuranceLevel;
         scopeCertificate.validFrom = BigInt(validFrom);
         scopeCertificate.validUntil = BigInt(validUntil);
@@ -279,12 +274,11 @@ class CertificationService {
 
     updateMaterialCertificate(
         certificateId: bigint,
-        assessmentStandard: string,
+        assessmentReferenceStandardId: bigint,
         assessmentAssuranceLevel: string,
         materialId: bigint,
         notes: string
     ): MaterialCertificate {
-        validateAssessmentStandard(assessmentStandard);
         validateAssessmentAssuranceLevel(assessmentAssuranceLevel);
         const [materialCertificate, materialCertificates, certificateIndex] = this._getCertificateAndInfoById<MaterialCertificate>(certificateId);
         validateFieldValue(
@@ -293,7 +287,7 @@ class CertificationService {
             'Caller is not the owner of the certificate'
         );
         validateMaterialById(materialId);
-        materialCertificate.assessmentStandard = assessmentStandard;
+        materialCertificate.assessmentReferenceStandard = AssessmentReferenceStandardService.instance.getById(assessmentReferenceStandardId);
         materialCertificate.assessmentAssuranceLevel = assessmentAssuranceLevel;
         materialCertificate.materialId = materialId;
         materialCertificate.notes = notes;

@@ -18,12 +18,12 @@ export class AssessmentAssuranceLevelDriver {
         return this._actor.getAllAssessmentAssuranceLevels();
     }
 
-    async addValue(value: string): Promise<string> {
-        return this._actor.addAssessmentAssuranceLevel(value);
+    async addValue(value: string, industrialSector?: string): Promise<string> {
+        return this._actor.addAssessmentAssuranceLevel(value, industrialSector || '');
     }
 
-    async removeValue(value: string): Promise<string> {
-        return this._actor.removeAssessmentAssuranceLevel(value);
+    async removeValue(value: string, industrialSector?: string): Promise<string> {
+        return this._actor.removeAssessmentAssuranceLevel(value, industrialSector || '');
     }
 
     async hasValue(value: string): Promise<boolean> {

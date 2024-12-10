@@ -132,7 +132,7 @@ describe('EntityBuilder', () => {
                 issuer: '0xissuer',
                 subject: '0xsubject',
                 uploadedBy: '0xuploadedBy',
-                assessmentStandard: 'assessment standard',
+                assessmentReferenceStandard: 'assessment standard',
                 assessmentAssuranceLevel: 'assessment assurance level',
                 document: {
                     referenceId: 'reference id',
@@ -181,7 +181,7 @@ describe('EntityBuilder', () => {
                 issuer: '0xissuer',
                 subject: '0xsubject',
                 uploadedBy: '0xuploadedBy',
-                assessmentStandard: 'assessment standard',
+                assessmentReferenceStandard: 'assessment standard',
                 assessmentAssuranceLevel: 'assessment assurance level',
                 document: {
                     referenceId: 'reference id',
@@ -234,7 +234,7 @@ describe('EntityBuilder', () => {
                 issuer: '0xissuer',
                 subject: '0xsubject',
                 uploadedBy: '0xuploadedBy',
-                assessmentStandard: 'assessment standard',
+                assessmentReferenceStandard: 'assessment standard',
                 assessmentAssuranceLevel: 'assessment assurance level',
                 document: {
                     referenceId: 'reference id',
@@ -289,7 +289,7 @@ describe('EntityBuilder', () => {
                 issuer: '0xissuer',
                 subject: '0xsubject',
                 uploadedBy: '0xuploadedBy',
-                assessmentStandard: 'assessment standard',
+                assessmentReferenceStandard: 'assessment standard',
                 assessmentAssuranceLevel: 'assessment assurance level',
                 document: {
                     referenceId: 'reference id',

@@ -1,9 +1,17 @@
 import { BaseCertificate, CertificateType, CertificateDocumentType } from './Certificate';
 import { EvaluationStatus } from './Evaluation';
+import { AssessmentReferenceStandard } from './AssessmentReferenceStandard';
 
 describe('Certificate', () => {
     let certificate: BaseCertificate;
     const issueDate = new Date();
+    const assessmentReferenceStandard = new AssessmentReferenceStandard(
+        1,
+        'standard1',
+        'criteria1',
+        'http://logo1',
+        'http://site1'
+    );
 
     beforeAll(() => {
         certificate = new BaseCertificate(
@@ -11,7 +19,7 @@ describe('Certificate', () => {
             'issuer',
             'subject',
             'uploadedBy',
-            'assessmentStandard',
+            assessmentReferenceStandard,
             'assessmentAssuranceLevel',
             {
                 referenceId: 'referenceId',
@@ -32,7 +40,7 @@ describe('Certificate', () => {
         expect(certificate.id).toEqual(0);
         expect(certificate.issuer).toEqual('issuer');
         expect(certificate.subject).toEqual('subject');
-        expect(certificate.assessmentStandard).toEqual('assessmentStandard');
+        expect(certificate.assessmentReferenceStandard).toEqual(assessmentReferenceStandard);
         expect(certificate.document).toEqual({
             referenceId: 'referenceId',
             documentType: CertificateDocumentType.CERTIFICATE_OF_CONFORMITY,
@@ -67,9 +75,16 @@ describe('Certificate', () => {
         expect(certificate.uploadedBy).toEqual('newUploadedBy');
     });
 
-    it('should correctly set the assessmentStandard', () => {
-        certificate.assessmentStandard = 'newAssessmentStandard';
-        expect(certificate.assessmentStandard).toEqual('newAssessmentStandard');
+    it('should correctly set the assessmentReferenceStandard', () => {
+        const newAssessmentReferenceStandard = new AssessmentReferenceStandard(
+            2,
+            'standard2',
+            'criteria2',
+            'http://logo2',
+            'http://site2'
+        );
+        certificate.assessmentReferenceStandard = newAssessmentReferenceStandard;
+        expect(certificate.assessmentReferenceStandard).toEqual(newAssessmentReferenceStandard);
     });
 
     it('should correctly set the assessmentAssuranceLevel', () => {

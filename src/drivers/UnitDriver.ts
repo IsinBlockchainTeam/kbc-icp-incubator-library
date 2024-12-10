@@ -18,12 +18,12 @@ export class UnitDriver {
         return this._actor.getAllUnits();
     }
 
-    async addValue(value: string): Promise<string> {
-        return this._actor.addUnit(value);
+    async addValue(value: string, industrialSector?: string): Promise<string> {
+        return this._actor.addUnit(value, industrialSector || '');
     }
 
-    async removeValue(value: string): Promise<string> {
-        return this._actor.removeUnit(value);
+    async removeValue(value: string, industrialSector?: string): Promise<string> {
+        return this._actor.removeUnit(value, industrialSector || '');
     }
 
     async hasValue(value: string): Promise<boolean> {

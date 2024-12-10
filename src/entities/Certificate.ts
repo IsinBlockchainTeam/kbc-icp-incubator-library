@@ -1,4 +1,5 @@
 import { EvaluationStatus } from './Evaluation';
+import { AssessmentReferenceStandard } from './AssessmentReferenceStandard';
 
 export enum CertificateType {
     COMPANY = 'COMPANY',
@@ -38,7 +39,7 @@ export class BaseCertificate {
 
     private _uploadedBy: string;
 
-    private _assessmentStandard: string;
+    private _assessmentReferenceStandard: AssessmentReferenceStandard;
 
     private _assessmentAssuranceLevel: string;
 
@@ -57,7 +58,7 @@ export class BaseCertificate {
         issuer: string,
         subject: string,
         uploadedBy: string,
-        assessmentStandard: string,
+        assessmentReferenceStandard: AssessmentReferenceStandard,
         assessmentAssuranceLevel: string,
         document: CertificateDocumentInfo,
         evaluationStatus: EvaluationStatus,
@@ -69,7 +70,7 @@ export class BaseCertificate {
         this._issuer = issuer;
         this._subject = subject;
         this._uploadedBy = uploadedBy;
-        this._assessmentStandard = assessmentStandard;
+        this._assessmentReferenceStandard = assessmentReferenceStandard;
         this._assessmentAssuranceLevel = assessmentAssuranceLevel;
         this._document = document;
         this._evaluationStatus = evaluationStatus;
@@ -110,12 +111,12 @@ export class BaseCertificate {
         this._uploadedBy = value;
     }
 
-    get assessmentStandard(): string {
-        return this._assessmentStandard;
+    get assessmentReferenceStandard(): AssessmentReferenceStandard {
+        return this._assessmentReferenceStandard;
     }
 
-    set assessmentStandard(value: string) {
-        this._assessmentStandard = value;
+    set assessmentReferenceStandard(value: AssessmentReferenceStandard) {
+        this._assessmentReferenceStandard = value;
     }
 
     get assessmentAssuranceLevel(): string {

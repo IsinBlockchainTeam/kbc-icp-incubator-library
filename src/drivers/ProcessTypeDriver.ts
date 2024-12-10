@@ -18,12 +18,12 @@ export class ProcessTypeDriver {
         return this._actor.getAllProcessTypes();
     }
 
-    async addValue(value: string): Promise<string> {
-        return this._actor.addProcessType(value);
+    async addValue(value: string, industrialSector?: string): Promise<string> {
+        return this._actor.addProcessType(value, industrialSector || '');
     }
 
-    async removeValue(value: string): Promise<string> {
-        return this._actor.removeProcessType(value);
+    async removeValue(value: string, industrialSector?: string): Promise<string> {
+        return this._actor.removeProcessType(value, industrialSector || '');
     }
 
     async hasValue(value: string): Promise<boolean> {
