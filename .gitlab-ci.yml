@@ -91,7 +91,7 @@ build_icp_canisters_job:
       - $ICP_RUST_WASM_PATH
     expire_in: 15 min
 
-build_smart_contract_job:
+build_smart_contracts_job:
   extends: .build_job_template
   script:
     - cd $ETHEREUM_PATH
@@ -115,11 +115,33 @@ build_lib_job:
       expire_in: 15 min
   needs: [build_icp_canisters_job, build_smart_contract_job]
 
+test_smart_contracts_job:
+    extends: .test_job_template
+    script:
+        - cd $ETHEREUM_PATH
+        - npm ci
+        - npm run test
+
 test_lib_jobs:
   extends: .test_job_template
   script:
     - cd $LIB_PATH
+    - npm ci
     - npm run test
+
+publish_azle_types_job:
+  extends: .deploy_job_template
+  script:
+    - cd $ICP_PATH/ts-canisters
+    - ls $BUILD_TYPES_PATH
+  when: manual
+
+publish_lib_job:
+  extends: .deploy_job_template
+  script:
+    - cd $LIB_PATH
+    - ls dist
+  when: manual
 
 deploy_icp_canisters_job:
   extends: .deploy_job_template
