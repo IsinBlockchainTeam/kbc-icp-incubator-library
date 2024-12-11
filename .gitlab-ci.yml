@@ -53,20 +53,20 @@ cache:
 
 .build_job_template:
   stage: build
-  rules:
-    - !reference [ .rules_dev, rules ]
-    - !reference [ .rules_force_deploy, rules ]
+#  rules:
+#    - !reference [ .rules_dev, rules ]
+#    - !reference [ .rules_force_deploy, rules ]
 
 .test_job_template:
   stage: test
-  rules:
-    - !reference [ .rules_dev, rules ]
+#  rules:
+#    - !reference [ .rules_dev, rules ]
 
 .deploy_job_template:
   stage: deploy
-  rules:
-    - !reference [ .rules_dev, rules ]
-    - !reference [ .rules_force_deploy, rules ]
+#  rules:
+#    - !reference [ .rules_dev, rules ]
+#    - !reference [ .rules_force_deploy, rules ]
 
 # JOBS
 
@@ -138,7 +138,7 @@ test_lib_job:
 publish_azle_types_job:
   extends: .deploy_job_template
   script:
-    - cd $ICP_PATH/ts-canisters
+    - cd $ICP_PATH/ts-canisters/src/models/types
     - cp .npmrc.template .npmrc
     - sed -i "s/<access_token>/${CI_JOB_TOKEN}/g" .npmrc
     - npm publish
