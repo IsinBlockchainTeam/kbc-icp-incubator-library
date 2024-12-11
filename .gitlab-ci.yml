@@ -29,12 +29,7 @@ variables:
   LIB_DIST_PATH: "$LIB_PATH/dist/"
 
 cache:
-#  key: $CI_COMMIT_REF_SLUG
-  key:
-    files:
-      - $ETHEREUM_PATH/package-lock.json
-      - $ICP_PATH/ts-canisters/package-lock.json
-      - $LIB_PATH/package-lock.json
+  key: $CI_COMMIT_REF_SLUG
   paths:
     - "$TYPESCRIPT_NODE_MODULES_PATH"
     - "$ETHEREUM_NODE_MODULES_PATH"
