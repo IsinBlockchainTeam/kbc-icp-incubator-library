@@ -116,11 +116,11 @@ build_lib_job:
   needs: [build_icp_canisters_job, build_smart_contract_job]
 
 test_smart_contracts_job:
-    extends: .test_job_template
-    script:
-        - cd $ETHEREUM_PATH
-        - npm ci
-        - npm run test
+  extends: .test_job_template
+  script:
+      - cd $ETHEREUM_PATH
+      - npm ci
+      - npm run test
 
 test_lib_jobs:
   extends: .test_job_template
