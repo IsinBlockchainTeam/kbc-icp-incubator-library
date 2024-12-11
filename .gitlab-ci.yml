@@ -8,26 +8,32 @@ image: node:20
 # VARIABLES
 
 variables:
+  DFX_INSTALLATION_PATH: "/root/.local/share/dfx/bin"
+  CARGO_INSTALLATION_PATH: "/root/.cargo/bin"
+
   CI_SCRIPTS: "$CI_PROJECT_DIR/ci/scripts"
-  ICP_PATH: "$CI_PROJECT_DIR/icp"
+
   ETHEREUM_PATH: "$CI_PROJECT_DIR/blockchain"
-  LIB_PATH: "$CI_PROJECT_DIR/src"
+  ETHEREUM_NODE_MODULES_PATH: "$ETHEREUM_PATH/node_modules/"
+
+  ICP_PATH: "$CI_PROJECT_DIR/icp"
   BUILD_TYPES_PATH: "$ICP_PATH/ts-canisters/src/models/types/dist/"
   TYPESCRIPT_NODE_MODULES_PATH: "$ICP_PATH/ts-canisters/node_modules/"
   ICP_DECLARATIONS_PATH: "$ICP_PATH/ts-canisters/declarations/"
   ICP_RUST_DECLARATIONS_PATH: "$ICP_PATH/rust-canisters/src/declarations/"
   ICP_RUST_WASM_PATH: "$ICP_PATH/rust-canisters/target/wasm32-unknown-unknown/release/"
+
+  LIB_PATH: "$CI_PROJECT_DIR/src"
+  LIB_NODE_MODULES_PATH: "$LIB_PATH/node_modules/"
   TYPECHAIN_TYPES_PATH: "$LIB_PATH/smart-contracts/"
   LIB_DIST_PATH: "$LIB_PATH/dist/"
-  ETHEREUM_NODE_MODULES_PATH: "$ETHEREUM_PATH/node_modules/"
-  DFX_INSTALLATION_PATH: "/root/.local/share/dfx/bin"
-  CARGO_INSTALLATION_PATH: "/root/.cargo/bin"
 
 cache:
   key: $CI_COMMIT_REF_SLUG
   paths:
     - "$TYPESCRIPT_NODE_MODULES_PATH"
     - "$ETHEREUM_NODE_MODULES_PATH"
+    - "$LIB_NODE_MODULES_PATH"
   policy: pull-push
 
 # RULES
