@@ -37,6 +37,7 @@ class AuthenticationService {
             roleProof,
             expiration
         });
+        console.log('authenticate - roleProof: ', roleProof);
     }
 
     // TODO: periodically remove expired authentications

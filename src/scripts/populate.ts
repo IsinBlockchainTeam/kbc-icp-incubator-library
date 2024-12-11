@@ -31,7 +31,7 @@ const login = async () => {
     );
     await organizationService.createOrganization({
         legalName: 'KBC',
-        industrialSector: IndustrialSectorEnum.DEFAULT,
+        industrialSector: IndustrialSectorEnum.COFFEE,
         address: 'KBC Address',
         city: 'KBC city',
         postalCode: '12345',
@@ -51,15 +51,15 @@ const processTypePopulate = async (identity: Identity) => {
     const processTypeService = new ProcessTypeService(
         new ProcessTypeDriver(identity, ICP.ENTITY_MANAGER_CANISTER_ID, ICP.NETWORK)
     );
-    const processTypes: { name: string; industrialSector?: string }[] = [
-        { name: '28 - Trading' },
-        { name: '33 - Collecting' },
-        { name: '37 - Manufacturing' },
-        { name: '137 - Splitting/shaving/sorting', industrialSector: 'coffee' },
-        { name: '38 - Harvesting', industrialSector: 'coffee' },
-        { name: '137 - Splitting/shaving/sorting', industrialSector: 'cotton' },
-        { name: '38 - Harvesting', industrialSector: 'cotton' },
-        { name: '113 - Finishing/Branding', industrialSector: 'cotton' }
+    const processTypes: { name: string; industrialSector: string }[] = [
+        { name: '28 - Trading', industrialSector: IndustrialSectorEnum.DEFAULT },
+        { name: '33 - Collecting', industrialSector: IndustrialSectorEnum.DEFAULT },
+        { name: '37 - Manufacturing', industrialSector: IndustrialSectorEnum.DEFAULT },
+        { name: '137 - Splitting/shaving/sorting', industrialSector: IndustrialSectorEnum.COFFEE },
+        { name: '38 - Harvesting', industrialSector: IndustrialSectorEnum.COFFEE },
+        { name: '137 - Splitting/shaving/sorting', industrialSector: IndustrialSectorEnum.COTTON },
+        { name: '38 - Harvesting', industrialSector: IndustrialSectorEnum.COTTON },
+        { name: '113 - Finishing/Branding', industrialSector: IndustrialSectorEnum.COTTON }
     ];
     await Promise.all(
         processTypes.map(async (processType) => {
@@ -96,54 +96,61 @@ const assessmentStandardPopulate = async (identity: Identity) => {
         sustainabilityCriteria: string;
         siteUrl: string;
         logoUrl: string;
-        industrialSector?: string;
+        industrialSector: string;
     }[] = [
         {
             name: 'B CORP',
             sustainabilityCriteria: 'Social/environmental performance',
             siteUrl: 'https://www.bcorporation.net/en-us/standards',
             logoUrl:
-                'https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Certified_B_Corporation_B_Corp_Logo_2022_Black_RGB.svg/220px-Certified_B_Corporation_B_Corp_Logo_2022_Black_RGB.svg.png'
+                'https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Certified_B_Corporation_B_Corp_Logo_2022_Black_RGB.svg/220px-Certified_B_Corporation_B_Corp_Logo_2022_Black_RGB.svg.png',
+            industrialSector: IndustrialSectorEnum.DEFAULT
         },
         {
             name: 'EU Ecolabel',
             sustainabilityCriteria: 'Social/environmental performance',
             siteUrl: 'https://environment.ec.europa.eu/topics/circular-economy/eu-ecolabel-home_en',
             logoUrl:
-                'https://upload.wikimedia.org/wikipedia/en/thumb/3/34/EU_Ecolabel_logo.svg/220px-EU_Ecolabel_logo.svg.png'
+                'https://upload.wikimedia.org/wikipedia/en/thumb/3/34/EU_Ecolabel_logo.svg/220px-EU_Ecolabel_logo.svg.png',
+            industrialSector: IndustrialSectorEnum.DEFAULT
         },
         {
             name: 'FSLM Facility Social Labor Module',
             sustainabilityCriteria: 'Social/environmental performance',
             siteUrl: 'https://howtohigg.org/higg-fslm-verification-program/',
-            logoUrl: 'https://qltysys.com/wp-content/uploads/2020/12/HI_Logo_WHT.png'
+            logoUrl: 'https://qltysys.com/wp-content/uploads/2020/12/HI_Logo_WHT.png',
+            industrialSector: IndustrialSectorEnum.DEFAULT
         },
         {
             name: 'ISO9001',
             sustainabilityCriteria: 'Origin',
             siteUrl: 'https://www.iso.org/iso-9001-quality-management.html',
             logoUrl:
-                'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/ISO_9001-2015.svg/595px-ISO_9001-2015.svg.png?20200218083857'
+                'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/ISO_9001-2015.svg/595px-ISO_9001-2015.svg.png?20200218083857',
+            industrialSector: IndustrialSectorEnum.DEFAULT
         },
         {
             name: 'AEO FULL',
             sustainabilityCriteria: 'Origin',
             siteUrl: 'https://www.adm.gov.it/portale/ee/trader/aeo-authorized-economic-operator',
-            logoUrl: 'https://thyracont-vacuum.com/wp-content/uploads/2018/07/aeo-logo-farbe.jpg'
+            logoUrl: 'https://thyracont-vacuum.com/wp-content/uploads/2018/07/aeo-logo-farbe.jpg',
+            industrialSector: IndustrialSectorEnum.DEFAULT
         },
         {
             name: 'EOV',
             sustainabilityCriteria: 'Use of chemicals',
             siteUrl: 'https://www.landtomarket.com/eov',
             logoUrl:
-                'https://savory.global/wp-content/uploads/2021/02/Screen-Shot-2021-02-18-at-2.50.38-PM-768x829.png'
+                'https://savory.global/wp-content/uploads/2021/02/Screen-Shot-2021-02-18-at-2.50.38-PM-768x829.png',
+            industrialSector: IndustrialSectorEnum.DEFAULT
         },
         {
             name: 'Supplier to Zero',
             sustainabilityCriteria: 'Use of chemicals',
             siteUrl: 'https://www.implementation-hub.org/supplier-to-zero',
             logoUrl:
-                'https://uploads-ssl.webflow.com/5c6a740b46b3672a86f5552b/5ed68bd87b5de42ebccd0fb7_flp.png'
+                'https://uploads-ssl.webflow.com/5c6a740b46b3672a86f5552b/5ed68bd87b5de42ebccd0fb7_flp.png',
+            industrialSector: IndustrialSectorEnum.COFFEE
         },
         {
             name: 'RFA - Rain Forest Alliance',
@@ -151,7 +158,7 @@ const assessmentStandardPopulate = async (identity: Identity) => {
             siteUrl: 'https://www.rainforest-alliance.org/',
             logoUrl:
                 'https://www.wwf.ch/sites/default/files/styles/guide_item_image_labels/public/2023-06/logo-rainforest-alliance-people-nature_c.jpg',
-            industrialSector: 'coffee'
+            industrialSector: IndustrialSectorEnum.COFFEE
         },
         {
             name: 'Haelixa DNA origin standard',
@@ -159,7 +166,15 @@ const assessmentStandardPopulate = async (identity: Identity) => {
             siteUrl: 'https://www.haelixa.com/',
             logoUrl:
                 'https://res-5.cloudinary.com/crunchbase-production/image/upload/c_lpad,h_170,w_170,f_auto,b_white,q_auto:eco/itcxeonqx6revolmtvhz',
-            industrialSector: 'cotton'
+            industrialSector: IndustrialSectorEnum.COTTON
+        },
+        {
+            name: 'Supplier to Zero',
+            sustainabilityCriteria: 'Use of chemicals',
+            siteUrl: 'https://www.implementation-hub.org/supplier-to-zero',
+            logoUrl:
+                'https://uploads-ssl.webflow.com/5c6a740b46b3672a86f5552b/5ed68bd87b5de42ebccd0fb7_flp.png',
+            industrialSector: IndustrialSectorEnum.COTTON
         }
     ];
     await Promise.all(
@@ -168,7 +183,8 @@ const assessmentStandardPopulate = async (identity: Identity) => {
                 assessmentReferenceStandard.name,
                 assessmentReferenceStandard.sustainabilityCriteria,
                 assessmentReferenceStandard.logoUrl,
-                assessmentReferenceStandard.siteUrl
+                assessmentReferenceStandard.siteUrl,
+                assessmentReferenceStandard.industrialSector
             );
         })
     );
@@ -211,12 +227,12 @@ const unitPopulate = async (identity: Identity) => {
     const unitService = new UnitService(
         new UnitDriver(identity, ICP.ENTITY_MANAGER_CANISTER_ID, ICP.NETWORK)
     );
-    const units: { name: string; industrialSector?: string }[] = [
-        { name: 'KGM - Kilograms' },
-        { name: 'BG - Bags', industrialSector: 'coffee' },
-        { name: 'H87 - Pieces', industrialSector: 'coffee' },
-        { name: 'MTK - Square meters', industrialSector: 'cotton' },
-        { name: 'MT - Meters', industrialSector: 'cotton' }
+    const units: { name: string; industrialSector: string }[] = [
+        { name: 'KGM - Kilograms', industrialSector: IndustrialSectorEnum.DEFAULT },
+        { name: 'BG - Bags', industrialSector: IndustrialSectorEnum.COFFEE },
+        { name: 'H87 - Pieces', industrialSector: IndustrialSectorEnum.COFFEE },
+        { name: 'MTK - Square meters', industrialSector: IndustrialSectorEnum.COTTON },
+        { name: 'MT - Meters', industrialSector: IndustrialSectorEnum.COTTON }
     ];
     await Promise.all(
         units.map(async (unit) => {
@@ -228,8 +244,8 @@ const unitPopulate = async (identity: Identity) => {
 (async () => {
     const identity = await login();
     await sustainabilityCriteriaPopulate(identity);
-    await processTypePopulate(identity);
     await assessmentStandardPopulate(identity);
+    await processTypePopulate(identity);
     await assessmentAssuranceLevelPopulate(identity);
     await fiatPopulate(identity);
     await unitPopulate(identity);

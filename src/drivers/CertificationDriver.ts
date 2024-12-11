@@ -24,7 +24,7 @@ export class CertificationDriver {
     async registerCompanyCertificate(
         issuer: string,
         subject: string,
-        assessmentReferenceStandardId: bigint,
+        assessmentReferenceStandardId: number,
         assessmentAssuranceLevel: string,
         document: CertificateDocumentInfo,
         validFrom: Date,
@@ -34,7 +34,7 @@ export class CertificationDriver {
         const certificate = await this._actor.registerCompanyCertificate(
             issuer,
             subject,
-            assessmentReferenceStandardId,
+            BigInt(assessmentReferenceStandardId),
             assessmentAssuranceLevel,
             EntityBuilder.buildICPCertificateDocumentInfo(document),
             BigInt(validFrom.getTime()),
@@ -47,7 +47,7 @@ export class CertificationDriver {
     async registerScopeCertificate(
         issuer: string,
         subject: string,
-        assessmentReferenceStandardId: bigint,
+        assessmentReferenceStandardId: number,
         assessmentAssuranceLevel: string,
         document: CertificateDocumentInfo,
         validFrom: Date,
@@ -58,7 +58,7 @@ export class CertificationDriver {
         const certificate = await this._actor.registerScopeCertificate(
             issuer,
             subject,
-            assessmentReferenceStandardId,
+            BigInt(assessmentReferenceStandardId),
             assessmentAssuranceLevel,
             EntityBuilder.buildICPCertificateDocumentInfo(document),
             BigInt(validFrom.getTime()),
@@ -72,7 +72,7 @@ export class CertificationDriver {
     async registerMaterialCertificate(
         issuer: string,
         subject: string,
-        assessmentReferenceStandardId: bigint,
+        assessmentReferenceStandardId: number,
         assessmentAssuranceLevel: string,
         document: CertificateDocumentInfo,
         materialId: number,
@@ -81,7 +81,7 @@ export class CertificationDriver {
         const certificate = await this._actor.registerMaterialCertificate(
             issuer,
             subject,
-            assessmentReferenceStandardId,
+            BigInt(assessmentReferenceStandardId),
             assessmentAssuranceLevel,
             EntityBuilder.buildICPCertificateDocumentInfo(document),
             BigInt(materialId),
@@ -132,7 +132,7 @@ export class CertificationDriver {
 
     async updateCompanyCertificate(
         certificateId: number,
-        assessmentReferenceStandardId: bigint,
+        assessmentReferenceStandardId: number,
         assessmentAssuranceLevel: string,
         validFrom: Date,
         validUntil: Date,
@@ -140,7 +140,7 @@ export class CertificationDriver {
     ): Promise<CompanyCertificate> {
         const certificate = await this._actor.updateCompanyCertificate(
             BigInt(certificateId),
-            assessmentReferenceStandardId,
+            BigInt(assessmentReferenceStandardId),
             assessmentAssuranceLevel,
             BigInt(validFrom.getTime()),
             BigInt(validUntil.getTime()),
@@ -151,7 +151,7 @@ export class CertificationDriver {
 
     async updateScopeCertificate(
         certificateId: number,
-        assessmentReferenceStandardId: bigint,
+        assessmentReferenceStandardId: number,
         assessmentAssuranceLevel: string,
         validFrom: Date,
         validUntil: Date,
@@ -160,7 +160,7 @@ export class CertificationDriver {
     ): Promise<ScopeCertificate> {
         const certificate = await this._actor.updateScopeCertificate(
             BigInt(certificateId),
-            assessmentReferenceStandardId,
+            BigInt(assessmentReferenceStandardId),
             assessmentAssuranceLevel,
             BigInt(validFrom.getTime()),
             BigInt(validUntil.getTime()),
@@ -172,14 +172,14 @@ export class CertificationDriver {
 
     async updateMaterialCertificate(
         certificateId: number,
-        assessmentReferenceStandardId: bigint,
+        assessmentReferenceStandardId: number,
         assessmentAssuranceLevel: string,
         materialId: number,
         notes?: string
     ): Promise<MaterialCertificate> {
         const certificate = await this._actor.updateMaterialCertificate(
             BigInt(certificateId),
-            assessmentReferenceStandardId,
+            BigInt(assessmentReferenceStandardId),
             assessmentAssuranceLevel,
             BigInt(materialId),
             notes || ''

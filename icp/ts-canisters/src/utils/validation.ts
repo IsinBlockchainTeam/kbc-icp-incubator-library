@@ -38,3 +38,5 @@ export const validateMaterialById = (materialId: bigint): Material => {
     if (!material) throw new Error('Material not found');
     return material;
 };
+
+export const compareStrings = (a: string, b: string) => a.replace(/\s+/g, '').toLowerCase().localeCompare(b.replace(/\s+/g, '').toLowerCase());

@@ -44,7 +44,7 @@ export class CertificationService {
     async registerCompanyCertificate(
         issuer: string,
         subject: string,
-        assessmentReferenceStandardId: bigint,
+        assessmentReferenceStandardId: number,
         assessmentAssuranceLevel: string,
         document: CertificateDocumentRequest,
         validFrom: Date,
@@ -78,7 +78,7 @@ export class CertificationService {
     async registerScopeCertificate(
         issuer: string,
         subject: string,
-        assessmentReferenceStandardId: bigint,
+        assessmentReferenceStandardId: number,
         assessmentAssuranceLevel: string,
         document: CertificateDocumentRequest,
         validFrom: Date,
@@ -111,7 +111,7 @@ export class CertificationService {
     async registerMaterialCertificate(
         issuer: string,
         subject: string,
-        assessmentReferenceStandardId: bigint,
+        assessmentReferenceStandardId: number,
         assessmentAssuranceLevel: string,
         document: CertificateDocumentRequest,
         materialId: number,
@@ -174,7 +174,7 @@ export class CertificationService {
 
     async updateCompanyCertificate(
         certificateId: number,
-        assessmentReferenceStandardId: bigint,
+        assessmentReferenceStandardId: number,
         assessmentAssuranceLevel: string,
         validFrom: Date,
         validUntil: Date,
@@ -192,7 +192,7 @@ export class CertificationService {
 
     async updateScopeCertificate(
         certificateId: number,
-        assessmentReferenceStandardId: bigint,
+        assessmentReferenceStandardId: number,
         assessmentAssuranceLevel: string,
         validFrom: Date,
         validUntil: Date,
@@ -212,7 +212,7 @@ export class CertificationService {
 
     async updateMaterialCertificate(
         certificateId: number,
-        assessmentReferenceStandardId: bigint,
+        assessmentReferenceStandardId: number,
         assessmentAssuranceLevel: string,
         materialId: number,
         notes?: string
