@@ -138,7 +138,9 @@ publish_azle_types_job:
   extends: .deploy_job_template
   script:
     - cd $ICP_PATH/ts-canisters
-    - ls $BUILD_TYPES_PATH
+    - cp .npmrc.template .npmrc
+    - sed -i "s/<access_token>/${CI_JOB_TOKEN}/g" .npmrc
+    - npm publish
   when: manual
 
 publish_lib_job:
