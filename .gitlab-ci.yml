@@ -113,7 +113,7 @@ build_lib_job:
       paths:
       - $LIB_DIST_PATH
       expire_in: 15 min
-  needs: [build_icp_canisters_job, build_smart_contract_job]
+  needs: [build_icp_canisters_job, build_smart_contracts_job]
 
 test_smart_contracts_job:
   extends: .test_job_template
