@@ -14,7 +14,7 @@ set +o allexport
 
 # Deploy canisters
 cd "$BASE_DIR/ts-canisters"
-dfx canister install entity_manager --mode reinstall --all --ic --yes
+dfx canister install --mode reinstall --ic --yes entity_manager
 
 # Canister status
 dfx canister status entity_manager --ic
