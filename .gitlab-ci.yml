@@ -26,10 +26,16 @@ variables:
   LIB_PATH: "$CI_PROJECT_DIR/src"
   LIB_NODE_MODULES_PATH: "$LIB_PATH/node_modules/"
   TYPECHAIN_TYPES_PATH: "$LIB_PATH/smart-contracts/"
+  LIB_DECLARATIONS_PATH: "$LIB_PATH/declarations/"
   LIB_DIST_PATH: "$LIB_PATH/dist/"
 
 cache:
-  key: $CI_COMMIT_REF_SLUG
+  key:
+    prefix: ${CI_COMMIT_REF_SLUG}
+    files:
+      - $ETHEREUM_PATH/package-lock.json
+      - $ICP_PATH/ts-canisters/package-lock.json
+      - $LIB_PATH/package-lock.json
   paths:
     - "$TYPESCRIPT_NODE_MODULES_PATH"
     - "$ETHEREUM_NODE_MODULES_PATH"
@@ -113,6 +119,7 @@ build_lib_job:
   artifacts:
       paths:
       - $LIB_DIST_PATH
+      - $LIB_DECLARATIONS_PATH
       expire_in: 15 min
   needs: [build_icp_canisters_job, build_smart_contracts_job]
 
