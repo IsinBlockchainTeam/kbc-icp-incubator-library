@@ -31,9 +31,9 @@ variables:
 cache:
 #  key: $CI_COMMIT_REF_SLUG
   files:
-  - $ETHEREUM_PATH/package-lock.json
-  - $ICP_PATH/ts-canisters/package-lock.json
-  - $LIB_PATH/package-lock.json
+    - $ETHEREUM_PATH/package-lock.json
+    - $ICP_PATH/ts-canisters/package-lock.json
+    - $LIB_PATH/package-lock.json
   paths:
     - "$TYPESCRIPT_NODE_MODULES_PATH"
     - "$ETHEREUM_NODE_MODULES_PATH"
