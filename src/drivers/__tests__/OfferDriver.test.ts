@@ -1,4 +1,4 @@
-import { createActor } from '../../declarations/entity_manager';
+import { createActor } from 'icp-declarations/entity_manager';
 import type { Identity } from '@dfinity/agent';
 import { OfferDriver } from '../OfferDriver';
 import { EntityBuilder } from '../../utils/EntityBuilder';

@@ -1,0 +1,175 @@
+stages:
+  - build
+  - test
+  - deploy
+
+image: node:20
+
+# VARIABLES
+
+variables:
+  DFX_INSTALLATION_PATH: "/root/.local/share/dfx/bin"
+  CARGO_INSTALLATION_PATH: "/root/.cargo/bin"
+
+  CI_SCRIPTS: "$CI_PROJECT_DIR/ci/scripts"
+
+  ETHEREUM_PATH: "$CI_PROJECT_DIR/blockchain"
+  ETHEREUM_NODE_MODULES_PATH: "$ETHEREUM_PATH/node_modules/"
+
+  ICP_PATH: "$CI_PROJECT_DIR/icp"
+  BUILD_TYPES_PATH: "$ICP_PATH/ts-canisters/src/models/types/dist/"
+  TYPESCRIPT_NODE_MODULES_PATH: "$ICP_PATH/ts-canisters/node_modules/"
+  ICP_DECLARATIONS_PATH: "$ICP_PATH/ts-canisters/declarations/"
+  ICP_RUST_DECLARATIONS_PATH: "$ICP_PATH/rust-canisters/src/declarations/"
+  ICP_RUST_WASM_PATH: "$ICP_PATH/rust-canisters/target/wasm32-unknown-unknown/release/"
+
+  LIB_PATH: "$CI_PROJECT_DIR/src"
+  LIB_NODE_MODULES_PATH: "$LIB_PATH/node_modules/"
+  TYPECHAIN_TYPES_PATH: "$LIB_PATH/smart-contracts/"
+  LIB_DECLARATIONS_PATH: "$LIB_PATH/declarations/"
+  LIB_DIST_PATH: "$LIB_PATH/dist/"
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - "$TYPESCRIPT_NODE_MODULES_PATH"
+    - "$ETHEREUM_NODE_MODULES_PATH"
+    - "$LIB_NODE_MODULES_PATH"
+  policy: pull-push
+
+# RULES
+
+.rules_dev:
+  rules:
+    - if: $CI_COMMIT_BRANCH == "dev"
+      when: always
+
+.rules_force_deploy:
+  rules:
+    - if: $CI_COMMIT_BRANCH == "force-deploy"
+      when: always
+
+# TEMPLATE JOBS
+
+.build_job_template:
+  stage: build
+  rules:
+    - !reference [ .rules_dev, rules ]
+    - !reference [ .rules_force_deploy, rules ]
+
+.test_job_template:
+  stage: test
+  rules:
+    - !reference [ .rules_dev, rules ]
+
+.deploy_job_template:
+  stage: deploy
+  rules:
+    - !reference [ .rules_dev, rules ]
+    - !reference [ .rules_force_deploy, rules ]
+
+# JOBS
+
+before_script:
+  - cd $CI_SCRIPTS
+  - chmod +x install-dependencies.sh
+  - ./install-dependencies.sh
+  - export PATH=$PATH:$DFX_INSTALLATION_PATH:$CARGO_INSTALLATION_PATH
+
+build_icp_canisters_job:
+  extends: .build_job_template
+  script:
+    - cd $ICP_PATH/ts-canisters
+    - npm ci
+    - cd ../scripts
+    - chmod +x build-canisters.sh
+    - ./build-canisters.sh
+  artifacts:
+    paths:
+      - $BUILD_TYPES_PATH
+      - $ICP_DECLARATIONS_PATH
+      - $ICP_RUST_DECLARATIONS_PATH
+      - $ICP_RUST_WASM_PATH
+    expire_in: 15 min
+
+build_smart_contracts_job:
+  extends: .build_job_template
+  script:
+    - cd $ETHEREUM_PATH
+    - npm ci
+    - npm run compile
+  artifacts:
+    paths:
+      - $TYPECHAIN_TYPES_PATH
+    expire_in: 15 min
+
+build_lib_job:
+  extends: .build_job_template
+  script:
+    - cd $LIB_PATH
+    - cp .npmrc.template .npmrc
+    - sed -i "s/<access_token>/${CI_JOB_TOKEN}/g" .npmrc
+    - npm ci
+    - npm run get-declarations
+    - npm ci
+    - npm run build
+  artifacts:
+      paths:
+      - $LIB_DIST_PATH
+      - $LIB_DECLARATIONS_PATH
+      expire_in: 15 min
+  needs: [build_icp_canisters_job, build_smart_contracts_job]
+
+test_smart_contracts_job:
+  extends: .test_job_template
+  script:
+      - cd $ETHEREUM_PATH
+      - npm ci
+      - npm run test
+
+test_lib_job:
+  extends: .test_job_template
+  script:
+    - cd $LIB_PATH
+    - npm ci
+    - npm run test
+
+publish_azle_types_job:
+  extends: .deploy_job_template
+  script:
+    - cd $ICP_PATH/ts-canisters
+    - cp .npmrc.template .npmrc
+    - sed -i "s/<access_token>/${CI_JOB_TOKEN}/g" .npmrc
+    - npm publish
+  when: manual
+
+publish_lib_job:
+  extends: .deploy_job_template
+  script:
+    - cd $LIB_PATH
+    - cp .npmrc.template .npmrc
+    - sed -i "s/<access_token>/${CI_JOB_TOKEN}/g" .npmrc
+    - npm publish
+  when: manual
+
+deploy_icp_canisters_job:
+  extends: .deploy_job_template
+  script:
+    - cd $ICP_PATH/ts-canisters
+    - npm ci
+    - cd ../scripts
+    - chmod +x import-identity-ic.sh deploy-ic.sh
+    - ./import-identity-ic.sh
+    - ./deploy-ic.sh
+  when: manual
+
+reinstall_icp_canisters_job:
+  extends: .deploy_job_template
+  script:
+    - cd $ICP_PATH/ts-canisters
+    - npm ci
+    - cd ../scripts
+    - chmod +x import-identity-ic.sh reinstall-ic.sh
+    - ./import-identity-ic.sh
+    - ./reinstall-ic.sh
+  when: manual
