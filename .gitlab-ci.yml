@@ -10,11 +10,16 @@ image: node:20
 variables:
   CI_SCRIPTS: "$CI_PROJECT_DIR/ci/scripts"
   ICP_PATH: "$CI_PROJECT_DIR/icp"
+  ETHEREUM_PATH: "$CI_PROJECT_DIR/blockchain"
+  LIB_PATH: "$CI_PROJECT_DIR/src"
   BUILD_TYPES_PATH: "$ICP_PATH/ts-canisters/src/models/types/dist/"
   TYPESCRIPT_NODE_MODULES_PATH: "$ICP_PATH/ts-canisters/node_modules/"
   ICP_DECLARATIONS_PATH: "$ICP_PATH/ts-canisters/declarations/"
   ICP_RUST_DECLARATIONS_PATH: "$ICP_PATH/rust-canisters/src/declarations/"
   ICP_RUST_WASM_PATH: "$ICP_PATH/rust-canisters/target/wasm32-unknown-unknown/release/"
+  TYPECHAIN_TYPES_PATH: "$LIB_PATH/smart-contracts/"
+  LIB_DIST_PATH: "$LIB_PATH/dist/"
+  ETHEREUM_NODE_MODULES_PATH: "$ETHEREUM_PATH/node_modules/"
   DFX_INSTALLATION_PATH: "/root/.local/share/dfx/bin"
   CARGO_INSTALLATION_PATH: "/root/.cargo/bin"
 
@@ -22,6 +27,7 @@ cache:
   key: $CI_COMMIT_REF_SLUG
   paths:
     - "$TYPESCRIPT_NODE_MODULES_PATH"
+    - "$ETHEREUM_NODE_MODULES_PATH"
   policy: pull-push
 
 # RULES
@@ -78,6 +84,40 @@ build_icp_canisters_job:
       - $ICP_RUST_DECLARATIONS_PATH
       - $ICP_RUST_WASM_PATH
     expire_in: 15 min
+
+build_smart_contract_job:
+  extends: .build_job_template
+  script:
+    - cd $ETHEREUM_PATH
+    - npm ci
+    - npm run compile
+  artifacts:
+    paths:
+      - $TYPECHAIN_TYPES_PATH
+    expire_in: 15 min
+
+build_lib_job:
+  extends: .build_job_template
+  script:
+    - cd $LIB_PATH
+    - npm ci
+    - npm run get-declarations
+    - npm run build
+  artifacts:
+      paths:
+      - $LIB_DIST_PATH
+      expire_in: 15 min
+  dependencies:
+    - build_smart_contract_job
+    - build_icp_canisters_job
+
+test_lib_jobs:
+  extends: .test_job_template
+  script:
+    - cd $LIB_PATH
+    - npm run test
+  dependencies:
+    - build_lib_job
 
 deploy_icp_canisters_job:
   extends: .deploy_job_template
