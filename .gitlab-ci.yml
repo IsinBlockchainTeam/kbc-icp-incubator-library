@@ -64,9 +64,9 @@ cache:
 
 .deploy_job_template:
   stage: deploy
-#  rules:
-#    - !reference [ .rules_dev, rules ]
-#    - !reference [ .rules_force_deploy, rules ]
+  rules:
+    - !reference [ .rules_dev, rules ]
+    - !reference [ .rules_force_deploy, rules ]
 
 # JOBS
 
