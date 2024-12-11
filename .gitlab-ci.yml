@@ -113,17 +113,13 @@ build_lib_job:
       paths:
       - $LIB_DIST_PATH
       expire_in: 15 min
-  dependencies:
-    - build_smart_contract_job
-    - build_icp_canisters_job
+  needs: [build_icp_canisters_job, build_smart_contract_job]
 
 test_lib_jobs:
   extends: .test_job_template
   script:
     - cd $LIB_PATH
     - npm run test
-  dependencies:
-    - build_lib_job
 
 deploy_icp_canisters_job:
   extends: .deploy_job_template
