@@ -181,6 +181,9 @@ test_lib_job:
     - sed -i "s/<access_token>/${CI_JOB_TOKEN}/g" .npmrc
     - npm ci
     - npm run test
+  needs:
+    - job: build_lib_job
+      artifacts: true
 
 publish_lib_job:
 #  extends: .deploy_job_template
@@ -191,3 +194,7 @@ publish_lib_job:
     - sed -i "s/<access_token>/${CI_JOB_TOKEN}/g" .npmrc
     - npm publish
   when: manual
+  needs:
+    - job: build_lib_job
+      artifacts: true
+    - job: test_lib_job
