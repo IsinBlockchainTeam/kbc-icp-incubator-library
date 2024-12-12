@@ -54,7 +54,7 @@ cache:
 
 # TEMPLATE JOBS
 
-.build_job_template:
+.build_job_template: null
 #  rules:
 #    - !reference [ .rules_dev, rules ]
 #    - !reference [ .rules_force_deploy, rules ]
