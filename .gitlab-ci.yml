@@ -149,7 +149,7 @@ reinstall_icp_canisters_job:
   when: manual
 
 build_lib_job:
-  extends: .build_job_template
+#  extends: .build_job_template
   stage: lib_build
   script:
     - cd $LIB_PATH
@@ -173,7 +173,7 @@ build_lib_job:
       optional: true
 
 test_lib_job:
-  extends: .test_job_template
+#  extends: .test_job_template
   stage: lib_test
   script:
     - cd $LIB_PATH
@@ -183,7 +183,7 @@ test_lib_job:
     - npm run test
 
 publish_lib_job:
-  extends: .deploy_job_template
+#  extends: .deploy_job_template
   stage: lib_deploy
   script:
     - cd $LIB_PATH
