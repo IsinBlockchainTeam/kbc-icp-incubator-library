@@ -86,7 +86,7 @@ build_smart_contracts_job:
   artifacts:
     paths:
       - $TYPECHAIN_TYPES_PATH
-    expire_in: 15 min
+    expire_in: 30 min
 
 build_icp_canisters_job:
   extends: .build_job_template
@@ -102,7 +102,7 @@ build_icp_canisters_job:
       - $ICP_DECLARATIONS_PATH
       - $ICP_RUST_DECLARATIONS_PATH
       - $ICP_RUST_WASM_PATH
-    expire_in: 15 min
+    expire_in: 30 min
 
 build_lib_job:
   extends: .build_job_template
@@ -118,7 +118,7 @@ build_lib_job:
     paths:
       - $LIB_DIST_PATH
       - $LIB_DECLARATIONS_PATH
-    expire_in: 15 min
+    expire_in: 30 min
   needs: [build_smart_contracts_job, build_icp_canisters_job]
 
 test_smart_contracts_job:
