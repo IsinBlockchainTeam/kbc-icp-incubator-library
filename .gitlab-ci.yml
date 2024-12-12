@@ -77,17 +77,17 @@ before_script:
   - export PATH=$PATH:$DFX_INSTALLATION_PATH:$CARGO_INSTALLATION_PATH
   - cd $CI_PROJECT_DIR
 
-#build_smart_contracts_job:
-#  stage: dependencies_build
+build_smart_contracts_job:
+  stage: dependencies_build
 #  extends: .build_job_template
-#  script:
-#    - cd $ETHEREUM_PATH
-#    - npm ci
-#    - npm run compile
-#  artifacts:
-#    paths:
-#      - $TYPECHAIN_TYPES_PATH
-#    expire_in: 15 min
+  script:
+    - cd $ETHEREUM_PATH
+    - npm ci
+    - npm run compile
+  artifacts:
+    paths:
+      - $TYPECHAIN_TYPES_PATH
+    expire_in: 15 min
 #
 #build_icp_canisters_job:
 #  stage: dependencies_build
