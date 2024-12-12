@@ -42,12 +42,12 @@ cache:
 .rules_dev:
   rules:
     - if: $CI_COMMIT_BRANCH == "dev"
-      when: always
+#      when: always
 
 .rules_force_deploy:
   rules:
     - if: $CI_COMMIT_BRANCH == "force-deploy"
-      when: always
+#      when: always
 
 # TEMPLATE JOBS
 
