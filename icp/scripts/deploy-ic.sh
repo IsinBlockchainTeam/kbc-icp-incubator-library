@@ -13,7 +13,6 @@ source .env.ci
 set +o allexport
 
 # Deploy canisters
-cd "$BASE_DIR/ts-canisters"
 dfx deploy entity_manager --network ic --yes
 
 # Canister status
