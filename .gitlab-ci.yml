@@ -164,13 +164,13 @@ build_lib_job:
       - $LIB_DIST_PATH
       - $LIB_DECLARATIONS_PATH
     expire_in: 15 min
-  needs:
-    - job: build_icp_canisters_job
-      artifacts: true
-    - job: build_smart_contracts_job
-      artifacts: true
-    - job: publish_azle_types_job
-      optional: true
+#  needs:
+#    - job: build_icp_canisters_job
+#      artifacts: true
+#    - job: build_smart_contracts_job
+#      artifacts: true
+#    - job: publish_azle_types_job
+#      optional: true
 
 test_lib_job:
 #  extends: .test_job_template
