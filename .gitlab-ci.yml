@@ -148,44 +148,46 @@ reinstall_icp_canisters_job:
     - ./reinstall-ic.sh
   when: manual
 
-#build_lib_job:
-#  extends: .build_job_template
-#  stage: lib_build
-#  script:
-#    - cd $LIB_PATH
-#    - cp .npmrc.template .npmrc
-#    - sed -i "s/<access_token>/${CI_JOB_TOKEN}/g" .npmrc
-#    - npm ci
-#    - npm run get-declarations
-#    - npm ci
-#    - npm run build
-#  artifacts:
-#    paths:
-#      - $LIB_DIST_PATH
-#      - $LIB_DECLARATIONS_PATH
-#    expire_in: 15 min
-#  needs:
-#    - job: build_icp_canisters_job
-#      artifacts: true
-#    - job: build_smart_contracts_job
-#      artifacts: true
-#    - job: publish_azle_types_job
-#      optional: true
-#
-#test_lib_job:
-#  extends: .test_job_template
-#  stage: lib_test
-#  script:
-#    - cd $LIB_PATH
-#    - npm ci
-#    - npm run test
-#
-#publish_lib_job:
-#  extends: .deploy_job_template
-#  stage: lib_deploy
-#  script:
-#    - cd $LIB_PATH
-#    - cp .npmrc.template .npmrc
-#    - sed -i "s/<access_token>/${CI_JOB_TOKEN}/g" .npmrc
-#    - npm publish
-#  when: manual
+build_lib_job:
+  extends: .build_job_template
+  stage: lib_build
+  script:
+    - cd $LIB_PATH
+    - cp .npmrc.template .npmrc
+    - sed -i "s/<access_token>/${CI_JOB_TOKEN}/g" .npmrc
+    - npm ci
+    - npm run get-declarations
+    - npm ci
+    - npm run build
+  artifacts:
+    paths:
+      - $LIB_DIST_PATH
+      - $LIB_DECLARATIONS_PATH
+    expire_in: 15 min
+  needs:
+    - job: build_icp_canisters_job
+      artifacts: true
+    - job: build_smart_contracts_job
+      artifacts: true
+    - job: publish_azle_types_job
+      optional: true
+
+test_lib_job:
+  extends: .test_job_template
+  stage: lib_test
+  script:
+    - cd $LIB_PATH
+    - ls -la
+    - cat .npmrc
+    - npm ci
+    - npm run test
+
+publish_lib_job:
+  extends: .deploy_job_template
+  stage: lib_deploy
+  script:
+    - cd $LIB_PATH
+    - cp .npmrc.template .npmrc
+    - sed -i "s/<access_token>/${CI_JOB_TOKEN}/g" .npmrc
+    - npm publish
+  when: manual
