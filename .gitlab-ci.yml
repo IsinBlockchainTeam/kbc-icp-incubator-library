@@ -32,6 +32,9 @@ variables:
   LIB_DECLARATIONS_PATH: "$LIB_PATH/declarations/"
   LIB_DIST_PATH: "$LIB_PATH/dist/"
 
+  AZLE_TYPES_PACKAGE_NAME: "@kbc-lib/azle-types"
+  AZLE_TYPES_PACKAGE_JSON_PATH: "$ICP_PATH/ts-canisters/src/models/types/package.json"
+
 cache:
   key: ${CI_COMMIT_REF_SLUG}
   paths:
@@ -39,6 +42,30 @@ cache:
     - "$ETHEREUM_NODE_MODULES_PATH"
     - "$LIB_NODE_MODULES_PATH"
   policy: pull-push
+
+# UTILS
+
+.check_package: &check_package |
+  get_version() {
+    if [ ! -f "$PACKAGE_JSON_PATH" ]; then
+      echo "Error: package.json not found at ${PACKAGE_JSON_PATH}" >&2
+      exit 1
+    }
+    VERSION=$(cat "$PACKAGE_JSON_PATH" | grep -o '"version": *"[^"]*"' | grep -o '[0-9][^"]*')
+    echo "$VERSION"
+  }
+  
+  check_package() {
+    VERSION=$(get_version)
+    echo "Checking for package $PACKAGE_NAME version $VERSION"
+    response=$(curl --silent --header "PRIVATE-TOKEN: $CI_JOB_TOKEN" \
+      "$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages?package_name=$PACKAGE_NAME")
+    if echo "$response" | grep -q "\"version\":\"${VERSION}\""; then
+      echo "true"
+    else
+      echo "false"
+    fi
+  }
 
 # RULES
 
@@ -51,6 +78,13 @@ cache:
   rules:
     - if: $CI_COMMIT_BRANCH == "force-deploy"
       when: always
+
+.rules_is_not_package_published:
+  rules:
+    - if: |
+        *check_package
+        [ "$(check_package)" = "false" ]
+    - when: on_success
 
 # TEMPLATE JOBS
 
@@ -122,6 +156,10 @@ publish_azle_types_job:
     - cp .npmrc.template .npmrc
     - sed -i "s/<access_token>/${CI_JOB_TOKEN}/g" .npmrc
     - npm publish
+  rules:
+    - !reference [ .rules_dev, rules ]
+    - !reference [ .rules_force_deploy, rules ]
+    - !reference [ .rules_is_not_package_published, rules ]
   when: manual
 
 deploy_icp_canisters_job:
