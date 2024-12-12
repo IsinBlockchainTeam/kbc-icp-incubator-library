@@ -83,8 +83,7 @@ cache:
   rules:
     - if: |
         *check_package
-        result=$(check_package)
-        [ "$result" = "false" ]
+        [ "$(check_package)" = "true" ]
       when: on_success
 
 # TEMPLATE JOBS
