@@ -177,8 +177,8 @@ test_lib_job:
   stage: lib_test
   script:
     - cd $LIB_PATH
-    - ls -la
-    - cat .npmrc
+    - cp .npmrc.template .npmrc
+    - sed -i "s/<access_token>/${CI_JOB_TOKEN}/g" .npmrc
     - npm ci
     - npm run test
 
