@@ -115,8 +115,8 @@ test_smart_contracts_job:
       - npm run test
 
 publish_azle_types_job:
+#  extends: .deploy_job_template
   stage: dependencies_deploy
-  extends: .deploy_job_template
   script:
     - cd $ICP_PATH/ts-canisters/src/models/types
     - cp .npmrc.template .npmrc
@@ -164,13 +164,13 @@ build_lib_job:
       - $LIB_DIST_PATH
       - $LIB_DECLARATIONS_PATH
     expire_in: 15 min
-#  needs:
+  needs:
 #    - job: build_icp_canisters_job
 #      artifacts: true
 #    - job: build_smart_contracts_job
 #      artifacts: true
-#    - job: publish_azle_types_job
-#      optional: true
+    - job: publish_azle_types_job
+      optional: true
 
 test_lib_job:
 #  extends: .test_job_template
