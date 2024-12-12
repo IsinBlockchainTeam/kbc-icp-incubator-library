@@ -78,8 +78,8 @@ before_script:
   - cd $CI_PROJECT_DIR
 
 build_smart_contracts_job:
-  stage: dependencies_build
   extends: .build_job_template
+  stage: dependencies_build
   script:
     - cd $ETHEREUM_PATH
     - npm ci
