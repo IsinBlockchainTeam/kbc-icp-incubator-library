@@ -84,7 +84,7 @@ cache:
     - if: |
         *check_package
         [ "$(check_package)" = "false" ]
-    - when: on_success
+      when: on_success
 
 # TEMPLATE JOBS
 
