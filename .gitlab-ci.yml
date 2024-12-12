@@ -62,8 +62,10 @@ cache:
       "$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages?package_name=$PACKAGE_NAME")
     if echo "$response" | grep -q "\"version\":\"${VERSION}\""; then
       echo "true"
+      exit 0  # Package exists
     else
       echo "false"
+      exit 1  # Package doesn't exist
     fi
   }
 
@@ -80,10 +82,10 @@ cache:
       when: always
 
 .rules_is_not_package_published:
+  before_script:
+    - *check_package
   rules:
-    - if: |
-        *check_package
-        [ "$(check_package)" = "true" ]
+    - if: '$CI_EXIT_CODE == 1'  # Package doesn't exist
       when: on_success
 
 # TEMPLATE JOBS
