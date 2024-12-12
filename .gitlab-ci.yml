@@ -55,6 +55,7 @@ cache:
 # TEMPLATE JOBS
 
 .build_job_template:
+  stage: dependencies_build
 #  rules:
 #    - !reference [ .rules_dev, rules ]
 #    - !reference [ .rules_force_deploy, rules ]
