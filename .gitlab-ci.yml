@@ -1,7 +1,10 @@
 stages:
-  - build
-  - test
-  - deploy
+  - dependencies_build
+  - dependencies_test
+  - dependencies_deploy
+  - lib_build
+  - lib_test
+  - lib_deploy
 
 image: node:20
 
@@ -52,18 +55,15 @@ cache:
 # TEMPLATE JOBS
 
 .build_job_template:
-  stage: build
 #  rules:
 #    - !reference [ .rules_dev, rules ]
 #    - !reference [ .rules_force_deploy, rules ]
 
 .test_job_template:
-  stage: test
 #  rules:
 #    - !reference [ .rules_dev, rules ]
 
 .deploy_job_template:
-  stage: deploy
 #  rules:
 #    - !reference [ .rules_dev, rules ]
 #    - !reference [ .rules_force_deploy, rules ]
@@ -77,7 +77,20 @@ before_script:
   - export PATH=$PATH:$DFX_INSTALLATION_PATH:$CARGO_INSTALLATION_PATH
   - cd $CI_PROJECT_DIR
 
+build_smart_contracts_job:
+  stage: dependencies_build
+  extends: .build_job_template
+  script:
+    - cd $ETHEREUM_PATH
+    - npm ci
+    - npm run compile
+  artifacts:
+    paths:
+      - $TYPECHAIN_TYPES_PATH
+    expire_in: 15 min
+
 build_icp_canisters_job:
+  stage: dependencies_build
   extends: .build_job_template
   script:
     - cd $ICP_PATH/ts-canisters
@@ -93,49 +106,16 @@ build_icp_canisters_job:
       - $ICP_RUST_WASM_PATH
     expire_in: 15 min
 
-build_smart_contracts_job:
-  extends: .build_job_template
-  script:
-    - cd $ETHEREUM_PATH
-    - npm ci
-    - npm run compile
-  artifacts:
-    paths:
-      - $TYPECHAIN_TYPES_PATH
-    expire_in: 15 min
-
-build_lib_job:
-  extends: .build_job_template
-  script:
-    - cd $LIB_PATH
-    - cp .npmrc.template .npmrc
-    - sed -i "s/<access_token>/${CI_JOB_TOKEN}/g" .npmrc
-    - npm ci
-    - npm run get-declarations
-    - npm ci
-    - npm run build
-  artifacts:
-      paths:
-      - $LIB_DIST_PATH
-      - $LIB_DECLARATIONS_PATH
-      expire_in: 15 min
-  needs: [build_icp_canisters_job, build_smart_contracts_job]
-
 test_smart_contracts_job:
+  stage: dependencies_test
   extends: .test_job_template
   script:
       - cd $ETHEREUM_PATH
       - npm ci
       - npm run test
 
-test_lib_job:
-  extends: .test_job_template
-  script:
-    - cd $LIB_PATH
-    - npm ci
-    - npm run test
-
 publish_azle_types_job:
+  stage: dependencies_deploy
   extends: .deploy_job_template
   script:
     - cd $ICP_PATH/ts-canisters/src/models/types
@@ -144,16 +124,8 @@ publish_azle_types_job:
     - npm publish
   when: manual
 
-publish_lib_job:
-  extends: .deploy_job_template
-  script:
-    - cd $LIB_PATH
-    - cp .npmrc.template .npmrc
-    - sed -i "s/<access_token>/${CI_JOB_TOKEN}/g" .npmrc
-    - npm publish
-  when: manual
-
 deploy_icp_canisters_job:
+  stage: dependencies_deploy
   extends: .deploy_job_template
   script:
     - cd $ICP_PATH/ts-canisters
@@ -165,6 +137,7 @@ deploy_icp_canisters_job:
   when: manual
 
 reinstall_icp_canisters_job:
+  stage: dependencies_deploy
   extends: .deploy_job_template
   script:
     - cd $ICP_PATH/ts-canisters
@@ -173,4 +146,46 @@ reinstall_icp_canisters_job:
     - chmod +x import-identity-ic.sh reinstall-ic.sh
     - ./import-identity-ic.sh
     - ./reinstall-ic.sh
+  when: manual
+
+build_lib_job:
+  stage: lib_build
+  extends: .build_job_template
+  script:
+    - cd $LIB_PATH
+    - cp .npmrc.template .npmrc
+    - sed -i "s/<access_token>/${CI_JOB_TOKEN}/g" .npmrc
+    - npm ci
+    - npm run get-declarations
+    - npm ci
+    - npm run build
+  artifacts:
+    paths:
+      - $LIB_DIST_PATH
+      - $LIB_DECLARATIONS_PATH
+    expire_in: 15 min
+  needs:
+    - job: build_icp_canisters_job
+      artifacts: true
+    - job: build_smart_contracts_job
+      artifacts: true
+    - job: publish_azle_types_job
+      optional: true
+
+test_lib_job:
+  stage: lib_test
+  extends: .test_job_template
+  script:
+    - cd $LIB_PATH
+    - npm ci
+    - npm run test
+
+publish_lib_job:
+  stage: lib_deploy
+  extends: .deploy_job_template
+  script:
+    - cd $LIB_PATH
+    - cp .npmrc.template .npmrc
+    - sed -i "s/<access_token>/${CI_JOB_TOKEN}/g" .npmrc
+    - npm publish
   when: manual
