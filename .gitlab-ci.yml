@@ -92,6 +92,7 @@ build_icp_canisters_job:
   extends: .build_job_template
   script:
     - cd $ICP_PATH/ts-canisters
+    - cp .env.ci .env
     - npm ci
     - cd ../scripts
     - chmod +x build-canisters.sh
