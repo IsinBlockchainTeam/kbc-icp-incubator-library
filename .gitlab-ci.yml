@@ -62,10 +62,8 @@ cache:
       "$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages?package_name=$PACKAGE_NAME")
     if echo "$response" | grep -q "\"version\":\"${VERSION}\""; then
       echo "true"
-      exit 0  # Package exists
     else
       echo "false"
-      exit 1  # Package doesn't exist
     fi
   }
 
@@ -81,13 +79,6 @@ cache:
     - if: $CI_COMMIT_BRANCH == "force-deploy"
       when: always
 
-.rules_is_not_package_published:
-  before_script:
-    - *check_package
-  rules:
-    - if: '$CI_EXIT_CODE == 1'  # Package doesn't exist
-      when: on_success
-
 # TEMPLATE JOBS
 
 .build_job_template:
@@ -101,9 +92,8 @@ cache:
 
 .deploy_job_template:
   rules:
-#    - !reference [ .rules_dev, rules ]
-#    - !reference [ .rules_force_deploy, rules ]
-    - !reference [ .rules_is_not_package_published, rules ]
+    - !reference [ .rules_dev, rules ]
+    - !reference [ .rules_force_deploy, rules ]
 
 # JOBS
 
