@@ -88,69 +88,69 @@ build_smart_contracts_job:
     paths:
       - $TYPECHAIN_TYPES_PATH
     expire_in: 15 min
-#
-#build_icp_canisters_job:
-#  stage: dependencies_build
-#  extends: .build_job_template
-#  script:
-#    - cd $ICP_PATH/ts-canisters
-#    - npm ci
-#    - cd ../scripts
-#    - chmod +x build-canisters.sh
-#    - ./build-canisters.sh
-#  artifacts:
-#    paths:
-#      - $BUILD_TYPES_PATH
-#      - $ICP_DECLARATIONS_PATH
-#      - $ICP_RUST_DECLARATIONS_PATH
-#      - $ICP_RUST_WASM_PATH
-#    expire_in: 15 min
-#
-#test_smart_contracts_job:
-#  stage: dependencies_test
-#  extends: .test_job_template
-#  script:
-#      - cd $ETHEREUM_PATH
-#      - npm ci
-#      - npm run test
 
-#publish_azle_types_job:
-#  stage: dependencies_deploy
-#  extends: .deploy_job_template
-#  script:
-#    - cd $ICP_PATH/ts-canisters/src/models/types
-#    - cp .npmrc.template .npmrc
-#    - sed -i "s/<access_token>/${CI_JOB_TOKEN}/g" .npmrc
-#    - npm publish
-#  when: manual
-#
-#deploy_icp_canisters_job:
-#  stage: dependencies_deploy
-#  extends: .deploy_job_template
-#  script:
-#    - cd $ICP_PATH/ts-canisters
-#    - npm ci
-#    - cd ../scripts
-#    - chmod +x import-identity-ic.sh deploy-ic.sh
-#    - ./import-identity-ic.sh
-#    - ./deploy-ic.sh
-#  when: manual
-#
-#reinstall_icp_canisters_job:
-#  stage: dependencies_deploy
-#  extends: .deploy_job_template
-#  script:
-#    - cd $ICP_PATH/ts-canisters
-#    - npm ci
-#    - cd ../scripts
-#    - chmod +x import-identity-ic.sh reinstall-ic.sh
-#    - ./import-identity-ic.sh
-#    - ./reinstall-ic.sh
-#  when: manual
-#
-#build_lib_job:
-#  stage: lib_build
+build_icp_canisters_job:
 #  extends: .build_job_template
+  stage: dependencies_build
+  script:
+    - cd $ICP_PATH/ts-canisters
+    - npm ci
+    - cd ../scripts
+    - chmod +x build-canisters.sh
+    - ./build-canisters.sh
+  artifacts:
+    paths:
+      - $BUILD_TYPES_PATH
+      - $ICP_DECLARATIONS_PATH
+      - $ICP_RUST_DECLARATIONS_PATH
+      - $ICP_RUST_WASM_PATH
+    expire_in: 15 min
+
+test_smart_contracts_job:
+  stage: dependencies_test
+#  extends: .test_job_template
+  script:
+      - cd $ETHEREUM_PATH
+      - npm ci
+      - npm run test
+
+publish_azle_types_job:
+  stage: dependencies_deploy
+  extends: .deploy_job_template
+  script:
+    - cd $ICP_PATH/ts-canisters/src/models/types
+    - cp .npmrc.template .npmrc
+    - sed -i "s/<access_token>/${CI_JOB_TOKEN}/g" .npmrc
+    - npm publish
+  when: manual
+
+deploy_icp_canisters_job:
+#  extends: .deploy_job_template
+  stage: dependencies_deploy
+  script:
+    - cd $ICP_PATH/ts-canisters
+    - npm ci
+    - cd ../scripts
+    - chmod +x import-identity-ic.sh deploy-ic.sh
+    - ./import-identity-ic.sh
+    - ./deploy-ic.sh
+  when: manual
+
+reinstall_icp_canisters_job:
+#  extends: .deploy_job_template
+  stage: dependencies_deploy
+  script:
+    - cd $ICP_PATH/ts-canisters
+    - npm ci
+    - cd ../scripts
+    - chmod +x import-identity-ic.sh reinstall-ic.sh
+    - ./import-identity-ic.sh
+    - ./reinstall-ic.sh
+  when: manual
+
+#build_lib_job:
+#  extends: .build_job_template
+#  stage: lib_build
 #  script:
 #    - cd $LIB_PATH
 #    - cp .npmrc.template .npmrc
@@ -173,16 +173,16 @@ build_smart_contracts_job:
 #      optional: true
 #
 #test_lib_job:
-#  stage: lib_test
 #  extends: .test_job_template
+#  stage: lib_test
 #  script:
 #    - cd $LIB_PATH
 #    - npm ci
 #    - npm run test
 #
 #publish_lib_job:
-#  stage: lib_deploy
 #  extends: .deploy_job_template
+#  stage: lib_deploy
 #  script:
 #    - cd $LIB_PATH
 #    - cp .npmrc.template .npmrc
