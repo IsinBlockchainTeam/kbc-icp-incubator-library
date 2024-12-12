@@ -55,19 +55,19 @@ cache:
 # TEMPLATE JOBS
 
 .build_job_template:
-  stage: dependencies_build
-#  rules:
+  rules:
+    - if: $CI_COMMIT_BRANCH == "*"
 #    - !reference [ .rules_dev, rules ]
 #    - !reference [ .rules_force_deploy, rules ]
 
-#.test_job_template:
-##  rules:
-##    - !reference [ .rules_dev, rules ]
-#
-#.deploy_job_template:
-##  rules:
-##    - !reference [ .rules_dev, rules ]
-##    - !reference [ .rules_force_deploy, rules ]
+.test_job_template:
+#  rules:
+#    - !reference [ .rules_dev, rules ]
+
+.deploy_job_template:
+#  rules:
+#    - !reference [ .rules_dev, rules ]
+#    - !reference [ .rules_force_deploy, rules ]
 
 # JOBS
 
