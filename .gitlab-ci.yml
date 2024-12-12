@@ -55,19 +55,18 @@ cache:
 # TEMPLATE JOBS
 
 .build_job_template:
-  when: always
-#  rules:
-#    - !reference [ .rules_dev, rules ]
-#    - !reference [ .rules_force_deploy, rules ]
+  rules:
+    - !reference [ .rules_dev, rules ]
+    - !reference [ .rules_force_deploy, rules ]
 
 .test_job_template:
-#  rules:
-#    - !reference [ .rules_dev, rules ]
+  rules:
+    - !reference [ .rules_dev, rules ]
 
 .deploy_job_template:
-#  rules:
-#    - !reference [ .rules_dev, rules ]
-#    - !reference [ .rules_force_deploy, rules ]
+  rules:
+    - !reference [ .rules_dev, rules ]
+    - !reference [ .rules_force_deploy, rules ]
 
 # JOBS
 
@@ -79,7 +78,7 @@ before_script:
   - cd $CI_PROJECT_DIR
 
 build_smart_contracts_job:
-  extends: .build_job_template
+#  extends: .build_job_template
   stage: dependencies_build
   script:
     - cd $ETHEREUM_PATH
