@@ -101,8 +101,9 @@ cache:
 
 .deploy_job_template:
   rules:
-    - !reference [ .rules_dev, rules ]
-    - !reference [ .rules_force_deploy, rules ]
+#    - !reference [ .rules_dev, rules ]
+#    - !reference [ .rules_force_deploy, rules ]
+    - !reference [ .rules_is_not_package_published, rules ]
 
 # JOBS
 
@@ -151,17 +152,13 @@ test_smart_contracts_job:
       - npm run test
 
 publish_azle_types_job:
-#  extends: .deploy_job_template
+  extends: .deploy_job_template
   stage: dependencies_deploy
   script:
     - cd $ICP_PATH/ts-canisters/src/models/types
     - cp .npmrc.template .npmrc
     - sed -i "s/<access_token>/${CI_JOB_TOKEN}/g" .npmrc
     - npm publish
-  rules:
-    - !reference [ .rules_dev, rules ]
-    - !reference [ .rules_force_deploy, rules ]
-    - !reference [ .rules_is_not_package_published, rules ]
   when: manual
 
 deploy_icp_canisters_job:
