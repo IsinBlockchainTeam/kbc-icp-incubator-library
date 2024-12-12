@@ -54,11 +54,11 @@ cache:
 
 # TEMPLATE JOBS
 
-#.build_job_template:
-##  rules:
-##    - !reference [ .rules_dev, rules ]
-##    - !reference [ .rules_force_deploy, rules ]
-#
+.build_job_template:
+#  rules:
+#    - !reference [ .rules_dev, rules ]
+#    - !reference [ .rules_force_deploy, rules ]
+
 #.test_job_template:
 ##  rules:
 ##    - !reference [ .rules_dev, rules ]
@@ -79,7 +79,7 @@ before_script:
 
 build_smart_contracts_job:
   stage: dependencies_build
-#  extends: .build_job_template
+  extends: .build_job_template
   script:
     - cd $ETHEREUM_PATH
     - npm ci
