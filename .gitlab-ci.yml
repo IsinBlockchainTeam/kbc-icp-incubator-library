@@ -55,8 +55,7 @@ cache:
 # TEMPLATE JOBS
 
 .build_job_template:
-  rules:
-    - if: $CI_COMMIT_BRANCH == "*"
+#  rules:
 #    - !reference [ .rules_dev, rules ]
 #    - !reference [ .rules_force_deploy, rules ]
 
