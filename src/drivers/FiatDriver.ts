@@ -21,13 +21,13 @@ export class FiatDriver {
     }
 
     @HandleIcpError()
-    async addValue(value: string, industrialSector?: string): Promise<string> {
-        return this._actor.addFiat(value, industrialSector || '');
+    async addValue(value: string, industrialSector: string): Promise<string> {
+        return this._actor.addFiat(value, industrialSector);
     }
 
     @HandleIcpError()
-    async removeValue(value: string, industrialSector?: string): Promise<string> {
-        return this._actor.removeFiat(value, industrialSector || '');
+    async removeValue(value: string, industrialSector: string): Promise<string> {
+        return this._actor.removeFiat(value, industrialSector);
     }
 
     @HandleIcpError()

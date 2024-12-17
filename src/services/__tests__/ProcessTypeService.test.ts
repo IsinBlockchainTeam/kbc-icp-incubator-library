@@ -1,4 +1,5 @@
 import { createMock } from 'ts-auto-mock';
+import { IndustrialSectorEnum } from '@kbc-lib/azle-types';
 import { ProcessTypeService } from '../ProcessTypeService';
 import { ProcessTypeDriver } from '../../drivers/ProcessTypeDriver';
 
@@ -31,17 +32,19 @@ describe('ProcessTypeService', () => {
         },
         {
             functionName: 'addValue',
-            serviceFunction: () => processTypeService.addValue('value'),
+            serviceFunction: () =>
+                processTypeService.addValue('value', IndustrialSectorEnum.COFFEE),
             driverFunction: mockedDriverFn.addValue,
             driverFunctionResult: 'value',
-            driverFunctionArgs: ['value']
+            driverFunctionArgs: ['value', IndustrialSectorEnum.COFFEE]
         },
         {
             functionName: 'removeValue',
-            serviceFunction: () => processTypeService.removeValue('value'),
+            serviceFunction: () =>
+                processTypeService.removeValue('value', IndustrialSectorEnum.COFFEE),
             driverFunction: mockedDriverFn.removeValue,
             driverFunctionResult: 'value',
-            driverFunctionArgs: ['value']
+            driverFunctionArgs: ['value', IndustrialSectorEnum.COFFEE]
         },
         {
             functionName: 'hasValue',

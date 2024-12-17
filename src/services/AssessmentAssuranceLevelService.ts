@@ -11,11 +11,11 @@ export class AssessmentAssuranceLevelService {
         return this._assessmentAssuranceLevelDriver.getAllValues();
     }
 
-    async addValue(value: string, industrialSector?: string): Promise<string> {
+    async addValue(value: string, industrialSector: string): Promise<string> {
         return this._assessmentAssuranceLevelDriver.addValue(value, industrialSector);
     }
 
-    async removeValue(value: string, industrialSector?: string): Promise<string> {
+    async removeValue(value: string, industrialSector: string): Promise<string> {
         return this._assessmentAssuranceLevelDriver.removeValue(value, industrialSector);
     }
 

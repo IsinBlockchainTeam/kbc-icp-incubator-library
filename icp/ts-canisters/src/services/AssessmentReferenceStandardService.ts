@@ -16,7 +16,7 @@ class AssessmentReferenceStandardService {
     private _assessmentReferenceStandards = StableBTreeMap<bigint, AssessmentReferenceStandard>(StableMemoryId.ASSESSMENT_STANDARD);
 
     // map<industrial_code_value, assessment_reference_standard_id[]>
-    private _industrialSectorStandards = StableBTreeMap<string, bigint[]>(StableMemoryId.ASSESSMENT_STANDARD_INDUSTRIAL_SECTOR);
+    private _industrialSectorStandardIds = StableBTreeMap<string, bigint[]>(StableMemoryId.ASSESSMENT_STANDARD_INDUSTRIAL_SECTOR);
 
     static get instance(): AssessmentReferenceStandardService {
         if (!this._instance) {
@@ -42,7 +42,7 @@ class AssessmentReferenceStandardService {
         if (!industrialSectorsAvailable.includes(industrialSector)) throw new InvalidIndustrialSectorError();
         const oldStandard = this._assessmentReferenceStandards.values().find((s) => compareStrings(s.name, name) === 0);
         if (oldStandard) {
-            this._industrialSectorStandards.insert(industrialSector, [...new Set([...this._getIndustrialSectorIds(industrialSector), oldStandard.id])]);
+            this._industrialSectorStandardIds.insert(industrialSector, [...new Set([...this._getIndustrialSectorIds(industrialSector), oldStandard.id])]);
             return oldStandard;
         }
         const standard = {
@@ -53,7 +53,7 @@ class AssessmentReferenceStandardService {
             siteUrl
         };
         this._assessmentReferenceStandards.insert(standard.id, standard);
-        this._industrialSectorStandards.insert(industrialSector, [...this._getIndustrialSectorIds(industrialSector), standard.id]);
+        this._industrialSectorStandardIds.insert(industrialSector, [...this._getIndustrialSectorIds(industrialSector), standard.id]);
         return standard;
     }
 
@@ -70,16 +70,16 @@ class AssessmentReferenceStandardService {
     }
 
     remove(id: bigint, industrialSector: string): AssessmentReferenceStandard {
+        if (!industrialSectorsAvailable.includes(industrialSector)) throw new InvalidIndustrialSectorError();
         const standard = this.getAll().find((s) => s.id === id);
         if (!standard) throw new AssessmentReferenceStandardNotFoundError(id);
 
-        if (!industrialSectorsAvailable.includes(industrialSector)) throw new InvalidIndustrialSectorError();
-        this._industrialSectorStandards.insert(
+        this._industrialSectorStandardIds.insert(
             industrialSector,
             this._getIndustrialSectorIds(industrialSector).filter((s) => s !== id)
         );
         if (
-            !this._industrialSectorStandards
+            !this._industrialSectorStandardIds
                 .values()
                 .flat()
                 .find((s) => s === id)
@@ -90,11 +90,11 @@ class AssessmentReferenceStandardService {
     }
 
     private _getDefaultIndustrialSectorIds(): bigint[] {
-        return this._industrialSectorStandards.get(IndustrialSectorEnum.DEFAULT) || [];
+        return this._industrialSectorStandardIds.get(IndustrialSectorEnum.DEFAULT) || [];
     }
 
     private _getIndustrialSectorIds(industrialSector: string): bigint[] {
-        return this._industrialSectorStandards.get(industrialSector) || [];
+        return this._industrialSectorStandardIds.get(industrialSector) || [];
     }
 
     private _getDefaultIndustrialSectorValues(): AssessmentReferenceStandard[] {

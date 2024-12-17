@@ -1,54 +1,72 @@
 import { createMock } from 'ts-auto-mock';
+import { IndustrialSectorEnum } from '@kbc-lib/azle-types';
 import { AssessmentReferenceStandardService } from '../AssessmentReferenceStandardService';
 import { AssessmentReferenceStandardDriver } from '../../drivers/AssessmentReferenceStandardDriver';
+import { AssessmentReferenceStandard } from '../../entities/AssessmentReferenceStandard';
 
 describe('AssessmentStandardService', () => {
     let assessmentStandardService: AssessmentReferenceStandardService;
     const mockedDriverFn = {
-        getAllValues: jest.fn(),
-        addValue: jest.fn(),
-        removeValue: jest.fn(),
-        hasValue: jest.fn()
+        getAll: jest.fn(),
+        getById: jest.fn(),
+        add: jest.fn(),
+        removeById: jest.fn()
     };
 
     beforeAll(() => {
         const assessmentStandardDriver = createMock<AssessmentReferenceStandardDriver>({
-            getAll: mockedDriverFn.getAllValues,
-            add: mockedDriverFn.addValue,
-            removeById: mockedDriverFn.removeValue,
-            hasValue: mockedDriverFn.hasValue
+            getAll: mockedDriverFn.getAll,
+            getById: mockedDriverFn.getById,
+            add: mockedDriverFn.add,
+            removeById: mockedDriverFn.removeById
         });
-        assessmentStandardService = new AssessmentReferenceStandardService(assessmentStandardDriver);
+        assessmentStandardService = new AssessmentReferenceStandardService(
+            assessmentStandardDriver
+        );
     });
 
     it.each([
         {
-            functionName: 'getAllValues',
+            functionName: 'getAll',
             serviceFunction: () => assessmentStandardService.getAll(),
-            driverFunction: mockedDriverFn.getAllValues,
-            driverFunctionResult: ['value1', 'value2'],
+            driverFunction: mockedDriverFn.getAll,
+            driverFunctionResult: [{ id: 1 } as AssessmentReferenceStandard],
             driverFunctionArgs: []
         },
         {
-            functionName: 'addValue',
-            serviceFunction: () => assessmentStandardService.add('value'),
-            driverFunction: mockedDriverFn.addValue,
-            driverFunctionResult: 'value',
-            driverFunctionArgs: ['value']
+            functionName: 'getById',
+            serviceFunction: () => assessmentStandardService.getById(3),
+            driverFunction: mockedDriverFn.getById,
+            driverFunctionResult: { id: 3 } as AssessmentReferenceStandard,
+            driverFunctionArgs: [3]
         },
         {
-            functionName: 'removeValue',
-            serviceFunction: () => assessmentStandardService.removeById('value'),
-            driverFunction: mockedDriverFn.removeValue,
-            driverFunctionResult: 'value',
-            driverFunctionArgs: ['value']
+            functionName: 'add',
+            serviceFunction: () =>
+                assessmentStandardService.add(
+                    'standard1',
+                    'criteria',
+                    'logo',
+                    'site',
+                    IndustrialSectorEnum.COFFEE
+                ),
+            driverFunction: mockedDriverFn.add,
+            driverFunctionResult: { id: 2 } as AssessmentReferenceStandard,
+            driverFunctionArgs: [
+                'standard1',
+                'criteria',
+                'logo',
+                'site',
+                IndustrialSectorEnum.COFFEE
+            ]
         },
         {
-            functionName: 'hasValue',
-            serviceFunction: () => assessmentStandardService.hasValue('value'),
-            driverFunction: mockedDriverFn.hasValue,
-            driverFunctionResult: true,
-            driverFunctionArgs: ['value']
+            functionName: 'removeById',
+            serviceFunction: () =>
+                assessmentStandardService.removeById(3, IndustrialSectorEnum.COFFEE),
+            driverFunction: mockedDriverFn.removeById,
+            driverFunctionResult: { id: 3 } as AssessmentReferenceStandard,
+            driverFunctionArgs: [3, IndustrialSectorEnum.COFFEE]
         }
     ])(
         `should call driver function $functionName`,

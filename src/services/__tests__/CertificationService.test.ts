@@ -36,7 +36,7 @@ describe('CertificationService', () => {
     };
     const issuer = '0xissuer';
     const subject = '0xsubject';
-    const assessmentReferenceStandard = '0xassessmentStandard';
+    const assessmentReferenceStandardId = 2;
     const assessmentAssuranceLevel = '0xassessmentAssuranceLevel';
     const documentRequest = {
         referenceId: '0xreferenceId',
@@ -104,7 +104,7 @@ describe('CertificationService', () => {
                 certificationService.registerCompanyCertificate(
                     issuer,
                     subject,
-                    assessmentReferenceStandard,
+                    assessmentReferenceStandardId,
                     assessmentAssuranceLevel,
                     documentRequest,
                     validFrom,
@@ -116,7 +116,7 @@ describe('CertificationService', () => {
             driverFunctionArgs: [
                 issuer,
                 subject,
-                assessmentReferenceStandard,
+                assessmentReferenceStandardId,
                 assessmentAssuranceLevel,
                 {
                     ...document,
@@ -133,7 +133,7 @@ describe('CertificationService', () => {
                 certificationService.registerScopeCertificate(
                     issuer,
                     subject,
-                    assessmentReferenceStandard,
+                    assessmentReferenceStandardId,
                     assessmentAssuranceLevel,
                     documentRequest,
                     validFrom,
@@ -146,7 +146,7 @@ describe('CertificationService', () => {
             driverFunctionArgs: [
                 issuer,
                 subject,
-                assessmentReferenceStandard,
+                assessmentReferenceStandardId,
                 assessmentAssuranceLevel,
                 {
                     ...document,
@@ -164,7 +164,7 @@ describe('CertificationService', () => {
                 certificationService.registerMaterialCertificate(
                     issuer,
                     subject,
-                    assessmentReferenceStandard,
+                    assessmentReferenceStandardId,
                     assessmentAssuranceLevel,
                     documentRequest,
                     1,
@@ -175,7 +175,7 @@ describe('CertificationService', () => {
             driverFunctionArgs: [
                 issuer,
                 subject,
-                assessmentReferenceStandard,
+                assessmentReferenceStandardId,
                 assessmentAssuranceLevel,
                 {
                     ...document,
@@ -246,7 +246,7 @@ describe('CertificationService', () => {
             serviceFunction: () =>
                 certificationService.updateCompanyCertificate(
                     1,
-                    assessmentReferenceStandard,
+                    assessmentReferenceStandardId,
                     assessmentAssuranceLevel,
                     validFrom,
                     validUntil,
@@ -256,7 +256,7 @@ describe('CertificationService', () => {
             driverFunctionResult: {} as CompanyCertificate,
             driverFunctionArgs: [
                 1,
-                assessmentReferenceStandard,
+                assessmentReferenceStandardId,
                 assessmentAssuranceLevel,
                 validFrom,
                 validUntil,
@@ -268,7 +268,7 @@ describe('CertificationService', () => {
             serviceFunction: () =>
                 certificationService.updateScopeCertificate(
                     1,
-                    assessmentReferenceStandard,
+                    assessmentReferenceStandardId,
                     assessmentAssuranceLevel,
                     validFrom,
                     validUntil,
@@ -279,7 +279,7 @@ describe('CertificationService', () => {
             driverFunctionResult: {} as ScopeCertificate,
             driverFunctionArgs: [
                 1,
-                assessmentReferenceStandard,
+                assessmentReferenceStandardId,
                 assessmentAssuranceLevel,
                 validFrom,
                 validUntil,
@@ -292,7 +292,7 @@ describe('CertificationService', () => {
             serviceFunction: () =>
                 certificationService.updateMaterialCertificate(
                     1,
-                    assessmentReferenceStandard,
+                    assessmentReferenceStandardId,
                     assessmentAssuranceLevel,
                     3,
                     'notes updated'
@@ -301,7 +301,7 @@ describe('CertificationService', () => {
             driverFunctionResult: {} as MaterialCertificate,
             driverFunctionArgs: [
                 1,
-                assessmentReferenceStandard,
+                assessmentReferenceStandardId,
                 assessmentAssuranceLevel,
                 3,
                 'notes updated'

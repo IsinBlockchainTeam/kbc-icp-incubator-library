@@ -1,12 +1,18 @@
 import { StableBTreeMap } from 'azle';
 import UnitService from '../UnitService';
-import { StableMemoryId } from '../../utils/stableMemory';
-import { ErrorType } from '../../models/types';
+import { ErrorType, IndustrialSectorEnum } from '../../models/types';
+import AuthenticationService from '../AuthenticationService';
 
 jest.mock('azle');
+jest.mock('../AuthenticationService', () => ({
+    instance: {
+        getLoggedOrganization: jest.fn()
+    }
+}));
 
 describe('UnitService', () => {
-    let processTypeService: UnitService;
+    let unitService: UnitService;
+    const authenticationServiceInstanceMock = AuthenticationService.instance as jest.Mocked<AuthenticationService>;
 
     const mockedFn = {
         values: jest.fn(),
@@ -22,7 +28,9 @@ describe('UnitService', () => {
             keys: mockedFn.keys,
             insert: mockedFn.insert
         });
-        processTypeService = UnitService.instance;
+        unitService = UnitService.instance;
+
+        authenticationServiceInstanceMock.getLoggedOrganization = jest.fn().mockReturnValue({ industrialSector: IndustrialSectorEnum.COFFEE });
     });
 
     afterEach(() => {
@@ -30,47 +38,58 @@ describe('UnitService', () => {
     });
 
     it('retrieves all values', () => {
-        processTypeService.getAllValues();
-        expect(mockedFn.get).toHaveBeenCalled();
-        expect(mockedFn.get).toHaveBeenCalledWith(BigInt(StableMemoryId.UNIT_ENUM));
+        unitService.getAllValues();
+        expect(mockedFn.get).toHaveBeenCalledTimes(2);
+        expect(mockedFn.get).toHaveBeenNthCalledWith(1, IndustrialSectorEnum.DEFAULT);
+        expect(mockedFn.get).toHaveBeenNthCalledWith(2, IndustrialSectorEnum.COFFEE);
     });
 
     it('add a value', () => {
-        processTypeService.addValue('value');
+        mockedFn.get.mockReturnValue(['value1']);
+        jest.spyOn(unitService, 'hasValue').mockReturnValueOnce(false);
+
+        unitService.addValue('value2', IndustrialSectorEnum.COFFEE);
         expect(mockedFn.get).toHaveBeenCalled();
-        expect(mockedFn.get).toHaveBeenCalledWith(BigInt(StableMemoryId.UNIT_ENUM));
+        expect(mockedFn.get).toHaveBeenCalledWith(IndustrialSectorEnum.COFFEE);
         expect(mockedFn.insert).toHaveBeenCalled();
-        expect(mockedFn.insert).toHaveBeenCalledWith(BigInt(StableMemoryId.UNIT_ENUM), ['value']);
+        expect(mockedFn.insert).toHaveBeenCalledWith(IndustrialSectorEnum.COFFEE, ['value1', 'value2']);
     });
 
     it('add a value - error (Enumeration value already exists)', () => {
         mockedFn.get.mockReturnValueOnce(['value']);
-        expect(() => processTypeService.addValue('value')).toThrow(
-            new Error(`(${ErrorType.ENUMERATION_ALREADY_EXISTS}) Enumeration value already exists.`)
-        );
+        expect(() => unitService.addValue('value', IndustrialSectorEnum.COFFEE)).toThrow(new Error(`(${ErrorType.ENUMERATION_ALREADY_EXISTS}) Unit value already exists.`));
+    });
+
+    it('add a value - error (Invalid industrial sector)', () => {
+        expect(() => unitService.addValue('value', 'sector')).toThrow(new Error(`(${ErrorType.INDUSTRIAL_SECTOR_INVALID}) Invalid industrial sector.`));
     });
 
     it('remove a value', () => {
         mockedFn.get.mockReturnValueOnce(['value']);
-        processTypeService.removeValue('value');
+        jest.spyOn(unitService, 'hasValue').mockReturnValueOnce(true);
+
+        unitService.removeValue('value', IndustrialSectorEnum.COFFEE);
         expect(mockedFn.get).toHaveBeenCalled();
-        expect(mockedFn.get).toHaveBeenCalledWith(BigInt(StableMemoryId.UNIT_ENUM));
+        expect(mockedFn.get).toHaveBeenCalledWith(IndustrialSectorEnum.COFFEE);
         expect(mockedFn.insert).toHaveBeenCalled();
-        expect(mockedFn.insert).toHaveBeenCalledWith(BigInt(StableMemoryId.UNIT_ENUM), []);
+        expect(mockedFn.insert).toHaveBeenCalledWith(IndustrialSectorEnum.COFFEE, []);
     });
 
     it('remove a value - error (Enumeration value does not exist)', () => {
-        expect(() => processTypeService.removeValue('value')).toThrow(
-            new Error(`(${ErrorType.ENUMERATION_NOT_FOUND}) Enumeration value does not exist.`)
-        );
+        expect(() => unitService.removeValue('value', IndustrialSectorEnum.COFFEE)).toThrow(new Error(`(${ErrorType.ENUMERATION_NOT_FOUND}) Unit value does not exist.`));
         expect(mockedFn.get).toHaveBeenCalled();
-        expect(mockedFn.get).toHaveBeenCalledWith(BigInt(StableMemoryId.UNIT_ENUM));
+        expect(mockedFn.get).toHaveBeenCalledWith(IndustrialSectorEnum.COFFEE);
+    });
+
+    it('remove a value - error (Invalid industrial sector)', () => {
+        expect(() => unitService.removeValue('value', 'sector')).toThrow(new Error(`(${ErrorType.INDUSTRIAL_SECTOR_INVALID}) Invalid industrial sector.`));
+        expect(mockedFn.get).not.toHaveBeenCalled();
     });
 
     it('checks if a value exists', () => {
         mockedFn.get.mockReturnValueOnce(['value']);
-        expect(processTypeService.hasValue('value')).toBeTruthy();
-        expect(processTypeService.hasValue('anotherValue')).toBeFalsy();
-        expect(mockedFn.get).toHaveBeenCalledTimes(2);
+        expect(unitService.hasValue('value')).toBeTruthy();
+        expect(unitService.hasValue('anotherValue')).toBeFalsy();
+        expect(mockedFn.get).toHaveBeenCalledTimes(4);
     });
 });

@@ -21,13 +21,13 @@ export class ProcessTypeDriver {
     }
 
     @HandleIcpError()
-    async addValue(value: string, industrialSector?: string): Promise<string> {
-        return this._actor.addProcessType(value, industrialSector || '');
+    async addValue(value: string, industrialSector: string): Promise<string> {
+        return this._actor.addProcessType(value, industrialSector);
     }
 
     @HandleIcpError()
-    async removeValue(value: string, industrialSector?: string): Promise<string> {
-        return this._actor.removeProcessType(value, industrialSector || '');
+    async removeValue(value: string, industrialSector: string): Promise<string> {
+        return this._actor.removeProcessType(value, industrialSector);
     }
 
     @HandleIcpError()

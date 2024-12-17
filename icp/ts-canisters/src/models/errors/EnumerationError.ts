@@ -2,8 +2,8 @@ import { ErrorType } from '../types';
 import { EnumerationType } from '../../services/EnumerationService';
 
 export class EnumerationAlreadyExistsError extends Error {
-    constructor() {
-        super(`(${ErrorType.ENUMERATION_ALREADY_EXISTS}) Enumeration value already exists.`);
+    constructor(type: EnumerationType) {
+        super(`(${ErrorType.ENUMERATION_ALREADY_EXISTS}) ${type} value already exists.`);
         this.name = 'EnumerationAlreadyExistsError';
     }
 }

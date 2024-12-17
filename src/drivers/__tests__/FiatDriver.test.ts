@@ -1,5 +1,6 @@
 import { createActor } from 'icp-declarations/entity_manager';
 import type { Identity } from '@dfinity/agent';
+import { IndustrialSectorEnum } from '@kbc-lib/azle-types';
 import { FiatDriver } from '../FiatDriver';
 
 jest.mock('icp-declarations/entity_manager');
@@ -35,17 +36,24 @@ describe('FiatDriver', () => {
     it('should add a value', async () => {
         const newFiatDriver = 'newFiatDriver';
         mockedActor.addFiat.mockReturnValue(newFiatDriver);
-        await expect(fiatDriver.addValue(newFiatDriver)).resolves.toEqual(newFiatDriver);
+        await expect(
+            fiatDriver.addValue(newFiatDriver, IndustrialSectorEnum.COFFEE)
+        ).resolves.toEqual(newFiatDriver);
         expect(mockedActor.addFiat).toHaveBeenCalled();
-        expect(mockedActor.addFiat).toHaveBeenCalledWith(newFiatDriver);
+        expect(mockedActor.addFiat).toHaveBeenCalledWith(
+            newFiatDriver,
+            IndustrialSectorEnum.COFFEE
+        );
     });
 
     it('should remove a value', async () => {
         const toRemove = 'fiat';
         mockedActor.removeFiat.mockReturnValue(toRemove);
-        await expect(fiatDriver.removeValue(toRemove)).resolves.toEqual(toRemove);
+        await expect(
+            fiatDriver.removeValue(toRemove, IndustrialSectorEnum.COFFEE)
+        ).resolves.toEqual(toRemove);
         expect(mockedActor.removeFiat).toHaveBeenCalled();
-        expect(mockedActor.removeFiat).toHaveBeenCalledWith(toRemove);
+        expect(mockedActor.removeFiat).toHaveBeenCalledWith(toRemove, IndustrialSectorEnum.COFFEE);
     });
 
     it('should check if a value already exists', async () => {

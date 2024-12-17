@@ -21,7 +21,7 @@ export class AssessmentReferenceStandardService {
         sustainabilityCriteria: string,
         logoUrl: string,
         siteUrl: string,
-        industrialSector?: string
+        industrialSector: string
     ): Promise<AssessmentReferenceStandard> {
         return this._assessmentReferenceStandardDriver.add(
             name,
@@ -32,7 +32,7 @@ export class AssessmentReferenceStandardService {
         );
     }
 
-    async removeById(id: number, industrialSector?: string): Promise<AssessmentReferenceStandard> {
+    async removeById(id: number, industrialSector: string): Promise<AssessmentReferenceStandard> {
         return this._assessmentReferenceStandardDriver.removeById(id, industrialSector);
     }
 }

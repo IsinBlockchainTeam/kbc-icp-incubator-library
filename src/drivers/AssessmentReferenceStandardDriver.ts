@@ -20,7 +20,9 @@ export class AssessmentReferenceStandardDriver {
     @HandleIcpError()
     async getAll(): Promise<AssessmentReferenceStandard[]> {
         const assessmentReferenceStandards = await this._actor.getAllAssessmentReferenceStandards();
-        return assessmentReferenceStandards.map(EntityBuilder.buildAssessmentReferenceStandard);
+        return assessmentReferenceStandards.map((s) =>
+            EntityBuilder.buildAssessmentReferenceStandard(s)
+        );
     }
 
     @HandleIcpError()
@@ -36,7 +38,7 @@ export class AssessmentReferenceStandardDriver {
         sustainabilityCriteria: string,
         logoUrl: string,
         siteUrl: string,
-        industrialSector?: string
+        industrialSector: string
     ): Promise<AssessmentReferenceStandard> {
         return EntityBuilder.buildAssessmentReferenceStandard(
             await this._actor.addAssessmentReferenceStandard(
@@ -44,15 +46,15 @@ export class AssessmentReferenceStandardDriver {
                 sustainabilityCriteria,
                 logoUrl,
                 siteUrl,
-                industrialSector || ''
+                industrialSector
             )
         );
     }
 
     @HandleIcpError()
-    async removeById(id: number, industrialSector?: string): Promise<AssessmentReferenceStandard> {
+    async removeById(id: number, industrialSector: string): Promise<AssessmentReferenceStandard> {
         return EntityBuilder.buildAssessmentReferenceStandard(
-            await this._actor.removeAssessmentReferenceStandard(BigInt(id), industrialSector || '')
+            await this._actor.removeAssessmentReferenceStandard(BigInt(id), industrialSector)
         );
     }
 }

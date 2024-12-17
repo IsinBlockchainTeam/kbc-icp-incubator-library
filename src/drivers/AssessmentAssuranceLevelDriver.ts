@@ -21,13 +21,13 @@ export class AssessmentAssuranceLevelDriver {
     }
 
     @HandleIcpError()
-    async addValue(value: string, industrialSector?: string): Promise<string> {
-        return this._actor.addAssessmentAssuranceLevel(value, industrialSector || '');
+    async addValue(value: string, industrialSector: string): Promise<string> {
+        return this._actor.addAssessmentAssuranceLevel(value, industrialSector);
     }
 
     @HandleIcpError()
-    async removeValue(value: string, industrialSector?: string): Promise<string> {
-        return this._actor.removeAssessmentAssuranceLevel(value, industrialSector || '');
+    async removeValue(value: string, industrialSector: string): Promise<string> {
+        return this._actor.removeAssessmentAssuranceLevel(value, industrialSector);
     }
 
     @HandleIcpError()

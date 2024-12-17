@@ -21,13 +21,13 @@ export class UnitDriver {
     }
 
     @HandleIcpError()
-    async addValue(value: string, industrialSector?: string): Promise<string> {
-        return this._actor.addUnit(value, industrialSector || '');
+    async addValue(value: string, industrialSector: string): Promise<string> {
+        return this._actor.addUnit(value, industrialSector);
     }
 
     @HandleIcpError()
-    async removeValue(value: string, industrialSector?: string): Promise<string> {
-        return this._actor.removeUnit(value, industrialSector || '');
+    async removeValue(value: string, industrialSector: string): Promise<string> {
+        return this._actor.removeUnit(value, industrialSector);
     }
 
     @HandleIcpError()

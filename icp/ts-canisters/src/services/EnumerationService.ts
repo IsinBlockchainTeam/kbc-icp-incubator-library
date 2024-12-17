@@ -36,26 +36,19 @@ abstract class EnumerationService {
 
     // industrial sector argument is needed to let the admin able to add enumerations for other industrial sectors
     addValue(value: string, industrialSector: string): string {
-        if (this.hasValue(value, industrialSector)) throw new EnumerationAlreadyExistsError();
-        if (industrialSector && !industrialSectorsAvailable.includes(industrialSector)) throw new InvalidIndustrialSectorError();
-        if (industrialSector) this._enumerations.insert(industrialSector, [...this._getIndustrialSectorValues(industrialSector), value]);
-        else this._enumerations.insert(IndustrialSectorEnum.DEFAULT, [...this._getDefaultIndustrialSectorValues(), value]);
+        if (!industrialSectorsAvailable.includes(industrialSector)) throw new InvalidIndustrialSectorError();
+        if (this.hasValue(value, industrialSector)) throw new EnumerationAlreadyExistsError(this._type);
+        this._enumerations.insert(industrialSector, [...this._getIndustrialSectorValues(industrialSector), value]);
         return value;
     }
 
     removeValue(value: string, industrialSector: string): string {
+        if (!industrialSectorsAvailable.includes(industrialSector)) throw new InvalidIndustrialSectorError();
         if (!this.hasValue(value, industrialSector)) throw new EnumerationNotFoundError(this._type);
-        if (industrialSector && !industrialSectorsAvailable.includes(industrialSector)) throw new InvalidIndustrialSectorError();
-        if (industrialSector)
-            this._enumerations.insert(
-                industrialSector,
-                this._getIndustrialSectorValues(industrialSector).filter((v) => v !== value)
-            );
-        else
-            this._enumerations.insert(
-                IndustrialSectorEnum.DEFAULT,
-                this._getDefaultIndustrialSectorValues().filter((v) => v !== value)
-            );
+        this._enumerations.insert(
+            industrialSector,
+            this._getIndustrialSectorValues(industrialSector).filter((v) => v !== value)
+        );
         return value;
     }
 

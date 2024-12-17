@@ -21,13 +21,13 @@ export class SustainabilityCriteriaDriver {
     }
 
     @HandleIcpError()
-    async addValue(value: string, industrialSector?: string): Promise<string> {
-        return this._actor.addSustainabilityCriteria(value, industrialSector || '');
+    async addValue(value: string, industrialSector: string): Promise<string> {
+        return this._actor.addSustainabilityCriteria(value, industrialSector);
     }
 
     @HandleIcpError()
-    async removeValue(value: string, industrialSector?: string): Promise<string> {
-        return this._actor.removeSustainabilityCriteria(value, industrialSector || '');
+    async removeValue(value: string, industrialSector: string): Promise<string> {
+        return this._actor.removeSustainabilityCriteria(value, industrialSector);
     }
 
     @HandleIcpError()
