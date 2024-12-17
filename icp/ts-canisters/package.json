@@ -1,21 +1,21 @@
 {
     "name": "@kbc-lib/azle-types",
-    "version": "0.0.1",
+    "version": "0.0.0",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "scripts": {
         "test": "jest",
         "start-network": "dfx start --clean",
-        "deploy": "bash -c \"set -o allexport; source ./.env.custom; source .env.custom; set +o allexport && dfx deploy\"",
-        "deploy:ic": "bash -c \"set -o allexport; source ./.env.custom; source .env.custom; set +o allexport && dfx deploy --ic\"",
-        "upgrade": "bash -c \"set -o allexport; source ./.env.custom; source .env.custom; set +o allexport && dfx build entity_manager && dfx canister install --mode upgrade entity_manager\"",
-        "upgrade:ic": "bash -c \"set -o allexport; source ./.env.custom; source .env.custom; set +o allexport && dfx build entity_manager --ic && dfx canister install --mode upgrade entity_manager --ic\"",
-        "reinstall": "bash -c \"set -o allexport; source ./.env.custom; source .env.custom; set +o allexport && dfx build entity_manager && dfx canister install --mode reinstall entity_manager\"",
-        "reinstall:ic": "bash -c \"set -o allexport; source ./.env.custom; source .env.custom; set +o allexport && dfx build entity_manager --ic && dfx canister install --mode reinstall entity_manager --ic\"",
+        "deploy": "bash -c \"set -o allexport; source ./.env.custom; source .env; set +o allexport && dfx deploy\"",
+        "deploy:ic": "bash -c \"set -o allexport; source ./env.ci; set +o allexport && dfx deploy --ic\"",
+        "upgrade": "bash -c \"set -o allexport; source ./.env.custom; source .env; set +o allexport && dfx build entity_manager && dfx canister install --mode upgrade entity_manager\"",
+        "upgrade:ic": "bash -c \"set -o allexport; source ./.env.custom; source .env; set +o allexport && dfx build entity_manager --ic && dfx canister install --mode upgrade entity_manager --ic\"",
+        "reinstall": "bash -c \"set -o allexport; source ./.env.custom; source .env; set +o allexport && dfx build entity_manager && dfx canister install --mode reinstall entity_manager\"",
+        "reinstall:ic": "bash -c \"set -o allexport; source ./.env.custom; source .env; set +o allexport && dfx build entity_manager --ic && dfx canister install --mode reinstall entity_manager --ic\"",
         "build-types": "npx tsc -p src/models/types/tsconfig.json",
         "lint": "eslint --fix --ext .ts .",
         "prettier": "npx prettier . --write",
-        "generate": "bash -c \"set -o allexport; source ./.env.custom; source .env.custom; set +o allexport && dfx generate\""
+        "generate": "bash -c \"set -o allexport; source ./.env.custom; source .env; set +o allexport && dfx generate\""
     },
     "dependencies": {
         "@types/jest": "^29.5.14",
