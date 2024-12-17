@@ -1,10 +1,11 @@
 #!/bin/bash
 
+OS_TYPE=$(uname)
+
 BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
 echo "BASE_DIR: $BASE_DIR"
 
 function new_iterm_tab() {
-  OS_TYPE=$(uname)
   local command=$1
 
   if [[ "$OS_TYPE" == "Linux" ]]; then
@@ -66,7 +67,11 @@ function store_ngrok_url() {
     local var_name="EVM_RPC_URL"
     local env_file="$BASE_DIR/icp/ts-canisters/.env.custom"
 
-    sed -i '' "s|^$var_name=.*|$var_name=$ngrok_url|" "$env_file"
+    if [[ "$OS_TYPE" == "Linux" ]]; then
+        sed -i "s|^$var_name=.*|$var_name=$ngrok_url|" "$env_file"
+    else
+      sed -i '' "s|^$var_name=.*|$var_name=$ngrok_url|" "$env_file"
+    fi
 }
 
 function wait_for_canister_address() {
@@ -87,7 +92,11 @@ function store_canister_address() {
     local var_name="ENTITY_MANAGER_CANISTER_ADDRESS"
     local env_file="$BASE_DIR/blockchain/.env"
 
-    sed -i '' "s|^$var_name=.*|$var_name=$entity_manager_canister_eth_address|" "$env_file"
+    if [[ "$OS_TYPE" == "Linux" ]]; then
+        sed -i "s|^$var_name=.*|$var_name=$entity_manager_canister_eth_address|" "$env_file"
+    else
+      sed -i '' "s|^$var_name=.*|$var_name=$entity_manager_canister_eth_address|" "$env_file"
+    fi
 }
 
 echo "Starting local environment..."
