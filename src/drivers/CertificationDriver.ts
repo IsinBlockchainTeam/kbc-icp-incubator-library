@@ -8,6 +8,7 @@ import { EntityBuilder } from '../utils/EntityBuilder';
 import { ScopeCertificate } from '../entities/ScopeCertificate';
 import { MaterialCertificate } from '../entities/MaterialCertificate';
 import { EvaluationStatus } from '../entities/Evaluation';
+import { HandleIcpError } from '../decorators/HandleIcpError';
 
 export class CertificationDriver {
     private _actor: ActorSubclass<_SERVICE>;
@@ -21,6 +22,7 @@ export class CertificationDriver {
         });
     }
 
+    @HandleIcpError()
     async registerCompanyCertificate(
         issuer: string,
         subject: string,
@@ -44,6 +46,7 @@ export class CertificationDriver {
         return EntityBuilder.buildCompanyCertificate(certificate);
     }
 
+    @HandleIcpError()
     async registerScopeCertificate(
         issuer: string,
         subject: string,
@@ -69,6 +72,7 @@ export class CertificationDriver {
         return EntityBuilder.buildScopeCertificate(certificate);
     }
 
+    @HandleIcpError()
     async registerMaterialCertificate(
         issuer: string,
         subject: string,
@@ -90,46 +94,55 @@ export class CertificationDriver {
         return this._buildMaterialCertificate(certificate);
     }
 
+    @HandleIcpError()
     async getBaseCertificateById(id: number): Promise<BaseCertificate> {
         const certificate = await this._actor.getBaseCertificateById(BigInt(id));
         return EntityBuilder.buildBaseCertificate(certificate);
     }
 
+    @HandleIcpError()
     async getBaseCertificatesInfoBySubject(subject: string): Promise<BaseCertificate[]> {
         const certificates = await this._actor.getBaseCertificatesInfoBySubject(subject);
         return certificates.map((cert) => EntityBuilder.buildBaseCertificate(cert));
     }
 
+    @HandleIcpError()
     async getCompanyCertificates(subject: string): Promise<CompanyCertificate[]> {
         const certificates = await this._actor.getCompanyCertificates(subject);
         return certificates.map((cert) => EntityBuilder.buildCompanyCertificate(cert));
     }
 
+    @HandleIcpError()
     async getScopeCertificates(subject: string): Promise<ScopeCertificate[]> {
         const certificates = await this._actor.getScopeCertificates(subject);
         return certificates.map((cert) => EntityBuilder.buildScopeCertificate(cert));
     }
 
+    @HandleIcpError()
     async getMaterialCertificates(subject: string): Promise<MaterialCertificate[]> {
         const certificates = await this._actor.getMaterialCertificates(subject);
         return Promise.all(certificates.map(async (cert) => this._buildMaterialCertificate(cert)));
     }
 
+    @HandleIcpError()
     async getCompanyCertificate(subject: string, id: number): Promise<CompanyCertificate> {
         const certificate = await this._actor.getCompanyCertificate(subject, BigInt(id));
         return EntityBuilder.buildCompanyCertificate(certificate);
     }
 
+    @HandleIcpError()
     async getScopeCertificate(subject: string, id: number): Promise<ScopeCertificate> {
         const certificate = await this._actor.getScopeCertificate(subject, BigInt(id));
         return EntityBuilder.buildScopeCertificate(certificate);
     }
 
+    @HandleIcpError()
     async getMaterialCertificate(subject: string, id: number): Promise<MaterialCertificate> {
         const certificate = await this._actor.getMaterialCertificate(subject, BigInt(id));
         return this._buildMaterialCertificate(certificate);
     }
 
+    @HandleIcpError()
     async updateCompanyCertificate(
         certificateId: number,
         assessmentReferenceStandardId: number,
@@ -149,6 +162,7 @@ export class CertificationDriver {
         return EntityBuilder.buildCompanyCertificate(certificate);
     }
 
+    @HandleIcpError()
     async updateScopeCertificate(
         certificateId: number,
         assessmentReferenceStandardId: number,
@@ -170,6 +184,7 @@ export class CertificationDriver {
         return EntityBuilder.buildScopeCertificate(certificate);
     }
 
+    @HandleIcpError()
     async updateMaterialCertificate(
         certificateId: number,
         assessmentReferenceStandardId: number,
@@ -187,6 +202,7 @@ export class CertificationDriver {
         return this._buildMaterialCertificate(certificate);
     }
 
+    @HandleIcpError()
     async updateDocument(
         certificateId: number,
         document: CertificateDocumentInfo
@@ -198,6 +214,7 @@ export class CertificationDriver {
         return EntityBuilder.buildBaseCertificate(baseCertificate);
     }
 
+    @HandleIcpError()
     async evaluateDocument(
         certificateId: number,
         evaluationStatus: EvaluationStatus

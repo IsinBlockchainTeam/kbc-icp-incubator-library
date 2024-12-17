@@ -5,7 +5,7 @@
 
 import { config } from 'dotenv';
 
-config({ path: '../icp/ts-canister/.env' });
+config({ path: '../icp/ts-canister/.env.custom' });
 
 export default {
     // All imported modules in your tests should be mocked automatically

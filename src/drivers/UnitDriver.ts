@@ -1,6 +1,7 @@
 import { ActorSubclass, Identity } from '@dfinity/agent';
 import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
 import { createActor } from 'icp-declarations/entity_manager';
+import { HandleIcpError } from '../decorators/HandleIcpError';
 
 export class UnitDriver {
     private _actor: ActorSubclass<_SERVICE>;
@@ -14,18 +15,22 @@ export class UnitDriver {
         });
     }
 
+    @HandleIcpError()
     async getAllValues(): Promise<string[]> {
         return this._actor.getAllUnits();
     }
 
+    @HandleIcpError()
     async addValue(value: string, industrialSector?: string): Promise<string> {
         return this._actor.addUnit(value, industrialSector || '');
     }
 
+    @HandleIcpError()
     async removeValue(value: string, industrialSector?: string): Promise<string> {
         return this._actor.removeUnit(value, industrialSector || '');
     }
 
+    @HandleIcpError()
     async hasValue(value: string): Promise<boolean> {
         return this._actor.hasUnit(value);
     }

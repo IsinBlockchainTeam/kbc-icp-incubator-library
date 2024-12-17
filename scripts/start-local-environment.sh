@@ -4,7 +4,13 @@ BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
 echo "BASE_DIR: $BASE_DIR"
 
 function new_iterm_tab() {
-    local command=$1
+  OS_TYPE=$(uname)
+  local command=$1
+
+  if [[ "$OS_TYPE" == "Linux" ]]; then
+    # Open a new tab in the existing gnome-terminal window
+    gnome-terminal --tab -- bash -c "$command; exec bash"
+  else
     local silent=true
     local delay=1
 
@@ -27,6 +33,8 @@ tell application "iTerm"
     delay "$delay"
 end tell
 EOF
+
+  fi
 }
 
 function wait_for_connection() {
