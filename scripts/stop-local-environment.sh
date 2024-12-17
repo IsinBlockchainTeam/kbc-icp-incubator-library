@@ -23,6 +23,10 @@ EOF
 echo "Stopping local environment..."
 
 dfx stop
+echo "Remove hardhat local network..."
+kill -9 $(lsof -t -i:8545)
+echo "Remove ngrok open tunnel..."
+kill -9 $(lsof -t -i:4040)
 
 if [[ "$OS_TYPE" == "Linux" ]]; then
   echo -e "\nSimply close the terminal window to stop the local environment and all its related sub-processes."

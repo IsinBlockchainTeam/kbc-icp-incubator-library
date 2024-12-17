@@ -1,3 +1,4 @@
+import { IndustrialSectorEnum } from '@kbc-lib/azle-types';
 import { AssessmentAssuranceLevelDriver } from '../drivers/AssessmentAssuranceLevelDriver';
 
 export class AssessmentAssuranceLevelService {
@@ -11,12 +12,18 @@ export class AssessmentAssuranceLevelService {
         return this._assessmentAssuranceLevelDriver.getAllValues();
     }
 
-    async addValue(value: string, industrialSector: string): Promise<string> {
-        return this._assessmentAssuranceLevelDriver.addValue(value, industrialSector);
+    async addValue(value: string, industrialSector?: string): Promise<string> {
+        return this._assessmentAssuranceLevelDriver.addValue(
+            value,
+            industrialSector || IndustrialSectorEnum.DEFAULT
+        );
     }
 
-    async removeValue(value: string, industrialSector: string): Promise<string> {
-        return this._assessmentAssuranceLevelDriver.removeValue(value, industrialSector);
+    async removeValue(value: string, industrialSector?: string): Promise<string> {
+        return this._assessmentAssuranceLevelDriver.removeValue(
+            value,
+            industrialSector || IndustrialSectorEnum.DEFAULT
+        );
     }
 
     async hasValue(value: string): Promise<boolean> {
