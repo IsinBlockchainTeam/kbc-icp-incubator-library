@@ -38,17 +38,17 @@ describe('MaterialService', () => {
         },
         {
             functionName: 'createMaterial',
-            serviceFunction: () => materialService.createMaterial(1),
+            serviceFunction: () => materialService.createMaterial(1, 'typologyTest', 'qualityTest', 'moistureTest'),
             driverFunction: mockedFn.createMaterial,
             driverFunctionResult: {},
-            driverFunctionArgs: [1]
+            driverFunctionArgs: [1, 'typologyTest', 'qualityTest', 'moistureTest']
         },
         {
             functionName: 'updateMaterial',
-            serviceFunction: () => materialService.updateMaterial(1, 1),
+            serviceFunction: () => materialService.updateMaterial(1, 1, 'typologyTest', 'qualityTest', 'moistureTest'),
             driverFunction: mockedFn.updateMaterial,
             driverFunctionResult: {},
-            driverFunctionArgs: [1, 1]
+            driverFunctionArgs: [1, 1, 'typologyTest', 'qualityTest', 'moistureTest']
         }
     ])(
         `should call driver function $functionName`,

@@ -48,10 +48,19 @@ describe('EntityBuilder', () => {
             };
             const icpMaterial: ICPMaterial = {
                 id: BigInt(1),
-                productCategory: icpProductCategory
+                productCategory: icpProductCategory,
+                typology: 'typology',
+                quality: 'quality',
+                moisture: 'moisture'
             };
             expect(EntityBuilder.buildMaterial(icpMaterial)).toEqual(
-                new Material(1, EntityBuilder.buildProductCategory(icpProductCategory))
+                new Material(
+                    1,
+                    EntityBuilder.buildProductCategory(icpProductCategory),
+                    icpMaterial.typology,
+                    icpMaterial.quality,
+                    icpMaterial.moisture
+                )
             );
         });
     });
@@ -313,7 +322,10 @@ describe('EntityBuilder', () => {
                     name: 'product category',
                     quality: BigInt(100),
                     description: 'description'
-                }
+                },
+                typology: 'typology',
+                quality: 'quality',
+                moisture: 'moisture'
             };
             expect(
                 EntityBuilder.buildMaterialCertificate(icpMaterialCertificate, icpMaterial)

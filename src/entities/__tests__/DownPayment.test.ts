@@ -1,5 +1,5 @@
-import { DownPayment } from './DownPayment';
-import { DownPaymentStatus } from '../types/DownPaymentStatus';
+import { DownPayment } from '../DownPayment';
+import { DownPaymentStatus } from '../../types/DownPaymentStatus';
 
 describe('Down payment', () => {
     let downPayment: DownPayment;

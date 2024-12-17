@@ -1,13 +1,19 @@
-import { MaterialCertificate } from './MaterialCertificate';
-import { CertificateType, CertificateDocumentType } from './Certificate';
-import { Material } from './Material';
-import { ProductCategory } from './ProductCategory';
-import { EvaluationStatus } from './Evaluation';
+import { MaterialCertificate } from '../MaterialCertificate';
+import { CertificateType, CertificateDocumentType } from '../Certificate';
+import { Material } from '../Material';
+import { ProductCategory } from '../ProductCategory';
+import { EvaluationStatus } from '../Evaluation';
 
 describe('MaterialCertificate', () => {
     let materialCertificate: MaterialCertificate;
     const issueDate = new Date();
-    const material: Material = new Material(1, new ProductCategory(1, 'productCategory1', 88, ''));
+    const material: Material = new Material(
+        1,
+        new ProductCategory(1, 'productCategory1', 88, ''),
+        'typologyTest',
+        'qualityTest',
+        'moistureTest'
+    );
 
     beforeAll(() => {
         materialCertificate = new MaterialCertificate(
@@ -123,7 +129,13 @@ describe('MaterialCertificate', () => {
     });
 
     it('should correctly set the materialId', () => {
-        const newMaterial = new Material(2, new ProductCategory(2, 'productCategory2', 88, ''));
+        const newMaterial: Material = new Material(
+            2,
+            new ProductCategory(2, 'productCategory2', 88, ''),
+            'typology2Test',
+            'quality2Test',
+            'moisture2Test'
+        );
         materialCertificate.material = newMaterial;
         expect(materialCertificate.material).toEqual(newMaterial);
     });

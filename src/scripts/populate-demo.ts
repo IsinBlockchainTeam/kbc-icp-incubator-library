@@ -1,7 +1,7 @@
 import { DocumentTypeEnum, EvaluationStatusEnum } from '@kbc-lib/azle-types';
 import {
     DocumentParams,
-    mockDocument,
+    mockDocument, mockMaterial,
     mockOrder,
     mockOrganizations,
     mockProductCategories,
@@ -50,7 +50,10 @@ const createProductCategory = async (
 
 const createMaterial = async (
     userSiweIdentityProvider: SiweIdentityProvider,
-    productCategoryId: number
+    productCategoryId: number,
+    typology: string,
+    quality: string,
+    moisture: string
 ) => {
     console.log('Creating material for product category:', productCategoryId);
 
@@ -60,7 +63,7 @@ const createMaterial = async (
         ICP.NETWORK
     );
 
-    return materialDriver.createMaterial(productCategoryId);
+    return materialDriver.createMaterial(productCategoryId, typology, quality, moisture);
 };
 
 const createOffer = async (
@@ -434,8 +437,8 @@ const main = async () => {
     );
 
     const createdMaterials: Material[] = await Promise.all(
-        createdProductCategories.map(async (productCategory) =>
-            createMaterial(exporter.siweIdentityProvider, productCategory.id)
+        mockMaterial.map(async (materialParams) =>
+            createMaterial(exporter.siweIdentityProvider, materialParams.productCategoryId, materialParams.typology, materialParams.quality, materialParams.moisture)
         )
     );
 

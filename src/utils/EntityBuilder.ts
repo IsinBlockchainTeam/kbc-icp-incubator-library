@@ -71,7 +71,10 @@ export class EntityBuilder {
     static buildMaterial(material: ICPMaterial) {
         return new Material(
             Number(material.id),
-            this.buildProductCategory(material.productCategory)
+            this.buildProductCategory(material.productCategory),
+            material.typology,
+            material.quality,
+            material.moisture
         );
     }
 

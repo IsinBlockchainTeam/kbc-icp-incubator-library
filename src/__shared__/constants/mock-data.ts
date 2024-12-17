@@ -11,6 +11,13 @@ export type ProductCategoryParams = {
     description: string;
 };
 
+export type MaterialParams = {
+    productCategoryId: number;
+    typology: string;
+    quality: string;
+    moisture: string;
+};
+
 export type ShipmentDetailsParams = {
     shipmentNumber: number;
     expirationDate: Date;
@@ -42,6 +49,21 @@ export const mockProductCategories: ProductCategoryParams[] = [
         quality: 85,
         description:
             'Medium-bodied coffee with sweet caramel undertones, balanced acidity, and hints of toasted nuts. Features a smooth chocolate finish and subtle fruity notes.'
+    }
+];
+
+export const mockMaterial: MaterialParams[] = [
+    {
+        productCategoryId: 0,
+        typology: 'Arabica',
+        quality: '92+',
+        moisture: '11% - 12%'
+    },
+    {
+        productCategoryId: 1,
+        typology: 'Robusta',
+        quality: '85',
+        moisture: '10% - 11%'
     }
 ];
 
