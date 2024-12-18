@@ -1,4 +1,4 @@
-import EnumerationService from './EnumerationService';
+import EnumerationService, { EnumerationType } from './EnumerationService';
 import { StableMemoryId } from '../utils/stableMemory';
 
 class UnitService extends EnumerationService {
@@ -6,7 +6,7 @@ class UnitService extends EnumerationService {
 
     static get instance(): UnitService {
         if (!this._instance) {
-            this._instance = new UnitService(StableMemoryId.UNIT_ENUM);
+            this._instance = new UnitService(StableMemoryId.UNIT_ENUM, EnumerationType.UNIT);
         }
         return this._instance;
     }

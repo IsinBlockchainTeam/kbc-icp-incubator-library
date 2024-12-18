@@ -1,4 +1,5 @@
 import { createMock } from 'ts-auto-mock';
+import { IndustrialSectorEnum } from '@kbc-lib/azle-types';
 import { UnitService } from '../UnitService';
 import { UnitDriver } from '../../drivers/UnitDriver';
 
@@ -31,17 +32,17 @@ describe('UnitService', () => {
         },
         {
             functionName: 'addValue',
-            serviceFunction: () => unitService.addValue('value'),
+            serviceFunction: () => unitService.addValue('value', IndustrialSectorEnum.COFFEE),
             driverFunction: mockedDriverFn.addValue,
             driverFunctionResult: 'value',
-            driverFunctionArgs: ['value']
+            driverFunctionArgs: ['value', IndustrialSectorEnum.COFFEE]
         },
         {
             functionName: 'removeValue',
-            serviceFunction: () => unitService.removeValue('value'),
+            serviceFunction: () => unitService.removeValue('value', IndustrialSectorEnum.COFFEE),
             driverFunction: mockedDriverFn.removeValue,
             driverFunctionResult: 'value',
-            driverFunctionArgs: ['value']
+            driverFunctionArgs: ['value', IndustrialSectorEnum.COFFEE]
         },
         {
             functionName: 'hasValue',

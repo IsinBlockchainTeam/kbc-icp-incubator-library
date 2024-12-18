@@ -19,12 +19,12 @@ import {
 import { AtLeastEditor, AtLeastViewer } from '../decorators/roles';
 
 class CertificationController {
-    @update([IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDLCertificateDocumentInfo, IDL.Nat, IDL.Nat, IDL.Text], IDLCompanyCertificate)
+    @update([IDL.Text, IDL.Text, IDL.Nat, IDL.Text, IDLCertificateDocumentInfo, IDL.Nat, IDL.Nat, IDL.Text], IDLCompanyCertificate)
     @AtLeastEditor
     async registerCompanyCertificate(
         issuer: string,
         subject: string,
-        assessmentStandard: string,
+        assessmentReferenceStandardId: bigint,
         assessmentAssuranceLevel: string,
         document: CertificateDocumentInfo,
         validFrom: bigint,
@@ -34,7 +34,7 @@ class CertificationController {
         return CertificationService.instance.registerCompanyCertificate(
             issuer,
             subject,
-            assessmentStandard,
+            assessmentReferenceStandardId,
             assessmentAssuranceLevel,
             document,
             validFrom,
@@ -43,12 +43,12 @@ class CertificationController {
         );
     }
 
-    @update([IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDLCertificateDocumentInfo, IDL.Nat, IDL.Nat, IDL.Vec(IDL.Text), IDL.Text], IDLScopeCertificate)
+    @update([IDL.Text, IDL.Text, IDL.Nat, IDL.Text, IDLCertificateDocumentInfo, IDL.Nat, IDL.Nat, IDL.Vec(IDL.Text), IDL.Text], IDLScopeCertificate)
     @AtLeastEditor
     async registerScopeCertificate(
         issuer: string,
         subject: string,
-        assessmentStandard: string,
+        assessmentReferenceStandardId: bigint,
         assessmentAssuranceLevel: string,
         document: CertificateDocumentInfo,
         validFrom: bigint,
@@ -59,7 +59,7 @@ class CertificationController {
         return CertificationService.instance.registerScopeCertificate(
             issuer,
             subject,
-            assessmentStandard,
+            assessmentReferenceStandardId,
             assessmentAssuranceLevel,
             document,
             validFrom,
@@ -69,12 +69,12 @@ class CertificationController {
         );
     }
 
-    @update([IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDLCertificateDocumentInfo, IDL.Nat, IDL.Text], IDLMaterialCertificate)
+    @update([IDL.Text, IDL.Text, IDL.Nat, IDL.Text, IDLCertificateDocumentInfo, IDL.Nat, IDL.Text], IDLMaterialCertificate)
     @AtLeastEditor
     async registerMaterialCertificate(
         issuer: string,
         subject: string,
-        assessmentStandard: string,
+        assessmentReferenceStandardId: bigint,
         assessmentAssuranceLevel: string,
         document: CertificateDocumentInfo,
         materialId: bigint,
@@ -83,7 +83,7 @@ class CertificationController {
         return CertificationService.instance.registerMaterialCertificate(
             issuer,
             subject,
-            assessmentStandard,
+            assessmentReferenceStandardId,
             assessmentAssuranceLevel,
             document,
             materialId,
@@ -139,11 +139,11 @@ class CertificationController {
         return CertificationService.instance.getMaterialCertificate(subject, id);
     }
 
-    @update([IDL.Nat, IDL.Text, IDL.Text, IDL.Nat, IDL.Nat, IDL.Text], IDLCompanyCertificate)
+    @update([IDL.Nat, IDL.Nat, IDL.Text, IDL.Nat, IDL.Nat, IDL.Text], IDLCompanyCertificate)
     @AtLeastEditor
     async updateCompanyCertificate(
         certificateId: bigint,
-        assessmentStandard: string,
+        assessmentReferenceStandardId: bigint,
         assessmentAssuranceLevel: string,
         validFrom: bigint,
         validUntil: bigint,
@@ -151,7 +151,7 @@ class CertificationController {
     ): Promise<CompanyCertificate> {
         return CertificationService.instance.updateCompanyCertificate(
             certificateId,
-            assessmentStandard,
+            assessmentReferenceStandardId,
             assessmentAssuranceLevel,
             validFrom,
             validUntil,
@@ -159,11 +159,11 @@ class CertificationController {
         );
     }
 
-    @update([IDL.Nat, IDL.Text, IDL.Text, IDL.Nat, IDL.Nat, IDL.Vec(IDL.Text), IDL.Text], IDLScopeCertificate)
+    @update([IDL.Nat, IDL.Nat, IDL.Text, IDL.Nat, IDL.Nat, IDL.Vec(IDL.Text), IDL.Text], IDLScopeCertificate)
     @AtLeastEditor
     async updateScopeCertificate(
         certificateId: bigint,
-        assessmentStandard: string,
+        assessmentReferenceStandardId: bigint,
         assessmentAssuranceLevel: string,
         validFrom: bigint,
         validUntil: bigint,
@@ -172,7 +172,7 @@ class CertificationController {
     ): Promise<ScopeCertificate> {
         return CertificationService.instance.updateScopeCertificate(
             certificateId,
-            assessmentStandard,
+            assessmentReferenceStandardId,
             assessmentAssuranceLevel,
             validFrom,
             validUntil,
@@ -181,18 +181,18 @@ class CertificationController {
         );
     }
 
-    @update([IDL.Nat, IDL.Text, IDL.Text, IDL.Nat, IDL.Text], IDLMaterialCertificate)
+    @update([IDL.Nat, IDL.Nat, IDL.Text, IDL.Nat, IDL.Text], IDLMaterialCertificate)
     @AtLeastEditor
     async updateMaterialCertificate(
         certificateId: bigint,
-        assessmentStandard: string,
+        assessmentReferenceStandardId: bigint,
         assessmentAssuranceLevel: string,
         materialId: bigint,
         notes: string
     ): Promise<MaterialCertificate> {
         return CertificationService.instance.updateMaterialCertificate(
             certificateId,
-            assessmentStandard,
+            assessmentReferenceStandardId,
             assessmentAssuranceLevel,
             materialId,
             notes

@@ -44,7 +44,7 @@ export class CertificationService {
     async registerCompanyCertificate(
         issuer: string,
         subject: string,
-        assessmentStandard: string,
+        assessmentReferenceStandardId: number,
         assessmentAssuranceLevel: string,
         document: CertificateDocumentRequest,
         validFrom: Date,
@@ -58,7 +58,7 @@ export class CertificationService {
         return this._certificationManagerDriver.registerCompanyCertificate(
             issuer,
             subject,
-            assessmentStandard,
+            assessmentReferenceStandardId,
             assessmentAssuranceLevel,
             {
                 referenceId: document.referenceId,
@@ -78,7 +78,7 @@ export class CertificationService {
     async registerScopeCertificate(
         issuer: string,
         subject: string,
-        assessmentStandard: string,
+        assessmentReferenceStandardId: number,
         assessmentAssuranceLevel: string,
         document: CertificateDocumentRequest,
         validFrom: Date,
@@ -90,7 +90,7 @@ export class CertificationService {
         return this._certificationManagerDriver.registerScopeCertificate(
             issuer,
             subject,
-            assessmentStandard,
+            assessmentReferenceStandardId,
             assessmentAssuranceLevel,
             {
                 referenceId: document.referenceId,
@@ -111,7 +111,7 @@ export class CertificationService {
     async registerMaterialCertificate(
         issuer: string,
         subject: string,
-        assessmentStandard: string,
+        assessmentReferenceStandardId: number,
         assessmentAssuranceLevel: string,
         document: CertificateDocumentRequest,
         materialId: number,
@@ -124,7 +124,7 @@ export class CertificationService {
         return this._certificationManagerDriver.registerMaterialCertificate(
             issuer,
             subject,
-            assessmentStandard,
+            assessmentReferenceStandardId,
             assessmentAssuranceLevel,
             {
                 referenceId: document.referenceId,
@@ -174,7 +174,7 @@ export class CertificationService {
 
     async updateCompanyCertificate(
         certificateId: number,
-        assessmentStandard: string,
+        assessmentReferenceStandardId: number,
         assessmentAssuranceLevel: string,
         validFrom: Date,
         validUntil: Date,
@@ -182,7 +182,7 @@ export class CertificationService {
     ): Promise<CompanyCertificate> {
         return this._certificationManagerDriver.updateCompanyCertificate(
             certificateId,
-            assessmentStandard,
+            assessmentReferenceStandardId,
             assessmentAssuranceLevel,
             validFrom,
             validUntil,
@@ -192,7 +192,7 @@ export class CertificationService {
 
     async updateScopeCertificate(
         certificateId: number,
-        assessmentStandard: string,
+        assessmentReferenceStandardId: number,
         assessmentAssuranceLevel: string,
         validFrom: Date,
         validUntil: Date,
@@ -201,7 +201,7 @@ export class CertificationService {
     ): Promise<ScopeCertificate> {
         return this._certificationManagerDriver.updateScopeCertificate(
             certificateId,
-            assessmentStandard,
+            assessmentReferenceStandardId,
             assessmentAssuranceLevel,
             validFrom,
             validUntil,
@@ -212,14 +212,14 @@ export class CertificationService {
 
     async updateMaterialCertificate(
         certificateId: number,
-        assessmentStandard: string,
+        assessmentReferenceStandardId: number,
         assessmentAssuranceLevel: string,
         materialId: number,
         notes?: string
     ): Promise<MaterialCertificate> {
         return this._certificationManagerDriver.updateMaterialCertificate(
             certificateId,
-            assessmentStandard,
+            assessmentReferenceStandardId,
             assessmentAssuranceLevel,
             materialId,
             notes

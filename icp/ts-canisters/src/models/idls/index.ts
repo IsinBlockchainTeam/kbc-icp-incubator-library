@@ -10,3 +10,4 @@ export * from './Rpc';
 export * from './Shipment';
 export * from './Certificate';
 export * from './Offer';
+export * from './AssessmentReferenceStandard';

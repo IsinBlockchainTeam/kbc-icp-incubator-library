@@ -259,7 +259,7 @@ describe('CertificationManagerDriver', () => {
                 new Date(new Date().setDate(new Date().getDate() + 365))
             );
             expect(companyCertificate).toBeDefined();
-            expect(companyCertificate.assessmentStandard).toEqual(assessmentStandards[1]);
+            expect(companyCertificate.assessmentReferenceStandard).toEqual(assessmentStandards[1]);
             const updatedCompanyCertificate =
                 await certificationManagerDriver.getCompanyCertificate(
                     subjectCompanyWallet.address,
@@ -317,7 +317,7 @@ describe('CertificationManagerDriver', () => {
                 1
             );
             expect(materialCertificate).toBeDefined();
-            expect(materialCertificate.assessmentStandard).toEqual(assessmentStandards[3]);
+            expect(materialCertificate.assessmentReferenceStandard).toEqual(assessmentStandards[3]);
             const updatedMaterialCertificate =
                 await certificationManagerDriver.getMaterialCertificate(
                     subjectCompanyWallet.address,

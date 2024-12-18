@@ -1,56 +1,62 @@
-import { update } from 'azle';
+import { query, update } from 'azle';
 import { AtLeastViewer } from '../../decorators/roles';
-import AssessmentStandardController from '../AssessmentStandardController';
-import AssessmentStandardService from '../../services/AssessmentStandardService';
+import AssessmentReferenceStandardController from '../AssessmentReferenceStandardController';
+import AssessmentReferenceStandardService from '../../services/AssessmentReferenceStandardService';
+import { AssessmentReferenceStandard, IndustrialSectorEnum } from '../../models/types';
 
 jest.mock('azle');
 jest.mock('../../decorators/roles');
 jest.mock('../../models/idls');
-jest.mock('../../services/AssessmentStandardService', () => ({
+jest.mock('../../services/AssessmentReferenceStandardService', () => ({
     instance: {
-        getAllValues: jest.fn(),
-        addValue: jest.fn(),
-        removeValue: jest.fn(),
-        hasValue: jest.fn()
+        getAll: jest.fn(),
+        getById: jest.fn(),
+        add: jest.fn(),
+        remove: jest.fn()
     }
 }));
 describe('AssessmentStandardController', () => {
-    const assessmentStandardServiceInstanceMock = AssessmentStandardService.instance as jest.Mocked<AssessmentStandardService>;
-    const assessmentStandardController = new AssessmentStandardController();
+    const assessmentStandardServiceInstanceMock = AssessmentReferenceStandardService.instance as jest.Mocked<AssessmentReferenceStandardService>;
+    const assessmentStandardController = new AssessmentReferenceStandardController();
 
     it.each([
         {
-            controllerFunctionName: 'getAllAssessmentStandards',
-            controllerFunction: () => assessmentStandardController.getAllAssessmentStandards(),
-            serviceFunction: assessmentStandardServiceInstanceMock.getAllValues,
+            controllerFunctionName: 'getAllAssessmentReferenceStandards',
+            controllerFunction: () => assessmentStandardController.getAllAssessmentReferenceStandards(),
+            serviceFunction: assessmentStandardServiceInstanceMock.getAll,
             expectedResult: [],
-            expectedDecorators: [update, AtLeastViewer]
+            expectedArguments: [],
+            expectedDecorators: [query, AtLeastViewer]
         },
         {
-            controllerFunctionName: 'addAssessmentStandard',
-            controllerFunction: () => assessmentStandardController.addAssessmentStandard('value'),
-            serviceFunction: assessmentStandardServiceInstanceMock.addValue,
-            expectedResult: 'value',
-            expectedDecorators: []
+            controllerFunctionName: 'getAssessmentReferenceStandard',
+            controllerFunction: () => assessmentStandardController.getAssessmentReferenceStandard(2n),
+            serviceFunction: assessmentStandardServiceInstanceMock.getById,
+            expectedResult: { id: 2n } as AssessmentReferenceStandard,
+            expectedArguments: [2n],
+            expectedDecorators: [query, AtLeastViewer]
         },
         {
-            controllerFunctionName: 'removeAssessmentStandard',
-            controllerFunction: () => assessmentStandardController.removeAssessmentStandard('value'),
-            serviceFunction: assessmentStandardServiceInstanceMock.removeValue,
-            expectedResult: 'value',
-            expectedDecorators: []
+            controllerFunctionName: 'addAssessmentReferenceStandard',
+            controllerFunction: () => assessmentStandardController.addAssessmentReferenceStandard('standard 1', 'criteria', 'logo', 'site', IndustrialSectorEnum.COFFEE),
+            serviceFunction: assessmentStandardServiceInstanceMock.add,
+            expectedResult: { id: 1n } as AssessmentReferenceStandard,
+            expectedArguments: ['standard 1', 'criteria', 'logo', 'site', IndustrialSectorEnum.COFFEE],
+            expectedDecorators: [update]
         },
         {
-            controllerFunctionName: 'hasAssessmentStandard',
-            controllerFunction: () => assessmentStandardController.hasAssessmentStandard('value'),
-            serviceFunction: assessmentStandardServiceInstanceMock.hasValue,
-            expectedResult: true,
-            expectedDecorators: [update, AtLeastViewer]
+            controllerFunctionName: 'removeAssessmentReferenceStandard',
+            controllerFunction: () => assessmentStandardController.removeAssessmentReferenceStandard(2n, IndustrialSectorEnum.COFFEE),
+            serviceFunction: assessmentStandardServiceInstanceMock.remove,
+            expectedResult: { id: 2n } as AssessmentReferenceStandard,
+            expectedArguments: [2n, IndustrialSectorEnum.COFFEE],
+            expectedDecorators: [update]
         }
-    ])('should pass service $controllerFunctionName', async ({ controllerFunction, serviceFunction, expectedResult, expectedDecorators }) => {
+    ])('should pass service $controllerFunctionName', async ({ controllerFunction, serviceFunction, expectedResult, expectedArguments, expectedDecorators }) => {
         serviceFunction.mockReturnValue(expectedResult as any);
         await expect(controllerFunction()).resolves.toEqual(expectedResult);
         expect(serviceFunction).toHaveBeenCalled();
+        expect(serviceFunction).toHaveBeenCalledWith(...expectedArguments);
         for (const decorator of expectedDecorators) {
             expect(decorator).toHaveBeenCalled();
         }

@@ -1,8 +1,9 @@
 import { ActorSubclass, Identity } from '@dfinity/agent';
 import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
 import { createActor } from 'icp-declarations/entity_manager';
+import { HandleIcpError } from '../decorators/HandleIcpError';
 
-export class AssessmentStandardDriver {
+export class SustainabilityCriteriaDriver {
     private _actor: ActorSubclass<_SERVICE>;
 
     public constructor(icpIdentity: Identity, canisterId: string, host?: string) {
@@ -14,19 +15,23 @@ export class AssessmentStandardDriver {
         });
     }
 
+    @HandleIcpError()
     async getAllValues(): Promise<string[]> {
-        return this._actor.getAllAssessmentStandards();
+        return this._actor.getAllSustainabilityCriteria();
     }
 
-    async addValue(value: string): Promise<string> {
-        return this._actor.addAssessmentStandard(value);
+    @HandleIcpError()
+    async addValue(value: string, industrialSector: string): Promise<string> {
+        return this._actor.addSustainabilityCriteria(value, industrialSector);
     }
 
-    async removeValue(value: string): Promise<string> {
-        return this._actor.removeAssessmentStandard(value);
+    @HandleIcpError()
+    async removeValue(value: string, industrialSector: string): Promise<string> {
+        return this._actor.removeSustainabilityCriteria(value, industrialSector);
     }
 
+    @HandleIcpError()
     async hasValue(value: string): Promise<boolean> {
-        return this._actor.hasAssessmentStandard(value);
+        return this._actor.hasSustainabilityCriteria(value);
     }
 }

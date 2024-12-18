@@ -1,6 +1,7 @@
-import { ScopeCertificate } from '../ScopeCertificate';
-import { CertificateType, CertificateDocumentType } from '../Certificate';
-import { EvaluationStatus } from '../Evaluation';
+import { ScopeCertificate } from './ScopeCertificate';
+import { CertificateType, CertificateDocumentType } from './Certificate';
+import { EvaluationStatus } from './Evaluation';
+import { AssessmentReferenceStandard } from './AssessmentReferenceStandard';
 
 describe('ScopeCertificate', () => {
     let scopeCertificate: ScopeCertificate;
@@ -8,6 +9,13 @@ describe('ScopeCertificate', () => {
     const validFrom = new Date();
     const validUntil = new Date();
     const processTypes = ['processType1', 'processType2'];
+    const assessmentReferenceStandard = new AssessmentReferenceStandard(
+        1,
+        'standard1',
+        'criteria1',
+        'http://logo1',
+        'http://site1'
+    );
 
     beforeAll(() => {
         scopeCertificate = new ScopeCertificate(
@@ -15,7 +23,7 @@ describe('ScopeCertificate', () => {
             'issuer',
             'subject',
             'uploadedBy',
-            'assessmentStandard',
+            assessmentReferenceStandard,
             'assessmentAssuranceLevel',
             {
                 referenceId: 'referenceId',
@@ -40,7 +48,7 @@ describe('ScopeCertificate', () => {
         expect(scopeCertificate.issuer).toEqual('issuer');
         expect(scopeCertificate.subject).toEqual('subject');
         expect(scopeCertificate.uploadedBy).toEqual('uploadedBy');
-        expect(scopeCertificate.assessmentStandard).toEqual('assessmentStandard');
+        expect(scopeCertificate.assessmentReferenceStandard).toEqual(assessmentReferenceStandard);
         expect(scopeCertificate.assessmentAssuranceLevel).toEqual('assessmentAssuranceLevel');
         expect(scopeCertificate.document).toEqual({
             referenceId: 'referenceId',
@@ -79,9 +87,18 @@ describe('ScopeCertificate', () => {
         expect(scopeCertificate.uploadedBy).toEqual('newUploadedBy');
     });
 
-    it('should correctly set the assessmentStandard', () => {
-        scopeCertificate.assessmentStandard = 'newAssessmentStandard';
-        expect(scopeCertificate.assessmentStandard).toEqual('newAssessmentStandard');
+    it('should correctly set the assessmentReferenceStandard', () => {
+        const newAssessmentReferenceStandard = new AssessmentReferenceStandard(
+            2,
+            'standard2',
+            'criteria2',
+            'http://logo2',
+            'http://site2'
+        );
+        scopeCertificate.assessmentReferenceStandard = newAssessmentReferenceStandard;
+        expect(scopeCertificate.assessmentReferenceStandard).toEqual(
+            newAssessmentReferenceStandard
+        );
     });
 
     it('should correctly set the assessmentAssuranceLevel', () => {

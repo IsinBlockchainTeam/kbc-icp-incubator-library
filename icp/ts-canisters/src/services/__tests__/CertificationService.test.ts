@@ -2,16 +2,8 @@ import { StableBTreeMap } from 'azle';
 import CertificationService from '../CertificationService';
 import { BaseCertificate, CompanyCertificate, EvaluationStatus, MaterialCertificate, ScopeCertificate } from '../../models/types';
 import AuthenticationService from '../AuthenticationService';
-import {
-    validateAddress,
-    validateAssessmentAssuranceLevel,
-    validateAssessmentStandard,
-    validateDatesValidity,
-    validateFieldValue,
-    validateMaterialById,
-    validateProcessTypes
-} from '../../utils/validation';
-import mocked = jest.mocked;
+import { validateAddress, validateAssessmentAssuranceLevel, validateDatesValidity, validateFieldValue, validateMaterialById, validateProcessTypes } from '../../utils/validation';
+import AssessmentReferenceStandardService from '../AssessmentReferenceStandardService';
 
 jest.mock('azle');
 jest.mock('../../services/AuthenticationService', () => ({
@@ -31,9 +23,16 @@ jest.mock('../../utils/validation', () => ({
     validateMaterialById: jest.fn(),
     validateFieldValue: jest.fn()
 }));
+jest.mock('../AssessmentReferenceStandardService', () => ({
+    instance: {
+        getById: jest.fn()
+    }
+}));
+
 describe('CertificationService', () => {
     let certificationService: CertificationService;
     const authenticationServiceInstanceMock = AuthenticationService.instance as jest.Mocked<AuthenticationService>;
+    const assessmentReferenceStandardServiceInstanceMock = AssessmentReferenceStandardService.instance as jest.Mocked<AssessmentReferenceStandardService>;
 
     const subject = '0xsubject';
     const mockedIssueDate = Date.now();
@@ -42,7 +41,13 @@ describe('CertificationService', () => {
         issuer: '0xissuer',
         subject,
         uploadedBy: '0xuploadedBy',
-        assessmentStandard: 'assessmentStandard',
+        assessmentReferenceStandard: {
+            id: 1n,
+            name: 'assessmentReferenceStandard',
+            logoUrl: 'logoUrl',
+            siteUrl: 'siteUrl',
+            sustainabilityCriteria: 'sustainabilityCriteria'
+        },
         assessmentAssuranceLevel: 'assessmentAssuranceLevel',
         document: {
             referenceId: 'referenceId',
@@ -104,10 +109,11 @@ describe('CertificationService', () => {
     it('register a company certificate', () => {
         mockedFn.keys.mockReturnValue([]);
         authenticationServiceInstanceMock.getDelegatorAddress.mockReturnValue(companyCertificate.uploadedBy);
+        assessmentReferenceStandardServiceInstanceMock.getById.mockReturnValue(companyCertificate.assessmentReferenceStandard);
         const certificateRegistered = certificationService.registerCompanyCertificate(
             companyCertificate.issuer,
             companyCertificate.subject,
-            companyCertificate.assessmentStandard,
+            companyCertificate.assessmentReferenceStandard.id,
             companyCertificate.assessmentAssuranceLevel,
             companyCertificate.document,
             companyCertificate.validFrom,
@@ -117,8 +123,8 @@ describe('CertificationService', () => {
 
         expect(validateAddress).toHaveBeenCalledTimes(2);
         expect(validateDatesValidity).toHaveBeenCalledTimes(1);
-        expect(validateAssessmentStandard).toHaveBeenCalledTimes(1);
         expect(validateAssessmentAssuranceLevel).toHaveBeenCalledTimes(1);
+        expect(assessmentReferenceStandardServiceInstanceMock.getById).toHaveBeenCalledTimes(1);
         expect(authenticationServiceInstanceMock.getDelegatorAddress).toHaveBeenCalledTimes(1);
 
         expect(certificateRegistered).toEqual(companyCertificate);
@@ -127,10 +133,12 @@ describe('CertificationService', () => {
     it('register a scope certificate', () => {
         mockedFn.keys.mockReturnValue([]);
         authenticationServiceInstanceMock.getDelegatorAddress.mockReturnValue(scopeCertificate.uploadedBy);
+        assessmentReferenceStandardServiceInstanceMock.getById.mockReturnValue(companyCertificate.assessmentReferenceStandard);
+
         const certificateRegistered = certificationService.registerScopeCertificate(
             scopeCertificate.issuer,
             scopeCertificate.subject,
-            scopeCertificate.assessmentStandard,
+            scopeCertificate.assessmentReferenceStandard.id,
             scopeCertificate.assessmentAssuranceLevel,
             scopeCertificate.document,
             scopeCertificate.validFrom,
@@ -141,9 +149,9 @@ describe('CertificationService', () => {
 
         expect(validateAddress).toHaveBeenCalledTimes(2);
         expect(validateDatesValidity).toHaveBeenCalledTimes(1);
-        expect(validateAssessmentStandard).toHaveBeenCalledTimes(1);
         expect(validateAssessmentAssuranceLevel).toHaveBeenCalledTimes(1);
         expect(validateProcessTypes).toHaveBeenCalledTimes(1);
+        expect(assessmentReferenceStandardServiceInstanceMock.getById).toHaveBeenCalledTimes(1);
         expect(authenticationServiceInstanceMock.getDelegatorAddress).toHaveBeenCalledTimes(1);
 
         expect(certificateRegistered).toEqual(scopeCertificate);
@@ -152,10 +160,12 @@ describe('CertificationService', () => {
     it('register a material certificate', () => {
         mockedFn.keys.mockReturnValue([]);
         authenticationServiceInstanceMock.getDelegatorAddress.mockReturnValue(materialCertificate.uploadedBy);
+        assessmentReferenceStandardServiceInstanceMock.getById.mockReturnValue(companyCertificate.assessmentReferenceStandard);
+
         const certificateRegistered = certificationService.registerMaterialCertificate(
             materialCertificate.issuer,
             materialCertificate.subject,
-            materialCertificate.assessmentStandard,
+            materialCertificate.assessmentReferenceStandard.id,
             materialCertificate.assessmentAssuranceLevel,
             materialCertificate.document,
             materialCertificate.materialId,
@@ -163,9 +173,9 @@ describe('CertificationService', () => {
         );
 
         expect(validateAddress).toHaveBeenCalledTimes(2);
-        expect(validateAssessmentStandard).toHaveBeenCalledTimes(1);
         expect(validateAssessmentAssuranceLevel).toHaveBeenCalledTimes(1);
         expect(validateMaterialById).toHaveBeenCalledTimes(1);
+        expect(assessmentReferenceStandardServiceInstanceMock.getById).toHaveBeenCalledTimes(1);
         expect(authenticationServiceInstanceMock.getDelegatorAddress).toHaveBeenCalledTimes(1);
 
         expect(certificateRegistered).toEqual(materialCertificate);
@@ -185,7 +195,7 @@ describe('CertificationService', () => {
                 uploadedBy: certificate.uploadedBy,
                 issuer: certificate.issuer,
                 subject: certificate.subject,
-                assessmentStandard: certificate.assessmentStandard,
+                assessmentReferenceStandard: certificate.assessmentReferenceStandard,
                 assessmentAssuranceLevel: certificate.assessmentAssuranceLevel,
                 document: certificate.document,
                 evaluationStatus: certificate.evaluationStatus,
@@ -245,7 +255,7 @@ describe('CertificationService', () => {
 
     it('get company certificate by subject and id - fail (Company certificate not found)', () => {
         mockedFn.get.mockReturnValue([]);
-        expect(() => certificationService.getCompanyCertificate(subject, companyCertificate.id)).toThrow(new Error('Company certificate not found'));
+        expect(() => certificationService.getCompanyCertificate(subject, companyCertificate.id)).toThrow(new Error('(CERTIFICATE_NOT_FOUND) COMPANY Certificate not found.'));
     });
 
     it('get scope certificate by subject and id', () => {
@@ -259,7 +269,7 @@ describe('CertificationService', () => {
 
     it('get scope certificate by subject and id - fail (Scope certificate not found)', () => {
         mockedFn.get.mockReturnValue([]);
-        expect(() => certificationService.getScopeCertificate(subject, scopeCertificate.id)).toThrow(new Error('Scope certificate not found'));
+        expect(() => certificationService.getScopeCertificate(subject, scopeCertificate.id)).toThrow(new Error('(CERTIFICATE_NOT_FOUND) SCOPE Certificate not found.'));
     });
 
     it('get material certificate by subject and id', () => {
@@ -273,9 +283,7 @@ describe('CertificationService', () => {
 
     it('get material certificate by subject and id - fail (Material certificate not found)', () => {
         mockedFn.get.mockReturnValue([]);
-        expect(() => certificationService.getMaterialCertificate(subject, materialCertificate.id)).toThrow(
-            new Error('Material certificate not found')
-        );
+        expect(() => certificationService.getMaterialCertificate(subject, materialCertificate.id)).toThrow(new Error('(CERTIFICATE_NOT_FOUND) MATERIAL Certificate not found.'));
     });
 
     it('update a company certificate', () => {
@@ -283,7 +291,7 @@ describe('CertificationService', () => {
         mockedFn.get.mockReturnValue([companyCertificate]);
         const updatedCertificate = certificationService.updateCompanyCertificate(
             companyCertificate.id,
-            'new assessmentStandard',
+            companyCertificate.assessmentReferenceStandard.id,
             companyCertificate.assessmentAssuranceLevel,
             companyCertificate.validFrom,
             987654n,
@@ -291,7 +299,6 @@ describe('CertificationService', () => {
         );
 
         expect(validateDatesValidity).toHaveBeenCalledTimes(1);
-        expect(validateAssessmentStandard).toHaveBeenCalledTimes(1);
         expect(validateAssessmentAssuranceLevel).toHaveBeenCalledTimes(1);
         expect(validateFieldValue).toHaveBeenCalledTimes(1);
         expect(mockedFn.insert).toHaveBeenCalledTimes(1);
@@ -299,7 +306,6 @@ describe('CertificationService', () => {
 
         expect(updatedCertificate).toEqual({
             ...companyCertificate,
-            assessmentStandard: 'new assessmentStandard',
             validUntil: 987654n
         });
     });
@@ -309,7 +315,7 @@ describe('CertificationService', () => {
         mockedFn.get.mockReturnValue([scopeCertificate]);
         const updatedCertificate = certificationService.updateScopeCertificate(
             scopeCertificate.id,
-            scopeCertificate.assessmentStandard,
+            scopeCertificate.assessmentReferenceStandard.id,
             'new assessmentAssuranceLevel',
             56789n,
             scopeCertificate.validUntil,
@@ -318,7 +324,6 @@ describe('CertificationService', () => {
         );
 
         expect(validateDatesValidity).toHaveBeenCalledTimes(1);
-        expect(validateAssessmentStandard).toHaveBeenCalledTimes(1);
         expect(validateAssessmentAssuranceLevel).toHaveBeenCalledTimes(1);
         expect(validateProcessTypes).toHaveBeenCalledTimes(1);
         expect(validateFieldValue).toHaveBeenCalledTimes(1);
@@ -338,13 +343,12 @@ describe('CertificationService', () => {
         mockedFn.get.mockReturnValue([materialCertificate]);
         const updatedCertificate = certificationService.updateMaterialCertificate(
             materialCertificate.id,
-            materialCertificate.assessmentStandard,
+            materialCertificate.assessmentReferenceStandard.id,
             materialCertificate.assessmentAssuranceLevel,
             5n,
             'new notes'
         );
 
-        expect(validateAssessmentStandard).toHaveBeenCalledTimes(1);
         expect(validateAssessmentAssuranceLevel).toHaveBeenCalledTimes(1);
         expect(validateMaterialById).toHaveBeenCalledTimes(1);
         expect(validateFieldValue).toHaveBeenCalledTimes(1);

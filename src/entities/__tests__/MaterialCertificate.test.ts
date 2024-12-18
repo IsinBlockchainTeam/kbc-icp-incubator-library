@@ -1,18 +1,20 @@
-import { MaterialCertificate } from '../MaterialCertificate';
-import { CertificateType, CertificateDocumentType } from '../Certificate';
-import { Material } from '../Material';
-import { ProductCategory } from '../ProductCategory';
-import { EvaluationStatus } from '../Evaluation';
+import { MaterialCertificate } from './MaterialCertificate';
+import { CertificateType, CertificateDocumentType } from './Certificate';
+import { Material } from './Material';
+import { ProductCategory } from './ProductCategory';
+import { EvaluationStatus } from './Evaluation';
+import { AssessmentReferenceStandard } from './AssessmentReferenceStandard';
 
 describe('MaterialCertificate', () => {
     let materialCertificate: MaterialCertificate;
     const issueDate = new Date();
-    const material: Material = new Material(
+    const material: Material = new Material(1, new ProductCategory(1, 'productCategory1', 88, ''));
+    const assessmentReferenceStandard = new AssessmentReferenceStandard(
         1,
-        new ProductCategory(1, 'productCategory1', 88, ''),
-        'typologyTest',
-        'qualityTest',
-        'moistureTest'
+        'standard1',
+        'criteria1',
+        'http://logo1',
+        'http://site1'
     );
 
     beforeAll(() => {
@@ -21,7 +23,7 @@ describe('MaterialCertificate', () => {
             'issuer',
             'subject',
             'uploadedBy',
-            'assessmentStandard',
+            assessmentReferenceStandard,
             'assessmentAssuranceLevel',
             {
                 referenceId: 'referenceId',
@@ -44,7 +46,9 @@ describe('MaterialCertificate', () => {
         expect(materialCertificate.issuer).toEqual('issuer');
         expect(materialCertificate.subject).toEqual('subject');
         expect(materialCertificate.uploadedBy).toEqual('uploadedBy');
-        expect(materialCertificate.assessmentStandard).toEqual('assessmentStandard');
+        expect(materialCertificate.assessmentReferenceStandard).toEqual(
+            assessmentReferenceStandard
+        );
         expect(materialCertificate.assessmentAssuranceLevel).toEqual('assessmentAssuranceLevel');
         expect(materialCertificate.document).toEqual({
             referenceId: 'referenceId',
@@ -81,9 +85,18 @@ describe('MaterialCertificate', () => {
         expect(materialCertificate.uploadedBy).toEqual('newUploadedBy');
     });
 
-    it('should correctly set the assessmentStandard', () => {
-        materialCertificate.assessmentStandard = 'newAssessmentStandard';
-        expect(materialCertificate.assessmentStandard).toEqual('newAssessmentStandard');
+    it('should correctly set the assessmentReferenceStandard', () => {
+        const newAssessmentReferenceStandard = new AssessmentReferenceStandard(
+            2,
+            'standard2',
+            'criteria2',
+            'http://logo2',
+            'http://site2'
+        );
+        materialCertificate.assessmentReferenceStandard = newAssessmentReferenceStandard;
+        expect(materialCertificate.assessmentReferenceStandard).toEqual(
+            newAssessmentReferenceStandard
+        );
     });
 
     it('should correctly set the assessmentAssuranceLevel', () => {

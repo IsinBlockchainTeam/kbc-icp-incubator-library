@@ -19,7 +19,8 @@ import {
     BaseCertificate as ICPBaseCertificate,
     CompanyCertificate as ICPCompanyCertificate,
     ScopeCertificate as ICPScopeCertificate,
-    MaterialCertificate as ICPMaterialCertificate
+    MaterialCertificate as ICPMaterialCertificate,
+    AssessmentReferenceStandard as ICPAssessmentReferenceStandard
 } from '@kbc-lib/azle-types';
 import { Order } from '../entities/Order';
 import { Shipment, Phase, FundStatus } from '../entities/Shipment';
@@ -38,6 +39,7 @@ import {
 import { CompanyCertificate } from '../entities/CompanyCertificate';
 import { ScopeCertificate } from '../entities/ScopeCertificate';
 import { MaterialCertificate } from '../entities/MaterialCertificate';
+import { AssessmentReferenceStandard } from '../entities/AssessmentReferenceStandard';
 
 export class EntityBuilder {
     static buildICPRoleProof(roleProof: RoleProof): ICPRoleProof {
@@ -194,7 +196,7 @@ export class EntityBuilder {
             baseCertificate.issuer,
             baseCertificate.subject,
             baseCertificate.uploadedBy,
-            baseCertificate.assessmentStandard,
+            this.buildAssessmentReferenceStandard(baseCertificate.assessmentReferenceStandard),
             baseCertificate.assessmentAssuranceLevel,
             this._buildCertificateDocumentInfo(baseCertificate.document),
             this._buildDocumentEvaluationStatus(baseCertificate.evaluationStatus),
@@ -210,7 +212,7 @@ export class EntityBuilder {
             companyCertificate.issuer,
             companyCertificate.subject,
             companyCertificate.uploadedBy,
-            companyCertificate.assessmentStandard,
+            this.buildAssessmentReferenceStandard(companyCertificate.assessmentReferenceStandard),
             companyCertificate.assessmentAssuranceLevel,
             this._buildCertificateDocumentInfo(companyCertificate.document),
             this._buildDocumentEvaluationStatus(companyCertificate.evaluationStatus),
@@ -228,7 +230,7 @@ export class EntityBuilder {
             scopeCertificate.issuer,
             scopeCertificate.subject,
             scopeCertificate.uploadedBy,
-            scopeCertificate.assessmentStandard,
+            this.buildAssessmentReferenceStandard(scopeCertificate.assessmentReferenceStandard),
             scopeCertificate.assessmentAssuranceLevel,
             this._buildCertificateDocumentInfo(scopeCertificate.document),
             this._buildDocumentEvaluationStatus(scopeCertificate.evaluationStatus),
@@ -250,7 +252,7 @@ export class EntityBuilder {
             materialCertificate.issuer,
             materialCertificate.subject,
             materialCertificate.uploadedBy,
-            materialCertificate.assessmentStandard,
+            this.buildAssessmentReferenceStandard(materialCertificate.assessmentReferenceStandard),
             materialCertificate.assessmentAssuranceLevel,
             this._buildCertificateDocumentInfo(materialCertificate.document),
             this._buildDocumentEvaluationStatus(materialCertificate.evaluationStatus),
@@ -326,6 +328,17 @@ export class EntityBuilder {
         uploadedBy: info.uploadedBy,
         externalUrl: info.externalUrl
     });
+
+    static buildAssessmentReferenceStandard = (
+        assessmentReferenceStandard: ICPAssessmentReferenceStandard
+    ): AssessmentReferenceStandard =>
+        new AssessmentReferenceStandard(
+            Number(assessmentReferenceStandard.id),
+            assessmentReferenceStandard.name,
+            assessmentReferenceStandard.sustainabilityCriteria,
+            assessmentReferenceStandard.logoUrl,
+            assessmentReferenceStandard.siteUrl
+        );
 
     static _buildCertificateDocumentType(
         documentType: ICPCertificateDocumentType

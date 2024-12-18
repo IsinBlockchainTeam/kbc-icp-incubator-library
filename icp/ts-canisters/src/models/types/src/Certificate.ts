@@ -1,5 +1,6 @@
 import { EvaluationStatus } from './Evaluation';
 import { DocumentMetadata } from './Document';
+import { AssessmentReferenceStandard } from './AssessmentReferenceStandard';
 
 export enum CertificateDocumentTypeEnum {
     CERTIFICATE_OF_CONFORMITY = 'CERTIFICATE_OF_CONFORMITY',
@@ -34,7 +35,7 @@ export interface BaseCertificate {
     issuer: string;
     subject: string;
     uploadedBy: string;
-    assessmentStandard: string;
+    assessmentReferenceStandard: AssessmentReferenceStandard;
     assessmentAssuranceLevel: string;
     document: CertificateDocumentInfo;
     evaluationStatus: EvaluationStatus;

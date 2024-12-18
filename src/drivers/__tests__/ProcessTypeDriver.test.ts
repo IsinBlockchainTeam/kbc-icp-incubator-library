@@ -1,5 +1,6 @@
 import { createActor } from 'icp-declarations/entity_manager';
 import type { Identity } from '@dfinity/agent';
+import { IndustrialSectorEnum } from '@kbc-lib/azle-types';
 import { ProcessTypeDriver } from '../ProcessTypeDriver';
 
 jest.mock('icp-declarations/entity_manager');
@@ -33,21 +34,29 @@ describe('ProcessTypeDriver', () => {
     });
 
     it('should add a value', async () => {
-        const newProcessTypeDriver = 'newProcessTypeDriver';
-        mockedActor.addProcessType.mockReturnValue(newProcessTypeDriver);
-        await expect(processTypeDriver.addValue(newProcessTypeDriver)).resolves.toEqual(
-            newProcessTypeDriver
-        );
+        const newProcessType = 'newProcessTypeDriver';
+        mockedActor.addProcessType.mockReturnValue(newProcessType);
+        await expect(
+            processTypeDriver.addValue(newProcessType, IndustrialSectorEnum.COFFEE)
+        ).resolves.toEqual(newProcessType);
         expect(mockedActor.addProcessType).toHaveBeenCalled();
-        expect(mockedActor.addProcessType).toHaveBeenCalledWith(newProcessTypeDriver);
+        expect(mockedActor.addProcessType).toHaveBeenCalledWith(
+            newProcessType,
+            IndustrialSectorEnum.COFFEE
+        );
     });
 
     it('should remove a value', async () => {
         const toRemove = 'processType';
         mockedActor.removeProcessType.mockReturnValue(toRemove);
-        await expect(processTypeDriver.removeValue(toRemove)).resolves.toEqual(toRemove);
+        await expect(
+            processTypeDriver.removeValue(toRemove, IndustrialSectorEnum.COFFEE)
+        ).resolves.toEqual(toRemove);
         expect(mockedActor.removeProcessType).toHaveBeenCalled();
-        expect(mockedActor.removeProcessType).toHaveBeenCalledWith(toRemove);
+        expect(mockedActor.removeProcessType).toHaveBeenCalledWith(
+            toRemove,
+            IndustrialSectorEnum.COFFEE
+        );
     });
 
     it('should check if a value already exists', async () => {

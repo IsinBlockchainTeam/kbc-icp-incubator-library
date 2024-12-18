@@ -1,6 +1,7 @@
 import { ActorSubclass, Identity } from '@dfinity/agent';
 import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
 import { createActor } from 'icp-declarations/entity_manager';
+import { HandleIcpError } from '../decorators/HandleIcpError';
 
 export class FiatDriver {
     private _actor: ActorSubclass<_SERVICE>;
@@ -14,18 +15,22 @@ export class FiatDriver {
         });
     }
 
+    @HandleIcpError()
     async getAllValues(): Promise<string[]> {
         return this._actor.getAllFiats();
     }
 
-    async addValue(value: string): Promise<string> {
-        return this._actor.addFiat(value);
+    @HandleIcpError()
+    async addValue(value: string, industrialSector: string): Promise<string> {
+        return this._actor.addFiat(value, industrialSector);
     }
 
-    async removeValue(value: string): Promise<string> {
-        return this._actor.removeFiat(value);
+    @HandleIcpError()
+    async removeValue(value: string, industrialSector: string): Promise<string> {
+        return this._actor.removeFiat(value, industrialSector);
     }
 
+    @HandleIcpError()
     async hasValue(value: string): Promise<boolean> {
         return this._actor.hasFiat(value);
     }

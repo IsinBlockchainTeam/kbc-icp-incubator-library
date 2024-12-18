@@ -1,12 +1,9 @@
-import { IDL, query, update } from "azle";
-import { AtLeastEditor, AtLeastViewer } from "../decorators/roles";
-import OrganizationService from "../services/OrganizationService";
-import {
-    IDLOrganization,
-    IDLOrganizationRole,
-} from "../models/idls/IDLOrganization";
-import { OrganizationPresentation } from "../models/types/src/presentations/OrganizationPresentation";
-import { OrganizationRoleType } from "../models/types";
+import { IDL, query, update } from 'azle';
+import { AtLeastEditor, AtLeastViewer } from '../decorators/roles';
+import OrganizationService from '../services/OrganizationService';
+import { IDLOrganization, IDLOrganizationRole } from '../models/idls/Organization';
+import { OrganizationPresentation } from '../models/types/src/presentations/OrganizationPresentation';
+import { OrganizationRoleType } from '../models/types';
 
 class OrganizationController {
     @query([], IDL.Vec(IDLOrganization))
@@ -17,27 +14,13 @@ class OrganizationController {
 
     @query([IDL.Text], IDLOrganization)
     @AtLeastViewer
-    async getOrganization(
-        ethAddress: string,
-    ): Promise<OrganizationPresentation> {
+    async getOrganization(ethAddress: string): Promise<OrganizationPresentation> {
         return OrganizationService.instance.getOrganization(ethAddress);
     }
 
     @update(
-        [
-            IDL.Text,
-            IDL.Text,
-            IDL.Text,
-            IDL.Text,
-            IDL.Text,
-            IDL.Text,
-            IDL.Text,
-            IDLOrganizationRole,
-            IDL.Text,
-            IDL.Text,
-            IDL.Text,
-        ],
-        IDLOrganization,
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDLOrganizationRole, IDL.Text, IDL.Text, IDL.Text],
+        IDLOrganization
     )
     @AtLeastEditor
     async createOrganization(
@@ -51,7 +34,7 @@ class OrganizationController {
         role: OrganizationRoleType,
         telephone: string,
         email: string,
-        image: string,
+        image: string
     ): Promise<OrganizationPresentation> {
         return OrganizationService.instance.createOrganization(
             legalName,
@@ -64,26 +47,13 @@ class OrganizationController {
             role,
             telephone,
             email,
-            image,
+            image
         );
     }
 
     @update(
-        [
-            IDL.Text,
-            IDL.Text,
-            IDL.Text,
-            IDL.Text,
-            IDL.Text,
-            IDL.Text,
-            IDL.Text,
-            IDL.Text,
-            IDLOrganizationRole,
-            IDL.Text,
-            IDL.Text,
-            IDL.Text,
-        ],
-        IDLOrganization,
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDLOrganizationRole, IDL.Text, IDL.Text, IDL.Text],
+        IDLOrganization
     )
     @AtLeastEditor
     async updateOrganization(
@@ -98,7 +68,7 @@ class OrganizationController {
         role: OrganizationRoleType,
         telephone: string,
         email: string,
-        image: string,
+        image: string
     ): Promise<OrganizationPresentation> {
         return OrganizationService.instance.updateOrganization(
             ethAddress,
@@ -112,7 +82,7 @@ class OrganizationController {
             role,
             telephone,
             email,
-            image,
+            image
         );
     }
 

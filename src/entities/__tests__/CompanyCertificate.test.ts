@@ -1,12 +1,20 @@
-import { CompanyCertificate } from '../CompanyCertificate';
-import { CertificateType, CertificateDocumentType } from '../Certificate';
-import { EvaluationStatus } from '../Evaluation';
+import { CompanyCertificate } from './CompanyCertificate';
+import { CertificateType, CertificateDocumentType } from './Certificate';
+import { EvaluationStatus } from './Evaluation';
+import { AssessmentReferenceStandard } from './AssessmentReferenceStandard';
 
 describe('CompanyCertificate', () => {
     let companyCertificate: CompanyCertificate;
     const issueDate = new Date();
     const validFrom = new Date(new Date().setDate(new Date().getDate() + 1));
     const validUntil = new Date(new Date().setDate(new Date().getDate() + 365));
+    const assessmentReferenceStandard = new AssessmentReferenceStandard(
+        1,
+        'standard1',
+        'criteria1',
+        'http://logo1',
+        'http://site1'
+    );
 
     beforeAll(() => {
         companyCertificate = new CompanyCertificate(
@@ -14,7 +22,7 @@ describe('CompanyCertificate', () => {
             'issuer',
             'subject',
             'uploadedBy',
-            'assessmentStandard',
+            assessmentReferenceStandard,
             'assessmentAssuranceLevel',
             {
                 referenceId: 'referenceId',
@@ -38,7 +46,7 @@ describe('CompanyCertificate', () => {
         expect(companyCertificate.issuer).toEqual('issuer');
         expect(companyCertificate.subject).toEqual('subject');
         expect(companyCertificate.uploadedBy).toEqual('uploadedBy');
-        expect(companyCertificate.assessmentStandard).toEqual('assessmentStandard');
+        expect(companyCertificate.assessmentReferenceStandard).toEqual(assessmentReferenceStandard);
         expect(companyCertificate.assessmentAssuranceLevel).toEqual('assessmentAssuranceLevel');
         expect(companyCertificate.document).toEqual({
             referenceId: 'referenceId',
@@ -76,9 +84,18 @@ describe('CompanyCertificate', () => {
         expect(companyCertificate.uploadedBy).toEqual('newUploadedBy');
     });
 
-    it('should correctly set the assessmentStandard', () => {
-        companyCertificate.assessmentStandard = 'newAssessmentStandard';
-        expect(companyCertificate.assessmentStandard).toEqual('newAssessmentStandard');
+    it('should correctly set the assessmentReferenceStandard', () => {
+        const newAssessmentReferenceStandard = new AssessmentReferenceStandard(
+            2,
+            'standard2',
+            'criteria2',
+            'http://logo2',
+            'http://site2'
+        );
+        companyCertificate.assessmentReferenceStandard = newAssessmentReferenceStandard;
+        expect(companyCertificate.assessmentReferenceStandard).toEqual(
+            newAssessmentReferenceStandard
+        );
     });
 
     it('should correctly set the assessmentAssuranceLevel', () => {

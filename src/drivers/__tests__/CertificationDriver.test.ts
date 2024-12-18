@@ -51,7 +51,7 @@ describe('CertificationDriver', () => {
     };
     const issuer = 'issuer';
     const subject = 'subject';
-    const assessmentStandard = 'assessmentStandard';
+    const assessmentReferenceStandardId = 2;
     const assessmentAssuranceLevel = 'assessmentAssuranceLevel';
     const document: CertificateDocumentInfo = {
         referenceId: 'referenceId',
@@ -113,7 +113,7 @@ describe('CertificationDriver', () => {
             const certificate = await certificationDriver.registerCompanyCertificate(
                 issuer,
                 subject,
-                assessmentStandard,
+                assessmentReferenceStandardId,
                 assessmentAssuranceLevel,
                 document,
                 validFrom,
@@ -124,7 +124,7 @@ describe('CertificationDriver', () => {
             expect(mockedActor.registerCompanyCertificate).toHaveBeenCalledWith(
                 issuer,
                 subject,
-                assessmentStandard,
+                BigInt(assessmentReferenceStandardId),
                 assessmentAssuranceLevel,
                 defaultEntities.icpCertificateDocument,
                 BigInt(validFrom.getTime()),
@@ -139,7 +139,7 @@ describe('CertificationDriver', () => {
             const certificate = await certificationDriver.registerScopeCertificate(
                 issuer,
                 subject,
-                assessmentStandard,
+                assessmentReferenceStandardId,
                 assessmentAssuranceLevel,
                 document,
                 validFrom,
@@ -151,7 +151,7 @@ describe('CertificationDriver', () => {
             expect(mockedActor.registerScopeCertificate).toHaveBeenCalledWith(
                 issuer,
                 subject,
-                assessmentStandard,
+                BigInt(assessmentReferenceStandardId),
                 assessmentAssuranceLevel,
                 defaultEntities.icpCertificateDocument,
                 BigInt(validFrom.getTime()),
@@ -168,7 +168,7 @@ describe('CertificationDriver', () => {
             const certificate = await certificationDriver.registerMaterialCertificate(
                 issuer,
                 subject,
-                assessmentStandard,
+                assessmentReferenceStandardId,
                 assessmentAssuranceLevel,
                 document,
                 materialId,
@@ -178,7 +178,7 @@ describe('CertificationDriver', () => {
             expect(mockedActor.registerMaterialCertificate).toHaveBeenCalledWith(
                 issuer,
                 subject,
-                assessmentStandard,
+                BigInt(assessmentReferenceStandardId),
                 assessmentAssuranceLevel,
                 defaultEntities.icpCertificateDocument,
                 BigInt(materialId),
@@ -260,7 +260,7 @@ describe('CertificationDriver', () => {
         it('should update a company certificate', async () => {
             const certificate = await certificationDriver.updateCompanyCertificate(
                 id,
-                assessmentStandard,
+                assessmentReferenceStandardId,
                 assessmentAssuranceLevel,
                 validFrom,
                 validUntil,
@@ -269,7 +269,7 @@ describe('CertificationDriver', () => {
             expect(mockedActor.updateCompanyCertificate).toHaveBeenCalled();
             expect(mockedActor.updateCompanyCertificate).toHaveBeenCalledWith(
                 BigInt(id),
-                assessmentStandard,
+                BigInt(assessmentReferenceStandardId),
                 assessmentAssuranceLevel,
                 BigInt(validFrom.getTime()),
                 BigInt(validUntil.getTime()),
@@ -281,7 +281,7 @@ describe('CertificationDriver', () => {
         it('should update a scope certificate', async () => {
             const certificate = await certificationDriver.updateScopeCertificate(
                 id,
-                assessmentStandard,
+                assessmentReferenceStandardId,
                 assessmentAssuranceLevel,
                 validFrom,
                 validUntil,
@@ -291,7 +291,7 @@ describe('CertificationDriver', () => {
             expect(mockedActor.updateScopeCertificate).toHaveBeenCalled();
             expect(mockedActor.updateScopeCertificate).toHaveBeenCalledWith(
                 BigInt(id),
-                assessmentStandard,
+                BigInt(assessmentReferenceStandardId),
                 assessmentAssuranceLevel,
                 BigInt(validFrom.getTime()),
                 BigInt(validUntil.getTime()),
@@ -305,7 +305,7 @@ describe('CertificationDriver', () => {
             mockedActor.updateMaterialCertificate.mockReturnValue({ id: 1 });
             const certificate = await certificationDriver.updateMaterialCertificate(
                 id,
-                assessmentStandard,
+                assessmentReferenceStandardId,
                 assessmentAssuranceLevel,
                 2,
                 'notes'
@@ -313,7 +313,7 @@ describe('CertificationDriver', () => {
             expect(mockedActor.updateMaterialCertificate).toHaveBeenCalled();
             expect(mockedActor.updateMaterialCertificate).toHaveBeenCalledWith(
                 BigInt(id),
-                assessmentStandard,
+                BigInt(assessmentReferenceStandardId),
                 assessmentAssuranceLevel,
                 BigInt(2),
                 'notes'

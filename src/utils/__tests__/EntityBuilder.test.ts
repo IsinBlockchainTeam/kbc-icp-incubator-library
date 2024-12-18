@@ -24,6 +24,14 @@ import { ScopeCertificate } from '../../entities/ScopeCertificate';
 import { MaterialCertificate } from '../../entities/MaterialCertificate';
 
 describe('EntityBuilder', () => {
+    const assessmentReferenceStandard = {
+        id: BigInt(1),
+        name: 'assessment standard',
+        logoUrl: 'logo url',
+        siteUrl: 'site url',
+        sustainabilityCriteria: 'sustainability criteria'
+    };
+
     describe('buildProductCategory', () => {
         it('should correctly build a product category', () => {
             const icpProductCategory: ICPProductCategory = {
@@ -141,7 +149,7 @@ describe('EntityBuilder', () => {
                 issuer: '0xissuer',
                 subject: '0xsubject',
                 uploadedBy: '0xuploadedBy',
-                assessmentStandard: 'assessment standard',
+                assessmentReferenceStandard,
                 assessmentAssuranceLevel: 'assessment assurance level',
                 document: {
                     referenceId: 'reference id',
@@ -163,7 +171,9 @@ describe('EntityBuilder', () => {
                     '0xissuer',
                     '0xsubject',
                     '0xuploadedBy',
-                    'assessment standard',
+                    EntityBuilder.buildAssessmentReferenceStandard(
+                        icpBaseCertificate.assessmentReferenceStandard
+                    ),
                     'assessment assurance level',
                     {
                         referenceId: 'reference id',
@@ -190,7 +200,7 @@ describe('EntityBuilder', () => {
                 issuer: '0xissuer',
                 subject: '0xsubject',
                 uploadedBy: '0xuploadedBy',
-                assessmentStandard: 'assessment standard',
+                assessmentReferenceStandard,
                 assessmentAssuranceLevel: 'assessment assurance level',
                 document: {
                     referenceId: 'reference id',
@@ -214,7 +224,9 @@ describe('EntityBuilder', () => {
                     '0xissuer',
                     '0xsubject',
                     '0xuploadedBy',
-                    'assessment standard',
+                    EntityBuilder.buildAssessmentReferenceStandard(
+                        icpCompanyCertificate.assessmentReferenceStandard
+                    ),
                     'assessment assurance level',
                     {
                         referenceId: 'reference id',
@@ -243,7 +255,7 @@ describe('EntityBuilder', () => {
                 issuer: '0xissuer',
                 subject: '0xsubject',
                 uploadedBy: '0xuploadedBy',
-                assessmentStandard: 'assessment standard',
+                assessmentReferenceStandard,
                 assessmentAssuranceLevel: 'assessment assurance level',
                 document: {
                     referenceId: 'reference id',
@@ -268,7 +280,9 @@ describe('EntityBuilder', () => {
                     '0xissuer',
                     '0xsubject',
                     '0xuploadedBy',
-                    'assessment standard',
+                    EntityBuilder.buildAssessmentReferenceStandard(
+                        icpScopeCertificate.assessmentReferenceStandard
+                    ),
                     'assessment assurance level',
                     {
                         referenceId: 'reference id',
@@ -298,7 +312,7 @@ describe('EntityBuilder', () => {
                 issuer: '0xissuer',
                 subject: '0xsubject',
                 uploadedBy: '0xuploadedBy',
-                assessmentStandard: 'assessment standard',
+                assessmentReferenceStandard,
                 assessmentAssuranceLevel: 'assessment assurance level',
                 document: {
                     referenceId: 'reference id',
@@ -335,7 +349,9 @@ describe('EntityBuilder', () => {
                     '0xissuer',
                     '0xsubject',
                     '0xuploadedBy',
-                    'assessment standard',
+                    EntityBuilder.buildAssessmentReferenceStandard(
+                        icpMaterialCertificate.assessmentReferenceStandard
+                    ),
                     'assessment assurance level',
                     {
                         referenceId: 'reference id',

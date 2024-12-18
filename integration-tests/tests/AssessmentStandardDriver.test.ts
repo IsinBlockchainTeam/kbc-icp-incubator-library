@@ -1,6 +1,6 @@
 import { Wallet } from 'ethers';
 import { SiweIdentityProvider } from '../../src/drivers/SiweIdentityProvider';
-import { AssessmentStandardDriver } from '../../src/drivers/AssessmentStandardDriver';
+import { AssessmentReferenceStandardDriver } from '../../src/drivers/AssessmentReferenceStandardDriver';
 import { AuthenticationDriver } from '../../src/drivers/AuthenticationDriver';
 import { createRoleProof } from '../../src/__testUtils__/proof';
 
@@ -12,7 +12,7 @@ const ENTITY_MANAGER_CANISTER_ID = process.env.CANISTER_ID_ENTITY_MANAGER!;
 type Utils = {
     userWallet: Wallet;
     companyWallet: Wallet;
-    assessmentStandardDriver: AssessmentStandardDriver;
+    assessmentStandardDriver: AssessmentReferenceStandardDriver;
     authenticate: () => Promise<void>;
 };
 
@@ -29,7 +29,7 @@ describe('AssessmentStandardDriver', () => {
             ENTITY_MANAGER_CANISTER_ID,
             'http://127.0.0.1:4943/'
         );
-        const assessmentStandardDriver = new AssessmentStandardDriver(
+        const assessmentStandardDriver = new AssessmentReferenceStandardDriver(
             siweIdentityProvider.identity,
             ENTITY_MANAGER_CANISTER_ID,
             'http://127.0.0.1:4943/'
@@ -47,10 +47,10 @@ describe('AssessmentStandardDriver', () => {
         const { assessmentStandardDriver, authenticate } = utils1;
         await authenticate();
 
-        const assessmentStandardCount = (await assessmentStandardDriver.getAllValues()).length;
-        await assessmentStandardDriver.addValue(`assessmentStandard${assessmentStandardCount + 1}`);
+        const assessmentStandardCount = (await assessmentStandardDriver.getAll()).length;
+        await assessmentStandardDriver.add(`assessmentStandard${assessmentStandardCount + 1}`);
 
-        const assessmentStandards = await assessmentStandardDriver.getAllValues();
+        const assessmentStandards = await assessmentStandardDriver.getAll();
         expect(assessmentStandards).toContain(`assessmentStandard${assessmentStandardCount + 1}`);
     });
 
@@ -58,7 +58,7 @@ describe('AssessmentStandardDriver', () => {
         const { assessmentStandardDriver, authenticate } = utils1;
         await authenticate();
 
-        const assessmentStandardCount = (await assessmentStandardDriver.getAllValues()).length;
+        const assessmentStandardCount = (await assessmentStandardDriver.getAll()).length;
 
         const hasUnit = await assessmentStandardDriver.hasValue(
             `assessmentStandard${assessmentStandardCount}`
@@ -70,10 +70,10 @@ describe('AssessmentStandardDriver', () => {
         const { assessmentStandardDriver, authenticate } = utils1;
         await authenticate();
 
-        const assessmentStandardCount = (await assessmentStandardDriver.getAllValues()).length;
-        await assessmentStandardDriver.removeValue(`assessmentStandard${assessmentStandardCount}`);
+        const assessmentStandardCount = (await assessmentStandardDriver.getAll()).length;
+        await assessmentStandardDriver.removeById(`assessmentStandard${assessmentStandardCount}`);
 
-        const assessmentStandards = await assessmentStandardDriver.getAllValues();
+        const assessmentStandards = await assessmentStandardDriver.getAll();
         expect(assessmentStandards).not.toContain(`assessmentStandard${assessmentStandardCount}`);
     });
 });

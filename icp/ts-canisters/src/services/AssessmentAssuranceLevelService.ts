@@ -1,4 +1,4 @@
-import EnumerationService from './EnumerationService';
+import EnumerationService, { EnumerationType } from './EnumerationService';
 import { StableMemoryId } from '../utils/stableMemory';
 
 class AssessmentAssuranceLevelService extends EnumerationService {
@@ -6,7 +6,10 @@ class AssessmentAssuranceLevelService extends EnumerationService {
 
     static get instance(): AssessmentAssuranceLevelService {
         if (!this._instance) {
-            this._instance = new AssessmentAssuranceLevelService(StableMemoryId.ASSESSMENT_ASSURANCE_LEVEL_ENUM);
+            this._instance = new AssessmentAssuranceLevelService(
+                StableMemoryId.ASSESSMENT_ASSURANCE_LEVEL_ENUM,
+                EnumerationType.ASSESSMENT_ASSURANCE_LEVEL
+            );
         }
         return this._instance;
     }
