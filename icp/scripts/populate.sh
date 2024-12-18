@@ -17,7 +17,7 @@ echo "Starting category creation process..."
 echo "-----------------------------------"
 for category in "${PRODUCT_CATEGORIES[@]}"; do
   echo "Creating product category: $category"
-  dfx canister call entity_manager createProductCategory "(\"$category\")" &>/dev/null
+  dfx canister call entity_manager createProductCategory "(\"$category\")"
   if [ $? -eq 0 ]; then
     echo "✓ Successfully created category"
   else
