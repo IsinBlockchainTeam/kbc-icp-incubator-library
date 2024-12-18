@@ -46,6 +46,7 @@ export class ProductCategoryDriver {
         return EntityBuilder.buildProductCategory(resp);
     }
 
+    @HandleIcpError()
     async deleteProductCategory(id: number): Promise<boolean> {
         return this._actor.deleteProductCategory(BigInt(id));
     }

@@ -2,7 +2,7 @@ import { update } from 'azle';
 import ProductCategoryController from '../ProductCategoryController';
 import ProductCategoryService from '../../services/ProductCategoryService';
 import { ProductCategory } from '../../models/types';
-import { AtLeastEditor, AtLeastViewer } from '../../decorators/roles';
+import { AtLeastViewer, OnlyController} from '../../decorators/roles';
 
 jest.mock('azle');
 jest.mock('../../decorators/roles');
@@ -12,7 +12,8 @@ jest.mock('../../services/ProductCategoryService', () => ({
         getProductCategories: jest.fn(),
         getProductCategory: jest.fn(),
         createProductCategory: jest.fn(),
-        updateProductCategory: jest.fn()
+        updateProductCategory: jest.fn(),
+        deleteProductCategory: jest.fn()
     }
 }));
 describe('ProductCategoryController', () => {
@@ -39,14 +40,21 @@ describe('ProductCategoryController', () => {
             controllerFunction: () => productCategoryController.createProductCategory('test'),
             serviceFunction: productCategoryServiceInstanceMock.createProductCategory,
             expectedResult: { name: 'test' } as ProductCategory,
-            expectedDecorators: [update, AtLeastEditor]
+            expectedDecorators: [update, OnlyController]
         },
         {
             controllerFunctionName: 'updateProductCategory',
             controllerFunction: () => productCategoryController.updateProductCategory(1n, 'test'),
             serviceFunction: productCategoryServiceInstanceMock.updateProductCategory,
             expectedResult: { name: 'test' } as ProductCategory,
-            expectedDecorators: [update, AtLeastEditor]
+            expectedDecorators: [update, OnlyController]
+        },
+        {
+            controllerFunctionName: 'deleteProductCategory',
+            controllerFunction: () => productCategoryController.deleteProductCategory(1n),
+            serviceFunction: productCategoryServiceInstanceMock.deleteProductCategory,
+            expectedResult: true,
+            expectedDecorators: [update, OnlyController]
         }
     ])('should pass service $controllerFunctionName', async ({ controllerFunction, serviceFunction, expectedResult, expectedDecorators }) => {
         serviceFunction.mockReturnValue(expectedResult as any);
