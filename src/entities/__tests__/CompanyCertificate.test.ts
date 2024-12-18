@@ -1,7 +1,7 @@
-import { CompanyCertificate } from './CompanyCertificate';
-import { CertificateType, CertificateDocumentType } from './Certificate';
-import { EvaluationStatus } from './Evaluation';
-import { AssessmentReferenceStandard } from './AssessmentReferenceStandard';
+import { CompanyCertificate } from '../CompanyCertificate';
+import { CertificateType, CertificateDocumentType } from '../Certificate';
+import { EvaluationStatus } from '../Evaluation';
+import { AssessmentReferenceStandard } from '../AssessmentReferenceStandard';
 
 describe('CompanyCertificate', () => {
     let companyCertificate: CompanyCertificate;

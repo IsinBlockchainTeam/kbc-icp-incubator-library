@@ -1,14 +1,20 @@
-import { MaterialCertificate } from './MaterialCertificate';
-import { CertificateType, CertificateDocumentType } from './Certificate';
-import { Material } from './Material';
-import { ProductCategory } from './ProductCategory';
-import { EvaluationStatus } from './Evaluation';
-import { AssessmentReferenceStandard } from './AssessmentReferenceStandard';
+import { MaterialCertificate } from '../MaterialCertificate';
+import { CertificateType, CertificateDocumentType } from '../Certificate';
+import { Material } from '../Material';
+import { ProductCategory } from '../ProductCategory';
+import { EvaluationStatus } from '../Evaluation';
+import { AssessmentReferenceStandard } from '../AssessmentReferenceStandard';
 
 describe('MaterialCertificate', () => {
     let materialCertificate: MaterialCertificate;
     const issueDate = new Date();
-    const material: Material = new Material(1, new ProductCategory(1, 'productCategory1', 88, ''));
+    const material: Material = new Material(
+        1,
+        new ProductCategory(1, 'productCategory1', 88, ''),
+        'typologyTest',
+        'qualityTest',
+        'moistureTest'
+    );
     const assessmentReferenceStandard = new AssessmentReferenceStandard(
         1,
         'standard1',

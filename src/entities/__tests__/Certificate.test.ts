@@ -1,6 +1,6 @@
-import { BaseCertificate, CertificateType, CertificateDocumentType } from './Certificate';
-import { EvaluationStatus } from './Evaluation';
-import { AssessmentReferenceStandard } from './AssessmentReferenceStandard';
+import { BaseCertificate, CertificateType, CertificateDocumentType } from '../Certificate';
+import { EvaluationStatus } from '../Evaluation';
+import { AssessmentReferenceStandard } from '../AssessmentReferenceStandard';
 
 describe('Certificate', () => {
     let certificate: BaseCertificate;
