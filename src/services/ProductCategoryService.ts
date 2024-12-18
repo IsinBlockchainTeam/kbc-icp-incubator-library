@@ -16,11 +16,11 @@ export class ProductCategoryService {
         return this._productCategoryDriver.getProductCategory(id);
     }
 
-    async createProductCategory(name: string, quality: number, description: string) {
-        return this._productCategoryDriver.createProductCategory(name, quality, description);
+    async createProductCategory(name: string) {
+        return this._productCategoryDriver.createProductCategory(name);
     }
 
-    async updateProductCategory(id: number, name: string, quality: number, description: string) {
-        return this._productCategoryDriver.updateProductCategory(id, name, quality, description);
+    async updateProductCategory(id: number, name: string) {
+        return this._productCategoryDriver.updateProductCategory(id, name);
     }
 }

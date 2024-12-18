@@ -5,12 +5,12 @@ describe('Material', () => {
     let material: Material;
 
     beforeAll(() => {
-        material = new Material(0, new ProductCategory(0, 'name', 80, 'description'), 'typology', 'quality', 'moisture');
+        material = new Material(0, new ProductCategory(0, 'name'), 'typology', 'quality', 'moisture');
     });
 
     it('should correctly initialize a new Material', () => {
         expect(material.id).toEqual(0);
-        expect(material.productCategory).toEqual(new ProductCategory(0, 'name', 80, 'description'));
+        expect(material.productCategory).toEqual(new ProductCategory(0, 'name'));
         expect(material.typology).toEqual('typology');
         expect(material.quality).toEqual('quality');
         expect(material.moisture).toEqual('moisture');
@@ -22,9 +22,9 @@ describe('Material', () => {
     });
 
     it('should correctly set the productCategory', () => {
-        material.productCategory = new ProductCategory(1, 'name2', 90, 'description2');
+        material.productCategory = new ProductCategory(1, 'name2');
         expect(material.productCategory).toEqual(
-            new ProductCategory(1, 'name2', 90, 'description2')
+            new ProductCategory(1, 'name2')
         );
     });
 

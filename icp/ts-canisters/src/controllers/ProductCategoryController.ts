@@ -17,34 +17,16 @@ class ProductCategoryController {
         return ProductCategoryService.instance.getProductCategory(id);
     }
 
-    @update([IDL.Text, IDL.Nat, IDL.Text], IDLProductCategory)
+    @update([IDL.Text], IDLProductCategory)
     @AtLeastEditor
-    async createProductCategory(
-        name: string,
-        quality: bigint,
-        description: string,
-    ): Promise<ProductCategory> {
-        return ProductCategoryService.instance.createProductCategory(
-            name,
-            quality,
-            description,
-        );
+    async createProductCategory(name: string): Promise<ProductCategory> {
+        return ProductCategoryService.instance.createProductCategory(name);
     }
 
-    @update([IDL.Nat, IDL.Text, IDL.Nat, IDL.Text], IDLProductCategory)
+    @update([IDL.Nat, IDL.Text], IDLProductCategory)
     @AtLeastEditor
-    async updateProductCategory(
-        id: bigint,
-        name: string,
-        quality: bigint,
-        description: string,
-    ): Promise<ProductCategory> {
-        return ProductCategoryService.instance.updateProductCategory(
-            id,
-            name,
-            quality,
-            description,
-        );
+    async updateProductCategory(id: bigint, name: string): Promise<ProductCategory> {
+        return ProductCategoryService.instance.updateProductCategory(id, name);
     }
 
     @update([IDL.Nat], IDL.Bool)

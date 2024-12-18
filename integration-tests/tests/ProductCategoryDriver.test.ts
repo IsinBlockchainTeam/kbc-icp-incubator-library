@@ -48,8 +48,6 @@ describe('ProductCategoryManagerDriver', () => {
         await authenticate();
         const productCategory = await productCategoryManagerDriver.createProductCategory(
             'test',
-            1,
-            'test'
         );
         console.log(productCategory);
         expect(productCategory).toBeDefined();

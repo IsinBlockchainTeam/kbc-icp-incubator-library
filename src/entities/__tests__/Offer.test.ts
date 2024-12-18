@@ -3,7 +3,7 @@ import { ProductCategory } from '../ProductCategory';
 
 describe('Offer', () => {
     let offer: Offer;
-    const productCategory: ProductCategory = new ProductCategory(1, 'test', 85, 'description');
+    const productCategory: ProductCategory = new ProductCategory(1, 'test');
 
     beforeAll(() => {
         offer = new Offer(0, 'owner', productCategory);
@@ -26,7 +26,7 @@ describe('Offer', () => {
     });
 
     it('should correctly set the productCategory', () => {
-        offer.productCategory = new ProductCategory(2, 'newCategory', 90, 'updated');
-        expect(offer.productCategory).toEqual(new ProductCategory(2, 'newCategory', 90, 'updated'));
+        offer.productCategory = new ProductCategory(2, 'newCategory');
+        expect(offer.productCategory).toEqual(new ProductCategory(2, 'newCategory'));
     });
 });

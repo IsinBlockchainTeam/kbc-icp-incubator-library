@@ -36,14 +36,14 @@ describe('ProductCategoryController', () => {
         },
         {
             controllerFunctionName: 'createProductCategory',
-            controllerFunction: () => productCategoryController.createProductCategory('test', 1n, 'test'),
+            controllerFunction: () => productCategoryController.createProductCategory('test'),
             serviceFunction: productCategoryServiceInstanceMock.createProductCategory,
             expectedResult: { name: 'test' } as ProductCategory,
             expectedDecorators: [update, AtLeastEditor]
         },
         {
             controllerFunctionName: 'updateProductCategory',
-            controllerFunction: () => productCategoryController.updateProductCategory(1n, 'test', 1n, 'test'),
+            controllerFunction: () => productCategoryController.updateProductCategory(1n, 'test'),
             serviceFunction: productCategoryServiceInstanceMock.updateProductCategory,
             expectedResult: { name: 'test' } as ProductCategory,
             expectedDecorators: [update, AtLeastEditor]

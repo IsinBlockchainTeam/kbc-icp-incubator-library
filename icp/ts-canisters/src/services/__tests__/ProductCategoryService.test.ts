@@ -52,21 +52,21 @@ describe("ProductCategoryService", () => {
     });
 
     it("creates a product category", () => {
-        const expectedResponse = {id: 0n, name: 'test', quality: 1n, description: 'test'} as ProductCategory;
+        const expectedResponse = {id: 0n, name: 'test'} as ProductCategory;
         mockedFn.keys.mockReturnValue([]);
-        expect(productCategoryService.createProductCategory('test', 1n, 'test')).toEqual(expectedResponse);
+        expect(productCategoryService.createProductCategory('test')).toEqual(expectedResponse);
         expect(mockedFn.keys).toHaveBeenCalled();
         expect(mockedFn.insert).toHaveBeenCalled();
     });
 
     it("updates a product category", () => {
-        const expectedResponse = {id: 0n, name: 'test', quality: 1n, description: 'test'} as ProductCategory;
+        const expectedResponse = {id: 0n, name: 'test'} as ProductCategory;
         mockedFn.get.mockReturnValue(expectedResponse);
-        expect(productCategoryService.updateProductCategory(0n, 'test', 1n, 'test')).toEqual(expectedResponse);
+        expect(productCategoryService.updateProductCategory(0n, 'test')).toEqual(expectedResponse);
         expect(mockedFn.get).toHaveBeenCalled();
         expect(mockedFn.insert).toHaveBeenCalled();
 
         mockedFn.get.mockReturnValue(undefined);
-        expect(() => productCategoryService.updateProductCategory(0n, 'test', 1n, 'test')).toThrow(ProductCategoryNotFoundError);
+        expect(() => productCategoryService.updateProductCategory(0n, 'test')).toThrow(ProductCategoryNotFoundError);
     });
 });

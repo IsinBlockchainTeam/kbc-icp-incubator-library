@@ -42,9 +42,7 @@ const createProductCategory = async (
     );
 
     return productCategoryDriver.createProductCategory(
-        params.name,
-        params.quality,
-        params.description
+        params.name
     );
 };
 

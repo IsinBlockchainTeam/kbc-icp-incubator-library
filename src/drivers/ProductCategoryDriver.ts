@@ -32,18 +32,16 @@ export class ProductCategoryDriver {
     }
 
     @HandleIcpError()
-    async createProductCategory(name: string, quality: number, description: string) {
-        const resp = await this._actor.createProductCategory(name, BigInt(quality), description);
+    async createProductCategory(name: string) {
+        const resp = await this._actor.createProductCategory(name);
         return EntityBuilder.buildProductCategory(resp);
     }
 
     @HandleIcpError()
-    async updateProductCategory(id: number, name: string, quality: number, description: string) {
+    async updateProductCategory(id: number, name: string) {
         const resp = await this._actor.updateProductCategory(
             BigInt(id),
-            name,
-            BigInt(quality),
-            description
+            name
         );
         return EntityBuilder.buildProductCategory(resp);
     }

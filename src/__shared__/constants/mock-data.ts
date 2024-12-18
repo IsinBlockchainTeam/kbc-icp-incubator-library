@@ -7,8 +7,6 @@ import { OrganizationParams } from '../../drivers/OrganizationDriver';
 
 export type ProductCategoryParams = {
     name: string;
-    quality: number;
-    description: string;
 };
 
 export type MaterialParams = {
@@ -40,15 +38,9 @@ export type DocumentParams = {
 export const mockProductCategories: ProductCategoryParams[] = [
     {
         name: 'Ethiopian Yirgacheffe',
-        quality: 92,
-        description:
-            'Light-bodied coffee with bright acidity, featuring distinctive floral and citrus notes. Known for its complex flavor profile with hints of bergamot and jasmine.'
     },
     {
         name: 'Colombian Supremo',
-        quality: 85,
-        description:
-            'Medium-bodied coffee with sweet caramel undertones, balanced acidity, and hints of toasted nuts. Features a smooth chocolate finish and subtle fruity notes.'
     }
 ];
 

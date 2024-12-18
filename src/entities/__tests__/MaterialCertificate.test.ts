@@ -10,7 +10,7 @@ describe('MaterialCertificate', () => {
     const issueDate = new Date();
     const material: Material = new Material(
         1,
-        new ProductCategory(1, 'productCategory1', 88, ''),
+        new ProductCategory(1, 'productCategory1'),
         'typologyTest',
         'qualityTest',
         'moistureTest'
@@ -150,7 +150,7 @@ describe('MaterialCertificate', () => {
     it('should correctly set the materialId', () => {
         const newMaterial: Material = new Material(
             2,
-            new ProductCategory(2, 'productCategory2', 88, ''),
+            new ProductCategory(2, 'productCategory2'),
             'typology2Test',
             'quality2Test',
             'moisture2Test'

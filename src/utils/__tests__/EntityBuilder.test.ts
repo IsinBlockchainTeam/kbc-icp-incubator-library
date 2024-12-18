@@ -36,12 +36,10 @@ describe('EntityBuilder', () => {
         it('should correctly build a product category', () => {
             const icpProductCategory: ICPProductCategory = {
                 id: BigInt(1),
-                name: 'product category',
-                quality: BigInt(100),
-                description: 'description'
+                name: 'product category'
             };
             expect(EntityBuilder.buildProductCategory(icpProductCategory)).toEqual(
-                new ProductCategory(1, 'product category', 100, 'description')
+                new ProductCategory(1, 'product category')
             );
         });
     });
@@ -50,9 +48,7 @@ describe('EntityBuilder', () => {
         it('should correctly build a material', () => {
             const icpProductCategory: ICPProductCategory = {
                 id: BigInt(1),
-                name: 'product category',
-                quality: BigInt(100),
-                description: 'description'
+                name: 'product category'
             };
             const icpMaterial: ICPMaterial = {
                 id: BigInt(1),
@@ -77,9 +73,7 @@ describe('EntityBuilder', () => {
         it('should correctly build an offer', () => {
             const icpProductCategory: ICPProductCategory = {
                 id: BigInt(1),
-                name: 'product category',
-                quality: BigInt(100),
-                description: 'description'
+                name: 'product category'
             };
             const icpOffer: ICPOffer = {
                 id: BigInt(1),
@@ -333,9 +327,7 @@ describe('EntityBuilder', () => {
                 id: BigInt(2),
                 productCategory: {
                     id: BigInt(1),
-                    name: 'product category',
-                    quality: BigInt(100),
-                    description: 'description'
+                    name: 'product category'
                 },
                 typology: 'typology',
                 quality: 'quality',
