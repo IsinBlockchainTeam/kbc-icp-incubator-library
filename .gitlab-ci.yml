@@ -176,5 +176,5 @@ reinstall_icp_canisters_job:
     - chmod +x import-identity-ic.sh reinstall-ic.sh
     - ./import-identity-ic.sh
     - ./reinstall-ic.sh
-    - ./populate.sh
+    - ./populate.sh ic
   when: manual

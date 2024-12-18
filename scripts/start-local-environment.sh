@@ -136,6 +136,6 @@ echo "Sending initial funds to entity_manager canister..."
 new_iterm_tab "cd '$BASE_DIR/blockchain' && npm run send-eth && npm run send-tokens && npm run approve-token-transfer"
 
 echo "Populating canisters with initial data..."
-new_iterm_tab "cd '$BASE_DIR/icp/scripts' && ./populate.sh"
+new_iterm_tab "cd '$BASE_DIR/icp/scripts' && ./populate.sh local"
 
 echo "Starting local environment... Done"
