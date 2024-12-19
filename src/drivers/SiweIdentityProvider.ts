@@ -2,6 +2,7 @@ import type { ActorSubclass, Identity } from '@dfinity/agent';
 import { Wallet } from 'ethers';
 import { DelegationIdentity, Ed25519KeyIdentity } from '@dfinity/identity';
 import { SIWE_IDENTITY_SERVICE, SiweDriver } from './SiweDriver';
+import {ICP} from "../__shared__/constants/constants";
 
 export class SiweIdentityProvider {
     private _icpSiweDriver: SiweDriver;
@@ -19,7 +20,7 @@ export class SiweIdentityProvider {
         const signerAddress = this._signer.address as `0x${string}`;
         const anonymousActor = this._icpSiweDriver.createAnonymousActor({
             httpAgentOptions: {
-                host: 'http://127.0.0.1:4943'
+                host: ICP.NETWORK
             },
             actorOptions: undefined
         }) as ActorSubclass<SIWE_IDENTITY_SERVICE>;

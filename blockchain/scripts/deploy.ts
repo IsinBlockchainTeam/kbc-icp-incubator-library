@@ -6,7 +6,7 @@ import { Libraries } from '@nomiclabs/hardhat-ethers/types';
 import { ContractName } from '../constants/contracts';
 import { getRequiredEnvs } from '../utils/env';
 
-dotenv.config({ path: '../.env.custom' });
+dotenv.config({ path: '../.env' });
 
 const contractMap = new Map<string, Contract>();
 

@@ -13,3 +13,8 @@ export class NotValidCredentialError extends Error {
         super('Access denied: user has not provided valid credentials.');
     }
 }
+export class NotControllerError extends Error {
+    constructor() {
+        super('Access denied: user is not the controller of the canister.');
+    }
+}

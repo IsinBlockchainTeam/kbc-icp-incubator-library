@@ -32,32 +32,16 @@ class ProductCategoryService {
         return !!result;
     }
 
-    createProductCategory(
-        name: string,
-        quality: bigint,
-        description: string,
-    ): ProductCategory {
+    createProductCategory(name: string): ProductCategory {
         const id = BigInt(this._productCategories.keys().length);
-        const productCategory: ProductCategory = {
-            id,
-            name,
-            quality,
-            description,
-        };
+        const productCategory: ProductCategory = { id, name };
         this._productCategories.insert(id, productCategory);
         return productCategory;
     }
 
-    updateProductCategory(
-        id: bigint,
-        name: string,
-        quality: bigint,
-        description: string,
-    ): ProductCategory {
+    updateProductCategory(id: bigint, name: string): ProductCategory {
         const productCategory = this.getProductCategory(id);
         productCategory.name = name;
-        productCategory.quality = quality;
-        productCategory.description = description;
         this._productCategories.insert(id, productCategory);
         return productCategory;
     }

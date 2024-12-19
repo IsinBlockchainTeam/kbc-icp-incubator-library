@@ -14,6 +14,7 @@ export const USERS = {
     OTHER_COMPANY_PRIVATE_KEY: 'c526ee95bf44d8fc405a158bb884d9d1238d99f0612e9f33d006bb0789009aaa'
 };
 
+// Local network
 export const ICP = {
     NETWORK: 'http://127.0.0.1:4943/',
 
@@ -21,6 +22,15 @@ export const ICP = {
     ENTITY_MANAGER_CANISTER_ID: 'bkyz2-fmaaa-aaaaa-qaaaq-cai',
     STORAGE_CANISTER_ID: 'by6od-j4aaa-aaaaa-qaadq-cai'
 };
+
+// IC
+// export const ICP = {
+//     NETWORK: 'https://ic0.app',
+//
+//     SIWE_CANISTER_ID: 'xes56-yiaaa-aaaak-aksbq-cai',
+//     ENTITY_MANAGER_CANISTER_ID: 'gzlum-xqaaa-aaaap-akqia-cai',
+//     STORAGE_CANISTER_ID: 'osr3e-iqaaa-aaaak-akq7a-cai'
+// };
 
 export const ETHEUREUM = {
     TOKEN_ADDRESS: '0xc5a5C42992dECbae36851359345FE25997F5C42d'

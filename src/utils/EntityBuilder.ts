@@ -64,9 +64,7 @@ export class EntityBuilder {
     static buildProductCategory(productCategory: ICPProductCategory) {
         return new ProductCategory(
             Number(productCategory.id),
-            productCategory.name,
-            Number(productCategory.quality),
-            productCategory.description
+            productCategory.name
         );
     }
 

@@ -1,4 +1,5 @@
 import AuthenticationService from "../services/AuthenticationService";
+import { HasInterestedParties } from '../services/interfaces/HasInterestedParties';
 
 function OnlyContractPartyDecorator(hasInterestedParties: HasInterestedParties, originalMethod: any, _context: any) {
     async function replacementMethod(this: any, ...args: any[]) {

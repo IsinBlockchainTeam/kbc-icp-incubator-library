@@ -56,7 +56,7 @@ describe('ProductCategoryDriver', () => {
         const rawProductCategory = { name: 'test' };
         mockFn.createProductCategory.mockReturnValue(rawProductCategory);
         await expect(
-            productCategoryDriver.createProductCategory('test', 1, 'test')
+            productCategoryDriver.createProductCategory('test')
         ).resolves.toEqual(defaultProductCategory);
         expect(mockFn.createProductCategory).toHaveBeenCalled();
         expect(EntityBuilder.buildProductCategory).toHaveBeenCalled();
@@ -67,7 +67,7 @@ describe('ProductCategoryDriver', () => {
         const rawProductCategory = { name: 'test' };
         mockFn.updateProductCategory.mockReturnValue(rawProductCategory);
         await expect(
-            productCategoryDriver.updateProductCategory(1, 'test', 1, 'test')
+            productCategoryDriver.updateProductCategory(1, 'test')
         ).resolves.toEqual(defaultProductCategory);
         expect(mockFn.updateProductCategory).toHaveBeenCalled();
         expect(EntityBuilder.buildProductCategory).toHaveBeenCalled();

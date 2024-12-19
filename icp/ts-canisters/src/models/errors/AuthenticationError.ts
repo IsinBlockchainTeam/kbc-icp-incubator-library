@@ -18,3 +18,9 @@ export class NotValidCredentialError extends Error {
         this.name = 'NotValidCredentialError';
     }
 }
+export class NotControllerError extends Error {
+    constructor() {
+        super(`(${ErrorType.NOT_CONTROLLER}) Access denied: only the controller can perform this action.`);
+        this.name = 'NotControllerError';
+    }
+}
