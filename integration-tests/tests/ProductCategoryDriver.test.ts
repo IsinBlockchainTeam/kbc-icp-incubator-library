@@ -1,7 +1,7 @@
 import { Wallet } from 'ethers';
 import { ProductCategoryDriver, SiweIdentityProvider, ICPAuthenticationDriver } from '@kbc-lib/coffee-trading-management-lib';
 import { createRoleProof } from '../../src/__testUtils__/proof';
-import { ICP, USERS } from '@kbc-lib/coffee-trading-management-lib/dist/__shared__/constants/constants';
+import { ICP, USERS } from '@kbc-lib/coffee-trading-management-lib/__shared__/constants/constants';
 
 type Utils = {
     userWallet: Wallet;
