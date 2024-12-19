@@ -9,14 +9,14 @@ class UnitController {
         return UnitService.instance.getAllValues();
     }
 
-    @update([IDL.Text], IDL.Text)
-    async addUnit(value: string): Promise<string> {
-        return UnitService.instance.addValue(value);
+    @update([IDL.Text, IDL.Text], IDL.Text)
+    async addUnit(value: string, industrialSector: string): Promise<string> {
+        return UnitService.instance.addValue(value, industrialSector);
     }
 
-    @update([IDL.Text], IDL.Text)
-    async removeUnit(value: string): Promise<string> {
-        return UnitService.instance.removeValue(value);
+    @update([IDL.Text, IDL.Text], IDL.Text)
+    async removeUnit(value: string, industrialSector: string): Promise<string> {
+        return UnitService.instance.removeValue(value, industrialSector);
     }
 
     @query([IDL.Text], IDL.Bool)

@@ -101,8 +101,8 @@ export class ShipmentDriver {
         return EntityBuilder.buildShipment(resp);
     }
 
-    async determineEscrowAddress(id: number): Promise<Shipment> {
-        const resp = await this._actor.determineEscrowAddress(BigInt(id));
+    async determineDownPaymentAddress(id: number): Promise<Shipment> {
+        const resp = await this._actor.determineDownPaymentAddress(BigInt(id));
         return EntityBuilder.buildShipment(resp);
     }
 

@@ -2,7 +2,8 @@ export { SameActorsError } from './ActorError';
 export {
     NotAuthorizedError,
     NotAuthenticatedError,
-    NotValidCredentialError
+    NotValidCredentialError,
+    NotControllerError
 } from './AuthenticationError';
 export {
     DocumentNotFoundError,

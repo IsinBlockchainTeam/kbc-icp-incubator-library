@@ -28,7 +28,7 @@ export type Shipment = {
     id: bigint;
     supplier: string;
     commissioner: string;
-    escrowAddress: [string] | [];
+    downPaymentAddress: [string] | [];
     sampleEvaluationStatus: EvaluationStatus;
     detailsEvaluationStatus: EvaluationStatus;
     qualityEvaluationStatus: EvaluationStatus;

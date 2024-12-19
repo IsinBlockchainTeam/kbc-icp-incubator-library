@@ -23,19 +23,19 @@ describe('ProcessTypeController', () => {
             controllerFunctionName: 'getAllProcessTypes',
             controllerFunction: () => processTypeController.getAllProcessTypes(),
             serviceFunction: processTypeServiceInstanceMock.getAllValues,
-            expectedResult: [],
+            expectedResult: [] as string[],
             expectedDecorators: [update, AtLeastViewer]
         },
         {
             controllerFunctionName: 'addProcessType',
-            controllerFunction: () => processTypeController.addProcessType('value'),
+            controllerFunction: () => processTypeController.addProcessType('value', 'industrialSector'),
             serviceFunction: processTypeServiceInstanceMock.addValue,
             expectedResult: 'value',
             expectedDecorators: []
         },
         {
             controllerFunctionName: 'removeProcessType',
-            controllerFunction: () => processTypeController.removeProcessType('value'),
+            controllerFunction: () => processTypeController.removeProcessType('value', 'industrialSector'),
             serviceFunction: processTypeServiceInstanceMock.removeValue,
             expectedResult: 'value',
             expectedDecorators: []
@@ -48,6 +48,7 @@ describe('ProcessTypeController', () => {
             expectedDecorators: [update, AtLeastViewer]
         }
     ])('should pass service $controllerFunctionName', async ({ controllerFunction, serviceFunction, expectedResult, expectedDecorators }) => {
+        // @ts-ignore
         serviceFunction.mockReturnValue(expectedResult as any);
         await expect(controllerFunction()).resolves.toEqual(expectedResult);
         expect(serviceFunction).toHaveBeenCalled();

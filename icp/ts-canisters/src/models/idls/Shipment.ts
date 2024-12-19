@@ -1,5 +1,5 @@
 import { IDL } from 'azle';
-import { IDLEvaluationStatus} from './Evaluation';
+import { IDLEvaluationStatus } from './Evaluation';
 import { IDLDocumentInfo, IDLDocumentType } from './Document';
 
 export const IDLPhase = IDL.Variant({
@@ -20,7 +20,7 @@ export const IDLShipment = IDL.Record({
     id: IDL.Nat,
     supplier: IDL.Text,
     commissioner: IDL.Text,
-    escrowAddress: IDL.Opt(IDL.Text),
+    downPaymentAddress: IDL.Opt(IDL.Text),
     sampleEvaluationStatus: IDLEvaluationStatus,
     detailsEvaluationStatus: IDLEvaluationStatus,
     qualityEvaluationStatus: IDLEvaluationStatus,

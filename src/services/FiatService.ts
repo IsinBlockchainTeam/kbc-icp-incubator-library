@@ -1,3 +1,4 @@
+import { IndustrialSectorEnum } from '@kbc-lib/azle-types';
 import { FiatDriver } from '../drivers/FiatDriver';
 
 export class FiatService {
@@ -11,12 +12,15 @@ export class FiatService {
         return this._fiatDriver.getAllValues();
     }
 
-    async addValue(value: string): Promise<string> {
-        return this._fiatDriver.addValue(value);
+    async addValue(value: string, industrialSector?: string): Promise<string> {
+        return this._fiatDriver.addValue(value, industrialSector || IndustrialSectorEnum.DEFAULT);
     }
 
-    async removeValue(value: string): Promise<string> {
-        return this._fiatDriver.removeValue(value);
+    async removeValue(value: string, industrialSector?: string): Promise<string> {
+        return this._fiatDriver.removeValue(
+            value,
+            industrialSector || IndustrialSectorEnum.DEFAULT
+        );
     }
 
     async hasValue(value: string): Promise<boolean> {

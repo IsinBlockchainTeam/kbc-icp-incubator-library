@@ -153,7 +153,7 @@ describe('OrganizationDriver', () => {
             arbiter: '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
             token: '0xc5a5C42992dECbae36851359345FE25997F5C42d',
             agreedAmount: 10,
-            escrowManager: '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
+            downPaymentManager: '0x319FFED7a71D3CD22aEEb5C815C88f0d2b19D123',
             incoterms: 'incoterms',
             shipper: 'shipper',
             shippingPort: 'shippingPort',

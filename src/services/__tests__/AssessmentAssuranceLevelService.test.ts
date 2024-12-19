@@ -1,4 +1,5 @@
 import { createMock } from 'ts-auto-mock';
+import { IndustrialSectorEnum } from '@kbc-lib/azle-types';
 import { AssessmentAssuranceLevelService } from '../AssessmentAssuranceLevelService';
 import { AssessmentAssuranceLevelDriver } from '../../drivers/AssessmentAssuranceLevelDriver';
 
@@ -33,17 +34,19 @@ describe('AssessmentAssuranceLevelService', () => {
         },
         {
             functionName: 'addValue',
-            serviceFunction: () => assessmentAssuranceLevelService.addValue('value'),
+            serviceFunction: () =>
+                assessmentAssuranceLevelService.addValue('value', IndustrialSectorEnum.COFFEE),
             driverFunction: mockedDriverFn.addValue,
             driverFunctionResult: 'value',
-            driverFunctionArgs: ['value']
+            driverFunctionArgs: ['value', IndustrialSectorEnum.COFFEE]
         },
         {
             functionName: 'removeValue',
-            serviceFunction: () => assessmentAssuranceLevelService.removeValue('value'),
+            serviceFunction: () =>
+                assessmentAssuranceLevelService.removeValue('value', IndustrialSectorEnum.COFFEE),
             driverFunction: mockedDriverFn.removeValue,
             driverFunctionResult: 'value',
-            driverFunctionArgs: ['value']
+            driverFunctionArgs: ['value', IndustrialSectorEnum.COFFEE]
         },
         {
             functionName: 'hasValue',

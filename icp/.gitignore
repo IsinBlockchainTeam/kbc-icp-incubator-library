@@ -1,3 +1,5 @@
 .env.custom
-.env
+ts-canisters/.env.custom
 .dfx
+
+.npmrc

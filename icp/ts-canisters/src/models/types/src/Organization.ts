@@ -1,13 +1,12 @@
 export enum OrganizationRole {
-    IMPORTER = "IMPORTER",
-    EXPORTER = "EXPORTER",
-    ARBITER = "ARBITER",
+    IMPORTER = 'IMPORTER',
+    EXPORTER = 'EXPORTER',
+    ARBITER = 'ARBITER',
+    // TODO: think about manage admin company in a separate way, in case remove from OrganizationRoleType, OrganizationRoleFactory and IDLOrganizationRole
+    ADMIN = 'ADMIN'
 }
 
-export type OrganizationRoleType =
-    | { IMPORTER: null }
-    | { EXPORTER: null }
-    | { ARBITER: null };
+export type OrganizationRoleType = { IMPORTER: null } | { EXPORTER: null } | { ARBITER: null } | { ADMIN: null };
 
 export type Organization = {
     ethAddress: string;
@@ -23,3 +22,12 @@ export type Organization = {
     email: string;
     image: string;
 };
+
+export enum IndustrialSectorEnum {
+    DEFAULT = 'default',
+    COFFEE = 'coffee',
+    COCOA = 'cocoa',
+    COTTON = 'cotton',
+    WOOL = 'wool'
+}
+export const industrialSectorsAvailable = Object.values(IndustrialSectorEnum).map((v) => v.toString());

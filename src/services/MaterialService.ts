@@ -16,11 +16,11 @@ export class MaterialService {
         return this._materialDriver.getMaterial(id);
     }
 
-    async createMaterial(productCategoryId: number): Promise<Material> {
-        return this._materialDriver.createMaterial(productCategoryId);
+    async createMaterial(productCategoryId: number, typology: string, quality: string, moisture: string): Promise<Material> {
+        return this._materialDriver.createMaterial(productCategoryId, typology, quality, moisture);
     }
 
-    async updateMaterial(id: number, productCategoryId: number) {
-        return this._materialDriver.updateMaterial(id, productCategoryId);
+    async updateMaterial(id: number, productCategoryId: number, typology: string, quality: string, moisture: string) {
+        return this._materialDriver.updateMaterial(id, productCategoryId, typology, quality, moisture);
     }
 }

@@ -5,9 +5,18 @@ export class Material {
 
     private _productCategory: ProductCategory;
 
-    constructor(id: number, productCategory: ProductCategory) {
+    private _typology: string;
+
+    private _quality: string;
+
+    private _moisture: string;
+
+    constructor(id: number, productCategory: ProductCategory, typology: string, quality: string, moisture: string) {
         this._id = id;
         this._productCategory = productCategory;
+        this._typology = typology;
+        this._quality = quality;
+        this._moisture = moisture;
     }
 
     get id(): number {
@@ -24,5 +33,29 @@ export class Material {
 
     set productCategory(value: ProductCategory) {
         this._productCategory = value;
+    }
+
+    get typology(): string {
+        return this._typology;
+    }
+
+    set typology(value: string) {
+        this._typology = value;
+    }
+
+    get quality(): string {
+        return this._quality;
+    }
+
+    set quality(value: string) {
+        this._quality = value;
+    }
+
+    get moisture(): string {
+        return this._moisture;
+    }
+
+    set moisture(value: string) {
+        this._moisture = value;
     }
 }

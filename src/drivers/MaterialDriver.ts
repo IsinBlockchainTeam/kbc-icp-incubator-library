@@ -30,14 +30,14 @@ export class MaterialDriver {
     }
 
     @HandleIcpError()
-    async createMaterial(productCategoryId: number): Promise<Material> {
-        const resp = await this._actor.createMaterial(BigInt(productCategoryId));
+    async createMaterial(productCategoryId: number, typology: string, quality: string, moisture: string): Promise<Material> {
+        const resp = await this._actor.createMaterial(BigInt(productCategoryId), typology, quality, moisture);
         return EntityBuilder.buildMaterial(resp);
     }
 
     @HandleIcpError()
-    async updateMaterial(id: number, productCategoryId: number) {
-        const resp = await this._actor.updateMaterial(BigInt(id), BigInt(productCategoryId));
+    async updateMaterial(id: number, productCategoryId: number, typology: string, quality: string, moisture: string) {
+        const resp = await this._actor.updateMaterial(BigInt(id), BigInt(productCategoryId), typology, quality, moisture);
         return EntityBuilder.buildMaterial(resp);
     }
 }

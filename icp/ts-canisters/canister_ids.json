@@ -1,7 +1,4 @@
 {
-  "evm_rpc": {
-    "ic": "c2y56-7aaaa-aaaap-akqta-cai"
-  },
   "entity_manager": {
     "ic": "gzlum-xqaaa-aaaap-akqia-cai"
   },

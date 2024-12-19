@@ -13,8 +13,8 @@ import {
 } from '../models/types';
 import { validateAddress } from '../utils/validation';
 import { ethCallContract, ethSendContractTransaction, getAddress } from '../utils/rpc';
-import escrowManagerAbi from '../../eth-abi/EscrowManager.json';
-import escrowAbi from '../../eth-abi/Escrow.json';
+import downPaymentManagerAbi from '../../eth-abi/DownPaymentManager.json';
+import downPaymentAbi from '../../eth-abi/DownPayment.json';
 import { StableMemoryId } from '../utils/stableMemory';
 import AuthenticationService from './AuthenticationService';
 import { ShipmentDownPaymentAddressNotFound } from '../models/errors';
@@ -80,7 +80,7 @@ class ShipmentService implements HasInterestedParties {
             id,
             supplier,
             commissioner,
-            escrowAddress: [],
+            downPaymentAddress: [],
             sampleEvaluationStatus: { NOT_EVALUATED: null },
             detailsEvaluationStatus: { NOT_EVALUATED: null },
             qualityEvaluationStatus: { NOT_EVALUATED: null },
@@ -100,8 +100,8 @@ class ShipmentService implements HasInterestedParties {
             documents: []
         };
 
-        const escrowManagerAddress: string = Evm.ESCROW_MANAGER_ADDRESS;
-        await ethSendContractTransaction(escrowManagerAddress, escrowManagerAbi.abi, 'registerEscrow', [
+        const downPaymentManagerAddress: string = Evm.DOWN_PAYMENT_MANAGER_ADDRESS;
+        await ethSendContractTransaction(downPaymentManagerAddress, downPaymentManagerAbi.abi, 'registerDownPayment', [
             shipment.id,
             supplier,
             duration,
@@ -212,16 +212,18 @@ class ShipmentService implements HasInterestedParties {
         return shipment;
     }
 
-    async determineEscrowAddress(id: bigint): Promise<Shipment> {
+    async determineDownPaymentAddress(id: bigint): Promise<Shipment> {
         const shipment = this.getShipment(id);
 
-        if (shipment.escrowAddress.length > 0) throw new ShipmentDownPaymentAddressNotFound();
+        if (shipment.downPaymentAddress.length > 0) throw new ShipmentDownPaymentAddressNotFound();
 
-        const escrowManagerAddress: string = Evm.ESCROW_MANAGER_ADDRESS;
-        const escrowAddress = await ethCallContract(escrowManagerAddress, escrowManagerAbi.abi, 'getEscrowByShipmentId', [shipment.id]);
+        const downPaymentManagerAddress: string = Evm.DOWN_PAYMENT_MANAGER_ADDRESS;
+        const downPaymentAddress = await ethCallContract(downPaymentManagerAddress, downPaymentManagerAbi.abi, 'getDownPaymentByShipmentId', [
+            shipment.id
+        ]);
 
-        if (escrowAddress === ZeroAddress) throw new Error('Unable to determine escrow address');
-        shipment.escrowAddress = [escrowAddress];
+        if (downPaymentAddress === ZeroAddress) throw new Error('Unable to determine downPayment address');
+        shipment.downPaymentAddress = [downPaymentAddress];
 
         this._shipments.insert(id, shipment);
         return shipment;
@@ -232,18 +234,20 @@ class ShipmentService implements HasInterestedParties {
         if (!(PhaseEnum.PHASE_3 in this.getShipmentPhase(id))) throw new Error('Shipment in wrong phase');
         if (!(FundStatusEnum.NOT_LOCKED in shipment.fundsStatus)) throw new Error('Funds already locked');
 
-        if (shipment.escrowAddress.length === 0) {
-            const escrowManagerAddress: string = Evm.ESCROW_MANAGER_ADDRESS;
-            const escrowAddress = await ethCallContract(escrowManagerAddress, escrowManagerAbi.abi, 'getEscrowByShipmentId', [shipment.id]);
-            shipment.escrowAddress = [escrowAddress];
+        if (shipment.downPaymentAddress.length === 0) {
+            const downPaymentManagerAddress: string = Evm.DOWN_PAYMENT_MANAGER_ADDRESS;
+            const downPaymentAddress = await ethCallContract(downPaymentManagerAddress, downPaymentManagerAbi.abi, 'getDownPaymentByShipmentId', [
+                shipment.id
+            ]);
+            shipment.downPaymentAddress = [downPaymentAddress];
         }
 
         const callerAddress = await getAddress(ic.caller());
         console.log('callerAddress', callerAddress);
-        const escrowAddress = shipment.escrowAddress[0];
-        console.log('escrowAddress', escrowAddress);
+        const downPaymentAddress = shipment.downPaymentAddress[0];
+        console.log('downPaymentAddress', downPaymentAddress);
 
-        await ethSendContractTransaction(escrowAddress, escrowAbi.abi, 'deposit', [amount, callerAddress]);
+        await ethSendContractTransaction(downPaymentAddress, downPaymentAbi.abi, 'deposit', [amount, callerAddress]);
 
         this._shipments.insert(id, shipment);
         return shipment;
@@ -254,18 +258,20 @@ class ShipmentService implements HasInterestedParties {
         if (!(PhaseEnum.PHASE_3 in this.getShipmentPhase(id))) throw new Error('Shipment in wrong phase');
         if (!(FundStatusEnum.NOT_LOCKED in shipment.fundsStatus)) throw new Error('Funds already locked');
 
-        if (shipment.escrowAddress.length === 0) {
-            const escrowManagerAddress: string = Evm.ESCROW_MANAGER_ADDRESS;
-            const escrowAddress = await ethCallContract(escrowManagerAddress, escrowManagerAbi.abi, 'getEscrowByShipmentId', [shipment.id]);
-            shipment.escrowAddress = [escrowAddress];
+        if (shipment.downPaymentAddress.length === 0) {
+            const downPaymentManagerAddress: string = Evm.DOWN_PAYMENT_MANAGER_ADDRESS;
+            const downPaymentAddress = await ethCallContract(downPaymentManagerAddress, downPaymentManagerAbi.abi, 'getDownPaymentByShipmentId', [
+                shipment.id
+            ]);
+            shipment.downPaymentAddress = [downPaymentAddress];
         }
 
-        const escrowAddress = shipment.escrowAddress[0];
-        const totalLockedFunds = await ethCallContract(escrowAddress, escrowAbi.abi, 'getLockedAmount', []);
+        const downPaymentAddress = shipment.downPaymentAddress[0];
+        const totalLockedFunds = await ethCallContract(downPaymentAddress, downPaymentAbi.abi, 'getLockedAmount', []);
         const requiredAmount = shipment.price;
-        const totalDepositedAmount = await ethCallContract(escrowAddress, escrowAbi.abi, 'getTotalDepositedAmount', []);
+        const totalDepositedAmount = await ethCallContract(downPaymentAddress, downPaymentAbi.abi, 'getTotalDepositedAmount', []);
         if (totalDepositedAmount >= totalLockedFunds + requiredAmount) {
-            await ethSendContractTransaction(escrowAddress, escrowAbi.abi, 'lockFunds', [requiredAmount]);
+            await ethSendContractTransaction(downPaymentAddress, downPaymentAbi.abi, 'lockFunds', [requiredAmount]);
             shipment.fundsStatus = { LOCKED: null };
             console.log('funds locked');
         }
@@ -277,9 +283,9 @@ class ShipmentService implements HasInterestedParties {
     async unlockFunds(id: bigint): Promise<Shipment> {
         const shipment = this.getShipment(id);
         if (PhaseEnum.PHASE_5 in this.getShipmentPhase(id) && FundStatusEnum.LOCKED in shipment.fundsStatus) {
-            const escrowAddress = shipment.escrowAddress[0];
-            if (!escrowAddress) throw new Error('Escrow address not found');
-            await ethSendContractTransaction(escrowAddress, escrowAbi.abi, 'releaseFunds', [shipment.price]);
+            const downPaymentAddress = shipment.downPaymentAddress[0];
+            if (!downPaymentAddress) throw new Error('DownPayment.sol address not found');
+            await ethSendContractTransaction(downPaymentAddress, downPaymentAbi.abi, 'releaseFunds', [shipment.price]);
             shipment.fundsStatus = { RELEASED: null };
             console.log('funds released');
         }
@@ -360,9 +366,9 @@ class ShipmentService implements HasInterestedParties {
         console.log('phase', this.getShipmentPhase(id));
         console.log('fundStatus', shipment.fundsStatus);
         if (PhaseEnum.PHASE_5 in this.getShipmentPhase(id) && FundStatusEnum.LOCKED in shipment.fundsStatus) {
-            const escrowAddress = shipment.escrowAddress[0];
-            if (!escrowAddress) throw new Error('Escrow address not found');
-            await ethSendContractTransaction(escrowAddress, escrowAbi.abi, 'releaseFunds', [shipment.price]);
+            const downPaymentAddress = shipment.downPaymentAddress[0];
+            if (!downPaymentAddress) throw new Error('DownPayment.sol address not found');
+            await ethSendContractTransaction(downPaymentAddress, downPaymentAbi.abi, 'releaseFunds', [shipment.price]);
             shipment.fundsStatus = { RELEASED: null };
             console.log('funds released');
         }

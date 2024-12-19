@@ -2,7 +2,7 @@ import { IDL, query, update } from "azle";
 import { IDLProductCategory } from "../models/idls";
 import { ProductCategory } from "../models/types";
 import ProductCategoryService from "../services/ProductCategoryService";
-import { AtLeastEditor, AtLeastViewer } from "../decorators/roles";
+import { AtLeastViewer, OnlyController} from "../decorators/roles";
 
 class ProductCategoryController {
     @query([], IDL.Vec(IDLProductCategory))
@@ -17,38 +17,20 @@ class ProductCategoryController {
         return ProductCategoryService.instance.getProductCategory(id);
     }
 
-    @update([IDL.Text, IDL.Nat, IDL.Text], IDLProductCategory)
-    @AtLeastEditor
-    async createProductCategory(
-        name: string,
-        quality: bigint,
-        description: string,
-    ): Promise<ProductCategory> {
-        return ProductCategoryService.instance.createProductCategory(
-            name,
-            quality,
-            description,
-        );
+    @update([IDL.Text], IDLProductCategory)
+    @OnlyController
+    async createProductCategory(name: string): Promise<ProductCategory> {
+        return ProductCategoryService.instance.createProductCategory(name);
     }
 
-    @update([IDL.Nat, IDL.Text, IDL.Nat, IDL.Text], IDLProductCategory)
-    @AtLeastEditor
-    async updateProductCategory(
-        id: bigint,
-        name: string,
-        quality: bigint,
-        description: string,
-    ): Promise<ProductCategory> {
-        return ProductCategoryService.instance.updateProductCategory(
-            id,
-            name,
-            quality,
-            description,
-        );
+    @update([IDL.Nat, IDL.Text], IDLProductCategory)
+    @OnlyController
+    async updateProductCategory(id: bigint, name: string): Promise<ProductCategory> {
+        return ProductCategoryService.instance.updateProductCategory(id, name);
     }
 
     @update([IDL.Nat], IDL.Bool)
-    @AtLeastEditor
+    @OnlyController
     async deleteProductCategory(id: bigint): Promise<boolean> {
         return ProductCategoryService.instance.deleteProductCategory(id);
     }

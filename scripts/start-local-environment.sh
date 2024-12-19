@@ -1,10 +1,17 @@
 #!/bin/bash
 
+OS_TYPE=$(uname)
+
 BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
 echo "BASE_DIR: $BASE_DIR"
 
 function new_iterm_tab() {
-    local command=$1
+  local command=$1
+
+  if [[ "$OS_TYPE" == "Linux" ]]; then
+    # Open a new tab in the existing gnome-terminal window
+    gnome-terminal --tab -- bash -c "$command; exec bash"
+  else
     local silent=true
     local delay=1
 
@@ -27,6 +34,8 @@ tell application "iTerm"
     delay "$delay"
 end tell
 EOF
+
+  fi
 }
 
 function wait_for_connection() {
@@ -58,7 +67,11 @@ function store_ngrok_url() {
     local var_name="EVM_RPC_URL"
     local env_file="$BASE_DIR/icp/ts-canisters/.env.custom"
 
-    sed -i '' "s|^$var_name=.*|$var_name=$ngrok_url|" "$env_file"
+    if [[ "$OS_TYPE" == "Linux" ]]; then
+        sed -i "s|^$var_name=.*|$var_name=$ngrok_url|" "$env_file"
+    else
+      sed -i '' "s|^$var_name=.*|$var_name=$ngrok_url|" "$env_file"
+    fi
 }
 
 function wait_for_canister_address() {
@@ -79,7 +92,11 @@ function store_canister_address() {
     local var_name="ENTITY_MANAGER_CANISTER_ADDRESS"
     local env_file="$BASE_DIR/blockchain/.env"
 
-    sed -i '' "s|^$var_name=.*|$var_name=$entity_manager_canister_eth_address|" "$env_file"
+    if [[ "$OS_TYPE" == "Linux" ]]; then
+        sed -i "s|^$var_name=.*|$var_name=$entity_manager_canister_eth_address|" "$env_file"
+    else
+      sed -i '' "s|^$var_name=.*|$var_name=$entity_manager_canister_eth_address|" "$env_file"
+    fi
 }
 
 echo "Starting local environment..."
@@ -117,5 +134,8 @@ new_iterm_tab "cd '$BASE_DIR/blockchain' && npm run deploy -- --network localhos
 
 echo "Sending initial funds to entity_manager canister..."
 new_iterm_tab "cd '$BASE_DIR/blockchain' && npm run send-eth && npm run send-tokens && npm run approve-token-transfer"
+
+echo "Populating canisters with initial data..."
+new_iterm_tab "cd '$BASE_DIR/icp/scripts' && ./populate.sh local"
 
 echo "Starting local environment... Done"

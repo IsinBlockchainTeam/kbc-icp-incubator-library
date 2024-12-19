@@ -8,6 +8,6 @@ cd ../ts-canisters
 set -o allexport
 source .env.custom
 source .env
-set +o allexport && dfx deploy
+set +o allexport && dfx deploy --network=local
 dfx generate
 npm run build-types

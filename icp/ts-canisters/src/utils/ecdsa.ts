@@ -14,7 +14,7 @@ export async function signWithEcdsa(derivationPath: Uint8Array[], messageHash: U
                 derivation_path: derivationPath,
                 key_id: {
                     curve: { secp256k1: null },
-                    name: Misc.DFX_NETWORK === 'local' ? 'dfx_test_key' : 'key1'
+                    name: Misc.DFX_NETWORK === 'local' ? 'dfx_test_key' : 'key_1'
                 }
             }
         ],
@@ -64,7 +64,7 @@ export async function ecdsaPublicKey(derivationPath: Uint8Array[]): Promise<Uint
                 derivation_path: derivationPath,
                 key_id: {
                     curve: { secp256k1: null },
-                    name: Misc.DFX_NETWORK === 'local' ? 'dfx_test_key' : 'key1'
+                    name: Misc.DFX_NETWORK === 'local' ? 'dfx_test_key' : 'key_1'
                 }
             }
         ]

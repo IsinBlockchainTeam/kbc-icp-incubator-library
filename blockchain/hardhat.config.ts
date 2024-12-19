@@ -8,7 +8,10 @@ require('hardhat-dependency-compiler');
 
 dotenv.config();
 
-const env = getRequiredEnvs('DEPLOYER_PRIVATE_KEY', 'DEFAULT_DEPLOY_NETWORK', 'RPC_URL');
+// FIXME: This is a too strict way to get envs because if I want only to compile I don't need to have envs
+// const env = getRequiredEnvs('DEPLOYER_PRIVATE_KEY', 'DEFAULT_DEPLOY_NETWORK', 'RPC_URL');
+const env = process.env;
+const rpcUrl = env.RPC_URL || '';
 
 const config: HardhatUserConfig = {
     solidity: {
@@ -31,12 +34,12 @@ const config: HardhatUserConfig = {
         },
         threeachain: {
             chainId: 222,
-            url: env.RPC_URL,
+            url: rpcUrl,
             accounts: env.DEPLOYER_PRIVATE_KEY ? [`0x${env.DEPLOYER_PRIVATE_KEY}`] : []
         },
         holesky: {
             chainId: 17000,
-            url: 'https://1rpc.io/holesky',
+            url: rpcUrl,
             accounts: env.DEPLOYER_PRIVATE_KEY ? [`0x${env.DEPLOYER_PRIVATE_KEY}`] : []
         }
     },

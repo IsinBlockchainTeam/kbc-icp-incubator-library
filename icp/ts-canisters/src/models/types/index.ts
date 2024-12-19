@@ -8,7 +8,7 @@ export { RoleProof } from './src/Proof';
 export { ROLES } from './src/Role';
 export { PhaseEnum, Phase, FundStatusEnum, FundStatus, Shipment } from './src/Shipment';
 export { OrganizationVisibilityLevel, OrganizationVisibilityLevelType } from './src/presentations/OrganizationPresentation';
-export { OrganizationRole, OrganizationRoleType } from './src/Organization';
+export { OrganizationRole, OrganizationRoleType, industrialSectorsAvailable, IndustrialSectorEnum } from './src/Organization';
 export { Offer } from './src/Offer';
 export { ErrorType } from './src/ErrorType';
 export {
@@ -22,3 +22,4 @@ export {
     ScopeCertificate,
     MaterialCertificate
 } from './src/Certificate';
+export { AssessmentReferenceStandard } from './src/AssessmentReferenceStandard';

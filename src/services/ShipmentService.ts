@@ -109,8 +109,8 @@ export class ShipmentService {
         return this._shipmentDriver.evaluateQuality(id, EvaluationStatus.NOT_APPROVED);
     }
 
-    async determineEscrowAddress(id: number): Promise<Shipment> {
-        return this._shipmentDriver.determineEscrowAddress(id);
+    async determineDownPaymentAddress(id: number): Promise<Shipment> {
+        return this._shipmentDriver.determineDownPaymentAddress(id);
     }
 
     async depositFunds(id: number, amount: number): Promise<Shipment> {

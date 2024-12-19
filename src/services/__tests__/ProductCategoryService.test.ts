@@ -38,18 +38,18 @@ describe('ProductCategoryService', () => {
         },
         {
             functionName: 'createProductCategory',
-            serviceFunction: () => productCategoryService.createProductCategory('test', 1, 'test'),
+            serviceFunction: () => productCategoryService.createProductCategory('test'),
             driverFunction: mockedFn.createProductCategory,
             driverFunctionResult: {},
-            driverFunctionArgs: ['test', 1, 'test']
+            driverFunctionArgs: ['test']
         },
         {
             functionName: 'updateProductCategory',
             serviceFunction: () =>
-                productCategoryService.updateProductCategory(1, 'test', 1, 'test'),
+                productCategoryService.updateProductCategory(1, 'test'),
             driverFunction: mockedFn.updateProductCategory,
             driverFunctionResult: {},
-            driverFunctionArgs: [1, 'test', 1, 'test']
+            driverFunctionArgs: [1, 'test']
         }
     ])(
         `should call driver function $functionName`,

@@ -5,8 +5,8 @@ export class Evm {
         return checkAndGetEnvironmentVariable(process.env.EVM_RPC_URL, 'EVM RPC URL must be defined');
     }
 
-    public static get ESCROW_MANAGER_ADDRESS(): string {
-        return checkAndGetEnvironmentVariable(process.env.EVM_ESCROW_MANAGER_ADDRESS, 'EVM Escrow Manager Address must be defined');
+    public static get DOWN_PAYMENT_MANAGER_ADDRESS(): string {
+        return checkAndGetEnvironmentVariable(process.env.EVM_DOWN_PAYMENT_MANAGER_ADDRESS, 'EVM Down Payment Manager Address must be defined');
     }
 
     public static get CHAIN_ID(): number {
