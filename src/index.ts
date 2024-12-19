@@ -117,8 +117,9 @@ export { UnitDriver as ICPUnitDriver } from './drivers/UnitDriver';
 export { UnitService as ICPUnitService } from './services/UnitService';
 export { ProcessTypeDriver as ICPProcessTypeDriver } from './drivers/ProcessTypeDriver';
 export { ProcessTypeService as ICPProcessTypeService } from './services/ProcessTypeService';
-export { AssessmentStandardDriver as ICPAssessmentStandardDriver } from './drivers/AssessmentStandardDriver';
-export { AssessmentStandardService as ICPAssessmentStandardService } from './services/AssessmentStandardService';
+export { AssessmentReferenceStandard as ICPAssessmentReferenceStandard } from './entities/AssessmentReferenceStandard';
+export { AssessmentReferenceStandardDriver as ICPAssessmentStandardDriver } from './drivers/AssessmentReferenceStandardDriver';
+export { AssessmentReferenceStandardService as ICPAssessmentStandardService } from './services/AssessmentReferenceStandardService';
 export { AssessmentAssuranceLevelDriver as ICPAssessmentAssuranceLevelDriver } from './drivers/AssessmentAssuranceLevelDriver';
 export { AssessmentAssuranceLevelService as ICPAssessmentAssuranceLevelService } from './services/AssessmentAssuranceLevelService';
 

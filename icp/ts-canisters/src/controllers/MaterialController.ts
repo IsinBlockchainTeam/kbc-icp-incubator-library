@@ -17,16 +17,27 @@ class MaterialController {
         return MaterialService.instance.getMaterial(id);
     }
 
-    @update([IDL.Nat], IDLMaterial)
+    @update([IDL.Nat, IDL.Text, IDL.Text, IDL.Text], IDLMaterial)
     @AtLeastEditor
-    async createMaterial(productCategoryId: bigint): Promise<Material> {
-        return MaterialService.instance.createMaterial(productCategoryId);
+    async createMaterial(productCategoryId: bigint, typology: string, quality: string, moisture: string): Promise<Material> {
+        return MaterialService.instance.createMaterial(
+            productCategoryId,
+            typology,
+            quality,
+            moisture
+        );
     }
 
-    @update([IDL.Nat, IDL.Nat], IDLMaterial)
+    @update([IDL.Nat, IDL.Nat, IDL.Text, IDL.Text, IDL.Text], IDLMaterial)
     @AtLeastEditor
-    async updateMaterial(id: bigint, productCategoryId: bigint): Promise<Material> {
-        return MaterialService.instance.updateMaterial(id, productCategoryId);
+    async updateMaterial(id: bigint, productCategoryId: bigint, typology: string, quality: string, moisture: string): Promise<Material> {
+        return MaterialService.instance.updateMaterial(
+            id,
+            productCategoryId,
+            typology,
+            quality,
+            moisture
+        );
     }
 }
 

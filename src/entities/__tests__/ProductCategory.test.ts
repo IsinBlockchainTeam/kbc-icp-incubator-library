@@ -1,4 +1,4 @@
-import { ProductCategory } from './ProductCategory';
+import { ProductCategory } from '../ProductCategory';
 
 describe('ProductCategory', () => {
     let productCategory: ProductCategory;

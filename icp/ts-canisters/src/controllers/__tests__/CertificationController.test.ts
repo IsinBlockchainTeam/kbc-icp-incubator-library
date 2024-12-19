@@ -39,7 +39,7 @@ describe('CertificationController', () => {
                 certificationController.registerCompanyCertificate(
                     '0xissuer',
                     '0xsubject',
-                    'assessmentStandard',
+                    'assessmentReferenceStandard',
                     'assessmentAssuranceLevel',
                     {} as CertificateDocumentInfo,
                     1n,
@@ -56,7 +56,7 @@ describe('CertificationController', () => {
                 certificationController.registerScopeCertificate(
                     '0xissuer',
                     '0xsubject',
-                    'assessmentStandard',
+                    'assessmentReferenceStandard',
                     'assessmentAssuranceLevel',
                     {} as CertificateDocumentInfo,
                     1n,
@@ -74,7 +74,7 @@ describe('CertificationController', () => {
                 certificationController.registerMaterialCertificate(
                     '0xissuer',
                     '0xsubject',
-                    'assessmentStandard',
+                    'assessmentReferenceStandard',
                     'assessmentAssuranceLevel',
                     {} as CertificateDocumentInfo,
                     1n,
@@ -143,7 +143,7 @@ describe('CertificationController', () => {
         {
             controllerFunctionName: 'updateCompanyCertificate',
             controllerFunction: () =>
-                certificationController.updateCompanyCertificate(1n, 'assessmentStandard', 'assessmentAssuranceLevel', 1n, 2n, 'notes'),
+                certificationController.updateCompanyCertificate(1n, 'assessmentReferenceStandard', 'assessmentAssuranceLevel', 1n, 2n, 'notes'),
             serviceFunction: certificationServiceInstanceMock.updateCompanyCertificate,
             expectedResult: { id: 1n } as CompanyCertificate,
             expectedDecorators: [update, AtLeastEditor]
@@ -153,7 +153,7 @@ describe('CertificationController', () => {
             controllerFunction: () =>
                 certificationController.updateScopeCertificate(
                     1n,
-                    'assessmentStandard',
+                    'assessmentReferenceStandard',
                     'assessmentAssuranceLevel',
                     1n,
                     2n,
@@ -167,7 +167,7 @@ describe('CertificationController', () => {
         {
             controllerFunctionName: 'updateMaterialCertificate',
             controllerFunction: () =>
-                certificationController.updateMaterialCertificate(1n, 'assessmentStandard', 'assessmentAssuranceLevel', 1n, 'notes'),
+                certificationController.updateMaterialCertificate(1n, 'assessmentReferenceStandard', 'assessmentAssuranceLevel', 1n, 'notes'),
             serviceFunction: certificationServiceInstanceMock.updateMaterialCertificate,
             expectedResult: { id: 1n } as MaterialCertificate,
             expectedDecorators: [update, AtLeastEditor]

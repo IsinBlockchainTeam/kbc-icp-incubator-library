@@ -30,23 +30,26 @@ class MaterialService {
         throw new MaterialNotFoundError();
     }
 
-    createMaterial(productCategoryId: bigint): Material {
+    createMaterial(productCategoryId: bigint, typology: string, quality: string, moisture: string): Material {
         if (!this._productCategoryService.productCategoryExists(productCategoryId)) {
             throw new ProductCategoryNotFoundError();
         }
         const productCategory = this._productCategoryService.getProductCategory(productCategoryId);
         const id = BigInt(this._materials.keys().length);
-        const material: Material = { id, productCategory };
+        const material: Material = { id, productCategory, typology, quality, moisture };
         this._materials.insert(id, material);
         return material;
     }
 
-    updateMaterial(id: bigint, productCategoryId: bigint): Material {
+    updateMaterial(id: bigint, productCategoryId: bigint, typology: string, quality: string, moisture: string): Material {
         const material = this.getMaterial(id);
         if (!this._productCategoryService.productCategoryExists(productCategoryId)) {
             throw new ProductCategoryNotFoundError();
         }
         material.productCategory = this._productCategoryService.getProductCategory(productCategoryId);
+        material.typology = typology;
+        material.quality = quality;
+        material.moisture = moisture;
         this._materials.insert(id, material);
         return material;
     }

@@ -1,5 +1,6 @@
 import { createActor } from 'icp-declarations/entity_manager';
 import type { Identity } from '@dfinity/agent';
+import { IndustrialSectorEnum } from '@kbc-lib/azle-types';
 import { AssessmentAssuranceLevelDriver } from '../AssessmentAssuranceLevelDriver';
 
 jest.mock('icp-declarations/entity_manager');
@@ -41,22 +42,29 @@ describe('AssessmentAssuranceLevelDriver', () => {
         const newAssessmentAssuranceLevel = 'newAssessmentAssuranceLevel';
         mockedActor.addAssessmentAssuranceLevel.mockReturnValue(newAssessmentAssuranceLevel);
         await expect(
-            assessmentAssuranceLevelDriver.addValue(newAssessmentAssuranceLevel)
+            assessmentAssuranceLevelDriver.addValue(
+                newAssessmentAssuranceLevel,
+                IndustrialSectorEnum.COFFEE
+            )
         ).resolves.toEqual(newAssessmentAssuranceLevel);
         expect(mockedActor.addAssessmentAssuranceLevel).toHaveBeenCalled();
         expect(mockedActor.addAssessmentAssuranceLevel).toHaveBeenCalledWith(
-            newAssessmentAssuranceLevel
+            newAssessmentAssuranceLevel,
+            IndustrialSectorEnum.COFFEE
         );
     });
 
     it('should remove a value', async () => {
         const toRemove = 'assessmentAssuranceLevel1';
         mockedActor.removeAssessmentAssuranceLevel.mockReturnValue(toRemove);
-        await expect(assessmentAssuranceLevelDriver.removeValue(toRemove)).resolves.toEqual(
-            toRemove
-        );
+        await expect(
+            assessmentAssuranceLevelDriver.removeValue(toRemove, IndustrialSectorEnum.COFFEE)
+        ).resolves.toEqual(toRemove);
         expect(mockedActor.removeAssessmentAssuranceLevel).toHaveBeenCalled();
-        expect(mockedActor.removeAssessmentAssuranceLevel).toHaveBeenCalledWith(toRemove);
+        expect(mockedActor.removeAssessmentAssuranceLevel).toHaveBeenCalledWith(
+            toRemove,
+            IndustrialSectorEnum.COFFEE
+        );
     });
 
     it('should check if a value already exists', async () => {

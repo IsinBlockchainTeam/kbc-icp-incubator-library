@@ -51,16 +51,32 @@ describe("MaterialService", () => {
     });
 
     it("creates a material", () => {
-        const expectedResponse = {id: 0n, productCategory: {} as ProductCategory} as Material;
+        const expectedResponse = {
+            id: 0n,
+            productCategory: {} as ProductCategory,
+            typology: 'typologyTest',
+            quality: 'qualityTest',
+            moisture: 'moistureTest'
+        } as Material;
         productCategoryServiceInstanceMock.productCategoryExists.mockReturnValue(true);
         productCategoryServiceInstanceMock.getProductCategory.mockReturnValue(expectedResponse.productCategory);
         mockedFn.keys.mockReturnValue([]);
-        expect(materialService.createMaterial(0n)).toEqual(expectedResponse);
+        expect(materialService.createMaterial(
+            expectedResponse.productCategory.id,
+            expectedResponse.typology,
+            expectedResponse.quality,
+            expectedResponse.moisture
+        )).toEqual(expectedResponse);
         expect(mockedFn.keys).toHaveBeenCalled();
         expect(mockedFn.insert).toHaveBeenCalled();
 
         productCategoryServiceInstanceMock.productCategoryExists.mockReturnValue(false);
-        expect(() => materialService.createMaterial(0n)).toThrow(ProductCategoryNotFoundError);
+        expect(() => materialService.createMaterial(
+            expectedResponse.productCategory.id,
+            expectedResponse.typology,
+            expectedResponse.quality,
+            expectedResponse.moisture
+        )).toThrow(ProductCategoryNotFoundError);
     });
 
     it("updates a material", () => {
@@ -68,14 +84,32 @@ describe("MaterialService", () => {
         productCategoryServiceInstanceMock.productCategoryExists.mockReturnValue(true);
         productCategoryServiceInstanceMock.getProductCategory.mockReturnValue(expectedResponse.productCategory);
         mockedFn.get.mockReturnValue(expectedResponse);
-        expect(materialService.updateMaterial(0n, 0n)).toEqual(expectedResponse);
+        expect(materialService.updateMaterial(
+            expectedResponse.id,
+            expectedResponse.productCategory.id,
+            expectedResponse.typology,
+            expectedResponse.quality,
+            expectedResponse.moisture
+        )).toEqual(expectedResponse);
         expect(mockedFn.get).toHaveBeenCalled();
         expect(mockedFn.insert).toHaveBeenCalled();
 
         mockedFn.get.mockReturnValue(undefined);
-        expect(() => materialService.updateMaterial(0n, 0n)).toThrow(MaterialNotFoundError);
+        expect(() => materialService.updateMaterial(
+            expectedResponse.id,
+            expectedResponse.productCategory.id,
+            expectedResponse.typology,
+            expectedResponse.quality,
+            expectedResponse.moisture
+        )).toThrow(MaterialNotFoundError);
         mockedFn.get.mockReturnValue(expectedResponse);
         productCategoryServiceInstanceMock.productCategoryExists.mockReturnValue(false);
-        expect(() => materialService.updateMaterial(0n, 0n)).toThrow(ProductCategoryNotFoundError);
+        expect(() => materialService.updateMaterial(
+            expectedResponse.id,
+            expectedResponse.productCategory.id,
+            expectedResponse.typology,
+            expectedResponse.quality,
+            expectedResponse.moisture
+        )).toThrow(ProductCategoryNotFoundError);
     });
 });

@@ -36,14 +36,14 @@ describe('MaterialController', () => {
         },
         {
             controllerFunctionName: 'createMaterial',
-            controllerFunction: () => materialController.createMaterial(1n),
+            controllerFunction: () => materialController.createMaterial(1n, 'typologyTest', 'qualityTest', 'moistureTest'),
             serviceFunction: materialServiceInstanceMock.createMaterial,
             expectedResult: { id: 1n } as Material,
             expectedDecorators: [update, AtLeastEditor]
         },
         {
             controllerFunctionName: 'updateMaterial',
-            controllerFunction: () => materialController.updateMaterial(1n, 1n),
+            controllerFunction: () => materialController.updateMaterial(1n, 1n, 'typologyTest', 'qualityTest', 'moistureTest'),
             serviceFunction: materialServiceInstanceMock.updateMaterial,
             expectedResult: { id: 1n } as Material,
             expectedDecorators: [update, AtLeastEditor]
@@ -52,8 +52,8 @@ describe('MaterialController', () => {
         serviceFunction.mockReturnValue(expectedResult as any);
         await expect(controllerFunction()).resolves.toEqual(expectedResult);
         expect(serviceFunction).toHaveBeenCalled();
-        for (const decorator of expectedDecorators) {
+        expectedDecorators.forEach((decorator) => {
             expect(decorator).toHaveBeenCalled();
-        }
+        });
     });
 });

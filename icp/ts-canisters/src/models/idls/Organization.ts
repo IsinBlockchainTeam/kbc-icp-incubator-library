@@ -1,14 +1,15 @@
-import { IDL } from "azle";
+import { IDL } from 'azle';
 
 export const IDLOrganizationVisibilityLevel = IDL.Variant({
     NARROW: IDL.Null,
-    BROAD: IDL.Null,
+    BROAD: IDL.Null
 });
 
 export const IDLOrganizationRole = IDL.Variant({
     IMPORTER: IDL.Null,
     EXPORTER: IDL.Null,
     ARBITER: IDL.Null,
+    ADMIN: IDL.Null
 });
 
 export const IDLOrganization = IDL.Record({
@@ -24,5 +25,5 @@ export const IDLOrganization = IDL.Record({
     role: IDL.Opt(IDLOrganizationRole),
     telephone: IDL.Opt(IDL.Text),
     email: IDL.Opt(IDL.Text),
-    image: IDL.Opt(IDL.Text),
+    image: IDL.Opt(IDL.Text)
 });

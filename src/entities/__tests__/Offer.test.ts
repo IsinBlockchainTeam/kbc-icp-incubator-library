@@ -1,5 +1,5 @@
-import { Offer } from './Offer';
-import { ProductCategory } from './ProductCategory';
+import { Offer } from '../Offer';
+import { ProductCategory } from '../ProductCategory';
 
 describe('Offer', () => {
     let offer: Offer;

@@ -18,7 +18,9 @@ jest.mock('../../services/DelegationService', () => ({
     }
 }));
 jest.mock('../../constants/misc', () => ({
-    LOGIN_DURATION: '100'
+    Misc: {
+        LOGIN_DURATION: '100'
+    }
 }));
 
 describe('AuthenticationService', () => {
