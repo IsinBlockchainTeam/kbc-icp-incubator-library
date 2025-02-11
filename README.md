@@ -10,7 +10,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/IsinBlockchainTeam/kbc-icp-incubator-library">
-    <img src="https://static.wixstatic.com/media/1a060c_163f7da40976483c956987af0c85a035~mv2.png" alt="Logo" width="260">
+    <img src="https://1e6b12a201.clvaw-cdnwnd.com/75d621de465cb8e4ab4adc116021dc36/200000018-d0baed0bb0/logo-2.jpeg?ph=1e6b12a201" alt="Logo" width="260">
   </a>
   <h3 align="center">KBC ICP Incubator Library</h3>
 
