@@ -4,3 +4,4 @@
 .env
 .npmrc
 .npmrc.template
+/azle-types

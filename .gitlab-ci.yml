@@ -109,6 +109,7 @@ build_lib_job:
     - cp .npmrc.template .npmrc
     - sed -i "s/<access_token>/${CI_JOB_TOKEN}/g" .npmrc
     - npm ci
+    - npm run get-azle-types
     - npm run get-declarations
     - npm ci
     - npm run build

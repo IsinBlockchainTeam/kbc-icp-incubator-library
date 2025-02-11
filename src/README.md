@@ -16,15 +16,19 @@ NodeJS library providing TypeScript classes for blockchain interaction, built us
     ```bash
     npm install
     ```
-3. Copy ICP declarations:
+3. Copy Azle types:
+    ```bash
+    npm run get-azle-types
+    ```
+4. Copy ICP declarations:
     ```bash
     npm run get-declarations
     ```
-4. Copy and configure environment:
+5. Copy and configure environment:
     ```bash
     cp .env.template .env
     ```
-5. Build the package:
+6. Build the package:
     ```bash
     npm run build
     ```
