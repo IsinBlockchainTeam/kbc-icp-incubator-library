@@ -1,6 +1,6 @@
 import type { ActorSubclass, Identity } from '@dfinity/agent';
 import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
-import { OrganizationRole, OrganizationVisibilityLevel } from '@isinblockchainteam/azle-types';
+import { OrganizationRole, OrganizationVisibilityLevel } from '@kbc-lib/azle-types';
 import { createActor } from 'icp-declarations/entity_manager';
 import { Organization } from '../entities/organization/Organization';
 import { BroadedOrganizationCreator } from '../factories/organization/BroadedOrganizationCreator';
@@ -48,6 +48,16 @@ export class OrganizationDriver {
             default:
                 throw new Error(`Invalid organization visibility level: ${visibilityLevel}`);
         }
+    }
+
+    @HandleIcpError()
+    async inviteOrganization(email: string, name: string): Promise<void> {
+        return this._actor.inviteOrganization(email, name);
+    }
+
+    @HandleIcpError()
+    async sendOrganizationCredential(email: string, name: string, credentialQrCode: string): Promise<void> {
+        return this._actor.sendOrganizationCredential(email, name, credentialQrCode);
     }
 
     @HandleIcpError()

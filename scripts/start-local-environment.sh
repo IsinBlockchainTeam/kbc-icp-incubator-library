@@ -1,10 +1,33 @@
 #!/bin/bash
 
+# Default value for populate demo
+POPULATE_DEMO=true
+
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -demo)
+            POPULATE_DEMO=$2
+            shift 2
+            ;;
+        *)
+            shift
+            ;;
+    esac
+done
+
+OS_TYPE=$(uname)
+
 BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
 echo "BASE_DIR: $BASE_DIR"
 
-function new_iterm_tab() {
-    local command=$1
+function new_terminal_tab() {
+  local command=$1
+
+  if [[ "$OS_TYPE" == "Linux" ]]; then
+    # Open a new tab in the existing gnome-terminal window
+    gnome-terminal --tab -- bash -c "$command; exec bash"
+  else
     local silent=true
     local delay=1
 
@@ -27,6 +50,8 @@ tell application "iTerm"
     delay "$delay"
 end tell
 EOF
+
+  fi
 }
 
 function wait_for_connection() {
@@ -55,10 +80,19 @@ function wait_for_dfx() {
 function store_ngrok_url() {
     local ngrok_url=$(curl -s http://127.0.0.1:4040/api/tunnels | grep -o '"public_url":"[^"]*' | grep -o 'http[^"]*' | head -1)
 
-    local var_name="EVM_RPC_URL"
-    local env_file="$BASE_DIR/icp/ts-canister/.env.custom"
+    while [ -z "$ngrok_url" ]; do
+        sleep 2
+        ngrok_url=$(curl -s http://127.0.0.1:4040/api/tunnels | grep -o '"public_url":"[^"]*' | grep -o 'http[^"]*' | head -1)
+    done
 
-    sed -i '' "s|^$var_name=.*|$var_name=$ngrok_url|" "$env_file"
+    local var_name="EVM_RPC_URL"
+    local env_file="$BASE_DIR/icp/ts-canisters/.env.custom"
+
+    if [[ "$OS_TYPE" == "Linux" ]]; then
+        sed -i "s|^$var_name=.*|$var_name=$ngrok_url|" "$env_file"
+    else
+      sed -i '' "s|^$var_name=.*|$var_name=$ngrok_url|" "$env_file"
+    fi
 }
 
 function wait_for_canister_address() {
@@ -79,32 +113,37 @@ function store_canister_address() {
     local var_name="ENTITY_MANAGER_CANISTER_ADDRESS"
     local env_file="$BASE_DIR/blockchain/.env"
 
-    sed -i '' "s|^$var_name=.*|$var_name=$entity_manager_canister_eth_address|" "$env_file"
+    if [[ "$OS_TYPE" == "Linux" ]]; then
+        sed -i "s|^$var_name=.*|$var_name=$entity_manager_canister_eth_address|" "$env_file"
+    else
+      sed -i '' "s|^$var_name=.*|$var_name=$entity_manager_canister_eth_address|" "$env_file"
+    fi
 }
 
 echo "Starting local environment..."
 
 echo "Starting hardhat node..."
-new_iterm_tab "cd '$BASE_DIR/blockchain' && npx hardhat node"
+new_terminal_tab "cd '$BASE_DIR/blockchain' && npx hardhat node"
 
 echo "Waiting for hardhat node to start..."
 wait_for_connection "localhost:8545"
 
 echo "Starting ngrok..."
-new_iterm_tab "ngrok http 8545"
+new_terminal_tab "ngrok http 8545"
 
 echo "Waiting for ngrok to start..."
-wait_for_connection "localhost:4040"
+wait_for_connection "localhost:4040/api/tunnels" 3
 store_ngrok_url
 
 echo "Starting dfx..."
-new_iterm_tab "cd '$BASE_DIR/icp/ts-canister' && npm run start-network"
+new_terminal_tab "cd '$BASE_DIR/icp/ts-canisters' && npm run start-network"
 
 echo "Waiting for dfx to start..."
 wait_for_dfx
 
 echo "Deploying canisters on dfx..."
-new_iterm_tab "cd '$BASE_DIR/icp/ts-canister' && npm run deploy"
+new_terminal_tab "cd '$BASE_DIR/icp/scripts' && ./deploy-local.sh"
+#new_terminal_tab "cd '$BASE_DIR/icp/ts-canisters' && npm run deploy"
 
 echo "Getting entity_manager canister ethereum address..."
 entity_manager_canister_eth_address=""
@@ -112,9 +151,18 @@ wait_for_canister_address
 store_canister_address
 
 echo "Deploying smart contracts on hardhat node..."
-new_iterm_tab "cd '$BASE_DIR/blockchain' && npm run deploy -- --network localhost"
+new_terminal_tab "cd '$BASE_DIR/blockchain' && npm run deploy -- --network localhost"
 
 echo "Sending initial funds to entity_manager canister..."
-new_iterm_tab "cd '$BASE_DIR/blockchain' && npm run send-eth"
+new_terminal_tab "cd '$BASE_DIR/blockchain' && npm run send-eth && npm run send-tokens && npm run approve-token-transfer"
+
+echo "Populating canisters with initial data..."
+new_terminal_tab "cd '$BASE_DIR/icp/scripts' && ./populate.sh local"
+
+# Only run populate demo if POPULATE_DEMO is true
+if [ "$POPULATE_DEMO" = true ]; then
+    echo "Populating with demo data..."
+    new_iterm_tab "cd '$BASE_DIR/src' && npm run populate-demo"
+fi
 
 echo "Starting local environment... Done"

@@ -1,6 +1,6 @@
-import { OrderStatusEnum, OrderStatusEnum as OrderStatus } from '@isinblockchainteam/azle-types';
+import { OrderStatusEnum, OrderStatusEnum as OrderStatus } from '@kbc-lib/azle-types';
 import { Shipment } from './Shipment';
-import { ProductCategory } from './ProductCategory';
+import {Material} from "./Material";
 
 export { OrderStatus };
 
@@ -9,11 +9,21 @@ export type OrderLinePrice = {
     fiat: string;
 };
 export type OrderLine = {
-    productCategory: ProductCategory;
+    supplierMaterial: Material;
+    commissionerMaterial: Material;
     quantity: number;
     unit: string;
     price: OrderLinePrice;
 };
+
+export type OrderLineRequest = {
+    supplierMaterialId: number;
+    commissionerMaterialId: number;
+    quantity: number;
+    unit: string;
+    price: OrderLinePrice;
+};
+
 export class Order {
     private _id: number;
 

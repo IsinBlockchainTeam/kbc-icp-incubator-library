@@ -3,3 +3,8 @@ export class MaterialNotFoundError extends Error {
         super(`Material not found.`);
     }
 }
+export class MaterialNotValidError extends Error {
+    constructor() {
+        super(`Material not valid.`);
+    }
+}

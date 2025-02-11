@@ -30,8 +30,13 @@ export class OfferDriver {
     }
 
     @HandleIcpError()
-    async createOffer(productCategoryId: number): Promise<Offer> {
-        const resp = await this._actor.createOffer(BigInt(productCategoryId));
+    async createOffer(materialId: number): Promise<Offer> {
+        const resp = await this._actor.createOffer(BigInt(materialId));
         return EntityBuilder.buildOffer(resp);
+    }
+
+    @HandleIcpError()
+    async deleteOffer(id: number): Promise<void> {
+        return this._actor.deleteOffer(BigInt(id));
     }
 }

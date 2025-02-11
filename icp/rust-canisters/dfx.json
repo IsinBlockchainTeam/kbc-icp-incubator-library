@@ -1,0 +1,24 @@
+{
+    "canisters": {
+        "permission": {
+            "specified_id": "xkbqi-2qaaa-aaaah-qbpqq-cai",
+            "candid": "src/services/permission/permission.did",
+            "package": "permission",
+            "type": "rust"
+        },
+        "storage": {
+            "specified_id": "uzhxd-ziaaa-aaaah-qanaq-cai",
+            "candid": "src/services/storage/storage.did",
+            "package": "storage",
+            "type": "rust"
+        }
+    },
+    "defaults": {
+        "build": {
+            "args": "",
+            "packtool": ""
+        }
+    },
+    "output_env_file": ".env",
+    "version": 1
+}

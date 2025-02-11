@@ -1,4 +1,4 @@
-import { createActor } from '../../declarations/entity_manager';
+import { createActor } from 'icp-declarations/entity_manager';
 import type { Identity } from '@dfinity/agent';
 import { OfferDriver } from '../OfferDriver';
 import { EntityBuilder } from '../../utils/EntityBuilder';
@@ -13,7 +13,8 @@ describe('OfferDriver', () => {
     const mockFn = {
         getOffers: jest.fn(),
         getOffer: jest.fn(),
-        createOffer: jest.fn()
+        createOffer: jest.fn(),
+        deleteOffer: jest.fn()
     };
     const defaultOffer = { id: 0 } as Offer;
 
@@ -21,7 +22,8 @@ describe('OfferDriver', () => {
         (createActor as jest.Mock).mockReturnValue({
             getOffers: mockFn.getOffers,
             getOffer: mockFn.getOffer,
-            createOffer: mockFn.createOffer
+            createOffer: mockFn.createOffer,
+            deleteOffer: mockFn.deleteOffer
         });
         jest.spyOn(EntityBuilder, 'buildOffer').mockReturnValue(defaultOffer);
         const icpIdentity = {} as Identity;
@@ -53,5 +55,10 @@ describe('OfferDriver', () => {
         expect(mockFn.createOffer).toHaveBeenCalled();
         expect(EntityBuilder.buildOffer).toHaveBeenCalled();
         expect(EntityBuilder.buildOffer).toHaveBeenCalledWith(rawOffer);
+    });
+
+    it('should delete an offer', async () => {
+        await expect(offerDriver.deleteOffer(1)).resolves.toBeUndefined();
+        expect(mockFn.deleteOffer).toHaveBeenCalled();
     });
 });

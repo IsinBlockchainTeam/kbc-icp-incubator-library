@@ -1,16 +1,16 @@
-import { ProductCategory } from './ProductCategory';
+import { Material } from './Material';
 
 export class Offer {
     private _id: number;
 
     private _owner: string;
 
-    private _productCategory: ProductCategory;
+    private _material: Material;
 
-    constructor(id: number, owner: string, productCategory: ProductCategory) {
+    constructor(id: number, owner: string, material: Material) {
         this._id = id;
         this._owner = owner;
-        this._productCategory = productCategory;
+        this._material = material;
     }
 
     get id(): number {
@@ -29,11 +29,11 @@ export class Offer {
         this._owner = value;
     }
 
-    get productCategory(): ProductCategory {
-        return this._productCategory;
+    get material(): Material {
+        return this._material;
     }
 
-    set productCategory(value: ProductCategory) {
-        this._productCategory = value;
+    set material(value: Material) {
+        this._material = value;
     }
 }

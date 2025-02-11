@@ -1,4 +1,4 @@
-import { OrganizationVisibilityLevel, OrganizationVisibilityLevelType } from '@isinblockchainteam/azle-types';
+import { OrganizationVisibilityLevel, OrganizationVisibilityLevelType } from '@kbc-lib/azle-types';
 import { ICPEnumFactory } from '../ICPEnumFactory';
 
 export class OrganizationVisibilityLevelFactory extends ICPEnumFactory<

@@ -3,15 +3,9 @@ export class ProductCategory {
 
     private _name: string;
 
-    private _quality: number;
-
-    private _description: string;
-
-    constructor(id: number, name: string, quality: number, description: string) {
+    constructor(id: number, name: string) {
         this._id = id;
         this._name = name;
-        this._quality = quality;
-        this._description = description;
     }
 
     get id(): number {
@@ -30,19 +24,10 @@ export class ProductCategory {
         this._name = value;
     }
 
-    get quality(): number {
-        return this._quality;
-    }
-
-    set quality(value: number) {
-        this._quality = value;
-    }
-
-    get description(): string {
-        return this._description;
-    }
-
-    set description(value: string) {
-        this._description = value;
+    static fromJson(json: any): ProductCategory {
+        if(!json || json._id === undefined || json._name === undefined) {
+            throw new Error('Invalid JSON');
+        }
+        return new ProductCategory(json._id, json._name);
     }
 }

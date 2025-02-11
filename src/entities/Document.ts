@@ -1,7 +1,13 @@
-import { Document, DocumentTypeEnum as DocumentType } from '@isinblockchainteam/azle-types';
+import { Document, DocumentTypeEnum as DocumentType } from '@kbc-lib/azle-types';
 import { EvaluationStatus } from './Evaluation';
 
-export { Document, DocumentType };
+export { type Document, DocumentType };
+
+export enum DocumentStatus {
+    NOT_EVALUATED,
+    APPROVED,
+    NOT_APPROVED
+}
 
 export type DocumentInfo = {
     id: number;

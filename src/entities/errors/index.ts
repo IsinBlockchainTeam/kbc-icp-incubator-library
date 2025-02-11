@@ -2,14 +2,15 @@ export { SameActorsError } from './ActorError';
 export {
     NotAuthorizedError,
     NotAuthenticatedError,
-    NotValidCredentialError
+    NotValidCredentialError,
+    NotControllerError
 } from './AuthenticationError';
 export {
     DocumentNotFoundError,
     DocumentAlreadyApprovedError,
     CallerIsTheUploaderError
 } from './DocumentError';
-export { MaterialNotFoundError } from './MaterialError';
+export { MaterialNotFoundError, MaterialNotValidError } from './MaterialError';
 export { OfferNotFoundError } from './OfferError';
 export {
     OrderNotFoundError,

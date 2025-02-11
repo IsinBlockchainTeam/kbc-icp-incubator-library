@@ -1,0 +1,85 @@
+{
+    "canisters": {
+        "entity_manager": {
+            "specified_id": "bkyz2-fmaaa-aaaaa-qaaaq-cai",
+            "type": "azle",
+            "main": "src/controllers/index.ts",
+            "declarations": {
+                "output": "declarations/entity_manager",
+                "node_compatibility": true
+            },
+            "custom": {
+                "experimental": true,
+                "env": [
+                    "DFX_NETWORK",
+                    "CANISTER_ID_IC_SIWE_PROVIDER",
+                    "CANISTER_ID_EVM_RPC",
+                    "EVM_RPC_URL",
+                    "EVM_DOWN_PAYMENT_MANAGER_ADDRESS",
+                    "EVM_REVOCATION_REGISTRY_ADDRESS",
+                    "EVM_MEMBERSHIP_ISSUER_ADDRESS",
+                    "EVM_CHAIN_ID",
+                    "EVM_TRANSACTION_TYPE",
+                    "LOGIN_DURATION",
+                    "COURIER_API_KEY"
+                ]
+            }
+        },
+        "internet_identity": {
+            "specified_id": "br5f7-7uaaa-aaaaa-qaaca-cai",
+            "type": "custom",
+            "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
+            "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz",
+            "declarations": {
+                "output": "declarations/internet_identity",
+                "node_compatibility": true
+            }
+        },
+        "ic_siwe_provider": {
+            "specified_id": "be2us-64aaa-aaaaa-qaabq-cai",
+            "candid": "https://github.com/kristoferlund/ic-siwe/releases/download/v0.0.6/ic_siwe_provider.did",
+            "type": "custom",
+            "wasm": "https://github.com/kristoferlund/ic-siwe/releases/download/v0.0.6/ic_siwe_provider.wasm.gz",
+            "init_arg_file": "./init/siwe_init.did",
+            "declarations": {
+                "output": "declarations/ic_siwe_provider",
+                "node_compatibility": true
+            }
+        },
+        "evm_rpc": {
+            "specified_id": "bd3sg-teaaa-aaaaa-qaaba-cai",
+            "candid": "https://github.com/internet-computer-protocol/evm-rpc-canister/releases/latest/download/evm_rpc.did",
+            "type": "custom",
+            "wasm": "https://github.com/internet-computer-protocol/evm-rpc-canister/releases/latest/download/evm_rpc.wasm.gz",
+            "init_arg_file": "./init/evm_rpc_init.did",
+            "declarations": {
+                "output": "declarations/evm_rpc",
+                "node_compatibility": true
+            }
+        },
+        "permission": {
+            "specified_id": "b77ix-eeaaa-aaaaa-qaada-cai",
+            "candid": "../rust-canisters/src/declarations/permission/permission.did",
+            "type": "custom",
+            "wasm": "../rust-canisters/target/wasm32-unknown-unknown/release/permission.wasm",
+            "init_arg_file": "./init/permission_init.did",
+            "declarations": {
+                "output": "declarations/permission",
+                "node_compatibility": true
+            }
+        },
+        "storage": {
+            "specified_id": "by6od-j4aaa-aaaaa-qaadq-cai",
+            "candid": "../rust-canisters/src/declarations/storage/storage.did",
+            "type": "custom",
+            "wasm": "../rust-canisters/target/wasm32-unknown-unknown/release/storage.wasm",
+            "init_arg_file": "./init/storage_init.did",
+            "declarations": {
+                "output": "declarations/storage",
+                "node_compatibility": true
+            }
+        }
+    },
+    "output_env_file": ".env",
+    "version": 1
+}

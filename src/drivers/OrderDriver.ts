@@ -1,10 +1,10 @@
 import type { ActorSubclass, Identity } from '@dfinity/agent';
 import { createActor } from 'icp-declarations/entity_manager';
 import { _SERVICE } from 'icp-declarations/entity_manager/entity_manager.did';
+import { Order as ICPOrder } from '@kbc-lib/azle-types';
 import { EntityBuilder } from '../utils/EntityBuilder';
 import { Order } from '../entities/Order';
 import { HandleIcpError } from '../decorators/HandleIcpError';
-import { Order as ICPOrder } from '@isinblockchainteam/azle-types';
 
 export type OrderParams = {
     supplier: string;
@@ -22,7 +22,8 @@ export type OrderParams = {
     shippingPort: string;
     deliveryPort: string;
     lines: {
-        productCategoryId: number;
+        supplierMaterialId: number;
+        commissionerMaterialId: number;
         quantity: number;
         unit: string;
         price: {
@@ -57,7 +58,7 @@ export class OrderDriver {
     @HandleIcpError()
     async getOrders(): Promise<Order[]> {
         const resp = await this._actor.getOrders();
-        return await Promise.all(resp.map((rawOrder) => this.buildOrder(rawOrder)));
+        return Promise.all(resp.map((rawOrder) => this.buildOrder(rawOrder)));
     }
 
     @HandleIcpError()
@@ -83,7 +84,8 @@ export class OrderDriver {
             params.shippingPort,
             params.deliveryPort,
             params.lines.map((line) => ({
-                productCategoryId: BigInt(line.productCategoryId),
+                supplierMaterialId: BigInt(line.supplierMaterialId),
+                commissionerMaterialId: BigInt(line.commissionerMaterialId),
                 quantity: line.quantity,
                 unit: line.unit,
                 price: {
@@ -113,7 +115,8 @@ export class OrderDriver {
             params.shippingPort,
             params.deliveryPort,
             params.lines.map((line) => ({
-                productCategoryId: BigInt(line.productCategoryId),
+                supplierMaterialId: BigInt(line.supplierMaterialId),
+                commissionerMaterialId: BigInt(line.commissionerMaterialId),
                 quantity: line.quantity,
                 unit: line.unit,
                 price: {

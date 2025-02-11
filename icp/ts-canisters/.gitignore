@@ -1,0 +1,4 @@
+dist
+coverage
+../dfx.json
+../.env.custom

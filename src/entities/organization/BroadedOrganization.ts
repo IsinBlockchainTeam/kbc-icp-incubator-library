@@ -1,4 +1,4 @@
-import { OrganizationRole, OrganizationVisibilityLevel } from '@isinblockchainteam/azle-types';
+import { OrganizationRole, OrganizationVisibilityLevel } from '@kbc-lib/azle-types';
 import { Organization } from './Organization';
 
 export { OrganizationRole };

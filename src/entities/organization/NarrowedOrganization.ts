@@ -1,4 +1,4 @@
-import { OrganizationVisibilityLevel } from '@isinblockchainteam/azle-types';
+import { OrganizationVisibilityLevel } from '@kbc-lib/azle-types';
 import { Organization } from './Organization';
 
 export class NarrowedOrganization extends Organization {

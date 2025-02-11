@@ -7,14 +7,16 @@ describe('OfferService', () => {
     const mockedFn = {
         getOffers: jest.fn(),
         getOffer: jest.fn(),
-        createOffer: jest.fn()
+        createOffer: jest.fn(),
+        deleteOffer: jest.fn()
     };
 
     beforeAll(() => {
         const offerDriver = createMock<OfferDriver>({
             getOffers: mockedFn.getOffers,
             getOffer: mockedFn.getOffer,
-            createOffer: mockedFn.createOffer
+            createOffer: mockedFn.createOffer,
+            deleteOffer: mockedFn.deleteOffer
         });
         offerService = new OfferService(offerDriver);
     });
@@ -38,6 +40,13 @@ describe('OfferService', () => {
             functionName: 'createOffer',
             serviceFunction: () => offerService.createOffer(1),
             driverFunction: mockedFn.createOffer,
+            driverFunctionResult: {},
+            driverFunctionArgs: [1]
+        },
+        {
+            functionName: 'deleteOffer',
+            serviceFunction: () => offerService.deleteOffer(1),
+            driverFunction: mockedFn.deleteOffer,
             driverFunctionResult: {},
             driverFunctionArgs: [1]
         }

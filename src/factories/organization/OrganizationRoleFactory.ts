@@ -1,4 +1,4 @@
-import { OrganizationRole, OrganizationRoleType } from '@isinblockchainteam/azle-types';
+import { OrganizationRole, OrganizationRoleType } from '@kbc-lib/azle-types';
 import { ICPEnumFactory } from '../ICPEnumFactory';
 
 export class OrganizationRoleFactory extends ICPEnumFactory<
@@ -9,6 +9,7 @@ export class OrganizationRoleFactory extends ICPEnumFactory<
         if (OrganizationRole.ARBITER in value) return OrganizationRole.ARBITER;
         if (OrganizationRole.EXPORTER in value) return OrganizationRole.EXPORTER;
         if (OrganizationRole.IMPORTER in value) return OrganizationRole.IMPORTER;
+        if (OrganizationRole.ADMIN in value) return OrganizationRole.ADMIN;
 
         throw new Error(`OrganizationRoleFactory: Invalid ICP organization role: ${value}`);
     }
@@ -21,6 +22,8 @@ export class OrganizationRoleFactory extends ICPEnumFactory<
                 return { EXPORTER: null };
             case OrganizationRole.IMPORTER:
                 return { IMPORTER: null };
+            case OrganizationRole.ADMIN:
+                return { ADMIN: null };
             default:
                 throw new Error(`OrganizationRoleFactory: Invalid organization role: ${value}`);
         }

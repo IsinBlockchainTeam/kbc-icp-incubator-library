@@ -15,7 +15,11 @@ export class OfferService {
         return this._offerDriver.getOffer(id);
     }
 
-    async createOffer(productCategoryId: number) {
-        return this._offerDriver.createOffer(productCategoryId);
+    async createOffer(materialId: number) {
+        return this._offerDriver.createOffer(materialId);
+    }
+
+    async deleteOffer(id: number) {
+        return this._offerDriver.deleteOffer(id);
     }
 }

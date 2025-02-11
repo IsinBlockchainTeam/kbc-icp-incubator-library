@@ -20,14 +20,14 @@ describe('AuthenticationService', () => {
 
     it.each([
         {
-            functionName: 'login',
+            functionName: 'authenticate',
             serviceFunction: () => authenticationService.authenticate({} as RoleProof),
             driverFunction: mockedFn.authenticate,
             driverFunctionResult: true,
             driverFunctionArgs: [{} as RoleProof]
         },
         {
-            functionName: 'createMaterial',
+            functionName: 'logout',
             serviceFunction: () => authenticationService.logout(),
             driverFunction: mockedFn.logout,
             driverFunctionResult: true,

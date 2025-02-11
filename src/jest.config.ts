@@ -5,7 +5,7 @@
 
 import { config } from 'dotenv';
 
-config({ path: '../icp/ts-canister/.env' });
+config({ path: '../icp/ts-canister/.env.custom' });
 
 export default {
     // All imported modules in your tests should be mocked automatically
@@ -32,13 +32,18 @@ export default {
     // An array of regexp pattern strings used to skip coverage collection
     coveragePathIgnorePatterns: [
         'smart-contracts/*',
+        'integration-test/*',
         'types/*',
         '.config.ts',
         '.interface.ts',
         '.dev.ts',
         '.type.ts',
         'index.ts',
-        'dist/*'
+        'dist/*',
+        '__shared__/*',
+        '__testUtils__/*',
+        'declarations/*',
+        'scripts/*',
     ],
 
     // Indicates which provider should be used to instrument code for coverage
@@ -62,6 +67,7 @@ export default {
     setupFiles: ['<rootDir>/ts-config.ts'],
     testPathIgnorePatterns: [
         '<rootDir>/smart-contracts',
+        '<rootDir>/integrationTests/',
         '<rootDir>/dist/',
         '<rootDir>/types/'
     ],
@@ -160,7 +166,7 @@ export default {
     // setupFiles: [],
 
     // A list of paths to modules that run some code to configure or set up the testing framework before each test
-    // setupFilesAfterEnv: [],
+    setupFilesAfterEnv: ['dotenv/config'],
 
     // The number of seconds after which a test is considered as slow and reported as such in the results.
     // slowTestThreshold: 5,

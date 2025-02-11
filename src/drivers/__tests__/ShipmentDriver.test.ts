@@ -2,7 +2,7 @@ import { createActor } from 'icp-declarations/entity_manager';
 import {
     DocumentType as IDLDocumentType,
     EvaluationStatus as ICPEvaluationStatus
-} from '@isinblockchainteam/azle-types';
+} from '@kbc-lib/azle-types';
 import { Identity } from '@dfinity/agent';
 import { ShipmentDriver } from '../ShipmentDriver';
 import { FundStatus, Shipment, Phase } from '../../entities/Shipment';
@@ -71,7 +71,7 @@ describe('ShipmentDriver', () => {
         jest.spyOn(EntityBuilder, 'buildEvaluationStatus').mockReturnValue(
             defaultEntities.evaluationStatus
         );
-        jest.spyOn(EntityBuilder, 'buildIDLEvaluationStatus').mockReturnValue(
+        jest.spyOn(EntityBuilder, 'buildICPEvaluationStatus').mockReturnValue(
             defaultEntities.idlEvaluationStatus
         );
         jest.spyOn(EntityBuilder, 'buildDocumentType').mockReturnValue(

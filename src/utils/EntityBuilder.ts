@@ -11,8 +11,18 @@ import {
     DocumentInfo as IDLDocumentInfo,
     EvaluationStatus as ICPEvaluationStatus,
     OrderStatusEnum as OrderStatus,
-    Offer as ICPOffer
-} from '@isinblockchainteam/azle-types';
+    Offer as ICPOffer,
+    CertificateDocumentInfo as ICPCertificateDocumentInfo,
+    CertificateType as ICPCertificateType,
+    EvaluationStatusEnum as ICPEvaluationStatusEnum,
+    CertificateDocumentType as ICPCertificateDocumentType,
+    BaseCertificate as ICPBaseCertificate,
+    CompanyCertificate as ICPCompanyCertificate,
+    ScopeCertificate as ICPScopeCertificate,
+    MaterialCertificate as ICPMaterialCertificate,
+    AssessmentReferenceStandard as ICPAssessmentReferenceStandard,
+    AssetOperation as ICPAssetOperation
+} from '@kbc-lib/azle-types';
 import { Order } from '../entities/Order';
 import { Shipment, Phase, FundStatus } from '../entities/Shipment';
 import { DocumentInfo, DocumentType } from '../entities/Document';
@@ -21,6 +31,17 @@ import { ProductCategory } from '../entities/ProductCategory';
 import { Material } from '../entities/Material';
 import { Offer } from '../entities/Offer';
 import { RoleProof } from '../types/RoleProof';
+import {
+    BaseCertificate,
+    CertificateDocumentInfo,
+    CertificateDocumentType,
+    CertificateType
+} from '../entities/Certificate';
+import { CompanyCertificate } from '../entities/CompanyCertificate';
+import { ScopeCertificate } from '../entities/ScopeCertificate';
+import { MaterialCertificate } from '../entities/MaterialCertificate';
+import { AssessmentReferenceStandard } from '../entities/AssessmentReferenceStandard';
+import { AssetOperation } from '../entities/AssetOperation';
 
 export class EntityBuilder {
     static buildICPRoleProof(roleProof: RoleProof): ICPRoleProof {
@@ -43,27 +64,24 @@ export class EntityBuilder {
     }
 
     static buildProductCategory(productCategory: ICPProductCategory) {
-        return new ProductCategory(
-            Number(productCategory.id),
-            productCategory.name,
-            Number(productCategory.quality),
-            productCategory.description
-        );
+        return new ProductCategory(Number(productCategory.id), productCategory.name);
     }
 
     static buildMaterial(material: ICPMaterial) {
         return new Material(
             Number(material.id),
-            this.buildProductCategory(material.productCategory)
+            material.owner,
+            material.name,
+            this.buildProductCategory(material.productCategory),
+            material.typology,
+            material.quality,
+            material.moisture,
+            material.isInput
         );
     }
 
     static buildOffer(offer: ICPOffer) {
-        return new Offer(
-            Number(offer.id),
-            offer.owner,
-            this.buildProductCategory(offer.productCategory)
-        );
+        return new Offer(Number(offer.id), offer.owner, this.buildMaterial(offer.material));
     }
 
     static buildOrder(order: ICPOrder, shipment: ICPShipment | null) {
@@ -84,7 +102,8 @@ export class EntityBuilder {
             order.shippingPort,
             order.deliveryPort,
             order.lines.map((line) => ({
-                productCategory: this.buildProductCategory(line.productCategory),
+                supplierMaterial: this.buildMaterial(line.supplierMaterial),
+                commissionerMaterial: this.buildMaterial(line.commissionerMaterial),
                 quantity: Number(line.quantity),
                 unit: line.unit,
                 price: {
@@ -98,19 +117,12 @@ export class EntityBuilder {
         );
     }
 
-    static _buildOrderStatus(orderStatus: ICPOrderStatus): OrderStatus {
-        if (OrderStatus.PENDING in orderStatus) return OrderStatus.PENDING;
-        if (OrderStatus.CONFIRMED in orderStatus) return OrderStatus.CONFIRMED;
-        if (OrderStatus.EXPIRED in orderStatus) return OrderStatus.EXPIRED;
-        throw new Error('Invalid document type');
-    }
-
     static buildShipment(shipment: ICPShipment): Shipment {
         return new Shipment(
             Number(shipment.id),
             shipment.supplier,
             shipment.commissioner,
-            shipment.escrowAddress[0] ? shipment.escrowAddress[0] : undefined,
+            shipment.downPaymentAddress[0] ? shipment.downPaymentAddress[0] : undefined,
             this.buildEvaluationStatus(shipment.sampleEvaluationStatus),
             this.buildEvaluationStatus(shipment.detailsEvaluationStatus),
             this.buildEvaluationStatus(shipment.qualityEvaluationStatus),
@@ -175,7 +187,99 @@ export class EntityBuilder {
         throw new Error('Invalid evaluation status');
     };
 
-    static buildIDLEvaluationStatus = (status: EvaluationStatus): ICPEvaluationStatus =>
+    static buildBaseCertificate(baseCertificate: ICPBaseCertificate): BaseCertificate {
+        return new BaseCertificate(
+            Number(baseCertificate.id),
+            baseCertificate.issuer,
+            baseCertificate.subject,
+            baseCertificate.uploadedBy,
+            this.buildAssessmentReferenceStandard(baseCertificate.assessmentReferenceStandard),
+            baseCertificate.assessmentAssuranceLevel,
+            this._buildCertificateDocumentInfo(baseCertificate.document),
+            this._buildDocumentEvaluationStatus(baseCertificate.evaluationStatus),
+            this._buildCertificateType(baseCertificate.certType),
+            new Date(Number(baseCertificate.issueDate)),
+            baseCertificate.notes
+        );
+    }
+
+    static buildCompanyCertificate(companyCertificate: ICPCompanyCertificate): CompanyCertificate {
+        return new CompanyCertificate(
+            Number(companyCertificate.id),
+            companyCertificate.issuer,
+            companyCertificate.subject,
+            companyCertificate.uploadedBy,
+            this.buildAssessmentReferenceStandard(companyCertificate.assessmentReferenceStandard),
+            companyCertificate.assessmentAssuranceLevel,
+            this._buildCertificateDocumentInfo(companyCertificate.document),
+            this._buildDocumentEvaluationStatus(companyCertificate.evaluationStatus),
+            this._buildCertificateType(companyCertificate.certType),
+            new Date(Number(companyCertificate.issueDate) / 1000),
+            new Date(Number(companyCertificate.validFrom)),
+            new Date(Number(companyCertificate.validUntil)),
+            companyCertificate.notes
+        );
+    }
+
+    static buildScopeCertificate(scopeCertificate: ICPScopeCertificate): ScopeCertificate {
+        return new ScopeCertificate(
+            Number(scopeCertificate.id),
+            scopeCertificate.issuer,
+            scopeCertificate.subject,
+            scopeCertificate.uploadedBy,
+            this.buildAssessmentReferenceStandard(scopeCertificate.assessmentReferenceStandard),
+            scopeCertificate.assessmentAssuranceLevel,
+            this._buildCertificateDocumentInfo(scopeCertificate.document),
+            this._buildDocumentEvaluationStatus(scopeCertificate.evaluationStatus),
+            this._buildCertificateType(scopeCertificate.certType),
+            new Date(Number(scopeCertificate.issueDate) / 1000),
+            scopeCertificate.processTypes,
+            new Date(Number(scopeCertificate.validFrom)),
+            new Date(Number(scopeCertificate.validUntil)),
+            scopeCertificate.notes
+        );
+    }
+
+    static buildMaterialCertificate(
+        materialCertificate: ICPMaterialCertificate,
+        material: ICPMaterial
+    ): MaterialCertificate {
+        return new MaterialCertificate(
+            Number(materialCertificate.id),
+            materialCertificate.issuer,
+            materialCertificate.subject,
+            materialCertificate.uploadedBy,
+            this.buildAssessmentReferenceStandard(materialCertificate.assessmentReferenceStandard),
+            materialCertificate.assessmentAssuranceLevel,
+            this._buildCertificateDocumentInfo(materialCertificate.document),
+            this._buildDocumentEvaluationStatus(materialCertificate.evaluationStatus),
+            this._buildCertificateType(materialCertificate.certType),
+            new Date(Number(materialCertificate.issueDate) / 1000),
+            this.buildMaterial(material),
+            materialCertificate.notes
+        );
+    }
+
+    static buildICPCertificateDocumentInfo(
+        document: CertificateDocumentInfo
+    ): ICPCertificateDocumentInfo {
+        return {
+            referenceId: document.referenceId,
+            documentType: this.buildICPCertificateDocumentType(document.documentType),
+            externalUrl: document.externalUrl,
+            metadata: document.metadata
+        };
+    }
+
+    static buildICPCertificateDocumentType(
+        documentType: CertificateDocumentType
+    ): ICPCertificateDocumentType {
+        return {
+            [documentType]: null
+        } as ICPCertificateDocumentType;
+    }
+
+    static buildICPEvaluationStatus = (status: EvaluationStatus): ICPEvaluationStatus =>
         ({
             [status]: null
         }) as ICPEvaluationStatus;
@@ -221,4 +325,79 @@ export class EntityBuilder {
         uploadedBy: info.uploadedBy,
         externalUrl: info.externalUrl
     });
+
+    static buildAssessmentReferenceStandard = (
+        assessmentReferenceStandard: ICPAssessmentReferenceStandard
+    ): AssessmentReferenceStandard =>
+        new AssessmentReferenceStandard(
+            Number(assessmentReferenceStandard.id),
+            assessmentReferenceStandard.name,
+            assessmentReferenceStandard.sustainabilityCriteria,
+            assessmentReferenceStandard.logoUrl,
+            assessmentReferenceStandard.siteUrl
+        );
+
+    static buildAssetOperation = (assetOperation: ICPAssetOperation): AssetOperation =>
+        new AssetOperation(
+            Number(assetOperation.id),
+            assetOperation.name,
+            assetOperation.inputMaterials.map((material) => this.buildMaterial(material)),
+            this.buildMaterial(assetOperation.outputMaterial),
+            assetOperation.latitude,
+            assetOperation.longitude,
+            assetOperation.processTypes
+        );
+
+    static _buildCertificateDocumentType(
+        documentType: ICPCertificateDocumentType
+    ): CertificateDocumentType {
+        if (CertificateDocumentType.CERTIFICATE_OF_CONFORMITY in documentType)
+            return CertificateDocumentType.CERTIFICATE_OF_CONFORMITY;
+        if (CertificateDocumentType.COUNTRY_OF_ORIGIN in documentType)
+            return CertificateDocumentType.COUNTRY_OF_ORIGIN;
+        if (CertificateDocumentType.SWISS_DECODE in documentType)
+            return CertificateDocumentType.SWISS_DECODE;
+        if (CertificateDocumentType.PRODUCTION_REPORT in documentType)
+            return CertificateDocumentType.PRODUCTION_REPORT;
+        if (CertificateDocumentType.PRODUCTION_FACILITY_LICENSE in documentType)
+            return CertificateDocumentType.PRODUCTION_FACILITY_LICENSE;
+        throw new Error('Invalid document type');
+    }
+
+    static _buildDocumentEvaluationStatus(
+        documentEvaluationStatus: ICPEvaluationStatus
+    ): EvaluationStatus {
+        if (ICPEvaluationStatusEnum.NOT_EVALUATED in documentEvaluationStatus)
+            return EvaluationStatus.NOT_EVALUATED;
+        if (ICPEvaluationStatusEnum.APPROVED in documentEvaluationStatus)
+            return EvaluationStatus.APPROVED;
+        if (ICPEvaluationStatusEnum.NOT_APPROVED in documentEvaluationStatus)
+            return EvaluationStatus.NOT_APPROVED;
+        throw new Error('Invalid document evaluation status');
+    }
+
+    static _buildCertificateType(certificateType: ICPCertificateType): CertificateType {
+        if (CertificateType.COMPANY in certificateType) return CertificateType.COMPANY;
+        if (CertificateType.SCOPE in certificateType) return CertificateType.SCOPE;
+        if (CertificateType.MATERIAL in certificateType) return CertificateType.MATERIAL;
+        throw new Error('Invalid certificate type');
+    }
+
+    static _buildCertificateDocumentInfo(
+        document: ICPCertificateDocumentInfo
+    ): CertificateDocumentInfo {
+        return {
+            referenceId: document.referenceId,
+            documentType: this._buildCertificateDocumentType(document.documentType),
+            externalUrl: document.externalUrl,
+            metadata: document.metadata
+        };
+    }
+
+    static _buildOrderStatus(orderStatus: ICPOrderStatus): OrderStatus {
+        if (OrderStatus.PENDING in orderStatus) return OrderStatus.PENDING;
+        if (OrderStatus.CONFIRMED in orderStatus) return OrderStatus.CONFIRMED;
+        if (OrderStatus.EXPIRED in orderStatus) return OrderStatus.EXPIRED;
+        throw new Error('Invalid document type');
+    }
 }

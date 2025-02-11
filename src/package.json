@@ -1,16 +1,21 @@
 {
-    "name": "@isinblockchainteam/kbc-icp-incubator-library",
-    "version": "1.0.0",
+    "name": "@isinblockchainteam/coffee-trading-management-lib",
+    "version": "1.20.0",
     "description": "",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "scripts": {
-        "get-declarations": "cp -r ../icp/ts-canister/declarations/ ./declarations && node transform-declarations.js",
+        "get-declarations": "cp -r ../icp/ts-canisters/declarations/ ./declarations && node transform-declarations.js",
         "build": "npx tsc",
         "test": "jest",
         "lint": "eslint *.ts --fix",
         "prettier": "npx prettier . --write",
-        "populate-demo": "ts-node ./scripts/populate-demo.ts"
+        "populate-demo": "ts-node ./scripts/populate-demo.ts",
+        "clear": "rm -rf coverage declarations dist"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/IsinBlockchainTeam/kbc-icp-incubator-library.git"
     },
     "keywords": [
         "Decentralized",
@@ -23,8 +28,6 @@
         "@babel/core": "^7.25.2",
         "@babel/plugin-transform-modules-commonjs": "^7.24.8",
         "@babel/preset-env": "^7.25.4",
-        "@dfinity/agent": "1.4.0",
-        "@dfinity/identity-secp256k1": "^1.4.0",
         "@types/crypto-js": "^4.2.2",
         "@types/jest": "^29.4.0",
         "@types/node": "^18.14.6",
@@ -45,11 +48,11 @@
         "ttypescript": "1.5.15"
     },
     "dependencies": {
-        "@isinblockchainteam/kbc-icp-incubator-common": "1.0.0",
+        "@dfinity/agent": "1.4.0",
         "@dfinity/auth-client": "^1.4.0",
         "@ethersproject/providers": "^5.6.4",
         "@jest/test-sequencer": "^29.7.0",
-        "@isinblockchainteam/azle-types": "file:../icp/ts-canister/src/models/types",
+        "@kbc-lib/azle-types": "^1.0.10",
         "@supercharge/promise-pool": "^3.2.0",
         "buffer": "^6.0.3",
         "crypto-js": "^4.2.0",

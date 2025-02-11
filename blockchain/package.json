@@ -1,5 +1,5 @@
 {
-    "name": "@isinblockchainteam/kbc-icp-incubator-library",
+    "name": "coffee-trading-management-lib-contracts",
     "version": "1.0.0",
     "scripts": {
         "clear": "npx hardhat clean &&  rm -rf ./cache ./artifacts ./typechain-types ../src/smart-contracts",
@@ -11,8 +11,10 @@
         "deploy": "npx hardhat run ./scripts/deploy.ts",
         "send-eth": "npx hardhat run ./scripts/send-eth.ts --network localhost",
         "send-tokens": "npx hardhat run ./scripts/send-tokens.ts --network localhost",
-        "deploy-threeachain": "npx hardhat run ./scripts/deploy-testnet.ts --network threeachain",
-        "deploy-holesky": "npx hardhat run ./scripts/deploy-testnet.ts --network holesky",
+        "approve-token-transfer": "npx hardhat run ./scripts/approve-token-transfer.ts --network localhost",
+        "deploy-threeachain": "npm run deploy -- --network threeachain",
+        "deploy-holesky": "npm run deploy -- --network holesky",
+        "deploy-optimism": "npm run deploy -- --network optimism",
         "node": "npx hardhat node --hostname 0.0.0.0",
         "lint": "eslint \"{contracts,scripts,test,utils}/**/*.ts\" --fix",
         "prettier": "npx prettier . --write"
@@ -34,7 +36,6 @@
         "prettier": "3.3.1"
     },
     "dependencies": {
-        "@isinblockchainteam/blockchain-common": "1.0.0",
         "@defi-wonderland/smock": "2.3.5",
         "@ethersproject/providers": "^5.7.2",
         "@openzeppelin/contracts": "4.8.2",

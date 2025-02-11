@@ -1,4 +1,4 @@
-import { PhaseEnum as Phase, FundStatusEnum as FundStatus } from '@isinblockchainteam/azle-types';
+import { PhaseEnum as Phase, FundStatusEnum as FundStatus } from '@kbc-lib/azle-types';
 import { DocumentInfo, DocumentType } from './Document';
 import { EvaluationStatus } from './Evaluation';
 
@@ -11,7 +11,7 @@ export class Shipment {
 
     private _commissioner: string;
 
-    private _escrowAddress: string | undefined;
+    private _downPaymentAddress: string | undefined;
 
     private _sampleEvaluationStatus: EvaluationStatus;
 
@@ -51,7 +51,7 @@ export class Shipment {
         id: number,
         supplier: string,
         commissioner: string,
-        escrowAddress: string | undefined,
+        downPaymentAddress: string | undefined,
         sampleEvaluationStatus: EvaluationStatus,
         detailsEvaluationStatus: EvaluationStatus,
         qualityEvaluationStatus: EvaluationStatus,
@@ -73,7 +73,7 @@ export class Shipment {
         this._id = id;
         this._supplier = supplier;
         this._commissioner = commissioner;
-        this._escrowAddress = escrowAddress;
+        this._downPaymentAddress = downPaymentAddress;
         this._sampleEvaluationStatus = sampleEvaluationStatus;
         this._detailsEvaluationStatus = detailsEvaluationStatus;
         this._qualityEvaluationStatus = qualityEvaluationStatus;
@@ -117,12 +117,12 @@ export class Shipment {
         this._commissioner = value;
     }
 
-    get escrowAddress(): string | undefined {
-        return this._escrowAddress;
+    get downPaymentAddress(): string | undefined {
+        return this._downPaymentAddress;
     }
 
-    set escrowAddress(value: string | undefined) {
-        this._escrowAddress = value;
+    set downPaymentAddress(value: string | undefined) {
+        this._downPaymentAddress = value;
     }
 
     get sampleEvaluationStatus(): EvaluationStatus {

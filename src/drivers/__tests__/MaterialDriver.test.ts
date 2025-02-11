@@ -1,5 +1,9 @@
 import { createActor } from 'icp-declarations/entity_manager';
 import type { Identity } from '@dfinity/agent';
+import {
+    Material as ICPMaterial,
+    ProductCategory as ICPProductCategory
+} from '@kbc-lib/azle-types';
 import { MaterialDriver } from '../MaterialDriver';
 import { EntityBuilder } from '../../utils/EntityBuilder';
 import { Material } from '../../entities/Material';
@@ -49,18 +53,49 @@ describe('MaterialDriver', () => {
     });
 
     it('should create a material', async () => {
-        const rawMaterial = { name: 'test' };
+        const rawMaterial = {
+            id: BigInt(0),
+            name: 'nameTest',
+            productCategory: { id: BigInt(0) } as ICPProductCategory,
+            typology: 'typologyTest',
+            quality: 'qualityTest',
+            moisture: 'moistureTest',
+            isInput: false
+        } as ICPMaterial;
         mockFn.createMaterial.mockReturnValue(rawMaterial);
-        await expect(materialDriver.createMaterial(1)).resolves.toEqual(defaultMaterial);
+        await expect(materialDriver.createMaterial(
+            rawMaterial.name,
+            Number(rawMaterial.productCategory.id),
+            rawMaterial.typology,
+            rawMaterial.quality,
+            rawMaterial.moisture,
+            rawMaterial.isInput
+        )).resolves.toEqual(defaultMaterial);
         expect(mockFn.createMaterial).toHaveBeenCalled();
         expect(EntityBuilder.buildMaterial).toHaveBeenCalled();
         expect(EntityBuilder.buildMaterial).toHaveBeenCalledWith(rawMaterial);
     });
 
     it('should update a material', async () => {
-        const rawMaterial = { name: 'test' };
+        const rawMaterial = {
+            id: BigInt(0),
+            name: 'nameTest',
+            productCategory: { id: BigInt(0) } as ICPProductCategory,
+            typology: 'typologyTest',
+            quality: 'qualityTest',
+            moisture: 'moistureTest',
+            isInput: false
+        } as ICPMaterial;
         mockFn.updateMaterial.mockReturnValue(rawMaterial);
-        await expect(materialDriver.updateMaterial(1, 1)).resolves.toEqual(defaultMaterial);
+        await expect(materialDriver.updateMaterial(
+            Number(rawMaterial.id),
+            rawMaterial.name,
+            Number(rawMaterial.productCategory.id),
+            rawMaterial.typology,
+            rawMaterial.quality,
+            rawMaterial.moisture,
+            rawMaterial.isInput
+        )).resolves.toEqual(defaultMaterial);
         expect(mockFn.updateMaterial).toHaveBeenCalled();
         expect(EntityBuilder.buildMaterial).toHaveBeenCalled();
         expect(EntityBuilder.buildMaterial).toHaveBeenCalledWith(rawMaterial);
